@@ -385,17 +385,30 @@ main{padding:22px 24px 40px;min-width:0}
 .sh-tile small{font-size:11.5px;font-weight:700;color:var(--ink-2);font-variant-numeric:tabular-nums}
 .sh-tile.is-shiny{box-shadow:inset 0 0 0 2px #FFB547}
 .pedia-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(290px,1fr));gap:16px}
-.fam-card{display:flex;flex-direction:column;gap:8px}
-.fam-card .row{display:flex;align-items:center;justify-content:space-between;gap:8px;flex-wrap:wrap}
-.fam-card h3{font-size:18px;font-weight:900}
-.fam-card > p{color:var(--ink-2);font-weight:600;font-size:13px;min-height:2.9em}
-.fam-balls{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:6px;margin-top:2px}
-.fam-balls button{aspect-ratio:1;display:grid;place-items:center;border-radius:12px;background:var(--panel-2);transition:transform .15s}
-.fam-balls button:hover{transform:translateY(-2px)}
-.fam-balls img{width:84%;height:auto;filter:drop-shadow(0 5px 4px rgba(40,30,20,.25))}
-.fam-card .foot{display:flex;justify-content:space-between;gap:8px;font-size:12px;font-weight:800;color:var(--ink-2);font-variant-numeric:tabular-nums}
-.fam-card .got{color:var(--green)}
-.fam-card .notgot{color:var(--muted)}
+.rar-group{margin-top:18px}
+.rar-group > h3{display:flex;align-items:center;gap:8px;font-size:15px;font-weight:900;margin-bottom:10px}
+.rar-group > h3 i{width:12px;height:12px;border-radius:50%;background:var(--dc)}
+.rar-group > h3 small{font-size:12.5px;font-weight:700;color:var(--muted)}
+.fam-card{display:flex;flex-direction:column;gap:10px;border-top:4px solid var(--dc)}
+.fam-top{display:grid;grid-template-columns:92px minmax(0,1fr);gap:12px;align-items:center}
+.fam-hero{width:92px;height:92px;display:grid;place-items:center;border-radius:50%;background:radial-gradient(circle,color-mix(in srgb,var(--dc) 22%,transparent),transparent 70%);transition:transform .15s}
+.fam-hero:hover{transform:scale(1.06)}
+.fam-hero img{width:86px;height:auto;filter:drop-shadow(0 7px 6px rgba(40,30,20,.3))}
+.fam-card h3{font-size:18px;font-weight:900;line-height:1.1}
+.dec-pill{display:inline-block;margin-top:5px;font-size:11px;font-weight:900;letter-spacing:.04em;text-transform:uppercase;padding:2px 9px;border-radius:999px;background:color-mix(in srgb,var(--dc) 16%,var(--panel));color:color-mix(in srgb,var(--dc) 75%,var(--ink))}
+.fam-odds{display:block;margin-top:4px;font-size:12px;font-weight:700;color:var(--ink-2);font-variant-numeric:tabular-nums}
+.fam-card > p{color:var(--ink-2);font-weight:600;font-size:13px}
+.fam-sizes{display:grid;grid-template-columns:repeat(6,minmax(0,1fr));gap:4px;padding:8px 6px 6px;border-radius:12px;background:var(--panel-2)}
+.fam-sizes button{display:flex;flex-direction:column;align-items:center;justify-content:flex-end;gap:3px;min-height:74px;border-radius:10px;transition:transform .15s}
+.fam-sizes button:hover{transform:translateY(-2px)}
+.fam-sizes img{height:auto;filter:drop-shadow(0 4px 3px rgba(40,30,20,.25))}
+.fam-sizes .missing img{filter:grayscale(1);opacity:.38}
+.fam-sizes small{font-size:10px;font-weight:900;letter-spacing:.02em;color:var(--muted);white-space:nowrap}
+.fam-sizes .owned small{color:var(--rtx,var(--ink))}
+.fam-card .foot{display:flex;justify-content:space-between;align-items:center;gap:10px;font-size:12px;font-weight:800;color:var(--ink-2);font-variant-numeric:tabular-nums}
+.fam-card .foot .bar{flex:1;height:6px;border-radius:999px;background:var(--line);overflow:hidden}
+.fam-card .foot .bar i{display:block;height:100%;background:var(--dc);border-radius:999px}
+.fam-card .foot .done{color:var(--green)}
 .fmt-grid{display:grid;grid-template-columns:repeat(6,minmax(0,1fr));gap:12px}
 .fmt-grid .sh-tile{justify-content:flex-end}
 .fmt-grid .sh-tile img{width:auto}
@@ -2949,7 +2962,6 @@ let pedia = [];   // billes d'exemple affichées, pour l'aperçu 3D
 function pv(s){ pedia.push(s); return pedia.length-1 }
 function viewPedia(){
   pedia = [];
-  const famSeen = new Set(S.specs.map(s=>s.family));
   const fw = FAM_W.reduce((a,b)=>a+b,0), sw = SHINIES.slice(1).reduce((a,x)=>a+x.w,0);
   const base = {seed:hash("pedia-shiny"), type:"calot", family:1, pal:5};
   const shinyTiles = [0,1,2,3].map(k=>{
@@ -2957,24 +2969,41 @@ function viewPedia(){
     const p = k ? FREE_BAG.shiny*SHINIES[k].w/sw : 1-FREE_BAG.shiny;
     return `<button class="sh-tile${k?" is-shiny":""}" data-action="preview" data-k="${i}">${k?shinyPill(s):`<span class="pill" style="${tstyle("calot")}">Normale</span>`}
       ${mImg(s,240)}<b>${k?SHINIES[k].name:"Sans effet"}</b><small>${k?SHINIES[k].desc:"Le même décor, sans effet spécial."}</small><small>${k?oneIn(p)+" billes":"Presque toutes les billes"}</small></button>`}).join("");
-  const order = FAMILIES.map((f,i)=>i).sort((a,b)=>FAMILIES[b].rar-FAMILIES[a].rar || a-b);
-  const famCards = order.map(f=>{
-    const F = FAMILIES[f], balls = [0,1,2,3].map(j=>{
-      const s = {seed:hash("pedia"+f+"-"+j), type:["calot","bille","mini","boulet"][j], family:f, pal:(f*7+j*5+3)%BASE_PALS, shiny:0}, i = pv(s);
-      return `<button data-action="preview" data-k="${i}" aria-label="${esc(specName(s))}, ${TYPES[s.type].label}">${mImg(s,160)}</button>`}).join("");
-    return `<section class="panel fam-card">
-      <div class="row"><h3>${F.name}</h3></div>
+  // décors regroupés par rareté ; pour chacun, les 6 tailles dans l'ordre (trouvées en couleur, les autres grisées)
+  const owned = slotsOwned();
+  const SHORT = {mini:"Mini", bille:"Bille", chinoise:"Chinoise", calot:"Calot", boulet:"Boulet", mammouth:"Mammouth"};
+  const famCard = f => {
+    const F = FAMILIES[f], dc = DECOR_RAR[F.rar].c;
+    const mine = S.specs.filter(x=>x.family===f).sort(tierSort);   // comme l'album : les billes de saison comptent
+    const best = mine[0], sample = {seed:hash("pedia"+f), type:"calot", family:f, pal:(f*7+3)%BASE_PALS, shiny:0};
+    const hero = best ? `<button class="fam-hero" data-action="spec" data-id="${best.id}" aria-label="Ta plus belle : ${esc(specName(best))}">${mImg(best,200,86,"")}</button>`
+                      : `<button class="fam-hero" data-action="preview" data-k="${pv(sample)}" aria-label="Aperçu du décor ${esc(F.name)}">${mImg(sample,200,86,"")}</button>`;
+    let got = 0;
+    const sizes = TK.map(t=>{
+      const list = (owned.get(t+"|"+f)||[]).slice().sort(tierSort), px = Math.round(24+26*(scaleOf(t)-.5)*2);
+      if(list.length){ got++; const x=list[0];
+        return `<button class="owned" data-action="spec" data-id="${x.id}" style="${tstyle(t)}" aria-label="${TYPES[t].label} : trouvé (${esc(specName(x))})">${mImg(x,120,px,"")}<small>${SHORT[t]}</small></button>` }
+      const g = {seed:hash("pedia"+f+t), type:t, family:f, pal:(f*7+3)%BASE_PALS, shiny:0};
+      return `<button class="missing" data-action="preview" data-k="${pv(g)}" aria-label="${TYPES[t].label} : pas encore trouvé">${mImg(g,120,px,"")}<small>${SHORT[t]}</small></button>`;
+    }).join("");
+    const cols = new Set(mine.filter(x=>x.pal<BASE_PALS).map(x=>x.pal)).size;
+    return `<section class="panel fam-card" style="--dc:${dc}">
+      <div class="fam-top">${hero}<div><h3>${F.name}</h3><span class="dec-pill">${DECOR_RAR[F.rar].name}</span><span class="fam-odds">${oneIn(FAM_W[f]/fw)} billes</span></div></div>
       <p>${F.desc}</p>
-      <div class="fam-balls">${balls}</div>
-      <div class="foot"><span>${oneIn(FAM_W[f]/fw)} billes</span><span class="${famSeen.has(f)?"got":"notgot"}">${famSeen.has(f)?"Trouvé":"Pas encore trouvé"}</span></div>
-    </section>`}).join("");
+      <div class="fam-sizes">${sizes}</div>
+      <div class="foot"><span class="${got===TK.length?"done":""}">${got} / ${TK.length} tailles</span><span class="bar"><i style="width:${got/TK.length*100}%"></i></span><span>${cols} / ${BASE_PALS} coloris</span></div>
+    </section>`;
+  };
+  const famGroups = DECOR_RAR.map((R,k)=>({R,k,fams:FAMILIES.map((_,i)=>i).filter(i=>FAMILIES[i].rar===k)})).reverse().filter(g=>g.fams.length)
+    .map(({R,fams})=>`<div class="rar-group" style="--dc:${R.c}"><h3><i></i>${R.name}<small>${fams.length} décor${fams.length>1?"s":""} · ${oneIn(R.w/fw)} billes chacun</small></h3>
+      <div class="pedia-grid">${fams.map(famCard).join("")}</div></div>`).join("");
   const fmts = TK.map((t,j)=>{ const s={seed:hash("pedia-fmt"+t), type:t, family:[0,1,4,6,5,11][j], pal:[0,2,12,3,9,13][j], shiny:0}, i=pv(s);
     return `<button class="sh-tile" data-action="preview" data-k="${i}" style="${tstyle(t)}">${mImg(s,200,Math.round(92*scaleOf(t)+10))}${typePill(t,true)}<small>${TYPES[t].mm} mm</small><small>${pct(FREE_BAG.odds[t])} du sac gratuit</small></button>` }).join("");
   const pals = PALETTES.slice(0,BASE_PALS).map(P=>`<div class="pal"><span>${[P[1],P[2],P[3]].map(c=>`<i style="background:${c}"></i>`).join("")}</span>${P[0]}</div>`).join("");
   const combos = TK.length*FAMILIES.length*BASE_PALS;
   return `<div class="page-head"><div><h1>Billepedia</h1><p>Tout ce qui existe dans Billy. Chaque bille ouverte est unique : son motif est tiré au hasard au moment de l'ouverture, il n'y en aura jamais deux pareilles. ${TK.length} formats × ${FAMILIES.length} décors × ${BASE_PALS} coloris = ${fmt(combos)} combinaisons, ×4 avec les shiny.</p></div></div>
   <section class="pedia-sec"><h2>Les shiny</h2><p>Un effet spécial qui peut tomber sur n'importe quelle bille, quel que soit son format. Touche une bille pour la voir tourner.</p><div class="shiny-show">${shinyTiles}</div></section>
-  <section class="pedia-sec"><h2>Les décors</h2><p>La rareté d'une bille, c'est sa taille. Mais tous les décors ne sortent pas aussi souvent : certains tombent une bille sur 10, d'autres une sur plusieurs centaines. Un Mammouth avec un décor rare, en shiny, c'est le graal.</p><div class="pedia-grid">${famCards}</div></section>
+  <section class="pedia-sec"><h2>Les décors</h2><p>Chaque décor existe dans les ${TK.length} tailles, de la Mini au Mammouth : la rangée sous chaque décor te montre celles que tu as déjà (en couleur) et celles qui te manquent (grisées). Certains décors tombent souvent, d'autres une bille sur plusieurs centaines. Un Mammouth avec un décor légendaire, en shiny, c'est le graal.</p>${famGroups}</section>
   <section class="pedia-sec"><h2>Les tailles</h2><p>Du plus petit au plus gros : plus une bille est grosse, plus elle est rare. Chaque taille a sa couleur, partout sur le site.</p><div class="fmt-grid">${fmts}</div></section>
   <section class="pedia-sec"><h2>Les coloris</h2><p>${BASE_PALS} coloris, tous aussi fréquents les uns que les autres.</p><div class="pal-grid">${pals}</div><p class="meta" style="margin-top:10px">Et chaque mois, un coloris exclusif qu'on ne trouve que dans le passe de saison.</p></section>`;
 }

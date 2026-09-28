@@ -894,12 +894,19 @@ button.vit-slot:hover{background:var(--panel-2);color:var(--ink)}
 /* ---------- jeux de la cour ---------- */
 .games-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(320px,1fr));gap:18px}
 .game-tile{display:flex;flex-direction:column;gap:0;padding:0;overflow:hidden}
-.gt-art{display:block;height:150px;background:#B8895A}
-.gt-art svg{width:100%;height:100%;display:block;transition:transform .3s}
-.game-tile:hover .gt-art svg{transform:scale(1.04)}
+.gt-art{position:relative;display:block;height:150px;background:#B8895A;overflow:hidden}
+.gt-art .gt-state{position:absolute;left:12px;bottom:12px;margin:0;background:rgba(15,12,10,.74);color:#fff;border:0;backdrop-filter:blur(4px)}
+.gt-art .gt-state.ok{background:var(--green);color:#fff}
+.gm-playing{display:flex;align-items:center;gap:12px;padding:10px 14px 10px 10px;margin-bottom:6px;flex-wrap:wrap}
+.gm-ball{display:grid;place-items:center;width:58px;height:58px;border-radius:50%;background:radial-gradient(circle,color-mix(in srgb,var(--rc) 26%,var(--panel)),var(--panel) 70%)}
+.gm-playing small{display:block;font-size:11.5px;font-weight:800;color:var(--muted)}
+.gm-playing b{font-weight:900;font-size:15px}
+.gm-sp{flex:1}
+.gt-art > svg{width:100%;height:100%;display:block;transition:transform .3s}
+.game-tile:hover .gt-art > svg{transform:scale(1.04)}
 .gt-body{display:flex;flex-direction:column;gap:8px;padding:16px 18px 18px;flex:1}
 .gt-body h2{font-family:var(--display);font-weight:400;font-size:26px;line-height:1}
-.gt-body p{color:var(--ink-2);font-weight:600;font-size:13.5px}
+.gt-body p{color:var(--ink-2);font-weight:600;font-size:13.5px;display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical;overflow:hidden}
 .gt-foot{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-top:auto;padding-top:6px}
 .gt-foot small{font-weight:800;color:var(--muted);font-size:12px}
 .back-link{display:inline-flex;align-items:center;gap:4px;font-size:13px;font-weight:800;color:var(--ink-2);margin-bottom:8px;padding:4px 8px 4px 4px;border-radius:8px}
@@ -4683,9 +4690,8 @@ function artCourse(){ return `<svg viewBox="0 0 240 130" preserveAspectRatio="xM
 function viewGames(){
   const P = playedToday(), tirLeft = LEVELS.length - Object.keys(P.tir).length;
   const tile = c => `<article class="panel game-tile">
-    <button class="gt-art" data-action="nav" data-view="${c.v}" aria-label="Jouer : ${c.t}">${c.art}</button>
+    <button class="gt-art" data-action="nav" data-view="${c.v}" aria-label="Jouer : ${c.t}">${c.art}<span class="gt-state ${c.ok?"ok":""}">${c.state}</span></button>
     <div class="gt-body"><h2>${c.t}</h2><p>${c.d}</p>
-      <span class="gt-state ${c.ok?"ok":""}">${c.state}</span>
       <div class="gt-foot"><small>${c.stat}</small><button class="btn btn-blue" data-action="nav" data-view="${c.v}">${ic("play",16)} Jouer</button></div></div>
   </article>`;
   const solo = [
@@ -4702,8 +4708,18 @@ function viewGames(){
     {v:"course", t:"La Course sur la plage", d:ARENA.course.lead, art:artCourse(), stat:`${S.stats.race||0} victoire${(S.stats.race||0)>1?"s":""}`, ok:true, state:`${COIN} Mise de 10 à 100 · à volonté`},
     {v:"tic", t:"La Tic", d:ARENA.tic.lead, art:artTic(), stat:`${S.stats.tic} victoire${S.stats.tic>1?"s":""}`, ok:true, state:`${COIN} Mise de 10 à 100 · à volonté`},
   ];
+  const act = activeSpec();
+  solo.sort((a,b)=>b.ok-a.ok);   // ceux qui rapportent encore quelque chose aujourd'hui d'abord
   return `<div class="page-head"><div><h1>Jeux de la cour</h1><p>Les jeux de billes de la récré. Joue quand tu en as envie : rien n'est obligatoire, et tu ne perds jamais tes billes.</p></div>
     <span class="hand-note">Qui c'est le plus fort de la cour ?</span></div>
+  ${act?`<div class="panel gm-playing" style="${tstyle(act.type)}">
+    <button class="gm-ball" data-action="spec" data-id="${act.id}" aria-label="Voir ta bille active">${mImg(act,120,48,"")}</button>
+    <div><small>Tu joues avec</small><b>${esc(specName(act))}</b> ${typePill(act.type)}</div>
+    <div class="gm-sp"></div>
+    <button class="nav-arrow" data-action="active-step" data-dir="-1" aria-label="Bille précédente">${ic("chevl",14,2.5)}</button>
+    <button class="nav-arrow" data-action="active-step" data-dir="1" aria-label="Bille suivante">${ic("chev",14,2.5)}</button>
+    <button class="btn btn-ghost" data-action="to-collection">Choisir dans ma boîte</button>
+  </div>`:""}
   <section class="games-sec"><div class="gs-head"><h2>Jeux solo</h2><p>Une récompense par jour et par jeu (au Tir, chaque trou). Tu peux rejouer autant que tu veux pour le plaisir, et les compteurs repartent à minuit.</p></div>
     <div class="games-grid">${solo.map(tile).join("")}</div></section>
   <section class="games-sec"><div class="gs-head"><h2>Jeux à plusieurs</h2><p>Mise des ${CUR.many} contre d'autres joueurs, autant de parties que tu veux. Plus la mise est grosse, plus les adversaires sont forts. En attendant le vrai multijoueur (avec la section Amis), tes adversaires sont simulés.</p></div>

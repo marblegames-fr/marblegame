@@ -1052,7 +1052,7 @@ const FIGURES = ["étoile","cœur","lune","fleur"];
 const PALETTES = [
   ["Azur","#1E5BD8","#6FB6FF","#F2C94C","#DDEBFF"],["Grenat","#8E1B2E","#D8443C","#F4B183","#FFE3E3"],
   ["Émeraude","#0E7A4C","#39C17E","#E9F5C9","#DFF7E9"],["Ambre","#C46A12","#F2A93B","#FFE2A8","#FFF0D6"],
-  ["Lagon","#0B8FA3","#35D0C9","#F7F3E3","#D8F6F6"],["Aurore","#6B3FD8","#2FD3A5","#FF8FD1","#EEE6FF"],
+  ["Lagon","#0B8FA3","#35D0C9","#F7F3E3","#D8F6F6"],["Féerie","#6B3FD8","#2FD3A5","#FF8FD1","#EEE6FF"],
   ["Volcan","#3A0D06","#E2461C","#FFB02E","#FFE0CF"],["Nuit","#0F1640","#5A6BE6","#C9D2FF","#D6DBF5"],
   ["Menthe","#1F9E7A","#9BF0CF","#FFFFFF","#E6FFF6"],["Corail","#E2574C","#FF9E80","#FFE0CC","#FFE9E2"],
   ["Lavande","#7A5BC8","#C6B2F5","#FFFFFF","#F0EAFF"],["Miel","#B7791F","#F6C453","#FFF3C4","#FFF6DA"],
@@ -1062,6 +1062,19 @@ const PALETTES = [
   ["Réglisse","#121212","#C81E2E","#F2F2F2","#E8E8E8"],["Rubis","#9B0F1F","#FF3348","#FFC2C8","#FFE0E3"],
   ["Saphir","#0B2E8A","#2A62FF","#9FC0FF","#DCE6FF"],["Opale","#B9AEE0","#7FD6DE","#F6C8E0","#F7F5FF"],
   ["Cuivre","#7A3B12","#D07A3C","#F5C79E","#FBE7D6"],["Brume","#6A7A8C","#B8C6D6","#F0F4F8","#EEF2F6"],
+  // 24 coloris ajoutés en septembre 2026 : pastels, fluo, tons terreux, noir et blanc, duos inattendus
+  ["Barbe à papa","#F28DC0","#8FD3F4","#FFFFFF","#FFE6F3"],["Néon","#0E0E1A","#39FF88","#FF3FD0","#E6FFF1"],
+  ["Kaki","#4B5320","#8A9A5B","#D8C89A","#EEF0DE"],["Terracotta","#A0482C","#D9825B","#F1D3B8","#F8E6DA"],
+  ["Moutarde","#B38600","#E0B22E","#4A3B1F","#FFF3CC"],["Or rose","#B76E79","#E8B4B8","#FCE8E0","#FBEDEC"],
+  ["Encre","#111111","#FFFFFF","#7A7A7A","#F2F2F2"],["Pop","#FFD500","#FF2E93","#00B8F0","#FFF8CC"],
+  ["Tropical","#FF7A00","#00A6A6","#B8E63A","#FFF0DC"],["Sorbet","#FF9E7A","#9BE8C8","#FFF1B8","#FFF1EA"],
+  ["Paon","#0B5E6B","#1B8F5A","#2E3A9E","#DDF3F0"],["Pétrole","#0F4C5C","#E3B23C","#F4E9CD","#DDEFF2"],
+  ["Framboise","#C2185B","#7B1FA2","#F8BBD0","#FCE4EC"],["Chocolat menthe","#4E2A1E","#7FD8B6","#F5F0E6","#E9F7F1"],
+  ["Crépuscule","#3D1E6D","#FF7B54","#FFD56B","#F6E4F0"],["Tournesol","#F5B700","#5C3A1E","#7BAE3F","#FFF4CC"],
+  ["Béton","#6E6E6E","#A9A9A9","#D8D2C4","#EEEEEA"],["Denim","#274B7A","#6E8FB8","#E08A3C","#E6ECF4"],
+  ["Kiwi","#6A8D1E","#B7D63F","#3B2A1A","#F1F7DE"],["Ciel d'orage","#2E3440","#8FA3B8","#F2C14E","#E5EAF0"],
+  ["Sucre d'orge","#E63946","#FFFFFF","#F4A3A8","#FFE8EA"],["Lilas","#B39DDB","#FFF176","#7E57C2","#F3EEFB"],
+  ["Toucan","#1A1A1A","#FF7F11","#FFD23F","#FFF1DC"],["Sauge","#7D8F69","#B5C4A1","#E8E2D0","#EEF2E8"],
 ];
 const BASE_PALS = PALETTES.length;   // coloris qu'on peut tirer dans les sacs
 // Une saison par mois (0 = janvier) : un coloris exclusif et un décor vedette, seulement dans le passe
@@ -1949,7 +1962,7 @@ function starterState(){
     ["mini",1,0],["mini",6,7],["mini",3,15],["mini",4,13],
   ];
   const specs = list.map(([t,f,p],i)=>makeSpec(t,{seed:hash("depart"+i),family:f,pal:p,at:now-(i+1)*day/3}));
-  return {v:2, fv:2, jetons:1000, holes:23, specs, active:specs[1].id, unseen:[], freeT0:now-FREE_EVERY, best:{}, bagInv:{}, title:"Petit Boulet", titles:["Petit Boulet"], name:"AlexBilleur", vitrine:[null,null,null,null,null], chal:[], pity:0, bags:0, log:[]};
+  return {v:2, fv:2, pv:2, jetons:1000, holes:23, specs, active:specs[1].id, unseen:[], freeT0:now-FREE_EVERY, best:{}, bagInv:{}, title:"Petit Boulet", titles:["Petit Boulet"], name:"AlexBilleur", vitrine:[null,null,null,null,null], chal:[], pity:0, bags:0, log:[]};
 }
 let S;
 try { S = JSON.parse(localStorage.getItem(STORE_KEY)) } catch(e){ S = null }
@@ -1965,6 +1978,12 @@ if(!(S.fv>=2)){
   S.specs.forEach(reFam); (S.log||[]).forEach(l=>reFam(l.s));
   S.chal = S.chal.filter(id=>id!=="fam-14").map(id=>{ const m=/^fam-(\d+)$/.exec(id); return m && +m[1]>14 ? "fam-"+(m[1]-1) : id });
   S.fv = 2; save();
+}
+// 24 nouveaux coloris ajoutés après les 24 premiers : les coloris de saison et des billes secrètes (rangés après) se décalent d'autant
+if(!(S.pv>=2)){
+  const rePal = s => { if(s && s.pal>=24) s.pal += 24 };
+  S.specs.forEach(rePal); (S.log||[]).forEach(l=>rePal(l.s));
+  S.pv = 2; save();
 }
 // ancien minuteur (un seul sac) -> stock
 if(S.freeT0===undefined){ S.freeT0 = (S.freeAt ?? Date.now()) - FREE_EVERY; delete S.freeAt }

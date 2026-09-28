@@ -2405,7 +2405,7 @@ const giftCount = () => Object.values(S.bagInv).reduce((a,b)=>a+b,0);
    NAVIGATION & HAUT DE PAGE
    ===================================================================== */
 const NAV = [
-  ["accueil","Accueil","home"],["sacs","Ouvrir des sacs","bag"],["collection","Collection","layers"],["confiserie","La Confiserie","candy"],["passe","Passe de saison","ticket"],
+  ["accueil","Accueil","home"],["sacs","Ouvrir des sacs","bag"],["collection","Boîte à billes","layers"],["confiserie","La Confiserie","candy"],["passe","Passe de saison","ticket"],
   ["quetes","Quêtes du jour","quest"],["jeux","Jeux de la cour","pad"],["billepedia","Billepedia","book"],"sep",
   ["profil","Mon profil","user"],["amis","Amis","users",1],["cour","Cour de récré","cour",1],["classement","Classement","trophy",1],["parametres","Paramètres","gear"],
 ];
@@ -2512,7 +2512,7 @@ function viewHome(){
     </div>
 
     <section class="panel">
-      <div class="panel-head"><h2>Ma collection</h2>${chalClaimable()?`<button class="see-all chal-cta" data-action="tab" data-tab="defis">${ic("trophy",14)} ${chalClaimable()} défi${chalClaimable()>1?"s":""} réussi${chalClaimable()>1?"s":""} !</button>`:`<button class="see-all" data-action="nav" data-view="collection">Ouvrir l'album ${ic("chev",14)}</button>`}</div>
+      <div class="panel-head"><h2>Ma boîte à billes</h2>${chalClaimable()?`<button class="see-all chal-cta" data-action="tab" data-tab="defis">${ic("trophy",14)} ${chalClaimable()} défi${chalClaimable()>1?"s":""} réussi${chalClaimable()>1?"s":""} !</button>`:`<button class="see-all" data-action="nav" data-view="collection">Ouvrir l'album ${ic("chev",14)}</button>`}</div>
       <div class="col-home">
         <div class="col-count">
           <b>${slots.size}<small> / ${TOTAL_SLOTS}</small></b>
@@ -2795,7 +2795,7 @@ function viewCollection(){
   }
 
   return `<div class="page-head">
-    <div><h1>Ma collection</h1><p>Chaque bille est unique : son motif et son numéro de série sont générés au moment où tu l'ouvres. L'album compte ${TOTAL_SLOTS} emplacements, un par format et par décor.</p></div>
+    <div><h1>Ma boîte à billes</h1><p>Là où on range ses trésors depuis toujours. Chaque bille est unique : son motif et son numéro de série sont générés au moment où tu l'ouvres. L'album compte ${TOTAL_SLOTS} emplacements, un par format et par décor.</p></div>
   </div>
   <div class="col-summary">
     <section class="panel big-count">
@@ -2983,7 +2983,7 @@ function showCraft(inputs, out, pxp){
     FX.setDust(false);
     const ed = editionOf(out);
     document.getElementById("ov-body").innerHTML = `<div class="ov-title">${out.shiny?"Une shiny !":"Fusion réussie !"}</div>
-      <p class="ov-sub">${esc(specName(out))} rejoint ta collection.</p>
+      <p class="ov-sub">${esc(specName(out))} rejoint ta boîte à billes.</p>
       <div class="reveal-row"><button class="slot is-open ${k>=BIG?"big":""} ${out.shiny?"shiny":""}" data-action="zoom" data-id="${out.id}" aria-label="Agrandir ${esc(specName(out))}" style="--tc:${scoreCol(k)};${tstyle(out.type)}">
         ${BANNER[k]?`<span class="slot-banner">${BANNER[k]}</span>`:""}
         <div class="slot-ball"><span class="rays"></span>${mImg(out,300,Math.round(150*scaleOf(out.type)),"")}</div>
@@ -3029,7 +3029,7 @@ function confEchange(dups, dupVal){
   ${dups.length ? `<div class="card-grid">${dups.map(s=>`<div class="m-card conf-card"><span class="ball">${mImg(s,160,Math.round(70*scaleOf(s.type)+10))}</span><b>${esc(specName(s))}</b>${typePill(s.type)}
       <button class="btn btn-ghost conf-btn" data-action="recycle" data-id="${s.id}">${COIN} +${fmt(recycleValue(s))}</button></div>`).join("")}</div>`
     : `<p class="empty">Pas de double pour l'instant. Reviens après avoir ouvert quelques sacs !</p>`}
-  <p class="meta" style="margin-top:14px">Pour échanger une autre bille, ouvre sa fiche dans ta collection. Les shiny, les billes secrètes, ta bille active et ta vitrine ne sont jamais proposées ici.</p>`;
+  <p class="meta" style="margin-top:14px">Pour échanger une autre bille, ouvre sa fiche dans ta boîte à billes. Les shiny, les billes secrètes, ta bille active et ta vitrine ne sont jamais proposées ici.</p>`;
 }
 
 /* =====================================================================
@@ -3171,7 +3171,7 @@ function openModal(id, pv){
         ${pv?"":`<dt>N° de série</dt><dd><code>${serial(s)}</code></dd>
         <dt>Obtenue le</dt><dd>${new Date(s.at).toLocaleDateString("fr-FR",{day:"numeric",month:"long",year:"numeric"})}</dd>`}
       </dl>
-      ${pv?`<p class="meta">Aperçu Billepedia · ${S.specs.some(x=>slotKey(x)===slotKey(s))?"tu as déjà ce format dans ce décor.":"pas encore dans ta collection."}</p>`:`<div class="modal-actions">
+      ${pv?`<p class="meta">Aperçu Billepedia · ${S.specs.some(x=>slotKey(x)===slotKey(s))?"tu as déjà ce format dans ce décor.":"pas encore dans ta boîte à billes."}</p>`:`<div class="modal-actions">
         ${S.active===s.id?`<button class="btn btn-ghost" disabled>Bille active</button>`:`<button class="btn btn-blue" data-action="set-active" data-id="${s.id}">Jouer avec cette bille</button>`}
         ${S.vitrine.includes(s.id)?`<button class="btn btn-ghost" data-action="vit-rm" data-id="${s.id}">${ic("layers",16)} Retirer de la vitrine</button>`:`<button class="btn btn-ghost" data-action="vit-add" data-id="${s.id}">${ic("layers",16)} Mettre en vitrine</button>`}
         ${S.active===s.id||s.secret?"":`<button class="btn btn-ghost" data-action="recycle" data-id="${s.id}">${ic("candy",16)} Échanger · +${fmt(recycleValue(s))} ${CUR.many}</button>`}
@@ -3495,7 +3495,7 @@ function finishReveal(){
   const shiny = results.find(r=>r.s.shiny);
   const top = [...results].sort((a,b)=>pullScore(b.s)-pullScore(a.s))[0].s, tk = pullScore(top);
   document.querySelector(".ov-sub").textContent = shiny ? `Incroyable : une bille shiny ${SHINIES[shiny.s.shiny].name} !`
-    : tk>=BIG ? `Quelle chance : un ${TYPES[top.type].label} ${specName(top)} !` : "Elles sont rangées dans ta collection.";
+    : tk>=BIG ? `Quelle chance : un ${TYPES[top.type].label} ${specName(top)} !` : "Elles sont rangées dans ta boîte à billes.";
   document.querySelector(".ov-sub").textContent += " Touche une bille pour l'agrandir.";
   let again = "";
   if(ovState.gift){
@@ -3507,7 +3507,7 @@ function finishReveal(){
   } else {
     again = freeReady() ? `<button class="btn btn-yellow" data-action="open-next-free">Ouvrir le suivant (${freeStock()} en stock)</button>` : `<button class="btn btn-yellow" data-action="to-bags">Voir les sacs payants</button>`;
   }
-  document.getElementById("ov-actions").innerHTML = `<span class="ov-xp" style="flex-basis:100%;justify-content:center">${ic("ticket",18)} +${ovState.pxp} XP de saison</span>${again}<button class="btn btn-ghost" data-action="to-collection">Voir ma collection</button>`;
+  document.getElementById("ov-actions").innerHTML = `<span class="ov-xp" style="flex-basis:100%;justify-content:center">${ic("ticket",18)} +${ovState.pxp} XP de saison</span>${again}<button class="btn btn-ghost" data-action="to-collection">Voir ma boîte à billes</button>`;
 }
 function closeOv(){
   FX.stop();
@@ -3814,7 +3814,7 @@ const ARENA = {
     rules:["5 lancers depuis la ligne de craie.","Chaque bille dans le pot rapporte 10 bonbecs.","Les billes déjà lancées restent en jeu : pousse-les dans le pot !","1 bille dans le pot : 1 étoile, 3 billes : 2 étoiles, 5 billes : 3 étoiles.","Ta première partie de la journée rapporte des bonbecs. Ensuite, tu peux rejouer pour le plaisir."]},
   chateau:{title:"Le Château", icon:"castle",
     lead:"Dix billes rangées en triangle au milieu d'un cercle de craie. Tu as 3 tirs pour en faire sortir un maximum du cercle.",
-    rules:["3 tirs depuis la ligne de craie, d'un endroit différent à chaque fois.","Chaque bille sortie du cercle rapporte 6 bonbecs.","3 billes sorties : 1 étoile, 6 : 2 étoiles, les 10 : 3 étoiles et une vraie bille gagnée pour ta collection !","Plus ta bille active est grosse, plus elle tape fort.","Ta première partie de la journée rapporte des bonbecs. Ensuite, tu peux rejouer pour le plaisir."]},
+    rules:["3 tirs depuis la ligne de craie, d'un endroit différent à chaque fois.","Chaque bille sortie du cercle rapporte 6 bonbecs.","3 billes sorties : 1 étoile, 6 : 2 étoiles, les 10 : 3 étoiles et une vraie bille gagnée pour ta boîte à billes !","Plus ta bille active est grosse, plus elle tape fort.","Ta première partie de la journée rapporte des bonbecs. Ensuite, tu peux rejouer pour le plaisir."]},
   course:{title:"La Course sur la plage", icon:"flag",
     lead:"Le Tour de France des billes des vacances : une piste creusée dans le sable, trois adversaires, et chacun sa pichenette à son tour. Le premier qui passe la ligne a gagné !",
     rules:["Chacun joue une pichenette à son tour : toi, puis tes trois adversaires.","Si ta bille sort de la piste, elle revient là où elle était. Pas de raccourci !","Tu peux bousculer les autres billes : c'est de bonne guerre.","Chacun mise la même chose : le 1er rafle les 4 mises, le 2e récupère la sienne.","Plus la mise est grosse, plus tes adversaires sont forts. 30 pichenettes au maximum."]},
@@ -4303,7 +4303,7 @@ function viewSoon(){
         </div>
       </section>
       <section class="panel"><div class="panel-head"><h3>Recommencer</h3></div>
-        <p>Remet la collection, les ${CUR.many}, les records, le passe et les défis comme au premier lancement.</p>
+        <p>Remet la boîte à billes, les ${CUR.many}, les records, le passe et les défis comme au premier lancement.</p>
         <div style="margin-top:14px"><button class="btn btn-ghost" data-action="reset" id="reset-btn">Réinitialiser la démo</button></div>
       </section>
     </div>`;

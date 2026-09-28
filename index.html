@@ -209,10 +209,10 @@ button.mj-row:hover{border-color:var(--line-2)}
   .mj-scrim{align-items:flex-end}
   .mj-panel{width:100%;height:auto;max-height:88%;border-left:0;border-radius:24px 24px 0 0;padding-bottom:calc(26px + env(safe-area-inset-bottom,0px));animation:mjup .28s cubic-bezier(.2,.9,.3,1)}
 }
-.tab{position:relative;display:flex;flex-direction:column;align-items:center;gap:3px;padding:8px 0 9px;font-size:10.5px;font-weight:800;color:var(--muted)}
-.tab[aria-current="page"]{color:var(--ink)}
-.tab[aria-current="page"] svg{color:var(--blue)}
-.tab .dot{position:absolute;top:6px;left:calc(50% + 8px);width:8px;height:8px;border-radius:50%;background:#E5484D;border:2px solid var(--panel)}
+.tb{position:relative;display:flex;flex-direction:column;align-items:center;gap:3px;padding:8px 0 9px;font-size:10.5px;font-weight:800;color:var(--muted)}
+.tb[aria-current="page"]{color:var(--ink)}
+.tb[aria-current="page"] svg{color:var(--blue)}
+.tb .dot{position:absolute;top:6px;left:calc(50% + 8px);width:8px;height:8px;border-radius:50%;background:#E5484D;border:2px solid var(--panel)}
 .tab-bag{display:flex;flex-direction:column;align-items:center;gap:2px;padding-bottom:9px;font-size:10.5px;font-weight:900;color:var(--ink)}
 .tab-bag .bb{position:relative;display:grid;place-items:center;width:62px;height:62px;margin-top:-24px;border-radius:50%;background:var(--yellow);box-shadow:0 4px 0 var(--yellow-2),0 10px 24px -8px rgba(0,0,0,.5);border:4px solid var(--panel)}
 .tab-bag .bb svg{width:44px;height:50px}
@@ -1125,6 +1125,57 @@ button.vit-slot:hover{background:var(--panel-2);color:var(--ink)}
 /* ---------- toast ---------- */
 .toast{position:fixed;left:50%;bottom:calc(24px + env(safe-area-inset-bottom,0px));transform:translate(-50%,20px);z-index:80;background:var(--ink);color:var(--on-ink);font-weight:700;padding:12px 18px;border-radius:14px;box-shadow:0 12px 30px -10px rgba(0,0,0,.5);opacity:0;pointer-events:none;transition:all .25s;max-width:calc(100% - 32px)}
 .toast.show{opacity:1;transform:translate(-50%,0)}
+
+/* ---------- ACCUEIL : la prochaine chose à faire, puis tes objectifs ---------- */
+.hm{display:grid;gap:18px;max-width:1180px}
+.hm-hero{position:relative;overflow:hidden;border-radius:24px;padding:34px 36px;min-height:290px;color:#F5EEE2;
+  background:radial-gradient(120% 90% at 75% 40%,#2F5A40 0%,#1C3326 45%,#0F1D15 100%);box-shadow:var(--shadow)}
+:root[data-theme="light"] .hm-hero{background:radial-gradient(120% 90% at 75% 40%,#3C7050 0%,#24452F 50%,#16291E 100%)}
+.hm-hero::after{content:"";position:absolute;inset:0;pointer-events:none;background:repeating-linear-gradient(115deg,rgba(255,255,255,.018) 0 2px,transparent 2px 7px)}
+.hm-txt{position:relative;z-index:2;max-width:380px;display:grid;gap:12px;justify-items:start}
+.hm-k{display:inline-flex;align-items:center;gap:6px;font-size:11.5px;font-weight:900;letter-spacing:.08em;text-transform:uppercase;color:#CFE7D5}
+.hm-txt h1{font-family:var(--display);font-weight:400;font-size:42px;line-height:1.02;letter-spacing:.3px}
+.hm-txt p{color:#CFE0D3;font-weight:600;font-size:14.5px}
+.btn-xl{height:56px;padding:0 28px;font-size:17px}
+.hm-hero .btn-yellow{box-shadow:0 4px 0 var(--yellow-2),0 12px 30px -10px rgba(255,201,63,.6)}
+.hm-foot{display:flex;align-items:center;gap:10px;font-size:12.5px;font-weight:800;color:#CFE0D3}
+.hm-foot .stack i{background:rgba(255,255,255,.2)}
+.hm-foot .stack i.on{background:var(--yellow)}
+.hm-art{position:absolute;inset:0 0 0 auto;width:60%;z-index:1;pointer-events:none}
+.hm-chalk{position:absolute;right:4%;top:50%;translate:0 -50%;width:min(88%,390px);color:rgba(255,255,255,.7)}
+.hm-bag{position:absolute;right:31%;bottom:5%;width:160px;filter:drop-shadow(0 16px 18px rgba(0,0,0,.45))}
+.hm-m{position:absolute;height:auto;filter:drop-shadow(0 8px 8px rgba(0,0,0,.45))}
+.hm-grid{display:grid;grid-template-columns:minmax(0,1.35fr) minmax(0,1fr);gap:18px;align-items:start}
+.hm-grid .goals .goal-grid{grid-template-columns:minmax(0,1fr)}
+.hm-col{display:grid;gap:18px}
+.hm-act{display:grid;grid-template-columns:auto minmax(0,1fr);gap:16px;align-items:center}
+.hm-act-ball{display:grid;place-items:center;width:112px;height:112px;border-radius:50%;background:radial-gradient(circle at 50% 45%,color-mix(in srgb,var(--rc) 28%,var(--panel)),var(--panel) 70%)}
+.hm-act b,.hm-treasure b{display:block;font-size:17px;font-weight:900;line-height:1.2;margin-bottom:5px}
+.hm-act .meta{margin-top:6px}
+.hm-act-row{display:flex;align-items:center;gap:8px;margin-top:10px}
+.hm-act-row .btn{height:38px;padding:0 16px;font-size:14px}
+.hm-treasure{display:grid;grid-template-columns:auto minmax(0,1fr);gap:14px;align-items:center;background:linear-gradient(135deg,color-mix(in srgb,var(--rc) 16%,var(--panel)),var(--panel) 60%)}
+.hm-tr-ball{display:grid;place-items:center;width:78px;height:78px}
+.hm-treasure .sample-tag{display:block;margin-bottom:3px}
+.hm-finds{display:flex;gap:10px;overflow-x:auto;padding-bottom:6px;scrollbar-width:thin}
+.hm-f{flex:0 0 124px;display:grid;justify-items:center;gap:6px;padding:14px 8px 10px;text-align:center}
+.hm-f .ball{height:70px;display:grid;place-items:center}
+.hm-f b{font-size:12px;font-weight:800;line-height:1.2}
+.hm-sizes{display:grid;grid-template-columns:repeat(6,minmax(0,1fr));gap:8px}
+.hm-size{display:grid;justify-items:center;gap:4px;padding:12px 6px;border-radius:14px;background:var(--panel-2);border:1px solid var(--line);text-align:center}
+.hm-size:hover{border-color:var(--line-2)}
+.hm-size .ball{height:54px;display:grid;place-items:end center}
+.hm-size b{font-size:12.5px;font-weight:900}
+.hm-size small{font-size:11px;font-weight:800;color:var(--muted)}
+.hm-size .bar{width:80%;height:5px;display:block}
+@media (max-width:1000px){ .hm-grid{grid-template-columns:minmax(0,1fr)} .hm-sizes{grid-template-columns:repeat(3,minmax(0,1fr))} }
+@media (max-width:620px){
+  .hm-hero{padding:180px 20px 24px;min-height:0}
+  .hm-art{inset:0 0 auto 0;width:100%;height:185px}
+  .hm-chalk{right:50%;translate:50% -50%;width:300px}
+  .hm-bag{right:auto;left:50%;translate:-50% 0;bottom:4px;width:120px}
+  .hm-txt h1{font-size:32px}
+}
 
 /* ---------- responsive ---------- */
 @media (max-width:1240px){
@@ -2834,7 +2885,7 @@ function renderNav(){
   ).join("") + `<div class="side-friends"><b>${ic("users",18)} Les copains</b>Amis, cour de récré et classement arriveront ici, tous au même endroit.</div>
     <p class="side-quote">Les plus grandes aventures commencent toujours par une petite bille.
     <svg width="40" height="36" viewBox="0 0 40 36" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"><path d="M6 2c-4 12 2 24 26 28"/><path d="M26 24l6 6-8 3"/></svg></p>`;
-  const tab = (v,l,i,dot) => `<button class="tab" data-action="nav" data-view="${v}" ${cur===v?'aria-current="page"':""}>${ic(i,24)}${l}${dot?'<span class="dot"></span>':""}</button>`;
+  const tab = (v,l,i,dot) => `<button class="tb" data-action="nav" data-view="${v}" ${cur===v?'aria-current="page"':""}>${ic(i,24)}${l}${dot?'<span class="dot"></span>':""}</button>`;
   document.getElementById("tabbar").innerHTML = tab("accueil","Accueil","home") + tab("collection","Boîte","layers")
     + `<button class="tab-bag" data-action="nav" data-view="sacs" ${cur==="sacs"?'aria-current="page"':""}><span class="bb">${bagSVG(FREE_BAG)}${bags?`<span class="n">${bags}</span>`:""}</span>Sacs</button>`
     + tab("jeux","Jeux","pad",games) + tab("confiserie","Confiserie","candy");
@@ -3055,129 +3106,89 @@ function renderView(){
 const SHOWCASE = TK.map((t,i)=>({seed:hash("vitrine"+t), type:t, family:[1,0,7,2,6,0][i], pal:[4,0,12,5,1,13][i], shiny:0}));
 
 function viewHome(){
-  const act = activeSpec();
-  const slots = slotsOwned(), found = albumFound();
-  const pctCol = found.size/ALBUM_TOTAL*100;
-  const recent = [...S.specs].sort((a,b)=>b.at-a.at).slice(0,4);
-  const ready = freeReady(), gifts = giftCount();
-  const P = ensurePass(), se = seasonNow(), tier = passTier(), claim = passClaimable();
-  const into = tier>=PASS_TIERS ? TIER_XP : P.xp-tier*TIER_XP;
-  const nextR = tier<PASS_TIERS ? passReward(P.premium?"prem":"free", tier+1) : null;
-  const finalSpec = rewardSpec("prem",30,passReward("prem",30));
+  const act = activeSpec(), slots = slotsOwned(), found = albumFound();
+  const st = freeStock(), gifts = giftCount();
+  const recent = [...S.specs].sort((a,b)=>b.at-a.at).slice(0,10);
   const rareKey = s => isSeason(s) ? 0 : chanceOf(s);
   const treasure = [...S.specs].sort((a,b)=>rareKey(a)-rareKey(b))[0];
-  const shinyN = S.specs.filter(s=>s.shiny).length;
-
-  return `<div class="home">
-  <div class="home-main">
-    <section class="hero">
-      <div class="hero-art" aria-hidden="true">
-        <img class="bokeh" src="${marbleURL(SHOWCASE[2],140)}" style="right:40%;top:-4%;width:80px;opacity:.45" alt="">
-        <img class="bokeh" src="${marbleURL(SHOWCASE[4],160)}" style="right:-2%;top:6%;width:120px" alt="">
-        ${act?`<img class="hero-main" src="${marbleURL(act,440)}" alt=""${lumAttr(act)}>`:""}
-        <div class="hero-bag">${bagSVG(FREE_BAG)}</div>
-      </div>
-      <span class="eyebrow">Sac gratuit</span>
-      ${ready
-        ? `<h1>${freeStock()>1?`${freeStock()} sacs gratuits t'attendent !`:"Ton sac gratuit est prêt !"}</h1>
-           <p>Un nouveau sac arrive toutes les 10 minutes, et tu peux en garder jusqu'à ${FREE_MAX} d'avance. ${freeFull()?"Ton stock est plein : ouvre-en un pour relancer le compteur.":`Prochain dans <span class="timer" data-free-timer>${freeLeft()}</span>.`}</p>
-           <div class="hero-cta"><button class="btn btn-yellow" data-action="open-free">${ic("bag",24)} Ouvrir un sac gratuit</button>${stackPips()}</div>`
-        : `<h1>Prochain sac dans <span class="timer" data-free-timer>${freeLeft()}</span></h1><p>${gifts?`Tu as ${gifts} sac${gifts>1?"s":""} offert${gifts>1?"s":""} par le passe de saison à ouvrir en attendant.`:`En attendant, gagne des ${CUR.many} au Tir et dans tes quêtes pour ouvrir un sac payant.`}</p>
-           <button class="btn btn-yellow" data-action="nav" data-view="sacs">${ic("bag",20)} ${gifts?"Ouvrir mes sacs offerts":"Voir les sacs"}</button>`}
-      ${ready&&gifts?`<span class="hero-note">${ic("gift",16)} + ${gifts} sac${gifts>1?"s":""} offert${gifts>1?"s":""} à ouvrir</span>`:""}
-    </section>
-
-    ${goalsPanel()}
-    <div class="row-2">
-      <section class="panel pass-mini" style="${seasonStyle(se)}">
-        <div class="panel-head"><h2>Passe de saison</h2><span class="sample-tag">Fin dans <span data-pass-timer>${passLeft()}</span></span></div>
-        <div class="pm-top">
-          <div><span class="pm-season">${se.def.name}</span><b class="pm-tier">Palier ${tier}<small> / ${PASS_TIERS}</small></b></div>
-          <img src="${marbleURL(finalSpec,160)}" alt="" width="64" height="64">
-        </div>
-        <div class="bar pass-bar"><i style="width:${into/TIER_XP*100}%"></i></div>
-        <p class="meta">${nextR?`${fmt(into)} / ${fmt(TIER_XP)} XP · ensuite : ${esc(rewardLabel(nextR))}`:"Passe terminé, bravo !"}</p>
-        <button class="btn ${claim?"btn-yellow":"btn-ghost"} pm-btn" data-action="nav" data-view="passe">${claim?`${ic("gift",18)} Récupérer ${claim} récompense${claim>1?"s":""}`:`Voir le passe ${ic("arrow",16)}`}</button>
-      </section>
-      <section class="panel">
-        <div class="panel-head"><h2>Quêtes du jour</h2><button class="see-all" data-action="nav" data-view="quetes">Tout voir ${ic("chev",14)}</button></div>
-        ${questRows(true)}
-      </section>
+  const unseen = new Set(S.unseen);
+  // le haut de l'accueil : toujours LA prochaine chose utile à faire
+  let hero;
+  if(st) hero = {k:"Sac gratuit", h:st>1?`${st} sacs gratuits t'attendent !`:"Ton sac gratuit est prêt !",
+    p:`Un nouveau sac arrive toutes les 10 minutes, jusqu'à ${FREE_MAX} d'avance.`,
+    cta:`<button class="btn btn-yellow btn-xl" data-action="open-free">${ic("bag",22)} Ouvrir un sac</button>`,
+    foot:`${stackPips()}<span>${st} / ${FREE_MAX} · ${freeFull()?"stock plein":`prochain dans <span data-free-timer>${freeLeft()}</span>`}</span>`};
+  else if(dailyReady()) hero = {k:"Le bonbec du jour", h:"Ton bonbec du jour t'attend !", p:"Passe chaque jour pour remplir ta semaine : le 7ᵉ jour, un Sac Premium en plus.",
+    cta:`<button class="btn btn-yellow btn-xl" data-action="daily-open">${ic("gift",22)} Récupérer</button>`, foot:`<span>Prochain sac gratuit dans <span data-free-timer>${freeLeft()}</span></span>`};
+  else if(gifts) hero = {k:"Sacs offerts", h:`${gifts} sac${gifts>1?"s":""} offert${gifts>1?"s":""} à ouvrir !`, p:"Gagnés au passe de saison, aux séries ou aux succès.",
+    cta:`<button class="btn btn-yellow btn-xl" data-action="nav" data-view="sacs">${ic("gift",22)} Ouvrir mes sacs</button>`, foot:`<span>Prochain sac gratuit dans <span data-free-timer>${freeLeft()}</span></span>`};
+  else { const g = gamesReady();
+    hero = {k:"Sac gratuit", h:`Prochain sac dans <span data-free-timer>${freeLeft()}</span>`,
+      p: g.length ? `En attendant, ${g[0]} a encore une récompense aujourd'hui.` : `En attendant, gagne des ${CUR.many} pour ouvrir un sac payant.`,
+      cta: g.length ? `<button class="btn btn-yellow btn-xl" data-action="nav" data-view="jeux">${ic("play",20)} Jouer</button>` : `<button class="btn btn-yellow btn-xl" data-action="nav" data-view="sacs">${ic("bag",20)} Voir les sacs</button>`,
+      foot:`${stackPips()}<span>0 / ${FREE_MAX}</span>`} }
+  const deco = [SHOWCASE[1], SHOWCASE[3], SHOWCASE[0], SHOWCASE[2]];
+  return `<div class="hm">
+  <section class="hm-hero">
+    <div class="hm-art" aria-hidden="true">
+      <svg class="hm-chalk" viewBox="0 0 400 300"><path d="M200 22C300 18 382 70 380 150S300 282 196 280 18 232 22 148 102 26 204 22" fill="none" stroke="currentColor" stroke-width="4" stroke-linecap="round"/><path d="M60 250c40-6 90-4 120 2" stroke="currentColor" stroke-width="3" stroke-linecap="round" opacity=".6" fill="none"/></svg>
+      <div class="hm-bag">${bagSVG(hero.k==="Sacs offerts"?BAG_BY.premium:FREE_BAG,{loose:true})}</div>
+      <img class="hm-m" style="right:13%;top:16%;width:70px" src="${marbleURL(deco[0],160)}" alt="">
+      <img class="hm-m" style="right:6%;bottom:22%;width:42px" src="${marbleURL(deco[2],100)}" alt="">
+      <img class="hm-m" style="right:25%;top:10%;width:28px" src="${marbleURL(deco[3],80)}" alt="">
+      <img class="hm-m" style="right:3%;top:44%;width:48px" src="${marbleURL(deco[1],110)}" alt="">
     </div>
+    <div class="hm-txt">
+      <span class="hm-k">${ic(hero.k==="Le bonbec du jour"||hero.k==="Sacs offerts"?"gift":"bag",15)} ${hero.k}</span>
+      <h1>${hero.h}</h1>
+      <p>${hero.p}</p>
+      ${hero.cta}
+      <div class="hm-foot">${hero.foot}</div>
+    </div>
+  </section>
 
-    <section class="panel">
-      <div class="panel-head"><h2>Ma boîte à billes</h2>${chalClaimable()?`<button class="see-all chal-cta" data-action="nav" data-view="succes">${ic("trophy",14)} ${chalClaimable()} défi${chalClaimable()>1?"s":""} réussi${chalClaimable()>1?"s":""} !</button>`:`<button class="see-all" data-action="nav" data-view="collection">Ouvrir l'album ${ic("chev",14)}</button>`}</div>
-      <div class="col-home">
-        <div class="col-count">
-          <b>${fmt(found.size)}<small> / ${fmt(ALBUM_TOTAL)}</small></b>
-          <span>billes trouvées · ${slots.size} / ${TOTAL_SLOTS} cases</span>
-          <div class="bar"><i style="width:${pctCol}%"></i></div>
-          <span>${S.specs.length} billes · ${shinyN} shiny</span>
+  <div class="hm-grid">
+    ${goalsPanel()}
+    <div class="hm-col">
+      ${act?`<section class="panel hm-active">
+        <div class="panel-head"><h2>Ta bille active</h2><span class="sample-tag">elle joue pour toi</span></div>
+        <div class="hm-act">
+          <button class="hm-act-ball" data-action="spec" data-id="${act.id}" style="${tstyle(act.type)}">${mImg(act,220,96,"")}</button>
+          <div><b>${esc(specName(act))}</b><div class="pills">${typePill(act.type)}${shinyPill(act)}</div>
+            <p class="meta">C'est elle que tu lances au Tir et dans tous les jeux de la cour.</p>
+            <div class="hm-act-row">
+              <button class="nav-arrow" data-action="active-step" data-dir="-1" aria-label="Bille précédente">${ic("chevl",14,2.5)}</button>
+              <button class="btn btn-blue" data-action="nav" data-view="jeux">${ic("play",16)} Jouer</button>
+              <button class="nav-arrow" data-action="active-step" data-dir="1" aria-label="Bille suivante">${ic("chev",14,2.5)}</button>
+            </div></div>
         </div>
-        <div class="type-tiles">
-          ${TK.map((t,i)=>{
-            const have = FAMILIES.filter((_,f)=>slots.has(t+"|"+f)).length;
-            const own = S.specs.filter(s=>s.type===t).sort(tierSort)[0];
-            return `<button class="t-tile" data-action="album-type" data-type="${t}"><span class="ball">${mImg(own||SHOWCASE[i],120,Math.round(40*scaleOf(t)+8),"")}</span><span><b>${TYPES[t].label}</b><small>${have} / ${FAMILIES.length}</small><div class="bar"><i class="${have===FAMILIES.length?"done":""}" style="width:${have/FAMILIES.length*100}%"></i></div></span></button>`}).join("")}
-        </div>
-      </div>
-      <h3 class="sub-h">Dernières trouvailles</h3>
-      <div class="marble-tiles">
-        ${recent.map(s=>`<button class="m-tile" data-action="spec" data-id="${s.id}"><span class="ball">${mImg(s,160,Math.round(62*scaleOf(s.type)+10))}</span><b>${esc(specName(s))}</b>${typePill(s.type)}</button>`).join("")}
-      </div>
-    </section>
+      </section>`:""}
+      ${treasure?`<section class="panel hm-treasure" style="${tstyle(treasure.type)}">
+        <button class="hm-tr-ball" data-action="spec" data-id="${treasure.id}">${mImg(treasure,160,64,"")}</button>
+        <div><span class="sample-tag">Ton trésor · ta bille la plus rare</span><b>${esc(specName(treasure))}</b>
+          <div class="pills">${typePill(treasure.type,true)}${shinyPill(treasure)}${edPill(treasure)}</div>
+          <p class="meta">${isSeason(treasure)?"Exclusive au passe de saison":`${oneIn(chanceOf(treasure))} dans un sac gratuit`}</p></div>
+      </section>`:""}
+    </div>
   </div>
 
-  <aside class="home-side">
-    <section class="panel profile-card">
-      <div class="pc-top"><div class="avatar">${act?mImg(act,160,68,""):""}</div><div><b>${esc(S.name)}</b><span>${esc(S.title)}</span></div><button class="see-all pc-edit" data-action="nav" data-view="profil">Mon profil ${ic("chev",14)}</button></div>
-      <div class="stats">
-        <div class="stat"><span class="ic">${ic("layers",26)}</span><div><small>Billes trouvées</small><b>${fmt(found.size)}</b></div></div>
-        <div class="stat"><span class="ic">${ic("star",26)}</span><div><small>Shiny</small><b>${shinyN}</b></div></div>
-        <div class="stat"><span class="ic">${ic("target",26)}</span><div><small>Trous réussis</small><b>${S.holes}</b></div></div>
-        <div class="stat"><span class="ic">${ic("ticket",26)}</span><div><small>Passe</small><b>${tier} / ${PASS_TIERS}</b></div></div>
-      </div>
-      ${act?`<div class="active-row">
-        <button class="nav-arrow" data-action="active-step" data-dir="-1" aria-label="Bille précédente">${ic("chevl",14,2.5)}</button>
-        <button class="ar-main" data-action="spec" data-id="${act.id}">${mImg(act,120,44,"")}<span><small>Bille active · joue au Tir</small><b>${esc(specName(act))}</b></span></button>
-        <button class="nav-arrow" data-action="active-step" data-dir="1" aria-label="Bille suivante">${ic("chev",14,2.5)}</button>
-      </div>`:""}
-    </section>
+  <section class="panel">
+    <div class="panel-head"><h2>Tes dernières trouvailles</h2><button class="see-all" data-action="to-collection">Toute ma boîte ${ic("chev",14)}</button></div>
+    <div class="hm-finds">${recent.map(s=>`<button class="m-card hm-f" data-action="spec" data-id="${s.id}"${unseen.has(s.id)?` data-unseen="${s.id}"`:""}>${unseen.has(s.id)?'<span class="new">Nouveau</span>':""}<span class="ball">${mImg(s,160,Math.round(58*scaleOf(s.type)+8))}</span><b>${esc(specName(s))}</b>${typePill(s.type)}</button>`).join("")}</div>
+  </section>
 
-    ${treasure?`<section class="panel treasure" style="${tstyle(treasure.type)}">
-      <div class="panel-head"><h2>Ton trésor</h2><span class="sample-tag">Ta bille la plus rare</span></div>
-      <button class="tr-ball" data-action="spec" data-id="${treasure.id}">${mImg(treasure,300,120,"")}</button>
-      <b class="tr-name">${esc(specName(treasure))}</b>
-      <div class="pills">${typePill(treasure.type,true)}${shinyPill(treasure)}${edPill(treasure)}${tierTag(treasure)}</div>
-      <p class="meta">${isSeason(treasure)?"Exclusive au passe de saison":`${oneIn(chanceOf(treasure))} dans un sac gratuit`}</p>
-    </section>`:""}
+  <section class="panel">
+    <div class="panel-head"><h2>Ma boîte à billes</h2><span class="sample-tag">${fmt(found.size)} / ${fmt(ALBUM_TOTAL)} billes · ${slots.size} / ${TOTAL_SLOTS} cases</span><button class="see-all" data-action="nav" data-view="collection">Ouvrir ${ic("chev",14)}</button></div>
+    <div class="hm-sizes">${TK.map((t,i)=>{
+      const have = FAMILIES.filter((_,f)=>slots.has(t+"|"+f)).length;
+      const own = S.specs.filter(s=>s.type===t).sort(tierSort)[0];
+      return `<button class="hm-size" data-action="album-type" data-type="${t}"><span class="ball">${mImg(own||SHOWCASE[i],120,Math.round(40*scaleOf(t)+6),"")}</span><b>${TYPES[t].label}</b><small>${have} / ${FAMILIES.length} cases</small><span class="bar"><i style="width:${have/FAMILIES.length*100}%;background:${TYPES[t].rc}"></i></span></button>` }).join("")}</div>
+  </section>
 
-    <section class="panel">
-      <div class="panel-head"><h2>Jeux de la cour</h2><span class="sample-tag">6 jeux</span></div>
-      <div class="game-card">
-        <svg viewBox="0 0 240 150" preserveAspectRatio="xMidYMid slice" aria-hidden="true">
-          <rect width="240" height="150" fill="#8B5A2B"/>
-          <rect x="8" y="8" width="224" height="134" rx="4" fill="#3E9A4A"/>
-          <rect x="60" y="8" width="18" height="90" fill="#A8713F"/>
-          <rect x="140" y="52" width="18" height="90" fill="#A8713F"/>
-          <circle cx="205" cy="40" r="7" fill="#12220F"/>
-          <path d="M205 40 V14" stroke="#fff" stroke-width="2"/><path d="M205 14 l13 5 -13 5z" fill="#E5484D"/>
-          <circle cx="30" cy="118" r="7" fill="#2E8CFF" stroke="#fff" stroke-width="1.5"/>
-          <path d="M40 112 Q 100 150 118 30" stroke="#fff" stroke-width="2" stroke-dasharray="3 5" fill="none"/>
-        </svg>
-        <div class="game-info">
-          <b>Solo ou à plusieurs</b>
-          <p>Solo : une récompense par jour. À plusieurs : mise tes ${CUR.many} !</p>
-          <button class="btn btn-blue" data-action="nav" data-view="jeux">${ic("play",16)} Jouer</button>
-        </div>
-      </div>
-    </section>
-
-    <section class="panel feed">
-      <div class="panel-head"><h2>Découvertes</h2><span class="sample-tag">Autres joueurs simulés</span></div>
-      <ul id="feed-list">${feedItems()}</ul>
-    </section>
-  </aside>
+  <section class="panel feed">
+    <div class="panel-head"><h2>Dans la cour</h2><span class="sample-tag">Trouvailles des autres joueurs (simulées)</span></div>
+    <ul id="feed-list">${feedItems()}</ul>
+  </section>
 </div>`;
 }
 

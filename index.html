@@ -796,8 +796,12 @@ button.vit-slot:hover{background:var(--panel-2);color:var(--ink)}
 .day.got{opacity:.55}
 .day-ok{position:absolute;top:4px;right:4px;width:18px;height:18px;border-radius:50%;background:var(--green);color:#fff;display:grid;place-items:center}
 .day-bonus{font-size:10px;font-weight:900;color:var(--green)}
-#daily-btn{color:#D9468F}
-#daily-btn svg{animation:giftwiggle 2.4s ease-in-out infinite}
+#daily-btn{color:var(--ink-2)}
+#daily-btn .dot{display:none}
+#daily-btn.ready{color:#D9468F}
+#daily-btn.ready .dot{display:block}
+#daily-btn.ready svg{animation:giftwiggle 2.4s ease-in-out infinite}
+.daily-done{display:inline-flex;align-items:center;gap:8px;font-weight:800;color:var(--green)}
 @keyframes giftwiggle{0%,80%,100%{transform:none}85%{transform:rotate(-12deg)}90%{transform:rotate(10deg)}95%{transform:rotate(-6deg)}}
 @media (max-width:560px){ .daily-row{grid-template-columns:repeat(4,minmax(0,1fr))} }
 
@@ -1008,7 +1012,7 @@ button.vit-slot:hover{background:var(--panel-2);color:var(--ink)}
   <div class="logo" aria-label="Billy"><span>Billy</span><img id="logo-marble" alt=""></div>
   <div class="tagline">Ouvre. Collectionne. Joue.</div>
   <div class="top-spacer"></div>
-  <button class="icon-btn" id="daily-btn" data-action="daily-open" aria-label="Récupérer le bonbec du jour" hidden><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3.5" y="8" width="17" height="4" rx="1"/><path d="M5 12v8h14v-8M12 8v12M12 8C10.5 4 7 4 7 6s3 2 5 2c2 0 5 0 5-2s-3.5-2-5 2"/></svg><span class="dot"></span></button>
+  <button class="icon-btn" id="daily-btn" data-action="daily-open" aria-label="Le bonbec du jour"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3.5" y="8" width="17" height="4" rx="1"/><path d="M5 12v8h14v-8M12 8v12M12 8C10.5 4 7 4 7 6s3 2 5 2c2 0 5 0 5-2s-3.5-2-5 2"/></svg><span class="dot"></span><span class="dot"></span></button>
   <button class="icon-btn" id="theme-btn" data-action="theme"></button>
   <button class="icon-btn" id="sound-btn" data-action="sound"></button>
   <button class="profile-mini" data-action="nav" data-view="profil" aria-label="Mon profil">
@@ -2058,7 +2062,7 @@ delete S.level; delete S.xp;
 S.stats = Object.assign({pot:0, tic:0, castle:0, bonus:0, race:0, best3:{}}, S.stats||{});
 function save(){ try{ localStorage.setItem(STORE_KEY, JSON.stringify(S)) }catch(e){} }
 
-const ui = {view:"accueil", tab:"album", type:"all", hideMissing:false};
+const ui = {view:"accueil", tab:"album", type:"all", hideMissing:true};
 
 const specById = id => S.specs.find(s=>s.id===id);
 const activeSpec = () => specById(S.active) || S.specs[0];
@@ -2485,24 +2489,27 @@ const dailyReady = () => !S.daily || S.daily.last!==dayKey();
 const dailyStreak = () => S.daily && S.daily.last===dayKey(new Date(Date.now()-864e5)) ? S.daily.streak+1 : 1;
 const isWednesday = () => new Date().getDay()===3;   // le mercredi, pas d'école : bonbecs doublés
 function openDaily(){
-  if(!dailyReady()) return;
-  const streak = dailyStreak(), idx = (streak-1)%7, mult = isWednesday()?2:1, amount = DAILY[idx]*mult;
+  const ready = dailyReady();
+  const streak = ready ? dailyStreak() : (S.daily?.streak||1), idx = (streak-1)%7, mult = isWednesday()?2:1, amount = DAILY[idx]*mult;
+  const next = idx===6 ? 0 : idx+1;
   const el = document.getElementById("modal");
   el.innerHTML = `<div class="modal daily" role="dialog" aria-modal="true" aria-label="Le bonbec du jour">
     <button class="close-x" data-action="close-modal" aria-label="Fermer">×</button>
     <div class="daily-body">
       <span class="daily-kicker">${ic("gift",16)} Le bonbec du jour</span>
-      <h2>${streak>1?`${streak} jours de suite !`:"Coucou, te revoilà !"}</h2>
+      <h2>${ready ? (streak>1?`${streak} jours de suite !`:"Coucou, te revoilà !") : "C'est dans la poche !"}</h2>
       <p>${isWednesday()?"<b>Le mercredi, pas d'école : tes bonbecs sont doublés !</b> ":""}Passe chaque jour pour remplir ta semaine : le 7ᵉ jour, un Sac Premium t'attend en plus.</p>
-      <div class="daily-row">${DAILY.map((v,i)=>`<div class="day ${i<idx?"got":i===idx?"today":""}"><small>Jour ${i+1}</small>${COIN}<b>${fmt(v*(i===idx?mult:1))}</b>${i===6?`<span class="day-bonus">+ 1 sac</span>`:""}${i<idx?`<span class="day-ok">${ic("check",11,3)}</span>`:""}</div>`).join("")}</div>
-      <button class="btn btn-yellow" data-action="daily-claim">${ic("gift",18)} Récupérer ${fmt(amount)} ${CUR.many}${idx===6?" et un Sac Premium":""}</button>
+      <div class="daily-row">${DAILY.map((v,i)=>`<div class="day ${i<idx||(!ready&&i===idx)?"got":i===idx?"today":""}"><small>Jour ${i+1}</small>${COIN}<b>${fmt(v*(i===idx?mult:1))}</b>${i===6?`<span class="day-bonus">+ 1 sac</span>`:""}${i<idx||(!ready&&i===idx)?`<span class="day-ok">${ic("check",11,3)}</span>`:""}</div>`).join("")}</div>
+      ${ready ? `<button class="btn btn-yellow" data-action="daily-claim">${ic("gift",18)} Récupérer ${fmt(amount)} ${CUR.many}${idx===6?" et un Sac Premium":""}</button>`
+        : `<span class="daily-done">${ic("check",18,2.5)} Bonbec du jour récupéré</span>
+           <p>Reviens dans <b data-quest-timer>${untilMidnight()}</b> pour le jour ${next+1} : ${fmt(DAILY[next])} ${CUR.many}${next===6?" et un Sac Premium":""}.</p>`}
       <p class="meta">Si tu sautes un jour, ta série recommence au jour 1.</p>
     </div></div>`;
   el.hidden = false;
-  el.querySelector(".btn-yellow").focus();
+  (el.querySelector(".btn-yellow")||el.querySelector(".close-x")).focus();
 }
 function renderTop(){
-  document.getElementById("daily-btn").hidden = !dailyReady();
+  { const b=document.getElementById("daily-btn"), r=dailyReady(); b.classList.toggle("ready",r); b.setAttribute("aria-label", r?"Récupérer le bonbec du jour":"Le bonbec du jour : déjà récupéré") }
   document.getElementById("jetons").textContent = fmt(S.jetons);
   document.getElementById("top-name").textContent = S.name;
   document.getElementById("top-level").textContent = S.title;
@@ -2822,7 +2829,7 @@ function viewCollection(){
       ${SHOW.map(([k,label,icon,f])=>`<button class="chip" data-action="show" data-show="${k}" aria-pressed="${show===k}">${k==="shiny"?SPARK:icon?ic(icon,14):""}${label}${f?` <span class="n">${k==="secret"?`${S.specs.filter(x=>x.secret).length}/${Object.keys(SECRETS).length}`:count(f)}</span>`:""}</button>`).join("")}
     </div>
     <div class="f-right">
-      ${ui.tab==="album"&&show==="all"?`<label class="check"><input type="checkbox" id="f-hide" ${ui.hideMissing?"checked":""}> Masquer les cases vides</label>`:""}
+      ${ui.tab==="album"&&show==="all"?`<label class="check"><input type="checkbox" id="f-hide" ${ui.hideMissing?"checked":""}> Masquer les billes à trouver</label>`:""}
       ${ui.tab==="billes"&&show!=="secret"&&show!=="dups"?`<label class="sort">Trier <select id="f-sort">${[["recent","Plus récentes"],["size","Plus grosses"],["decor","Par décor"],["color","Par coloris"]].map(([k,l])=>`<option value="${k}"${(ui.sort||"recent")===k?" selected":""}>${l}</option>`).join("")}</select></label>`:""}
       ${S.unseen.some(id=>specById(id))?`<button class="btn btn-ghost seen-all" data-action="seen-all">${ic("check",16)} Tout marquer comme vu (${S.unseen.filter(id=>specById(id)).length})</button>`:""}
     </div>
@@ -4649,7 +4656,7 @@ setInterval(()=>{
   document.querySelectorAll("[data-free-timer]").forEach(el=>el.textContent=freeLeft());
   document.querySelectorAll("[data-quest-timer]").forEach(el=>el.textContent=untilMidnight());
   document.querySelectorAll("[data-pass-timer]").forEach(el=>el.textContent=passLeft());
-  document.getElementById("daily-btn").hidden = !dailyReady();
+  { const b=document.getElementById("daily-btn"), r=dailyReady(); b.classList.toggle("ready",r); b.setAttribute("aria-label", r?"Récupérer le bonbec du jour":"Le bonbec du jour : déjà récupéré") }
   // de temps en temps, un autre joueur fait une trouvaille (simulé)
   if(Math.random()<1/25){ feed.unshift(fakeFind()); feed = feed.slice(0,8); const fl=document.getElementById("feed-list"); if(fl) fl.innerHTML = feedItems() }
   if(S.quests && S.quests.day!==dayKey()){ ensureQuests(); renderNav(); if(ui.view==="accueil"||ui.view==="quetes") renderView() }

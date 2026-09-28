@@ -1,6 +1,8 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Billy</title>
+<script>/* thème sombre par défaut, appliqué avant l'affichage pour éviter un flash clair */
+try{ document.documentElement.dataset.theme = localStorage.getItem("billy-theme") || "dark" }catch(e){ document.documentElement.dataset.theme = "dark" }</script>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Lilita+One&family=Nunito:wght@500;600;700;800;900&family=Caveat:wght@600;700&display=swap">
@@ -1359,14 +1361,14 @@ const Sound = (()=>{
   };
   return api;
 })();
-// Thème clair / sombre : suit le système tant qu'on n'a pas choisi
+// Thème clair / sombre : sombre par défaut, puis on garde le choix fait avec le bouton
 const Theme = {
   get(){ try{ return localStorage.getItem("billy-theme") }catch(e){ return null } },
   apply(v){ const r=document.documentElement; if(v) r.dataset.theme=v; else delete r.dataset.theme },
   isDark(){ const v=document.documentElement.dataset.theme; return v ? v==="dark" : matchMedia("(prefers-color-scheme: dark)").matches },
   toggle(){ const v=this.isDark()?"light":"dark"; this.apply(v); try{ localStorage.setItem("billy-theme",v) }catch(e){} },
 };
-Theme.apply(Theme.get());
+Theme.apply(Theme.get() || "dark");
 function renderThemeBtn(){
   const b=document.getElementById("theme-btn"), dark=Theme.isDark();
   b.setAttribute("aria-label", dark?"Passer en mode clair":"Passer en mode sombre");

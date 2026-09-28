@@ -1089,9 +1089,9 @@ button.vit-slot:hover{background:var(--panel-2);color:var(--ink)}
 .auth[hidden]{display:none}
 #auth-fx{position:fixed;inset:0;width:100%;height:100%;display:block;touch-action:none;cursor:grab}
 #auth-fx.aiming{cursor:grabbing}
-.auth-wrap{position:relative;z-index:1;min-height:100%;max-width:1140px;margin:0 auto;padding:32px 32px 40px;align-content:start;padding-top:max(32px,calc(50vh - 380px));display:grid;grid-template-columns:minmax(0,1fr) minmax(0,430px);gap:64px;align-items:center;pointer-events:none}
+.auth-wrap{position:relative;z-index:1;min-height:100%;max-width:1140px;margin:0 auto;padding:32px 32px 40px;align-content:start;padding-top:max(32px,calc(50vh - 380px));display:grid;grid-template-columns:minmax(0,1fr) minmax(0,430px);gap:64px;align-items:start;pointer-events:none}
 .auth-wrap > *{pointer-events:auto}
-.auth-pitch{pointer-events:none;text-shadow:0 2px 18px rgba(0,0,0,.55)}
+.auth-pitch{pointer-events:none;text-shadow:0 2px 18px rgba(0,0,0,.55);margin-top:60px}   /* fixe : ne bouge pas quand le formulaire change de hauteur */
 .auth-pitch .logo{font-size:80px;gap:10px;animation:auth-in .7s cubic-bezier(.2,.9,.3,1.3) both}
 .auth-pitch .logo span{-webkit-text-stroke:10px var(--navy)}
 .auth-pitch .logo img{width:72px;height:72px;animation:auth-roll 1.1s cubic-bezier(.2,.8,.3,1) .15s both;filter:drop-shadow(0 10px 14px rgba(0,0,0,.5))}
@@ -1147,7 +1147,7 @@ button.vit-slot:hover{background:var(--panel-2);color:var(--ink)}
 @keyframes auth-shake{20%,60%{transform:translateX(-5px)}40%,80%{transform:translateX(5px)}}
 @media (max-width:880px){
   .auth-wrap{grid-template-columns:minmax(0,1fr);gap:22px;padding:28px 16px 32px;align-content:start;max-width:460px}
-  .auth-pitch{text-align:center}
+  .auth-pitch{text-align:center;margin-top:0}
   .auth-pitch .logo{font-size:60px;justify-content:center}
   .auth-pitch .logo span{-webkit-text-stroke:7px var(--navy)}
   .auth-pitch .logo img{width:54px;height:54px}

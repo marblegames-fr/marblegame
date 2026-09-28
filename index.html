@@ -559,6 +559,49 @@ button.rw:hover{transform:translateY(-2px)}
 .sheet-back{align-self:flex-start;display:inline-flex;align-items:center;gap:4px;font-size:12.5px;font-weight:800;color:var(--ink-2);padding:6px 10px;border-radius:999px;background:var(--panel)}
 .sheet-back svg{transform:rotate(180deg)}
 .chal-sec{margin-top:18px}
+/* prochains objectifs et liste de souhaits */
+.goal-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px}
+.goal{display:grid;grid-template-columns:auto minmax(0,1fr);grid-template-rows:1fr auto;gap:6px 12px;align-items:start;text-align:left;padding:12px;border-radius:14px;background:var(--panel-2);border:1px solid var(--line);transition:transform .15s,border-color .15s}
+.goal:hover{transform:translateY(-2px);border-color:var(--line-2)}
+.goal.ready{border:2px solid #E0A417;background:var(--gold-bg)}
+.g-ic{grid-row:span 2;width:44px;height:44px;border-radius:12px;display:grid;place-items:center;background:var(--panel);border:1px solid var(--line);color:var(--ink-2)}
+.g-ic img{width:40px;height:auto}
+.g-main{display:flex;flex-direction:column;gap:3px;min-width:0}
+.g-main b{font-size:13.5px;font-weight:900;line-height:1.25}
+.g-main > small{font-size:12px;font-weight:700;color:var(--ink-2);line-height:1.3}
+.g-main .q-prog{margin-top:2px}
+.g-main .q-prog .bar{flex:1}
+.g-cta{grid-column:2;display:inline-flex;align-items:center;gap:3px;font-size:12px;font-weight:900;color:var(--blue)}
+.sub-h small{font-weight:800;opacity:.7;margin-left:4px}
+.wish-row{display:grid;grid-template-columns:repeat(6,minmax(0,1fr));gap:8px}
+.wish{display:flex;flex-direction:column;align-items:center;gap:4px;padding:10px 4px 8px;border-radius:12px;background:var(--panel-2);border:1.5px dashed var(--line-2);text-align:center}
+.wish b{font-size:11.5px;font-weight:900;line-height:1.2}
+.wish small{font-size:10.5px;font-weight:700;color:var(--muted)}
+.wish.got{border:2px solid var(--green);border-style:solid}
+.wish.got small{color:var(--green)}
+.wish img{width:44px;height:auto}
+.wish .sil,.s-item .sil{width:44px;height:44px;border-radius:50%;background:radial-gradient(circle at 35% 30%,color-mix(in srgb,var(--c2,#999) 35%,transparent),color-mix(in srgb,var(--c1,#666) 30%,transparent) 70%);box-shadow:inset 0 0 0 2px color-mix(in srgb,var(--ink) 12%,transparent);filter:grayscale(.55)}
+.sh-cell.missing{cursor:pointer}
+.sh-cell.missing:hover{opacity:1}
+.sh-cell.wished{opacity:1;border:2px solid #E0A417;border-style:solid}
+.sh-cell .wstar{position:absolute;top:4px;right:5px;color:#E0A417}
+.slot.wished .slot-banner{color:#FFD27A}
+/* séries */
+.series-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(330px,1fr));gap:14px}
+.serie{display:flex;flex-direction:column;gap:12px}
+.serie.ready{border:2px solid #E0A417;background:linear-gradient(180deg,var(--gold-bg),var(--panel) 50%)}
+.serie.claimed{opacity:.8}
+.serie-head{display:flex;justify-content:space-between;gap:10px;align-items:flex-start}
+.serie-head h3{font-size:17px;font-weight:900}
+.serie-head p{font-size:12.5px;font-weight:600;color:var(--ink-2);margin-top:2px}
+.serie-n{font-weight:900;font-size:14px;font-variant-numeric:tabular-nums;white-space:nowrap;padding:3px 10px;border-radius:999px;background:var(--panel-2);border:1px solid var(--line)}
+.serie-items{display:grid;grid-template-columns:repeat(auto-fill,minmax(70px,1fr));gap:6px}
+.s-item{display:flex;flex-direction:column;align-items:center;gap:4px;padding:8px 2px 6px;border-radius:12px;background:var(--panel-2);border:1px dashed var(--line-2);text-align:center}
+.s-item.got{border:1px solid var(--line)}
+.s-item img{width:40px;height:auto;filter:drop-shadow(0 4px 3px rgba(0,0,0,.25))}
+.s-item small{font-size:10.5px;font-weight:800;color:var(--ink-2);line-height:1.15}
+.serie-foot{display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap;margin-top:auto}
+@media (max-width:1000px){ .goal-grid{grid-template-columns:minmax(0,1fr)} .wish-row{grid-template-columns:repeat(3,minmax(0,1fr))} }
 .chal-sec h2{font-size:19px;font-weight:900;margin-bottom:10px}
 .chal-sec h2 small{font-size:13px;font-weight:800;color:var(--muted);margin-left:6px}
 @media (max-width:820px){ .sheet-grid{grid-template-columns:repeat(4,minmax(0,1fr))} .modal.sheet{padding:20px 14px} }
@@ -2025,12 +2068,12 @@ function starterState(){
     ["mini",1,0],["mini",6,7],["mini",3,15],["mini",4,13],
   ];
   const specs = list.map(([t,f,p],i)=>makeSpec(t,{seed:hash("depart"+i),family:f,pal:p,at:now-(i+1)*day/3}));
-  return {v:2, fv:2, pv:2, cover:{}, jetons:1000, holes:23, specs, active:specs[1].id, unseen:[], freeT0:now-FREE_EVERY, best:{}, bagInv:{}, title:"Petit Boulet", titles:["Petit Boulet"], name:"AlexBilleur", vitrine:[null,null,null,null,null], chal:[], pity:0, bags:0, log:[]};
+  return {v:2, fv:2, pv:2, cover:{}, wish:[], seriesDone:[], jetons:1000, holes:23, specs, active:specs[1].id, unseen:[], freeT0:now-FREE_EVERY, best:{}, bagInv:{}, title:"Petit Boulet", titles:["Petit Boulet"], name:"AlexBilleur", vitrine:[null,null,null,null,null], chal:[], pity:0, bags:0, log:[]};
 }
 let S;
 try { S = JSON.parse(localStorage.getItem(STORE_KEY)) } catch(e){ S = null }
 if(!S || S.v!==2 || !Array.isArray(S.specs)) S = starterState();
-else S = Object.assign({cover:{}, unseen:[], best:{}, bagInv:{}, title:"Petit Boulet", titles:["Petit Boulet"], name:"AlexBilleur", vitrine:[null,null,null,null,null], chal:[], pity:0, bags:0, log:[]}, S);
+else S = Object.assign({cover:{}, wish:[], seriesDone:[], unseen:[], best:{}, bagInv:{}, title:"Petit Boulet", titles:["Petit Boulet"], name:"AlexBilleur", vitrine:[null,null,null,null,null], chal:[], pity:0, bags:0, log:[]}, S);
 // anciennes sauvegardes : la bille chinoise n'existe plus, le niveau non plus
 // Décor Arc-en-ciel supprimé (trop proche de la shiny Irisée) : les décors suivants ont remonté d'un cran.
 // Les billes Arc-en-ciel déjà trouvées deviennent Aurore (même rareté), Givrée pour la saison Flocon, Pixel pour L'Arcade.
@@ -2337,6 +2380,38 @@ const CHALLENGES = [
   {id:"bags250", cat:"habitudes", icon:"bag", title:"Sac sans fond", desc:"Ouvre 250 sacs.", goal:250, prog:()=>S.bags||0, rew:{j:1500, bag:"collector", title:"Sac sans fond"}},
   {id:"craft10", cat:"habitudes", icon:"flask", title:"Apprenti confiseur", desc:"Réussis 10 fusions à la Confiserie.", goal:10, prog:()=>S.crafts||0, rew:{j:800, title:"Apprenti confiseur"}},
 ];
+// Séries : de petits albums à thème, chacun avec sa récompense (une case = un décor et/ou un coloris, n'importe quelle taille)
+const FAM_ID = n => FAMILIES.findIndex(F=>F.name===n), PAL_ID = n => PALETTES.findIndex(P=>P[0]===n);
+const SERIES = [
+  {id:"trousse", name:"La trousse d'écolier", desc:"Les motifs du cahier de classe.", items:[{fam:"Damier"},{fam:"Écossais"},{fam:"Pixel"},{fam:"Cible"}], rew:{j:300, bag:"classique"}},
+  {id:"bonbons", name:"La boulangerie du coin", desc:"Des billes qui donnent faim.", items:[{fam:"Berlingot"},{fam:"Millefiori"},{fam:"À pois"},{fam:"Nid d'abeille"},{pal:"Barbe à papa"},{pal:"Chocolat menthe"}], rew:{j:500, bag:"premium"}},
+  {id:"nature", name:"Au fond du jardin", desc:"Ce qu'on trouve en rentrant de l'école.", items:[{fam:"Bois"},{fam:"Écailles"},{fam:"Tigrée"},{fam:"Œil-de-chat"},{pal:"Forêt"},{pal:"Sauge"}], rew:{j:500, bag:"premium"}},
+  {id:"arcenciel", name:"L'arc-en-ciel", desc:"Une bille de chaque couleur, peu importe le décor.", items:["Cerise","Ambre","Citron","Émeraude","Azur","Saphir","Lavande"].map(pal=>({pal})), rew:{j:600, bag:"premium"}},
+  {id:"noiretblanc", name:"Noir et blanc", desc:"Pour les amateurs de contrastes.", items:[{pal:"Encre"},{pal:"Réglisse"},{pal:"Béton"},{pal:"Brume"},{pal:"Ciel d'orage"}], rew:{j:400, bag:"classique"}},
+  {id:"pierres", name:"Les pierres précieuses", desc:"Des pierres dans les coloris des joyaux.", items:[{fam:"Agate",pal:"Rubis"},{fam:"Marbre",pal:"Saphir"},{fam:"Cristal",pal:"Émeraude"},{fam:"Nacrée",pal:"Opale"}], rew:{j:2500, bag:"collector", title:"Joaillier"}},
+  {id:"feuglace", name:"Le feu et la glace", desc:"Du plus chaud au plus froid.", items:[{fam:"Lave"},{fam:"Givrée"},{pal:"Volcan"},{pal:"Glacier"}], rew:{j:700, bag:"premium"}},
+  {id:"cosmos", name:"Le système solaire", desc:"Les décors venus d'ailleurs.", items:[{fam:"Globe"},{fam:"Planète"},{fam:"Galaxie"},{fam:"Aurore"}], rew:{j:3000, bag:"collector", title:"Astronome"}},
+  {id:"grands", name:"Les grands formats", desc:"De la plus petite à la plus grosse, dans un même décor.", items:TK.map(type=>({type})), same:"family", rew:{j:4000, bag:"collector", title:"Toutes tailles"}},
+];
+const seriesMatch = (it,x) => (!it.fam || x.family===FAM_ID(it.fam)) && (!it.pal || x.pal===PAL_ID(it.pal)) && (!it.type || x.type===it.type);
+const seriesLabel = it => [it.type?TYPES[it.type].label:"", it.fam||"", it.pal?(it.fam?it.pal:`Coloris ${it.pal}`):""].filter(Boolean).join(" ");
+// ce qui remplit chaque case d'une série (pour « grands formats » : les 6 tailles dans un même décor, le décor le plus avancé)
+function seriesFill(se){
+  if(se.same==="family"){
+    let best=null;
+    FAMILIES.forEach((_,f)=>{ const got=se.items.map(it=>S.specs.filter(x=>x.family===f&&seriesMatch(it,x)).sort(tierSort)[0]); const n=got.filter(Boolean).length; if(!best||n>best.n) best={n,got,f} });
+    return best.got;
+  }
+  return se.items.map(it=>S.specs.filter(x=>seriesMatch(it,x)).sort(tierSort)[0]);
+}
+const seriesProg = se => seriesFill(se).filter(Boolean).length;
+const seriesClaimable = () => SERIES.filter(se=>!(S.seriesDone||[]).includes(se.id) && seriesProg(se)>=se.items.length).length;
+
+// Liste de souhaits : des billes précises (taille, décor, coloris) qu'on chasse
+const WISH_MAX = 6;
+const wishSpec = k => { const [type,f,p]=k.split("|"); return {seed:hash("wish"+k), type, family:+f, pal:+p, shiny:0} };
+const wishFound = k => S.specs.some(x=>colorKey(x)===k);
+
 // catégorie de chaque succès (pour la page Succès)
 const CHAL_CATS = [["album","L'album","book"],["coloris","Les coloris","star"],["tailles","Les tailles","layers"],["decors","Les décors","star"],["rare","Les grandes trouvailles","trophy"],["jeux","Jeux de la cour","target"],["habitudes","Les habitudes","clock"]];
 CHALLENGES.forEach(c=>{ c.cat = c.cat || (c.id.startsWith("fmt-")?"tailles": c.id.startsWith("fam-")?"decors": c.id==="pal10"?"coloris": ["half","full"].includes(c.id)?"album": ["shiny1","shiny3","big5","mam3"].includes(c.id)?"rare": ["t-chouchou","t-caid"].includes(c.id)?"habitudes":"jeux") });
@@ -2479,7 +2554,7 @@ const NAV = [
 function renderNav(){
   const ready = freeReady(), claim = questsClaimable();
   document.getElementById("nav").innerHTML = NAV.map(n=> n==="sep" ? `<div class="nav-sep"></div>` :
-    `<button class="nav-btn" data-action="nav" data-view="${n[0]}" ${ui.view===n[0]?'aria-current="page"':""}>${ic(n[2])}<span>${n[1]}</span>${n[3]?'<span class="soon">bientôt</span>':""}${n[0]==="sacs"&&ready?'<span class="ready" aria-label="Sac gratuit disponible"></span>':""}${n[0]==="quetes"&&claim?'<span class="ready" aria-label="Récompense à récupérer"></span>':""}${n[0]==="succes"&&chalClaimable()?'<span class="ready" aria-label="Succès à récupérer"></span>':""}${n[0]==="passe"&&passClaimable()?'<span class="ready" aria-label="Récompenses du passe à récupérer"></span>':""}</button>`
+    `<button class="nav-btn" data-action="nav" data-view="${n[0]}" ${ui.view===n[0]?'aria-current="page"':""}>${ic(n[2])}<span>${n[1]}</span>${n[3]?'<span class="soon">bientôt</span>':""}${n[0]==="sacs"&&ready?'<span class="ready" aria-label="Sac gratuit disponible"></span>':""}${n[0]==="quetes"&&claim?'<span class="ready" aria-label="Récompense à récupérer"></span>':""}${n[0]==="collection"&&seriesClaimable()?'<span class="ready" aria-label="Série à récupérer"></span>':""}${n[0]==="succes"&&chalClaimable()?'<span class="ready" aria-label="Succès à récupérer"></span>':""}${n[0]==="passe"&&passClaimable()?'<span class="ready" aria-label="Récompenses du passe à récupérer"></span>':""}</button>`
   ).join("") + `<p class="side-quote">Les plus grandes aventures commencent toujours par une petite bille.
     <svg width="40" height="36" viewBox="0 0 40 36" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"><path d="M6 2c-4 12 2 24 26 28"/><path d="M26 24l6 6-8 3"/></svg></p>`;
 }
@@ -2564,6 +2639,7 @@ function viewHome(){
       ${ready&&gifts?`<span class="hero-note">${ic("gift",16)} + ${gifts} sac${gifts>1?"s":""} offert${gifts>1?"s":""} à ouvrir</span>`:""}
     </section>
 
+    ${goalsPanel()}
     <div class="row-2">
       <section class="panel pass-mini" style="${seasonStyle(se)}">
         <div class="panel-head"><h2>Passe de saison</h2><span class="sample-tag">Fin dans <span data-pass-timer>${passLeft()}</span></span></div>
@@ -2771,6 +2847,45 @@ function viewQuests(){
 }
 
 /* =====================================================================
+   PROCHAINS OBJECTIFS : de petits buts à portée de main, calculés sur ta boîte
+   ===================================================================== */
+function nextGoals(){
+  const goals = [];
+  // une case presque complète
+  const cases = [...slotsOwned()].map(([k,l])=>({k,l,got:casePals(l)})).filter(c=>c.got<BASE_PALS).sort((a,b)=>b.got-a.got);
+  if(cases[0] && cases[0].got>=2){ const c=cases[0], x=coverOf(c.l);
+    goals.push({icon:"layers", img:x, title:`Complète ta case ${FAMILIES[x.family].name} · ${TYPES[x.type].label}`, text:`Plus que ${BASE_PALS-c.got} coloris pour la case complète.`, p:c.got, goal:BASE_PALS, act:`data-action="sheet" data-type="${x.type}" data-fam="${x.family}"`, cta:"Voir les coloris"}) }
+  // la série la plus avancée
+  const se = SERIES.filter(x=>!(S.seriesDone||[]).includes(x.id)).map(x=>({x,p:seriesProg(x)})).sort((a,b)=>b.p/b.x.items.length-a.p/a.x.items.length)[0];
+  if(se){ const left=se.x.items.length-se.p;
+    goals.push({icon:"book", title:`Série « ${se.x.name} »`, text:left?`Encore ${left} bille${left>1?"s":""} pour la récompense.`:"Série complète : récupère ta récompense !", p:se.p, goal:se.x.items.length, act:`data-action="series-go"`, cta:left?"Voir la série":"Récupérer", ready:!left}) }
+  // le succès le plus proche
+  const ch = CHALLENGES.filter(c=>!S.chal.includes(c.id)).map(c=>({c,p:chalProg(c)})).filter(o=>o.p>0||o.c.goal<=3).sort((a,b)=>(b.p>=b.c.goal)-(a.p>=a.c.goal) || b.p/b.c.goal-a.p/a.c.goal)[0];
+  if(ch){ const done=ch.p>=ch.c.goal;
+    goals.push({icon:ch.c.icon, title:ch.c.title, text:done?"Succès réussi : récupère ta récompense !":ch.c.desc, p:ch.p, goal:ch.c.goal, act:`data-action="nav" data-view="succes"`, cta:done?"Récupérer":"Voir les succès", ready:done}) }
+  // le prochain palier de l'album
+  const f = albumFound().size, pal = CHALLENGES.find(c=>c.id.startsWith("found-") && !S.chal.includes(c.id) && c.goal>f);
+  if(pal && goals.length<3) goals.push({icon:"book", title:`Palier : ${pal.title}`, text:`Encore ${fmt(pal.goal-f)} billes différentes à trouver.`, p:f, goal:pal.goal, act:`data-action="nav" data-view="collection"`, cta:"Ma boîte à billes"});
+  return goals.slice(0,3);
+}
+function goalsPanel(){
+  const goals = nextGoals(), wish = [...(S.wish||[]), ...(S.wishGot||[]).filter(k=>!(S.wish||[]).includes(k))];
+  return `<section class="panel goals">
+    <div class="panel-head"><h2>Tes prochains objectifs</h2><button class="see-all" data-action="nav" data-view="succes">Tous les succès ${ic("chev",14)}</button></div>
+    <div class="goal-grid">${goals.map(g=>`<button class="goal${g.ready?" ready":""}" ${g.act}>
+      <span class="g-ic">${g.img?mImg(g.img,100,40,""):ic(g.icon,22)}</span>
+      <span class="g-main"><b>${g.title}</b><small>${g.text}</small>
+        <span class="q-prog"><span class="bar"><i class="${g.p>=g.goal?"done":""}" style="width:${Math.min(100,g.p/g.goal*100)}%"></i></span><small>${fmt(Math.min(g.p,g.goal))} / ${fmt(g.goal)}</small></span></span>
+      <span class="g-cta">${g.cta} ${ic("chev",13)}</span></button>`).join("")}</div>
+    <h3 class="sub-h">Ma liste de souhaits <small>${(S.wish||[]).length} / ${WISH_MAX}</small></h3>
+    ${wish.length ? `<div class="wish-row">${wish.map(k=>{ const w=wishSpec(k), got=wishFound(k);
+        return `<button class="wish${got?" got":""}" data-action="${got?"sheet":"wish-info"}" data-k="${k}" data-type="${w.type}" data-fam="${w.family}">${got?mImg(S.specs.filter(x=>colorKey(x)===k).sort(tierSort)[0],100,44,""):`<span class="sil" style="--c1:${PALETTES[w.pal][1]};--c2:${PALETTES[w.pal][2]}"></span>`}
+          <b>${esc(specName(w))}</b><small>${got?"Trouvée !":TYPES[w.type].label+" · "+oneIn(chanceOf(w))}</small></button>` }).join("")}</div>`
+      : `<p class="meta">Chasse une bille précise : dans ta boîte à billes, ouvre une case et touche un coloris qui te manque pour l'ajouter ici. On te prévient dès qu'elle tombe d'un sac.</p>`}
+  </section>`;
+}
+
+/* =====================================================================
    SUCCÈS : tous les défis, rangés par catégorie
    ===================================================================== */
 function chalRow(c){
@@ -2782,6 +2897,20 @@ function chalRow(c){
       <div class="rews">${rewChips(c.rew)}</div></div>
     ${got?`<span class="q-state">${ic("check",16,2.5)} Récupéré</span>`:done?`<button class="btn btn-yellow q-claim" data-action="chal-claim" data-id="${c.id}">${ic("gift",16)} Récupérer</button>`:""}
   </div>`;
+}
+function seriesView(){
+  const done = S.seriesDone||[];
+  return `<p class="conf-intro">De petites collections à thème : remplis toutes les cases d'une série (n'importe quelle taille, sauf indication) pour gagner sa récompense. ${done.length} / ${SERIES.length} séries terminées.</p>
+  <div class="series-grid">${SERIES.map(se=>{
+    const fill = seriesFill(se), n = fill.filter(Boolean).length, full = n>=se.items.length, got = done.includes(se.id);
+    return `<section class="panel serie${full&&!got?" ready":""}${got?" claimed":""}">
+      <div class="serie-head"><div><h3>${se.name}</h3><p>${se.desc}</p></div><span class="serie-n">${n} / ${se.items.length}</span></div>
+      <div class="serie-items">${se.items.map((it,i)=>{ const x=fill[i];
+        return x ? `<button class="s-item got" data-action="spec" data-id="${x.id}" aria-label="${esc(specName(x))}">${mImg(x,100,40,"")}<small>${seriesLabel(it)||esc(specName(x))}</small></button>`
+                 : `<div class="s-item"><span class="sil"${it.pal?` style="--c1:${PALETTES[PAL_ID(it.pal)][1]};--c2:${PALETTES[PAL_ID(it.pal)][2]}"`:""}></span><small>${seriesLabel(it)}</small></div>` }).join("")}</div>
+      <div class="serie-foot"><div class="rews">${rewChips(se.rew)}</div>
+        ${got?`<span class="q-state">${ic("check",16,2.5)} Récupéré</span>`:full?`<button class="btn btn-yellow" data-action="series-claim" data-id="${se.id}">${ic("gift",16)} Récupérer</button>`:""}</div>
+    </section>` }).join("")}</div>`;
 }
 function viewSucces(){
   const n = CHALLENGES.filter(c=>S.chal.includes(c.id)).length, claim = chalClaimable(), cat = ui.chalCat || "all";
@@ -2824,7 +2953,7 @@ function viewCollection(){
     ["secret","Secrètes","lock",x=>x.secret],
   ];
   const showFn = (SHOW.find(o=>o[0]===show)||SHOW[0])[3];
-  const filters = ui.tab==="defis" ? "" : `<div class="col-filters">
+  const filters = ui.tab==="defis"||ui.tab==="series" ? "" : `<div class="col-filters">
     <div class="seg" role="group" aria-label="Afficher"><span class="f-lbl">Afficher</span>
       ${SHOW.map(([k,label,icon,f])=>`<button class="chip" data-action="show" data-show="${k}" aria-pressed="${show===k}">${k==="shiny"?SPARK:icon?ic(icon,14):""}${label}${f?` <span class="n">${k==="secret"?`${S.specs.filter(x=>x.secret).length}/${Object.keys(SECRETS).length}`:count(f)}</span>`:""}</button>`).join("")}
     </div>
@@ -2871,7 +3000,9 @@ function viewCollection(){
     }).join("");
     if(show==="dups") body = dupsBar() + body;
   }
-  if(ui.tab!=="defis" && show==="secret"){
+  if(ui.tab==="series"){
+    body = seriesView();
+  } else if(ui.tab!=="defis" && show==="secret"){
     body = secretGrid();
   } else if(ui.tab==="billes"){
     let list = S.specs.filter(x=>inType(x) && (!showFn || showFn(x)));
@@ -2904,6 +3035,7 @@ function viewCollection(){
     <div class="tabs" role="tablist">
       <button class="tab" role="tab" data-action="tab" data-tab="album" aria-selected="${ui.tab==="album"}">Album</button>
       <button class="tab" role="tab" data-action="tab" data-tab="billes" aria-selected="${ui.tab==="billes"}">Mes billes (${S.specs.length})</button>
+      <button class="tab" role="tab" data-action="tab" data-tab="series" aria-selected="${ui.tab==="series"}">Séries${seriesClaimable()?` <span class="tab-dot">${seriesClaimable()}</span>`:""}</button>
     </div>
   </div>
   ${filters}
@@ -3299,7 +3431,8 @@ function openSheet(t,f){
   const cell = p => { const P=PALETTES[p], l=by[p];
     if(l){ const b=[...l].sort(tierSort)[0];
       return `<button class="sh-cell owned${cov&&cov.id===b.id?" cover":""}" data-action="spec" data-id="${b.id}" data-from-sheet="1" aria-label="${esc(specName(b))}">${mImg(b,120,54,"")}<small>${P[0]}</small>${l.length>1?`<i class="x">×${l.length}</i>`:""}${S.unseen.some(id=>l.some(x=>x.id===id))?`<i class="nw"></i>`:""}</button>` }
-    return `<div class="sh-cell missing" title="${P[0]} : pas encore trouvée"><span class="sil" style="--c1:${P[1]};--c2:${P[2]}"></span><small>${P[0]}</small></div>` };
+    const wk = k+"|"+p, wished = (S.wish||[]).includes(wk);
+    return `<button class="sh-cell missing${wished?" wished":""}" data-action="wish-toggle" data-k="${wk}" title="${P[0]} : pas encore trouvée. Touche pour ${wished?"la retirer de":"l'ajouter à"} ta liste de souhaits"><span class="sil" style="--c1:${P[1]};--c2:${P[2]}"></span><small>${P[0]}</small>${wished?`<i class="wstar">${ic("star",12,2.6)}</i>`:""}</button>` };
   const extra = Object.keys(by).map(Number).filter(p=>p>=BASE_PALS);
   ui.sheet = {t,f};
   const el = document.getElementById("modal");
@@ -3309,7 +3442,7 @@ function openSheet(t,f){
       <div class="pills">${typePill(t,true)}<span class="dec-pill" style="--dc:${DECOR_RAR[F.rar].c}">${DECOR_RAR[F.rar].name}</span>${full?`<span class="full-tag static">${ic("star",11,2.6)} Case complète</span>`:""}</div>
       <h2>${F.name} <small>· ${T.label}</small></h2>
       <div class="sheet-prog"><span class="bar"><i class="${full?"done":""}" style="width:${got/BASE_PALS*100}%"></i></span><b>${got} / ${BASE_PALS} coloris</b></div>
-      <p class="meta">${got?`Touche une bille pour l'ouvrir. ${cov?`Dans l'album, c'est ${esc(PALETTES[cov.pal][0])} qui s'affiche : tu peux en choisir une autre depuis sa fiche.`:""}`:`Tu n'as pas encore de ${T.label.toLowerCase()} ${F.name}. Elle se cache peut-être dans ton prochain sac !`}</p>
+      <p class="meta">${got?`Touche une bille pour l'ouvrir, ou un coloris manquant pour l'ajouter à ta liste de souhaits (★). ${cov?`Dans l'album, c'est ${esc(PALETTES[cov.pal][0])} qui s'affiche : tu peux en choisir une autre depuis sa fiche.`:""}`:`Tu n'as pas encore de ${T.label.toLowerCase()} ${F.name}. Elle se cache peut-être dans ton prochain sac !`}</p>
     </div>
     <div class="sheet-grid">${Array.from({length:BASE_PALS},(_,p)=>cell(p)).join("")}</div>
     ${extra.length?`<h3 class="sub-h">Éditions spéciales</h3><div class="sheet-grid">${extra.map(cell).join("")}</div>`:""}
@@ -3367,9 +3500,13 @@ function openBag(bagId, gift){
     const isNew = !before.has(k);
     const newColor = !isNew && !before.get(k).some(x=>x.pal===s.pal);   // une nouvelle bille dans une case déjà commencée
     if(!before.has(k)) before.set(k,[]); before.get(k).push(s);
+    const wish = (S.wish||[]).includes(colorKey(s));
     S.specs.push(s); S.unseen.push(s.id);
-    return {s, isNew, newColor};
+    return {s, isNew, newColor, wish};
   });
+  // billes de la liste de souhaits trouvées : elles libèrent leur place (et restent affichées « Trouvée ! » un moment)
+  const gotW = results.filter(r=>r.wish).map(r=>colorKey(r.s));
+  if(gotW.length){ S.wish = S.wish.filter(k=>!gotW.includes(k)); S.wishGot = [...new Set([...gotW, ...(S.wishGot||[])])].slice(0,3) }
   const hr = new Date().getHours(), mn = new Date().getMinutes();
   const sid = hr===0 && mn<15 ? "grenier" : hr===16 && mn>=30 && mn<40 ? "gouter" : null;
   if(sid){ const sp = grantSecret(sid); if(sp) results.push({s:sp, isNew:true, newColor:false}) }
@@ -3530,10 +3667,10 @@ function showReveal(){
     <div class="ov-title">${results.length} billes trouvées !</div>
     <p class="ov-sub">${ovState.forced?"Garantie Boulet activée : un gros t'attend !":"Touche chaque bille pour la découvrir. La couleur de la lueur annonce sa taille…"}</p>
     <div class="reveal-row">
-      ${results.map(({s,isNew,newColor},i)=>{
+      ${results.map(({s,isNew,newColor,wish},i)=>{
         const k = pullScore(s), big = k>=BIG;
-        return `<button class="slot ${k>=FMT_TIER.calot?"hint":""} ${big?"big":""} ${s.shiny?"shiny":""}" style="--d:${i*130}ms;--tc:${scoreCol(k)};${tstyle(s.type)}" data-action="reveal" data-i="${i}" aria-label="Découvrir la bille ${i+1}">
-        ${s.secret?`<span class="slot-banner">Secrète !</span>`:BANNER[k]?`<span class="slot-banner">${BANNER[k]}</span>`:""}
+        return `<button class="slot ${k>=FMT_TIER.calot||wish?"hint":""}${wish?" wished":""} ${big?"big":""} ${s.shiny?"shiny":""}" style="--d:${i*130}ms;--tc:${scoreCol(k)};${tstyle(s.type)}" data-action="reveal" data-i="${i}" aria-label="Découvrir la bille ${i+1}">
+        ${wish?`<span class="slot-banner">Ta liste !</span>`:s.secret?`<span class="slot-banner">Secrète !</span>`:BANNER[k]?`<span class="slot-banner">${BANNER[k]}</span>`:""}
         <div class="slot-ball"><span class="rays"></span><span class="ball-shadow"></span><span class="orb"><span class="orb-spin"><i>?</i></span></span>${mImg(s,300,Math.round(150*scaleOf(s.type)),"")}</div>
         <div class="slot-info"><b>${esc(specName(s))}</b><span style="display:flex;gap:4px;flex-wrap:wrap;justify-content:center">${typePill(s.type,true)}${shinyPill(s)}${edPill(s)}</span>${tierTag(s)}${k>=BIG?`<span class="ed-no">${edLabel(editionOf(s))}</span>`:""}${isNew?`<span class="new">Nouvelle case !</span>`:newColor?`<span class="new">Nouveau coloris</span>`:`<span class="dup">Déjà dans ta boîte</span>`}<span class="zoom-hint">${ic("search",14)} Agrandir</span></div>
       </button>`}).join("")}
@@ -3612,6 +3749,7 @@ function reveal(i){
   if(k>=6) FX.burst(x,y, SHINY_COLS, 70, 1.3);
   if(k>=BIG){ const b=document.getElementById("ov-body"); b.classList.remove("quake"); void b.offsetWidth; b.classList.add("quake") }
   Sound.reveal(TIDX[rs.type], !!rs.shiny);
+  if(ovState.results[i].wish){ Sound.reveal(5,false); setTimeout(()=>toast(`Sur ta liste de souhaits : ${specName(rs)} ! Elle rejoint ta boîte à billes.`),500) }
   if(ovState.opened.size === ovState.results.length) finishReveal();
 }
 function finishReveal(){
@@ -4573,6 +4711,26 @@ document.addEventListener("click", e=>{
       break;
     }
     case "chal-cat": ui.chalCat=t.dataset.cat; renderView(); break;
+    case "series-go": ui.tab="series"; go("collection"); break;
+    case "series-claim": {
+      const se = SERIES.find(x=>x.id===t.dataset.id); S.seriesDone = S.seriesDone||[];
+      if(!se || S.seriesDone.includes(se.id) || seriesProg(se)<se.items.length) break;
+      S.seriesDone.push(se.id); const r = se.rew;
+      if(r.j) S.jetons += r.j;
+      if(r.bag) S.bagInv[r.bag] = (S.bagInv[r.bag]||0)+1;
+      if(r.title && !S.titles.includes(r.title)){ S.titles.push(r.title); S.title = r.title }
+      save(); Sound.coin(); Sound.ding(); renderTop(); renderNav(); renderView();
+      toast(`Série « ${se.name} » terminée : +${fmt(r.j||0)} ${CUR.many}${r.bag?", "+BAG_BY[r.bag].name:""}${r.title?", titre « "+r.title+" »":""} !`);
+      break;
+    }
+    case "wish-toggle": {
+      const k = t.dataset.k; S.wish = S.wish||[];
+      if(S.wish.includes(k)) S.wish = S.wish.filter(x=>x!==k);
+      else if(S.wish.length>=WISH_MAX){ toast(`Ta liste de souhaits est pleine (${WISH_MAX} billes). Retires-en une d'abord.`); break }
+      else { S.wish.push(k); toast(`${specName(wishSpec(k))} ajoutée à ta liste de souhaits.`) }
+      save(); if(ui.sheet) openSheet(ui.sheet.t, ui.sheet.f); if(ui.view==="accueil") renderView(); break;
+    }
+    case "wish-info": { const [ty,f]=t.dataset.k.split("|"); openSheet(ty,+f); break }
     case "chal-claim": {
       const c = CHAL_BY[t.dataset.id]; if(!c || S.chal.includes(c.id) || chalProg(c)<c.goal) break;
       S.chal.push(c.id); const r = c.rew;

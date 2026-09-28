@@ -95,8 +95,31 @@ p{margin:0}
 .avatar{width:44px;height:44px;border-radius:50%;background:radial-gradient(circle at 40% 35%,var(--avatar-1),var(--avatar-2));display:grid;place-items:center;overflow:hidden;box-shadow:0 0 0 2px var(--panel)}
 .avatar img{width:92%;height:92%}
 .profile-mini b{display:block;font-weight:800;font-size:14px;text-align:left}
-button.profile-mini{height:56px;border-radius:0}
-button.profile-mini:hover{background:var(--panel-2)}
+button.profile-mini{height:52px;border-radius:14px;padding-inline:8px 10px;margin-inline:4px;transition:background .15s}
+button.profile-mini:hover,button.profile-mini[aria-expanded="true"]{background:var(--panel-2)}
+.prof-wrap{position:relative;display:flex;align-items:center;padding-inline:6px;border-inline:1px solid var(--line)}
+.prof-wrap .profile-mini{border:0}
+.av-ring{--p:0;padding:3px;border-radius:50%;background:conic-gradient(var(--blue) calc(var(--p)*1%),color-mix(in srgb,var(--ink) 12%,transparent) 0)}
+.av-ring .avatar{box-shadow:0 0 0 2px var(--panel)}
+.av-ring.big .avatar{width:60px;height:60px}
+.pm-chev{color:var(--muted);transition:transform .2s}
+.profile-mini[aria-expanded="true"] .pm-chev{transform:rotate(180deg)}
+.prof-pop{position:absolute;top:calc(100% + 8px);right:0;z-index:50;width:330px;padding:16px;border-radius:18px;background:var(--panel);border:1px solid var(--line);box-shadow:0 24px 50px -18px rgba(0,0,0,.55);display:grid;gap:14px}
+.pp-head{display:flex;align-items:center;gap:12px}
+.pp-head b{display:block;font-size:17px;font-weight:900}
+.pp-head small{display:block;font-size:12.5px;font-weight:700;color:var(--ink-2)}
+.pp-head .pp-ball{color:var(--muted);font-weight:600;font-size:11.5px;margin-top:2px}
+.pp-stats{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.pp-stats > div{padding:9px 11px;border-radius:12px;background:var(--panel-2);border:1px solid var(--line)}
+.pp-stats .wide{grid-column:1/-1}
+.pp-stats small{display:block;font-size:10.5px;font-weight:900;letter-spacing:.05em;text-transform:uppercase;color:var(--muted)}
+.pp-stats b{display:flex;align-items:center;gap:5px;font-size:16px;font-weight:900;font-variant-numeric:tabular-nums;margin-top:2px}
+.pp-stats b i{font-style:normal;font-size:12px;color:var(--muted);font-weight:800}
+.pp-stats .bar{display:block;height:6px;margin-top:6px}
+.pp-claim{display:flex;align-items:center;justify-content:center;gap:8px;height:40px;border-radius:12px;background:var(--gold-bg);border:2px solid #E0A417;font-weight:900;font-size:13.5px}
+.pp-links{display:grid;grid-template-columns:repeat(3,1fr);gap:6px}
+.pp-links button{display:flex;flex-direction:column;align-items:center;gap:4px;padding:9px 4px;border-radius:12px;font-size:12px;font-weight:800;color:var(--ink-2);background:var(--panel-2)}
+.pp-links button:hover{color:var(--ink)}
 .profile-mini small{display:block;text-align:left}
 .profile-mini small{color:var(--muted);font-size:12px;font-weight:600}
 .wallet{display:flex;align-items:center;gap:8px;height:38px;padding:0 14px 0 7px;border-radius:999px;background:var(--panel);border:1px solid var(--line);font-weight:800;font-variant-numeric:tabular-nums}
@@ -586,6 +609,7 @@ button.rw:hover{transform:translateY(-2px)}
 .sh-cell.wished{opacity:1;border:2px solid #E0A417;border-style:solid}
 .sh-cell .wstar{position:absolute;top:4px;right:5px;color:#E0A417}
 .slot.wished .slot-banner{color:#FFD27A}
+.slot-banner.low{font-size:19px;color:color-mix(in srgb,var(--tc) 45%,#fff);text-shadow:0 2px 0 rgba(0,0,0,.45)}
 /* séries */
 .series-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(330px,1fr));gap:14px}
 .serie{display:flex;flex-direction:column;gap:12px}
@@ -1026,8 +1050,9 @@ button.vit-slot:hover{background:var(--panel-2);color:var(--ink)}
   .nav-btn .ready{position:absolute;top:4px;right:10px}
   main{padding:16px 16px 100px}
   .topbar{padding-inline:16px;gap:8px}
-  .profile-mini > span:last-child{display:none}
+  .profile-mini .pm-txt,.profile-mini .pm-chev{display:none}
   .profile-mini{border:0;padding:0}
+  .prof-pop{position:fixed;top:72px;right:10px;width:min(330px,calc(100vw - 20px))}
   .home-side{grid-template-columns:minmax(0,1fr)}
   .hero-main{right:8%;width:160px;height:160px}
   .hero-bag{display:none}
@@ -1063,13 +1088,17 @@ button.vit-slot:hover{background:var(--panel-2);color:var(--ink)}
   <div class="logo" aria-label="Billy"><span>Billy</span><img id="logo-marble" alt=""></div>
   <div class="tagline">Ouvre. Collectionne. Joue.</div>
   <div class="top-spacer"></div>
-  <button class="icon-btn" id="daily-btn" data-action="daily-open" aria-label="Le bonbec du jour"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3.5" y="8" width="17" height="4" rx="1"/><path d="M5 12v8h14v-8M12 8v12M12 8C10.5 4 7 4 7 6s3 2 5 2c2 0 5 0 5-2s-3.5-2-5 2"/></svg><span class="dot"></span><span class="dot"></span></button>
+  <button class="icon-btn" id="daily-btn" data-action="daily-open" aria-label="Le bonbec du jour"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3.5" y="8" width="17" height="4" rx="1"/><path d="M5 12v8h14v-8M12 8v12M12 8C10.5 4 7 4 7 6s3 2 5 2c2 0 5 0 5-2s-3.5-2-5 2"/></svg><span class="dot"></span></button>
   <button class="icon-btn" id="theme-btn" data-action="theme"></button>
   <button class="icon-btn" id="sound-btn" data-action="sound"></button>
-  <button class="profile-mini" data-action="nav" data-view="profil" aria-label="Mon profil">
-    <span class="avatar" id="top-avatar"></span>
-    <span><b id="top-name">AlexBilleur</b><small id="top-level"></small></span>
-  </button>
+  <div class="prof-wrap">
+    <button class="profile-mini" data-action="prof-pop" aria-label="Mon profil" aria-expanded="false" aria-haspopup="true">
+      <span class="av-ring" id="top-ring"><span class="avatar" id="top-avatar"></span></span>
+      <span class="pm-txt"><b id="top-name">AlexBilleur</b><small id="top-level"></small></span>
+      <span class="pm-chev" aria-hidden="true"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path d="M6 9l6 6 6-6"/></svg></span>
+    </button>
+    <div class="prof-pop" id="prof-pop" hidden></div>
+  </div>
   <button class="wallet" data-action="nav" data-view="sacs" aria-label="Mes bonbecs, ouvrir des sacs"><span id="coin-slot"></span><span id="jetons">0</span><small>bonbecs</small></button>
 </header>
 
@@ -1519,7 +1548,7 @@ function specParams(s){
     par:[(r()-.5)*5, [3,4,4,5,6][Math.floor(r()*5)], .05+r()*.07, 2+Math.floor(r()*4)],
     srot: rotAxis(r()-.5,r()-.5,r()-.5,r()*TAU),
     c1:hex01(P[1]), c2:hex01(P[2]), c3:hex01(P[3]), tint,
-    mode:s.family, opaque:opaque?1:0, porc:0, sulf:0, fig:s.family%4, shiny:s.shiny||0, asp:s.type==="chinoise"?1.22:1,
+    mode:s.family, opaque:opaque?1:0, porc:0, sulf:0, fig:s.family%4, shiny:s.shiny||0, asp:s.type==="chinoise"?1.45:1,
   };
   paramCache.set(key,p); return p;
 }
@@ -1887,12 +1916,13 @@ vec3 env(vec3 r){
 
 void main(){
   vec2 uv=((gl_FragCoord.xy/uRes)*2.0-1.0)/uR;
-  uv.x/=uAsp;   // bille chinoise : un peu ovale
+  uv.x/=uAsp;   // bille chinoise : plus large que haute
   float rad=length(uv);
   float px=2.0/(uRes.x*uR);
   float edge=1.0-smoothstep(1.0-px*1.5,1.0+px*0.5,rad);
   if(rad>1.0) uv=uv/rad*0.999;
   vec3 n=vec3(uv,sqrt(max(0.0,1.0-dot(uv,uv))));
+  if(uAsp>1.01) n=normalize(vec3(n.xy, n.z*0.55));   // bille chinoise : une pépite de verre, plus plate et moins bombée
   vec3 d0=vec3(0.0,0.0,-1.0);
   vec3 L=normalize(vec3(-0.55,0.65,0.6));
   vec3 rv=reflect(d0,n);
@@ -2590,8 +2620,43 @@ function renderTop(){
   document.getElementById("top-level").textContent = S.title;
   const a = activeSpec();
   document.getElementById("top-avatar").innerHTML = a ? mImg(a,120,40,"") : "";
+  document.getElementById("top-ring").style.setProperty("--p", Math.max(1.5, albumFound().size/ALBUM_TOTAL*100));
+  if(!document.getElementById("prof-pop").hidden) renderProfPop();
 }
-function go(view){ if(view==="atelier"){ view="confiserie"; ui.confTab="fusion" } ui.view=view; renderNav(); renderView(); window.scrollTo({top:0}); }
+// Petit tableau de bord du joueur, sous son profil en haut à droite
+function renderProfPop(){
+  const a = activeSpec(), found = albumFound().size, slots = slotsOwned();
+  const full = [...slots.values()].filter(l=>casePals(l)===BASE_PALS).length;
+  const tier = passTier(), streak = S.daily ? (dailyReady() ? (S.daily.last===dayKey(new Date(Date.now()-864e5)) ? S.daily.streak : 0) : S.daily.streak) : 0;
+  const nChal = CHALLENGES.filter(c=>S.chal.includes(c.id)).length, claim = chalClaimable()+seriesClaimable()+questsClaimable();
+  document.getElementById("prof-pop").innerHTML = `
+    <div class="pp-head"><span class="av-ring big" style="--p:${Math.max(1.5,found/ALBUM_TOTAL*100)}"><span class="avatar">${a?mImg(a,160,56,""):""}</span></span>
+      <div><b>${esc(S.name)}</b><small>${esc(S.title)}</small>${a?`<small class="pp-ball">Joue avec : ${esc(specName(a))}</small>`:""}</div></div>
+    <div class="pp-stats">
+      <div class="wide"><small>Billes trouvées</small><b>${fmt(found)} <i>/ ${fmt(ALBUM_TOTAL)}</i></b><span class="bar"><i style="width:${Math.max(.8,found/ALBUM_TOTAL*100)}%"></i></span></div>
+      <div><small>Cases complètes</small><b>${full}</b></div>
+      <div><small>Succès</small><b>${nChal} <i>/ ${CHALLENGES.length}</i></b></div>
+      <div><small>Série de jours</small><b>${streak} ${ic("candy",14)}</b></div>
+      <div><small>Passe de saison</small><b>Palier ${tier} <i>/ ${PASS_TIERS}</i></b></div>
+      <div><small>Shiny</small><b>${S.specs.filter(x=>x.shiny).length}</b></div>
+      <div><small>Sacs ouverts</small><b>${fmt(S.bags||0)}</b></div>
+    </div>
+    ${claim?`<button class="pp-claim" data-action="nav" data-view="${chalClaimable()?"succes":seriesClaimable()?"collection":"quetes"}">${ic("gift",16)} ${claim} récompense${claim>1?"s":""} à récupérer</button>`:""}
+    <div class="pp-links">
+      <button data-action="nav" data-view="profil">${ic("user",16)} Mon profil</button>
+      <button data-action="nav" data-view="succes">${ic("trophy",16)} Succès</button>
+      <button data-action="nav" data-view="parametres">${ic("gear",16)} Paramètres</button>
+    </div>`;
+}
+function toggleProfPop(open){
+  const pop = document.getElementById("prof-pop"), btn = document.querySelector(".profile-mini");
+  open = open ?? pop.hidden;
+  if(open) renderProfPop();
+  pop.hidden = !open; btn.setAttribute("aria-expanded", open);
+}
+document.addEventListener("click", e=>{ if(!e.target.closest(".prof-wrap")) toggleProfPop(false) }, true);
+document.addEventListener("keydown", e=>{ if(e.key==="Escape") toggleProfPop(false) });
+function go(view){ toggleProfPop(false); if(view==="atelier"){ view="confiserie"; ui.confTab="fusion" } ui.view=view; renderNav(); renderView(); window.scrollTo({top:0}); }
 function renderView(){
   const v = document.getElementById("view");
   const map = {succes:viewSucces, accueil:viewHome, sacs:viewBags, collection:viewCollection, jeux:viewGames, tir:viewGame, pot:viewArena, chateau:viewArena, tic:viewArena, course:viewArena, quetes:viewQuests, billepedia:viewPedia, passe:viewPass, profil:viewProfile, atelier:viewCraft, confiserie:viewConfiserie};
@@ -2684,7 +2749,7 @@ function viewHome(){
     <section class="panel profile-card">
       <div class="pc-top"><div class="avatar">${act?mImg(act,160,68,""):""}</div><div><b>${esc(S.name)}</b><span>${esc(S.title)}</span></div><button class="see-all pc-edit" data-action="nav" data-view="profil">Mon profil ${ic("chev",14)}</button></div>
       <div class="stats">
-        <div class="stat"><span class="ic">${ic("layers",26)}</span><div><small>Album</small><b>${pctCol} %</b></div></div>
+        <div class="stat"><span class="ic">${ic("layers",26)}</span><div><small>Billes trouvées</small><b>${fmt(found.size)}</b></div></div>
         <div class="stat"><span class="ic">${ic("star",26)}</span><div><small>Shiny</small><b>${shinyN}</b></div></div>
         <div class="stat"><span class="ic">${ic("target",26)}</span><div><small>Trous réussis</small><b>${S.holes}</b></div></div>
         <div class="stat"><span class="ic">${ic("ticket",26)}</span><div><small>Passe</small><b>${tier} / ${PASS_TIERS}</b></div></div>
@@ -3526,7 +3591,7 @@ function openBag(bagId, gift){
 const pullScore = s => s.shiny || s.secret ? 6 : tierOf(s);
 const scoreCol = k => k>=6 ? "#FFD27A" : RARITY[k].c;
 const scoreCols = k => k>=6 ? SHINY_COLS : [RARITY[k].c, shade(RARITY[k].c,.45), "#FFF3D6"];
-const BANNER = ["","","Chinoise !","Calot !","Boulet !","Mammouth !","Shiny !"];
+const BANNER = ["Mini","Bille","Chinoise !","Calot !","Boulet !","Mammouth !","Shiny !"];   // les petites tailles ont une étiquette plus discrète
 
 // petites particules plein écran pendant l'ouverture
 const FX = {
@@ -3670,7 +3735,7 @@ function showReveal(){
       ${results.map(({s,isNew,newColor,wish},i)=>{
         const k = pullScore(s), big = k>=BIG;
         return `<button class="slot ${k>=FMT_TIER.calot||wish?"hint":""}${wish?" wished":""} ${big?"big":""} ${s.shiny?"shiny":""}" style="--d:${i*130}ms;--tc:${scoreCol(k)};${tstyle(s.type)}" data-action="reveal" data-i="${i}" aria-label="Découvrir la bille ${i+1}">
-        ${wish?`<span class="slot-banner">Ta liste !</span>`:s.secret?`<span class="slot-banner">Secrète !</span>`:BANNER[k]?`<span class="slot-banner">${BANNER[k]}</span>`:""}
+        ${wish?`<span class="slot-banner">Ta liste !</span>`:s.secret?`<span class="slot-banner">Secrète !</span>`:BANNER[k]?`<span class="slot-banner${k<2?" low":""}">${BANNER[k]}</span>`:""}
         <div class="slot-ball"><span class="rays"></span><span class="ball-shadow"></span><span class="orb"><span class="orb-spin"><i>?</i></span></span>${mImg(s,300,Math.round(150*scaleOf(s.type)),"")}</div>
         <div class="slot-info"><b>${esc(specName(s))}</b><span style="display:flex;gap:4px;flex-wrap:wrap;justify-content:center">${typePill(s.type,true)}${shinyPill(s)}${edPill(s)}</span>${tierTag(s)}${k>=BIG?`<span class="ed-no">${edLabel(editionOf(s))}</span>`:""}${isNew?`<span class="new">Nouvelle case !</span>`:newColor?`<span class="new">Nouveau coloris</span>`:`<span class="dup">Déjà dans ta boîte</span>`}<span class="zoom-hint">${ic("search",14)} Agrandir</span></div>
       </button>`}).join("")}
@@ -4711,6 +4776,7 @@ document.addEventListener("click", e=>{
       break;
     }
     case "chal-cat": ui.chalCat=t.dataset.cat; renderView(); break;
+    case "prof-pop": toggleProfPop(); break;
     case "series-go": ui.tab="series"; go("collection"); break;
     case "series-claim": {
       const se = SERIES.find(x=>x.id===t.dataset.id); S.seriesDone = S.seriesDone||[];

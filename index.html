@@ -519,6 +519,16 @@ button.rw:hover{transform:translateY(-2px)}
 .treasure .pills{display:flex;gap:6px;flex-wrap:wrap;justify-content:center}
 .col-toolbar{display:flex;align-items:center;gap:16px;flex-wrap:wrap;margin-bottom:18px}
 .col-toolbar .tabs{margin-bottom:0}
+.col-filters{display:flex;align-items:center;justify-content:space-between;gap:10px 16px;flex-wrap:wrap;margin:-4px 0 18px;padding:10px 12px;border-radius:var(--r-lg);background:var(--panel);border:1px solid var(--line)}
+.col-filters .seg{align-items:center}
+.col-filters .f-lbl{font-size:11px;font-weight:900;letter-spacing:.06em;text-transform:uppercase;color:var(--muted);margin-right:2px}
+.col-filters .chip{height:32px;padding:0 12px;font-size:12.5px;gap:6px}
+.col-filters .chip .n{font-size:11px;font-weight:900;opacity:.65;font-variant-numeric:tabular-nums}
+.col-filters .f-right{display:flex;align-items:center;gap:12px;flex-wrap:wrap;margin-left:auto}
+.col-filters .seen-all{margin-left:0;height:32px}
+.sort{display:inline-flex;align-items:center;gap:8px;font-size:13px;font-weight:800;color:var(--ink-2)}
+.sort select{height:32px;padding:0 10px;border-radius:10px;border:1.5px solid var(--line-2);background:var(--panel);color:var(--ink);font:inherit;font-weight:700}
+.keep-tag{position:absolute;top:7px;left:8px;font-size:10px;font-weight:900;background:var(--green);color:#fff;border-radius:999px;padding:2px 7px;text-transform:uppercase;letter-spacing:.04em}
 button.type-box{text-align:left;transition:transform .12s,box-shadow .12s}
 button.type-box:hover{transform:translateY(-2px)}
 .type-box[aria-pressed="true"]{box-shadow:0 0 0 2.5px var(--rc)}
@@ -2697,14 +2707,42 @@ function viewCollection(){
   const slots = slotsOwned();
   const shinyCount = S.specs.filter(s=>s.shiny).length;
   const types = TK.filter(t=>ui.type==="all"||ui.type===t);
-  const nSh = S.specs.filter(s=>s.shiny).length, nSe = S.specs.filter(isSeason).length, sp0 = ui.tab==="billes" ? (ui.special||"all") : "all";
-  const special = ui.tab==="defis" ? "" : `<div class="seg" role="group" aria-label="Filtrer">
-      <button class="chip" data-action="special" data-sp="all" aria-pressed="${sp0==="all"}">Toutes</button>
-      <button class="chip" data-action="special" data-sp="shiny" aria-pressed="${sp0==="shiny"}">${SPARK} Shiny (${nSh})</button>
-      <button class="chip" data-action="special" data-sp="season" aria-pressed="${sp0==="season"}">${ic("ticket",14)} Éditions saisonnières (${nSe})</button>
-      <button class="chip" data-action="special" data-sp="secret" aria-pressed="${sp0==="secret"}">${ic("lock",14)} Secrètes (${S.specs.filter(s=>s.secret).length} / ${Object.keys(SECRETS).length})</button>
-    </div>`;
-  const chips = special + (ui.tab==="album"?`<label class="check"><input type="checkbox" id="f-hide" ${ui.hideMissing?"checked":""}> Masquer les manquantes</label>`:"");
+  // « Afficher » : le même filtre pour l'Album (par case) et pour Mes billes (bille par bille)
+  const show = ui.show || "all";
+  const unseenIds = new Set(S.unseen), dupKeys = new Set([...slots].filter(([k,l])=>l.length>1).map(([k])=>k));
+  const keep = new Set([...slots.values()].map(l=>[...l].sort(tierSort)[0].id));   // la bille gardée de chaque case
+  const inType = x => ui.type==="all" || x.type===ui.type;
+  const count = f => S.specs.filter(x=>inType(x)&&f(x)).length;
+  const SHOW = [
+    ["all","Tout",null,null],
+    ["new","Nouveautés","star",x=>unseenIds.has(x.id)],
+    ["dups","Doublons","layers",x=>dupKeys.has(slotKey(x))],
+    ["shiny","Shiny",null,x=>x.shiny],
+    ["season","Saison","ticket",isSeason],
+    ["secret","Secrètes","lock",x=>x.secret],
+  ];
+  const showFn = (SHOW.find(o=>o[0]===show)||SHOW[0])[3];
+  const filters = ui.tab==="defis" ? "" : `<div class="col-filters">
+    <div class="seg" role="group" aria-label="Afficher"><span class="f-lbl">Afficher</span>
+      ${SHOW.map(([k,label,icon,f])=>`<button class="chip" data-action="show" data-show="${k}" aria-pressed="${show===k}">${k==="shiny"?SPARK:icon?ic(icon,14):""}${label}${f?` <span class="n">${k==="secret"?`${S.specs.filter(x=>x.secret).length}/${Object.keys(SECRETS).length}`:count(f)}</span>`:""}</button>`).join("")}
+    </div>
+    <div class="f-right">
+      ${ui.tab==="album"&&show==="all"?`<label class="check"><input type="checkbox" id="f-hide" ${ui.hideMissing?"checked":""}> Masquer les cases vides</label>`:""}
+      ${ui.tab==="billes"&&show!=="secret"&&show!=="dups"?`<label class="sort">Trier <select id="f-sort">${[["recent","Plus récentes"],["size","Plus grosses"],["decor","Par décor"],["color","Par coloris"]].map(([k,l])=>`<option value="${k}"${(ui.sort||"recent")===k?" selected":""}>${l}</option>`).join("")}</select></label>`:""}
+      ${S.unseen.some(id=>specById(id))?`<button class="btn btn-ghost seen-all" data-action="seen-all">${ic("check",16)} Tout marquer comme vu (${S.unseen.filter(id=>specById(id)).length})</button>`:""}
+    </div>
+  </div>`;
+  const dupsBar = () => { const d = recyclableDups(), v = d.reduce((a,x)=>a+recycleValue(x),0);
+    return `<section class="panel recycle-bar">
+      <span class="q-ic">${ic("candy",24)}</span>
+      <div><b>${d.length ? `${d.length} double${d.length>1?"s":""} à échanger · +${fmt(v)} ${CUR.many}` : "Aucun double pour l'instant"}</b>
+        <p>Dans chaque case, on garde toujours ta plus belle bille. Les autres peuvent partir à la Confiserie, en ${CUR.many} ou en fusion.</p></div>
+      <button class="btn btn-ghost" data-action="nav" data-view="confiserie">Aller à la Confiserie ${ic("arrow",16)}</button>
+    </section>` };
+  const ballCard = x => `<button class="m-card${x.shiny?" is-shiny":""}" data-action="spec" data-id="${x.id}"${unseenIds.has(x.id)?` data-unseen="${x.id}"`:""}>
+      ${x.shiny?`<span class="shiny-mark">${shinyPill(x)}</span>`:""}${unseenIds.has(x.id)&&show!=="dups"?`<span class="new">Nouveau</span>`:""}${show==="dups"?(keep.has(x.id)?`<span class="keep-tag">Gardée</span>`:`<span class="dup-tag">Double</span>`):""}
+      <span class="ball">${mImg(x,160,Math.round(84*scaleOf(x.type)+6))}</span><b>${esc(specName(x))}</b>${typePill(x.type)}</button>`;
+  const EMPTY = {new:"Aucune nouveauté : tu as tout regardé !", dups:"Aucun doublon pour l'instant. Ouvre des sacs pour en trouver.", shiny:"Pas encore de shiny ici. Elles sont très rares : bonne chance !", season:"Pas encore de bille de saison ici. Le passe de saison en donne à certains paliers.", all:"Aucune bille dans ce format."};
 
   let body;
   if(ui.tab==="defis"){
@@ -2725,6 +2763,7 @@ function viewCollection(){
       const have = FAMILIES.filter((_,f)=>slots.has(t+"|"+f)).length;
       const cards = FAMILIES.map((F,f)=>{
         const list = slots.get(t+"|"+f);
+        if(showFn && !(list||[]).some(showFn)) return "";
         if(!list){ if(ui.hideMissing) return ""; return `<button class="m-card missing" data-action="missing" data-type="${t}" data-fam="${f}" aria-label="${TYPES[t].label} ${F.name} : pas encore trouvée"><span class="ball">${mImg(ghost(t,f),160,Math.round(84*scaleOf(t)+6),"")}</span><b>${F.name}</b><small>À trouver</small></button>` }
         const best = [...list].sort(tierSort)[0];
         const isNew = list.some(s=>S.unseen.includes(s.id));
@@ -2738,24 +2777,21 @@ function viewCollection(){
         <div class="type-head">${typePill(t,true)}<h2>${TYPES[t].label}</h2><span class="mm">${TYPES[t].mm} mm</span>
           <span class="prog">${have} / ${FAMILIES.length}<span class="bar"><i class="${have===FAMILIES.length?"done":""}" style="width:${have/FAMILIES.length*100}%"></i></span></span>
           <p class="desc">${TYPES[t].desc}</p></div>
-        ${cards.trim()?`<div class="card-grid">${cards}</div>`:`<p class="empty">Aucune ${TYPES[t].label.toLowerCase()} pour l'instant.</p>`}
+        ${cards.trim()?`<div class="card-grid">${cards}</div>`:`<p class="empty">${show==="all"?`Aucune ${TYPES[t].label.toLowerCase()} pour l'instant.`:"Rien avec ce filtre dans cette taille."}</p>`}
       </section>`;
     }).join("");
-  } else if(ui.special==="secret"){
+    if(show==="dups") body = dupsBar() + body;
+  }
+  if(ui.tab!=="defis" && show==="secret"){
     body = secretGrid();
-  } else {
-    const sp = ui.special||"all";
-    const list = S.specs.filter(s=>(ui.type==="all"||s.type===ui.type) && (sp==="all" || (sp==="shiny"?s.shiny:isSeason(s)))).sort((a,b)=>b.at-a.at);
-    const dups = recyclableDups(), dupVal = dups.reduce((a,s)=>a+recycleValue(s),0);
-    body = `<section class="panel recycle-bar">
-      <span class="q-ic">${ic("candy",24)}</span>
-      <div><b>${dups.length ? `${dups.length} double${dups.length>1?"s":""} à échanger · +${fmt(dupVal)} ${CUR.many}` : "Aucun double pour l'instant"}</b>
-        <p>Échange tes doubles contre des ${CUR.many} à la Confiserie.</p></div>
-      <button class="btn btn-ghost" data-action="nav" data-view="confiserie">Aller à la Confiserie ${ic("arrow",16)}</button>
-    </section>` + (list.length ? `<div class="card-grid">${list.map(s=>`<button class="m-card${s.shiny?" is-shiny":""}" data-action="spec" data-id="${s.id}"${S.unseen.includes(s.id)?` data-unseen="${s.id}"`:""}>
-      ${s.shiny?`<span class="shiny-mark">${shinyPill(s)}</span>`:""}${S.unseen.includes(s.id)?`<span class="new">Nouveau</span>`:""}
-      <span class="ball">${mImg(s,160,Math.round(84*scaleOf(s.type)+6))}</span><b>${esc(specName(s))}</b>${typePill(s.type)}</button>`).join("")}</div>`
-      : `<p class="empty">${sp==="shiny"?"Pas encore de shiny ici. Elles sont très rares : bonne chance !":sp==="season"?"Pas encore de bille de saison ici. Le passe de saison en donne à certains paliers.":"Aucune bille dans ce format."}</p>`);
+  } else if(ui.tab==="billes"){
+    let list = S.specs.filter(x=>inType(x) && (!showFn || showFn(x)));
+    const srt = show==="dups" ? "slot" : ui.sort||"recent";
+    const by = {recent:(a,b)=>b.at-a.at, size:(a,b)=>tierSort(a,b), decor:(a,b)=>FAMILIES[a.family].name.localeCompare(FAMILIES[b.family].name,"fr")||tierSort(a,b),
+      color:(a,b)=>PALETTES[a.pal][0].localeCompare(PALETTES[b.pal][0],"fr")||tierSort(a,b),
+      slot:(a,b)=>TIDX[b.type]-TIDX[a.type] || a.family-b.family || (keep.has(b.id)?1:0)-(keep.has(a.id)?1:0) || tierSort(a,b)};
+    list.sort(by[srt]);
+    body = (show==="dups"||show==="all" ? dupsBar() : "") + (list.length ? `<div class="card-grid">${list.map(ballCard).join("")}</div>` : `<p class="empty">${EMPTY[show]||EMPTY.all}</p>`);
   }
 
   return `<div class="page-head">
@@ -2769,7 +2805,7 @@ function viewCollection(){
       <small class="meta">${S.specs.length} billes au total · ${shinyCount} shiny</small>
     </section>
     <section class="panel">
-      <div class="panel-head"><h2>Filtrer par format</h2>${ui.type!=="all"?`<button class="see-all" data-action="ftype" data-type="all">Tout afficher</button>`:""}</div>
+      <div class="panel-head"><h2>Filtrer par taille</h2>${ui.type!=="all"?`<button class="see-all" data-action="ftype" data-type="all">Tout afficher</button>`:""}</div>
       <div class="type-grid">
         ${TK.map(t=>{const h=FAMILIES.filter((_,f)=>slots.has(t+"|"+f)).length,c=S.specs.filter(s=>s.type===t).length;return `<button class="type-box" style="${tstyle(t)}" data-action="ftype" data-type="${ui.type===t?"all":t}" aria-pressed="${ui.type===t}"><span>${TYPES[t].label}</span><b>${h} <small>/ ${FAMILIES.length}</small></b><em>${c} bille${c>1?"s":""}</em></button>`}).join("")}
       </div>
@@ -2778,12 +2814,11 @@ function viewCollection(){
   <div class="col-toolbar">
     <div class="tabs" role="tablist">
       <button class="tab" role="tab" data-action="tab" data-tab="album" aria-selected="${ui.tab==="album"}">Album</button>
-      <button class="tab" role="tab" data-action="tab" data-tab="billes" aria-selected="${ui.tab==="billes"}">Toutes mes billes (${S.specs.length})</button>
+      <button class="tab" role="tab" data-action="tab" data-tab="billes" aria-selected="${ui.tab==="billes"}">Mes billes (${S.specs.length})</button>
       <button class="tab" role="tab" data-action="tab" data-tab="defis" aria-selected="${ui.tab==="defis"}">Défis${chalClaimable()?` <span class="tab-dot">${chalClaimable()}</span>`:""}</button>
     </div>
-    ${chips}
-    ${S.unseen.some(id=>specById(id))&&ui.tab!=="defis"?`<button class="btn btn-ghost seen-all" data-action="seen-all">${ic("check",16)} Tout marquer comme vu (${S.unseen.filter(id=>specById(id)).length})</button>`:""}
   </div>
+  ${filters}
   ${body}`;
 }
 
@@ -4304,7 +4339,7 @@ document.addEventListener("click", e=>{
     case "conf-tab": ui.confTab=t.dataset.tab; renderView(); break;
     case "tab": ui.tab=t.dataset.tab; closeModal(); if(ui.view!=="collection") go("collection"); else renderView(); break;
     case "ftype": ui.type=t.dataset.type; renderView(); break;
-    case "special": ui.special=t.dataset.sp; if(ui.special!=="all") ui.tab="billes"; renderView(); break;
+    case "show": ui.show=t.dataset.show; renderView(); break;
     case "album-type": ui.tab="album"; ui.type=t.dataset.type; go("collection"); break;
     case "spec": openModal(t.dataset.id); break;
     case "preview": openModal(null, pedia[+t.dataset.k]); break;
@@ -4479,6 +4514,7 @@ document.addEventListener("submit", e=>{
 });
 document.addEventListener("change", e=>{
   if(e.target.id==="f-hide"){ ui.hideMissing=e.target.checked; renderView() }
+  if(e.target.id==="f-sort"){ ui.sort=e.target.value; renderView() }
 });
 document.addEventListener("keydown", e=>{
   if(e.key!=="Escape") return;

@@ -528,6 +528,40 @@ button.rw:hover{transform:translateY(-2px)}
 .col-filters .seen-all{margin-left:0;height:32px}
 .sort{display:inline-flex;align-items:center;gap:8px;font-size:13px;font-weight:800;color:var(--ink-2)}
 .sort select{height:32px;padding:0 10px;border-radius:10px;border:1.5px solid var(--line-2);background:var(--panel);color:var(--ink);font:inherit;font-weight:700}
+.m-card.case{padding-bottom:10px}
+.case-prog{display:flex;flex-direction:column;align-items:center;gap:3px;width:100%;padding:0 6px;margin-top:2px}
+.case-prog .bar{width:100%;height:5px}
+.case-prog small{font-size:11px;font-weight:800;color:var(--muted);font-variant-numeric:tabular-nums}
+.m-card.full{border:2px solid #E0A417;background:linear-gradient(180deg,color-mix(in srgb,#FFC93F 16%,var(--panel)),var(--panel) 60%);box-shadow:0 0 0 3px color-mix(in srgb,#FFC93F 22%,transparent)}
+.m-card.full .case-prog .bar i{background:#E0A417}
+.m-card.full .ball::after{content:"";position:absolute;inset:-10%;border-radius:50%;background:conic-gradient(from 0deg,transparent 0 40deg,rgba(255,220,120,.35) 60deg,transparent 80deg 360deg);animation:spin 6s linear infinite;pointer-events:none}
+.m-card .ball{position:relative}
+.full-tag{position:absolute;top:7px;left:8px;display:inline-flex;align-items:center;gap:3px;font-size:10px;font-weight:900;background:#E0A417;color:#241a05;border-radius:999px;padding:2px 7px;text-transform:uppercase;letter-spacing:.04em;z-index:1}
+.full-tag.static{position:static}
+.modal.sheet{display:block;width:min(900px,100%);padding:26px 26px 22px}
+.sheet-head{display:grid;gap:8px;margin-bottom:16px;padding-right:40px}
+.sheet-head h2{font-family:var(--display);font-weight:400;font-size:32px;line-height:1}
+.sheet-head h2 small{font-family:var(--body);font-size:16px;font-weight:800;color:var(--ink-2)}
+.sheet-prog{display:flex;align-items:center;gap:12px;max-width:420px}
+.sheet-prog .bar{flex:1;height:8px}
+.sheet-prog b{font-size:14px;font-weight:900;white-space:nowrap;font-variant-numeric:tabular-nums}
+.sheet-grid{display:grid;grid-template-columns:repeat(8,minmax(0,1fr));gap:8px}
+.sh-cell{position:relative;display:flex;flex-direction:column;align-items:center;gap:4px;padding:8px 2px 6px;border-radius:12px;background:var(--panel-2);border:1px solid var(--line);text-align:center;min-height:92px}
+.sh-cell small{font-size:10.5px;font-weight:800;color:var(--ink-2);line-height:1.15}
+.sh-cell.owned{transition:transform .15s}
+.sh-cell.owned:hover{transform:translateY(-2px)}
+.sh-cell.cover{border:2px solid #E0A417}
+.sh-cell img{height:auto;filter:drop-shadow(0 5px 4px rgba(0,0,0,.28))}
+.sh-cell .x{position:absolute;top:4px;right:5px;font-style:normal;font-size:10px;font-weight:900;background:var(--ink);color:var(--on-ink);border-radius:999px;padding:0 5px}
+.sh-cell .nw{position:absolute;top:6px;left:6px;width:8px;height:8px;border-radius:50%;background:#E5484D}
+.sh-cell.missing{opacity:.75;border-style:dashed}
+.sh-cell .sil{width:54px;height:54px;border-radius:50%;background:radial-gradient(circle at 35% 30%,color-mix(in srgb,var(--c2) 35%,transparent),color-mix(in srgb,var(--c1) 30%,transparent) 70%);box-shadow:inset 0 0 0 2px color-mix(in srgb,var(--ink) 12%,transparent);filter:grayscale(.55)}
+.sheet-back{align-self:flex-start;display:inline-flex;align-items:center;gap:4px;font-size:12.5px;font-weight:800;color:var(--ink-2);padding:6px 10px;border-radius:999px;background:var(--panel)}
+.sheet-back svg{transform:rotate(180deg)}
+.chal-sec{margin-top:18px}
+.chal-sec h2{font-size:19px;font-weight:900;margin-bottom:10px}
+.chal-sec h2 small{font-size:13px;font-weight:800;color:var(--muted);margin-left:6px}
+@media (max-width:820px){ .sheet-grid{grid-template-columns:repeat(4,minmax(0,1fr))} .modal.sheet{padding:20px 14px} }
 .keep-tag{position:absolute;top:7px;left:8px;font-size:10px;font-weight:900;background:var(--green);color:#fff;border-radius:999px;padding:2px 7px;text-transform:uppercase;letter-spacing:.04em}
 button.type-box{text-align:left;transition:transform .12s,box-shadow .12s}
 button.type-box:hover{transform:translateY(-2px)}
@@ -1155,7 +1189,11 @@ const QUESTS = {
   twoshots:      {title:"Mets ta bille dans le trou en 2 coups", goal:1, reward:90, icon:"target", desc:"Ou moins ! Le trou 1 est un bon candidat."},
   find_bille:    {title:"Trouve 2 Billes ou plus grosses", goal:2, reward:90, icon:"layers", desc:"Bille, Bille chinoise, Calot, Boulet ou Mammouth : les Mini billes ne comptent pas."},
   find_calot:    {title:"Trouve un Calot ou mieux", goal:1, reward:120, icon:"layers", desc:"Calot, Boulet ou Mammouth."},
-  new_slot:      {title:"Remplis un nouvel emplacement", goal:1, reward:100, icon:"book", desc:"Un format et un décor que tu n'avais pas encore dans l'album."},
+  new_slot:      {title:"Commence une nouvelle case", goal:1, reward:100, icon:"book", desc:"Une taille et un décor que tu n'avais pas encore dans l'album."},
+  new_color:     {title:"Trouve 3 nouvelles billes", goal:3, reward:100, icon:"star", desc:"Des billes que tu n'avais pas encore : nouvelle case ou nouveau coloris."},
+  open_paid:     {title:"Ouvre un sac payant", goal:1, reward:120, icon:"bag", desc:"Classique, Premium ou Collector, acheté ou offert."},
+  craft:         {title:"Réussis une fusion", goal:1, reward:120, icon:"flask", desc:"10 billes d'une même taille à la Confiserie."},
+  shake:         {title:"Secoue bien les sacs", goal:20, reward:60, icon:"bag", desc:"Secoue les sacs avant de les ouvrir : 20 secousses en tout."},
   recycle:       {title:"Échange 3 billes à la Confiserie", goal:3, reward:60, icon:"candy", desc:"Depuis la fiche d'une bille ou avec le bouton des doubles."},
 };
 const QUEST_BONUS = 150;
@@ -1985,12 +2023,12 @@ function starterState(){
     ["mini",1,0],["mini",6,7],["mini",3,15],["mini",4,13],
   ];
   const specs = list.map(([t,f,p],i)=>makeSpec(t,{seed:hash("depart"+i),family:f,pal:p,at:now-(i+1)*day/3}));
-  return {v:2, fv:2, pv:2, jetons:1000, holes:23, specs, active:specs[1].id, unseen:[], freeT0:now-FREE_EVERY, best:{}, bagInv:{}, title:"Petit Boulet", titles:["Petit Boulet"], name:"AlexBilleur", vitrine:[null,null,null,null,null], chal:[], pity:0, bags:0, log:[]};
+  return {v:2, fv:2, pv:2, cover:{}, jetons:1000, holes:23, specs, active:specs[1].id, unseen:[], freeT0:now-FREE_EVERY, best:{}, bagInv:{}, title:"Petit Boulet", titles:["Petit Boulet"], name:"AlexBilleur", vitrine:[null,null,null,null,null], chal:[], pity:0, bags:0, log:[]};
 }
 let S;
 try { S = JSON.parse(localStorage.getItem(STORE_KEY)) } catch(e){ S = null }
 if(!S || S.v!==2 || !Array.isArray(S.specs)) S = starterState();
-else S = Object.assign({unseen:[], best:{}, bagInv:{}, title:"Petit Boulet", titles:["Petit Boulet"], name:"AlexBilleur", vitrine:[null,null,null,null,null], chal:[], pity:0, bags:0, log:[]}, S);
+else S = Object.assign({cover:{}, unseen:[], best:{}, bagInv:{}, title:"Petit Boulet", titles:["Petit Boulet"], name:"AlexBilleur", vitrine:[null,null,null,null,null], chal:[], pity:0, bags:0, log:[]}, S);
 // anciennes sauvegardes : la bille chinoise n'existe plus, le niveau non plus
 // Décor Arc-en-ciel supprimé (trop proche de la shiny Irisée) : les décors suivants ont remonté d'un cran.
 // Les billes Arc-en-ciel déjà trouvées deviennent Aurore (même rareté), Givrée pour la saison Flocon, Pixel pour L'Arcade.
@@ -2025,7 +2063,14 @@ const ui = {view:"accueil", tab:"album", type:"all", hideMissing:false};
 const specById = id => S.specs.find(s=>s.id===id);
 const activeSpec = () => specById(S.active) || S.specs[0];
 function slotsOwned(){ const m=new Map(); S.specs.forEach(s=>{const k=slotKey(s); if(!m.has(k)) m.set(k,[]); m.get(k).push(s)}); return m }
-const TOTAL_SLOTS = TK.length*FAMILIES.length;
+const TOTAL_SLOTS = TK.length*FAMILIES.length;              // cases de l'album : une par taille × décor
+// Chaque case se remplit coloris par coloris : l'album compte toutes les billes différentes (taille × décor × coloris)
+const colorKey = s => s.type+"|"+s.family+"|"+s.pal;
+const ALBUM_TOTAL = TOTAL_SLOTS*BASE_PALS;
+function albumFound(){ const set=new Set(); S.specs.forEach(s=>{ if(s.pal<BASE_PALS) set.add(colorKey(s)) }); return set }
+const casePals = list => new Set(list.filter(x=>x.pal<BASE_PALS).map(x=>x.pal)).size;
+// bille affichée sur la case : celle que tu as choisie, sinon ta shiny, sinon la dernière trouvée
+function coverOf(list){ const pin=(S.cover||{})[slotKey(list[0])]; return list.find(x=>x.id===pin) || [...list].sort(tierSort)[0] }
 // Sacs gratuits en stock : un nouveau toutes les 10 minutes, jusqu'à FREE_MAX d'avance
 const FREE_MAX = 5;
 const freeStock = () => Math.min(FREE_MAX, Math.max(0, Math.floor((Date.now()-S.freeT0)/FREE_EVERY)));
@@ -2075,7 +2120,8 @@ function questEvent(type, n=1){
 // Doubles recyclables : on garde la meilleure bille de chaque emplacement, les shiny et la bille active
 function recyclableDups(){
   const out = [];
-  slotsOwned().forEach(list=>{ [...list].sort(tierSort).slice(1).forEach(s=>{ if(!s.shiny && !s.secret && s.id!==S.active && !S.vitrine.includes(s.id)) out.push(s) }) });
+  const byColor=new Map(); S.specs.forEach(s=>{ const k=colorKey(s); if(!byColor.has(k)) byColor.set(k,[]); byColor.get(k).push(s) });
+  byColor.forEach(list=>{ [...list].sort(tierSort).slice(1).forEach(s=>{ if(!s.shiny && !s.secret && s.id!==S.active && !S.vitrine.includes(s.id)) out.push(s) }) });
   return out;
 }
 function recycleSpecs(ids){
@@ -2270,9 +2316,26 @@ const CHALLENGES = [
   {id:"t-race", icon:"flag", title:"Maillot jaune", desc:"Gagne 5 courses sur la plage avec une mise.", goal:5, prog:()=>S.stats.race, rew:{j:600, title:"Maillot jaune"}},
   {id:"t-chouchou", icon:"quest", title:"Chouchou de la maîtresse", desc:"Récupère 5 fois le bonus des quêtes du jour.", goal:5, prog:()=>S.stats.bonus, rew:{j:500, title:"Chouchou de la maîtresse"}},
   {id:"t-caid", icon:"layers", title:"Caïd des billes", desc:"Possède 100 billes en même temps.", goal:100, prog:()=>S.specs.length, rew:{j:700, title:"Caïd des billes"}},
-  {id:"half", icon:"layers", title:"Mi-parcours", desc:"Remplis la moitié de l'album.", goal:Math.ceil(TOTAL_SLOTS/2), prog:()=>slotsOwned().size, rew:{j:1000, bag:"collector"}},
-  {id:"full", icon:"trophy", title:"Album complet", desc:"Remplis les ${TOTAL_SLOTS} emplacements de l'album.", goal:TOTAL_SLOTS, prog:()=>slotsOwned().size, rew:{j:5000, title:"Grand collectionneur"}},
+  {id:"half", icon:"layers", title:"Mi-parcours", desc:"Commence la moitié des cases de l'album (une taille et un décor).", goal:Math.ceil(TOTAL_SLOTS/2), prog:()=>slotsOwned().size, rew:{j:1000, bag:"collector"}},
+  {id:"full", icon:"trophy", title:"Tour complet", desc:`Commence les ${TOTAL_SLOTS} cases de l'album : toutes les tailles dans tous les décors.`, goal:TOTAL_SLOTS, prog:()=>slotsOwned().size, rew:{j:3000, bag:"collector"}},
+  // paliers de billes trouvées (taille × décor × coloris)
+  ...[[25,200],[50,300],[100,500,"premium"],[250,800,"premium"],[500,1200,"collector"],[1000,2000,"collector","Collectionneur fou"],[2500,4000,"collector"],[5000,6000,"collector","Encyclopédie vivante"],[ALBUM_TOTAL,10000,"collector","Grand collectionneur"]]
+    .map(([n,j,bag,title])=>({id:"found-"+(n===ALBUM_TOTAL?"all":n), cat:"album", icon:n===ALBUM_TOTAL?"trophy":"book", title:n===ALBUM_TOTAL?"L'album entier":`${fmt(n)} billes`, desc:n===ALBUM_TOTAL?`Trouve les ${fmt(ALBUM_TOTAL)} billes différentes de l'album.`:`Trouve ${fmt(n)} billes différentes (taille, décor et coloris).`, goal:n, prog:()=>albumFound().size, rew:{j, bag, title}})),
+  {id:"case1", cat:"coloris", icon:"star", title:"Case complète", desc:`Une case dans les ${BASE_PALS} coloris.`, goal:1, prog:()=>[...slotsOwned().values()].filter(l=>casePals(l)===BASE_PALS).length, rew:{j:1500, bag:"collector", title:"Nuancier vivant"}},
+  {id:"case5", cat:"coloris", icon:"star", title:"Cinq cases complètes", desc:`Cinq cases dans les ${BASE_PALS} coloris.`, goal:5, prog:()=>[...slotsOwned().values()].filter(l=>casePals(l)===BASE_PALS).length, rew:{j:4000, bag:"collector"}},
+  {id:"pal24", cat:"coloris", icon:"book", title:"Grand nuancier", desc:"Un même décor dans 24 coloris différents.", goal:24, prog:()=>Math.max(0,...FAMILIES.map((_,f)=>new Set(S.specs.filter(s=>s.family===f&&s.pal<BASE_PALS).map(s=>s.pal)).size)), rew:{j:900}},
+  {id:"allpals", cat:"coloris", icon:"book", title:"Boîte de peinture", desc:`Trouve les ${BASE_PALS} coloris, tous décors et tailles confondus.`, goal:BASE_PALS, prog:()=>new Set(S.specs.filter(s=>s.pal<BASE_PALS).map(s=>s.pal)).size, rew:{j:1200, title:"Peintre en billes"}},
+  {id:"leg1", cat:"rare", icon:"star", title:"Légende de poche", desc:"Trouve une bille au décor légendaire (Galaxie ou Aurore).", goal:1, prog:()=>S.specs.filter(s=>FAMILIES[s.family].rar===4).length, rew:{j:500}},
+  {id:"legmam", cat:"rare", icon:"trophy", title:"Légende de la cour", desc:"Un Mammouth au décor légendaire.", goal:1, prog:()=>S.specs.filter(s=>s.type==="mammouth"&&FAMILIES[s.family].rar===4).length, rew:{j:5000, title:"Légende de la cour"}},
+  {id:"shinybig", cat:"rare", icon:"star", title:"Gros éclat", desc:"Une shiny Boulet ou Mammouth.", goal:1, prog:()=>S.specs.filter(s=>s.shiny&&tierOf(s)>=BIG).length, rew:{j:2000}},
+  {id:"secrets", cat:"rare", icon:"lock", title:"Détective de la cour", desc:"Trouve toutes les billes secrètes.", goal:Object.keys(SECRETS).length, prog:()=>S.specs.filter(s=>s.secret).length, rew:{j:3000, title:"Détective"}},
+  {id:"bags50", cat:"habitudes", icon:"bag", title:"Habitué du préau", desc:"Ouvre 50 sacs.", goal:50, prog:()=>S.bags||0, rew:{j:500, bag:"premium"}},
+  {id:"bags250", cat:"habitudes", icon:"bag", title:"Sac sans fond", desc:"Ouvre 250 sacs.", goal:250, prog:()=>S.bags||0, rew:{j:1500, bag:"collector", title:"Sac sans fond"}},
+  {id:"craft10", cat:"habitudes", icon:"flask", title:"Apprenti confiseur", desc:"Réussis 10 fusions à la Confiserie.", goal:10, prog:()=>S.crafts||0, rew:{j:800, title:"Apprenti confiseur"}},
 ];
+// catégorie de chaque succès (pour la page Succès)
+const CHAL_CATS = [["album","L'album","book"],["coloris","Les coloris","star"],["tailles","Les tailles","layers"],["decors","Les décors","star"],["rare","Les grandes trouvailles","trophy"],["jeux","Jeux de la cour","target"],["habitudes","Les habitudes","clock"]];
+CHALLENGES.forEach(c=>{ c.cat = c.cat || (c.id.startsWith("fmt-")?"tailles": c.id.startsWith("fam-")?"decors": c.id==="pal10"?"coloris": ["half","full"].includes(c.id)?"album": ["shiny1","shiny3","big5","mam3"].includes(c.id)?"rare": ["t-chouchou","t-caid"].includes(c.id)?"habitudes":"jeux") });
 const CHAL_BY = Object.fromEntries(CHALLENGES.map(c=>[c.id,c]));
 const chalProg = c => Math.min(c.goal, c.prog());
 const chalClaimable = () => CHALLENGES.filter(c=>!S.chal.includes(c.id) && chalProg(c)>=c.goal).length;
@@ -2406,13 +2469,13 @@ const giftCount = () => Object.values(S.bagInv).reduce((a,b)=>a+b,0);
    ===================================================================== */
 const NAV = [
   ["accueil","Accueil","home"],["sacs","Ouvrir des sacs","bag"],["collection","Boîte à billes","layers"],["confiserie","La Confiserie","candy"],["passe","Passe de saison","ticket"],
-  ["quetes","Quêtes du jour","quest"],["jeux","Jeux de la cour","pad"],["billepedia","Billepedia","book"],"sep",
+  ["quetes","Quêtes du jour","quest"],["succes","Succès","trophy"],["jeux","Jeux de la cour","pad"],["billepedia","Billepedia","book"],"sep",
   ["profil","Mon profil","user"],["amis","Amis","users",1],["cour","Cour de récré","cour",1],["classement","Classement","trophy",1],["parametres","Paramètres","gear"],
 ];
 function renderNav(){
   const ready = freeReady(), claim = questsClaimable();
   document.getElementById("nav").innerHTML = NAV.map(n=> n==="sep" ? `<div class="nav-sep"></div>` :
-    `<button class="nav-btn" data-action="nav" data-view="${n[0]}" ${ui.view===n[0]?'aria-current="page"':""}>${ic(n[2])}<span>${n[1]}</span>${n[3]?'<span class="soon">bientôt</span>':""}${n[0]==="sacs"&&ready?'<span class="ready" aria-label="Sac gratuit disponible"></span>':""}${n[0]==="quetes"&&claim?'<span class="ready" aria-label="Récompense à récupérer"></span>':""}${n[0]==="collection"&&chalClaimable()?'<span class="ready" aria-label="Défi à récupérer"></span>':""}${n[0]==="passe"&&passClaimable()?'<span class="ready" aria-label="Récompenses du passe à récupérer"></span>':""}</button>`
+    `<button class="nav-btn" data-action="nav" data-view="${n[0]}" ${ui.view===n[0]?'aria-current="page"':""}>${ic(n[2])}<span>${n[1]}</span>${n[3]?'<span class="soon">bientôt</span>':""}${n[0]==="sacs"&&ready?'<span class="ready" aria-label="Sac gratuit disponible"></span>':""}${n[0]==="quetes"&&claim?'<span class="ready" aria-label="Récompense à récupérer"></span>':""}${n[0]==="succes"&&chalClaimable()?'<span class="ready" aria-label="Succès à récupérer"></span>':""}${n[0]==="passe"&&passClaimable()?'<span class="ready" aria-label="Récompenses du passe à récupérer"></span>':""}</button>`
   ).join("") + `<p class="side-quote">Les plus grandes aventures commencent toujours par une petite bille.
     <svg width="40" height="36" viewBox="0 0 40 36" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"><path d="M6 2c-4 12 2 24 26 28"/><path d="M26 24l6 6-8 3"/></svg></p>`;
 }
@@ -2449,7 +2512,7 @@ function renderTop(){
 function go(view){ if(view==="atelier"){ view="confiserie"; ui.confTab="fusion" } ui.view=view; renderNav(); renderView(); window.scrollTo({top:0}); }
 function renderView(){
   const v = document.getElementById("view");
-  const map = {accueil:viewHome, sacs:viewBags, collection:viewCollection, jeux:viewGames, tir:viewGame, pot:viewArena, chateau:viewArena, tic:viewArena, course:viewArena, quetes:viewQuests, billepedia:viewPedia, passe:viewPass, profil:viewProfile, atelier:viewCraft, confiserie:viewConfiserie};
+  const map = {succes:viewSucces, accueil:viewHome, sacs:viewBags, collection:viewCollection, jeux:viewGames, tir:viewGame, pot:viewArena, chateau:viewArena, tic:viewArena, course:viewArena, quetes:viewQuests, billepedia:viewPedia, passe:viewPass, profil:viewProfile, atelier:viewCraft, confiserie:viewConfiserie};
   v.innerHTML = (map[ui.view] || viewSoon)();
   if(ui.view==="passe") focusTrack();
   if(ui.view==="tir") initGame();
@@ -2463,8 +2526,8 @@ const SHOWCASE = TK.map((t,i)=>({seed:hash("vitrine"+t), type:t, family:[1,0,7,2
 
 function viewHome(){
   const act = activeSpec();
-  const slots = slotsOwned();
-  const pctCol = Math.round(slots.size/TOTAL_SLOTS*100);
+  const slots = slotsOwned(), found = albumFound();
+  const pctCol = found.size/ALBUM_TOTAL*100;
   const recent = [...S.specs].sort((a,b)=>b.at-a.at).slice(0,4);
   const ready = freeReady(), gifts = giftCount();
   const P = ensurePass(), se = seasonNow(), tier = passTier(), claim = passClaimable();
@@ -2512,11 +2575,11 @@ function viewHome(){
     </div>
 
     <section class="panel">
-      <div class="panel-head"><h2>Ma boîte à billes</h2>${chalClaimable()?`<button class="see-all chal-cta" data-action="tab" data-tab="defis">${ic("trophy",14)} ${chalClaimable()} défi${chalClaimable()>1?"s":""} réussi${chalClaimable()>1?"s":""} !</button>`:`<button class="see-all" data-action="nav" data-view="collection">Ouvrir l'album ${ic("chev",14)}</button>`}</div>
+      <div class="panel-head"><h2>Ma boîte à billes</h2>${chalClaimable()?`<button class="see-all chal-cta" data-action="nav" data-view="succes">${ic("trophy",14)} ${chalClaimable()} défi${chalClaimable()>1?"s":""} réussi${chalClaimable()>1?"s":""} !</button>`:`<button class="see-all" data-action="nav" data-view="collection">Ouvrir l'album ${ic("chev",14)}</button>`}</div>
       <div class="col-home">
         <div class="col-count">
-          <b>${slots.size}<small> / ${TOTAL_SLOTS}</small></b>
-          <span>emplacements remplis</span>
+          <b>${fmt(found.size)}<small> / ${fmt(ALBUM_TOTAL)}</small></b>
+          <span>billes trouvées · ${slots.size} / ${TOTAL_SLOTS} cases</span>
           <div class="bar"><i style="width:${pctCol}%"></i></div>
           <span>${S.specs.length} billes · ${shinyN} shiny</span>
         </div>
@@ -2701,22 +2764,54 @@ function viewQuests(){
 }
 
 /* =====================================================================
+   SUCCÈS : tous les défis, rangés par catégorie
+   ===================================================================== */
+function chalRow(c){
+  const p = chalProg(c), done = p>=c.goal, got = S.chal.includes(c.id);
+  return `<div class="chal quest${done&&!got?" done":""}${got?" claimed":""}">
+    <span class="q-ic">${ic(c.icon,24)}</span>
+    <div class="q-main"><b>${c.title}</b><p>${c.desc}</p>
+      <div class="q-prog"><div class="bar"><i class="${done?"done":""}" style="width:${p/c.goal*100}%"></i></div><small>${fmt(p)} / ${fmt(c.goal)}</small></div>
+      <div class="rews">${rewChips(c.rew)}</div></div>
+    ${got?`<span class="q-state">${ic("check",16,2.5)} Récupéré</span>`:done?`<button class="btn btn-yellow q-claim" data-action="chal-claim" data-id="${c.id}">${ic("gift",16)} Récupérer</button>`:""}
+  </div>`;
+}
+function viewSucces(){
+  const n = CHALLENGES.filter(c=>S.chal.includes(c.id)).length, claim = chalClaimable(), cat = ui.chalCat || "all";
+  const order = (a,b)=>{ const sa=S.chal.includes(a.id)?2:chalProg(a)>=a.goal?0:1, sb=S.chal.includes(b.id)?2:chalProg(b)>=b.goal?0:1; return sa-sb || chalProg(b)/b.goal-chalProg(a)/a.goal };
+  const cats = CHAL_CATS.filter(([k])=>CHALLENGES.some(c=>c.cat===k));
+  return `<div class="page-head"><div><h1>Succès</h1><p>Des défis pour toute la vie de ta boîte à billes : ils avancent tout seuls et chacun se récupère une fois, avec des ${CUR.many}, des sacs et des titres à afficher sur ton profil.</p></div>
+    <span class="hand-note">${n} / ${CHALLENGES.length} réussis</span></div>
+  ${claim?`<section class="panel pity"><span class="q-ic">${ic("gift",24)}</span><div><b>${claim} succès à récupérer</b><p>Ils sont en haut de chaque catégorie.</p></div></section>`:""}
+  <div class="col-filters"><div class="seg"><span class="f-lbl">Catégorie</span>
+    <button class="chip" data-action="chal-cat" data-cat="all" aria-pressed="${cat==="all"}">Tous</button>
+    ${cats.map(([k,l,icn])=>{ const L=CHALLENGES.filter(c=>c.cat===k), r=L.filter(c=>!S.chal.includes(c.id)&&chalProg(c)>=c.goal).length;
+      return `<button class="chip" data-action="chal-cat" data-cat="${k}" aria-pressed="${cat===k}">${ic(icn,14)}${l} <span class="n">${L.filter(c=>S.chal.includes(c.id)).length}/${L.length}</span>${r?`<span class="tab-dot">${r}</span>`:""}</button>` }).join("")}
+  </div></div>
+  ${cats.filter(([k])=>cat==="all"||cat===k).map(([k,l])=>{ const L=CHALLENGES.filter(c=>c.cat===k).sort(order);
+    return `<section class="chal-sec"><h2>${l} <small>${L.filter(c=>S.chal.includes(c.id)).length} / ${L.length}</small></h2><div class="chal-list">${L.map(chalRow).join("")}</div></section>` }).join("")}`;
+}
+
+/* =====================================================================
    COLLECTION
    ===================================================================== */
 function viewCollection(){
-  const slots = slotsOwned();
+  const slots = slotsOwned(), found = albumFound();
   const shinyCount = S.specs.filter(s=>s.shiny).length;
+  const nFull = [...slots.values()].filter(l=>casePals(l)===BASE_PALS).length;
+  if(ui.tab==="defis") ui.tab = "album";   // les défis ont leur propre page (Succès)
   const types = TK.filter(t=>ui.type==="all"||ui.type===t);
   // « Afficher » : le même filtre pour l'Album (par case) et pour Mes billes (bille par bille)
   const show = ui.show || "all";
-  const unseenIds = new Set(S.unseen), dupKeys = new Set([...slots].filter(([k,l])=>l.length>1).map(([k])=>k));
-  const keep = new Set([...slots.values()].map(l=>[...l].sort(tierSort)[0].id));   // la bille gardée de chaque case
+  const byColor = new Map(); S.specs.forEach(x=>{ const k=colorKey(x); if(!byColor.has(k)) byColor.set(k,[]); byColor.get(k).push(x) });
+  const unseenIds = new Set(S.unseen), dupKeys = new Set([...byColor].filter(([k,l])=>l.length>1).map(([k])=>k));
+  const keep = new Set([...byColor.values()].map(l=>[...l].sort(tierSort)[0].id));   // l'exemplaire gardé de chaque bille
   const inType = x => ui.type==="all" || x.type===ui.type;
   const count = f => S.specs.filter(x=>inType(x)&&f(x)).length;
   const SHOW = [
     ["all","Tout",null,null],
     ["new","Nouveautés","star",x=>unseenIds.has(x.id)],
-    ["dups","Doublons","layers",x=>dupKeys.has(slotKey(x))],
+    ["dups","Doublons","layers",x=>dupKeys.has(colorKey(x))],
     ["shiny","Shiny",null,x=>x.shiny],
     ["season","Saison","ticket",isSeason],
     ["secret","Secrètes","lock",x=>x.secret],
@@ -2736,7 +2831,7 @@ function viewCollection(){
     return `<section class="panel recycle-bar">
       <span class="q-ic">${ic("candy",24)}</span>
       <div><b>${d.length ? `${d.length} double${d.length>1?"s":""} à échanger · +${fmt(v)} ${CUR.many}` : "Aucun double pour l'instant"}</b>
-        <p>Dans chaque case, on garde toujours ta plus belle bille. Les autres peuvent partir à la Confiserie, en ${CUR.many} ou en fusion.</p></div>
+        <p>Un double, c'est la même taille, le même décor et le même coloris. On garde toujours un exemplaire ; les autres peuvent partir à la Confiserie, en ${CUR.many} ou en fusion.</p></div>
       <button class="btn btn-ghost" data-action="nav" data-view="confiserie">Aller à la Confiserie ${ic("arrow",16)}</button>
     </section>` };
   const ballCard = x => `<button class="m-card${x.shiny?" is-shiny":""}" data-action="spec" data-id="${x.id}"${unseenIds.has(x.id)?` data-unseen="${x.id}"`:""}>
@@ -2745,37 +2840,24 @@ function viewCollection(){
   const EMPTY = {new:"Aucune nouveauté : tu as tout regardé !", dups:"Aucun doublon pour l'instant. Ouvre des sacs pour en trouver.", shiny:"Pas encore de shiny ici. Elles sont très rares : bonne chance !", season:"Pas encore de bille de saison ici. Le passe de saison en donne à certains paliers.", all:"Aucune bille dans ce format."};
 
   let body;
-  if(ui.tab==="defis"){
-    const list = [...CHALLENGES].sort((a,b)=>{
-      const sa = S.chal.includes(a.id)?2:chalProg(a)>=a.goal?0:1, sb = S.chal.includes(b.id)?2:chalProg(b)>=b.goal?0:1;
-      return sa-sb || chalProg(b)/b.goal-chalProg(a)/a.goal });
-    body = `<div class="chal-list">${list.map(c=>{
-      const p = chalProg(c), done = p>=c.goal, got = S.chal.includes(c.id);
-      return `<div class="chal quest${done&&!got?" done":""}${got?" claimed":""}">
-        <span class="q-ic">${ic(c.icon,24)}</span>
-        <div class="q-main"><b>${c.title}</b><p>${c.desc}</p>
-          <div class="q-prog"><div class="bar"><i class="${done?"done":""}" style="width:${p/c.goal*100}%"></i></div><small>${p} / ${c.goal}</small></div>
-          <div class="rews">${rewChips(c.rew)}</div></div>
-        ${got?`<span class="q-state">${ic("check",16,2.5)} Récupéré</span>`:done?`<button class="btn btn-yellow q-claim" data-action="chal-claim" data-id="${c.id}">${ic("gift",16)} Récupérer</button>`:""}
-      </div>`}).join("")}</div>`;
-  } else if(ui.tab==="album"){
+  if(ui.tab==="album"){
     body = types.map(t=>{
       const have = FAMILIES.filter((_,f)=>slots.has(t+"|"+f)).length;
       const cards = FAMILIES.map((F,f)=>{
         const list = slots.get(t+"|"+f);
         if(showFn && !(list||[]).some(showFn)) return "";
         if(!list){ if(ui.hideMissing) return ""; return `<button class="m-card missing" data-action="missing" data-type="${t}" data-fam="${f}" aria-label="${TYPES[t].label} ${F.name} : pas encore trouvée"><span class="ball">${mImg(ghost(t,f),160,Math.round(84*scaleOf(t)+6),"")}</span><b>${F.name}</b><small>À trouver</small></button>` }
-        const best = [...list].sort(tierSort)[0];
+        const best = coverOf(list), got = casePals(list), full = got===BASE_PALS;
         const isNew = list.some(s=>S.unseen.includes(s.id));
-        const variants = new Set(list.map(s=>s.pal)).size;
-        return `<button class="m-card${best.shiny?" is-shiny":""}" data-action="spec" data-id="${best.id}"${isNew?` data-unseen="${list.filter(s=>S.unseen.includes(s.id)).map(s=>s.id).join(",")}"`:""}>
+        return `<button class="m-card case${best.shiny?" is-shiny":""}${full?" full":""}" data-action="sheet" data-type="${t}" data-fam="${f}" aria-label="${TYPES[t].label} ${F.name} : ${got} coloris sur ${BASE_PALS}"${isNew?` data-unseen="${list.filter(s=>S.unseen.includes(s.id)).map(s=>s.id).join(",")}"`:""}>
           ${best.shiny?`<span class="shiny-mark">${shinyPill(best)}</span>`:""}
-          ${isNew?`<span class="new">Nouveau</span>`:list.length>1?`<span class="count">×${list.length}</span>`:""}
-          <span class="ball">${mImg(best,160,Math.round(84*scaleOf(t)+6))}</span><b>${F.name}</b><small>${variants} coloris sur ${BASE_PALS}</small></button>`;
+          ${full?`<span class="full-tag">${ic("star",11,2.6)} Complète</span>`:""}${isNew?`<span class="new">Nouveau</span>`:""}
+          <span class="ball">${mImg(best,160,Math.round(84*scaleOf(t)+6))}</span><b>${F.name}</b>
+          <span class="case-prog"><span class="bar"><i style="width:${got/BASE_PALS*100}%"></i></span><small>${got} / ${BASE_PALS} coloris</small></span></button>`;
       }).join("");
       return `<section class="type-block">
         <div class="type-head">${typePill(t,true)}<h2>${TYPES[t].label}</h2><span class="mm">${TYPES[t].mm} mm</span>
-          <span class="prog">${have} / ${FAMILIES.length}<span class="bar"><i class="${have===FAMILIES.length?"done":""}" style="width:${have/FAMILIES.length*100}%"></i></span></span>
+          <span class="prog">${have} / ${FAMILIES.length} cases<span class="bar"><i class="${have===FAMILIES.length?"done":""}" style="width:${have/FAMILIES.length*100}%"></i></span></span>
           <p class="desc">${TYPES[t].desc}</p></div>
         ${cards.trim()?`<div class="card-grid">${cards}</div>`:`<p class="empty">${show==="all"?`Aucune ${TYPES[t].label.toLowerCase()} pour l'instant.`:"Rien avec ce filtre dans cette taille."}</p>`}
       </section>`;
@@ -2789,25 +2871,25 @@ function viewCollection(){
     const srt = show==="dups" ? "slot" : ui.sort||"recent";
     const by = {recent:(a,b)=>b.at-a.at, size:(a,b)=>tierSort(a,b), decor:(a,b)=>FAMILIES[a.family].name.localeCompare(FAMILIES[b.family].name,"fr")||tierSort(a,b),
       color:(a,b)=>PALETTES[a.pal][0].localeCompare(PALETTES[b.pal][0],"fr")||tierSort(a,b),
-      slot:(a,b)=>TIDX[b.type]-TIDX[a.type] || a.family-b.family || (keep.has(b.id)?1:0)-(keep.has(a.id)?1:0) || tierSort(a,b)};
+      slot:(a,b)=>TIDX[b.type]-TIDX[a.type] || a.family-b.family || a.pal-b.pal || (keep.has(b.id)?1:0)-(keep.has(a.id)?1:0) || tierSort(a,b)};
     list.sort(by[srt]);
     body = (show==="dups"||show==="all" ? dupsBar() : "") + (list.length ? `<div class="card-grid">${list.map(ballCard).join("")}</div>` : `<p class="empty">${EMPTY[show]||EMPTY.all}</p>`);
   }
 
   return `<div class="page-head">
-    <div><h1>Ma boîte à billes</h1><p>Là où on range ses trésors depuis toujours. Chaque bille est unique : son motif et son numéro de série sont générés au moment où tu l'ouvres. L'album compte ${TOTAL_SLOTS} emplacements, un par format et par décor.</p></div>
+    <div><h1>Ma boîte à billes</h1><p>Là où on range ses trésors depuis toujours. Chaque bille est unique : son motif et son numéro de série sont générés au moment où tu l'ouvres. L'album compte ${fmt(ALBUM_TOTAL)} billes différentes : ${TOTAL_SLOTS} cases (une par taille et par décor), chacune à remplir dans les ${BASE_PALS} coloris.</p></div>
   </div>
   <div class="col-summary">
     <section class="panel big-count">
-      <small class="sample-tag">Emplacements remplis</small>
-      <b>${slots.size} <small>/ ${TOTAL_SLOTS}</small></b>
-      <div class="bar"><i style="width:${slots.size/TOTAL_SLOTS*100}%"></i></div>
-      <small class="meta">${S.specs.length} billes au total · ${shinyCount} shiny</small>
+      <small class="sample-tag">Billes trouvées</small>
+      <b>${fmt(found.size)} <small>/ ${fmt(ALBUM_TOTAL)}</small></b>
+      <div class="bar"><i style="width:${Math.max(found.size?.6:0,found.size/ALBUM_TOTAL*100)}%"></i></div>
+      <small class="meta">${slots.size} / ${TOTAL_SLOTS} cases commencées · ${nFull} complète${nFull>1?"s":""} · ${shinyCount} shiny</small>
     </section>
     <section class="panel">
       <div class="panel-head"><h2>Filtrer par taille</h2>${ui.type!=="all"?`<button class="see-all" data-action="ftype" data-type="all">Tout afficher</button>`:""}</div>
       <div class="type-grid">
-        ${TK.map(t=>{const h=FAMILIES.filter((_,f)=>slots.has(t+"|"+f)).length,c=S.specs.filter(s=>s.type===t).length;return `<button class="type-box" style="${tstyle(t)}" data-action="ftype" data-type="${ui.type===t?"all":t}" aria-pressed="${ui.type===t}"><span>${TYPES[t].label}</span><b>${h} <small>/ ${FAMILIES.length}</small></b><em>${c} bille${c>1?"s":""}</em></button>`}).join("")}
+        ${TK.map(t=>{const h=FAMILIES.filter((_,f)=>slots.has(t+"|"+f)).length,c=S.specs.filter(s=>s.type===t).length,ft=[...found].filter(k=>k.startsWith(t+"|")).length;return `<button class="type-box" style="${tstyle(t)}" data-action="ftype" data-type="${ui.type===t?"all":t}" aria-pressed="${ui.type===t}"><span>${TYPES[t].label}</span><b>${fmt(ft)} <small>/ ${fmt(FAMILIES.length*BASE_PALS)}</small></b><small>${h} / ${FAMILIES.length} cases · ${c} bille${c>1?"s":""}</small></button>`}).join("")}
       </div>
     </section>
   </div>
@@ -2815,7 +2897,6 @@ function viewCollection(){
     <div class="tabs" role="tablist">
       <button class="tab" role="tab" data-action="tab" data-tab="album" aria-selected="${ui.tab==="album"}">Album</button>
       <button class="tab" role="tab" data-action="tab" data-tab="billes" aria-selected="${ui.tab==="billes"}">Mes billes (${S.specs.length})</button>
-      <button class="tab" role="tab" data-action="tab" data-tab="defis" aria-selected="${ui.tab==="defis"}">Défis${chalClaimable()?` <span class="tab-dot">${chalClaimable()}</span>`:""}</button>
     </div>
   </div>
   ${filters}
@@ -2918,15 +2999,15 @@ const RAR_F  = TK.map(t=>TYPES[t].label);
 const RAR_PL = TK.map(t=>TYPES[t].pl);
 // billes qu'on peut fusionner : jamais les shiny, la bille active, la vitrine ni les billes de saison
 const craftPool = t => S.specs.filter(s=>tierOf(s)===t && !s.shiny && !s.secret && s.id!==S.active && !S.vitrine.includes(s.id) && s.pal<BASE_PALS);
-const slotCounts = () => { const c={}; S.specs.forEach(s=>{ const k=slotKey(s); c[k]=(c[k]||0)+1 }); return c };
+const slotCounts = () => { const c={}; S.specs.forEach(s=>{ const k=colorKey(s); c[k]=(c[k]||0)+1 }); return c };   // exemplaires de chaque bille (doubles stricts)
 // la taille au-dessus ; le décor et le coloris sont tirés au hasard avec leurs chances habituelles
 function craftResult(T){
   return makeSpec(TK[T],{shiny:Math.random()<CRAFT_SHINY ? rollShiny() : 0});
 }
 // remplissage auto : d'abord les doubles, pour ne pas vider d'emplacement de l'album
 function craftAuto(t){
-  const cnt = slotCounts(), pool = [...craftPool(t)].sort((a,b)=>cnt[slotKey(b)]-cnt[slotKey(a)] || a.at-b.at), sel = [];
-  for(const s of pool){ if(sel.length>=CRAFT_N) break; const k=slotKey(s); if(cnt[k]>1){ sel.push(s.id); cnt[k]-- } }
+  const cnt = slotCounts(), pool = [...craftPool(t)].sort((a,b)=>cnt[colorKey(b)]-cnt[colorKey(a)] || a.at-b.at), sel = [];
+  for(const s of pool){ if(sel.length>=CRAFT_N) break; const k=colorKey(s); if(cnt[k]>1){ sel.push(s.id); cnt[k]-- } }
   for(const s of pool){ if(sel.length>=CRAFT_N) break; if(!sel.includes(s.id)) sel.push(s.id) }
   return sel;
 }
@@ -2939,7 +3020,7 @@ function viewCraft(){
       <span class="rc-line"><i class="a"></i>${CRAFT_N} ${RAR_PL[t]}</span>${ic("arrow",14)}<span class="rc-line"><i class="b"></i>1 ${RAR_F[t+1]}</span><small>${craftPool(t).length} disponible${craftPool(t).length>1?"s":""}</small></button>`).join("");
   const slots = Array.from({length:CRAFT_N},(_,i)=>{ const s=specById(C.sel[i]);
     return s ? `<button class="fz-slot filled" data-action="craft-toggle" data-id="${s.id}" aria-label="Retirer ${esc(specName(s))}">${mImg(s,120,44,"")}</button>` : `<span class="fz-slot"></span>` }).join("");
-  const last = C.sel.filter(id=>{ const s=specById(id); return !S.specs.some(x=>slotKey(x)===slotKey(s) && !C.sel.includes(x.id)) }).length;
+  const last = C.sel.filter(id=>{ const s=specById(id); return !S.specs.some(x=>colorKey(x)===colorKey(s) && !C.sel.includes(x.id)) }).length;
   return `<p class="conf-intro">Fusionne ${CRAFT_N} billes d'une même taille pour obtenir une bille de la taille au-dessus : 10 Mini billes donnent une Bille, 10 Billes une Bille chinoise, et ainsi de suite jusqu'au Mammouth. La nouvelle bille a un décor et un coloris tirés au hasard.</p>
   <div class="recipes">${recipes}</div>
   <section class="panel fuse" style="--a:${A};--b:${B}">
@@ -2952,12 +3033,12 @@ function viewCraft(){
       <button class="btn btn-ghost" data-action="craft-clear" ${C.sel.length?"":"disabled"}>Vider</button>
       <button class="btn btn-yellow" data-action="craft-go" ${C.sel.length===CRAFT_N?"":"disabled"}>${ic("flask",18)} Fusionner</button>
     </div>
-    ${last?`<p class="warn-note fz-warn">Attention : ${last} de ces billes ${last>1?"sont les dernières":"est la dernière"} de leur emplacement, l'album perdra ${last} case${last>1?"s":""}.</p>`:""}
+    ${last?`<p class="warn-note fz-warn">Attention : ${last} de ces billes ${last>1?"sont les dernières":"est la dernière"} de ce coloris : l'album perdra ${last} bille${last>1?"s":""}.</p>`:""}
   </section>
   <section>
     <div class="panel-head"><h2>Tes ${RAR_PL[C.t]} (${pool.length})</h2><span class="sample-tag">Touche une bille pour l'ajouter ou la retirer</span></div>
-    ${pool.length ? `<div class="card-grid">${[...pool].sort((a,b)=>cnt[slotKey(b)]-cnt[slotKey(a)] || a.at-b.at).map(s=>`<button class="m-card" data-action="craft-toggle" data-id="${s.id}" aria-pressed="${C.sel.includes(s.id)}">
-        ${cnt[slotKey(s)]>1?`<span class="dup-tag">Double</span>`:""}<span class="ball">${mImg(s,160,Math.round(70*scaleOf(s.type)+10))}</span><b>${esc(specName(s))}</b>${typePill(s.type)}</button>`).join("")}</div>`
+    ${pool.length ? `<div class="card-grid">${[...pool].sort((a,b)=>cnt[colorKey(b)]-cnt[colorKey(a)] || a.at-b.at).map(s=>`<button class="m-card" data-action="craft-toggle" data-id="${s.id}" aria-pressed="${C.sel.includes(s.id)}">
+        ${cnt[colorKey(s)]>1?`<span class="dup-tag">Double</span>`:""}<span class="ball">${mImg(s,160,Math.round(70*scaleOf(s.type)+10))}</span><b>${esc(specName(s))}</b>${typePill(s.type)}</button>`).join("")}</div>`
       : `<p class="empty">Aucune bille de cette taille à fusionner pour l'instant.</p>`}
     <p class="meta" style="margin-top:12px">Les shiny, ta bille active, ta vitrine et les billes de saison ne peuvent pas être fusionnées.</p>
   </section>`;
@@ -3065,11 +3146,11 @@ function viewProfile(){
     <div class="panel-head"><h2>Mes chiffres</h2></div>
     <div class="prof-stats">
       <div><small>Billes</small><b>${S.specs.length}</b></div>
-      <div><small>Album</small><b>${slots.size} / ${TOTAL_SLOTS}</b></div>
+      <div><small>Album</small><b>${fmt(albumFound().size)} / ${fmt(ALBUM_TOTAL)}</b></div>
       <div><small>Shiny</small><b>${S.specs.filter(s=>s.shiny).length}</b></div>
       <div><small>Sacs ouverts</small><b>${fmt(S.bags||0)}</b></div>
       <div><small>Fusions</small><b>${fmt(S.crafts||0)}</b></div>
-      <div><small>Défis réussis</small><b>${S.chal.length} / ${CHALLENGES.length}</b></div>
+      <div><small>Succès</small><b>${S.chal.filter(id=>CHAL_BY[id]).length} / ${CHALLENGES.length}</b></div>
       <div><small>Plus grosse bille</small><b>${S.specs.length?TYPES[TK[Math.max(...S.specs.map(tierOf))]].label:"–"}</b></div>
     </div>
   </section>`;
@@ -3149,14 +3230,17 @@ function openModal(id, pv){
   const s = pv || specById(id); if(!s) return;
   if(!pv){ S.unseen = S.unseen.filter(x=>x!==id); save(); }
   liveSpec = s;
-  const sib = pv ? [] : S.specs.filter(x=>slotKey(x)===slotKey(s)).sort(tierSort);
+  const caseList = pv ? [] : S.specs.filter(x=>slotKey(x)===slotKey(s));
+  const sib = caseList.filter(x=>colorKey(x)===colorKey(s)).sort(tierSort);   // exemplaires de cette même bille
+  const fromSheet = ui.fromSheet && ui.sheet && ui.sheet.t===s.type && ui.sheet.f===s.family; ui.fromSheet = false;
   const el = document.getElementById("modal");
   const F = FAMILIES[s.family], T = TYPES[s.type];
   el.innerHTML = `<div class="modal" role="dialog" aria-modal="true" aria-label="${esc(specName(s))}" style="${tstyle(s.type)}">
     <button class="close-x" data-action="close-modal" aria-label="Fermer">×</button>
     <div class="modal-visual${s.shiny===3?" lum":""}"${s.shiny===3?` style="--lc:${PALETTES[s.pal][2]}"`:""}>
       <div id="live-slot"></div>
-      ${sib.length>1?`<span class="hint">${sib.length} exemplaires dans cet emplacement</span><div class="siblings">${sib.map(x=>`<button data-action="spec" data-id="${x.id}" aria-pressed="${x.id===s.id}" aria-label="${esc(specName(x))}">${mImg(x,80,32)}</button>`).join("")}</div>`:""}
+      ${fromSheet?`<button class="sheet-back" data-action="sheet-back">${ic("chev",14)} Tous les coloris</button>`:""}
+      ${sib.length>1?`<span class="hint">${sib.length} exemplaires de cette bille</span><div class="siblings">${sib.map(x=>`<button data-action="spec" data-id="${x.id}" aria-pressed="${x.id===s.id}" aria-label="${esc(specName(x))}">${mImg(x,80,32)}</button>`).join("")}</div>`:""}
     </div>
     <div class="modal-body">
       <div class="pills">${typePill(s.type,true)}${shinyPill(s)}${edPill(s)}${tierTag(s)}</div>
@@ -3175,8 +3259,10 @@ function openModal(id, pv){
         ${S.active===s.id?`<button class="btn btn-ghost" disabled>Bille active</button>`:`<button class="btn btn-blue" data-action="set-active" data-id="${s.id}">Jouer avec cette bille</button>`}
         ${S.vitrine.includes(s.id)?`<button class="btn btn-ghost" data-action="vit-rm" data-id="${s.id}">${ic("layers",16)} Retirer de la vitrine</button>`:`<button class="btn btn-ghost" data-action="vit-add" data-id="${s.id}">${ic("layers",16)} Mettre en vitrine</button>`}
         ${S.active===s.id||s.secret?"":`<button class="btn btn-ghost" data-action="recycle" data-id="${s.id}">${ic("candy",16)} Échanger · +${fmt(recycleValue(s))} ${CUR.many}</button>`}
+        ${caseList.length>1 && coverOf(caseList).id!==s.id?`<button class="btn btn-ghost" data-action="cover" data-id="${s.id}">${ic("star",16)} Afficher dans l'album</button>`:""}
+        ${fromSheet?"":`<button class="btn btn-ghost" data-action="sheet" data-type="${s.type}" data-fam="${s.family}">${ic("layers",16)} Coloris de la case · ${casePals(caseList)} / ${BASE_PALS}</button>`}
       </div>
-      ${S.active!==s.id && sib.length===1?`<p class="warn-note">C'est ta seule bille dans cet emplacement : l'échanger le laissera vide.</p>`:""}
+      ${S.active!==s.id && sib.length===1 && s.pal<BASE_PALS?`<p class="warn-note">C'est ton seul exemplaire de cette bille : l'échanger la retirera de ton album.</p>`:""}
       ${S.active!==s.id && s.shiny?`<p class="warn-note">Attention, c'est une shiny !</p>`:""}`}
     </div>
   </div>`;
@@ -3193,6 +3279,33 @@ function openModal(id, pv){
     const tick = () => { liveGL.draw(liveSpec,size,rotAxis(.25,1,.1,a)); a += .008; if(!reduce && !el.hidden) liveRAF=requestAnimationFrame(tick) };
     tick();
   } else slot.innerHTML = mImg(s,440,220);
+  el.querySelector(".close-x").focus();
+}
+// Planche d'une case : les coloris, dans le même ordre partout ; ceux qui manquent en silhouette
+function openSheet(t,f){
+  const k=t+"|"+f, F=FAMILIES[f], T=TYPES[t], list=S.specs.filter(x=>slotKey(x)===k);
+  const cov = list.length ? coverOf(list) : null, by = {};
+  list.forEach(x=>{ (by[x.pal]=by[x.pal]||[]).push(x) });
+  const got = casePals(list), full = got===BASE_PALS;
+  const cell = p => { const P=PALETTES[p], l=by[p];
+    if(l){ const b=[...l].sort(tierSort)[0];
+      return `<button class="sh-cell owned${cov&&cov.id===b.id?" cover":""}" data-action="spec" data-id="${b.id}" data-from-sheet="1" aria-label="${esc(specName(b))}">${mImg(b,120,54,"")}<small>${P[0]}</small>${l.length>1?`<i class="x">×${l.length}</i>`:""}${S.unseen.some(id=>l.some(x=>x.id===id))?`<i class="nw"></i>`:""}</button>` }
+    return `<div class="sh-cell missing" title="${P[0]} : pas encore trouvée"><span class="sil" style="--c1:${P[1]};--c2:${P[2]}"></span><small>${P[0]}</small></div>` };
+  const extra = Object.keys(by).map(Number).filter(p=>p>=BASE_PALS);
+  ui.sheet = {t,f};
+  const el = document.getElementById("modal");
+  el.innerHTML = `<div class="modal sheet" role="dialog" aria-modal="true" aria-label="${F.name} ${T.label}" style="${tstyle(t)}">
+    <button class="close-x" data-action="close-modal" aria-label="Fermer">×</button>
+    <div class="sheet-head">
+      <div class="pills">${typePill(t,true)}<span class="dec-pill" style="--dc:${DECOR_RAR[F.rar].c}">${DECOR_RAR[F.rar].name}</span>${full?`<span class="full-tag static">${ic("star",11,2.6)} Case complète</span>`:""}</div>
+      <h2>${F.name} <small>· ${T.label}</small></h2>
+      <div class="sheet-prog"><span class="bar"><i class="${full?"done":""}" style="width:${got/BASE_PALS*100}%"></i></span><b>${got} / ${BASE_PALS} coloris</b></div>
+      <p class="meta">${got?`Touche une bille pour l'ouvrir. ${cov?`Dans l'album, c'est ${esc(PALETTES[cov.pal][0])} qui s'affiche : tu peux en choisir une autre depuis sa fiche.`:""}`:`Tu n'as pas encore de ${T.label.toLowerCase()} ${F.name}. Elle se cache peut-être dans ton prochain sac !`}</p>
+    </div>
+    <div class="sheet-grid">${Array.from({length:BASE_PALS},(_,p)=>cell(p)).join("")}</div>
+    ${extra.length?`<h3 class="sub-h">Éditions spéciales</h3><div class="sheet-grid">${extra.map(cell).join("")}</div>`:""}
+  </div>`;
+  el.hidden = false;
   el.querySelector(".close-x").focus();
 }
 function closeModal(){ const el=document.getElementById("modal"); el.hidden=true; cancelAnimationFrame(liveRAF); el.innerHTML=""; }
@@ -3243,7 +3356,7 @@ function openBag(bagId, gift){
   const results = pulls.map(s=>{
     const k = slotKey(s);
     const isNew = !before.has(k);
-    const newColor = !isNew && !before.get(k).some(x=>x.pal===s.pal);
+    const newColor = !isNew && !before.get(k).some(x=>x.pal===s.pal);   // une nouvelle bille dans une case déjà commencée
     if(!before.has(k)) before.set(k,[]); before.get(k).push(s);
     S.specs.push(s); S.unseen.push(s.id);
     return {s, isNew, newColor};
@@ -3258,6 +3371,8 @@ function openBag(bagId, gift){
   if(nBig) questEvent("find_bille", nBig);
   if(results.some(r=>TIDX[r.s.type]>=TIDX.calot)) questEvent("find_calot");
   if(results.some(r=>r.isNew)) questEvent("new_slot");
+  const nNew = results.filter(r=>r.isNew||r.newColor).length; if(nNew) questEvent("new_color", nNew);
+  if(bag.price>0) questEvent("open_paid");
   ovState = {bag, results, opened:new Set(), gift, forced:!!pulls.forced, pxp:passXP(BAG_XP[bag.id])};
   showBagStage();
 }
@@ -3369,6 +3484,7 @@ function tear(){
   const st = document.getElementById("bag-stage");
   if(!st || st.dataset.busy) return;
   st.dataset.busy = 1;
+  if(ovState.shakes) questEvent("shake", ovState.shakes);
   if((ovState.shakes||0)>=20){ const sp = grantSecret("preau"); if(sp) ovState.results.push({s:sp, isNew:true, newColor:false}) }
   const reduce = FX.reduce();
   const zone = document.getElementById("bag-zone");
@@ -3410,7 +3526,7 @@ function showReveal(){
         return `<button class="slot ${k>=FMT_TIER.calot?"hint":""} ${big?"big":""} ${s.shiny?"shiny":""}" style="--d:${i*130}ms;--tc:${scoreCol(k)};${tstyle(s.type)}" data-action="reveal" data-i="${i}" aria-label="Découvrir la bille ${i+1}">
         ${s.secret?`<span class="slot-banner">Secrète !</span>`:BANNER[k]?`<span class="slot-banner">${BANNER[k]}</span>`:""}
         <div class="slot-ball"><span class="rays"></span><span class="ball-shadow"></span><span class="orb"><span class="orb-spin"><i>?</i></span></span>${mImg(s,300,Math.round(150*scaleOf(s.type)),"")}</div>
-        <div class="slot-info"><b>${esc(specName(s))}</b><span style="display:flex;gap:4px;flex-wrap:wrap;justify-content:center">${typePill(s.type,true)}${shinyPill(s)}${edPill(s)}</span>${tierTag(s)}${k>=BIG?`<span class="ed-no">${edLabel(editionOf(s))}</span>`:""}${isNew?`<span class="new">Nouvel emplacement !</span>`:newColor?`<span class="new">Nouveau coloris</span>`:`<span class="dup">Déjà dans l'album</span>`}<span class="zoom-hint">${ic("search",14)} Agrandir</span></div>
+        <div class="slot-info"><b>${esc(specName(s))}</b><span style="display:flex;gap:4px;flex-wrap:wrap;justify-content:center">${typePill(s.type,true)}${shinyPill(s)}${edPill(s)}</span>${tierTag(s)}${k>=BIG?`<span class="ed-no">${edLabel(editionOf(s))}</span>`:""}${isNew?`<span class="new">Nouvelle case !</span>`:newColor?`<span class="new">Nouveau coloris</span>`:`<span class="dup">Déjà dans ta boîte</span>`}<span class="zoom-hint">${ic("search",14)} Agrandir</span></div>
       </button>`}).join("")}
     </div>
     <div class="ov-actions" id="ov-actions">
@@ -4311,7 +4427,7 @@ function viewSoon(){
   let extra = "";
   if(ui.view==="cour"){
     const slots = slotsOwned();
-    const dups = [...slots.values()].filter(l=>l.length>1).map(l=>[...l].sort(tierSort)[1]);
+    const dups = recyclableDups();
     extra = `<section class="panel"><div class="panel-head"><h3>Tes doubles (${dups.length})</h3></div>
       ${dups.length?`<p>Tu as au moins deux billes dans ces emplacements. Tu pourras les vendre ou les échanger ici.</p><div class="dup-grid">${dups.map(s=>`<button class="m-card" data-action="spec" data-id="${s.id}"><span class="ball">${mImg(s,160,Math.round(70*scaleOf(s.type)+8))}</span><b>${esc(specName(s))}</b>${typePill(s.type)}</button>`).join("")}</div>`:`<p>Pas encore de doubles. Ouvre quelques sacs !</p>`}</section>`;
   }
@@ -4337,11 +4453,15 @@ document.addEventListener("click", e=>{
   switch(t.dataset.action){
     case "nav": closeModal(); if(t.dataset.conftab) ui.confTab=t.dataset.conftab; go(t.dataset.view); break;
     case "conf-tab": ui.confTab=t.dataset.tab; renderView(); break;
-    case "tab": ui.tab=t.dataset.tab; closeModal(); if(ui.view!=="collection") go("collection"); else renderView(); break;
+    case "tab": if(t.dataset.tab==="defis"){ closeModal(); go("succes"); break }
+      ui.tab=t.dataset.tab; closeModal(); if(ui.view!=="collection") go("collection"); else renderView(); break;
     case "ftype": ui.type=t.dataset.type; renderView(); break;
     case "show": ui.show=t.dataset.show; renderView(); break;
     case "album-type": ui.tab="album"; ui.type=t.dataset.type; go("collection"); break;
-    case "spec": openModal(t.dataset.id); break;
+    case "spec": ui.fromSheet = !!t.dataset.fromSheet; openModal(t.dataset.id); break;
+    case "sheet": openSheet(t.dataset.type, +t.dataset.fam); break;
+    case "sheet-back": if(ui.sheet) openSheet(ui.sheet.t, ui.sheet.f); break;
+    case "cover": { const x=specById(t.dataset.id); if(!x) break; S.cover=S.cover||{}; S.cover[slotKey(x)]=x.id; save(); toast(`${specName(x)} s'affiche maintenant dans l'album.`); ui.fromSheet = !!document.querySelector(".sheet-back"); openModal(x.id); if(ui.view==="collection") renderView(); break }
     case "preview": openModal(null, pedia[+t.dataset.k]); break;
     case "theme": Theme.toggle(); renderThemeBtn(); break;
     case "seen-all": S.unseen = []; save(); renderView(); break;
@@ -4425,7 +4545,7 @@ document.addEventListener("click", e=>{
       const out = craftResult(C.t+1);
       S.specs.push(out); S.unseen.push(out.id);
       if(tierOf(out)>=BIG || out.shiny) logFind(out);
-      S.crafts = (S.crafts||0)+1; C.sel = []; save();
+      S.crafts = (S.crafts||0)+1; C.sel = []; save(); questEvent("craft");
       showCraft(inputs, out, passXP(PASS_XP.craft));
       break;
     }
@@ -4442,6 +4562,7 @@ document.addEventListener("click", e=>{
       if(!document.getElementById("modal").hidden) openModal(t.dataset.id); else renderView();
       break;
     }
+    case "chal-cat": ui.chalCat=t.dataset.cat; renderView(); break;
     case "chal-claim": {
       const c = CHAL_BY[t.dataset.id]; if(!c || S.chal.includes(c.id) || chalProg(c)<c.goal) break;
       S.chal.push(c.id); const r = c.rew;

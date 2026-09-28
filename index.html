@@ -566,8 +566,16 @@ button.rw:hover{transform:translateY(-2px)}
 button.type-box{text-align:left;transition:transform .12s,box-shadow .12s}
 button.type-box:hover{transform:translateY(-2px)}
 .type-box[aria-pressed="true"]{box-shadow:0 0 0 2.5px var(--rc)}
-.bag-visual .tag.gift{background:var(--green);color:#fff;display:inline-flex;align-items:center;gap:4px}
-.bag-card.has-gift{border:2px solid var(--green)}
+.bag-visual .tag svg{width:12px;height:12px}
+/* sac offert : un ruban noué dans le coin, et un bouton d'ouverture bien visible */
+.bag-card.has-gift{border:2px solid color-mix(in srgb,var(--green) 70%,transparent);box-shadow:var(--shadow),0 0 0 4px color-mix(in srgb,var(--green) 14%,transparent)}
+.gift-ribbon{position:absolute;top:12px;right:-8px;z-index:1;display:inline-flex;align-items:center;gap:6px;padding:5px 12px 5px 10px;border-radius:8px 0 0 8px;background:var(--green);color:#fff;font-size:12px;font-weight:900;letter-spacing:.02em;box-shadow:0 4px 10px -4px rgba(0,0,0,.45)}
+.gift-ribbon::after{content:"";position:absolute;right:0;bottom:-8px;border-left:8px solid color-mix(in srgb,var(--green) 55%,#000);border-bottom:8px solid transparent}
+.gift-ribbon svg{width:15px;height:15px}
+.bag-card .btn-gift{background:var(--green);border-color:var(--green);color:#fff;box-shadow:0 4px 0 color-mix(in srgb,var(--green) 60%,#000)}
+.bag-card .btn-gift:hover{filter:brightness(1.08)}
+.bag-card .btn-gift{white-space:nowrap;padding-inline:10px;gap:8px}
+.bag-card .buy-alt{height:38px;font-size:13px}
 @media (max-width:820px){
   .pass-hero{grid-template-columns:minmax(0,1fr);padding:22px 20px}
   .ph-final{flex-direction:row;flex-wrap:wrap;justify-content:center}
@@ -2670,7 +2678,7 @@ function drawExplainer(){
     <p>Chaque bille du sac est tirée en 4 fois, indépendamment. Le sac que tu choisis change surtout la <b>taille</b> : les chances de <b>décor</b> et de <b>coloris</b> sont les mêmes dans tous les sacs.</p>
     <div class="draw-steps">
       <div class="draw-step"><span class="n">1</span><b>La taille</b><small>La rareté principale. Les chances sont sur chaque sac, plus haut.</small></div>
-      <div class="draw-step hl"><span class="n">2</span><b>Le décor</b><small>${FAMILIES.length} décors rangés en ${rows.length} paniers, du plus courant au plus rare (ci-dessous).</small></div>
+      <div class="draw-step"><span class="n">2</span><b>Le décor</b><small>${FAMILIES.length} décors rangés en ${rows.length} paniers, du plus courant au plus rare (ci-dessous).</small></div>
       <div class="draw-step"><span class="n">3</span><b>Le coloris</b><small>${BASE_PALS} coloris, tous aussi fréquents : 1 chance sur ${BASE_PALS} chacun.</small></div>
       <div class="draw-step"><span class="n">4</span><b>Shiny ou pas</b><small>${oneIn(SHINY_RATE)} billes, 5 fois plus dans le Sac Collector.</small></div>
     </div>
@@ -2708,11 +2716,11 @@ function viewBags(){
       </article>`;
       const miss=b.price-S.jetons, inv=S.bagInv[b.id]||0;
       return `<article class="bag-card${inv?" has-gift":""}">
-        <div class="bag-visual" style="--bag-tint:${b.tint}">${inv?`<span class="tag gift">${ic("gift",12,2.4)} Offert ×${inv}</span>`:""}${bagSVG(b,{loose:true})}</div>
+        <div class="bag-visual" style="--bag-tint:${b.tint}">${inv?`<span class="gift-ribbon">${ic("gift",15,2.4)} ${inv} offert${inv>1?"s":""}</span>`:""}${bagSVG(b,{loose:true})}</div>
         <h3>${b.name}</h3><p>${b.desc}</p>${oddsList(b)}
-        ${inv?`<button class="btn btn-yellow" data-action="open-gift" data-bag="${b.id}">${ic("gift",18)} Ouvrir un sac offert</button>`:""}
-        <button class="btn ${inv?"btn-ghost":"btn-yellow"}" data-action="buy" data-bag="${b.id}" ${miss>0?"disabled":""}>
-          ${miss>0?`Il manque ${fmt(miss)} ${CUR.many}`:`Ouvrir <span class="price">${COIN}${fmt(b.price)}</span>`}
+        ${inv?`<button class="btn btn-gift" data-action="open-gift" data-bag="${b.id}">${ic("gift",18)} Ouvrir gratuitement</button>`:""}
+        <button class="btn ${inv?"btn-ghost buy-alt":"btn-yellow"}" data-action="buy" data-bag="${b.id}" ${miss>0?"disabled":""}>
+          ${miss>0?`Il manque ${fmt(miss)} ${CUR.many}`:`${inv?"Ou l'acheter":"Ouvrir"} <span class="price">${COIN}${fmt(b.price)}</span>`}
         </button>
       </article>`}).join("")}
   </div>

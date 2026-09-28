@@ -1089,6 +1089,9 @@ button.vit-slot:hover{background:var(--panel-2);color:var(--ink)}
 .auth[hidden]{display:none}
 #auth-fx{position:fixed;inset:0;width:100%;height:100%;display:block;touch-action:none;cursor:grab}
 #auth-fx.aiming{cursor:grabbing}
+#auth-fx.off{cursor:default}
+.auth-balls{position:fixed;left:16px;bottom:16px;z-index:2;display:inline-flex;align-items:center;gap:8px;height:38px;padding:0 15px;border-radius:999px;background:rgba(24,17,13,.66);-webkit-backdrop-filter:blur(12px);backdrop-filter:blur(12px);border:1px solid rgba(255,255,255,.14);color:rgba(255,255,255,.78);font-weight:800;font-size:13px;transition:color .15s,background .15s}
+.auth-balls:hover{color:#fff;background:rgba(40,30,24,.8)}
 .auth-wrap{position:relative;z-index:1;min-height:100%;max-width:1140px;margin:0 auto;padding:32px 32px 40px;align-content:start;padding-top:max(32px,calc(50vh - 380px));display:grid;grid-template-columns:minmax(0,1fr) minmax(0,430px);gap:64px;align-items:start;pointer-events:none}
 .auth-wrap > *{pointer-events:auto}
 .auth-pitch{pointer-events:none;text-shadow:0 2px 18px rgba(0,0,0,.55);margin-top:60px}   /* fixe : ne bouge pas quand le formulaire change de hauteur */
@@ -1146,7 +1149,7 @@ button.vit-slot:hover{background:var(--panel-2);color:var(--ink)}
 @keyframes auth-float{50%{transform:translateY(-8px)}}
 @keyframes auth-shake{20%,60%{transform:translateX(-5px)}40%,80%{transform:translateX(5px)}}
 @media (max-width:880px){
-  .auth-wrap{grid-template-columns:minmax(0,1fr);gap:22px;padding:28px 16px 32px;align-content:start;max-width:460px}
+  .auth-wrap{grid-template-columns:minmax(0,1fr);gap:22px;padding:28px 16px 72px;align-content:start;max-width:460px}
   .auth-pitch{text-align:center;margin-top:0}
   .auth-pitch .logo{font-size:60px;justify-content:center}
   .auth-pitch .logo span{-webkit-text-stroke:7px var(--navy)}
@@ -5194,6 +5197,7 @@ document.addEventListener("visibilitychange", async ()=>{
 const AuthFx = (()=>{
   let cv, g, bg, shadow, W=0, H=0, dpr=1, ring={x:0,y:0,r:0}, balls=[], sparks=[], ripples=[];
   let raf=0, running=false, last=0, t0=0, nextShot=0, idleT=0, drag=null, heard=false, lastHit=0, reduce=false;
+  let off = lsGet("billy-cour-billes")==="off";   // le joueur a rangé les billes
   const FAMS = [0,1,2,3,6,7];
   const PLAN = ["mammouth","boulet","boulet","calot","calot","bille","bille","calot","bille","bille","mini","bille","mini","bille","mini","bille","mini","bille"];
   const rand = (a,b) => a+Math.random()*(b-a);
@@ -5212,6 +5216,7 @@ const AuthFx = (()=>{
   function pack(){
     const placed = [];
     balls.forEach((b,i)=>{
+      b.vx = b.vy = 0; b.trail = [];
       if(i===3){ b.x = -80; b.y = ring.y + ring.r*.9; b.inside = false; return }
       for(let a=0, d=0;; a+=2.39996, d+=.7){
         const x = ring.x + Math.cos(a)*d, y = ring.y + Math.sin(a)*d;
@@ -5246,7 +5251,7 @@ const AuthFx = (()=>{
     c.save(); c.font = `700 ${Math.min(46,W*.05)}px ${hand}`; c.fillStyle="rgba(255,250,240,.1)"; c.translate(W*.86,H*.9); c.rotate(-.08); c.fillText("Billy ♥", 0, 0); c.restore();
     chalk(()=>{ const x=W*.6, y=H*.12; for(let i=0;i<=10;i++){ const a=i*Math.PI*4/5-Math.PI/2, rr=i%2?9:22; i ? c.lineTo(x+Math.cos(a)*22, y+Math.sin(a)*22) : c.moveTo(x+Math.cos(a)*22, y+Math.sin(a)*22) } }, .09, 2.5);
     // la consigne, écrite à la craie à côté du rond
-    if(W>=880 && matchMedia("(pointer:fine)").matches){
+    if(!off && W>=880 && matchMedia("(pointer:fine)").matches){
       const x = ring.x+ring.r+28, y = ring.y-ring.r*.35;
       c.save(); c.translate(x,y); c.rotate(-.07); c.font = `700 27px ${hand}`; c.textAlign = "left"; c.textBaseline = "middle";
       c.fillStyle = "rgba(255,201,63,.62)"; c.fillText("Attrape une bille", 0, 0); c.fillText("et lance-la !", 14, 30); c.restore();
@@ -5314,6 +5319,7 @@ const AuthFx = (()=>{
     if(bg) g.drawImage(bg,0,0,W,H);
     ripples = ripples.filter(r=>(r.t+=.035)<1);
     for(const r of ripples){ g.strokeStyle=`rgba(255,250,240,${.35*(1-r.t)})`; g.lineWidth=2.5; g.beginPath(); g.arc(r.x,r.y,20+r.t*140,0,Math.PI*2); g.stroke() }
+    if(off) return;
     for(const b of balls) g.drawImage(shadow, b.x-b.r*.85+b.r*.22, b.y-b.r*.55+b.r*.5, b.r*1.9, b.r*1.3);
     for(const b of balls){
       const sp = Math.hypot(b.vx,b.vy);
@@ -5349,6 +5355,7 @@ const AuthFx = (()=>{
 
   const at = e => ({x:e.clientX, y:e.clientY});
   function down(e){
+    if(off) return;
     heard = true; idleT = performance.now();
     const p = at(e), b = balls.filter(b=>Math.hypot(b.x-p.x,b.y-p.y)<b.r+14).sort((a,c)=>Math.hypot(a.x-p.x,a.y-p.y)-Math.hypot(c.x-p.x,c.y-p.y))[0];
     if(b){ drag = {b, x:p.x, y:p.y}; cv.setPointerCapture(e.pointerId); cv.classList.add("aiming"); Sound.pop(); return }
@@ -5374,13 +5381,24 @@ const AuthFx = (()=>{
         document.fonts?.ready.then(()=>{ if(cv){ paintBg(); if(!running) draw() } });
       }
       reduce = matchMedia("(prefers-reduced-motion: reduce)").matches;
-      if(reduce){ draw(); return }
+      cv.classList.toggle("off", off);
+      if(reduce || off){ draw(); return }
       running = true; last = performance.now(); if(!t0 && balls[3] && !balls[3].inside) t0 = last; idleT = last - 5000;
       raf = requestAnimationFrame(loop);
     },
     stop(){ running = false; cancelAnimationFrame(raf) },
     resize(){ if(cv && document.getElementById("auth") && !document.getElementById("auth").hidden) resize() },
     wake(){ heard = true },
+    get off(){ return off },
+    // ranger les billes (tout s'arrête) ou les ressortir (le calot recasse le paquet)
+    setOff(v){
+      off = v; lsSet("billy-cour-billes", v ? "off" : null);
+      running = false; cancelAnimationFrame(raf); drag = null; sparks = []; t0 = 0;
+      if(!cv) return;
+      paintBg();
+      if(!v) pack();
+      this.start(cv);
+    },
   };
 })();
 addEventListener("resize", ()=>AuthFx.resize());
@@ -5450,7 +5468,8 @@ function authShow(screen, opts){
   else if(screen==="offline") body = `${head}<h2>Pas de connexion</h2><p>Impossible de récupérer ta collection pour l'instant. Vérifie ton accès à Internet.</p>
     <button class="btn btn-yellow" data-action="auth-retry">Réessayer</button>`;
   if(!box.querySelector("#auth-fx")) box.innerHTML = `<canvas id="auth-fx" aria-hidden="true"></canvas>
-    <div class="auth-wrap"><div class="auth-pitch">${authPitch()}</div><div class="auth-slot"></div></div>`;
+    <div class="auth-wrap"><div class="auth-pitch">${authPitch()}</div><div class="auth-slot"></div></div>
+    <button class="auth-balls" data-action="auth-balls">${authBallsLabel()}</button>`;
   const slot = box.querySelector(".auth-slot"), again = !!slot.firstChild;
   slot.innerHTML = `<div class="auth-card" role="dialog" aria-modal="true" aria-label="Compte Billy"${again?` style="animation:none"`:""}>${close}${body}</div>`;
   const tabs = slot.querySelector(".auth-tabs"); if(tabs) requestAnimationFrame(()=>tabs.dataset.tab = auth.tab);
@@ -5477,6 +5496,9 @@ function authPitch(){
     </ul>
 `;
 }
+function authBallsLabel(){
+  return `<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" aria-hidden="true"><circle cx="12" cy="12" r="8.5"/><path d="M8.5 9.5a4 4 0 0 1 3-2.5" stroke-linecap="round"/>${AuthFx.off?"":`<path d="M4 20 20 4" stroke-linecap="round"/>`}</svg> ${AuthFx.off ? "Sortir les billes" : "Ranger les billes"}`;
+}
 function authHide(){ document.getElementById("auth").hidden = true; auth.screen = null; auth.closable = false; AuthFx.stop() }
 function authOpen(tab){ auth.tab = tab; auth.closable = true; toggleProfPop(false); authShow("welcome") }
 function authFail(e){ auth.err = typeof e==="string" ? e : authErr(e); authShow(auth.screen) }
@@ -5487,6 +5509,7 @@ document.addEventListener("click", async e=>{
     case "auth-tab": auth.tab = t.dataset.tab; authShow("welcome"); break;
     case "auth-go": if(t.dataset.tab) auth.tab = t.dataset.tab; authShow(t.dataset.screen); break;
     case "auth-close": authHide(); break;
+    case "auth-balls": AuthFx.setOff(!AuthFx.off); t.innerHTML = authBallsLabel(); break;
     case "auth-guest": lsSet(GUEST_FLAG, "1"); authHide(); break;
     case "auth-import": auth.opts.begin(t.dataset.keep==="1"); break;
     case "auth-retry": { const u = await Cloud.currentUser().catch(()=>null); if(u){ sync.uid = null; cloudStart(u) } else authShow("welcome"); break }

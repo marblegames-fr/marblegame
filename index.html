@@ -120,6 +120,9 @@ button.profile-mini:hover,button.profile-mini[aria-expanded="true"]{background:v
 .pp-links{display:grid;grid-template-columns:repeat(3,1fr);gap:6px}
 .pp-links button{display:flex;flex-direction:column;align-items:center;gap:4px;padding:9px 4px;border-radius:12px;font-size:12px;font-weight:800;color:var(--ink-2);background:var(--panel-2)}
 .pp-links button:hover{color:var(--ink)}
+.pp-links.pp-acct{grid-template-columns:minmax(0,1fr)}
+.pp-links.pp-acct:empty{display:none}
+.pp-links.pp-acct button{flex-direction:row;justify-content:center}
 .profile-mini small{display:block;text-align:left}
 .profile-mini small{color:var(--muted);font-size:12px;font-weight:600}
 .wallet{display:flex;align-items:center;gap:8px;height:38px;padding:0 14px 0 7px;border-radius:999px;background:var(--panel);border:1px solid var(--line);font-weight:800;font-variant-numeric:tabular-nums}
@@ -129,6 +132,7 @@ button.wallet:hover{background:var(--panel-2)}
 
 /* ---------- layout ---------- */
 .layout{display:grid;grid-template-columns:216px minmax(0,1fr);min-height:calc(100% - 68px)}
+@media (min-width:1280px){ .layout{grid-template-columns:216px minmax(0,1fr) 320px} }
 .side{position:sticky;top:calc(68px + env(safe-area-inset-top,0px));align-self:start;height:calc(100vh - 68px);display:flex;flex-direction:column;gap:4px;padding:22px 10px;border-right:1px solid var(--line);overflow-y:auto}
 .nav-btn{display:flex;align-items:center;gap:12px;width:100%;padding:12px 10px 12px 12px;border-radius:12px;font-weight:700;font-size:14.5px;color:var(--ink);text-align:left}
 .nav-btn svg{flex:none;width:22px;height:22px}
@@ -140,6 +144,83 @@ button.wallet:hover{background:var(--panel-2)}
 .nav-sep{height:1px;background:var(--line);margin:14px 8px}
 .side-quote{margin-top:auto;padding:18px 10px 4px;font-family:var(--hand);font-size:19px;line-height:1.15;color:var(--ink-2);transform:rotate(-6deg)}
 .side-quote svg{display:block;margin:6px 0 0 40px}
+.nav-btn .cnt{margin-left:auto;min-width:22px;text-align:center;font-size:11px;font-weight:900;padding:1px 7px;border-radius:999px;background:var(--green-soft);color:var(--green)}
+.side-friends{margin-top:auto;padding:12px;border-radius:14px;border:1.5px dashed var(--line-2);color:var(--muted);font-size:12.5px;font-weight:700;line-height:1.35}
+.side-friends b{display:flex;align-items:center;gap:8px;color:var(--ink-2);font-size:13.5px;margin-bottom:3px}
+.side-friends + .side-quote{margin-top:6px}
+
+/* ---------- Ma journée : tout ce qui revient chaque jour, au même endroit ---------- */
+.mj-btn{position:relative;display:none;align-items:center;gap:8px;height:38px;padding:0 14px 0 11px;border-radius:999px;background:var(--gold-bg);border:1.5px solid var(--gold-line);font-weight:900;font-size:13px;color:var(--ink)}
+.mj-btn .n{display:grid;place-items:center;min-width:20px;height:20px;padding:0 5px;border-radius:999px;background:#E5484D;color:#fff;font-size:11px}
+.mj-btn:not(.has) svg{color:var(--muted)}
+.mj-btn.has svg{color:#D9468F;animation:giftwiggle 2.4s ease-in-out infinite}
+@media (max-width:1279px){ .mj-btn{display:flex} }
+.mj-rail{display:none;position:sticky;top:calc(68px + env(safe-area-inset-top,0px));align-self:start;height:calc(100vh - 68px);overflow-y:auto;flex-direction:column;gap:12px;padding:22px 16px 30px;border-left:1px solid var(--line)}
+@media (min-width:1280px){ .mj-rail{display:flex} }
+.mj-rail > *,.mj-panel > *{flex-shrink:0}
+.mj-head{display:flex;align-items:center;gap:10px}
+.mj-head h2{font-family:var(--display);font-weight:400;font-size:24px;letter-spacing:.3px;line-height:1}
+.mj-head .sp{flex:1}
+.mj-prog{display:flex;align-items:center;gap:10px;font-size:12.5px;font-weight:800;color:var(--ink-2)}
+.mj-prog .bar{flex:1;height:6px}
+.mj-prog .bar i{background:var(--green)}
+.mj-all{width:100%}
+.mj-empty{font-size:12.5px;font-weight:700;color:var(--muted);text-align:center}
+.mj-group{display:grid;gap:6px}
+.mj-gh{display:flex;justify-content:space-between;gap:8px;font-size:11px;font-weight:900;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);margin:4px 2px 0}
+.mj-gh small{font-size:11px;letter-spacing:0;text-transform:none;font-weight:700}
+.mj-row{display:grid;grid-template-columns:34px minmax(0,1fr) auto;gap:10px;align-items:center;padding:9px 10px;border-radius:14px;background:var(--panel);border:1px solid var(--line);text-align:left;width:100%}
+button.mj-row:hover{border-color:var(--line-2)}
+.mj-row .mi{display:grid;place-items:center;width:34px;height:34px;border-radius:10px;background:var(--panel-2);color:var(--ink-2)}
+.mj-row b{display:block;font-size:13px;font-weight:900;line-height:1.25}
+.mj-row small{display:block;font-size:11.5px;font-weight:700;color:var(--muted)}
+.mj-row .bar{height:5px;margin-top:5px}
+.mj-row.ready{border-color:var(--gold-line);background:var(--gold-bg)}
+.mj-row.ready .mi{background:var(--yellow);color:#24253D}
+.mj-row.done{opacity:.55}
+.mj-row.done .mi{background:var(--green-soft);color:var(--green)}
+.mj-row .mj-rw{display:flex;align-items:center;gap:3px;font-size:12px;font-weight:900;color:var(--ink-2);white-space:nowrap}
+.mj-row .mj-rw .coin{width:16px;height:16px}
+.mj-row .bar,.mj-pass .bar{display:block}
+.mj-row > span:nth-child(2){min-width:0}
+.mj-row .go{color:var(--muted)}
+.mj-row .btn{height:32px;padding:0 12px;font-size:12.5px;gap:4px}
+.mj-row .btn .coin{width:15px;height:15px}
+.mj-pass{position:relative;overflow:hidden;display:grid;gap:4px;padding:14px;border-radius:16px;color:#fff;background:radial-gradient(ellipse 60% 90% at 100% 0%,color-mix(in srgb,var(--s2) 45%,transparent),transparent 70%),linear-gradient(135deg,color-mix(in srgb,var(--s1) 70%,#000),var(--s1))}
+.mj-pass .k{font-size:11px;font-weight:900;letter-spacing:.08em;text-transform:uppercase;opacity:.8;padding-right:64px}
+.mj-pass b{font-family:var(--display);font-weight:400;font-size:21px;letter-spacing:.3px}
+.mj-pass .bar{background:rgba(255,255,255,.2);margin:4px 0 2px}
+.mj-pass .bar i{background:var(--yellow)}
+.mj-pass small{font-size:12px;font-weight:700;opacity:.85}
+.mj-pass img{position:absolute;right:10px;top:10px;width:58px;height:58px}
+.mj-pass .btn{justify-self:start;height:34px;padding:0 14px;font-size:13px;margin-top:6px}
+.mj-pass .btn-ghost{background:rgba(255,255,255,.14);border-color:rgba(255,255,255,.3);color:#fff}
+.mj-scrim{position:fixed;inset:0;z-index:60;background:rgba(10,8,6,.5);display:flex;justify-content:flex-end;animation:mjfade .2s}
+.mj-panel{width:min(400px,100%);height:100%;overflow-y:auto;display:flex;flex-direction:column;gap:12px;padding:18px 16px 30px;background:var(--bg);border-left:1px solid var(--line);animation:mjside .28s cubic-bezier(.2,.9,.3,1)}
+.mj-x{display:grid;place-items:center;width:36px;height:36px;border-radius:50%;background:var(--panel-2);border:1px solid var(--line);font-size:20px;line-height:1}
+@keyframes mjfade{from{opacity:0}}
+@keyframes mjside{from{transform:translateX(40px);opacity:0}}
+@keyframes mjup{from{transform:translateY(40px);opacity:0}}
+
+/* ---------- barre du bas (téléphone) : le sac au centre ---------- */
+.tabbar{display:none}
+@media (max-width:820px){
+  .tabbar{position:fixed;left:0;right:0;bottom:0;z-index:40;display:grid;grid-template-columns:repeat(5,minmax(0,1fr));align-items:end;height:calc(68px + env(safe-area-inset-bottom,0px));padding:0 4px env(safe-area-inset-bottom,0px);background:var(--panel);border-top:1px solid var(--line)}
+  .mj-scrim{align-items:flex-end}
+  .mj-panel{width:100%;height:auto;max-height:88%;border-left:0;border-radius:24px 24px 0 0;padding-bottom:calc(26px + env(safe-area-inset-bottom,0px));animation:mjup .28s cubic-bezier(.2,.9,.3,1)}
+}
+.tab{position:relative;display:flex;flex-direction:column;align-items:center;gap:3px;padding:8px 0 9px;font-size:10.5px;font-weight:800;color:var(--muted)}
+.tab[aria-current="page"]{color:var(--ink)}
+.tab[aria-current="page"] svg{color:var(--blue)}
+.tab .dot{position:absolute;top:6px;left:calc(50% + 8px);width:8px;height:8px;border-radius:50%;background:#E5484D;border:2px solid var(--panel)}
+.tab-bag{display:flex;flex-direction:column;align-items:center;gap:2px;padding-bottom:9px;font-size:10.5px;font-weight:900;color:var(--ink)}
+.tab-bag .bb{position:relative;display:grid;place-items:center;width:62px;height:62px;margin-top:-24px;border-radius:50%;background:var(--yellow);box-shadow:0 4px 0 var(--yellow-2),0 10px 24px -8px rgba(0,0,0,.5);border:4px solid var(--panel)}
+.tab-bag .bb svg{width:44px;height:50px}
+.tab-bag .n{position:absolute;top:-4px;right:-4px;display:grid;place-items:center;width:22px;height:22px;border-radius:50%;background:#E5484D;color:#fff;font-size:11px;font-weight:900;border:2px solid var(--panel)}
+.w-plus{display:grid;place-items:center;width:24px;height:24px;margin-right:-8px;border-radius:50%;background:var(--yellow);color:#24253D}
+.pp-toggles{display:grid;grid-template-columns:1fr 1fr;gap:6px}
+.pp-toggles button{display:flex;align-items:center;justify-content:center;gap:6px;height:36px;border-radius:10px;background:var(--panel-2);border:1px solid var(--line);font-size:12.5px;font-weight:800;color:var(--ink-2)}
+.pp-toggles button svg{width:17px;height:17px}
 
 main{padding:22px 24px 40px;min-width:0}
 
@@ -1059,11 +1140,8 @@ button.vit-slot:hover{background:var(--panel-2);color:var(--ink)}
 }
 @media (max-width:820px){
   .layout{grid-template-columns:minmax(0,1fr)}
-  .side{position:fixed;top:auto;bottom:0;left:0;right:0;height:auto;z-index:40;flex-direction:row;gap:2px;padding:6px 8px calc(6px + env(safe-area-inset-bottom,0px));border-right:0;border-top:1px solid var(--line);background:var(--panel);overflow-x:auto}
-  .nav-btn{flex-direction:column;gap:3px;padding:6px 10px;font-size:11px;width:auto;flex:none;position:relative}
-  .nav-btn .soon,.nav-sep,.side-quote{display:none}
-  .nav-btn .ready{position:absolute;top:4px;right:10px}
-  main{padding:16px 16px 100px}
+  .side{display:none}
+  main{padding:16px 16px calc(100px + env(safe-area-inset-bottom,0px))}
   .topbar{padding-inline:16px;gap:8px}
   .profile-mini .pm-txt,.profile-mini .pm-chev{display:none}
   .profile-mini{border:0;padding:0}
@@ -1077,7 +1155,8 @@ button.vit-slot:hover{background:var(--panel-2);color:var(--ink)}
 @media (max-width:560px){
   .logo{font-size:30px}
   .icon-btn.bell{display:none}
-  .wallet small{display:none}
+  .wallet small,.mj-btn .lbl{display:none}
+  .mj-btn{padding:0 9px}
   .hero{padding:24px 20px 170px}
   .hero-main{top:auto;bottom:0;right:50%;transform:translateX(50%);animation:none}
   .bokeh{display:none}
@@ -1184,9 +1263,8 @@ button.vit-slot:hover{background:var(--panel-2);color:var(--ink)}
   <div class="logo" aria-label="Billy"><span>Billy</span><img id="logo-marble" alt=""></div>
   <div class="tagline">Ouvre. Collectionne. Joue.</div>
   <div class="top-spacer"></div>
-  <button class="icon-btn" id="daily-btn" data-action="daily-open" aria-label="Le bonbec du jour"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3.5" y="8" width="17" height="4" rx="1"/><path d="M5 12v8h14v-8M12 8v12M12 8C10.5 4 7 4 7 6s3 2 5 2c2 0 5 0 5-2s-3.5-2-5 2"/></svg><span class="dot"></span></button>
-  <button class="icon-btn" id="theme-btn" data-action="theme"></button>
-  <button class="icon-btn" id="sound-btn" data-action="sound"></button>
+  <button class="mj-btn" id="mj-btn" data-action="mj-open" aria-label="Ma journée"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3.5" y="8" width="17" height="4" rx="1"/><path d="M5 12v8h14v-8M12 8v12M12 8C10.5 4 7 4 7 6s3 2 5 2c2 0 5 0 5-2s-3.5-2-5 2"/></svg><span class="lbl">Ma journée</span><span class="n" id="mj-n" hidden></span></button>
+  <button class="wallet" data-action="nav" data-view="sacs" aria-label="Mes bonbecs, ouvrir des sacs"><span id="coin-slot"></span><span id="jetons">0</span><small>bonbecs</small><span class="w-plus" aria-hidden="true"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg></span></button>
   <div class="prof-wrap">
     <button class="profile-mini" data-action="prof-pop" aria-label="Mon profil" aria-expanded="false" aria-haspopup="true">
       <span class="av-ring" id="top-ring"><span class="avatar" id="top-avatar"></span></span>
@@ -1195,13 +1273,15 @@ button.vit-slot:hover{background:var(--panel-2);color:var(--ink)}
     </button>
     <div class="prof-pop" id="prof-pop" hidden></div>
   </div>
-  <button class="wallet" data-action="nav" data-view="sacs" aria-label="Mes bonbecs, ouvrir des sacs"><span id="coin-slot"></span><span id="jetons">0</span><small>bonbecs</small></button>
 </header>
 
 <div class="layout">
   <nav class="side" id="nav" aria-label="Navigation principale"></nav>
   <main id="view"></main>
+  <aside class="mj-rail" id="mj-rail" aria-label="Ma journée"></aside>
 </div>
+<nav class="tabbar" id="tabbar" aria-label="Navigation"></nav>
+<div class="mj-scrim" id="mj-sheet" hidden></div>
 
 <div class="scrim" id="modal" hidden></div>
 <div class="ov" id="ov" hidden>
@@ -1612,18 +1692,18 @@ const Theme = {
 };
 Theme.apply(Theme.get() || "dark");
 function renderThemeBtn(){
-  const b=document.getElementById("theme-btn"), dark=Theme.isDark();
+  const b=document.getElementById("theme-btn"), dark=Theme.isDark(); if(!b) return;
   b.setAttribute("aria-label", dark?"Passer en mode clair":"Passer en mode sombre");
   b.innerHTML = `<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${dark
     ? '<circle cx="12" cy="12" r="4.2"/><path d="M12 2.5v2.2M12 19.3v2.2M2.5 12h2.2M19.3 12h2.2M5.3 5.3l1.6 1.6M17.1 17.1l1.6 1.6M5.3 18.7l1.6-1.6M17.1 6.9l1.6-1.6"/>'
-    : '<path d="M20 14.5A8 8 0 0 1 9.5 4a8 8 0 1 0 10.5 10.5z"/>'}</svg>`;
+    : '<path d="M20 14.5A8 8 0 0 1 9.5 4a8 8 0 1 0 10.5 10.5z"/>'}</svg><span>${dark?"Mode clair":"Mode sombre"}</span>`;
 }
 matchMedia("(prefers-color-scheme: dark)").addEventListener("change", ()=>renderThemeBtn());
 function renderSoundBtn(){
-  const b=document.getElementById("sound-btn"), on=Sound.on;
+  const b=document.getElementById("sound-btn"), on=Sound.on; if(!b) return;
   b.setAttribute("aria-label", on?"Couper le son":"Activer le son");
   b.setAttribute("aria-pressed", String(on));
-  b.innerHTML = `<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 9.5h3.5L12 5.5v13l-4.5-4H4z"/>${on?'<path d="M15.5 9a4 4 0 0 1 0 6"/><path d="M18 6.5a7.5 7.5 0 0 1 0 11"/>':'<path d="M16 9.5l5 5M21 9.5l-5 5"/>'}</svg>`;
+  b.innerHTML = `<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 9.5h3.5L12 5.5v13l-4.5-4H4z"/>${on?'<path d="M15.5 9a4 4 0 0 1 0 6"/><path d="M18 6.5a7.5 7.5 0 0 1 0 11"/>':'<path d="M16 9.5l5 5M21 9.5l-5 5"/>'}</svg><span>${on?"Son activé":"Son coupé"}</span>`;
 }
 
 /* =====================================================================
@@ -2736,17 +2816,155 @@ const giftCount = () => Object.values(S.bagInv).reduce((a,b)=>a+b,0);
 /* =====================================================================
    NAVIGATION & HAUT DE PAGE
    ===================================================================== */
-const NAV = [
-  ["accueil","Accueil","home"],["sacs","Ouvrir des sacs","bag"],["collection","Boîte à billes","layers"],["confiserie","La Confiserie","candy"],["passe","Passe de saison","ticket"],
-  ["quetes","Quêtes du jour","quest"],["succes","Succès","trophy"],["jeux","Jeux de la cour","pad"],["billepedia","Billepedia","book"],"sep",
-  ["profil","Mon profil","user"],["amis","Amis","users",1],["cour","Cour de récré","cour",1],["classement","Classement","trophy",1],["parametres","Paramètres","gear"],
-];
+const NAV = [["accueil","Accueil","home"],["sacs","Ouvrir des sacs","bag"],["collection","Boîte à billes","layers"],["jeux","Jeux de la cour","pad"],["confiserie","La Confiserie","candy"]];
+// les pages qui ne sont pas dans le menu allument leur « parent »
+const NAV_PARENT = {billepedia:"collection", tir:"jeux", pot:"jeux", chateau:"jeux", casse:"jeux", tic:"jeux", course:"jeux", atelier:"confiserie"};
+const SOLO_GAMES = [["pot","Le Pot"],["chateau","Le Château"],["casse","Le Casse-briques"]];
+function gamesReady(){
+  const out = SOLO_GAMES.filter(g=>soloReady(g[0])).map(g=>g[1]);
+  if(LEVELS.length - Object.keys(playedToday().tir).length > 0) out.unshift("Le Tir");
+  return out;
+}
 function renderNav(){
-  const ready = freeReady(), claim = questsClaimable();
-  document.getElementById("nav").innerHTML = NAV.map(n=> n==="sep" ? `<div class="nav-sep"></div>` :
-    `<button class="nav-btn" data-action="nav" data-view="${n[0]}" ${ui.view===n[0]?'aria-current="page"':""}>${ic(n[2])}<span>${n[1]}</span>${n[3]?'<span class="soon">bientôt</span>':""}${n[0]==="sacs"&&ready?'<span class="ready" aria-label="Sac gratuit disponible"></span>':""}${n[0]==="quetes"&&claim?'<span class="ready" aria-label="Récompense à récupérer"></span>':""}${n[0]==="collection"&&seriesClaimable()?'<span class="ready" aria-label="Série à récupérer"></span>':""}${n[0]==="succes"&&chalClaimable()?'<span class="ready" aria-label="Succès à récupérer"></span>':""}${n[0]==="passe"&&passClaimable()?'<span class="ready" aria-label="Récompenses du passe à récupérer"></span>':""}</button>`
-  ).join("") + `<p class="side-quote">Les plus grandes aventures commencent toujours par une petite bille.
+  const cur = NAV_PARENT[ui.view] || ui.view, bags = freeStock()+giftCount(), games = gamesReady().length;
+  document.getElementById("nav").innerHTML = NAV.map(n=>
+    `<button class="nav-btn" data-action="nav" data-view="${n[0]}" ${cur===n[0]?'aria-current="page"':""}>${ic(n[2])}<span>${n[1]}</span>${
+      n[0]==="sacs"&&bags?`<span class="cnt" aria-label="${bags} sac${bags>1?"s":""} à ouvrir">${bags}</span>`:""}${
+      n[0]==="jeux"&&games?'<span class="ready" aria-label="Récompense du jour à gagner"></span>':""}</button>`
+  ).join("") + `<div class="side-friends"><b>${ic("users",18)} Les copains</b>Amis, cour de récré et classement arriveront ici, tous au même endroit.</div>
+    <p class="side-quote">Les plus grandes aventures commencent toujours par une petite bille.
     <svg width="40" height="36" viewBox="0 0 40 36" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"><path d="M6 2c-4 12 2 24 26 28"/><path d="M26 24l6 6-8 3"/></svg></p>`;
+  const tab = (v,l,i,dot) => `<button class="tab" data-action="nav" data-view="${v}" ${cur===v?'aria-current="page"':""}>${ic(i,24)}${l}${dot?'<span class="dot"></span>':""}</button>`;
+  document.getElementById("tabbar").innerHTML = tab("accueil","Accueil","home") + tab("collection","Boîte","layers")
+    + `<button class="tab-bag" data-action="nav" data-view="sacs" ${cur==="sacs"?'aria-current="page"':""}><span class="bb">${bagSVG(FREE_BAG)}${bags?`<span class="n">${bags}</span>`:""}</span>Sacs</button>`
+    + tab("jeux","Jeux","pad",games) + tab("confiserie","Confiserie","candy");
+  renderDay();
+}
+
+/* ---------- Ma journée : bonbec, sacs gratuits, quêtes, jeux, passe… une seule liste ---------- */
+const mjClaimable = () => (dailyReady()?1:0) + questsClaimable() + passClaimable() + chalClaimable() + seriesClaimable();
+function mjRow(o){
+  const tag = o.act && !o.btn ? "button" : "div";
+  return `<${tag} class="mj-row${o.ready?" ready":""}${o.done?" done":""}" ${tag==="button"?o.act:""}>
+    <span class="mi">${ic(o.done?"check":o.icon,18)}</span>
+    <span><b>${o.title}</b><small>${o.text}</small>${o.p!=null&&!o.done&&!o.ready?`<span class="bar"><i style="width:${Math.min(100,o.p*100)}%"></i></span>`:""}</span>
+    ${o.btn || (o.done?"" : o.rw?`<span class="mj-rw">${COIN}${fmt(o.rw)}</span>` : o.act?`<span class="go">${ic("chev",16)}</span>`:"")}
+  </${tag}>`;
+}
+function dayHTML(inSheet){
+  ensureQuests();
+  const Q = S.quests, n = mjClaimable();
+  // le bonbec du jour
+  const dReady = dailyReady(), streak = dReady ? dailyStreak() : (S.daily?.streak||1), idx = (streak-1)%7, amount = DAILY[idx]*(isWednesday()?2:1);
+  const next = idx===6 ? 0 : idx+1;
+  const rows1 = [mjRow({icon:"gift", title:"Le bonbec du jour", ready:dReady, done:!dReady,
+    text: dReady ? `Jour ${idx+1} sur 7${isWednesday()?" · mercredi : doublé !":""}` : `Demain : ${fmt(DAILY[next])} ${CUR.many} (jour ${next+1})`,
+    btn: dReady ? `<button class="btn btn-yellow" data-action="daily-claim">+${fmt(amount)} ${COIN}</button>` : "", act:'data-action="daily-open"'})];
+  // les sacs
+  const st = freeStock(), gifts = giftCount();
+  rows1.push(mjRow({icon:"bag", title: st ? `${st} sac${st>1?"s":""} gratuit${st>1?"s":""} à ouvrir` : "Sac gratuit",
+    text: st>=FREE_MAX ? "Stock plein : ouvre-en un !" : `${st} / ${FREE_MAX} · prochain dans <span data-free-timer>${freeLeft()}</span>`, p:st/FREE_MAX,
+    btn: st ? `<button class="btn btn-ghost" data-action="open-free">Ouvrir</button>` : "", act:'data-action="nav" data-view="sacs"'}));
+  if(gifts) rows1.push(mjRow({icon:"gift", title:`${gifts} sac${gifts>1?"s":""} offert${gifts>1?"s":""}`, text:"Gagnés au passe, aux séries ou aux succès", act:'data-action="nav" data-view="sacs"'}));
+  // les quêtes
+  const rows2 = Q.items.map((q,i)=>{ const D = QUESTS[q.id], done = questDone(q);
+    return mjRow({icon:D.icon, title:D.title, text:`${q.p} / ${D.goal}`, p:q.p/D.goal, rw:D.reward, done:q.claimed, ready:done&&!q.claimed,
+      btn: done&&!q.claimed ? `<button class="btn btn-yellow" data-action="q-claim" data-i="${i}">+${D.reward} ${COIN}</button>` : "", act:'data-action="nav" data-view="quetes"'}) });
+  const all = Q.items.every(q=>q.claimed);
+  rows2.push(mjRow({icon:"trophy", title:"Bonus : les 3 quêtes", text:Q.bonus?"Récupéré":`${Q.items.filter(q=>q.claimed).length} / 3 récupérées`, p:Q.items.filter(q=>q.claimed).length/3,
+    rw:QUEST_BONUS, done:Q.bonus, ready:all&&!Q.bonus, btn: all&&!Q.bonus ? `<button class="btn btn-yellow" data-action="q-bonus">+${QUEST_BONUS} ${COIN}</button>` : ""}));
+  // les jeux de la cour
+  const games = gamesReady();
+  const rows3 = [mjRow({icon:"pad", title: games.length ? `${games.length} jeu${games.length>1?"x ont":" a"} une récompense` : "Récompenses des jeux prises",
+    text: games.length ? games.join(", ") : "Rejoue pour le plaisir, ça repart à minuit", done:!games.length, act:'data-action="nav" data-view="jeux"'})];
+  // succès et séries terminés
+  const nc = chalClaimable(), ns = seriesClaimable(), rows4 = [];
+  if(nc) rows4.push(mjRow({icon:"trophy", title:`${nc} succès réussi${nc>1?"s":""}`, text:"Ta récompense t'attend", ready:true, act:'data-action="nav" data-view="succes"'}));
+  if(ns) rows4.push(mjRow({icon:"book", title:`${ns} série${ns>1?"s":""} terminée${ns>1?"s":""}`, text:"Ta récompense t'attend", ready:true, act:'data-action="series-go"'}));
+  // le passe de saison
+  const P = ensurePass(), se = seasonNow(), tier = passTier(), pc = passClaimable();
+  const into = tier>=PASS_TIERS ? TIER_XP : P.xp-tier*TIER_XP;
+  const finalSpec = rewardSpec("prem",30,passReward("prem",30));
+  const tasks = [!dReady, ...Q.items.map(q=>q.claimed), Q.bonus], nDone = tasks.filter(Boolean).length;
+  return `<div class="mj-head"><h2>Ma journée</h2><div class="sp"></div>${inSheet?`<button class="mj-x" data-action="mj-close" aria-label="Fermer">×</button>`:`<span class="meta">${new Date().toLocaleDateString("fr-FR",{weekday:"short",day:"numeric",month:"short"})}</span>`}</div>
+  <div class="mj-prog"><span>${nDone} / ${tasks.length} faits</span><span class="bar"><i style="width:${nDone/tasks.length*100}%"></i></span></div>
+  ${n ? `<button class="btn btn-yellow mj-all" data-action="claim-all">${ic("gift",18)} Tout récupérer (${n})</button>` : `<p class="mj-empty">Tout est récupéré. Reviens demain !</p>`}
+  <div class="mj-group"><div class="mj-gh">Tous les jours</div>${rows1.join("")}</div>
+  <div class="mj-group"><div class="mj-gh">Quêtes du jour <small>nouvelles dans <span data-quest-timer>${untilMidnight()}</span></small></div>${rows2.join("")}</div>
+  <div class="mj-group"><div class="mj-gh">Jeux de la cour</div>${rows3.join("")}</div>
+  ${rows4.length?`<div class="mj-group"><div class="mj-gh">Récompenses</div>${rows4.join("")}</div>`:""}
+  <div class="mj-group"><div class="mj-gh">Passe de saison</div>
+    <div class="mj-pass" style="${seasonStyle(se)}"><img src="${marbleURL(finalSpec,120)}" alt="">
+      <span class="k">Saison ${esc(se.def.name)}</span><b>Palier ${tier} / ${PASS_TIERS}</b>
+      <span class="bar"><i style="width:${into/TIER_XP*100}%"></i></span>
+      <small>${fmt(into)} / ${fmt(TIER_XP)} XP · fin dans <span data-pass-timer>${passLeft()}</span></small>
+      ${pc ? `<button class="btn btn-yellow" data-action="pass-all">${ic("gift",16)} ${pc} récompense${pc>1?"s":""} à prendre</button>` : `<button class="btn btn-ghost" data-action="nav" data-view="passe">Voir le passe ${ic("arrow",14)}</button>`}
+    </div></div>`;
+}
+function renderDay(){
+  const n = mjClaimable(), b = document.getElementById("mj-btn"), c = document.getElementById("mj-n");
+  b.classList.toggle("has", n>0); c.hidden = !n; c.textContent = n;
+  b.setAttribute("aria-label", n ? `Ma journée : ${n} récompense${n>1?"s":""} à récupérer` : "Ma journée");
+  const rail = document.getElementById("mj-rail"), sc = rail.scrollTop;
+  rail.innerHTML = dayHTML(false); rail.scrollTop = sc;
+  const sh = document.getElementById("mj-sheet");
+  if(!sh.hidden){ const pn = sh.querySelector(".mj-panel"), y = pn ? pn.scrollTop : 0; sh.innerHTML = `<div class="mj-panel" role="dialog" aria-modal="true" aria-label="Ma journée">${dayHTML(true)}</div>`; sh.firstChild.scrollTop = y }
+}
+function openDay(open){
+  const sh = document.getElementById("mj-sheet");
+  sh.hidden = !open;
+  if(open){ sh.innerHTML = `<div class="mj-panel" role="dialog" aria-modal="true" aria-label="Ma journée">${dayHTML(true)}</div>`; sh.querySelector(".mj-x").focus() }
+  else sh.innerHTML = "";
+}
+
+// Les récompenses : une fonction par sorte, pour les boutons un par un et pour « Tout récupérer »
+function claimDaily(){
+  if(!dailyReady()) return null;
+  const streak = dailyStreak(), idx = (streak-1)%7, amount = DAILY[idx]*(isWednesday()?2:1);
+  S.jetons += amount; if(idx===6) S.bagInv.premium = (S.bagInv.premium||0)+1;
+  S.daily = {last:dayKey(), streak};
+  return {j:amount, bags:idx===6?1:0, idx};
+}
+function claimQuest(i){
+  ensureQuests(); const q = S.quests.items[i];
+  if(!q || q.claimed || !questDone(q)) return 0;
+  q.claimed = true; S.jetons += QUESTS[q.id].reward; passXP(PASS_XP.quest);
+  return QUESTS[q.id].reward;
+}
+function claimBonus(){
+  ensureQuests(); const Q = S.quests;
+  if(Q.bonus || !Q.items.every(q=>q.claimed)) return 0;
+  Q.bonus = true; S.jetons += QUEST_BONUS; S.stats.bonus++; passXP(PASS_XP.bonus);
+  return QUEST_BONUS;
+}
+function claimRew(r){   // récompense d'un succès ou d'une série
+  if(r.j) S.jetons += r.j;
+  if(r.bag) S.bagInv[r.bag] = (S.bagInv[r.bag]||0)+1;
+  if(r.title && !S.titles.includes(r.title)){ S.titles.push(r.title); S.title = r.title }
+}
+function claimChal(c){
+  if(!c || S.chal.includes(c.id) || chalProg(c)<c.goal) return false;
+  S.chal.push(c.id); claimRew(c.rew); return true;
+}
+function claimSeries(se){
+  S.seriesDone = S.seriesDone||[];
+  if(!se || S.seriesDone.includes(se.id) || seriesProg(se)<se.items.length) return false;
+  S.seriesDone.push(se.id); claimRew(se.rew); return true;
+}
+function claimAll(){
+  const j0 = S.jetons, b0 = giftCount(), got = [];
+  const d = claimDaily(); if(d) got.push("le bonbec du jour");
+  ensureQuests(); let nq = 0; S.quests.items.forEach((_,i)=>{ if(claimQuest(i)) nq++ });
+  if(claimBonus()) nq++;
+  if(nq) got.push(`${nq} quête${nq>1?"s":""}`);
+  let np = 0; for(let k=1;k<=passTier();k++) ["free","prem"].forEach(tr=>{ if(grantReward(tr,k)) np++ });
+  if(np) got.push(`${np} palier${np>1?"s":""} du passe`);
+  const nc = CHALLENGES.filter(c=>claimChal(c)).length; if(nc) got.push(`${nc} succès`);
+  const ns = SERIES.filter(se=>claimSeries(se)).length; if(ns) got.push(`${ns} série${ns>1?"s":""}`);
+  if(!got.length) return;
+  save(); Sound.coin(); Sound.ding(); closeModal(); renderTop(); renderNav(); renderView();
+  const dj = S.jetons-j0, db = giftCount()-b0;
+  toast(`Récupéré : ${got.join(", ")}. +${fmt(dj)} ${CUR.many}${db>0?` et ${db} sac${db>1?"s":""}`:""} !`);
 }
 // Le bonbec du jour : un cadeau à la première visite de chaque jour, sur une série de 7 jours
 const DAILY = [50,80,110,150,200,250,300];
@@ -2774,14 +2992,13 @@ function openDaily(){
   (el.querySelector(".btn-yellow")||el.querySelector(".close-x")).focus();
 }
 function renderTop(){
-  { const b=document.getElementById("daily-btn"), r=dailyReady(); b.classList.toggle("ready",r); b.setAttribute("aria-label", r?"Récupérer le bonbec du jour":"Le bonbec du jour : déjà récupéré") }
   document.getElementById("jetons").textContent = fmt(S.jetons);
   document.getElementById("top-name").textContent = S.name;
   document.getElementById("top-level").textContent = S.title;
   const a = activeSpec();
   document.getElementById("top-avatar").innerHTML = a ? mImg(a,120,40,"") : "";
   document.getElementById("top-ring").style.setProperty("--p", Math.max(1.5, albumFound().size/ALBUM_TOTAL*100));
-  if(!document.getElementById("prof-pop").hidden) renderProfPop();
+  if(!document.getElementById("prof-pop").hidden){ renderProfPop(); renderThemeBtn(); renderSoundBtn() }
 }
 // Petit tableau de bord du joueur, sous son profil en haut à droite
 function renderProfPop(){
@@ -2806,6 +3023,9 @@ function renderProfPop(){
       <button data-action="nav" data-view="profil">${ic("user",16)} Mon profil</button>
       <button data-action="nav" data-view="succes">${ic("trophy",16)} Succès</button>
       <button data-action="nav" data-view="parametres">${ic("gear",16)} Paramètres</button>
+    </div>
+    <div class="pp-toggles"><button id="theme-btn" data-action="theme"></button><button id="sound-btn" data-action="sound"></button></div>
+    <div class="pp-links pp-acct">
       ${sync.on ? `<button class="pp-out" data-action="acct-logout">${ic("user",16)} Se déconnecter</button>`
         : window.Cloud?.available ? `<button data-action="acct-signup">${ic("user",16)} Créer un compte / Se connecter</button>` : ""}
     </div>`;
@@ -2813,7 +3033,7 @@ function renderProfPop(){
 function toggleProfPop(open){
   const pop = document.getElementById("prof-pop"), btn = document.querySelector(".profile-mini");
   open = open ?? pop.hidden;
-  if(open) renderProfPop();
+  if(open){ renderProfPop(); renderThemeBtn(); renderSoundBtn() }
   pop.hidden = !open; btn.setAttribute("aria-expanded", open);
 }
 document.addEventListener("click", e=>{ if(!e.target.closest(".prof-wrap")) toggleProfPop(false) }, true);
@@ -5229,9 +5449,10 @@ function toast(msg){ const t=document.getElementById("toast"); t.textContent=msg
 let resetArmed = false;
 document.addEventListener("click", e=>{
   if(e.target.id==="modal"){ closeModal(); return }
+  if(e.target.id==="mj-sheet"){ openDay(false); return }
   const t = e.target.closest("[data-action]"); if(!t) return;
   switch(t.dataset.action){
-    case "nav": closeModal(); if(t.dataset.conftab) ui.confTab=t.dataset.conftab; go(t.dataset.view); break;
+    case "nav": closeModal(); openDay(false); if(t.dataset.conftab) ui.confTab=t.dataset.conftab; go(t.dataset.view); break;
     case "conf-tab": ui.confTab=t.dataset.tab; renderView(); break;
     case "tab": if(t.dataset.tab==="defis"){ closeModal(); go("succes"); break }
       ui.tab=t.dataset.tab; closeModal(); if(ui.view!=="collection") go("collection"); else renderView(); break;
@@ -5296,14 +5517,14 @@ document.addEventListener("click", e=>{
     }
     case "daily-open": openDaily(); break;
     case "daily-claim": {
-      if(!dailyReady()) break;
-      const streak = dailyStreak(), idx = (streak-1)%7, amount = DAILY[idx]*(isWednesday()?2:1);
-      S.jetons += amount; if(idx===6) S.bagInv.premium = (S.bagInv.premium||0)+1;
-      S.daily = {last:dayKey(), streak}; save();
+      const r = claimDaily(); if(!r) break; save();
       Sound.coin(); Sound.ding(); closeModal(); renderTop(); renderNav(); renderView();
-      toast(`+${fmt(amount)} ${CUR.many}${idx===6?" et un Sac Premium":""} ! À demain pour le jour ${idx===6?1:idx+2}.`);
+      toast(`+${fmt(r.j)} ${CUR.many}${r.bags?" et un Sac Premium":""} ! À demain pour le jour ${r.idx===6?1:r.idx+2}.`);
       break;
     }
+    case "mj-open": openDay(true); break;
+    case "mj-close": openDay(false); break;
+    case "claim-all": claimAll(); break;
     case "daily-reset": if(S.daily) S.daily.last = "démo"; save(); renderTop(); openDaily(); break;
     case "bell-test": Sound.bell(); break;
     case "vit-pick": openPicker(+t.dataset.i); break;
@@ -5349,12 +5570,8 @@ document.addEventListener("click", e=>{
     case "prof-pop": toggleProfPop(); break;
     case "series-go": ui.tab="series"; go("collection"); break;
     case "series-claim": {
-      const se = SERIES.find(x=>x.id===t.dataset.id); S.seriesDone = S.seriesDone||[];
-      if(!se || S.seriesDone.includes(se.id) || seriesProg(se)<se.items.length) break;
-      S.seriesDone.push(se.id); const r = se.rew;
-      if(r.j) S.jetons += r.j;
-      if(r.bag) S.bagInv[r.bag] = (S.bagInv[r.bag]||0)+1;
-      if(r.title && !S.titles.includes(r.title)){ S.titles.push(r.title); S.title = r.title }
+      const se = SERIES.find(x=>x.id===t.dataset.id);
+      if(!claimSeries(se)) break; const r = se.rew;
       save(); Sound.coin(); Sound.ding(); renderTop(); renderNav(); renderView();
       toast(`Série « ${se.name} » terminée : +${fmt(r.j||0)} ${CUR.many}${r.bag?", "+BAG_BY[r.bag].name:""}${r.title?", titre « "+r.title+" »":""} !`);
       break;
@@ -5368,11 +5585,8 @@ document.addEventListener("click", e=>{
     }
     case "wish-info": { const [ty,f]=t.dataset.k.split("|"); openSheet(ty,+f); break }
     case "chal-claim": {
-      const c = CHAL_BY[t.dataset.id]; if(!c || S.chal.includes(c.id) || chalProg(c)<c.goal) break;
-      S.chal.push(c.id); const r = c.rew;
-      if(r.j) S.jetons += r.j;
-      if(r.bag) S.bagInv[r.bag] = (S.bagInv[r.bag]||0)+1;
-      if(r.title && !S.titles.includes(r.title)){ S.titles.push(r.title); S.title = r.title }
+      const c = CHAL_BY[t.dataset.id];
+      if(!claimChal(c)) break; const r = c.rew;
       save(); Sound.coin(); Sound.ding(); renderTop(); renderNav(); renderView();
       toast(`Défi « ${c.title} » réussi : +${fmt(r.j||0)} ${CUR.many}${r.bag?", "+BAG_BY[r.bag].name:""}${r.title?", titre « "+r.title+" »":""} !`);
       break;
@@ -5396,18 +5610,13 @@ document.addEventListener("click", e=>{
       break;
     }
     case "q-claim": {
-      ensureQuests(); const q = S.quests.items[+t.dataset.i];
-      if(!q || q.claimed || !questDone(q)) break;
-      q.claimed = true; S.jetons += QUESTS[q.id].reward; save();
-      passXP(PASS_XP.quest);
+      const got = claimQuest(+t.dataset.i); if(!got) break; save();
       Sound.coin(); renderTop(); renderNav(); renderView();
-      toast(`+${QUESTS[q.id].reward} ${CUR.many} et +${PASS_XP.quest} XP de saison !`);
+      toast(`+${got} ${CUR.many} et +${PASS_XP.quest} XP de saison !`);
       break;
     }
     case "q-bonus": {
-      ensureQuests(); const Q = S.quests;
-      if(Q.bonus || !Q.items.every(q=>q.claimed)) break;
-      Q.bonus = true; S.jetons += QUEST_BONUS; S.stats.bonus++; save(); passXP(PASS_XP.bonus);
+      if(!claimBonus()) break; save();
       Sound.coin(); Sound.ding(); renderTop(); renderNav(); renderView();
       toast(`Bonus du jour : +${QUEST_BONUS} ${CUR.many} !`);
       break;
@@ -5447,6 +5656,7 @@ document.addEventListener("change", e=>{
 document.addEventListener("keydown", e=>{
   if(e.key!=="Escape") return;
   if(!document.getElementById("modal").hidden) closeModal();
+  else if(!document.getElementById("mj-sheet").hidden) openDay(false);
   else if(!document.getElementById("ov").hidden) closeOv();
 });
 
@@ -5459,7 +5669,6 @@ setInterval(()=>{
   document.querySelectorAll("[data-free-timer]").forEach(el=>el.textContent=freeLeft());
   document.querySelectorAll("[data-quest-timer]").forEach(el=>el.textContent=untilMidnight());
   document.querySelectorAll("[data-pass-timer]").forEach(el=>el.textContent=passLeft());
-  { const b=document.getElementById("daily-btn"), r=dailyReady(); b.classList.toggle("ready",r); b.setAttribute("aria-label", r?"Récupérer le bonbec du jour":"Le bonbec du jour : déjà récupéré") }
   // de temps en temps, un autre joueur fait une trouvaille (simulé)
   if(Math.random()<1/25){ feed.unshift(fakeFind()); feed = feed.slice(0,8); const fl=document.getElementById("feed-list"); if(fl) fl.innerHTML = feedItems() }
   if(S.quests && S.quests.day!==dayKey()){ ensureQuests(); renderNav(); if(ui.view==="accueil"||ui.view==="quetes") renderView() }

@@ -360,7 +360,9 @@ main{padding:22px 24px 40px;min-width:0}
 .m-card .ball{height:92px;display:grid;place-items:center}
 .m-card img{filter:drop-shadow(0 8px 6px rgba(40,30,20,.28))}
 .m-card .count{position:absolute;top:7px;right:8px;font-size:11px;font-weight:900;background:var(--ink);color:var(--on-ink);border-radius:999px;padding:1px 7px}
-.m-card .new{position:absolute;top:7px;right:8px;font-size:10px;font-weight:900;background:#E5484D;color:#fff;border-radius:999px;padding:2px 7px;text-transform:uppercase;letter-spacing:.04em}
+.m-card .new{position:absolute;top:7px;right:8px;font-size:10px;font-weight:900;background:#E5484D;color:#fff;border-radius:999px;padding:2px 7px;text-transform:uppercase;letter-spacing:.04em;transition:opacity .3s,transform .3s}
+.m-card .new.bye{opacity:0;transform:scale(.5)}
+.seen-all{margin-left:auto;height:38px;font-size:13px}
 .m-card .shiny-mark{position:absolute;top:8px;left:9px}
 .m-card b{font-size:13.5px;font-weight:800;line-height:1.2}
 .m-card small{font-size:11.5px;font-weight:700;color:var(--ink-2)}
@@ -2719,7 +2721,7 @@ function viewCollection(){
         const best = [...list].sort(tierSort)[0];
         const isNew = list.some(s=>S.unseen.includes(s.id));
         const variants = new Set(list.map(s=>s.pal)).size;
-        return `<button class="m-card${best.shiny?" is-shiny":""}" data-action="spec" data-id="${best.id}">
+        return `<button class="m-card${best.shiny?" is-shiny":""}" data-action="spec" data-id="${best.id}"${isNew?` data-unseen="${list.filter(s=>S.unseen.includes(s.id)).map(s=>s.id).join(",")}"`:""}>
           ${best.shiny?`<span class="shiny-mark">${shinyPill(best)}</span>`:""}
           ${isNew?`<span class="new">Nouveau</span>`:list.length>1?`<span class="count">×${list.length}</span>`:""}
           <span class="ball">${mImg(best,160,Math.round(84*scaleOf(t)+6))}</span><b>${F.name}</b><small>${variants} coloris sur ${BASE_PALS}</small></button>`;
@@ -2742,7 +2744,7 @@ function viewCollection(){
       <div><b>${dups.length ? `${dups.length} double${dups.length>1?"s":""} à échanger · +${fmt(dupVal)} ${CUR.many}` : "Aucun double pour l'instant"}</b>
         <p>Échange tes doubles contre des ${CUR.many} à la Confiserie.</p></div>
       <button class="btn btn-ghost" data-action="nav" data-view="confiserie">Aller à la Confiserie ${ic("arrow",16)}</button>
-    </section>` + (list.length ? `<div class="card-grid">${list.map(s=>`<button class="m-card${s.shiny?" is-shiny":""}" data-action="spec" data-id="${s.id}">
+    </section>` + (list.length ? `<div class="card-grid">${list.map(s=>`<button class="m-card${s.shiny?" is-shiny":""}" data-action="spec" data-id="${s.id}"${S.unseen.includes(s.id)?` data-unseen="${s.id}"`:""}>
       ${s.shiny?`<span class="shiny-mark">${shinyPill(s)}</span>`:""}${S.unseen.includes(s.id)?`<span class="new">Nouveau</span>`:""}
       <span class="ball">${mImg(s,160,Math.round(84*scaleOf(s.type)+6))}</span><b>${esc(specName(s))}</b>${typePill(s.type)}</button>`).join("")}</div>`
       : `<p class="empty">${sp==="shiny"?"Pas encore de shiny ici. Elles sont très rares : bonne chance !":sp==="season"?"Pas encore de bille de saison ici. Le passe de saison en donne à certains paliers.":"Aucune bille dans ce format."}</p>`);
@@ -2772,6 +2774,7 @@ function viewCollection(){
       <button class="tab" role="tab" data-action="tab" data-tab="defis" aria-selected="${ui.tab==="defis"}">Défis${chalClaimable()?` <span class="tab-dot">${chalClaimable()}</span>`:""}</button>
     </div>
     ${chips}
+    ${S.unseen.some(id=>specById(id))&&ui.tab!=="defis"?`<button class="btn btn-ghost seen-all" data-action="seen-all">${ic("check",16)} Tout marquer comme vu (${S.unseen.filter(id=>specById(id)).length})</button>`:""}
   </div>
   ${body}`;
 }
@@ -3344,6 +3347,7 @@ function tear(){
   setTimeout(showReveal, reduce?50:1500);
 }
 function showReveal(){
+  if(!ovState) return;   // ouverture fermée pendant l'explosion du sac
   const {results} = ovState;
   FX.setDust(false);
   document.getElementById("ov-body").innerHTML = `
@@ -4288,6 +4292,7 @@ document.addEventListener("click", e=>{
     case "spec": openModal(t.dataset.id); break;
     case "preview": openModal(null, pedia[+t.dataset.k]); break;
     case "theme": Theme.toggle(); renderThemeBtn(); break;
+    case "seen-all": S.unseen = []; save(); renderView(); break;
     case "give-shiny": {
       const s = makeSpec(TK[2+Math.floor(Math.random()*(TK.length-2))], {shiny:1+Math.floor(Math.random()*3)});
       S.specs.push(s); S.unseen.push(s.id); save(); renderTop(); renderView(); openModal(s.id);
@@ -4486,6 +4491,22 @@ setInterval(()=>{
 document.getElementById("logo-marble").src = marbleURL(SHOWCASE[1],96);
 document.getElementById("coin-slot").outerHTML = COIN;
 renderThemeBtn(); renderSoundBtn(); renderTop(); renderNav(); renderView();
+// « Nouveau » : s'efface quand on laisse la souris une demi-seconde sur la bille (un survol rapide ne compte pas)
+document.addEventListener("pointerover", e=>{
+  if(e.pointerType==="touch") return;
+  const c = e.target.closest?.("[data-unseen]"); if(!c || c._seenT) return;
+  c._seenT = setTimeout(()=>{
+    const ids = new Set(c.dataset.unseen.split(",")); c.removeAttribute("data-unseen");
+    S.unseen = S.unseen.filter(id=>!ids.has(id)); save();
+    c.querySelector(".new")?.classList.add("bye");
+    const b = document.querySelector(".seen-all"), n = S.unseen.filter(id=>specById(id)).length;
+    if(b){ if(n) b.lastChild.textContent = ` Tout marquer comme vu (${n})`; else b.remove() }
+  }, 500);
+});
+document.addEventListener("pointerout", e=>{
+  const c = e.target.closest?.("[data-unseen]");
+  if(c && c._seenT && !c.contains(e.relatedTarget)){ clearTimeout(c._seenT); c._seenT = 0 }
+});
 // le bonbec du jour s'ouvre tout seul à la première visite de la journée
 setTimeout(()=>{ if(dailyReady() && document.getElementById("modal").hidden && document.getElementById("ov").hidden) openDaily() }, 800);
 // petits secrets

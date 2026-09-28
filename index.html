@@ -1082,6 +1082,36 @@ button.vit-slot:hover{background:var(--panel-2);color:var(--ink)}
 @media (prefers-reduced-motion:reduce){
   *,*::before,*::after{animation-duration:.01ms!important;animation-iteration-count:1!important;transition-duration:.01ms!important}
 }
+/* ---------- compte : bienvenue, inscription, connexion ---------- */
+.auth{position:fixed;inset:0;z-index:75;display:grid;place-items:center;padding:24px 16px;background:var(--bg);overflow:auto}
+.auth[hidden]{display:none}
+.auth-card{position:relative;width:min(420px,100%);background:var(--panel);border:1px solid var(--line);border-radius:22px;padding:28px 24px 22px;box-shadow:var(--shadow);text-align:center}
+.auth-card .logo{justify-content:center}
+.auth-card .logo img{width:44px;height:44px}
+.auth-tag{font-family:var(--hand);font-size:23px;font-weight:600;color:var(--ink-2);margin-top:4px}
+.auth-card h2{font-family:var(--display);font-weight:400;font-size:26px;line-height:1.05;margin:18px 0 6px}
+.auth-card p{color:var(--ink-2);margin:0}
+.auth-tabs{display:flex;gap:4px;padding:4px;margin:20px 0 4px;border-radius:999px;background:var(--panel-2);border:1px solid var(--line)}
+.auth-tabs button{flex:1;height:38px;border-radius:999px;font-weight:800;color:var(--ink-2)}
+.auth-tabs button[aria-selected="true"]{background:var(--panel);color:var(--ink);box-shadow:var(--shadow)}
+.auth-form{text-align:left}
+.auth-form label{display:block;margin:14px 0 6px;font-size:12px;font-weight:900;text-transform:uppercase;letter-spacing:.06em;color:var(--muted)}
+.auth-form input{width:100%;height:46px;padding:0 14px;border-radius:12px;border:1.5px solid var(--line-2);background:var(--panel-2);color:var(--ink);font:inherit;font-size:16px;font-weight:700}
+.auth-form input:focus{outline:3px solid var(--blue);outline-offset:1px}
+.auth-form small{display:block;margin-top:5px;color:var(--muted);font-size:12px}
+.auth-card .btn{width:100%;margin-top:20px}
+.auth-card .btn + .btn{margin-top:10px}
+.auth-err{margin-top:12px;color:var(--warn);font-weight:800;font-size:13.5px;text-align:center}
+.auth-err:empty{display:none}
+.auth-links{display:flex;flex-direction:column;align-items:center;gap:6px;margin-top:16px}
+.auth-link{color:var(--blue);font-weight:800;font-size:13.5px;text-decoration:underline;text-underline-offset:3px}
+.auth-note{margin-top:16px;color:var(--muted);font-size:12.5px;line-height:1.4}
+.auth-mail{font-weight:900;color:var(--ink);word-break:break-all}
+.auth-card .close-x{position:absolute;top:10px;right:12px;width:36px;height:36px;border-radius:50%;font-size:24px;line-height:1;color:var(--ink-2)}
+.auth-card .close-x:hover{background:var(--panel-2)}
+.auth-spin{width:34px;height:34px;margin:22px auto 4px;border-radius:50%;border:4px solid var(--line);border-top-color:var(--yellow);animation:auth-spin .8s linear infinite}
+@keyframes auth-spin{to{transform:rotate(360deg)}}
+.pp-links button.pp-out{color:var(--warn)}
 </style>
 
 <header class="topbar">
@@ -1115,6 +1145,10 @@ button.vit-slot:hover{background:var(--panel-2);color:var(--ink)}
   <div class="ov-body" id="ov-body"></div>
 </div>
 <div class="toast" id="toast" role="status" aria-live="polite"></div>
+<div class="auth" id="auth" hidden></div>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="cloud.js"></script>
 
 <script>
 /* =====================================================================
@@ -1521,11 +1555,13 @@ function renderSoundBtn(){
 /* =====================================================================
    BILLES : génération procédurale (chaque bille est unique)
    ===================================================================== */
-let idc = 0;
+// identifiant unique de chaque bille (UUID) : c'est lui qui la suit d'un joueur à l'autre, la base refuse les doublons
+const newId = () => crypto.randomUUID ? crypto.randomUUID() : ([1e7]+-1e3+-4e3+-8e3+-1e11).replace(/[018]/g, c=>(c^crypto.getRandomValues(new Uint8Array(1))[0]&15>>c/4).toString(16));
+const isUUID = id => /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(id||"");
 function makeSpec(type, o={}){
   const seed = o.seed ?? randU32();
   const r = rng(seed);
-  return {id: seed.toString(36)+(Date.now()+(idc++)).toString(36).slice(-5), seed, type,
+  return {id: newId(), seed, type,
     family: o.family ?? pickW(r(), FAM_W),
     pal: o.pal ?? Math.floor(r()*BASE_PALS),
     shiny: o.shiny ?? 0, at: o.at ?? Date.now()};
@@ -2123,18 +2159,22 @@ const ghost = (type,family) => ({seed:hash(type+family), type, family, pal:23, s
 /* =====================================================================
    ÉTAT (sauvegardé dans le navigateur)
    ===================================================================== */
-const STORE_KEY = "billy-proto-v2";
+const GUEST_KEY = "billy-proto-v2";                                // sauvegarde sans compte (dans ce navigateur)
+const CLOUD_UID = window.Cloud ? Cloud.cachedUserId() : null;       // joueur connecté (session gardée par le navigateur)
+let STORE_KEY = CLOUD_UID ? "billy-u-"+CLOUD_UID : GUEST_KEY;       // avec un compte : copie locale de la sauvegarde en ligne
 function starterState(){
   const now = Date.now(), day = 86400000;
   const list = [
     ["boulet",0,6],["calot",2,5],["calot",4,5],["bille",0,0],["bille",1,1],["bille",5,20],["bille",7,12],
     ["mini",1,0],["mini",6,7],["mini",3,15],["mini",4,13],
   ];
-  const specs = list.map(([t,f,p],i)=>makeSpec(t,{seed:hash("depart"+i),family:f,pal:p,at:now-(i+1)*day/3}));
+  const specs = list.map(([t,f,p],i)=>makeSpec(t,{family:f,pal:p,at:now-(i+1)*day/3}));
   return {v:2, fv:2, pv:2, cover:{}, wish:[], seriesDone:[], jetons:1000, holes:23, specs, active:specs[1].id, unseen:[], freeT0:now-FREE_EVERY, best:{}, bagInv:{}, title:"Petit Boulet", titles:["Petit Boulet"], name:"AlexBilleur", vitrine:[null,null,null,null,null], chal:[], pity:0, bags:0, log:[]};
 }
 let S;
-try { S = JSON.parse(localStorage.getItem(STORE_KEY)) } catch(e){ S = null }
+// charge une sauvegarde (ou en crée une neuve) et la met à jour si elle vient d'une ancienne version du jeu
+function adoptState(raw){
+S = raw;
 if(!S || S.v!==2 || !Array.isArray(S.specs)) S = starterState();
 else S = Object.assign({cover:{}, wish:[], seriesDone:[], unseen:[], best:{}, bagInv:{}, title:"Petit Boulet", titles:["Petit Boulet"], name:"AlexBilleur", vitrine:[null,null,null,null,null], chal:[], pity:0, bags:0, log:[]}, S);
 // anciennes sauvegardes : la bille chinoise n'existe plus, le niveau non plus
@@ -2164,7 +2204,9 @@ if(S.title==="Maître du Sulfure") S.title = "Maître du Mammouth";
 if(S.quests && S.quests.items.some(q=>!QUESTS[q.id])) delete S.quests;
 delete S.level; delete S.xp;
 S.stats = Object.assign({pot:0, tic:0, castle:0, bonus:0, race:0, best3:{}}, S.stats||{});
-function save(){ try{ localStorage.setItem(STORE_KEY, JSON.stringify(S)) }catch(e){} }
+}
+{ let raw = null; try { raw = JSON.parse(localStorage.getItem(STORE_KEY)) } catch(e){} adoptState(raw) }
+function save(){ try{ localStorage.setItem(STORE_KEY, JSON.stringify(S)) }catch(e){} cloudQueue() }
 
 const ui = {view:"accueil", tab:"album", type:"all", hideMissing:true};
 
@@ -2239,6 +2281,7 @@ function recycleSpecs(ids){
   const gone = S.specs.filter(s=>set.has(s.id) && s.id!==S.active);
   if(!gone.length) return 0;
   const total = gone.reduce((a,s)=>a+recycleValue(s),0);
+  gone.forEach(s=>sync.why[s.id]="recyclee");
   S.specs = S.specs.filter(s=>!gone.includes(s));
   S.unseen = S.unseen.filter(id=>!set.has(id));
   S.jetons += total;
@@ -2679,6 +2722,8 @@ function renderProfPop(){
       <button data-action="nav" data-view="profil">${ic("user",16)} Mon profil</button>
       <button data-action="nav" data-view="succes">${ic("trophy",16)} Succès</button>
       <button data-action="nav" data-view="parametres">${ic("gear",16)} Paramètres</button>
+      ${sync.on ? `<button class="pp-out" data-action="acct-logout">${ic("user",16)} Se déconnecter</button>`
+        : window.Cloud?.available ? `<button data-action="acct-signup">${ic("user",16)} Créer un compte / Se connecter</button>` : ""}
     </div>`;
 }
 function toggleProfPop(open){
@@ -4649,8 +4694,14 @@ const SOON = {
   classement:["Classement","Qui a le plus bel album de la cour ?",["Classement par emplacements remplis.","Classement des meilleurs scores au Tir."]],
 };
 function viewSoon(){
-  if(ui.view==="parametres") return `<div class="page-head"><div><h1>Paramètres</h1><p>Outils de la démo. Ta progression est enregistrée dans ce navigateur uniquement.</p></div></div>
+  if(ui.view==="parametres") return `<div class="page-head"><div><h1>Paramètres</h1><p>${sync.on ? "Ta collection est sauvegardée sur ton compte." : "Sans compte, ta progression est enregistrée dans ce navigateur uniquement."}</p></div></div>
     <div class="soon-page">
+      <section class="panel"><div class="panel-head"><h3>Mon compte</h3></div>
+        ${sync.on ? `<p>Connecté avec <b>${esc(sync.email)}</b>. Tes billes te suivent sur tous tes appareils.</p>
+        <div style="margin-top:14px"><button class="btn btn-ghost" data-action="acct-logout">Se déconnecter</button></div>`
+        : `<p>Crée un compte pour garder ta collection en sécurité et la retrouver sur tous tes appareils.</p>
+        <div style="display:flex;gap:10px;flex-wrap:wrap;margin-top:14px">${window.Cloud?.available ? `<button class="btn btn-yellow" data-action="acct-signup">Créer un compte</button><button class="btn btn-ghost" data-action="acct-login">Se connecter</button>` : `<p>Connexion impossible pour l'instant.</p>`}</div>`}
+      </section>
       <section class="panel"><div class="panel-head"><h3>Outils de test</h3></div>
         <p>Pour tester sans attendre : ajoute des ${CUR.many}, recharge tout de suite le sac gratuit ou reçois une bille shiny.</p>
         <div style="display:flex;gap:10px;flex-wrap:wrap;margin-top:14px">
@@ -4786,6 +4837,7 @@ document.addEventListener("click", e=>{
       if(C.t>=TK.length-1 || C.sel.length!==CRAFT_N || !C.sel.every(id=>pool.some(s=>s.id===id))) break;
       if(!arm("craft", t, "Confirmer la fusion")) break;
       const inputs = C.sel.map(specById), gone = new Set(C.sel);
+      gone.forEach(id=>sync.why[id]="fusionnee");
       S.specs = S.specs.filter(s=>!gone.has(s.id));
       S.unseen = S.unseen.filter(id=>!gone.has(id));
       const out = craftResult(C.t+1);
@@ -4898,7 +4950,10 @@ document.addEventListener("submit", e=>{
   e.preventDefault();
   const v = e.target.pseudo.value.trim().replace(/\s+/g," ");
   if(!/^[\p{L}\p{N}_\- ]{3,20}$/u.test(v)){ toast("Ton pseudo doit faire 3 à 20 caractères : lettres, chiffres, espaces, - et _."); return }
-  S.name = v; S.log.forEach(x=>{ if(x.me) x.who = v }); save(); renderTop(); renderView(); toast(`C'est noté, ${v} !`);
+  const apply = () => { S.name = v; S.log.forEach(x=>{ if(x.me) x.who = v }); save(); renderTop(); renderView(); toast(`C'est noté, ${v} !`) };
+  if(!sync.on) return apply();
+  // avec un compte, le pseudo est unique : la base vérifie qu'il est libre
+  Cloud.setPseudo(sync.uid, v).then(apply, err=>toast(err.code==="pseudo_pris" ? `Le pseudo « ${v} » est déjà pris. Essaie-en un autre !` : "Impossible de changer de pseudo pour l'instant. Réessaie dans un instant."));
 });
 document.addEventListener("change", e=>{
   if(e.target.id==="f-hide"){ ui.hideMissing=e.target.checked; renderView() }
@@ -4930,11 +4985,309 @@ setInterval(()=>{
 },1000);
 
 /* =====================================================================
+   COMPTE : connexion et sauvegarde en ligne (voir cloud.js)
+   Chaque bille est une ligne de la base, avec son identifiant unique.
+   Le reste de la partie (bonbecs, titres, défis…) est une sauvegarde en bloc.
+   ===================================================================== */
+var sync = {on:false, uid:null, email:"", known:new Set(), timer:0, busy:false, again:false, edits:0, why:{}};
+const DEVICE = (()=>{ try{ let d = localStorage.getItem("billy-device"); if(!d){ d = newId(); localStorage.setItem("billy-device", d) } return d }catch(e){ return newId() } })();
+const GUEST_FLAG = "billy-guest";   // le joueur a choisi de jouer sans compte sur cet appareil
+const lsGet = k => { try{ return localStorage.getItem(k) }catch(e){ return null } };
+const lsSet = (k,v) => { try{ v==null ? localStorage.removeItem(k) : localStorage.setItem(k,v) }catch(e){} };
+const knownKey = () => "billy-sync-"+sync.uid, dirtyKey = () => "billy-dirty-"+sync.uid;
+
+// appelé par save() : on regroupe les changements et on les envoie 1,5 s plus tard
+function cloudQueue(){
+  if(!sync || !sync.on) return;
+  sync.edits++; lsSet(dirtyKey(), "1");
+  clearTimeout(sync.timer); sync.timer = setTimeout(cloudFlush, 1500);
+}
+async function cloudFlush(){
+  if(!sync.on) return true;
+  if(sync.busy){ sync.again = true; return false }
+  sync.busy = true; clearTimeout(sync.timer);
+  const edits = sync.edits;
+  try{
+    const ids = new Set(S.specs.map(s=>s.id));
+    const add = S.specs.filter(s=>!sync.known.has(s.id));
+    const gone = [...sync.known].filter(id=>!ids.has(id));
+    if(add.length){
+      const rows = await Cloud.addBilles(add);
+      add.forEach(s=>sync.known.add(s.id));
+      rows.forEach(r=>{ const s = specById(r.id); if(s) s.no = r.numero });   // numéro de série donné par la base
+    }
+    if(gone.length){
+      const by = {}; gone.forEach(id=>{ const w = sync.why[id]||"retiree"; (by[w] = by[w]||[]).push(id) });
+      for(const w in by) await Cloud.destroyBilles(by[w], w);
+      gone.forEach(id=>{ sync.known.delete(id); delete sync.why[id] });
+    }
+    const data = Object.assign({}, S); delete data.specs;
+    await Cloud.pushSave(sync.uid, data, DEVICE);
+    lsSet(knownKey(), JSON.stringify([...sync.known]));
+    try{ localStorage.setItem(STORE_KEY, JSON.stringify(S)) }catch(e){}
+    if(sync.edits===edits) lsSet(dirtyKey(), null);
+    return true;
+  }catch(e){
+    console.warn("Sauvegarde en ligne impossible pour l'instant", e);
+    sync.timer = setTimeout(cloudFlush, 30000);   // on réessaie plus tard, la partie reste gardée sur l'appareil
+    return false;
+  }finally{
+    sync.busy = false;
+    if(sync.again){ sync.again = false; cloudFlush() }
+  }
+}
+
+// avant d'envoyer une collection dans la base : identifiants uniques et billes de départ toutes différentes
+function prepForCloud(){
+  const map = {}, dep = new Set(Array.from({length:11}, (_,i)=>hash("depart"+i)));
+  S.specs.forEach(s=>{
+    if(!isUUID(s.id)){ map[s.id] = newId(); s.id = map[s.id] }
+    if(dep.has(s.seed)) s.seed = randU32();
+  });
+  const re = id => map[id] || id;
+  S.active = re(S.active);
+  S.vitrine = S.vitrine.map(id=>id && re(id));
+  S.unseen = S.unseen.map(re);
+  ["cover","keep"].forEach(k=>{ if(S[k]) for(const x in S[k]) S[k][x] = re(S[k][x]) });
+}
+function rerenderAll(){ closeModal(); renderTop(); renderNav(); renderView() }
+
+// reprend la partie du joueur connecté (les événements de connexion peuvent arriver en double : on ne démarre qu'une fois)
+async function cloudStart(user){
+  if(sync.uid===user.id && (sync.on || sync.starting || auth.screen==="import")) return;
+  sync.starting = true;
+  try{ await cloudStart0(user) } finally { sync.starting = false }
+}
+async function cloudStart0(user){
+  sync.uid = user.id; sync.email = user.email||""; STORE_KEY = "billy-u-"+user.id;
+  lsSet(GUEST_FLAG, null);
+  let cached = null; try{ cached = JSON.parse(localStorage.getItem(STORE_KEY)) }catch(e){}
+  const dirty = lsGet(dirtyKey()) === "1";
+  let prevKnown = []; try{ prevKnown = JSON.parse(lsGet(knownKey())) || [] }catch(e){}
+  authShow("loading");
+  let P;
+  try{ P = await Promise.race([Cloud.pull(user.id), new Promise((_,no)=>setTimeout(()=>no(new Error("délai")), 10000))]) }
+  catch(e){
+    if(cached){   // pas de réseau : on joue sur la copie de l'appareil, elle partira plus tard
+      sync.known = new Set(prevKnown); adoptState(cached); sync.on = true; authHide(); rerenderAll();
+      toast("Pas de connexion : ta partie est gardée sur cet appareil et sera envoyée plus tard.");
+      return;
+    }
+    authShow("offline"); return;
+  }
+  if(P.sauvegarde){
+    const cloudIds = new Set(P.billes.map(s=>s.id));
+    if(dirty && cached && P.sauvegarde.appareil===DEVICE){
+      adoptState(cached);   // cet appareil a joué après son dernier envoi : sa copie est la plus récente
+      // billes gagnées ailleurs entre-temps
+      const mine = new Set(S.specs.map(s=>s.id)), prev = new Set(prevKnown);
+      P.billes.forEach(s=>{ if(!mine.has(s.id) && !prev.has(s.id)) S.specs.push(s) });
+      sync.known = new Set(prevKnown.filter(id=>cloudIds.has(id)));
+      S.specs.forEach(s=>{ if(cloudIds.has(s.id)) sync.known.add(s.id) });
+    } else {
+      const st = P.sauvegarde.donnees; st.specs = P.billes;
+      // billes trouvées hors ligne sur cet appareil et pas encore envoyées
+      if(dirty && cached){ const prev = new Set(prevKnown);
+        (cached.specs||[]).forEach(s=>{ if(isUUID(s.id) && !cloudIds.has(s.id) && !prev.has(s.id)) st.specs.push(s) }) }
+      sync.known = new Set(cloudIds);
+      adoptState(st);
+    }
+    if(P.profil) S.name = P.profil.pseudo;
+    sync.on = true; save(); authHide(); rerenderAll();
+    return;
+  }
+  // premier passage de ce compte : on récupère (ou pas) la collection jouée sans compte
+  let guest = null; try{ guest = JSON.parse(localStorage.getItem(GUEST_KEY)) }catch(e){}
+  const pseudo = P.profil?.pseudo;
+  const begin = async fromGuest => {
+    adoptState(fromGuest ? guest : null);
+    prepForCloud();
+    if(pseudo){ S.name = pseudo; S.log.forEach(x=>{ if(x.me) x.who = pseudo }) }
+    sync.known = new Set(); sync.on = true; save();
+    authShow("loading");
+    await cloudFlush();
+    if(fromGuest) lsSet(GUEST_KEY, null);   // la collection appartient maintenant au compte : elle ne peut pas partir sur un autre
+    authHide(); rerenderAll();
+    toast(fromGuest ? "Ta collection est maintenant sauvegardée sur ton compte." : `Bienvenue dans la cour, ${S.name} !`);
+  };
+  if(guest && Array.isArray(guest.specs) && guest.specs.length) authShow("import", {n:guest.specs.length, begin});
+  else begin(false);
+}
+
+async function logout(){
+  if(sync.on && !(await cloudFlush()) || lsGet(dirtyKey())==="1"){
+    toast("Ta partie n'a pas encore pu être envoyée. Vérifie ta connexion avant de te déconnecter."); return;
+  }
+  [STORE_KEY, knownKey(), dirtyKey()].forEach(k=>lsSet(k, null));   // rien ne reste sur un appareil partagé
+  sync.on = false;
+  await Cloud.signOut();
+  location.reload();
+}
+
+// si le joueur a joué sur un autre appareil entre-temps, on reprend sa partie à jour
+document.addEventListener("visibilitychange", async ()=>{
+  if(!sync.on) return;
+  if(document.visibilityState==="hidden"){ cloudFlush(); return }
+  if(lsGet(dirtyKey())==="1" && !(await cloudFlush())) return;
+  try{
+    const u = await Cloud.lastUpdate(sync.uid);
+    if(!u || u.appareil===DEVICE) return;
+    const P = await Cloud.pull(sync.uid);
+    if(!P.sauvegarde || P.sauvegarde.appareil===DEVICE) return;
+    const st = P.sauvegarde.donnees; st.specs = P.billes;
+    sync.known = new Set(P.billes.map(s=>s.id));
+    adoptState(st); if(P.profil) S.name = P.profil.pseudo;
+    try{ localStorage.setItem(STORE_KEY, JSON.stringify(S)) }catch(e){}
+    rerenderAll();
+  }catch(e){}
+});
+
+/* ---------- écrans : bienvenue, inscription, connexion… ---------- */
+const auth = {screen:null, tab:"signup", email:"", err:"", closable:false, opts:{}};
+const AUTH_ERR = {
+  invalid_credentials:"E-mail ou mot de passe incorrect.",
+  email_not_confirmed:"Confirme d'abord ton adresse e-mail : clique sur le lien reçu (regarde aussi dans les spams).",
+  user_already_exists:"Un compte existe déjà avec cet e-mail. Connecte-toi !",
+  weak_password:"Ce mot de passe est trop facile à deviner. Choisis-en un plus long.",
+  email_address_invalid:"Cette adresse e-mail n'est pas valide.",
+  over_email_send_rate_limit:"Trop d'e-mails envoyés d'un coup. Réessaie dans quelques minutes.",
+  over_request_rate_limit:"Trop d'essais d'un coup. Réessaie dans quelques minutes.",
+  same_password:"C'est déjà ton mot de passe actuel.",
+};
+const authErr = e => AUTH_ERR[e?.code] || (e?.message==="hors-ligne" || /fetch|network/i.test(e?.message||"") ? "Connexion impossible. Vérifie ton accès à Internet." : "Oups, ça n'a pas marché. Réessaie dans un instant.");
+const field = (id, label, type, extra="") => `<label for="${id}">${label}</label><input id="${id}" name="${id}" type="${type}" ${extra}>`;
+
+function authShow(screen, opts){
+  auth.screen = screen; if(opts) auth.opts = opts;
+  const box = document.getElementById("auth");
+  const head = `<div class="logo" aria-label="Billy"><span>Billy</span><img src="${marbleURL(SHOWCASE[1],96)}" alt=""></div><div class="auth-tag">Ouvre. Collectionne. Joue.</div>`;
+  const close = auth.closable ? `<button class="close-x" data-action="auth-close" aria-label="Fermer">×</button>` : "";
+  const err = `<div class="auth-err" role="alert">${esc(auth.err)}</div>`;
+  let body = "";
+  if(screen==="welcome") body = `${head}
+    <div class="auth-tabs" role="tablist">
+      <button role="tab" aria-selected="${auth.tab==="signup"}" data-action="auth-tab" data-tab="signup">Créer un compte</button>
+      <button role="tab" aria-selected="${auth.tab==="login"}" data-action="auth-tab" data-tab="login">Se connecter</button>
+    </div>
+    ${auth.tab==="signup" ? `<form class="auth-form" id="auth-signup" novalidate>
+      ${field("a-pseudo","Pseudo","text",`maxlength="20" autocomplete="nickname" spellcheck="false" required`)}<small>3 à 20 caractères. C'est le nom que les autres joueurs verront.</small>
+      ${field("a-email","E-mail","email",`autocomplete="email" value="${esc(auth.email)}" required`)}
+      ${field("a-pass","Mot de passe","password",`minlength="8" autocomplete="new-password" required`)}<small>8 caractères minimum.</small>
+      ${err}<button class="btn btn-yellow" type="submit">Créer mon compte</button>
+    </form>` : `<form class="auth-form" id="auth-login" novalidate>
+      ${field("a-email","E-mail","email",`autocomplete="email" value="${esc(auth.email)}" required`)}
+      ${field("a-pass","Mot de passe","password",`autocomplete="current-password" required`)}
+      ${err}<button class="btn btn-yellow" type="submit">Me connecter</button>
+    </form>
+    <div class="auth-links"><button class="auth-link" data-action="auth-go" data-screen="forgot">Mot de passe oublié ?</button></div>`}
+    ${auth.closable ? "" : `<div class="auth-links"><button class="auth-link" data-action="auth-guest">Jouer sans compte</button></div>
+    <p class="auth-note">Sans compte, ta collection reste sur cet appareil. Tu pourras créer un compte plus tard pour la garder.</p>`}`;
+  else if(screen==="check-mail") body = `${head}<h2>Vérifie ta boîte mail</h2>
+    <p>On t'a envoyé un lien à <span class="auth-mail">${esc(auth.email)}</span>. Clique dessus pour activer ton compte : tu reviendras ici tout seul.</p>
+    <p class="auth-note">Rien reçu ? Regarde dans les spams, ou renvoie l'e-mail.</p>${err}
+    <button class="btn btn-ghost" data-action="auth-resend">Renvoyer l'e-mail</button>
+    <div class="auth-links"><button class="auth-link" data-action="auth-go" data-screen="welcome" data-tab="login">J'ai activé mon compte, me connecter</button></div>`;
+  else if(screen==="forgot") body = `${head}<h2>Mot de passe oublié</h2><p>Donne ton e-mail : on t'envoie un lien pour en choisir un nouveau.</p>
+    <form class="auth-form" id="auth-forgot" novalidate>${field("a-email","E-mail","email",`autocomplete="email" value="${esc(auth.email)}" required`)}
+      ${err}<button class="btn btn-yellow" type="submit">Envoyer le lien</button></form>
+    <div class="auth-links"><button class="auth-link" data-action="auth-go" data-screen="welcome" data-tab="login">Retour</button></div>`;
+  else if(screen==="forgot-sent") body = `${head}<h2>E-mail envoyé</h2>
+    <p>Si un compte existe avec <span class="auth-mail">${esc(auth.email)}</span>, tu vas recevoir un lien pour choisir un nouveau mot de passe.</p>
+    <div class="auth-links"><button class="auth-link" data-action="auth-go" data-screen="welcome" data-tab="login">Retour à la connexion</button></div>`;
+  else if(screen==="newpass") body = `${head}<h2>Nouveau mot de passe</h2>
+    <form class="auth-form" id="auth-newpass" novalidate>${field("a-pass","Nouveau mot de passe","password",`minlength="8" autocomplete="new-password" required`)}<small>8 caractères minimum.</small>
+      ${err}<button class="btn btn-yellow" type="submit">Enregistrer</button></form>`;
+  else if(screen==="import") body = `${head}<h2>Tu as déjà des billes ici</h2>
+    <p>Cet appareil contient une collection de <b>${fmt(auth.opts.n)} bille${auth.opts.n>1?"s":""}</b> jouée sans compte. Tu veux la garder sur ton compte ?</p>
+    <button class="btn btn-yellow" data-action="auth-import" data-keep="1">Garder cette collection</button>
+    <button class="btn btn-ghost" data-action="auth-import" data-keep="0">Commencer une nouvelle collection</button>
+    <p class="auth-note">Une collection ne peut aller que sur un seul compte.</p>`;
+  else if(screen==="loading") body = `${head}<div class="auth-spin" aria-hidden="true"></div><p>Chargement de ta collection…</p>`;
+  else if(screen==="offline") body = `${head}<h2>Pas de connexion</h2><p>Impossible de récupérer ta collection pour l'instant. Vérifie ton accès à Internet.</p>
+    <button class="btn btn-yellow" data-action="auth-retry">Réessayer</button>`;
+  box.innerHTML = `<div class="auth-card" role="dialog" aria-modal="true" aria-label="Compte Billy">${close}${body}</div>`;
+  box.hidden = false;
+  auth.err = "";
+  [...box.querySelectorAll("input")].find(i=>!i.value)?.focus();
+}
+function authHide(){ document.getElementById("auth").hidden = true; auth.screen = null; auth.closable = false }
+function authOpen(tab){ auth.tab = tab; auth.closable = true; toggleProfPop(false); authShow("welcome") }
+function authFail(e){ auth.err = typeof e==="string" ? e : authErr(e); authShow(auth.screen) }
+
+document.addEventListener("click", async e=>{
+  const t = e.target.closest("#auth [data-action], [data-action^='acct-']"); if(!t) return;
+  switch(t.dataset.action){
+    case "auth-tab": auth.tab = t.dataset.tab; authShow("welcome"); break;
+    case "auth-go": if(t.dataset.tab) auth.tab = t.dataset.tab; authShow(t.dataset.screen); break;
+    case "auth-close": authHide(); break;
+    case "auth-guest": lsSet(GUEST_FLAG, "1"); authHide(); break;
+    case "auth-import": auth.opts.begin(t.dataset.keep==="1"); break;
+    case "auth-retry": { const u = await Cloud.currentUser().catch(()=>null); if(u){ sync.uid = null; cloudStart(u) } else authShow("welcome"); break }
+    case "auth-resend": try{ await Cloud.resendConfirm(auth.email); toast("E-mail renvoyé !") }catch(err){ authFail(err) } break;
+    case "acct-login": authOpen("login"); break;
+    case "acct-signup": authOpen("signup"); break;
+    case "acct-logout": if(arm("logout", t, "Confirmer la déconnexion")) logout(); break;
+  }
+});
+document.addEventListener("submit", async e=>{
+  const f = e.target; if(!f.id.startsWith("auth-")) return;
+  e.preventDefault();
+  const email = f["a-email"]?.value.trim() || "", pass = f["a-pass"]?.value || "";
+  if(f["a-email"]) auth.email = email;
+  const btn = f.querySelector("[type=submit]");
+  if(f["a-email"] && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) return authFail("Cette adresse e-mail n'est pas valide.");
+  try{
+    if(f.id==="auth-signup"){
+      const pseudo = f["a-pseudo"].value.trim().replace(/\s+/g," ");
+      if(!/^[\p{L}\p{N}_\- ]{3,20}$/u.test(pseudo)) return authFail("Ton pseudo doit faire 3 à 20 caractères : lettres, chiffres, espaces, - et _.");
+      if(pass.length<8) return authFail("Ton mot de passe doit faire au moins 8 caractères.");
+      btn.disabled = true;
+      const r = await Cloud.signUp(email, pass, pseudo);
+      if(r.needsConfirm) authShow("check-mail");   // sinon, la connexion lance cloudStart toute seule
+    }
+    else if(f.id==="auth-login"){
+      if(!pass) return authFail("Entre ton mot de passe.");
+      btn.disabled = true;
+      await Cloud.signIn(email, pass);
+    }
+    else if(f.id==="auth-forgot"){ btn.disabled = true; await Cloud.resetPassword(email); authShow("forgot-sent") }
+    else if(f.id==="auth-newpass"){
+      if(pass.length<8) return authFail("Ton mot de passe doit faire au moins 8 caractères.");
+      btn.disabled = true;
+      await Cloud.updatePassword(pass);
+      toast("Nouveau mot de passe enregistré !");
+      auth.screen = null;
+      const u = await Cloud.currentUser(); if(u){ sync.uid = null; cloudStart(u) } else authShow("welcome");
+    }
+  }catch(err){ authFail(err) }
+});
+
+// au démarrage : session en cours, lien reçu par e-mail, ou écran de bienvenue
+function accountBoot(){
+  if(!window.Cloud?.available){ if(CLOUD_UID) toast("Pas de connexion : ta partie est gardée sur cet appareil."); return }
+  if(CLOUD_UID) authShow("loading");
+  const h = new URLSearchParams(location.hash.slice(1));
+  if(h.get("error")){   // lien d'e-mail périmé ou déjà utilisé
+    history.replaceState(null, "", location.pathname + location.search);
+    auth.err = h.get("error_code")==="otp_expired" ? "Ce lien a expiré ou a déjà servi. Connecte-toi, ou demande un nouveau lien." : "Ce lien ne fonctionne pas. Réessaie.";
+    auth.tab = "login";
+  }
+  Cloud.onAuth((ev, user)=>{
+    if(ev==="PASSWORD_RECOVERY"){ auth.closable = false; authShow("newpass"); return }
+    if(auth.screen==="newpass") return;
+    if(user && (ev==="INITIAL_SESSION" || ev==="SIGNED_IN")) cloudStart(user);
+    else if(!user && ev==="INITIAL_SESSION" && (auth.err || lsGet(GUEST_FLAG)!=="1")) authShow("welcome");
+    else if(!user && ev==="SIGNED_OUT" && sync.on){ sync.on = false; location.reload() }
+  });
+}
+
+/* =====================================================================
    DÉMARRAGE
    ===================================================================== */
 document.getElementById("logo-marble").src = marbleURL(SHOWCASE[1],96);
 document.getElementById("coin-slot").outerHTML = COIN;
 renderThemeBtn(); renderSoundBtn(); renderTop(); renderNav(); renderView();
+accountBoot();
 // « Nouveau » : s'efface quand on laisse la souris une demi-seconde sur la bille (un survol rapide ne compte pas)
 document.addEventListener("pointerover", e=>{
   if(e.pointerType==="touch") return;

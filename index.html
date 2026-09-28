@@ -132,7 +132,7 @@ button.wallet:hover{background:var(--panel-2)}
 
 /* ---------- layout ---------- */
 .layout{display:grid;grid-template-columns:216px minmax(0,1fr);min-height:calc(100% - 68px)}
-@media (min-width:1280px){ .layout{grid-template-columns:216px minmax(0,1fr) 320px} }
+@media (min-width:1340px){ .layout{grid-template-columns:216px minmax(0,1fr) 360px} }
 .side{position:sticky;top:calc(68px + env(safe-area-inset-top,0px));align-self:start;height:calc(100vh - 68px);display:flex;flex-direction:column;gap:4px;padding:22px 10px;border-right:1px solid var(--line);overflow-y:auto}
 .nav-btn{display:flex;align-items:center;gap:12px;width:100%;padding:12px 10px 12px 12px;border-radius:12px;font-weight:700;font-size:14.5px;color:var(--ink);text-align:left}
 .nav-btn svg{flex:none;width:22px;height:22px}
@@ -157,9 +157,9 @@ button.wallet:hover{background:var(--panel-2)}
 .mj-btn .n{display:grid;place-items:center;min-width:20px;height:20px;padding:0 5px;border-radius:999px;background:#E5484D;color:#fff;font-size:11px}
 .mj-btn:not(.has) svg{color:var(--muted)}
 .mj-btn.has svg{color:#D9468F;animation:giftwiggle 2.4s ease-in-out infinite}
-@media (max-width:1279px){ .mj-btn{display:flex} }
+@media (max-width:1339px){ .mj-btn{display:flex} }
 .mj-rail{display:none;position:sticky;top:calc(68px + env(safe-area-inset-top,0px));align-self:start;height:calc(100vh - 68px);overflow-y:auto;flex-direction:column;gap:12px;padding:22px 16px 30px;border-left:1px solid var(--line)}
-@media (min-width:1280px){ .mj-rail{display:flex} }
+@media (min-width:1340px){ .mj-rail{display:flex} }
 .mj-rail > *,.mj-panel > *{flex-shrink:0}
 .mj-head{display:flex;align-items:center;gap:10px}
 .mj-head h2{font-family:var(--display);font-weight:400;font-size:24px;letter-spacing:.3px;line-height:1}
@@ -199,8 +199,51 @@ button.mj-row:hover{border-color:var(--line-2)}
 .mj-pass .btn{justify-self:start;height:34px;padding:0 14px;font-size:13px;margin-top:6px}
 .mj-pass .btn-ghost{background:rgba(255,255,255,.14);border-color:rgba(255,255,255,.3);color:#fff}
 .mj-scrim{position:fixed;inset:0;z-index:60;background:rgba(10,8,6,.5);display:flex;justify-content:flex-end;animation:mjfade .2s}
-.mj-panel{width:min(400px,100%);height:100%;overflow-y:auto;display:flex;flex-direction:column;gap:12px;padding:18px 16px 30px;background:var(--bg);border-left:1px solid var(--line);animation:mjside .28s cubic-bezier(.2,.9,.3,1)}
+.mj-panel{width:min(420px,100%);height:100%;overflow-y:auto;display:flex;flex-direction:column;gap:12px;padding:18px 16px 30px;background:var(--bg);border-left:1px solid var(--line);animation:mjside .28s cubic-bezier(.2,.9,.3,1)}
 .mj-x{display:grid;place-items:center;width:36px;height:36px;border-radius:50%;background:var(--panel-2);border:1px solid var(--line);font-size:20px;line-height:1}
+/* l'ardoise : cadre en bois, fond d'ardoise, écriture à la craie (toujours sombre, comme une vraie) */
+.mj-rail{padding:18px 14px 30px}
+.ardoise{--chalk:#F1EFE8;--chalk-2:rgba(241,239,232,.62);--chalk-line:rgba(241,239,232,.2);
+  display:flex;flex-direction:column;gap:12px;padding:18px 16px 20px;border-radius:14px;color:var(--chalk);
+  border:10px solid #9A6B3F;border-image:none;
+  background:radial-gradient(circle at 20% 15%,rgba(255,255,255,.06),transparent 40%),radial-gradient(circle at 80% 70%,rgba(255,255,255,.04),transparent 45%),
+    repeating-linear-gradient(170deg,rgba(255,255,255,.012) 0 3px,transparent 3px 9px),#26302C;
+  box-shadow:inset 0 0 0 2px #6E4726,inset 0 2px 14px rgba(0,0,0,.55),0 0 0 1px #6E4726,0 14px 28px -14px rgba(0,0,0,.7)}
+.ardoise > *{flex-shrink:0}
+.ardoise .mj-head{align-items:flex-start}
+.ard-date{display:block;font-family:var(--hand);font-size:21px;font-weight:700;line-height:1;color:var(--chalk-2);margin-bottom:2px}
+.ardoise .mj-head h2{font-family:var(--hand);font-weight:700;font-size:38px;line-height:1;letter-spacing:0;color:var(--chalk);text-shadow:0 0 1px rgba(255,255,255,.5);
+  text-decoration:underline;text-decoration-thickness:2px;text-underline-offset:6px;text-decoration-color:rgba(241,239,232,.45)}
+.ardoise .mj-x{background:transparent;border:2px solid var(--chalk-line);color:var(--chalk)}
+.ardoise .mj-prog{color:var(--chalk-2);font-family:var(--hand);font-size:19px;font-weight:700}
+.ardoise .bar{background:var(--chalk-line)}
+.ardoise .mj-prog .bar i{background:var(--chalk)}
+.ardoise .mj-empty{font-family:var(--hand);font-size:20px;color:var(--chalk-2)}
+.ardoise .mj-gh{font-family:var(--hand);font-size:21px;font-weight:700;letter-spacing:0;text-transform:none;color:var(--chalk);margin:8px 2px 0}
+.ardoise .mj-gh small{font-family:var(--body);font-size:11px;font-weight:700;color:var(--chalk-2);align-self:center}
+.ardoise .mj-group{gap:0}
+.ardoise .mj-row{background:none;border:0;border-radius:0;border-bottom:1.5px dashed var(--chalk-line);padding:10px 2px;grid-template-columns:28px minmax(0,1fr) auto;color:var(--chalk)}
+.ardoise .mj-group > .mj-row:last-child{border-bottom:0}
+.ardoise button.mj-row:hover{background:rgba(255,255,255,.04)}
+.ardoise .mj-row .mi{width:24px;height:24px;border-radius:4px;background:none;border:2px solid var(--chalk-2);color:transparent;transform:rotate(-3deg)}
+.ardoise .mj-row .mi svg{width:0;height:0}
+.ardoise .mj-row b{color:var(--chalk);font-family:var(--hand);font-size:20px;font-weight:700;line-height:1.05}
+.ardoise .mj-row small{color:var(--chalk-2)}
+.ardoise .mj-row .bar{height:3px}
+.ardoise .mj-row .bar i{background:var(--chalk-2)}
+.ardoise .mj-row .mj-rw{color:var(--chalk-2)}
+.ardoise .mj-row .go{color:var(--chalk-2)}
+.ardoise .mj-row.ready{background:none;border-color:var(--chalk-line)}
+.ardoise .mj-row.ready .mi{border-color:#FFD86B;background:none}
+.ardoise .mj-row.ready b{color:#FFE08A}
+.ardoise .mj-row.done{opacity:1}
+.ardoise .mj-row.done .mi{background:none;border-color:var(--chalk-2);color:var(--chalk)}
+.ardoise .mj-row.done .mi svg{width:20px;height:20px;stroke-width:3;transform:rotate(6deg) translate(2px,-3px)}
+.ardoise .mj-row.done b{color:var(--chalk-2);text-decoration:line-through;text-decoration-thickness:2px;text-decoration-color:rgba(241,239,232,.7)}
+.ardoise .mj-row.done small{color:rgba(241,239,232,.4)}
+.ardoise .btn-ghost{background:transparent;border-color:var(--chalk-line);color:var(--chalk)}
+.ardoise .mj-pass{margin-top:6px;transform:rotate(-1deg);box-shadow:0 6px 14px -6px rgba(0,0,0,.6)}
+.mj-panel{padding:14px 12px 30px}
 @keyframes mjfade{from{opacity:0}}
 @keyframes mjside{from{transform:translateX(40px);opacity:0}}
 @keyframes mjup{from{transform:translateY(40px);opacity:0}}
@@ -3031,7 +3074,8 @@ function dayHTML(inSheet){
   const into = tier>=PASS_TIERS ? TIER_XP : P.xp-tier*TIER_XP;
   const finalSpec = rewardSpec("prem",30,passReward("prem",30));
   const tasks = [!dReady, ...Q.items.map(q=>q.claimed), Q.bonus], nDone = tasks.filter(Boolean).length;
-  return `<div class="mj-head"><h2>Ma journée</h2><div class="sp"></div>${inSheet?`<button class="mj-x" data-action="mj-close" aria-label="Fermer">×</button>`:`<span class="meta">${new Date().toLocaleDateString("fr-FR",{weekday:"short",day:"numeric",month:"short"})}</span>`}</div>
+  const today = new Date().toLocaleDateString("fr-FR",{weekday:"long",day:"numeric",month:"long"});
+  return `<div class="ardoise"><div class="mj-head"><div><span class="ard-date">${today.charAt(0).toUpperCase()+today.slice(1)}</span><h2>Ma journée</h2></div><div class="sp"></div>${inSheet?`<button class="mj-x" data-action="mj-close" aria-label="Fermer">×</button>`:""}</div>
   <div class="mj-prog"><span>${nDone} / ${tasks.length} faits</span><span class="bar"><i style="width:${nDone/tasks.length*100}%"></i></span></div>
   ${n ? `<button class="btn btn-yellow mj-all" data-action="claim-all">${ic("gift",18)} Tout récupérer (${n})</button>` : `<p class="mj-empty">Tout est récupéré. Reviens demain !</p>`}
   <div class="mj-group"><div class="mj-gh">Tous les jours</div>${rows1.join("")}</div>
@@ -3044,7 +3088,7 @@ function dayHTML(inSheet){
       <span class="bar"><i style="width:${into/TIER_XP*100}%"></i></span>
       <small>${fmt(into)} / ${fmt(TIER_XP)} XP · fin dans <span data-pass-timer>${passLeft()}</span></small>
       ${pc ? `<button class="btn btn-yellow" data-action="pass-all">${ic("gift",16)} ${pc} récompense${pc>1?"s":""} à prendre</button>` : `<button class="btn btn-ghost" data-action="nav" data-view="passe">Voir le passe ${ic("arrow",14)}</button>`}
-    </div></div>`;
+    </div></div></div>`;
 }
 function renderDay(){
   const n = mjClaimable(), b = document.getElementById("mj-btn"), c = document.getElementById("mj-n");

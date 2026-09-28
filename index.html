@@ -1672,8 +1672,7 @@ vec4 fam(vec3 q, out vec3 e){
   { // damier : cases qui s'enroulent comme sur un ballon de plage
     vec3 u=normalize(q); vec2 s=sph(u); float n=4.0+nb;
     vec2 c=floor(vec2((s.x+s.y*tw*0.04)*n*2.0, s.y*n));
-    vec3 other=h31(so)<0.5?vec3(0.97,0.95,0.9):uC2;
-    return vec4(mod(c.x+c.y,2.0)<0.5?uC1:other, 200.0);
+    return vec4(mod(c.x+c.y,2.0)<0.5?uC1:uC3, 200.0);   // toujours les mêmes couleurs pour un même coloris
   }
 #elif MODE==22
   { // écossais : deux trames qui se croisent, avec le petit sergé du tissu

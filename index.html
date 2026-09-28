@@ -145,6 +145,9 @@ button.wallet:hover{background:var(--panel-2)}
 .side-quote{margin-top:auto;padding:18px 10px 4px;font-family:var(--hand);font-size:19px;line-height:1.15;color:var(--ink-2);transform:rotate(-6deg)}
 .side-quote svg{display:block;margin:6px 0 0 40px}
 .nav-btn .cnt{margin-left:auto;min-width:22px;text-align:center;font-size:11px;font-weight:900;padding:1px 7px;border-radius:999px;background:var(--green-soft);color:var(--green)}
+.nav-apart{margin-top:26px;position:relative}
+.nav-apart::before{content:"";position:absolute;top:-14px;left:12px;right:12px;height:1px;background:var(--line)}
+.nav-btn .cnt.gold{background:var(--gold-bg);color:#C07A0C;border:1px solid var(--gold-line)}
 .side-friends{margin-top:auto;padding:12px;border-radius:14px;border:1.5px dashed var(--line-2);color:var(--muted);font-size:12.5px;font-weight:700;line-height:1.35}
 .side-friends b{display:flex;align-items:center;gap:8px;color:var(--ink-2);font-size:13.5px;margin-bottom:3px}
 .side-friends + .side-quote{margin-top:6px}
@@ -2971,7 +2974,9 @@ function renderNav(){
     `<button class="nav-btn" data-action="nav" data-view="${n[0]}" ${cur===n[0]?'aria-current="page"':""}>${ic(n[2])}<span>${n[1]}</span>${
       n[0]==="sacs"&&bags?`<span class="cnt" aria-label="${bags} sac${bags>1?"s":""} à ouvrir">${bags}</span>`:""}${
       n[0]==="jeux"&&games?'<span class="ready" aria-label="Récompense du jour à gagner"></span>':""}</button>`
-  ).join("") + `<div class="side-friends"><b>${ic("users",18)} Les copains</b>Amis, cour de récré et classement arriveront ici, tous au même endroit.</div>
+  ).join("") + (()=>{ const pc = passClaimable();
+    return `<button class="nav-btn nav-apart" data-action="nav" data-view="passe" ${cur==="passe"?'aria-current="page"':""}>${ic("ticket")}<span>Passe de saison</span>${pc?`<span class="cnt gold" aria-label="${pc} récompense${pc>1?"s":""} à prendre">${pc}</span>`:""}</button>` })()
+    + `<div class="side-friends"><b>${ic("users",18)} Les copains</b>Amis, cour de récré et classement arriveront ici, tous au même endroit.</div>
     <p class="side-quote">Les plus grandes aventures commencent toujours par une petite bille.
     <svg width="40" height="36" viewBox="0 0 40 36" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"><path d="M6 2c-4 12 2 24 26 28"/><path d="M26 24l6 6-8 3"/></svg></p>`;
   const tab = (v,l,i,dot) => `<button class="tb" data-action="nav" data-view="${v}" ${cur===v?'aria-current="page"':""}>${ic(i,24)}${l}${dot?'<span class="dot"></span>':""}</button>`;

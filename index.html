@@ -569,6 +569,35 @@ button.vit-slot:hover{background:var(--panel-2);color:var(--ink)}
 .pity b{font-weight:900}
 .pity p{font-size:12.5px;color:var(--ink-2);font-weight:600;margin-top:2px}
 .pity .q-prog{max-width:420px}
+.odds .odds-h{display:block;grid-template-columns:none;font-size:10.5px;font-weight:900;letter-spacing:.06em;text-transform:uppercase;color:var(--muted);margin-bottom:1px}
+/* comment une bille est tirée */
+.draw{margin-top:22px;display:grid;gap:16px}
+.draw h2{font-size:21px;font-weight:900}
+.draw > p{color:var(--ink-2);font-weight:600;max-width:78ch;margin-top:-8px}
+.draw-steps{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:10px}
+.draw-step{display:grid;grid-template-columns:auto minmax(0,1fr);gap:4px 10px;align-items:start;padding:12px 14px;border-radius:14px;background:var(--panel-2);border:1px solid var(--line)}
+.draw-step .n{grid-row:span 2;width:28px;height:28px;border-radius:50%;display:grid;place-items:center;font-weight:900;background:var(--ink);color:var(--on-ink)}
+.draw-step b{font-weight:900}
+.draw-step small{font-size:12px;font-weight:700;color:var(--ink-2)}
+.draw-step.hl{border:2px solid var(--gold-line);background:var(--gold-bg)}
+.dec-table{display:grid;gap:6px}
+.dec-row{display:grid;grid-template-columns:150px minmax(0,1fr) 120px 110px;gap:12px;align-items:center;padding:9px 12px;border-radius:12px;background:var(--panel-2);border-left:4px solid var(--dc)}
+.dec-row b{display:flex;align-items:center;gap:7px;font-weight:900;color:color-mix(in srgb,var(--dc) 70%,var(--ink))}
+.dec-row b i{width:10px;height:10px;border-radius:50%;background:var(--dc)}
+.dec-row .names{font-size:12.5px;font-weight:700;color:var(--ink-2)}
+.dec-row .v{text-align:right;font-size:12.5px;font-weight:800;font-variant-numeric:tabular-nums}
+.dec-row .v small{display:block;font-size:10.5px;font-weight:700;color:var(--muted)}
+.dec-head{display:grid;grid-template-columns:150px minmax(0,1fr) 120px 110px;gap:12px;padding:0 12px 0 16px;font-size:10.5px;font-weight:900;letter-spacing:.06em;text-transform:uppercase;color:var(--muted)}
+.dec-head span:nth-child(n+3){text-align:right}
+.draw-ex{display:flex;gap:10px;align-items:center;flex-wrap:wrap;font-weight:700;color:var(--ink-2);font-size:13.5px}
+.draw-ex b{color:var(--ink)}
+@media (max-width:820px){
+  .draw-steps{grid-template-columns:repeat(2,minmax(0,1fr))}
+  .dec-head{display:none}
+  .dec-row{grid-template-columns:minmax(0,1fr) auto;gap:4px 10px}
+  .dec-row .names{grid-column:1/-1;grid-row:2}
+  .dec-row .v:last-child{display:none}
+}
 .first-pill{display:inline-flex;align-items:center;font-size:11px;font-weight:900;padding:2px 9px;border-radius:999px;color:#24253D;background:linear-gradient(100deg,#FFD35F,#FFB547);white-space:nowrap;line-height:1.5}
 .ed-no{font-size:12px;font-weight:900;color:#FFD98A;letter-spacing:.02em}
 .feed li{align-items:flex-start}
@@ -2521,10 +2550,36 @@ function viewHome(){
    ===================================================================== */
 function oddsList(b){
   return `<ul class="odds">
+    <li class="odds-h">Taille de chaque bille</li>
     ${TK.map(k=>`<li style="${tstyle(k)}"><i></i><span>${TYPES[k].label}</span><span>${pct(b.odds[k])}</span></li>`).join("")}
     <li class="sh"><i></i><span>Shiny (sur chaque bille)</span><span>${pct(+(b.shiny*100).toFixed(2))}</span></li>
     ${b.guarantee?`<li class="guar">Garantie : 1 ${TYPES[b.guarantee].label} ou mieux</li>`:""}
   </ul>`;
+}
+// Chaque bille est tirée en 4 fois : taille (selon le sac), décor, coloris, shiny
+function drawExplainer(){
+  const fw = FAM_W.reduce((a,b)=>a+b,0);
+  const rows = DECOR_RAR.map((R,k)=>({R,k,fams:FAMILIES.map((F,i)=>i).filter(i=>FAMILIES[i].rar===k)})).filter(g=>g.fams.length).reverse();
+  const gal = FAMILIES.findIndex(F=>F.name==="Galaxie"), ex = FREE_BAG.odds.mammouth/100 * FAM_W[gal]/fw;
+  return `<section class="panel draw">
+    <h2>Comment chaque bille est tirée</h2>
+    <p>Chaque bille du sac est tirée en 4 fois, indépendamment. Le sac que tu choisis change surtout la <b>taille</b> : les chances de <b>décor</b> et de <b>coloris</b> sont les mêmes dans tous les sacs.</p>
+    <div class="draw-steps">
+      <div class="draw-step"><span class="n">1</span><b>La taille</b><small>La rareté principale. Les chances sont sur chaque sac, plus haut.</small></div>
+      <div class="draw-step hl"><span class="n">2</span><b>Le décor</b><small>${FAMILIES.length} décors rangés en ${rows.length} paniers, du plus courant au plus rare (ci-dessous).</small></div>
+      <div class="draw-step"><span class="n">3</span><b>Le coloris</b><small>${BASE_PALS} coloris, tous aussi fréquents : 1 chance sur ${BASE_PALS} chacun.</small></div>
+      <div class="draw-step"><span class="n">4</span><b>Shiny ou pas</b><small>${oneIn(SHINY_RATE)} billes, 5 fois plus dans le Sac Collector.</small></div>
+    </div>
+    <div class="dec-table">
+      <div class="dec-head"><span>Panier de décors</span><span>Décors</span><span>Un décor précis</span><span>Tout le panier</span></div>
+      ${rows.map(({R,k,fams})=>`<div class="dec-row" style="--dc:${R.c}"><b><i></i>${R.name}</b>
+        <span class="names">${fams.map(i=>FAMILIES[i].name).join(", ")}</span>
+        <span class="v">${oneIn(FAM_W[fams[0]]/fw)}<small>billes</small></span>
+        <span class="v">${pct(+(100*FAM_W[fams[0]]*fams.length/fw).toFixed(1))}<small>des billes</small></span></div>`).join("")}
+    </div>
+    <div class="draw-ex">${ic("star",18)}<span>Les chances se multiplient : un <b>Mammouth Galaxie</b> dans le sac gratuit, c'est environ 1 sur ${fmt(Math.round(1/ex/1000)*1000)} billes.</span>
+      <button class="btn btn-ghost" data-action="nav" data-view="billepedia">Voir tous les décors</button></div>
+  </section>`;
 }
 function viewBags(){
   const ready = freeReady();
@@ -2557,6 +2612,7 @@ function viewBags(){
         </button>
       </article>`}).join("")}
   </div>
+  ${drawExplainer()}
   <div class="earn">
     <button class="panel" data-action="nav" data-view="jeux">${ic("target",26)}<div><b>Le Tir</b><p>De 20 à 100 ${CUR.many} par trou selon ton score.</p></div></button>
     <button class="panel" data-action="nav" data-view="passe">${ic("ticket",26)}<div><b>Passe de saison</b><p>Des sacs offerts et des billes exclusives à chaque palier.</p></div></button>

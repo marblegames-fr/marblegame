@@ -1342,8 +1342,8 @@ button.vit-slot:hover{background:var(--panel-2);color:var(--ink)}
   .modal.sheet.drawer .sheet-grid{grid-template-columns:repeat(6,minmax(0,1fr))}
   /* la fiche d'une bille, elle, s'ouvre au milieu de l'écran */
   .scrim:has(> .drawer.mid){place-items:center;padding:20px;background:rgba(27,24,40,.55);backdrop-filter:blur(4px)}
-  .modal.drawer.mid{width:min(700px,100%);height:auto;max-height:calc(100% - 20px);border-radius:22px;grid-template-columns:minmax(0,1fr) minmax(0,1.1fr);align-content:stretch;animation:auth-card .24s cubic-bezier(.2,.9,.3,1)}
-  .modal.drawer.mid .modal-visual{min-height:300px}
+  .modal.drawer.mid{width:min(980px,100%);height:auto;max-height:calc(100% - 20px);border-radius:22px;grid-template-columns:minmax(0,1.35fr) minmax(0,1fr);align-content:stretch;animation:auth-card .24s cubic-bezier(.2,.9,.3,1)}
+  .modal.drawer.mid .modal-visual{min-height:500px}
 }
 @media (max-width:820px){
   .scrim:has(> .drawer){place-items:end stretch;padding:0}
@@ -4110,10 +4110,10 @@ function openModal(id, pv){
     slot.appendChild(liveCanvas);
     liveCanvas.toggleAttribute("data-lum", s.shiny===3);
     liveCanvas.style.setProperty("--lc", PALETTES[s.pal][2]);
-    // la taille à l'écran suit le diamètre : de 90 px pour une Mini (10 mm) à 280 px pour un Mammouth (40 mm)
-    const px = Math.round(90+190*(T.mm-10)/30);
+    // la taille à l'écran suit le diamètre : de 120 px pour une Mini (10 mm) à 420 px pour un Mammouth (40 mm)
+    const px = Math.round(120+300*(T.mm-10)/30);
     liveCanvas.style.width = `min(${px}px,100%)`;
-    const dpr = window.devicePixelRatio||1, base = Math.min(560, Math.round(px*dpr));
+    const dpr = window.devicePixelRatio||1, base = Math.min(900, Math.round(px*dpr));
     cancelAnimationFrame(liveRAF);
     const reduce = matchMedia("(prefers-reduced-motion: reduce)").matches;
     // rotation : elle tourne toute seule, on peut la prendre à la souris (ou au doigt) et la lancer
@@ -4134,7 +4134,7 @@ function openModal(id, pv){
       liveRAF = requestAnimationFrame(tick);
     };
     tick();
-  } else slot.innerHTML = mImg(s,440,Math.round(80+170*(T.mm-10)/30));
+  } else slot.innerHTML = mImg(s,840,Math.round(120+300*(T.mm-10)/30));
   el.querySelector(".close-x").focus();
 }
 // Planche d'une case : les coloris, dans le même ordre partout ; ceux qui manquent en silhouette

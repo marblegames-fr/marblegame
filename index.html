@@ -3085,10 +3085,31 @@ function seasonNow(d=new Date()){
   return {id:`${y}-${m+1}`, m, y, def, pal:BASE_PALS+m, end:new Date(y,m+1,1).getTime(), label:`${def.name} ${y}`,
     month:d.toLocaleDateString("fr-FR",{month:"long",year:"numeric"})};
 }
+// la saison d'un passe à partir de son identifiant (« 2026-9 »)
+function seasonOf(id){ const [y,m] = id.split("-").map(Number); return seasonNow(new Date(y, m-1, 15)) }
+const PASS_GRACE = 7;   // jours du nouveau mois pendant lesquels les récompenses oubliées du mois d'avant sont encore versées
 function ensurePass(){
   const se = seasonNow();
-  if(!S.pass || S.pass.id!==se.id){ S.pass = {id:se.id, xp:0, premium:false, free:[], prem:[]}; save() }
+  if(!S.pass || S.pass.id!==se.id){
+    const old = S.pass;
+    S.pass = {id:se.id, xp:0, premium:false, free:[], prem:[]};
+    if(old) passRollover(old);
+    save();
+  }
   return S.pass;
+}
+// Nouveau mois : les paliers atteints mais pas récupérés du passe d'avant sont ajoutés automatiquement
+// (si on revient dans les 7 premiers jours ; le serveur accepte le mois d'avant pendant ce temps-là).
+function passRollover(P){
+  if(new Date().getDate() > PASS_GRACE) return;
+  const se = seasonOf(P.id), tier = Math.min(PASS_TIERS, Math.floor((P.xp||0)/TIER_XP));
+  if(se.id===seasonNow().id) return;
+  let n = 0;
+  for(let t=1; t<=tier; t++) ["free","prem"].forEach(tr=>{
+    if(tr==="prem" && !P.premium) return;
+    if(!P[tr].includes(t) && grantPassReward(P, se, tr, t)) n++;
+  });
+  if(n) setTimeout(()=>{ toast(`Passe ${se.label} terminé : ${n} récompense${n>1?"s":""} que tu n'avais pas récupérée${n>1?"s":""} ${n>1?"sont":"est"} dans ta boîte !`); Sound.ding(); renderTop(); renderNav() }, 900);
 }
 const passTier = () => Math.min(PASS_TIERS, Math.floor(ensurePass().xp/TIER_XP));
 function passLeft(){ const ms=Math.max(0,seasonNow().end-Date.now()), d=Math.floor(ms/86400000), hh=Math.floor(ms/3600000)%24; return d ? `${d} j ${hh} h` : `${hh} h ${Math.floor(ms/60000)%60} min` }
@@ -3098,8 +3119,8 @@ const seasonStyle = se => { const P=PALETTES[se.pal]; return `--s1:${P[1]};--s2:
 // Trois étapes de 10 paliers : les bonbecs montent d'une étape à l'autre, un sac tous les 5 paliers,
 // et les billes de la saison aux paliers ronds (10, 20, 30).
 const PASS_J = {free:[100,150,200], prem:[200,300,400]};
-function passReward(track,t){
-  const fam = seasonNow().def.fam, stage = Math.floor((t-1)/10);
+function passReward(track,t,se=seasonNow()){
+  const fam = se.def.fam, stage = Math.floor((t-1)/10);
   const M = (type,shiny=0) => ({k:"marble", type, fam, shiny});
   if(track==="free"){
     if(t===30) return M("calot");
@@ -3119,7 +3140,7 @@ function passReward(track,t){
   if(t%5===3) return {k:"bag", bag:stage===0?"classique":"premium"};
   return {k:"jetons", n:PASS_J.prem[stage]};
 }
-function rewardSpec(track,t,r){ const se=seasonNow(); return {seed:hash(se.id+track+t), type:r.type, family:r.fam, pal:se.pal, shiny:r.shiny, ed:se.label} }
+function rewardSpec(track,t,r,se=seasonNow()){ return {seed:hash(se.id+track+t), type:r.type, family:r.fam, pal:se.pal, shiny:r.shiny, ed:se.label} }
 function rewardLabel(r){
   if(!r) return "";
   if(r.k==="jetons") return `${fmt(r.n)} ${CUR.many}`;
@@ -3133,14 +3154,20 @@ function passClaimable(){
   return n;
 }
 function grantReward(track,t){
-  const P = ensurePass(), r = passReward(track,t);
-  if(!r || t>passTier() || (track==="prem" && !P.premium) || P[track].includes(t)) return null;
+  const P = ensurePass();
+  if(t>passTier() || (track==="prem" && !P.premium) || P[track].includes(t)) return null;
+  return grantPassReward(P, seasonNow(), track, t);
+}
+// verse la récompense d'un palier (du passe en cours, ou du mois d'avant lors du changement de saison)
+function grantPassReward(P, se, track, t){
+  const r = passReward(track,t,se);
+  if(!r || P[track].includes(t)) return null;
   P[track].push(t);
-  const key = `${seasonNow().id}|${track}|${t}`;
+  const key = `${se.id}|${track}|${t}`;
   if(r.k==="jetons") earn("passe", key, r.n);
   else if(r.k==="bag") earn("passe", key, 0, r.bag);
   else if(r.k==="title"){ if(!S.titles.includes(r.name)) S.titles.push(r.name); S.title = r.name }
-  else { const sp = rewardSpec(track,t,r), s = makeSpec(sp.type,{...sp, src:"passe"}); s.ed = sp.ed; srvMint(s, "passe", key); S.specs.push(s); S.unseen.push(s.id); r.spec = s }
+  else { const sp = rewardSpec(track,t,r,se), s = makeSpec(sp.type,{...sp, src:"passe"}); s.ed = sp.ed; srvMint(s, "passe", key); S.specs.push(s); S.unseen.push(s.id); r.spec = s }
   return r;
 }
 function passXP(n){

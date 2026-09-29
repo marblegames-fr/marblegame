@@ -73,11 +73,11 @@
       need();
       ok(await db.from("sauvegardes").upsert({joueur:uid, donnees, appareil, maj_le:new Date().toISOString()}, {onConflict:"joueur"}));
     },
-    // nouvelles billes : renvoie [{id, numero}] (une bille déjà enregistrée est ignorée)
+    // nouvelles billes : renvoie [{id, numero, edition}] (une bille déjà enregistrée est ignorée)
     async addBilles(specs){
       need(); const out = [];
       for(let i=0; i<specs.length; i+=200)
-        out.push(...ok(await db.from("billes").upsert(specs.slice(i, i+200).map(toRow), {onConflict:"id", ignoreDuplicates:true}).select("id, numero")));
+        out.push(...ok(await db.from("billes").upsert(specs.slice(i, i+200).map(toRow), {onConflict:"id", ignoreDuplicates:true}).select("id, numero, edition")));
       return out;
     },
     async destroyBilles(ids, raison){ need(); return ok(await db.rpc("detruire_billes", {ids, raison})); },
@@ -108,7 +108,7 @@
       repondreTroc: (troc, oui) => rpc("troc_repondre", {troc, oui}),
       annuler: troc => rpc("troc_annuler", {troc}),
       trocs: () => rpc("mes_trocs"),
-      vendre: (bille, prix) => rpc("vendre", {bille, prix}),
+      vendre: (bille, prix, jours) => rpc("vendre", {bille, prix, jours:jours||3}),
       retirerAnnonce: annonce => rpc("retirer_annonce", {annonce}),
       acheter: annonce => rpc("acheter", {annonce}),
       marche: f => rpc("marche", {taille:f.taille||null, decor:f.decor??null, coloris:f.coloris??null, shiny:f.shiny===""||f.shiny==null?null:f.shiny==="1", tri:f.tri||"recent", page:f.page||0}),

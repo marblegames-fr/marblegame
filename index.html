@@ -1033,12 +1033,19 @@ button.vit-slot:hover{background:var(--panel-2);color:var(--ink)}
 /* ---------- modal ---------- */
 .scrim{position:fixed;inset:0;z-index:70;background:rgba(27,24,40,.55);backdrop-filter:blur(4px);display:grid;place-items:center;padding:20px}
 .modal{position:relative;width:min(700px,100%);max-height:calc(100% - 20px);overflow:auto;background:var(--panel);border-radius:22px;display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1.1fr);box-shadow:0 30px 60px -20px rgba(0,0,0,.5)}
-.modal-visual{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:14px;padding:30px 20px;background:radial-gradient(circle at 50% 45%,var(--glow) 0%,var(--rbg) 90%);min-height:300px}
+/* la fiche d'une bille : posée dans un écrin de velours de la couleur de sa taille, sous un petit spot */
+.modal-visual{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:14px;padding:30px 20px;min-height:300px;color:#fff;
+  background:
+    radial-gradient(ellipse 55% 45% at 50% 40%,rgba(255,255,255,.26) 0%,rgba(255,255,255,0) 70%),
+    radial-gradient(ellipse 42% 9% at 50% 71%,rgba(0,0,0,.38) 0%,transparent 100%),
+    repeating-linear-gradient(45deg,rgba(255,255,255,.028) 0 2px,transparent 2px 5px),
+    radial-gradient(ellipse 120% 90% at 50% 35%,color-mix(in srgb,var(--rc) 62%,#1d1726) 0%,color-mix(in srgb,var(--rc) 30%,#120e18) 75%)}
 .modal-visual canvas{width:min(250px,100%);aspect-ratio:1;filter:drop-shadow(0 18px 14px rgba(30,20,50,.35))}
 .modal-visual canvas{cursor:grab;touch-action:none}
 .modal-visual canvas.grabbing{cursor:grabbing}
-.modal-visual > .rot-hint{font-size:11px;font-weight:700;color:var(--muted);margin-top:-6px}
-.modal-visual .hint{font-size:11.5px;font-weight:800;color:var(--ink-2);letter-spacing:.04em;text-transform:uppercase}
+.modal-visual > .rot-hint{font-size:11px;font-weight:700;color:rgba(255,255,255,.7);margin-top:-6px}
+.modal-visual .hint{font-size:11.5px;font-weight:800;color:rgba(255,255,255,.85);letter-spacing:.04em;text-transform:uppercase}
+.modal-visual .siblings button[aria-pressed="true"]{border-color:#fff}
 .siblings{display:flex;flex-wrap:wrap;gap:6px;justify-content:center}
 .siblings button{width:40px;height:40px;border-radius:50%;padding:2px;border:2px solid transparent}
 .siblings button[aria-pressed="true"]{border-color:var(--ink)}
@@ -1055,9 +1062,18 @@ button.vit-slot:hover{background:var(--panel-2);color:var(--ink)}
 .close-x:hover{background:var(--panel)}
 
 /* ---------- opening overlay ---------- */
+/* la cour de récré le soir : du bitume sous la lampe du préau, et un rond tracé à la craie où le sac s'ouvre */
 .ov{position:fixed;inset:0;z-index:60;display:grid;place-items:center;padding:20px;color:#fff;overflow:auto;
-  background:radial-gradient(ellipse 70% 60% at 50% 45%,color-mix(in srgb,var(--bc,#8a5a35) 38%,#241810) 0%,#1A120C 68%,#0C0806 100%)}
-.ov-bg{position:fixed;inset:-60%;pointer-events:none;background:repeating-conic-gradient(from 0deg,rgba(255,228,180,.07) 0 9deg,transparent 9deg 18deg);-webkit-mask:radial-gradient(circle,#000 0,transparent 40%);mask:radial-gradient(circle,#000 0,transparent 40%);animation:spin 80s linear infinite}
+  background:
+    radial-gradient(ellipse 60% 50% at 50% 42%,color-mix(in srgb,var(--bc,#8a5a35) 22%,rgba(255,226,170,.2)) 0%,transparent 70%),
+    radial-gradient(circle at 20% 30%,rgba(255,255,255,.035) 0 1px,transparent 1.6px) 0 0/7px 7px,
+    radial-gradient(circle at 70% 80%,rgba(0,0,0,.28) 0 1px,transparent 1.8px) 0 0/9px 9px,
+    radial-gradient(ellipse 90% 80% at 50% 45%,#3A3B42 0%,#24252B 60%,#131418 100%)}
+.ov-bg{position:fixed;left:50%;top:46%;width:min(640px,94vw);aspect-ratio:1;transform:translate(-50%,-50%) rotate(-4deg);pointer-events:none;
+  border-radius:48% 52% 50% 50% / 51% 48% 52% 49%;border:3px solid rgba(255,255,255,.17);
+  box-shadow:0 0 0 5px rgba(255,255,255,.03),inset 0 0 0 1px rgba(255,255,255,.06);
+  -webkit-mask:repeating-linear-gradient(115deg,#000 0 9px,rgba(0,0,0,.55) 9px 11px);mask:repeating-linear-gradient(115deg,#000 0 9px,rgba(0,0,0,.55) 9px 11px)}
+.ov-bg::after{content:"";position:absolute;inset:14%;border-radius:52% 48% 49% 51% / 48% 52% 48% 52%;border:2px dashed rgba(255,255,255,.07)}
 #ov-fx{position:fixed;inset:0;width:100%;height:100%;pointer-events:none;z-index:1}
 .ov-kicker{font-size:12px;font-weight:900;letter-spacing:.12em;text-transform:uppercase;color:#FFE3B0;background:rgba(255,255,255,.1);padding:4px 12px;border-radius:999px}
 .ov-count{font-size:13px;font-weight:800;color:#C9B8A6}
@@ -1629,10 +1645,12 @@ function pickW(r,w){ const tot=w.reduce((a,b)=>a+b,0); let x=r*tot; for(let i=0;
 const rollShiny = () => 1+pickW(Math.random(), SHINIES.slice(1).map(x=>x.w));
 const SHINY_RATE = .0001;  // 0,01 % par bille : le graal ultime (0,05 % dans le Sac Collector)
 
-// Recyclage : ce que rapporte une bille détruite
-const RECYCLE = {mini:5, bille:10, chinoise:25, calot:50, boulet:150, mammouth:400};
-const SHINY_RECYCLE_MULT = 20;
-const recycleValue = s => RECYCLE[s.type]*(s.shiny?SHINY_RECYCLE_MULT:1);
+// Recyclage : ce que rapporte une bille échangée. Proportionnel à sa rareté dans le sac gratuit
+// (chaque taille rapporte donc autant en moyenne), et toujours bien moins que ce qu'elle coûte à trouver.
+const RECYCLE = {mini:5, bille:8, chinoise:20, calot:50, boulet:150, mammouth:600};
+// une shiny (tirée dans un sac ou une fusion) vaut 10 fois sa taille, plus une prime selon son éclat ; celles du passe, non
+const SHINY_RECYCLE_MULT = 10, SHINY_BONUS = [0, 2000, 5000, 15000];
+const recycleValue = s => s.shiny && !isSeason(s) ? RECYCLE[s.type]*SHINY_RECYCLE_MULT + SHINY_BONUS[s.shiny] : RECYCLE[s.type];
 
 // Quêtes du jour : 3 tirées chaque jour dans cette liste
 const QUESTS = {
@@ -1646,21 +1664,21 @@ const QUESTS = {
   new_slot:      {title:"Commence une nouvelle case", goal:1, reward:100, icon:"book", desc:"Une taille et un décor que tu n'avais pas encore dans l'album."},
   new_color:     {title:"Trouve 3 nouvelles billes", goal:3, reward:100, icon:"star", desc:"Des billes que tu n'avais pas encore : nouvelle case ou nouveau coloris."},
   open_paid:     {title:"Ouvre un sac payant", goal:1, reward:120, icon:"bag", desc:"Classique, Premium ou Collector, acheté ou offert."},
-  craft:         {title:"Réussis une fusion", goal:1, reward:120, icon:"flask", desc:"10 billes d'une même taille à la Confiserie."},
+  craft:         {title:"Réussis une fusion", goal:1, reward:120, icon:"flask", desc:"Des billes d'une même taille contre une plus grosse, à la Confiserie."},
   shake:         {title:"Secoue bien les sacs", goal:20, reward:60, icon:"bag", desc:"Secoue les sacs avant de les ouvrir : 20 secousses en tout."},
   recycle:       {title:"Échange 3 billes à la Confiserie", goal:3, reward:60, icon:"candy", desc:"Depuis la fiche d'une bille ou avec le bouton des doubles."},
 };
 const QUEST_BONUS = 150;
 
 const FREE_BAG = {id:"gratuit", name:"Sac gratuit", desc:"3 billes offertes. Un nouveau sac toutes les 10 minutes, jusqu'à 5 en stock.", price:0, n:3, color:"#C98E4E", tint:"#F6E3C8", shiny:SHINY_RATE,
-  odds:{mini:50,bille:33,chinoise:9,calot:5.8,boulet:1.8,mammouth:.4}};
+  odds:{mini:50,bille:31,chinoise:12,calot:5,boulet:1.6,mammouth:.4}};
 const BAGS = [FREE_BAG,
   {id:"classique", name:"Sac Classique", desc:"5 billes, avec de meilleures chances que le sac gratuit.", price:300, n:5, color:"#2A8A74", tint:"#D5EFE7", shiny:SHINY_RATE,
-   odds:{mini:40,bille:34,chinoise:12,calot:9.5,boulet:3.5,mammouth:1}},
-  {id:"premium", name:"Sac Premium", desc:"5 billes, dont au moins un Calot ou mieux.", price:900, n:5, guarantee:"calot", color:"#34469C", tint:"#DCE0F6", shiny:SHINY_RATE,
-   odds:{mini:26,bille:34,chinoise:16,calot:16,boulet:6.5,mammouth:1.5}},
-  {id:"collector", name:"Sac Collector", desc:"5 billes, dont au moins un Boulet ou plus gros. 5 fois plus de chances de shiny.", price:2200, n:5, guarantee:"boulet", color:"#D9A020", tint:"#FBEBC0", shiny:SHINY_RATE*5,
-   odds:{mini:14,bille:28,chinoise:20,calot:23,boulet:11,mammouth:4}},
+   odds:{mini:38,bille:32,chinoise:16,calot:9,boulet:4,mammouth:1}},
+  {id:"premium", name:"Sac Premium", desc:"5 billes, dont au moins un Calot ou mieux.", price:600, n:5, guarantee:"calot", color:"#34469C", tint:"#DCE0F6", shiny:SHINY_RATE,
+   odds:{mini:27,bille:30,chinoise:20,calot:14,boulet:7,mammouth:2}},
+  {id:"collector", name:"Sac Collector", desc:"5 billes, dont au moins un Boulet ou plus gros. 5 fois plus de chances de shiny.", price:1500, n:5, guarantee:"boulet", color:"#D9A020", tint:"#FBEBC0", shiny:SHINY_RATE*5,
+   odds:{mini:14,bille:20,chinoise:20,calot:19,boulet:19,mammouth:8}},
 ];
 const BAG_BY = Object.fromEntries(BAGS.map(b=>[b.id,b]));
 
@@ -2802,20 +2820,30 @@ function editionOf(s){
 }
 const edLabel = n => n===1 ? "Première mondiale" : `n° ${fmt(n)}`;
 
-// Défis de collection : calculés sur la collection actuelle, récompense à récupérer une fois
+// Défis de collection : calculés sur la collection actuelle, récompense à récupérer une fois.
+// Objectifs calés par simulation sur un joueur régulier (≈ 15 sacs gratuits + 4 Classiques par jour) : rien ne doit
+// demander plus d'un an, et la récompense grandit avec le temps qu'il faut.
+// décors à trouver dans chaque taille (les gros formats dans un décor légendaire sont quasi introuvables)
+const FMT_GOAL = [32,32,30,28,24,20];
+// tailles à réunir pour un décor, selon sa rareté (de la Mini bille jusqu'à…)
+const FAM_SIZES = [6,6,5,4,2], FAM_REW = [450,750,550,850,500];
+const upTo = n => ({bille:"à la Bille", chinoise:"à la Bille chinoise", calot:"au Calot", boulet:"au Boulet", mammouth:"au Mammouth"})[TK[n-1]];
 const CHALLENGES = [
-  ...TK.map((t,i)=>({id:"fmt-"+t, icon:"layers", title:`Tous les décors en ${TYPES[t].label}`, desc:`Trouve les ${FAMILIES.length} décors au format ${TYPES[t].label}.`, goal:FAMILIES.length,
+  ...TK.map((t,i)=>({id:"fmt-"+t, icon:"layers", title:FMT_GOAL[i]>=FAMILIES.length?`Tous les décors en ${TYPES[t].label}`:`${FMT_GOAL[i]} décors en ${TYPES[t].label}`,
+    desc:FMT_GOAL[i]>=FAMILIES.length?`Trouve les ${FAMILIES.length} décors au format ${TYPES[t].label}.`:`Trouve ${FMT_GOAL[i]} décors différents (sur ${FAMILIES.length}) au format ${TYPES[t].label}.`, goal:Math.min(FMT_GOAL[i],FAMILIES.length),
     prog:()=>FAMILIES.filter((_,f)=>S.specs.some(s=>s.type===t&&s.family===f)).length,
-    rew:{j:[200,300,450,600,1000,2000][i], bag:i>=3?"collector":"premium", title:t==="mammouth"?"Maître du Mammouth":null}})),
-  ...FAMILIES.map((F,f)=>({id:"fam-"+f, icon:"star", title:`${F.name} dans tous les formats`, desc:`Un décor ${F.name} dans les ${TK.length} tailles, de la Mini bille au Mammouth.`, goal:TK.length,
-    prog:()=>TK.filter(t=>S.specs.some(s=>s.type===t&&s.family===f)).length,
-    rew:{j:150+F.rar*150, bag:F.rar>=2?"premium":"classique"}})),
+    rew:{j:[400,500,700,900,1200,2500][i], bag:i>=3?"collector":"premium", title:t==="mammouth"?"Maître du Mammouth":null}})),
+  ...FAMILIES.map((F,f)=>{ const n = FAM_SIZES[F.rar];
+    return {id:"fam-"+f, icon:"star", title:n>=TK.length?`${F.name} dans tous les formats`:`${F.name} en ${n} tailles`,
+    desc:n>=TK.length?`Un décor ${F.name} dans les ${TK.length} tailles, de la Mini bille au Mammouth.`:`Un décor ${F.name} dans ${n} tailles, de la Mini bille jusqu'${upTo(n)}.`, goal:n,
+    prog:()=>TK.slice(0,n).filter(t=>S.specs.some(s=>s.type===t&&s.family===f)).length,
+    rew:{j:FAM_REW[F.rar], bag:FAM_REW[F.rar]>=700?"premium":"classique"}} }),
   {id:"pal10", icon:"book", title:"Nuancier", desc:"Un même décor dans 10 coloris différents.", goal:10,
     prog:()=>Math.max(0,...FAMILIES.map((_,f)=>new Set(S.specs.filter(s=>s.family===f&&!isSeason(s)).map(s=>s.pal)).size)), rew:{j:400}},
-  {id:"shiny1", icon:"star", title:"Premier éclat", desc:"Trouve ta première bille shiny.", goal:1, prog:()=>S.specs.filter(s=>s.shiny).length, rew:{j:300}},
-  {id:"shiny3", icon:"star", title:"Les trois éclats", desc:"Possède une Irisée, une Dorée et une Lumineuse.", goal:3, prog:()=>new Set(S.specs.filter(s=>s.shiny).map(s=>s.shiny)).size, rew:{j:1500, title:"Chasseur d'éclats"}},
-  {id:"big5", icon:"trophy", title:"La cour des grands", desc:"Possède 5 Boulets ou Mammouths.", goal:5, prog:()=>S.specs.filter(s=>tierOf(s)>=BIG).length, rew:{j:600, bag:"collector"}},
-  {id:"mam3", icon:"trophy", title:"Chasseur de mammouths", desc:"Possède 3 Mammouths.", goal:3, prog:()=>S.specs.filter(s=>s.type==="mammouth").length, rew:{j:1200, title:"Chasseur de mammouths"}},
+  {id:"shiny1", icon:"star", title:"Premier éclat", desc:"Trouve ta première bille shiny dans un sac ou une fusion.", goal:1, prog:()=>S.specs.filter(s=>s.shiny&&!isSeason(s)).length, rew:{j:1000}},
+  {id:"shiny3", icon:"star", title:"Double éclat", desc:"Possède 2 billes shiny trouvées dans les sacs ou les fusions.", goal:2, prog:()=>S.specs.filter(s=>s.shiny&&!isSeason(s)).length, rew:{j:3000, title:"Chasseur d'éclats"}},
+  {id:"big5", icon:"trophy", title:"La cour des grands", desc:"Possède 5 Boulets ou Mammouths.", goal:5, prog:()=>S.specs.filter(s=>tierOf(s)>=BIG).length, rew:{j:400, bag:"premium"}},
+  {id:"mam3", icon:"trophy", title:"Chasseur de mammouths", desc:"Possède 3 Mammouths.", goal:3, prog:()=>S.specs.filter(s=>s.type==="mammouth").length, rew:{j:800, title:"Chasseur de mammouths"}},
   {id:"t-pot", icon:"pot", title:"Champion du pot", desc:"Mets 25 billes dans le pot.", goal:25, prog:()=>S.stats.pot, rew:{j:500, title:"Champion du pot"}},
   {id:"t-castle", icon:"castle", title:"Démolisseur de châteaux", desc:"Fais sortir 60 billes du cercle au Château.", goal:60, prog:()=>S.stats.castle, rew:{j:500, title:"Démolisseur"}},
   {id:"t-tic", icon:"tic", title:"Terreur du préau", desc:"Gagne 10 parties de Tic avec une mise.", goal:10, prog:()=>S.stats.tic, rew:{j:600, title:"Terreur du préau"}},
@@ -2823,18 +2851,18 @@ const CHALLENGES = [
   {id:"t-race", icon:"flag", title:"Maillot jaune", desc:"Gagne 5 courses sur la plage avec une mise.", goal:5, prog:()=>S.stats.race, rew:{j:600, title:"Maillot jaune"}},
   {id:"t-chouchou", icon:"quest", title:"Chouchou de la maîtresse", desc:"Récupère 5 fois le bonus des quêtes du jour.", goal:5, prog:()=>S.stats.bonus, rew:{j:500, title:"Chouchou de la maîtresse"}},
   {id:"t-caid", icon:"layers", title:"Caïd des billes", desc:"Possède 100 billes en même temps.", goal:100, prog:()=>S.specs.length, rew:{j:700, title:"Caïd des billes"}},
-  {id:"half", icon:"layers", title:"Mi-parcours", desc:"Commence la moitié des cases de l'album (une taille et un décor).", goal:Math.ceil(TOTAL_SLOTS/2), prog:()=>slotsOwned().size, rew:{j:1000, bag:"collector"}},
-  {id:"full", icon:"trophy", title:"Tour complet", desc:`Commence les ${TOTAL_SLOTS} cases de l'album : toutes les tailles dans tous les décors.`, goal:TOTAL_SLOTS, prog:()=>slotsOwned().size, rew:{j:3000, bag:"collector"}},
+  {id:"half", icon:"layers", title:"Mi-parcours", desc:"Commence la moitié des cases de l'album (une taille et un décor).", goal:Math.ceil(TOTAL_SLOTS/2), prog:()=>slotsOwned().size, rew:{j:600, bag:"premium"}},
+  {id:"full", icon:"trophy", title:"Album bien rempli", desc:`Commence 170 des ${TOTAL_SLOTS} cases de l'album (une taille et un décor).`, goal:170, prog:()=>slotsOwned().size, rew:{j:3000, bag:"collector"}},
   // paliers de billes trouvées (taille × décor × coloris)
-  ...[[25,200],[50,300],[100,500,"premium"],[250,800,"premium"],[500,1200,"collector"],[1000,2000,"collector","Collectionneur fou"],[2500,4000,"collector"],[5000,6000,"collector","Encyclopédie vivante"],[ALBUM_TOTAL,10000,"collector","Grand collectionneur"]]
+  ...[[25,200],[50,300],[100,500,"premium"],[250,800,"premium"],[500,1200,"collector"],[1000,2000,"collector","Collectionneur fou"],[2000,3500,"collector"],[3000,5000,"collector","Encyclopédie vivante"],[4000,8000,"collector","Grand collectionneur"]]
     .map(([n,j,bag,title])=>({id:"found-"+(n===ALBUM_TOTAL?"all":n), cat:"album", icon:n===ALBUM_TOTAL?"trophy":"book", title:n===ALBUM_TOTAL?"L'album entier":`${fmt(n)} billes`, desc:n===ALBUM_TOTAL?`Trouve les ${fmt(ALBUM_TOTAL)} billes différentes de l'album.`:`Trouve ${fmt(n)} billes différentes (taille, décor et coloris).`, goal:n, prog:()=>albumFound().size, rew:{j, bag, title}})),
   {id:"case1", cat:"coloris", icon:"star", title:"Case complète", desc:`Une case dans les ${BASE_PALS} coloris.`, goal:1, prog:()=>[...slotsOwned().values()].filter(l=>casePals(l)===BASE_PALS).length, rew:{j:1500, bag:"collector", title:"Nuancier vivant"}},
   {id:"case5", cat:"coloris", icon:"star", title:"Cinq cases complètes", desc:`Cinq cases dans les ${BASE_PALS} coloris.`, goal:5, prog:()=>[...slotsOwned().values()].filter(l=>casePals(l)===BASE_PALS).length, rew:{j:4000, bag:"collector"}},
   {id:"pal24", cat:"coloris", icon:"book", title:"Grand nuancier", desc:"Un même décor dans 24 coloris différents.", goal:24, prog:()=>Math.max(0,...FAMILIES.map((_,f)=>new Set(S.specs.filter(s=>s.family===f&&s.pal<BASE_PALS).map(s=>s.pal)).size)), rew:{j:900}},
-  {id:"allpals", cat:"coloris", icon:"book", title:"Boîte de peinture", desc:`Trouve les ${BASE_PALS} coloris, tous décors et tailles confondus.`, goal:BASE_PALS, prog:()=>new Set(S.specs.filter(s=>s.pal<BASE_PALS).map(s=>s.pal)).size, rew:{j:1200, title:"Peintre en billes"}},
+  {id:"allpals", cat:"coloris", icon:"book", title:"Boîte de peinture", desc:`Trouve les ${BASE_PALS} coloris, tous décors et tailles confondus.`, goal:BASE_PALS, prog:()=>new Set(S.specs.filter(s=>s.pal<BASE_PALS).map(s=>s.pal)).size, rew:{j:500, title:"Peintre en billes"}},
   {id:"leg1", cat:"rare", icon:"star", title:"Légende de poche", desc:"Trouve une bille au décor légendaire (Galaxie ou Aurore).", goal:1, prog:()=>S.specs.filter(s=>FAMILIES[s.family].rar===4).length, rew:{j:500}},
-  {id:"legmam", cat:"rare", icon:"trophy", title:"Légende de la cour", desc:"Un Mammouth au décor légendaire.", goal:1, prog:()=>S.specs.filter(s=>s.type==="mammouth"&&FAMILIES[s.family].rar===4).length, rew:{j:5000, title:"Légende de la cour"}},
-  {id:"shinybig", cat:"rare", icon:"star", title:"Gros éclat", desc:"Une shiny Boulet ou Mammouth.", goal:1, prog:()=>S.specs.filter(s=>s.shiny&&tierOf(s)>=BIG).length, rew:{j:2000}},
+  {id:"legmam", cat:"rare", icon:"trophy", title:"Légende de la cour", desc:"Un Mammouth au décor épique ou légendaire.", goal:1, prog:()=>S.specs.filter(s=>s.type==="mammouth"&&FAMILIES[s.family].rar>=3).length, rew:{j:5000, title:"Légende de la cour"}},
+  {id:"bigepic", cat:"rare", icon:"star", title:"Géant précieux", desc:"Un Boulet ou un Mammouth au décor épique ou légendaire.", goal:1, prog:()=>S.specs.filter(s=>tierOf(s)>=BIG&&FAMILIES[s.family].rar>=3).length, rew:{j:1000}},
   {id:"secrets", cat:"rare", icon:"lock", title:"Détective de la cour", desc:"Trouve toutes les billes secrètes.", goal:Object.keys(SECRETS).length, prog:()=>S.specs.filter(s=>s.secret).length, rew:{j:3000, title:"Détective"}},
   {id:"bags50", cat:"habitudes", icon:"bag", title:"Habitué du préau", desc:"Ouvre 50 sacs.", goal:50, prog:()=>S.bags||0, rew:{j:500, bag:"premium"}},
   {id:"bags250", cat:"habitudes", icon:"bag", title:"Sac sans fond", desc:"Ouvre 250 sacs.", goal:250, prog:()=>S.bags||0, rew:{j:1500, bag:"collector", title:"Sac sans fond"}},
@@ -2844,14 +2872,14 @@ const CHALLENGES = [
 const FAM_ID = n => FAMILIES.findIndex(F=>F.name===n), PAL_ID = n => PALETTES.findIndex(P=>P[0]===n);
 const SERIES = [
   {id:"trousse", name:"La trousse d'écolier", desc:"Les motifs du cahier de classe.", items:[{fam:"Damier"},{fam:"Écossais"},{fam:"Pixel"},{fam:"Cible"}], rew:{j:300, bag:"classique"}},
-  {id:"bonbons", name:"La boulangerie du coin", desc:"Des billes qui donnent faim.", items:[{fam:"Berlingot"},{fam:"Millefiori"},{fam:"À pois"},{fam:"Nid d'abeille"},{pal:"Barbe à papa"},{pal:"Chocolat menthe"}], rew:{j:500, bag:"premium"}},
-  {id:"nature", name:"Au fond du jardin", desc:"Ce qu'on trouve en rentrant de l'école.", items:[{fam:"Bois"},{fam:"Écailles"},{fam:"Tigrée"},{fam:"Œil-de-chat"},{pal:"Forêt"},{pal:"Sauge"}], rew:{j:500, bag:"premium"}},
-  {id:"arcenciel", name:"L'arc-en-ciel", desc:"Une bille de chaque couleur, peu importe le décor.", items:["Cerise","Ambre","Citron","Émeraude","Azur","Saphir","Lavande"].map(pal=>({pal})), rew:{j:600, bag:"premium"}},
-  {id:"noiretblanc", name:"Noir et blanc", desc:"Pour les amateurs de contrastes.", items:[{pal:"Encre"},{pal:"Réglisse"},{pal:"Béton"},{pal:"Brume"},{pal:"Ciel d'orage"}], rew:{j:400, bag:"classique"}},
-  {id:"pierres", name:"Les pierres précieuses", desc:"Des pierres dans les coloris des joyaux.", items:[{fam:"Agate",pal:"Rubis"},{fam:"Marbre",pal:"Saphir"},{fam:"Cristal",pal:"Émeraude"},{fam:"Nacrée",pal:"Opale"}], rew:{j:2500, bag:"collector", title:"Joaillier"}},
-  {id:"feuglace", name:"Le feu et la glace", desc:"Du plus chaud au plus froid.", items:[{fam:"Lave"},{fam:"Givrée"},{pal:"Volcan"},{pal:"Glacier"}], rew:{j:700, bag:"premium"}},
-  {id:"cosmos", name:"Le système solaire", desc:"Les décors venus d'ailleurs.", items:[{fam:"Globe"},{fam:"Planète"},{fam:"Galaxie"},{fam:"Aurore"}], rew:{j:3000, bag:"collector", title:"Astronome"}},
-  {id:"grands", name:"Les grands formats", desc:"De la plus petite à la plus grosse, dans un même décor.", items:TK.map(type=>({type})), same:"family", rew:{j:4000, bag:"collector", title:"Toutes tailles"}},
+  {id:"bonbons", name:"La boulangerie du coin", desc:"Des billes qui donnent faim.", items:[{fam:"Berlingot"},{fam:"Millefiori"},{fam:"À pois"},{fam:"Nid d'abeille"},{pal:"Barbe à papa"},{pal:"Chocolat menthe"}], rew:{j:400, bag:"classique"}},
+  {id:"nature", name:"Au fond du jardin", desc:"Ce qu'on trouve en rentrant de l'école.", items:[{fam:"Bois"},{fam:"Écailles"},{fam:"Tigrée"},{fam:"Œil-de-chat"},{pal:"Forêt"},{pal:"Sauge"}], rew:{j:400, bag:"classique"}},
+  {id:"arcenciel", name:"L'arc-en-ciel", desc:"Une bille de chaque couleur, peu importe le décor.", items:["Cerise","Ambre","Citron","Émeraude","Azur","Saphir","Lavande"].map(pal=>({pal})), rew:{j:400, bag:"classique"}},
+  {id:"noiretblanc", name:"Noir et blanc", desc:"Pour les amateurs de contrastes.", items:[{pal:"Encre"},{pal:"Réglisse"},{pal:"Béton"},{pal:"Brume"},{pal:"Ciel d'orage"}], rew:{j:300, bag:"classique"}},
+  {id:"pierres", name:"Les pierres précieuses", desc:"Des pierres dans les coloris des joyaux.", items:[{fam:"Agate",pal:"Rubis"},{fam:"Marbre",pal:"Saphir"},{fam:"Cristal",pal:"Émeraude"},{fam:"Nacrée",pal:"Opale"}], rew:{j:6000, bag:"collector", title:"Joaillier"}},
+  {id:"feuglace", name:"Le feu et la glace", desc:"Du plus chaud au plus froid.", items:[{fam:"Lave"},{fam:"Givrée"},{pal:"Volcan"},{pal:"Glacier"}], rew:{j:400, bag:"classique"}},
+  {id:"cosmos", name:"Le système solaire", desc:"Les décors venus d'ailleurs.", items:[{fam:"Globe"},{fam:"Planète"},{fam:"Galaxie"},{fam:"Aurore"}], rew:{j:2000, bag:"collector", title:"Astronome"}},
+  {id:"grands", name:"Les grands formats", desc:"De la plus petite à la plus grosse, dans un même décor.", items:TK.map(type=>({type})), same:"family", rew:{j:1200, bag:"premium", title:"Toutes tailles"}},
 ];
 const seriesMatch = (it,x) => (!it.fam || x.family===FAM_ID(it.fam)) && (!it.pal || x.pal===PAL_ID(it.pal)) && (!it.type || x.type===it.type);
 const seriesLabel = it => [it.type?TYPES[it.type].label:"", it.fam||"", it.pal?(it.fam?it.pal:`Coloris ${it.pal}`):""].filter(Boolean).join(" ");
@@ -2934,8 +2962,9 @@ function secretGrid(){
    PASSE DE SAISON (une saison = un mois)
    ===================================================================== */
 const PASS_TIERS = 30, TIER_XP = 1000, PASS_PRICE = "4,99 €";
-const BAG_XP = {gratuit:40, classique:200, premium:300, collector:450};
-const PASS_XP = {quest:200, bonus:300, star:20, recycle:5, craft:50};
+// Rythme visé : un joueur régulier finit le passe en ~3 semaines, un joueur qui passe juste faire ses quêtes vers la fin du mois
+const BAG_XP = {gratuit:20, classique:60, premium:120, collector:300};
+const PASS_XP = {quest:150, bonus:200, star:15, recycle:2, craft:40};
 function seasonNow(d=new Date()){
   const m = d.getMonth(), y = d.getFullYear(), def = SEASONS[m];
   return {id:`${y}-${m+1}`, m, y, def, pal:BASE_PALS+m, end:new Date(y,m+1,1).getTime(), label:`${def.name} ${y}`,
@@ -3416,7 +3445,7 @@ function viewBags(){
     <button class="panel" data-action="nav" data-view="jeux">${ic("target",26)}<div><b>Jeux de la cour</b><p>Une récompense par jour et par jeu, et des mises à plusieurs.</p></div></button>
     <button class="panel" data-action="mj-open">${ic("quest",26)}<div><b>Ma journée</b><p>Bonbec du jour, 3 quêtes, et ${QUEST_BONUS} ${CUR.many} de bonus.</p></div></button>
     <button class="panel" data-action="nav" data-view="passe">${ic("ticket",26)}<div><b>Passe de saison</b><p>Des sacs offerts et des billes exclusives à chaque palier.</p></div></button>
-    <button class="panel" data-action="nav" data-view="confiserie">${ic("candy",26)}<div><b>La Confiserie</b><p>Échange tes doubles, ou fusionne-en ${CRAFT_N} pour une bille plus grosse.</p></div></button>
+    <button class="panel" data-action="nav" data-view="confiserie">${ic("candy",26)}<div><b>La Confiserie</b><p>Échange tes doubles, ou fusionne-les pour une bille plus grosse.</p></div></button>
   </div>`;
 }
 
@@ -3738,9 +3767,13 @@ function focusTrack(){
 }
 
 /* =====================================================================
-   ATELIER : 10 billes d'une taille -> 1 bille de la taille au-dessus
+   ATELIER : 3 à 8 billes d'une taille -> 1 bille de la taille au-dessus
    ===================================================================== */
-const CRAFT_N = 10, CRAFT_SHINY = .0005;   // même chance de shiny que le Sac Collector
+// Fusion : combien de billes d'une taille pour une de la taille au-dessus. Toujours environ la moitié de leur valeur
+// à la Confiserie (on troque des bonbecs contre une plus grosse bille, au décor tout neuf).
+const CRAFT_NS = [3,5,5,6,8];
+const craftN = t => CRAFT_NS[t];
+const craftShiny = t => SHINY_RATE*craftN(t);   // les chances de shiny des billes fusionnées s'additionnent
 const RAR_F  = TK.map(t=>TYPES[t].label);
 const RAR_PL = TK.map(t=>TYPES[t].pl);
 // billes qu'on peut fusionner : jamais les shiny, la bille active, la vitrine ni les billes de saison
@@ -3748,13 +3781,13 @@ const craftPool = t => S.specs.filter(s=>tierOf(s)===t && !s.shiny && !s.secret 
 const slotCounts = () => { const c={}; S.specs.forEach(s=>{ const k=colorKey(s); c[k]=(c[k]||0)+1 }); return c };   // exemplaires de chaque bille (doubles stricts)
 // la taille au-dessus ; le décor et le coloris sont tirés au hasard avec leurs chances habituelles
 function craftResult(T){
-  return makeSpec(TK[T],{shiny:Math.random()<CRAFT_SHINY ? rollShiny() : 0});
+  return makeSpec(TK[T],{shiny:Math.random()<craftShiny(T-1) ? rollShiny() : 0});
 }
 // remplissage auto : d'abord les doubles, pour ne pas vider d'emplacement de l'album
 function craftAuto(t){
   const cnt = slotCounts(), pool = [...craftPool(t)].sort((a,b)=>cnt[colorKey(b)]-cnt[colorKey(a)] || a.at-b.at), sel = [];
-  for(const s of pool){ if(sel.length>=CRAFT_N) break; const k=colorKey(s); if(cnt[k]>1){ sel.push(s.id); cnt[k]-- } }
-  for(const s of pool){ if(sel.length>=CRAFT_N) break; if(!sel.includes(s.id)) sel.push(s.id) }
+  for(const s of pool){ if(sel.length>=craftN(t)) break; const k=colorKey(s); if(cnt[k]>1){ sel.push(s.id); cnt[k]-- } }
+  for(const s of pool){ if(sel.length>=craftN(t)) break; if(!sel.includes(s.id)) sel.push(s.id) }
   return sel;
 }
 function viewCraft(){
@@ -3763,21 +3796,22 @@ function viewCraft(){
   C.sel = C.sel.filter(id=>pool.some(s=>s.id===id));
   const A = RARITY[C.t].c, B = RARITY[C.t+1].c;
   const recipes = TK.slice(0,-1).map((_,t)=>`<button class="recipe" data-action="craft-t" data-t="${t}" aria-pressed="${C.t===t}" style="--a:${RARITY[t].c};--b:${RARITY[t+1].c}">
-      <span class="rc-line"><i class="a"></i>${CRAFT_N} ${RAR_PL[t]}</span>${ic("arrow",14)}<span class="rc-line"><i class="b"></i>1 ${RAR_F[t+1]}</span><small>${craftPool(t).length} disponible${craftPool(t).length>1?"s":""}</small></button>`).join("");
-  const slots = Array.from({length:CRAFT_N},(_,i)=>{ const s=specById(C.sel[i]);
+      <span class="rc-line"><i class="a"></i>${craftN(t)} ${RAR_PL[t]}</span>${ic("arrow",14)}<span class="rc-line"><i class="b"></i>1 ${RAR_F[t+1]}</span><small>${craftPool(t).length} disponible${craftPool(t).length>1?"s":""}</small></button>`).join("");
+  const N = craftN(C.t);
+  const slots = Array.from({length:N},(_,i)=>{ const s=specById(C.sel[i]);
     return s ? `<button class="fz-slot filled" data-action="craft-toggle" data-id="${s.id}" aria-label="Retirer ${esc(specName(s))}">${mImg(s,120,44,"")}</button>` : `<span class="fz-slot"></span>` }).join("");
   const last = C.sel.filter(id=>{ const s=specById(id); return !S.specs.some(x=>colorKey(x)===colorKey(s) && !C.sel.includes(x.id)) }).length;
-  return `<p class="conf-intro">Fusionne ${CRAFT_N} billes d'une même taille pour obtenir une bille de la taille au-dessus : 10 Mini billes donnent une Bille, 10 Billes une Bille chinoise, et ainsi de suite jusqu'au Mammouth. La nouvelle bille a un décor et un coloris tirés au hasard.</p>
+  return `<p class="conf-intro">Fusionne des billes d'une même taille pour obtenir une bille de la taille au-dessus : ${CRAFT_NS[0]} Mini billes donnent une Bille, ${CRAFT_NS[1]} Billes une Bille chinoise… jusqu'à ${CRAFT_NS[4]} Boulets pour un Mammouth. La nouvelle bille a un décor et un coloris tirés au hasard.</p>
   <div class="recipes">${recipes}</div>
   <section class="panel fuse" style="--a:${A};--b:${B}">
     <div class="fz-grid">${slots}</div>
     <div class="fz-arrow">${ic("arrow",30)}</div>
-    <div class="fz-out"><span class="orb-mini">?</span><b>1 ${RAR_F[C.t+1]}</b><small>dont ${pct(CRAFT_SHINY*100)} de shiny</small></div>
+    <div class="fz-out"><span class="orb-mini">?</span><b>1 ${RAR_F[C.t+1]}</b><small>dont ${pct(+(craftShiny(C.t)*100).toFixed(2))} de shiny</small></div>
     <div class="fz-actions">
-      <span class="fz-count">${C.sel.length} / ${CRAFT_N} billes</span>
-      <button class="btn btn-ghost" data-action="craft-auto" ${pool.length<CRAFT_N?"disabled":""}>Remplir avec mes doubles</button>
+      <span class="fz-count">${C.sel.length} / ${N} billes</span>
+      <button class="btn btn-ghost" data-action="craft-auto" ${pool.length<N?"disabled":""}>Remplir avec mes doubles</button>
       <button class="btn btn-ghost" data-action="craft-clear" ${C.sel.length?"":"disabled"}>Vider</button>
-      <button class="btn btn-yellow" data-action="craft-go" ${C.sel.length===CRAFT_N?"":"disabled"}>${ic("flask",18)} Fusionner</button>
+      <button class="btn btn-yellow" data-action="craft-go" ${C.sel.length===N?"":"disabled"}>${ic("flask",18)} Fusionner</button>
     </div>
     ${last?`<p class="warn-note fz-warn">Attention : ${last} de ces billes ${last>1?"sont les dernières":"est la dernière"} de ce coloris : l'album perdra ${last} bille${last>1?"s":""}.</p>`:""}
   </section>
@@ -3817,7 +3851,7 @@ function showCraft(inputs, out, pxp){
         <div class="slot-info"><b>${esc(specName(out))}</b><span style="display:flex;gap:4px;flex-wrap:wrap;justify-content:center">${typePill(out.type,true)}${shinyPill(out)}</span>${tierTag(out)}${k>=BIG?`<span class="ed-no">${edLabel(ed)}</span>`:""}<span class="zoom-hint">${ic("search",14)} Agrandir</span></div>
       </button></div>
       <div class="ov-actions"><span class="ov-xp" style="flex-basis:100%;justify-content:center">${ic("ticket",18)} +${pxp} XP de saison</span>
-        ${craftPool(ui.craft.t).length>=CRAFT_N?`<button class="btn btn-yellow" data-action="craft-again">Préparer une autre fusion</button>`:""}
+        ${craftPool(ui.craft.t).length>=craftN(ui.craft.t)?`<button class="btn btn-yellow" data-action="craft-again">Préparer une autre fusion</button>`:""}
         <button class="btn btn-ghost" data-action="craft-see" data-id="${out.id}">Voir la fiche</button>
         <button class="btn btn-ghost" data-action="close-ov">Retour à la Confiserie</button></div>`;
     Sound.reveal(FMT_TIER[out.type], !!out.shiny);
@@ -3830,14 +3864,14 @@ function showCraft(inputs, out, pxp){
 function viewConfiserie(){
   const tab = ui.confTab==="fusion" ? "fusion" : "echange";
   const dups = recyclableDups(), dupVal = dups.reduce((a,s)=>a+recycleValue(s),0);
-  const fusions = TK.slice(0,-1).reduce((a,_,t)=>a+Math.floor(craftPool(t).length/CRAFT_N),0);
+  const fusions = TK.slice(0,-1).reduce((a,_,t)=>a+Math.floor(craftPool(t).length/craftN(t)),0);
   return `<div class="page-head"><div><h1>La Confiserie</h1><p>Comme à la boulangerie du coin après l'école. Tes billes en trop, deux façons d'en profiter : les échanger contre des ${CUR.many}, ou tenter la fusion pour une plus grosse.</p></div>
     <span class="hand-note">Rien ne se perd, tout se transforme !</span></div>
   <div class="conf-choices">
     <button class="conf-choice" data-action="conf-tab" data-tab="echange" aria-pressed="${tab==="echange"}">${ic("candy",26)}
       <div><b>Échanger contre des ${CUR.many}</b><small>${dups.length?`${dups.length} double${dups.length>1?"s":""} · +${fmt(dupVal)} ${CUR.many}`:"De 5 (Mini) à 400 (Mammouth) par bille"}</small></div></button>
     <button class="conf-choice" data-action="conf-tab" data-tab="fusion" aria-pressed="${tab==="fusion"}">${ic("flask",26)}
-      <div><b>Fusionner ${CRAFT_N} billes</b><small>${fusions?`${fusions} fusion${fusions>1?"s":""} possible${fusions>1?"s":""}`:`${CRAFT_N} billes d'une taille → 1 de la taille au-dessus`}</small></div></button>
+      <div><b>Fusionner des billes</b><small>${fusions?`${fusions} fusion${fusions>1?"s":""} possible${fusions>1?"s":""}`:`${CRAFT_NS[0]} à ${CRAFT_NS[4]} billes d'une taille → 1 de la taille au-dessus`}</small></div></button>
   </div>
   ${tab==="fusion" ? viewCraft() : confEchange(dups, dupVal)}`;
 }
@@ -3854,7 +3888,7 @@ function confEchange(dups, dupVal){
   <section class="panel" style="margin-top:18px">
     <div class="panel-head"><h2>Les tarifs de la maison</h2><span class="sample-tag">Par bille</span></div>
     <div class="tarif-grid">${TK.map((t,i)=>`<div class="tarif" style="${tstyle(t)}">${mImg(SHOWCASE[i],120,Math.round(26*scaleOf(t)+18),"")}<b>${TYPES[t].label}</b><span class="price">${COIN}${fmt(RECYCLE[t])}</span></div>`).join("")}
-      <div class="tarif is-shiny"><span class="shiny-pill">${SPARK}Shiny</span><b>Toutes tailles</b><span class="price">×${SHINY_RECYCLE_MULT}</span></div></div>
+      <div class="tarif is-shiny"><span class="shiny-pill">${SPARK}Shiny</span><b>×${SHINY_RECYCLE_MULT} + une prime</b><span class="price" style="font-size:12px">${SHINIES.slice(1).map((x,i)=>`${x.name} +${fmt(SHINY_BONUS[i+1])}`).join("<br>")}</span></div></div>
   </section>
   <p class="meta" style="margin-top:14px">Pour échanger une autre bille, ouvre sa fiche dans ta boîte à billes.</p>`;
 }
@@ -4266,24 +4300,21 @@ function tear(){
   st.querySelector("svg").style.transform = "";
   document.querySelector(".bag-tools")?.setAttribute("hidden","");
   document.querySelector(".ov-hint")?.setAttribute("hidden","");
-  // le halo monte en couleur jusqu'à la meilleure rareté du sac : ça annonce la couleur
-  const best = Math.max(...ovState.results.map(r=>pullScore(r.s)));
-  const steps = [0, Math.min(best,2), best];
+  // le sac ne dit rien de ce qu'il contient : même lueur et même explosion (couleur du sac) quel que soit le tirage
+  const bc = ovState.bag.color, bcs = [bc, shade(bc,.45), "#FFF3D6"];
   zone.classList.add("charging");
   { const r = st.getBoundingClientRect(); ovState.from = [r.left+r.width/2, r.top+r.height*.2] }
-  steps.forEach((k,i)=>setTimeout(()=>{
-    zone.style.setProperty("--glow", rgba(scoreCol(k), .75));
+  [0,1,2].forEach(i=>setTimeout(()=>{
+    zone.style.setProperty("--glow", rgba(shade(bc,.25*i), .55+i*.1));
     Sound.shake(1+i*.12);
-    if(i===2 && best>=BIG) FX.burst(...FX.at(st), scoreCols(best), 16, .5);
   }, reduce?0:i*340));
   setTimeout(()=>{
     Sound.whoosh();
     zone.classList.remove("charging"); st.classList.add("burst");
-    document.getElementById("ov").style.setProperty("--flash", rgba(scoreCol(best), best>=BIG?.75:.5));
+    document.getElementById("ov").style.setProperty("--flash", rgba(shade(bc,.3), .55));
     const [x,y] = FX.at(st);
-    FX.burst(x,y, scoreCols(best), 60+best*18, 1.2+best*.08);
-    FX.ring(x,y, scoreCol(best));
-    if(best>=6) FX.burst(x,y, SHINY_COLS, 90, 1.6);
+    FX.burst(x,y, bcs, 90, 1.3);
+    FX.ring(x,y, shade(bc,.3));
   }, reduce?0:1050);
   setTimeout(showReveal, reduce?50:1500);
 }
@@ -4293,11 +4324,11 @@ function showReveal(){
   FX.setDust(false);
   document.getElementById("ov-body").innerHTML = `
     <div class="ov-title">${results.length} billes trouvées !</div>
-    <p class="ov-sub">${ovState.forced?"Garantie Boulet activée : un gros t'attend !":"Touche chaque bille pour la découvrir. La couleur de la lueur annonce sa taille…"}</p>
+    <p class="ov-sub">${ovState.forced?"Garantie Boulet activée : un gros t'attend !":"Touche chaque bille pour la découvrir…"}</p>
     <div class="reveal-row">
       ${results.map(({s,isNew,newColor,wish},i)=>{
         const k = pullScore(s), big = k>=BIG;
-        return `<button class="slot ${k>=FMT_TIER.calot||wish?"hint":""}${wish?" wished":""} ${big?"big":""} ${s.shiny?"shiny":""}" style="--d:${i*130}ms;--tc:${scoreCol(k)};${tstyle(s.type)}" data-action="reveal" data-i="${i}" aria-label="Découvrir la bille ${i+1}">
+        return `<button class="slot${wish?" wished":""} ${big?"big":""} ${s.shiny?"shiny":""}" style="--d:${i*130}ms;--tc:${shade(ovState.bag.color,.2)};${tstyle(s.type)}" data-tc="${scoreCol(k)}" data-action="reveal" data-i="${i}" aria-label="Découvrir la bille ${i+1}">
         ${wish?`<span class="slot-banner">Ta liste !</span>`:s.secret?`<span class="slot-banner">Secrète !</span>`:BANNER[k]?`<span class="slot-banner${k<2?" low":""}">${BANNER[k]}</span>`:""}
         <div class="slot-ball"><span class="rays"></span><span class="ball-shadow"></span><span class="orb"><span class="orb-spin"><i>?</i></span></span>${mImg(s,300,Math.round(150*scaleOf(s.type)),"")}</div>
         <div class="slot-info"><b>${esc(specName(s))}</b><span style="display:flex;gap:4px;flex-wrap:wrap;justify-content:center">${wish||s.secret?typePill(s.type,true):""}${shinyPill(s)}${edPill(s)}</span>${tierTag(s)}${k>=BIG?`<span class="ed-no">${edLabel(editionOf(s))}</span>`:""}${isNew?`<span class="new">Nouvelle case !</span>`:newColor?`<span class="new">Nouveau coloris</span>`:`<span class="dup">Déjà dans ta boîte</span>`}<span class="zoom-hint">${ic("search",14)} Agrandir</span></div>
@@ -4368,7 +4399,7 @@ function reveal(i){
   ovState.opened.add(i);
   const el = document.querySelector(`.slot[data-i="${i}"]`);
   el._roll?.forEach(a=>{ try{ a.finish() }catch(e){} }); el._roll = null;
-  el.classList.add("is-open"); el.classList.remove("hint");
+  el.style.setProperty("--tc", el.dataset.tc); el.classList.add("is-open"); el.classList.remove("hint");
   el.setAttribute("aria-label", specName(ovState.results[i].s));
   const rs = ovState.results[i].s, k = pullScore(rs);
   const [x,y] = FX.at(el.querySelector(".slot-ball"));
@@ -4392,7 +4423,7 @@ function revealAll(btn){
     const k = pullScore(st.results[i].s), el = document.querySelector(`.slot[data-i="${i}"]`);
     if(k>=BIG && el && !reduce){
       const wait = k>=6 ? 2400 : k>=FMT_TIER.mammouth ? 2000 : 1500;
-      el.style.setProperty("--sd", wait+"ms"); el.classList.add("suspense"); Sound.suspense(wait/1000, k);
+      el.style.setProperty("--sd", wait+"ms"); el.style.setProperty("--tc", "#FFE3B0"); el.classList.add("suspense"); Sound.suspense(wait/1000, k);
       setTimeout(()=>{ if(ovState!==st) return; el.classList.remove("suspense"); reveal(i); setTimeout(()=>next(i+1), 1300) }, wait);
     } else { reveal(i); setTimeout(()=>next(i+1), k>=FMT_TIER.calot ? 900 : 650) }
   };
@@ -5701,15 +5732,15 @@ document.addEventListener("click", e=>{
     case "craft-toggle": {
       const C = ui.craft, id = t.dataset.id, i = C.sel.indexOf(id);
       if(i>=0) C.sel.splice(i,1);
-      else if(C.sel.length<CRAFT_N) C.sel.push(id);
-      else { toast(`Il y a déjà ${CRAFT_N} billes dans la fusion.`); break }
+      else if(C.sel.length<craftN(C.t)) C.sel.push(id);
+      else { toast(`Il y a déjà ${craftN(C.t)} billes dans la fusion.`); break }
       renderView(); break;
     }
     case "craft-auto": ui.craft.sel = craftAuto(ui.craft.t); renderView(); break;
     case "craft-clear": ui.craft.sel = []; renderView(); break;
     case "craft-go": {
       const C = ui.craft, pool = craftPool(C.t);
-      if(C.t>=TK.length-1 || C.sel.length!==CRAFT_N || !C.sel.every(id=>pool.some(s=>s.id===id))) break;
+      if(C.t>=TK.length-1 || C.sel.length!==craftN(C.t) || !C.sel.every(id=>pool.some(s=>s.id===id))) break;
       if(!arm("craft", t, "Confirmer la fusion")) break;
       const inputs = C.sel.map(specById), gone = new Set(C.sel);
       gone.forEach(id=>sync.why[id]="fusionnee");

@@ -49,6 +49,11 @@ create table if not exists public.annonces (
   retiree_le timestamptz
 );
 create unique index if not exists annonces_une_par_bille on public.annonces (bille) where vendue_le is null and retiree_le is null;
+-- une annonce dure 1, 3 ou 7 jours (au choix du vendeur) ; ensuite elle se retire toute seule
+alter table public.annonces add column if not exists expire_le timestamptz;
+update public.annonces set expire_le = le + interval '3 days' where expire_le is null;
+alter table public.annonces alter column expire_le set default now() + interval '3 days';
+alter table public.annonces alter column expire_le set not null;
 create index if not exists annonces_actives on public.annonces (le desc) where vendue_le is null and retiree_le is null;
 
 alter table public.amis          enable row level security;
@@ -67,11 +72,16 @@ $$ select exists (select 1 from public.amis where joueur = a and ami = b) $$;
 create or replace function interne.bille_json(b public.billes) returns jsonb language sql stable as
 $$ select b.donnees || jsonb_build_object('id', b.id, 'no', b.numero, 'srv', b.origine = 'serveur') $$;
 
+-- les annonces arrivées à leur fin sont retirées (appelé avant de lire ou de modifier le marché)
+create or replace function interne.expirer_annonces() returns void language sql as $$
+  update public.annonces set retiree_le = expire_le where vendue_le is null and retiree_le is null and expire_le <= now()
+$$;
+
 -- une bille qui peut circuler : à ce joueur, pas détruite, tirée par le serveur, pas secrète, pas en vente
 create or replace function interne.bille_libre(bid uuid, qui uuid) returns boolean language sql stable as $$
   select exists (select 1 from public.billes b where b.id = bid and b.proprietaire = qui and b.detruite_le is null
                    and b.origine = 'serveur' and b.secrete is null)
-     and not exists (select 1 from public.annonces a where a.bille = bid and a.vendue_le is null and a.retiree_le is null)
+     and not exists (select 1 from public.annonces a where a.bille = bid and a.vendue_le is null and a.retiree_le is null and a.expire_le > now())
 $$;
 
 create or replace function interne.pseudo(qui uuid) returns text language sql stable as
@@ -170,7 +180,7 @@ begin
   return coalesce((select jsonb_agg(x.j) from (
     select interne.bille_json(b) j from billes b
     where b.proprietaire = qui and b.detruite_le is null and b.origine = 'serveur' and b.secrete is null
-      and not exists (select 1 from annonces a where a.bille = b.id and a.vendue_le is null and a.retiree_le is null)
+      and not exists (select 1 from annonces a where a.bille = b.id and a.vendue_le is null and a.retiree_le is null and a.expire_le > now())
     order by interne.rang(b.taille) desc, b.shiny desc, b.numero desc limit 500) x), '[]');
 end $$;
 
@@ -260,13 +270,16 @@ end $$;
 -- =====================================================================
 --  MARCHÉ
 -- =====================================================================
-create or replace function public.vendre(bille uuid, prix int) returns bigint language plpgsql security definer set search_path = public as $$
+drop function if exists public.vendre(uuid, int);
+create or replace function public.vendre(bille uuid, prix int, jours int default 3) returns bigint language plpgsql security definer set search_path = public as $$
 declare moi uuid := interne.moi(); aid bigint;
 begin
+  perform interne.expirer_annonces();
   if prix < 1 or prix > 1000000 then raise exception 'prix_invalide'; end if;
+  if jours not in (1, 3, 7) then raise exception 'duree_invalide'; end if;
   if not interne.bille_libre(bille, moi) then raise exception 'bille_indisponible'; end if;
   if (select count(*) from annonces a where a.vendeur = moi and a.vendue_le is null and a.retiree_le is null) >= 30 then raise exception 'trop_annonces'; end if;
-  insert into annonces (vendeur, bille, prix) values (moi, vendre.bille, vendre.prix) returning id into aid;
+  insert into annonces (vendeur, bille, prix, expire_le) values (moi, vendre.bille, vendre.prix, now() + make_interval(days => jours)) returning id into aid;
   return aid;
 end $$;
 
@@ -279,7 +292,7 @@ end $$;
 create or replace function public.acheter(annonce bigint) returns jsonb language plpgsql security definer set search_path = public as $$
 declare moi uuid := interne.moi(); a annonces; b billes;
 begin
-  select * into a from annonces where id = annonce and vendue_le is null and retiree_le is null for update;
+  select * into a from annonces where id = annonce and vendue_le is null and retiree_le is null and expire_le > now() for update;
   if a.id is null then raise exception 'plus_en_vente'; end if;
   if a.vendeur = moi then raise exception 'ta_bille'; end if;
   -- on verrouille les deux portefeuilles dans le même ordre pour ne jamais se bloquer
@@ -301,8 +314,10 @@ returns jsonb language plpgsql security definer set search_path = public as $$
 declare moi uuid := auth.uid();
 begin
   if moi is null then raise exception 'connexion_requise'; end if;
+  perform interne.expirer_annonces();
   return coalesce((select jsonb_agg(x.j) from (
     select jsonb_build_object('id', a.id, 'prix', a.prix, 'le', floor(extract(epoch from a.le)*1000)::bigint,
+      'fin', floor(extract(epoch from a.expire_le)*1000)::bigint,
       'vendeur', interne.pseudo(a.vendeur), 'moi', a.vendeur = moi, 'bille', interne.bille_json(b),
       'moyen', (select round(avg(a2.prix))::int from annonces a2 join billes b2 on b2.id = a2.bille
                 where a2.vendue_le > now() - interval '30 days' and b2.taille = b.taille and b2.decor = b.decor
@@ -322,8 +337,10 @@ create or replace function public.mes_annonces() returns jsonb language plpgsql 
 declare moi uuid := auth.uid();
 begin
   if moi is null then raise exception 'connexion_requise'; end if;
+  perform interne.expirer_annonces();
   return coalesce((select jsonb_agg(x.j) from (
     select jsonb_build_object('id', a.id, 'prix', a.prix, 'le', floor(extract(epoch from a.le)*1000)::bigint,
+      'fin', floor(extract(epoch from a.expire_le)*1000)::bigint,
       'vendue', a.vendue_le is not null, 'acheteur', interne.pseudo(a.acheteur), 'bille', interne.bille_json(b)) j
     from annonces a join billes b on b.id = a.bille
     where a.vendeur = moi and a.retiree_le is null and (a.vendue_le is null or a.vendue_le > now() - interval '7 days')
@@ -345,7 +362,7 @@ create trigger retirer_si_detruite after update of detruite_le on public.billes 
 do $$ declare f text; begin
   foreach f in array array['cour_moi()','ami_demander(text)','ami_repondre(uuid,boolean)','ami_retirer(uuid)','profil_joueur(uuid)',
     'billes_echangeables(uuid)','fil_amis()','troc_proposer(uuid,uuid[],uuid[],text)','troc_repondre(bigint,boolean)','troc_annuler(bigint)',
-    'mes_trocs()','vendre(uuid,int)','retirer_annonce(bigint)','acheter(bigint)','marche(text,int,int,boolean,text,int)','mes_annonces()'] loop
+    'mes_trocs()','vendre(uuid,int,int)','retirer_annonce(bigint)','acheter(bigint)','marche(text,int,int,boolean,text,int)','mes_annonces()'] loop
     execute format('revoke all on function public.%s from public, anon', f);
     execute format('grant execute on function public.%s to authenticated', f);
   end loop;

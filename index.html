@@ -2033,7 +2033,7 @@ function makeSpec(type, o={}){
   return {id: newId(), seed, type,
     family: o.family ?? pickW(r(), FAM_W),
     pal: o.pal ?? Math.floor(r()*BASE_PALS),
-    shiny: o.shiny ?? 0, at: o.at ?? Date.now()};
+    shiny: o.shiny ?? 0, at: o.at ?? Date.now(), ...(o.src ? {src:o.src} : {})};
 }
 const specName = s => s.loan ? "Bille prêtée" : s.secret && SECRETS[s.secret] ? SECRETS[s.secret].name : `${FAMILIES[s.family].name} ${PALETTES[s.pal][0]}`;
 const serial = s => { const h=(s.seed>>>0).toString(16).toUpperCase().padStart(8,"0"); return h.slice(0,4)+"-"+h.slice(4) };
@@ -2922,11 +2922,16 @@ const PITY = 10;   // un Boulet au minimum (parfois un Mammouth) au plus tard to
 const WORLD_START = Date.UTC(2026,8,1), WORLD_BAGS_H = 1500;
 function editionOf(s){
   if(s.pal>=BASE_PALS) return 0;
+  if(s.edn) return s.edn;             // la vraie : la combientième de ce modèle trouvée dans le monde (donnée par la base)
+  if(sync.on) return 0;               // avec un compte, pas d'estimation : on attend le vrai numéro
   const bags = Math.max(0,(s.at-WORLD_START)/3600000)*WORLD_BAGS_H;
   const r = rng((s.seed ^ 0x5EED)>>>0)();
   return 1 + Math.floor(chanceOf(s)*3*bags*(.6+.8*r));
 }
-const edLabel = n => n===1 ? "Première mondiale" : `n° ${fmt(n)}`;
+const edLabel = n => n===1 ? "Première mondiale" : n ? `n° ${fmt(n)}` : "";
+// d'où vient une bille (affiché dans sa fiche)
+const SRC_LABEL = {gratuit:"Dans un Sac gratuit", classique:"Dans un Sac Classique", premium:"Dans un Sac Premium", collector:"Dans un Sac Collector",
+  fusion:"En fusion, à la Confiserie", chateau:"En gagnant au Château", passe:"Au passe de saison", secrete:"En découvrant un secret", test:"Outil de test"};
 
 // Défis de collection : calculés sur la collection actuelle, récompense à récupérer une fois.
 // Objectifs calés par simulation sur un joueur régulier (≈ 15 sacs gratuits + 4 Classiques par jour) : rien ne doit
@@ -3039,7 +3044,7 @@ function feedItems(){
 
 function grantSecret(id){
   if(S.specs.some(s=>s.secret===id)) return null;
-  const X = SECRETS[id], s = makeSpec(X.type,{seed:hash("secret-"+id), family:X.family, pal:X.palIdx, shiny:X.shiny});
+  const X = SECRETS[id], s = makeSpec(X.type,{seed:hash("secret-"+id), family:X.family, pal:X.palIdx, shiny:X.shiny, src:"secrete"});
   s.secret = id; srvMint(s, "secrete", id); S.specs.push(s); S.unseen.push(s.id); logFind(s);
   if(id==="folle" && !S.titles.includes("Perd la boule")) S.titles.push("Perd la boule");
   save(); return s;
@@ -3135,7 +3140,7 @@ function grantReward(track,t){
   if(r.k==="jetons") earn("passe", key, r.n);
   else if(r.k==="bag") earn("passe", key, 0, r.bag);
   else if(r.k==="title"){ if(!S.titles.includes(r.name)) S.titles.push(r.name); S.title = r.name }
-  else { const sp = rewardSpec(track,t,r), s = makeSpec(sp.type,sp); s.ed = sp.ed; srvMint(s, "passe", key); S.specs.push(s); S.unseen.push(s.id); r.spec = s }
+  else { const sp = rewardSpec(track,t,r), s = makeSpec(sp.type,{...sp, src:"passe"}); s.ed = sp.ed; srvMint(s, "passe", key); S.specs.push(s); S.unseen.push(s.id); r.spec = s }
   return r;
 }
 function passXP(n){
@@ -3914,7 +3919,7 @@ const craftPool = t => S.specs.filter(s=>tierOf(s)===t && !s.shiny && !s.secret 
 const slotCounts = () => { const c={}; S.specs.forEach(s=>{ const k=colorKey(s); c[k]=(c[k]||0)+1 }); return c };   // exemplaires de chaque bille (doubles stricts)
 // la taille au-dessus ; le décor et le coloris sont tirés au hasard avec leurs chances habituelles
 function craftResult(T){
-  return makeSpec(TK[T],{shiny:Math.random()<craftShiny(T-1) ? rollShiny() : 0});
+  return makeSpec(TK[T],{shiny:Math.random()<craftShiny(T-1) ? rollShiny() : 0, src:"fusion"});
 }
 // remplissage auto : d'abord les doubles, pour ne pas vider d'emplacement de l'album
 function craftAuto(t){
@@ -3981,7 +3986,7 @@ function showCraft(inputs, out, pxp){
       <div class="reveal-row"><button class="slot is-open ${k>=BIG?"big":""} ${out.shiny?"shiny":""}" data-action="zoom" data-id="${out.id}" aria-label="Agrandir ${esc(specName(out))}" style="--tc:${scoreCol(k)};${tstyle(out.type)}">
         ${BANNER[k]?`<span class="slot-banner">${BANNER[k]}</span>`:""}
         <div class="slot-ball"><span class="rays"></span>${mImg(out,300,Math.round(150*scaleOf(out.type)),"")}</div>
-        <div class="slot-info"><b>${esc(specName(out))}</b><span style="display:flex;gap:4px;flex-wrap:wrap;justify-content:center">${typePill(out.type,true)}${shinyPill(out)}</span>${tierTag(out)}${k>=BIG?`<span class="ed-no">${edLabel(ed)}</span>`:""}<span class="zoom-hint">${ic("search",14)} Agrandir</span></div>
+        <div class="slot-info"><b>${esc(specName(out))}</b><span style="display:flex;gap:4px;flex-wrap:wrap;justify-content:center">${typePill(out.type,true)}${shinyPill(out)}</span>${tierTag(out)}${k>=BIG&&ed?`<span class="ed-no">${edLabel(ed)}</span>`:""}<span class="zoom-hint">${ic("search",14)} Agrandir</span></div>
       </button></div>
       <div class="ov-actions"><span class="ov-xp" style="flex-basis:100%;justify-content:center">${ic("ticket",18)} +${pxp} XP de saison</span>
         ${craftPool(ui.craft.t).length>=craftN(ui.craft.t)?`<button class="btn btn-yellow" data-action="craft-again">Préparer une autre fusion</button>`:""}
@@ -4167,8 +4172,10 @@ function openModal(id, pv){
         <dt>Décor</dt><dd>${F.name} · ${DECOR_RAR[F.rar].name} <small class="meta">(${famOdds(s.family)} a ce décor)</small></dd>
         <dt>Coloris</dt><dd>${PALETTES[s.pal][0]}</dd>
         <dt>Chance</dt><dd>${s.secret?"Bille secrète : une seule par joueur":isSeason(s)?"Exclusive au passe de saison":`${oneIn(chanceOf(s))} <small class="meta">par bille du sac gratuit</small>`}</dd>
-        ${pv||s.pal>=BASE_PALS?"":`<dt>Édition</dt><dd>${editionOf(s)===1?`<span class="first-pill">Première mondiale</span>`:`n° ${fmt(editionOf(s))}`} <small class="meta">de ce modèle dans le monde (simulé)</small></dd>`}
-        ${pv?"":`<dt>N° de série</dt><dd><code>${serial(s)}</code></dd>
+        ${pv||!editionOf(s)?"":`<dt>Édition</dt><dd>${editionOf(s)===1?`<span class="first-pill">Première mondiale</span>`:`n° ${fmt(editionOf(s))}`} <small class="meta">de ce modèle trouvée dans le monde${s.edn?"":" (estimation)"}</small></dd>`}
+        ${pv||!s.no?"":`<dt>N° de série</dt><dd><code>#${String(s.no).padStart(7,"0")}</code> <small class="meta">unique, dans l'ordre d'apparition</small></dd>`}
+        ${pv||!SRC_LABEL[s.src]?"":`<dt>Trouvée</dt><dd>${SRC_LABEL[s.src]}</dd>`}
+        ${pv?"":`<dt>Motif</dt><dd><code>${serial(s)}</code></dd>
         <dt>Obtenue le</dt><dd>${new Date(s.at).toLocaleDateString("fr-FR",{day:"numeric",month:"long",year:"numeric"})}</dd>`}
       </dl>
       ${pv&&pv.cour?`<p class="meta">${esc(pv.cour)}</p>`:pv?`<p class="meta">Aperçu Billepedia · ${S.specs.some(x=>slotKey(x)===slotKey(s))?"tu as déjà ce format dans ce décor.":"pas encore dans ta boîte à billes."}</p>`:`<div class="modal-actions">
@@ -4265,11 +4272,11 @@ function pullBag(bag){
     let t = rollType(bag.odds);
     if(bag.guarantee && i===bag.n-1 && !res.some(s=>TIDX[s.type]>=TIDX[bag.guarantee])) t = rollType(bag.odds,bag.guarantee);
     const shiny = Math.random()<bag.shiny ? rollShiny() : 0;
-    res.push(makeSpec(t,{shiny}));
+    res.push(makeSpec(t,{shiny, src:bag.id}));
   }
   if((S.pity||0)+1>=PITY && !res.some(s=>tierOf(s)>=BIG)){
     const last = res[res.length-1];
-    res[res.length-1] = makeSpec(Math.random()*(bag.odds.boulet+bag.odds.mammouth)<bag.odds.mammouth ? "mammouth" : "boulet", {shiny:last.shiny});
+    res[res.length-1] = makeSpec(Math.random()*(bag.odds.boulet+bag.odds.mammouth)<bag.odds.mammouth ? "mammouth" : "boulet", {shiny:last.shiny, src:bag.id});
     res.forced = true;
   }
   return res.sort((a,b)=>TIDX[a.type]-TIDX[b.type] || (a.shiny?1:0)-(b.shiny?1:0));
@@ -4491,7 +4498,7 @@ function showReveal(){
         return `<button class="slot${wish?" wished":""} ${big?"big":""} ${s.shiny?"shiny":""}" style="--d:${i*130}ms;--tc:${shade(ovState.bag.color,.2)};${tstyle(s.type)}" data-tc="${scoreCol(k)}" data-action="reveal" data-i="${i}" aria-label="Découvrir la bille ${i+1}">
         ${wish?`<span class="slot-banner">Ta liste !</span>`:s.secret?`<span class="slot-banner">Secrète !</span>`:BANNER[k]?`<span class="slot-banner${k<2?" low":""}">${BANNER[k]}</span>`:""}
         <div class="slot-ball"><span class="rays"></span><span class="ball-shadow"></span><span class="orb"><span class="orb-spin"><i>?</i></span></span>${mImg(s,300,Math.round(150*scaleOf(s.type)),"")}</div>
-        <div class="slot-info"><b>${esc(specName(s))}</b><span style="display:flex;gap:4px;flex-wrap:wrap;justify-content:center">${wish||s.secret?typePill(s.type,true):""}${shinyPill(s)}${edPill(s)}</span>${tierTag(s)}${k>=BIG?`<span class="ed-no">${edLabel(editionOf(s))}</span>`:""}${isNew?`<span class="new">Nouvelle case !</span>`:newColor?`<span class="new">Nouveau coloris</span>`:`<span class="dup">Déjà dans ta boîte</span>`}<span class="zoom-hint">${ic("search",14)} Agrandir</span></div>
+        <div class="slot-info"><b>${esc(specName(s))}</b><span style="display:flex;gap:4px;flex-wrap:wrap;justify-content:center">${wish||s.secret?typePill(s.type,true):""}${shinyPill(s)}${edPill(s)}</span>${tierTag(s)}${k>=BIG&&editionOf(s)?`<span class="ed-no">${edLabel(editionOf(s))}</span>`:""}${isNew?`<span class="new">Nouvelle case !</span>`:newColor?`<span class="new">Nouveau coloris</span>`:`<span class="dup">Déjà dans ta boîte</span>`}<span class="zoom-hint">${ic("search",14)} Agrandir</span></div>
       </button>`}).join("")}
     </div>
     <div class="ov-actions" id="ov-actions">
@@ -5310,7 +5317,7 @@ const SETUP = {
       if(st===3 && paid){
         if(srvOn()){ prize = " Et pour de vrai : tu gagnes une Bille du château !";
           srv(()=>Cloud.eco.marble("chateau","")).then(r=>{ const s = srvAdopt([r.bille])[0]; S.specs.push(s); S.unseen.push(s.id); applyEco(r.eco); toast(`Ta Bille du château : ${specName(s)} !`) }, srvFail) }
-        else { const s=makeSpec("bille"); S.specs.push(s); S.unseen.push(s.id); prize = ` Et pour de vrai : tu gagnes une bille du château, ${specName(s)} !` }
+        else { const s=makeSpec("bille",{src:"chateau"}); S.specs.push(s); S.unseen.push(s.id); prize = ` Et pour de vrai : tu gagnes une bille du château, ${specName(s)} !` }
       }
       payOut(paid?rew:0, st, "chateau", paid, paid?"chateau":null);
       arenaResult(n>=10?"Château rasé !":n>=6?"Belle démolition !":n?"Quelques briques en moins":"Le château tient bon", st, `${n} bille${n>1?"s":""} sortie${n>1?"s":""} du cercle sur 10.${prize}${paid?"":FUN_NOTE}`, paid?rew:0);
@@ -5833,7 +5840,7 @@ const COUR_ERR = {inconnu:"Personne ne s'appelle comme ça dans la cour.", soi_m
   deja_ami:"Vous êtes déjà copains.", trop_amis:"Tu as déjà 200 copains !", trop_demandes:"Tu as déjà beaucoup de demandes en attente.",
   plus_de_demande:"Cette demande n'existe plus.", pas_ami:"Vous n'êtes pas (ou plus) copains.", bille_indisponible:"Une de ces billes n'est plus disponible.",
   troc_invalide:"Ce troc n'est pas possible.", trop_trocs:"Tu as déjà 20 trocs en attente.", plus_de_troc:"Ce troc n'existe plus.",
-  prix_invalide:"Choisis un prix entre 1 et 1 000 000.", trop_annonces:"Tu as déjà 30 billes en vente.", plus_en_vente:"Cette bille n'est plus en vente.",
+  prix_invalide:"Choisis un prix entre 1 et 1 000 000.", duree_invalide:"Choisis une durée : 1, 3 ou 7 jours.", trop_annonces:"Tu as déjà 30 billes en vente.", plus_en_vente:"Cette bille n'est plus en vente.",
   ta_bille:"C'est ta propre bille !", pas_assez:`Il te manque des ${CUR.many}.`, reseau:"Pas de connexion : réessaie dans un instant."};
 function courFail(e){ console.warn("Cour :", e); toast(COUR_ERR[e?.code] || "Oups, ça n'a pas marché. Réessaie dans un instant.") }
 const courCount = () => cour.moi ? (cour.moi.trocs||0) + (cour.moi.recues||[]).length : 0;
@@ -5855,6 +5862,9 @@ function courSpec(s, note){ cour.specs.push(Object.assign({}, s, {cour:note||"Un
 const courBall = (s, px=46, note) => `<button data-action="cour-see" data-k="${courSpec(s, note)}" title="${esc(TYPES[s.type].label+" "+specName(s))}">${mImg(s,120,px,"")}</button>`;
 const courName = s => `${TYPES[s.type].label} ${specName(s)}`;
 const timeAgo = t => ago(typeof t==="number" ? t : Date.parse(t));
+// temps restant avant la fin d'une annonce
+function finDans(fin){ const ms = fin - Date.now(); if(!(ms>0)) return "Se termine"; const h = Math.floor(ms/36e5), d = Math.floor(h/24);
+  return d>=1 ? `Encore ${d} j ${h%24} h` : h>=1 ? `Encore ${h} h` : `Encore ${Math.max(1,Math.floor(ms/6e4))} min` }
 
 // les billes qui ont changé de main (vendues, troquées, achetées) : la boîte se cale sur la base
 async function syncMarbles(){
@@ -6004,7 +6014,7 @@ function courMarche(){
     return `<div class="mk${a.moi?" mine":""}"><span class="ball" data-action="cour-see" data-k="${courSpec(x, a.moi?"Ta bille en vente.":`En vente par ${a.vendeur}.`)}">${mImg(x,160,Math.round(44*scaleOf(x.type)+22),"")}</span>
       <b>${esc(specName(x))}</b><span style="display:flex;gap:4px;flex-wrap:wrap;justify-content:center">${typePill(x.type)}${shinyPill(x)}</span>
       <span class="price">${COIN}${fmt(a.prix)}</span>
-      <small>${a.moyen?`Prix moyen : ${fmt(a.moyen)} · `:""}${a.moi?"ta bille":`par ${esc(a.vendeur)}`}</small>
+      <small>${a.moyen?`Prix moyen : ${fmt(a.moyen)} · `:""}${a.moi?"ta bille":`par ${esc(a.vendeur)}`}</small><small>${finDans(a.fin)}</small>
       ${a.moi ? `<button class="btn btn-ghost btn-sm" data-action="mk-retirer" data-id="${a.id}">Retirer</button>`
         : `<button class="btn btn-yellow btn-sm" data-action="mk-acheter" data-id="${a.id}" data-prix="${a.prix}" ${S.jetons<a.prix?"disabled":""}>Acheter</button>`}</div>` };
   const mine = (A||[]);
@@ -6020,7 +6030,7 @@ function courMarche(){
     ${mine.length ? `<section class="panel"><div class="panel-head"><h3>Mes annonces</h3></div><div class="mk-grid">${mine.map(a=>{ const x=a.bille;
       return `<div class="mk mine${a.vendue?" sold":""}"><span class="ball" data-action="cour-see" data-k="${courSpec(x)}">${mImg(x,160,Math.round(40*scaleOf(x.type)+20),"")}</span><b>${esc(specName(x))}</b>
         <span class="price">${COIN}${fmt(a.prix)}</span>
-        ${a.vendue ? `<small>Vendue à ${esc(a.acheteur||"?")}</small>` : `<button class="btn btn-ghost btn-sm" data-action="mk-retirer" data-id="${a.id}">Retirer</button>`}</div>` }).join("")}</div></section>` : ""}
+        ${a.vendue ? `<small>Vendue à ${esc(a.acheteur||"?")}</small>` : `<small>${finDans(a.fin)}</small><button class="btn btn-ghost btn-sm" data-action="mk-retirer" data-id="${a.id}">Retirer</button>`}</div>` }).join("")}</div></section>` : ""}
   </div>`;
 }
 function sellStart(pick){
@@ -6035,8 +6045,10 @@ function sellView(){
     <section class="panel"><div class="panel-head"><h3>Vendre une bille</h3><button class="see-all" data-action="mk-close">${ic("chevl",14)} Retour</button></div>
       ${p ? `<div class="cour-row">${mImg(p,120,56,"")}<span class="who">${esc(courName(p))}<small>À la Confiserie, elle vaut ${fmt(recycleValue(p))} ${CUR.many}.</small></span></div>
         <form class="cour-form" id="sell-form"><input type="number" id="sell-prix" min="1" max="1000000" step="1" placeholder="Prix" value="${X.prix||""}" aria-label="Prix en ${CUR.many}" required>
-          <span class="meta">${CUR.many}</span><button class="btn btn-yellow" type="submit">Mettre en vente</button></form>
-        <p class="cour-lead">Tu peux la retirer quand tu veux tant que personne ne l'a achetée. Pendant qu'elle est en vente, elle ne peut pas être troquée.</p>`
+          <span class="meta">${CUR.many}</span>
+          <select id="sell-jours" aria-label="Durée de la vente"><option value="1">pendant 1 jour</option><option value="3" selected>pendant 3 jours</option><option value="7">pendant 7 jours</option></select>
+          <button class="btn btn-yellow" type="submit">Mettre en vente</button></form>
+        <p class="cour-lead">Si personne ne l'achète avant la fin, elle reste simplement dans ta boîte. Tu peux aussi la retirer quand tu veux. Pendant qu'elle est en vente, elle ne peut pas être troquée.</p>`
         : `<p class="cour-lead">Choisis la bille à vendre. Ta bille active, les billes de départ et les billes secrètes ne peuvent pas être vendues.</p>`}
     </section>
     <section class="panel">${pickList(X.list, "sell", X.pick?[X.pick]:[], X.f)}</section>
@@ -6124,7 +6136,7 @@ document.addEventListener("click", e=>{
     case "seen-all": S.unseen = []; save(); renderView(); break;
     case "give-shiny": {
       if(sync.on && eco.ready){ srv(()=>Cloud.eco.test("shiny")).then(r=>{ const s = srvAdopt([r.bille])[0]; S.specs.push(s); S.unseen.push(s.id); applyEco(r.eco); renderView(); openModal(s.id) }, srvFail); break }
-      const s = makeSpec(TK[2+Math.floor(Math.random()*(TK.length-2))], {shiny:1+Math.floor(Math.random()*3)});
+      const s = makeSpec(TK[2+Math.floor(Math.random()*(TK.length-2))], {shiny:1+Math.floor(Math.random()*3), src:"test"});
       S.specs.push(s); S.unseen.push(s.id); save(); renderTop(); renderView(); openModal(s.id);
       toast(`Nouvelle shiny ${SHINIES[s.shiny].name} : ${specName(s)} (démo).`);
       break;
@@ -6331,9 +6343,9 @@ document.addEventListener("submit", e=>{
   }
   if(id==="sell-form"){
     e.preventDefault();
-    const X = cour.sell, prix = Math.round(+document.getElementById("sell-prix").value);
+    const X = cour.sell, prix = Math.round(+document.getElementById("sell-prix").value), jours = +document.getElementById("sell-jours").value || 3;
     if(!X?.pick || !(prix>=1)) return;
-    Cloud.cour.vendre(X.pick, prix).then(()=>{ toast(`En vente pour ${fmt(prix)} ${CUR.many} !`); cour.sell = null; courRefresh("marche","annonces") }, courFail);
+    Cloud.cour.vendre(X.pick, prix, jours).then(()=>{ toast(`En vente pour ${fmt(prix)} ${CUR.many} !`); cour.sell = null; courRefresh("marche","annonces") }, courFail);
     return;
   }
   if(id!=="name-form") return;
@@ -6453,7 +6465,7 @@ async function cloudFlush(){
     if(add.length){
       const rows = await Cloud.addBilles(add);
       add.forEach(s=>sync.known.add(s.id));
-      rows.forEach(r=>{ const s = specById(r.id); if(s) s.no = r.numero });   // numéro de série donné par la base
+      rows.forEach(r=>{ const s = specById(r.id); if(s){ s.no = r.numero; if(r.edition) s.edn = r.edition } });   // numéro de série et édition donnés par la base
     }
     if(gone.length){
       const by = {}; gone.forEach(id=>{ const w = sync.why[id]||"retiree"; (by[w] = by[w]||[]).push(id) });

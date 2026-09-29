@@ -33,6 +33,32 @@ end $$;
 -- (le droit d'insérer des billes, donné dans schema.sql, ne comprend pas la colonne origine : le téléphone ne peut pas la choisir)
 grant select (origine) on public.billes to authenticated;
 
+-- ---------- Édition : la combientième bille de ce modèle (taille + décor + coloris) trouvée dans le monde ----------
+alter table public.billes add column if not exists edition int;
+-- security definer : le compte doit voir toutes les billes du monde, pas seulement celles du joueur
+create or replace function interne.numeroter_edition() returns trigger language plpgsql security definer set search_path = public as $$
+begin
+  if new.coloris < 48 then   -- les billes de saison et secrètes n'ont pas d'édition
+    perform pg_advisory_xact_lock(hashtext('edition|' || new.taille || '|' || new.decor || '|' || new.coloris));
+    select count(*) + 1 into new.edition from public.billes b
+      where b.taille = new.taille and b.decor = new.decor and b.coloris = new.coloris;
+    new.donnees := new.donnees || jsonb_build_object('edn', new.edition);
+  end if;
+  return new;
+end $$;
+drop trigger if exists numeroter_edition on public.billes;
+create trigger numeroter_edition before insert on public.billes for each row execute function interne.numeroter_edition();
+-- une seule fois : les billes déjà en base reçoivent leur vraie édition, dans l'ordre où elles ont été trouvées
+do $$ begin
+  if not exists (select 1 from interne.migrations where nom = 'editions-reelles') then
+    update public.billes b set edition = x.rn, donnees = b.donnees || jsonb_build_object('edn', x.rn)
+      from (select id, row_number() over (partition by taille, decor, coloris order by numero) rn from public.billes where coloris < 48) x
+      where b.id = x.id;
+    insert into interne.migrations (nom) values ('editions-reelles');
+  end if;
+end $$;
+grant select (edition) on public.billes to authenticated;
+
 -- ---------- Portefeuille : bonbecs, sacs offerts, sac gratuit, bonbec du jour ----------
 create table if not exists public.portefeuilles (
   joueur       uuid primary key references auth.users(id) on delete cascade,
@@ -147,8 +173,10 @@ create or replace function interne.tirer_shiny(taux numeric) returns int languag
 $$;
 
 -- crée une bille en base pour ce joueur et la renvoie telle que le jeu la connaît
+-- src : d'où elle vient (gratuit, classique, premium, collector, fusion, chateau, passe, secrete, test)
+drop function if exists interne.nouvelle_bille(uuid, text, int, int, int, text, bigint, jsonb, uuid);
 create or replace function interne.nouvelle_bille(qui uuid, taille text, decor int default null, coloris int default null,
-  shiny int default 0, secrete text default null, graine bigint default null, extra jsonb default '{}', bid uuid default null)
+  shiny int default 0, secrete text default null, graine bigint default null, extra jsonb default '{}', bid uuid default null, src text default null)
 returns jsonb language plpgsql volatile as $$
 declare d int := coalesce(decor, interne.tirer_decor());
         c int := coalesce(coloris, floor(random()*interne.coloris_base())::int);
@@ -158,10 +186,11 @@ begin
   don := jsonb_build_object('seed', s, 'type', taille, 'family', d, 'pal', c, 'shiny', shiny,
            'at', floor(extract(epoch from now())*1000)::bigint) || extra;
   if secrete is not null then don := don || jsonb_build_object('secret', secrete); end if;
+  if src is not null then don := don || jsonb_build_object('src', src); end if;
   insert into public.billes (id, proprietaire, seed, taille, decor, coloris, shiny, secrete, donnees, origine)
     values (coalesce(bid, gen_random_uuid()), qui, s, taille, d, c, shiny, secrete, don, 'serveur')
-    returning id, numero into r;
-  return don || jsonb_build_object('id', r.id, 'no', r.numero, 'srv', true);
+    returning id, numero, donnees into r;   -- donnees : avec l'édition ajoutée par la base
+  return r.donnees || jsonb_build_object('id', r.id, 'no', r.numero, 'srv', true);
 end $$;
 
 -- l'état du portefeuille, envoyé au jeu après chaque action
@@ -250,7 +279,7 @@ begin
     pity = case when exists (select 1 from unnest(tirees) x where x >= 4) then 0 else pity + 1 end
     where joueur = qui;
   for i in 1..r.n loop
-    billes := billes || interne.nouvelle_bille(qui, (interne.tailles())[tirees[i]+1], shiny => shinies[i]);
+    billes := billes || interne.nouvelle_bille(qui, (interne.tailles())[tirees[i]+1], shiny => shinies[i], src => nom);
   end loop;
   return jsonb_build_object('eco', interne.etat(qui), 'billes', billes, 'force', force);
 end $$;
@@ -291,7 +320,7 @@ begin
     insert into billes_historique (bille, de, vers, motif) values (b.id, qui, null, 'detruite');
   end loop;
   return jsonb_build_object('eco', interne.etat(qui),
-    'bille', interne.nouvelle_bille(qui, (interne.tailles())[rg+2], shiny => interne.tirer_shiny(interne.taux_shiny() * nb)));
+    'bille', interne.nouvelle_bille(qui, (interne.tailles())[rg+2], shiny => interne.tirer_shiny(interne.taux_shiny() * nb), src => 'fusion'));
 end $$;
 
 -- Le bonbec du jour : calendrier de 4 semaines, calculé par le serveur
@@ -366,7 +395,7 @@ begin
     when 'chateau' then   -- 3 étoiles au Château : une Bille, une fois par jour
       begin insert into gains (joueur, source, cle) values (qui, 'bille-chateau', interne.aujourdhui()::text);
       exception when unique_violation then raise exception 'deja'; end;
-      b := interne.nouvelle_bille(qui, 'bille');
+      b := interne.nouvelle_bille(qui, 'bille', src => 'chateau');
     when 'passe' then     -- cle : « 2026-9|free|10 »
       if split_part(cle, '|', 1) <> interne.saison() then raise exception 'montant_invalide'; end if;
       select x.t, x.sh into t, sh from (values ('free|10','mini',0), ('free|20','bille',0), ('free|30','calot',0),
@@ -377,14 +406,14 @@ begin
       exception when unique_violation then raise exception 'deja'; end;
       m := split_part(split_part(cle,'|',1), '-', 2)::int;
       b := interne.nouvelle_bille(qui, t, fams[m], interne.coloris_base() + m - 1, sh, graine => graine,
-             extra => jsonb_build_object('ed', noms[m] || ' ' || split_part(split_part(cle,'|',1), '-', 1)), bid => bid);
+             extra => jsonb_build_object('ed', noms[m] || ' ' || split_part(split_part(cle,'|',1), '-', 1)), bid => bid, src => 'passe');
     when 'secrete' then   -- une seule de chaque par joueur
       select x.t, x.f, x.c, x.sh into t, m, c, sh from (values
         ('folle','calot',1,60,1), ('arcade','boulet',25,61,3), ('grenier','mammouth',8,62,2),
         ('gouter','calot',20,63,0), ('preau','boulet',16,64,0)) x(k, t, f, c, sh) where x.k = cle;
       if t is null then raise exception 'secrete_inconnue'; end if;
       if exists (select 1 from billes where proprietaire = qui and secrete = cle) then raise exception 'deja'; end if;
-      b := interne.nouvelle_bille(qui, t, m, c, sh, cle, graine, bid => bid);
+      b := interne.nouvelle_bille(qui, t, m, c, sh, cle, graine, bid => bid, src => 'secrete');
     else raise exception 'source_inconnue';
   end case;
   return jsonb_build_object('eco', interne.etat(qui), 'bille', b);
@@ -426,7 +455,7 @@ begin
   case action
     when 'bonbecs' then perform interne.crediter(qui, 1000);
     when 'gratuit' then update portefeuilles set gratuit_t0 = now() - interval '50 minutes' where joueur = qui;
-    when 'shiny' then b := interne.nouvelle_bille(qui, (interne.tailles())[3 + floor(random()*4)::int], shiny => 1 + floor(random()*3)::int);
+    when 'shiny' then b := interne.nouvelle_bille(qui, (interne.tailles())[3 + floor(random()*4)::int], shiny => 1 + floor(random()*3)::int, src => 'test');
     else raise exception 'action_inconnue';
   end case;
   return jsonb_build_object('eco', interne.etat(qui), 'bille', b);

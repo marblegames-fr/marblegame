@@ -6553,7 +6553,9 @@ async function cloudStart0(user){
     authHide(); rerenderAll();
     toast(fromGuest ? "Ta collection est maintenant sauvegardée sur ton compte." : `Bienvenue dans la cour, ${S.name} !`);
   };
-  if(guest && Array.isArray(guest.specs) && guest.specs.length) authShow("import", {n:guest.specs.length, begin});
+  // on ne propose de reprendre la partie sans compte que si elle a vraiment été jouée (pas juste les billes de départ)
+  const played = guest && Array.isArray(guest.specs) && guest.specs.length && ((guest.bags||0)>0 || guest.specs.length!==11 || (guest.chal||[]).length>0);
+  if(played) authShow("import", {n:guest.specs.length, begin});
   else begin(false);
 }
 

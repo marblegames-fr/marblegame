@@ -1,11 +1,12 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Billy</title>
+<link rel="icon" id="favicon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Cdefs%3E%3CradialGradient id='g' cx='38%25' cy='34%25' r='70%25'%3E%3Cstop offset='0' stop-color='%23BFE3FF'/%3E%3Cstop offset='.5' stop-color='%232E6BE6'/%3E%3Cstop offset='1' stop-color='%23142A6B'/%3E%3C/radialGradient%3E%3C/defs%3E%3Ccircle cx='32' cy='32' r='29' fill='url(%23g)'/%3E%3Cpath d='M14 38c8-14 22-18 36-10' stroke='%23FFC93F' stroke-width='5' fill='none' stroke-linecap='round'/%3E%3Cellipse cx='23' cy='20' rx='8' ry='5' fill='%23fff' opacity='.7'/%3E%3C/svg%3E">
 <script>/* thème sombre par défaut, appliqué avant l'affichage pour éviter un flash clair */
 try{ document.documentElement.dataset.theme = localStorage.getItem("billy-theme") || "dark" }catch(e){ document.documentElement.dataset.theme = "dark" }</script>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Lilita+One&family=Nunito:wght@500;600;700;800;900&family=Caveat:wght@600;700&display=swap">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Lilita+One&family=Titan+One&family=Nunito:wght@500;600;700;800;900&family=Caveat:wght@600;700&display=swap">
 <style>
 :root{
   --bg:#FBF4E6;
@@ -84,6 +85,9 @@ p{margin:0}
 /* ---------- top bar ---------- */
 .topbar{position:sticky;top:env(safe-area-inset-top,0px);z-index:30;display:flex;align-items:center;gap:16px;height:68px;padding-inline:24px;background:var(--topbar);backdrop-filter:blur(8px);border-bottom:1px solid var(--line)}
 .logo{display:flex;align-items:center;gap:4px;font-family:var(--display);font-size:38px;line-height:1;color:var(--yellow);text-shadow:0 3px 0 var(--navy);letter-spacing:.5px}
+/* le titre : une police ronde et gourmande, jaune avec une tranche caramel et un petit relief */
+.logo span{font-family:"Titan One",var(--display);font-size:.92em;letter-spacing:.8px;color:#FFC93F;
+  text-shadow:0 1.5px 0 #F59E0B,0 3px 0 #E07B00,0 5px 0 var(--navy),0 7px 9px rgba(0,0,0,.35)}
 .logo span{-webkit-text-stroke:6px var(--navy);paint-order:stroke fill}
 .logo img{width:36px;height:36px;margin-left:2px;margin-top:4px}
 .tagline{font-family:var(--hand);font-size:24px;font-weight:600;color:var(--ink);margin-left:18px;white-space:nowrap}
@@ -127,6 +131,8 @@ button.profile-mini:hover,button.profile-mini[aria-expanded="true"]{background:v
 .profile-mini small{color:var(--muted);font-size:12px;font-weight:600}
 .wallet{display:flex;align-items:center;gap:8px;height:38px;padding:0 14px 0 7px;border-radius:999px;background:var(--panel);border:1px solid var(--line);font-weight:800;font-variant-numeric:tabular-nums}
 .wallet small{font-weight:700;color:var(--ink-2);font-size:12px}
+@media (max-width:420px){ .wallet .w-plus{display:none} #daily-btn{width:34px} }
+@media (max-width:400px){ #daily-btn{display:none} }
 .coin{width:24px;height:24px;flex:none}
 button.wallet:hover{background:var(--panel-2)}
 
@@ -251,7 +257,7 @@ button.mj-row:hover{border-color:var(--line-2)}
 /* ---------- barre du bas (téléphone) : le sac au centre ---------- */
 .tabbar{display:none}
 @media (max-width:820px){
-  .tabbar{position:fixed;left:0;right:0;bottom:0;z-index:40;display:grid;grid-template-columns:repeat(5,minmax(0,1fr));align-items:end;height:calc(68px + env(safe-area-inset-bottom,0px));padding:0 4px env(safe-area-inset-bottom,0px);background:var(--panel);border-top:1px solid var(--line)}
+  .tabbar{position:fixed;left:0;right:0;bottom:0;z-index:40;display:grid;grid-template-columns:repeat(6,minmax(0,1fr));align-items:end;height:calc(68px + env(safe-area-inset-bottom,0px));padding:0 4px env(safe-area-inset-bottom,0px);background:var(--panel);border-top:1px solid var(--line)}
   .mj-scrim{align-items:flex-end}
   .mj-panel{width:100%;height:auto;max-height:88%;border-left:0;border-radius:24px 24px 0 0;padding-bottom:calc(26px + env(safe-area-inset-bottom,0px));animation:mjup .28s cubic-bezier(.2,.9,.3,1)}
 }
@@ -1011,6 +1017,23 @@ button.vit-slot:hover{background:var(--panel-2);color:var(--ink)}
 .day b{font-weight:900;font-size:13px;font-variant-numeric:tabular-nums}
 .day.today{border-color:#F2AE12;background:var(--gold-bg);box-shadow:0 0 0 3px color-mix(in srgb,#FFC93F 30%,transparent)}
 .day.got{opacity:.55}
+.sh-odds{display:flex;flex-direction:column;gap:1px;font-size:11px;font-weight:700;color:var(--muted);width:100%}
+.sh-odds span{display:flex;justify-content:space-between;gap:6px}
+.sh-odds b{color:var(--ink-2);font-weight:900;font-variant-numeric:tabular-nums}
+.daily-cal{display:flex;flex-direction:column;gap:6px;width:100%;margin:2px 0}
+.daily-cal .day{padding:6px 2px;gap:2px;border-radius:10px}
+.daily-cal .day .coin{width:20px;height:20px}
+.daily-cal .day-bag{height:20px}
+.daily-cal .day b{font-size:12px}
+.modal.daily .daily-body{gap:8px;padding-top:22px}
+.modal.daily .daily-body h2{font-size:28px}
+.daily-wk{display:flex;flex-direction:column;gap:4px;text-align:left}
+.wk-lbl{font-size:11px;font-weight:900;color:var(--muted);text-transform:uppercase;letter-spacing:.06em}
+.daily-cal .daily-row{margin:0}
+.day.has-bag{background:color-mix(in srgb,var(--bc) 14%,var(--panel));border-color:color-mix(in srgb,var(--bc) 45%,var(--line))}
+.day-bag{color:var(--bc);display:grid;place-items:center;height:26px}
+.day em{font-style:normal;font-size:10.5px;font-weight:900;color:color-mix(in srgb,var(--bc) 70%,var(--ink))}
+.day.wk-end.has-bag{box-shadow:inset 0 0 0 1px color-mix(in srgb,var(--bc) 40%,transparent)}
 .day-ok{position:absolute;top:4px;right:4px;width:18px;height:18px;border-radius:50%;background:var(--green);color:#fff;display:grid;place-items:center}
 .day-bonus{font-size:10px;font-weight:900;color:var(--green)}
 #daily-btn{color:var(--ink-2)}
@@ -1020,7 +1043,7 @@ button.vit-slot:hover{background:var(--panel-2);color:var(--ink)}
 #daily-btn.ready svg{animation:giftwiggle 2.4s ease-in-out infinite}
 .daily-done{display:inline-flex;align-items:center;gap:8px;font-weight:800;color:var(--green)}
 @keyframes giftwiggle{0%,80%,100%{transform:none}85%{transform:rotate(-12deg)}90%{transform:rotate(10deg)}95%{transform:rotate(-6deg)}}
-@media (max-width:560px){ .daily-row{grid-template-columns:repeat(4,minmax(0,1fr))} }
+@media (max-width:560px){ .daily-row{gap:4px} .day{padding:7px 1px;border-radius:9px} .day .coin{width:18px;height:18px} .day b{font-size:11px} .day em{font-size:9px} .day-bag{height:18px} .day-bag svg{width:16px;height:16px} .daily-body{padding:26px 14px 20px} }
 
 /* ---------- placeholder ---------- */
 .soon-page{display:grid;gap:18px;max-width:760px}
@@ -1033,12 +1056,19 @@ button.vit-slot:hover{background:var(--panel-2);color:var(--ink)}
 /* ---------- modal ---------- */
 .scrim{position:fixed;inset:0;z-index:70;background:rgba(27,24,40,.55);backdrop-filter:blur(4px);display:grid;place-items:center;padding:20px}
 .modal{position:relative;width:min(700px,100%);max-height:calc(100% - 20px);overflow:auto;background:var(--panel);border-radius:22px;display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1.1fr);box-shadow:0 30px 60px -20px rgba(0,0,0,.5)}
-.modal-visual{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:14px;padding:30px 20px;background:radial-gradient(circle at 50% 45%,var(--glow) 0%,var(--rbg) 90%);min-height:300px}
+/* la fiche d'une bille : posée dans un écrin de velours de la couleur de sa taille, sous un petit spot */
+.modal-visual{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:14px;padding:30px 20px;min-height:300px;color:#fff;
+  background:
+    radial-gradient(ellipse 55% 45% at 50% 40%,rgba(255,255,255,.26) 0%,rgba(255,255,255,0) 70%),
+    radial-gradient(ellipse 42% 9% at 50% 71%,rgba(0,0,0,.38) 0%,transparent 100%),
+    repeating-linear-gradient(45deg,rgba(255,255,255,.028) 0 2px,transparent 2px 5px),
+    radial-gradient(ellipse 120% 90% at 50% 35%,color-mix(in srgb,var(--rc) 62%,#1d1726) 0%,color-mix(in srgb,var(--rc) 30%,#120e18) 75%)}
 .modal-visual canvas{width:min(250px,100%);aspect-ratio:1;filter:drop-shadow(0 18px 14px rgba(30,20,50,.35))}
 .modal-visual canvas{cursor:grab;touch-action:none}
 .modal-visual canvas.grabbing{cursor:grabbing}
-.modal-visual > .rot-hint{font-size:11px;font-weight:700;color:var(--muted);margin-top:-6px}
-.modal-visual .hint{font-size:11.5px;font-weight:800;color:var(--ink-2);letter-spacing:.04em;text-transform:uppercase}
+.modal-visual > .rot-hint{font-size:11px;font-weight:700;color:rgba(255,255,255,.7);margin-top:-6px}
+.modal-visual .hint{font-size:11.5px;font-weight:800;color:rgba(255,255,255,.85);letter-spacing:.04em;text-transform:uppercase}
+.modal-visual .siblings button[aria-pressed="true"]{border-color:#fff}
 .siblings{display:flex;flex-wrap:wrap;gap:6px;justify-content:center}
 .siblings button{width:40px;height:40px;border-radius:50%;padding:2px;border:2px solid transparent}
 .siblings button[aria-pressed="true"]{border-color:var(--ink)}
@@ -1055,9 +1085,18 @@ button.vit-slot:hover{background:var(--panel-2);color:var(--ink)}
 .close-x:hover{background:var(--panel)}
 
 /* ---------- opening overlay ---------- */
+/* ouverture d'un sac : posé sur un tapis de feutrine (teinté de la couleur du sac), sous le faisceau d'une lampe */
 .ov{position:fixed;inset:0;z-index:60;display:grid;place-items:center;padding:20px;color:#fff;overflow:auto;
-  background:radial-gradient(ellipse 70% 60% at 50% 45%,color-mix(in srgb,var(--bc,#8a5a35) 38%,#241810) 0%,#1A120C 68%,#0C0806 100%)}
-.ov-bg{position:fixed;inset:-60%;pointer-events:none;background:repeating-conic-gradient(from 0deg,rgba(255,228,180,.07) 0 9deg,transparent 9deg 18deg);-webkit-mask:radial-gradient(circle,#000 0,transparent 40%);mask:radial-gradient(circle,#000 0,transparent 40%);animation:spin 80s linear infinite}
+  background:
+    radial-gradient(ellipse 34% 30% at 50% 48%,rgba(255,236,200,.16) 0%,transparent 70%),
+    radial-gradient(circle at 30% 40%,rgba(255,255,255,.028) 0 .8px,transparent 1.3px) 0 0/5px 5px,
+    radial-gradient(circle at 70% 70%,rgba(0,0,0,.22) 0 .8px,transparent 1.4px) 0 0/4px 4px,
+    radial-gradient(ellipse 85% 75% at 50% 46%,color-mix(in srgb,var(--bc,#8a5a35) 34%,#1d1712) 0%,color-mix(in srgb,var(--bc,#8a5a35) 14%,#120e0b) 62%,#070605 100%)}
+/* le faisceau de la lampe, qui descend sur le sac */
+.ov-bg{position:fixed;left:50%;top:-12vh;width:min(900px,140vw);height:78vh;transform:translateX(-50%);pointer-events:none;
+  background:conic-gradient(from 180deg at 50% 0%,transparent 156deg,rgba(255,236,200,.11) 169deg,rgba(255,236,200,.17) 180deg,rgba(255,236,200,.11) 191deg,transparent 204deg);
+  -webkit-mask:linear-gradient(to bottom,#000 30%,transparent 100%);mask:linear-gradient(to bottom,#000 30%,transparent 100%);filter:blur(6px);animation:lampe 7s ease-in-out infinite}
+@keyframes lampe{50%{opacity:.75}}
 #ov-fx{position:fixed;inset:0;width:100%;height:100%;pointer-events:none;z-index:1}
 .ov-kicker{font-size:12px;font-weight:900;letter-spacing:.12em;text-transform:uppercase;color:#FFE3B0;background:rgba(255,255,255,.1);padding:4px 12px;border-radius:999px}
 .ov-count{font-size:13px;font-weight:800;color:#C9B8A6}
@@ -1113,6 +1152,15 @@ button.vit-slot:hover{background:var(--panel-2);color:var(--ink)}
 /* suspense avant un gros : la bille tremble de plus en plus et sa lueur grossit */
 .slot.suspense .orb{animation:susp-shake var(--sd,1.5s) ease-in both,hintglow .5s ease-in-out infinite}
 .slot.suspense .rays{opacity:1;animation:susp-rays var(--sd,1.5s) ease-in both}
+/* Mammouth et shiny : tremble, fausse accalmie, puis tremble de plus belle ; tout le reste s'assombrit */
+.slot.suspense.mega .orb{animation:susp-mega var(--sd,3s) ease-in both,hintglow .45s ease-in-out infinite}
+@keyframes susp-mega{0%{transform:none;filter:none}8%,16%,24%,32%{transform:translate(-2px,1px) rotate(-3deg)}12%,20%,28%,36%{transform:translate(2px,-1px) rotate(3deg)}
+  42%,58%{transform:scale(1.03);filter:brightness(1.1)}
+  62%,70%,78%,86%,94%{transform:translate(-4px,2px) rotate(-7deg) scale(1.08)}66%,74%,82%,90%{transform:translate(4px,-2px) rotate(7deg) scale(1.1)}
+  100%{transform:scale(1.2);filter:brightness(1.9) drop-shadow(0 0 30px #FFE3B0)}}
+.ov .slot{transition:opacity .5s ease}
+.ov.dim .slot:not(.suspense){opacity:.25}
+.ov.dim::before{background:radial-gradient(circle at 50% 50%,transparent 10%,rgba(0,0,0,.55) 60%)}
 @keyframes susp-shake{0%{transform:none}10%,30%,50%,70%,90%{transform:translate(-2px,1px) rotate(-3deg)}20%,40%,60%,80%{transform:translate(2px,-1px) rotate(3deg)}95%{transform:translate(-4px,2px) rotate(-6deg) scale(1.08)}100%{transform:scale(1.12)}}
 @keyframes susp-rays{from{opacity:.2;transform:scale(.6)}to{opacity:1;transform:scale(1.15)}}
 @keyframes hintglow{0%,100%{box-shadow:inset 0 -10px 20px rgba(0,0,0,.4),0 0 14px -4px var(--tc)}50%{box-shadow:inset 0 -10px 20px rgba(0,0,0,.4),0 0 40px 8px var(--tc)}}
@@ -1298,11 +1346,80 @@ button.vit-slot:hover{background:var(--panel-2);color:var(--ink)}
   .modal.sheet.drawer{width:min(560px,100%)}
   .modal.drawer .modal-visual{min-height:280px}
   .modal.sheet.drawer .sheet-grid{grid-template-columns:repeat(6,minmax(0,1fr))}
+  /* la fiche d'une bille, elle, s'ouvre au milieu de l'écran */
+  .scrim:has(> .drawer.mid){place-items:center;padding:20px;background:rgba(27,24,40,.55);backdrop-filter:blur(4px)}
+  .modal.drawer.mid{width:min(980px,100%);height:auto;max-height:calc(100% - 20px);border-radius:22px;grid-template-columns:minmax(0,1.35fr) minmax(0,1fr);align-content:stretch;animation:auth-card .24s cubic-bezier(.2,.9,.3,1)}
+  .modal.drawer.mid .modal-visual{min-height:500px}
 }
 @media (max-width:820px){
   .scrim:has(> .drawer){place-items:end stretch;padding:0}
   .modal.drawer{width:100%;max-height:92%;border-radius:24px 24px 0 0;grid-template-columns:minmax(0,1fr);animation:mjup .28s cubic-bezier(.2,.9,.3,1)}
 }
+
+/* ---------- LA COUR DE RÉCRÉ ---------- */
+.cour-tabs{display:flex;flex-wrap:wrap}
+.cour-tabs .tab{display:inline-flex;align-items:center;gap:6px}
+.cour-tabs .tab .n{min-width:18px;height:18px;padding:0 5px;border-radius:999px;background:#E5484D;color:#fff;font-size:11px;display:grid;place-items:center}
+.cour-grid{display:grid;gap:16px}
+.cour-row{display:flex;align-items:center;gap:12px;padding:10px 0;border-top:1px solid var(--line)}
+.cour-row:first-of-type{border-top:0}
+.cour-row .who{flex:1;min-width:0;font-weight:800}
+.cour-row .who small{display:block;color:var(--muted);font-weight:700;font-size:12px}
+.btn-sm{height:34px;padding:0 14px;font-size:13.5px;gap:6px}
+.friends{display:grid;grid-template-columns:repeat(auto-fill,minmax(170px,1fr));gap:12px}
+.friend{display:flex;flex-direction:column;align-items:center;gap:6px;padding:16px 10px 12px;border-radius:var(--r-md);background:var(--panel-2);border:1px solid var(--line);text-align:center}
+.friend .ball{height:64px;display:grid;place-items:center}
+.friend b{font-size:15px;font-weight:900}
+.friend small{font-size:12px;color:var(--muted);font-weight:700;min-height:1.2em}
+.friend .acts{display:flex;gap:6px;margin-top:4px;flex-wrap:wrap;justify-content:center}
+.cour-lead{color:var(--ink-2);font-weight:600;margin-top:8px}
+.troc{padding:14px;border-radius:var(--r-md);background:var(--panel-2);border:1px solid var(--line);display:grid;gap:10px}
+.troc + .troc{margin-top:10px}
+.troc-head{font-weight:800;display:flex;gap:8px;flex-wrap:wrap;align-items:baseline}
+.troc-head time{color:var(--muted);font-size:12px;font-weight:700}
+.troc-sides{display:grid;grid-template-columns:minmax(0,1fr) auto minmax(0,1fr);gap:10px;align-items:center}
+.troc-side{display:grid;gap:6px;padding:10px;border-radius:12px;background:var(--panel);border:1px solid var(--line);min-height:84px;align-content:start}
+.troc-side small{font-size:11px;font-weight:900;text-transform:uppercase;letter-spacing:.06em;color:var(--muted)}
+.troc-balls{display:flex;flex-wrap:wrap;gap:4px}
+.troc-balls button{border-radius:50%;padding:2px}
+.troc-balls button:hover{background:var(--panel-2)}
+.troc-arrow{color:var(--muted)}
+.troc-mot{font-family:var(--hand);font-size:20px;color:var(--ink-2)}
+.troc-act{display:flex;gap:8px;flex-wrap:wrap}
+.troc.fini{opacity:.7}
+.troc .st{font-size:12px;font-weight:900;padding:2px 10px;border-radius:999px;background:var(--panel);border:1px solid var(--line)}
+.compose{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:16px}
+.pick-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(92px,1fr));gap:8px;max-height:420px;overflow:auto;padding:2px}
+.pick{position:relative;display:flex;flex-direction:column;align-items:center;gap:2px;padding:8px 4px;border-radius:12px;border:1.5px solid var(--line);background:var(--panel-2);font-size:11px;font-weight:800;text-align:center;line-height:1.15}
+.pick[aria-pressed="true"]{border-color:var(--blue);background:color-mix(in srgb,var(--blue) 14%,var(--panel));box-shadow:0 0 0 2px color-mix(in srgb,var(--blue) 35%,transparent)}
+.pick .ball{height:52px;display:grid;place-items:center}
+.pick-filters{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:10px}
+.chip{height:30px;padding:0 12px;border-radius:999px;border:1px solid var(--line);background:var(--panel);font-weight:800;font-size:12.5px;color:var(--ink-2)}
+.chip[aria-pressed="true"]{background:var(--ink);color:var(--on-ink);border-color:var(--ink)}
+.cour-form{display:flex;gap:10px;flex-wrap:wrap;align-items:center}
+.cour-form input,.cour-form select{height:40px;padding:0 12px;border-radius:12px;border:1.5px solid var(--line-2);background:var(--panel-2);color:var(--ink);font:inherit;font-weight:800;font-size:15px;min-width:0}
+.cour-form input[type=text]{flex:1 1 200px}
+.cour-form input[type=number]{width:140px}
+.mk-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(170px,1fr));gap:12px}
+.mk{display:flex;flex-direction:column;align-items:center;gap:5px;padding:14px 10px 12px;border-radius:var(--r-md);background:var(--panel);border:1px solid var(--line);text-align:center}
+.mk .ball{height:76px;display:grid;place-items:center;cursor:zoom-in}
+.mk b{font-size:14px;font-weight:900;line-height:1.2}
+.mk .price{display:inline-flex;align-items:center;gap:6px;font-family:var(--display);font-size:22px;line-height:1}
+.mk .price .coin{width:22px;height:22px}
+.mk small{font-size:11.5px;font-weight:700;color:var(--muted)}
+.mk .btn{margin-top:4px}
+.mk.mine{border-style:dashed}
+.mk.sold{opacity:.65}
+.cour-lock{display:grid;place-items:center;text-align:center;gap:10px;padding:40px 20px}
+.cour-lock .btns{display:flex;gap:10px;flex-wrap:wrap;justify-content:center}
+.pf-stats{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px;width:100%}
+.pf-stats div{padding:10px;border-radius:12px;background:var(--panel-2);text-align:center}
+.pf-stats b{display:block;font-size:20px;font-weight:900}
+.pf-stats small{font-size:11px;font-weight:800;color:var(--muted);text-transform:uppercase}
+.modal.profil{display:block;width:min(620px,100%)}
+.modal.profil .pf-body{padding:26px 22px 22px;display:grid;gap:14px;justify-items:center;text-align:center}
+.modal.profil h2{font-family:var(--display);font-weight:400;font-size:32px;line-height:1}
+@media (max-width:700px){ .compose{grid-template-columns:minmax(0,1fr)} .troc-sides{grid-template-columns:minmax(0,1fr)} .troc-arrow{justify-self:center;transform:rotate(90deg)} }
 
 /* ---------- LA CONFISERIE ---------- */
 .cf-sum{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:20px;align-items:center;margin-bottom:18px}
@@ -1342,6 +1459,7 @@ button.vit-slot:hover{background:var(--panel-2);color:var(--ink)}
   .logo{font-size:30px}
   .icon-btn.bell{display:none}
   .wallet small,.mj-btn .lbl{display:none}
+  .wallet{white-space:nowrap;gap:5px;padding:0 10px 0 5px}
   .mj-btn{padding:0 9px}
   .hero{padding:24px 20px 170px}
   .hero-main{top:auto;bottom:0;right:50%;transform:translateX(50%);animation:none}
@@ -1450,6 +1568,7 @@ button.vit-slot:hover{background:var(--panel-2);color:var(--ink)}
   <div class="tagline">Ouvre. Collectionne. Joue.</div>
   <div class="top-spacer"></div>
   <button class="mj-btn" id="mj-btn" data-action="mj-open" aria-label="Ma journée"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3.5" y="8" width="17" height="4" rx="1"/><path d="M5 12v8h14v-8M12 8v12M12 8C10.5 4 7 4 7 6s3 2 5 2c2 0 5 0 5-2s-3.5-2-5 2"/></svg><span class="lbl">Ma journée</span><span class="n" id="mj-n" hidden></span></button>
+  <button class="icon-btn" id="daily-btn" data-action="daily-open" aria-label="Le bonbec du jour"><span class="dot"></span></button>
   <button class="wallet" data-action="nav" data-view="sacs" aria-label="Mes bonbecs, ouvrir des sacs"><span id="coin-slot"></span><span id="jetons">0</span><small>bonbecs</small><span class="w-plus" aria-hidden="true"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg></span></button>
   <div class="prof-wrap">
     <button class="profile-mini" data-action="prof-pop" aria-label="Mon profil" aria-expanded="false" aria-haspopup="true">
@@ -1547,6 +1666,8 @@ const FAMILIES = [
   {name:"Craquelée",   rar:1, desc:"Un verre clair fêlé de l'intérieur, qui accroche la lumière."},
 ];
 const FAM_W = FAMILIES.map(f=>DECOR_RAR[f.rar].w);
+// les décors rangés par rareté (Commun, Peu commun, Rare, Épique, Légendaire), puis par nom : l'ordre de l'album
+const FAM_ORDER = FAMILIES.map((_,i)=>i).sort((a,b)=>FAMILIES[a].rar-FAMILIES[b].rar || FAMILIES[a].name.localeCompare(FAMILIES[b].name,"fr"));
 // La rareté d'une bille, c'est sa taille (les décors ont seulement des fréquences différentes)
 const RARITY = Object.keys(TYPES).map(t=>({name:TYPES[t].label, c:TYPES[t].rc}));
 const FMT_TIER = {mini:0, bille:1, chinoise:2, calot:3, boulet:4, mammouth:5};
@@ -1623,12 +1744,15 @@ const SHINIES = [null,
 // tirage pondéré : r dans [0,1[, w = poids
 function pickW(r,w){ const tot=w.reduce((a,b)=>a+b,0); let x=r*tot; for(let i=0;i<w.length;i++){ x-=w[i]; if(x<0) return i } return w.length-1 }
 const rollShiny = () => 1+pickW(Math.random(), SHINIES.slice(1).map(x=>x.w));
-const SHINY_RATE = .0001;  // 0,01 % par bille : le graal ultime (0,05 % dans le Sac Collector)
+const SHINY_RATE = .0001;  // 0,01 % par bille : le graal ultime (0,02 % dans le Sac Premium, 0,05 % dans le Sac Collector)
 
-// Recyclage : ce que rapporte une bille détruite
-const RECYCLE = {mini:5, bille:10, chinoise:25, calot:50, boulet:150, mammouth:400};
-const SHINY_RECYCLE_MULT = 20;
-const recycleValue = s => RECYCLE[s.type]*(s.shiny?SHINY_RECYCLE_MULT:1);
+// Recyclage : ce que rapporte une bille échangée. Proportionnel à sa rareté dans le sac gratuit
+// (chaque taille rapporte donc autant en moyenne), et toujours bien moins que ce qu'elle coûte à trouver.
+const RECYCLE = {mini:5, bille:8, chinoise:20, calot:50, boulet:150, mammouth:600};
+// une shiny (tirée dans un sac ou une fusion) vaut 10 fois sa taille, plus une prime selon son éclat ; celles du passe, non
+const SHINY_RECYCLE_MULT = 10, SHINY_BONUS = [0, 2000, 5000, 15000];
+// avec un compte, seules les billes tirées par le serveur rapportent (pas les billes de départ ni celles d'une partie sans compte)
+const recycleValue = s => srvOn() && !s.srv ? 0 : s.shiny && !isSeason(s) ? RECYCLE[s.type]*SHINY_RECYCLE_MULT + SHINY_BONUS[s.shiny] : RECYCLE[s.type];
 
 // Quêtes du jour : 3 tirées chaque jour dans cette liste
 const QUESTS = {
@@ -1642,21 +1766,21 @@ const QUESTS = {
   new_slot:      {title:"Commence une nouvelle case", goal:1, reward:100, icon:"book", desc:"Une taille et un décor que tu n'avais pas encore dans l'album."},
   new_color:     {title:"Trouve 3 nouvelles billes", goal:3, reward:100, icon:"star", desc:"Des billes que tu n'avais pas encore : nouvelle case ou nouveau coloris."},
   open_paid:     {title:"Ouvre un sac payant", goal:1, reward:120, icon:"bag", desc:"Classique, Premium ou Collector, acheté ou offert."},
-  craft:         {title:"Réussis une fusion", goal:1, reward:120, icon:"flask", desc:"10 billes d'une même taille à la Confiserie."},
+  craft:         {title:"Réussis une fusion", goal:1, reward:120, icon:"flask", desc:"Des billes d'une même taille contre une plus grosse, à la Confiserie."},
   shake:         {title:"Secoue bien les sacs", goal:20, reward:60, icon:"bag", desc:"Secoue les sacs avant de les ouvrir : 20 secousses en tout."},
   recycle:       {title:"Échange 3 billes à la Confiserie", goal:3, reward:60, icon:"candy", desc:"Depuis la fiche d'une bille ou avec le bouton des doubles."},
 };
 const QUEST_BONUS = 150;
 
 const FREE_BAG = {id:"gratuit", name:"Sac gratuit", desc:"3 billes offertes. Un nouveau sac toutes les 10 minutes, jusqu'à 5 en stock.", price:0, n:3, color:"#C98E4E", tint:"#F6E3C8", shiny:SHINY_RATE,
-  odds:{mini:50,bille:33,chinoise:9,calot:5.8,boulet:1.8,mammouth:.4}};
+  odds:{mini:50,bille:31,chinoise:12,calot:5,boulet:1.6,mammouth:.4}};
 const BAGS = [FREE_BAG,
   {id:"classique", name:"Sac Classique", desc:"5 billes, avec de meilleures chances que le sac gratuit.", price:300, n:5, color:"#2A8A74", tint:"#D5EFE7", shiny:SHINY_RATE,
-   odds:{mini:40,bille:34,chinoise:12,calot:9.5,boulet:3.5,mammouth:1}},
-  {id:"premium", name:"Sac Premium", desc:"5 billes, dont au moins un Calot ou mieux.", price:900, n:5, guarantee:"calot", color:"#34469C", tint:"#DCE0F6", shiny:SHINY_RATE,
-   odds:{mini:26,bille:34,chinoise:16,calot:16,boulet:6.5,mammouth:1.5}},
-  {id:"collector", name:"Sac Collector", desc:"5 billes, dont au moins un Boulet ou plus gros. 5 fois plus de chances de shiny.", price:2200, n:5, guarantee:"boulet", color:"#D9A020", tint:"#FBEBC0", shiny:SHINY_RATE*5,
-   odds:{mini:14,bille:28,chinoise:20,calot:23,boulet:11,mammouth:4}},
+   odds:{mini:38,bille:32,chinoise:16,calot:9,boulet:4,mammouth:1}},
+  {id:"premium", name:"Sac Premium", desc:"5 billes, dont au moins un Calot ou mieux. 2 fois plus de chances de shiny.", price:600, n:5, guarantee:"calot", color:"#34469C", tint:"#DCE0F6", shiny:SHINY_RATE*2,
+   odds:{mini:27,bille:30,chinoise:20,calot:14,boulet:7,mammouth:2}},
+  {id:"collector", name:"Sac Collector", desc:"5 billes, dont au moins un Boulet ou plus gros. 5 fois plus de chances de shiny.", price:1500, n:5, guarantee:"boulet", color:"#D9A020", tint:"#FBEBC0", shiny:SHINY_RATE*5,
+   odds:{mini:14,bille:20,chinoise:20,calot:19,boulet:19,mammouth:8}},
 ];
 const BAG_BY = Object.fromEntries(BAGS.map(b=>[b.id,b]));
 
@@ -1829,6 +1953,11 @@ const Sound = (()=>{
     suspense(dur,k){ if(!init()) return; const t0=now(); let t=t0, dt=.14;
       while(t<t0+dur-.05){ const p=(t-t0)/dur; thud(t,.12+.35*p,120+80*p); t+=dt; dt=Math.max(.035,dt*.9) }
       osc(t0,"sine",180,.06,dur*.9,.12,null,k>=6?720:520) },
+    firework(){ if(!init()) return; const t=now(), up=.95+Math.random()*.2;
+      osc(t,"sine",700,.035,.05,up,null,2100);
+      env(noise(t,up,[{type:"bandpass",f:3000,f2:6000,Q:2}]),t,.05,.05,up);
+      const b=t+up; thud(b,.55,90); env(noise(b,.5,[{type:"lowpass",f:1600,f2:300}]),b,.35,.004,.45);
+      for(let i=0;i<14;i++){ const c=b+.12+Math.random()*.9; env(noise(c,.02,[{type:"highpass",f:3500}]),c,.12*Math.random()+.04,.001,.015) } },
     ding(){ if(!ctx||!on||ctx.state!=="running") return; const t=now(); chime(t,880,.12); chime(t+.12,1318.5,.1) },
     pop(){ if(!init()) return; clack(now(),.5,1.1) },
     // tout petit clic quand on prend une bille pour la regarder de près
@@ -2320,7 +2449,8 @@ void main(){
   float edge; vec3 n, P;
   if(pep()){
     // lancer de rayon sur la pépite (dôme + dessous plat)
-    vec3 r=uRot*vec3(1.0,0.0,0.0); float an=atan(r.z,r.x); YW=vec2(cos(an),sin(an));
+    // même sens de rotation que les billes rondes (le signe de r.z était inversé : elle tournait à l'envers sous la souris)
+    vec3 r=uRot*vec3(1.0,0.0,0.0); float an=atan(-r.z,r.x); YW=vec2(cos(an),sin(an));
     vec3 O=vec3(uv,3.0), D=vec3(0.0,0.0,-1.0), oO=toO(O), dO=toO(D);
     float eT, eB, tT=halfHit(oO,dO,CTT,1.0,false,eT), tB=halfHit(oO,dO,CTB,-1.0,false,eB);
     float ev = tT<1e8 ? eT : (tB<1e8 ? eB : (eT<0.0 ? eT : eB));
@@ -2634,6 +2764,7 @@ function recycleSpecs(ids){
   S.specs = S.specs.filter(s=>!gone.includes(s));
   S.unseen = S.unseen.filter(id=>!set.has(id));
   S.jetons += total;
+  if(srvOn()){ const ids = gone.map(s=>s.id); ids.forEach(id=>sync.known.delete(id)); srv(()=>Cloud.eco.recycle(ids)).then(r=>applyEco(r.eco), srvFail) }
   save(); renderTop();
   questEvent("recycle", gone.length);
   passXP(PASS_XP.recycle*gone.length);
@@ -2666,7 +2797,8 @@ function chanceOf(s, bag=FREE_BAG){
 const oneIn = p => `1 sur ${fmt(1/p)}`;
 const edPill = s => s.secret ? `<span class="ed-pill secret-pill">${ic("lock",12,2.4)}Secrète</span>` : isSeason(s) ? `<span class="ed-pill">${ic("ticket",12,2.4)}Saison ${esc(s.ed||PALETTES[s.pal][0])}</span>` : "";
 const tierTag = s => "";
-const famOdds = f => `1 décor sur ${fmt(FAM_W.reduce((a,b)=>a+b,0)/FAM_W[f])}`;
+// chance qu'une bille ait ce décor (toutes tailles et coloris confondus)
+const famOdds = f => `1 bille sur ${fmt(FAM_W.reduce((a,b)=>a+b,0)/FAM_W[f])}`;
 // chaque shiny a son étiquette : arc-en-ciel (Irisée), or qui brille (Dorée), lueur de la couleur de la bille (Lumineuse)
 const shinyPill = s => s.shiny ? `<span class="shiny-pill sh-${s.shiny}"${s.shiny===3?` style="--lc:${PALETTES[s.pal][2]}"`:""}>${SPARK}${SHINIES[s.shiny].name}</span>` : "";
 const tstyle = t => `--rc:${TYPES[t].rc};--rb:${TYPES[t].rb}`;
@@ -2761,7 +2893,6 @@ function bagSVG(b, o={}){
   <path d="${body}" fill="url(#${id})"/>
   <g clip-path="url(#${id}-c)">
     <rect x="0" y="80" width="200" height="140" fill="url(#${id}-t)"/>
-    <g class="bag-bumps"><circle cx="66" cy="190" r="16" fill="url(#${id}-b)"/><circle cx="102" cy="200" r="15" fill="url(#${id}-b)"/><circle cx="138" cy="188" r="15" fill="url(#${id}-b)"/></g>
     <path d="M84 96C70 122 64 150 70 178M116 96C132 124 138 150 132 180M100 98C98 118 100 128 97 136" stroke="${dd}" stroke-opacity=".28" stroke-width="3" fill="none" stroke-linecap="round"/>
     <path d="M60 116C47 140 45 166 54 190" stroke="#fff" stroke-opacity="${L.tex==="velours"?.18:.3}" stroke-width="7" fill="none" stroke-linecap="round"/>
     <path d="M36 196C60 212 140 212 164 196" stroke="${dd}" stroke-opacity=".35" stroke-width="1.6" stroke-dasharray="5 4" fill="none"/>
@@ -2798,20 +2929,30 @@ function editionOf(s){
 }
 const edLabel = n => n===1 ? "Première mondiale" : `n° ${fmt(n)}`;
 
-// Défis de collection : calculés sur la collection actuelle, récompense à récupérer une fois
+// Défis de collection : calculés sur la collection actuelle, récompense à récupérer une fois.
+// Objectifs calés par simulation sur un joueur régulier (≈ 15 sacs gratuits + 4 Classiques par jour) : rien ne doit
+// demander plus d'un an, et la récompense grandit avec le temps qu'il faut.
+// décors à trouver dans chaque taille (les gros formats dans un décor légendaire sont quasi introuvables)
+const FMT_GOAL = [32,32,30,28,24,20];
+// tailles à réunir pour un décor, selon sa rareté (de la Mini bille jusqu'à…)
+const FAM_SIZES = [6,6,5,4,2], FAM_REW = [450,750,550,850,500];
+const upTo = n => ({bille:"à la Bille", chinoise:"à la Bille chinoise", calot:"au Calot", boulet:"au Boulet", mammouth:"au Mammouth"})[TK[n-1]];
 const CHALLENGES = [
-  ...TK.map((t,i)=>({id:"fmt-"+t, icon:"layers", title:`Tous les décors en ${TYPES[t].label}`, desc:`Trouve les ${FAMILIES.length} décors au format ${TYPES[t].label}.`, goal:FAMILIES.length,
+  ...TK.map((t,i)=>({id:"fmt-"+t, icon:"layers", title:FMT_GOAL[i]>=FAMILIES.length?`Tous les décors en ${TYPES[t].label}`:`${FMT_GOAL[i]} décors en ${TYPES[t].label}`,
+    desc:FMT_GOAL[i]>=FAMILIES.length?`Trouve les ${FAMILIES.length} décors au format ${TYPES[t].label}.`:`Trouve ${FMT_GOAL[i]} décors différents (sur ${FAMILIES.length}) au format ${TYPES[t].label}.`, goal:Math.min(FMT_GOAL[i],FAMILIES.length),
     prog:()=>FAMILIES.filter((_,f)=>S.specs.some(s=>s.type===t&&s.family===f)).length,
-    rew:{j:[200,300,450,600,1000,2000][i], bag:i>=3?"collector":"premium", title:t==="mammouth"?"Maître du Mammouth":null}})),
-  ...FAMILIES.map((F,f)=>({id:"fam-"+f, icon:"star", title:`${F.name} dans tous les formats`, desc:`Un décor ${F.name} dans les ${TK.length} tailles, de la Mini bille au Mammouth.`, goal:TK.length,
-    prog:()=>TK.filter(t=>S.specs.some(s=>s.type===t&&s.family===f)).length,
-    rew:{j:150+F.rar*150, bag:F.rar>=2?"premium":"classique"}})),
+    rew:{j:[400,500,700,900,1200,2500][i], bag:i>=3?"collector":"premium", title:t==="mammouth"?"Maître du Mammouth":null}})),
+  ...FAMILIES.map((F,f)=>{ const n = FAM_SIZES[F.rar];
+    return {id:"fam-"+f, icon:"star", title:n>=TK.length?`${F.name} dans tous les formats`:`${F.name} en ${n} tailles`,
+    desc:n>=TK.length?`Un décor ${F.name} dans les ${TK.length} tailles, de la Mini bille au Mammouth.`:`Un décor ${F.name} dans ${n} tailles, de la Mini bille jusqu'${upTo(n)}.`, goal:n,
+    prog:()=>TK.slice(0,n).filter(t=>S.specs.some(s=>s.type===t&&s.family===f)).length,
+    rew:{j:FAM_REW[F.rar], bag:FAM_REW[F.rar]>=700?"premium":"classique"}} }),
   {id:"pal10", icon:"book", title:"Nuancier", desc:"Un même décor dans 10 coloris différents.", goal:10,
     prog:()=>Math.max(0,...FAMILIES.map((_,f)=>new Set(S.specs.filter(s=>s.family===f&&!isSeason(s)).map(s=>s.pal)).size)), rew:{j:400}},
-  {id:"shiny1", icon:"star", title:"Premier éclat", desc:"Trouve ta première bille shiny.", goal:1, prog:()=>S.specs.filter(s=>s.shiny).length, rew:{j:300}},
-  {id:"shiny3", icon:"star", title:"Les trois éclats", desc:"Possède une Irisée, une Dorée et une Lumineuse.", goal:3, prog:()=>new Set(S.specs.filter(s=>s.shiny).map(s=>s.shiny)).size, rew:{j:1500, title:"Chasseur d'éclats"}},
-  {id:"big5", icon:"trophy", title:"La cour des grands", desc:"Possède 5 Boulets ou Mammouths.", goal:5, prog:()=>S.specs.filter(s=>tierOf(s)>=BIG).length, rew:{j:600, bag:"collector"}},
-  {id:"mam3", icon:"trophy", title:"Chasseur de mammouths", desc:"Possède 3 Mammouths.", goal:3, prog:()=>S.specs.filter(s=>s.type==="mammouth").length, rew:{j:1200, title:"Chasseur de mammouths"}},
+  {id:"shiny1", icon:"star", title:"Premier éclat", desc:"Trouve ta première bille shiny dans un sac ou une fusion.", goal:1, prog:()=>S.specs.filter(s=>s.shiny&&!isSeason(s)).length, rew:{j:1000}},
+  {id:"shiny3", icon:"star", title:"Double éclat", desc:"Possède 2 billes shiny trouvées dans les sacs ou les fusions.", goal:2, prog:()=>S.specs.filter(s=>s.shiny&&!isSeason(s)).length, rew:{j:3000, title:"Chasseur d'éclats"}},
+  {id:"big5", icon:"trophy", title:"La cour des grands", desc:"Possède 5 Boulets ou Mammouths.", goal:5, prog:()=>S.specs.filter(s=>tierOf(s)>=BIG).length, rew:{j:400, bag:"premium"}},
+  {id:"mam3", icon:"trophy", title:"Chasseur de mammouths", desc:"Possède 3 Mammouths.", goal:3, prog:()=>S.specs.filter(s=>s.type==="mammouth").length, rew:{j:800, title:"Chasseur de mammouths"}},
   {id:"t-pot", icon:"pot", title:"Champion du pot", desc:"Mets 25 billes dans le pot.", goal:25, prog:()=>S.stats.pot, rew:{j:500, title:"Champion du pot"}},
   {id:"t-castle", icon:"castle", title:"Démolisseur de châteaux", desc:"Fais sortir 60 billes du cercle au Château.", goal:60, prog:()=>S.stats.castle, rew:{j:500, title:"Démolisseur"}},
   {id:"t-tic", icon:"tic", title:"Terreur du préau", desc:"Gagne 10 parties de Tic avec une mise.", goal:10, prog:()=>S.stats.tic, rew:{j:600, title:"Terreur du préau"}},
@@ -2819,18 +2960,18 @@ const CHALLENGES = [
   {id:"t-race", icon:"flag", title:"Maillot jaune", desc:"Gagne 5 courses sur la plage avec une mise.", goal:5, prog:()=>S.stats.race, rew:{j:600, title:"Maillot jaune"}},
   {id:"t-chouchou", icon:"quest", title:"Chouchou de la maîtresse", desc:"Récupère 5 fois le bonus des quêtes du jour.", goal:5, prog:()=>S.stats.bonus, rew:{j:500, title:"Chouchou de la maîtresse"}},
   {id:"t-caid", icon:"layers", title:"Caïd des billes", desc:"Possède 100 billes en même temps.", goal:100, prog:()=>S.specs.length, rew:{j:700, title:"Caïd des billes"}},
-  {id:"half", icon:"layers", title:"Mi-parcours", desc:"Commence la moitié des cases de l'album (une taille et un décor).", goal:Math.ceil(TOTAL_SLOTS/2), prog:()=>slotsOwned().size, rew:{j:1000, bag:"collector"}},
-  {id:"full", icon:"trophy", title:"Tour complet", desc:`Commence les ${TOTAL_SLOTS} cases de l'album : toutes les tailles dans tous les décors.`, goal:TOTAL_SLOTS, prog:()=>slotsOwned().size, rew:{j:3000, bag:"collector"}},
+  {id:"half", icon:"layers", title:"Mi-parcours", desc:"Commence la moitié des cases de l'album (une taille et un décor).", goal:Math.ceil(TOTAL_SLOTS/2), prog:()=>slotsOwned().size, rew:{j:600, bag:"premium"}},
+  {id:"full", icon:"trophy", title:"Album bien rempli", desc:`Commence 170 des ${TOTAL_SLOTS} cases de l'album (une taille et un décor).`, goal:170, prog:()=>slotsOwned().size, rew:{j:3000, bag:"collector"}},
   // paliers de billes trouvées (taille × décor × coloris)
-  ...[[25,200],[50,300],[100,500,"premium"],[250,800,"premium"],[500,1200,"collector"],[1000,2000,"collector","Collectionneur fou"],[2500,4000,"collector"],[5000,6000,"collector","Encyclopédie vivante"],[ALBUM_TOTAL,10000,"collector","Grand collectionneur"]]
+  ...[[25,200],[50,300],[100,500,"premium"],[250,800,"premium"],[500,1200,"collector"],[1000,2000,"collector","Collectionneur fou"],[2000,3500,"collector"],[3000,5000,"collector","Encyclopédie vivante"],[4000,8000,"collector","Grand collectionneur"]]
     .map(([n,j,bag,title])=>({id:"found-"+(n===ALBUM_TOTAL?"all":n), cat:"album", icon:n===ALBUM_TOTAL?"trophy":"book", title:n===ALBUM_TOTAL?"L'album entier":`${fmt(n)} billes`, desc:n===ALBUM_TOTAL?`Trouve les ${fmt(ALBUM_TOTAL)} billes différentes de l'album.`:`Trouve ${fmt(n)} billes différentes (taille, décor et coloris).`, goal:n, prog:()=>albumFound().size, rew:{j, bag, title}})),
   {id:"case1", cat:"coloris", icon:"star", title:"Case complète", desc:`Une case dans les ${BASE_PALS} coloris.`, goal:1, prog:()=>[...slotsOwned().values()].filter(l=>casePals(l)===BASE_PALS).length, rew:{j:1500, bag:"collector", title:"Nuancier vivant"}},
   {id:"case5", cat:"coloris", icon:"star", title:"Cinq cases complètes", desc:`Cinq cases dans les ${BASE_PALS} coloris.`, goal:5, prog:()=>[...slotsOwned().values()].filter(l=>casePals(l)===BASE_PALS).length, rew:{j:4000, bag:"collector"}},
   {id:"pal24", cat:"coloris", icon:"book", title:"Grand nuancier", desc:"Un même décor dans 24 coloris différents.", goal:24, prog:()=>Math.max(0,...FAMILIES.map((_,f)=>new Set(S.specs.filter(s=>s.family===f&&s.pal<BASE_PALS).map(s=>s.pal)).size)), rew:{j:900}},
-  {id:"allpals", cat:"coloris", icon:"book", title:"Boîte de peinture", desc:`Trouve les ${BASE_PALS} coloris, tous décors et tailles confondus.`, goal:BASE_PALS, prog:()=>new Set(S.specs.filter(s=>s.pal<BASE_PALS).map(s=>s.pal)).size, rew:{j:1200, title:"Peintre en billes"}},
+  {id:"allpals", cat:"coloris", icon:"book", title:"Boîte de peinture", desc:`Trouve les ${BASE_PALS} coloris, tous décors et tailles confondus.`, goal:BASE_PALS, prog:()=>new Set(S.specs.filter(s=>s.pal<BASE_PALS).map(s=>s.pal)).size, rew:{j:500, title:"Peintre en billes"}},
   {id:"leg1", cat:"rare", icon:"star", title:"Légende de poche", desc:"Trouve une bille au décor légendaire (Galaxie ou Aurore).", goal:1, prog:()=>S.specs.filter(s=>FAMILIES[s.family].rar===4).length, rew:{j:500}},
-  {id:"legmam", cat:"rare", icon:"trophy", title:"Légende de la cour", desc:"Un Mammouth au décor légendaire.", goal:1, prog:()=>S.specs.filter(s=>s.type==="mammouth"&&FAMILIES[s.family].rar===4).length, rew:{j:5000, title:"Légende de la cour"}},
-  {id:"shinybig", cat:"rare", icon:"star", title:"Gros éclat", desc:"Une shiny Boulet ou Mammouth.", goal:1, prog:()=>S.specs.filter(s=>s.shiny&&tierOf(s)>=BIG).length, rew:{j:2000}},
+  {id:"legmam", cat:"rare", icon:"trophy", title:"Légende de la cour", desc:"Un Mammouth au décor épique ou légendaire.", goal:1, prog:()=>S.specs.filter(s=>s.type==="mammouth"&&FAMILIES[s.family].rar>=3).length, rew:{j:5000, title:"Légende de la cour"}},
+  {id:"bigepic", cat:"rare", icon:"star", title:"Géant précieux", desc:"Un Boulet ou un Mammouth au décor épique ou légendaire.", goal:1, prog:()=>S.specs.filter(s=>tierOf(s)>=BIG&&FAMILIES[s.family].rar>=3).length, rew:{j:1000}},
   {id:"secrets", cat:"rare", icon:"lock", title:"Détective de la cour", desc:"Trouve toutes les billes secrètes.", goal:Object.keys(SECRETS).length, prog:()=>S.specs.filter(s=>s.secret).length, rew:{j:3000, title:"Détective"}},
   {id:"bags50", cat:"habitudes", icon:"bag", title:"Habitué du préau", desc:"Ouvre 50 sacs.", goal:50, prog:()=>S.bags||0, rew:{j:500, bag:"premium"}},
   {id:"bags250", cat:"habitudes", icon:"bag", title:"Sac sans fond", desc:"Ouvre 250 sacs.", goal:250, prog:()=>S.bags||0, rew:{j:1500, bag:"collector", title:"Sac sans fond"}},
@@ -2840,14 +2981,14 @@ const CHALLENGES = [
 const FAM_ID = n => FAMILIES.findIndex(F=>F.name===n), PAL_ID = n => PALETTES.findIndex(P=>P[0]===n);
 const SERIES = [
   {id:"trousse", name:"La trousse d'écolier", desc:"Les motifs du cahier de classe.", items:[{fam:"Damier"},{fam:"Écossais"},{fam:"Pixel"},{fam:"Cible"}], rew:{j:300, bag:"classique"}},
-  {id:"bonbons", name:"La boulangerie du coin", desc:"Des billes qui donnent faim.", items:[{fam:"Berlingot"},{fam:"Millefiori"},{fam:"À pois"},{fam:"Nid d'abeille"},{pal:"Barbe à papa"},{pal:"Chocolat menthe"}], rew:{j:500, bag:"premium"}},
-  {id:"nature", name:"Au fond du jardin", desc:"Ce qu'on trouve en rentrant de l'école.", items:[{fam:"Bois"},{fam:"Écailles"},{fam:"Tigrée"},{fam:"Œil-de-chat"},{pal:"Forêt"},{pal:"Sauge"}], rew:{j:500, bag:"premium"}},
-  {id:"arcenciel", name:"L'arc-en-ciel", desc:"Une bille de chaque couleur, peu importe le décor.", items:["Cerise","Ambre","Citron","Émeraude","Azur","Saphir","Lavande"].map(pal=>({pal})), rew:{j:600, bag:"premium"}},
-  {id:"noiretblanc", name:"Noir et blanc", desc:"Pour les amateurs de contrastes.", items:[{pal:"Encre"},{pal:"Réglisse"},{pal:"Béton"},{pal:"Brume"},{pal:"Ciel d'orage"}], rew:{j:400, bag:"classique"}},
-  {id:"pierres", name:"Les pierres précieuses", desc:"Des pierres dans les coloris des joyaux.", items:[{fam:"Agate",pal:"Rubis"},{fam:"Marbre",pal:"Saphir"},{fam:"Cristal",pal:"Émeraude"},{fam:"Nacrée",pal:"Opale"}], rew:{j:2500, bag:"collector", title:"Joaillier"}},
-  {id:"feuglace", name:"Le feu et la glace", desc:"Du plus chaud au plus froid.", items:[{fam:"Lave"},{fam:"Givrée"},{pal:"Volcan"},{pal:"Glacier"}], rew:{j:700, bag:"premium"}},
-  {id:"cosmos", name:"Le système solaire", desc:"Les décors venus d'ailleurs.", items:[{fam:"Globe"},{fam:"Planète"},{fam:"Galaxie"},{fam:"Aurore"}], rew:{j:3000, bag:"collector", title:"Astronome"}},
-  {id:"grands", name:"Les grands formats", desc:"De la plus petite à la plus grosse, dans un même décor.", items:TK.map(type=>({type})), same:"family", rew:{j:4000, bag:"collector", title:"Toutes tailles"}},
+  {id:"bonbons", name:"La boulangerie du coin", desc:"Des billes qui donnent faim.", items:[{fam:"Berlingot"},{fam:"Millefiori"},{fam:"À pois"},{fam:"Nid d'abeille"},{pal:"Barbe à papa"},{pal:"Chocolat menthe"}], rew:{j:400, bag:"classique"}},
+  {id:"nature", name:"Au fond du jardin", desc:"Ce qu'on trouve en rentrant de l'école.", items:[{fam:"Bois"},{fam:"Écailles"},{fam:"Tigrée"},{fam:"Œil-de-chat"},{pal:"Forêt"},{pal:"Sauge"}], rew:{j:400, bag:"classique"}},
+  {id:"arcenciel", name:"L'arc-en-ciel", desc:"Une bille de chaque couleur, peu importe le décor.", items:["Cerise","Ambre","Citron","Émeraude","Azur","Saphir","Lavande"].map(pal=>({pal})), rew:{j:400, bag:"classique"}},
+  {id:"noiretblanc", name:"Noir et blanc", desc:"Pour les amateurs de contrastes.", items:[{pal:"Encre"},{pal:"Réglisse"},{pal:"Béton"},{pal:"Brume"},{pal:"Ciel d'orage"}], rew:{j:300, bag:"classique"}},
+  {id:"pierres", name:"Les pierres précieuses", desc:"Des pierres dans les coloris des joyaux.", items:[{fam:"Agate",pal:"Rubis"},{fam:"Marbre",pal:"Saphir"},{fam:"Cristal",pal:"Émeraude"},{fam:"Nacrée",pal:"Opale"}], rew:{j:6000, bag:"collector", title:"Joaillier"}},
+  {id:"feuglace", name:"Le feu et la glace", desc:"Du plus chaud au plus froid.", items:[{fam:"Lave"},{fam:"Givrée"},{pal:"Volcan"},{pal:"Glacier"}], rew:{j:400, bag:"classique"}},
+  {id:"cosmos", name:"Le système solaire", desc:"Les décors venus d'ailleurs.", items:[{fam:"Globe"},{fam:"Planète"},{fam:"Galaxie"},{fam:"Aurore"}], rew:{j:2000, bag:"collector", title:"Astronome"}},
+  {id:"grands", name:"Les grands formats", desc:"De la plus petite à la plus grosse, dans un même décor.", items:TK.map(type=>({type})), same:"family", rew:{j:1200, bag:"premium", title:"Toutes tailles"}},
 ];
 const seriesMatch = (it,x) => (!it.fam || x.family===FAM_ID(it.fam)) && (!it.pal || x.pal===PAL_ID(it.pal)) && (!it.type || x.type===it.type);
 const seriesLabel = it => [it.type?TYPES[it.type].label:"", it.fam||"", it.pal?(it.fam?it.pal:`Coloris ${it.pal}`):""].filter(Boolean).join(" ");
@@ -2889,8 +3030,10 @@ function fakeFind(at=Date.now()){
 function logFind(s){ S.log.unshift({who:S.name, me:true, s:{seed:s.seed,type:s.type,family:s.family,pal:s.pal,shiny:s.shiny,at:s.at}, at:s.at}); S.log = S.log.slice(0,12) }
 function ago(t){ const m=Math.max(0,Math.round((Date.now()-t)/60000)); return m<1?"à l'instant":m<60?`il y a ${m} min`:`il y a ${Math.round(m/60)} h` }
 function feedItems(){
-  if(!feed.length) for(let i=0;i<5;i++) feed.push(fakeFind(Date.now()-(i*7+2)*60000));
-  return [...S.log.slice(0,4), ...feed].sort((a,b)=>b.at-a.at).slice(0,6).map(e=>{
+  let others;
+  if(srvOn()){ courLoad("fil"); others = cour.fil || [] }   // avec un compte : les vraies trouvailles des copains
+  else { if(!feed.length) for(let i=0;i<5;i++) feed.push(fakeFind(Date.now()-(i*7+2)*60000)); others = feed }
+  return [...S.log.slice(0,4), ...others].sort((a,b)=>b.at-a.at).slice(0,6).map(e=>{
     const ed = editionOf(e.s);
     return `<li>${mImg(e.s,60,28,"")}<span><b>${esc(e.me?e.who+" (toi)":e.who)}</b> a trouvé ${e.s.shiny?"une shiny ":""}<b>${esc(TYPES[e.s.type].label+" "+specName(e.s))}</b> ${tierTag(e.s)}${ed===1?` <span class="first-pill">Première mondiale</span>`:""}<time>${ago(e.at)}</time></span></li>`}).join("");
 }
@@ -2898,7 +3041,7 @@ function feedItems(){
 function grantSecret(id){
   if(S.specs.some(s=>s.secret===id)) return null;
   const X = SECRETS[id], s = makeSpec(X.type,{seed:hash("secret-"+id), family:X.family, pal:X.palIdx, shiny:X.shiny});
-  s.secret = id; S.specs.push(s); S.unseen.push(s.id); logFind(s);
+  s.secret = id; srvMint(s, "secrete", id); S.specs.push(s); S.unseen.push(s.id); logFind(s);
   if(id==="folle" && !S.titles.includes("Perd la boule")) S.titles.push("Perd la boule");
   save(); return s;
 }
@@ -2930,8 +3073,9 @@ function secretGrid(){
    PASSE DE SAISON (une saison = un mois)
    ===================================================================== */
 const PASS_TIERS = 30, TIER_XP = 1000, PASS_PRICE = "4,99 €";
-const BAG_XP = {gratuit:40, classique:200, premium:300, collector:450};
-const PASS_XP = {quest:200, bonus:300, star:20, recycle:5, craft:50};
+// Rythme visé : un joueur régulier finit le passe en ~3 semaines, un joueur qui passe juste faire ses quêtes vers la fin du mois
+const BAG_XP = {gratuit:20, classique:60, premium:120, collector:300};
+const PASS_XP = {quest:150, bonus:200, star:15, recycle:2, craft:40};
 function seasonNow(d=new Date()){
   const m = d.getMonth(), y = d.getFullYear(), def = SEASONS[m];
   return {id:`${y}-${m+1}`, m, y, def, pal:BASE_PALS+m, end:new Date(y,m+1,1).getTime(), label:`${def.name} ${y}`,
@@ -2946,15 +3090,20 @@ const passTier = () => Math.min(PASS_TIERS, Math.floor(ensurePass().xp/TIER_XP))
 function passLeft(){ const ms=Math.max(0,seasonNow().end-Date.now()), d=Math.floor(ms/86400000), hh=Math.floor(ms/3600000)%24; return d ? `${d} j ${hh} h` : `${hh} h ${Math.floor(ms/60000)%60} min` }
 const seasonStyle = se => { const P=PALETTES[se.pal]; return `--s1:${P[1]};--s2:${P[2]};--s3:${P[3]}` };
 // récompenses d'un palier (1 à 30) sur la piste gratuite ("free") ou premium ("prem")
+// Récompenses d'un palier (1 à 30) sur la piste gratuite ("free") ou premium ("prem").
+// Trois étapes de 10 paliers : les bonbecs montent d'une étape à l'autre, un sac tous les 5 paliers,
+// et les billes de la saison aux paliers ronds (10, 20, 30).
+const PASS_J = {free:[100,150,200], prem:[200,300,400]};
 function passReward(track,t){
-  const fam = seasonNow().def.fam;
+  const fam = seasonNow().def.fam, stage = Math.floor((t-1)/10);
   const M = (type,shiny=0) => ({k:"marble", type, fam, shiny});
   if(track==="free"){
     if(t===30) return M("calot");
     if(t===20) return M("bille");
     if(t===10) return M("mini");
+    if(t===25) return {k:"bag", bag:"premium"};
     if(t%5===0) return {k:"bag", bag:"classique"};
-    return {k:"jetons", n:(t%2?40:70)+t*4};
+    return {k:"jetons", n:PASS_J.free[stage]};
   }
   if(t===30) return M("mammouth",3);
   if(t===25) return {k:"bag", bag:"collector"};
@@ -2963,9 +3112,8 @@ function passReward(track,t){
   if(t===10) return M("calot",1);
   if(t===5)  return M("chinoise");
   if(t===1)  return {k:"title", name:"Collectionneur"};
-  if(t%4===0) return {k:"bag", bag:"premium"};
-  if(t%3===0) return {k:"bag", bag:"classique"};
-  return {k:"jetons", n:120+t*8};
+  if(t%5===3) return {k:"bag", bag:stage===0?"classique":"premium"};
+  return {k:"jetons", n:PASS_J.prem[stage]};
 }
 function rewardSpec(track,t,r){ const se=seasonNow(); return {seed:hash(se.id+track+t), type:r.type, family:r.fam, pal:se.pal, shiny:r.shiny, ed:se.label} }
 function rewardLabel(r){
@@ -2984,10 +3132,11 @@ function grantReward(track,t){
   const P = ensurePass(), r = passReward(track,t);
   if(!r || t>passTier() || (track==="prem" && !P.premium) || P[track].includes(t)) return null;
   P[track].push(t);
-  if(r.k==="jetons") S.jetons += r.n;
-  else if(r.k==="bag") S.bagInv[r.bag] = (S.bagInv[r.bag]||0)+1;
+  const key = `${seasonNow().id}|${track}|${t}`;
+  if(r.k==="jetons") earn("passe", key, r.n);
+  else if(r.k==="bag") earn("passe", key, 0, r.bag);
   else if(r.k==="title"){ if(!S.titles.includes(r.name)) S.titles.push(r.name); S.title = r.name }
-  else { const sp = rewardSpec(track,t,r), s = makeSpec(sp.type,sp); s.ed = sp.ed; S.specs.push(s); S.unseen.push(s.id); r.spec = s }
+  else { const sp = rewardSpec(track,t,r), s = makeSpec(sp.type,sp); s.ed = sp.ed; srvMint(s, "passe", key); S.specs.push(s); S.unseen.push(s.id); r.spec = s }
   return r;
 }
 function passXP(n){
@@ -3002,7 +3151,7 @@ const giftCount = () => Object.values(S.bagInv).reduce((a,b)=>a+b,0);
 /* =====================================================================
    NAVIGATION & HAUT DE PAGE
    ===================================================================== */
-const NAV = [["accueil","Accueil","home"],["sacs","Ouvrir des sacs","bag"],["collection","Boîte à billes","layers"],["jeux","Jeux de la cour","pad"],["confiserie","La Confiserie","candy"]];
+const NAV = [["accueil","Accueil","home"],["sacs","Ouvrir des sacs","bag"],["collection","Boîte à billes","layers"],["jeux","Jeux de la cour","pad"],["confiserie","La Confiserie","candy"],["cour","La cour de récré","cour"]];
 // les pages qui ne sont pas dans le menu allument leur « parent »
 const NAV_PARENT = {billepedia:"collection", tir:"jeux", pot:"jeux", chateau:"jeux", casse:"jeux", tic:"jeux", course:"jeux", atelier:"confiserie"};
 const SOLO_GAMES = [["pot","Le Pot"],["chateau","Le Château"],["casse","Le Casse-briques"]];
@@ -3016,16 +3165,16 @@ function renderNav(){
   document.getElementById("nav").innerHTML = NAV.map(n=>
     `<button class="nav-btn" data-action="nav" data-view="${n[0]}" ${cur===n[0]?'aria-current="page"':""}>${ic(n[2])}<span>${n[1]}</span>${
       n[0]==="sacs"&&bags?`<span class="cnt" aria-label="${bags} sac${bags>1?"s":""} à ouvrir">${bags}</span>`:""}${
-      n[0]==="jeux"&&games?'<span class="ready" aria-label="Récompense du jour à gagner"></span>':""}</button>`
+      n[0]==="jeux"&&games?'<span class="ready" aria-label="Récompense du jour à gagner"></span>':""}${
+      n[0]==="cour"&&courCount()?`<span class="cnt" aria-label="${courCount()} nouveauté${courCount()>1?"s":""} dans la cour">${courCount()}</span>`:""}</button>`
   ).join("") + (()=>{ const pc = passClaimable();
     return `<button class="nav-btn nav-apart" data-action="nav" data-view="passe" ${cur==="passe"?'aria-current="page"':""}>${ic("ticket")}<span>Passe de saison</span>${pc?`<span class="cnt gold" aria-label="${pc} récompense${pc>1?"s":""} à prendre">${pc}</span>`:""}</button>` })()
-    + `<div class="side-friends"><b>${ic("users",18)} Les copains</b>Amis, cour de récré et classement arriveront ici, tous au même endroit.</div>
-    <p class="side-quote">Les plus grandes aventures commencent toujours par une petite bille.
+    + `<p class="side-quote">Les plus grandes aventures commencent toujours par une petite bille.
     <svg width="40" height="36" viewBox="0 0 40 36" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"><path d="M6 2c-4 12 2 24 26 28"/><path d="M26 24l6 6-8 3"/></svg></p>`;
   const tab = (v,l,i,dot) => `<button class="tb" data-action="nav" data-view="${v}" ${cur===v?'aria-current="page"':""}>${ic(i,24)}${l}${dot?'<span class="dot"></span>':""}</button>`;
   document.getElementById("tabbar").innerHTML = tab("accueil","Accueil","home") + tab("collection","Boîte","layers")
     + `<button class="tab-bag" data-action="nav" data-view="sacs" ${cur==="sacs"?'aria-current="page"':""}><span class="bb">${bagSVG(FREE_BAG)}${bags?`<span class="n">${bags}</span>`:""}</span>Sacs</button>`
-    + tab("jeux","Jeux","pad",games) + tab("confiserie","Confiserie","candy");
+    + tab("jeux","Jeux","pad",games) + tab("confiserie","Confiserie","candy") + tab("cour","Cour","cour",courCount());
   renderDay();
 }
 
@@ -3043,11 +3192,11 @@ function dayHTML(inSheet){
   ensureQuests();
   const Q = S.quests, n = mjClaimable();
   // le bonbec du jour
-  const dReady = dailyReady(), streak = dReady ? dailyStreak() : (S.daily?.streak||1), idx = (streak-1)%7, amount = DAILY[idx]*(isWednesday()?2:1);
-  const next = idx===6 ? 0 : idx+1;
+  const dReady = dailyReady(), streak = dReady ? dailyStreak() : (S.daily?.streak||1), idx = dailyDay(streak), dToday = dailyRew(idx);
+  const next = dailyDay(streak+1);
   const rows1 = [mjRow({icon:"gift", title:"Le bonbec du jour", ready:dReady, done:!dReady,
-    text: dReady ? `Jour ${idx+1} sur 7${isWednesday()?" · mercredi : doublé !":""}` : `Demain : ${fmt(DAILY[next])} ${CUR.many} (jour ${next+1})`,
-    btn: dReady ? `<button class="btn btn-yellow" data-action="daily-claim">+${fmt(amount)} ${COIN}</button>` : "", act:'data-action="daily-open"'})];
+    text: dReady ? `Jour ${idx+1} sur ${DAILY_N}` : `Demain : ${dailyText(dailyRew(next))} (jour ${next+1})`,
+    btn: dReady ? `<button class="btn btn-yellow" data-action="daily-claim">${dToday.bag?ic("bag",16):""}${dToday.j?`+${fmt(dToday.j)} ${COIN}`:""}</button>` : "", act:'data-action="daily-open"'})];
   // les sacs
   const st = freeStock(), gifts = giftCount();
   rows1.push(mjRow({icon:"bag", title: st ? `${st} sac${st>1?"s":""} gratuit${st>1?"s":""} à ouvrir` : "Sac gratuit",
@@ -3109,36 +3258,36 @@ function openDay(open){
 // Les récompenses : une fonction par sorte, pour les boutons un par un et pour « Tout récupérer »
 function claimDaily(){
   if(!dailyReady()) return null;
-  const streak = dailyStreak(), idx = (streak-1)%7, amount = DAILY[idx]*(isWednesday()?2:1);
-  S.jetons += amount; if(idx===6) S.bagInv.premium = (S.bagInv.premium||0)+1;
+  const streak = dailyStreak(), idx = dailyDay(streak), r = dailyRew(idx);
+  S.jetons += r.j; if(r.bag) S.bagInv[r.bag] = (S.bagInv[r.bag]||0)+1;
   S.daily = {last:dayKey(), streak};
-  return {j:amount, bags:idx===6?1:0, idx};
+  if(srvOn()) srv(()=>Cloud.eco.daily()).then(x=>applyEco(x.eco), srvFail);
+  return {...r, idx, streak};
 }
 function claimQuest(i){
   ensureQuests(); const q = S.quests.items[i];
   if(!q || q.claimed || !questDone(q)) return 0;
-  q.claimed = true; S.jetons += QUESTS[q.id].reward; passXP(PASS_XP.quest);
+  q.claimed = true; earn("quete", q.id, QUESTS[q.id].reward); passXP(PASS_XP.quest);
   return QUESTS[q.id].reward;
 }
 function claimBonus(){
   ensureQuests(); const Q = S.quests;
   if(Q.bonus || !Q.items.every(q=>q.claimed)) return 0;
-  Q.bonus = true; S.jetons += QUEST_BONUS; S.stats.bonus++; passXP(PASS_XP.bonus);
+  Q.bonus = true; earn("quetes-bonus", dayKey(), QUEST_BONUS); S.stats.bonus++; passXP(PASS_XP.bonus);
   return QUEST_BONUS;
 }
-function claimRew(r){   // récompense d'un succès ou d'une série
-  if(r.j) S.jetons += r.j;
-  if(r.bag) S.bagInv[r.bag] = (S.bagInv[r.bag]||0)+1;
+function claimRew(r, source, key){   // récompense d'un succès ou d'une série
+  if(r.j || r.bag) earn(source, key, r.j||0, r.bag);
   if(r.title && !S.titles.includes(r.title)){ S.titles.push(r.title); S.title = r.title }
 }
 function claimChal(c){
   if(!c || S.chal.includes(c.id) || chalProg(c)<c.goal) return false;
-  S.chal.push(c.id); claimRew(c.rew); return true;
+  S.chal.push(c.id); claimRew(c.rew, "succes", c.id); return true;
 }
 function claimSeries(se){
   S.seriesDone = S.seriesDone||[];
   if(!se || S.seriesDone.includes(se.id) || seriesProg(se)<se.items.length) return false;
-  S.seriesDone.push(se.id); claimRew(se.rew); return true;
+  S.seriesDone.push(se.id); claimRew(se.rew, "serie", se.id); return true;
 }
 function claimAll(){
   const j0 = S.jetons, b0 = giftCount(), got = [];
@@ -3155,26 +3304,40 @@ function claimAll(){
   const dj = S.jetons-j0, db = giftCount()-b0;
   toast(`Récupéré : ${got.join(", ")}. +${fmt(dj)} ${CUR.many}${db>0?` et ${db} sac${db>1?"s":""}`:""} !`);
 }
-// Le bonbec du jour : un cadeau à la première visite de chaque jour, sur une série de 7 jours
-const DAILY = [50,80,110,150,200,250,300];
+// Le bonbec du jour : un cadeau à la première visite de chaque jour, sur un calendrier de 4 semaines.
+// Chaque semaine rapporte plus que la précédente, avec un sac au milieu (jour 4) et un plus beau à la fin (jour 7).
+// Après le 28ᵉ jour, la 4ᵉ semaine recommence tant qu'on ne rate pas de jour. Un jour sauté : retour au jour 1.
+const DAILY_CAL = [
+  {j:60},  {j:80},  {j:100}, {bag:"classique"}, {j:120}, {j:150}, {bag:"classique"},
+  {j:100}, {j:120}, {j:150}, {bag:"classique"}, {j:180}, {j:200}, {bag:"premium"},
+  {j:120}, {j:150}, {j:180}, {bag:"classique"}, {j:200}, {j:250}, {bag:"premium"},  
+  {j:150}, {j:180}, {j:200}, {bag:"premium"},   {j:250}, {j:300}, {bag:"collector"},
+];
+const DAILY_N = DAILY_CAL.length;
+const dailyDay = streak => streak<=DAILY_N ? streak-1 : DAILY_N-7 + (streak-DAILY_N-1)%7;   // 0 à 27
+const dailyRew = i => ({j:DAILY_CAL[i].j||0, bag:DAILY_CAL[i].bag});
+const dailyText = r => [r.j?`${fmt(r.j)} ${CUR.many}`:"", r.bag?`un ${BAG_BY[r.bag].name}`:""].filter(Boolean).join(" et ");
 const dailyReady = () => !S.daily || S.daily.last!==dayKey();
 const dailyStreak = () => S.daily && S.daily.last===dayKey(new Date(Date.now()-864e5)) ? S.daily.streak+1 : 1;
-const isWednesday = () => new Date().getDay()===3;   // le mercredi, pas d'école : bonbecs doublés
 function openDaily(){
   const ready = dailyReady();
-  const streak = ready ? dailyStreak() : (S.daily?.streak||1), idx = (streak-1)%7, mult = isWednesday()?2:1, amount = DAILY[idx]*mult;
-  const next = idx===6 ? 0 : idx+1;
+  const streak = ready ? dailyStreak() : (S.daily?.streak||1), idx = dailyDay(streak), r = dailyRew(idx);
+  const next = dailyDay(streak+1), looped = streak>DAILY_N;
+  const cell = (d,i) => { const got = i<idx || (!ready && i===idx), today = ready && i===idx, B = d.bag && BAG_BY[d.bag];
+    return `<div class="day ${got?"got":today?"today":""}${B?" has-bag":""}${i%7===6?" wk-end":""}" ${B?`style="--bc:${B.color}"`:""} title="Jour ${i+1} : ${esc(dailyText(dailyRew(i)))}">
+      <small>${i+1}</small>${B?`<span class="day-bag">${ic("bag",20,2.2)}</span><em>${B.name.replace("Sac ","")}</em>`:`${COIN}`}${d.j?`<b>${fmt(d.j)}</b>`:""}
+      ${got?`<span class="day-ok">${ic("check",11,3)}</span>`:""}</div>` };
   const el = document.getElementById("modal");
   el.innerHTML = `<div class="modal daily" role="dialog" aria-modal="true" aria-label="Le bonbec du jour">
     <button class="close-x" data-action="close-modal" aria-label="Fermer">×</button>
     <div class="daily-body">
       <span class="daily-kicker">${ic("gift",16)} Le bonbec du jour</span>
       <h2>${ready ? (streak>1?`${streak} jours de suite !`:"Coucou, te revoilà !") : "C'est dans la poche !"}</h2>
-      <p>${isWednesday()?"<b>Le mercredi, pas d'école : tes bonbecs sont doublés !</b> ":""}Passe chaque jour pour remplir ta semaine : le 7ᵉ jour, un Sac Premium t'attend en plus.</p>
-      <div class="daily-row">${DAILY.map((v,i)=>`<div class="day ${i<idx||(!ready&&i===idx)?"got":i===idx?"today":""}"><small>Jour ${i+1}</small>${COIN}<b>${fmt(v*(i===idx?mult:1))}</b>${i===6?`<span class="day-bonus">+ 1 sac</span>`:""}${i<idx||(!ready&&i===idx)?`<span class="day-ok">${ic("check",11,3)}</span>`:""}</div>`).join("")}</div>
-      ${ready ? `<button class="btn btn-yellow" data-action="daily-claim">${ic("gift",18)} Récupérer ${fmt(amount)} ${CUR.many}${idx===6?" et un Sac Premium":""}</button>`
+      <p>Passe chaque jour sans en rater un : chaque semaine rapporte plus que la précédente, avec un sac au milieu et un plus beau à la fin.${looped?" Tu as fini le calendrier : la dernière semaine recommence tant que tu reviens chaque jour.":""}</p>
+      <div class="daily-cal">${[0,1,2,3].map(w=>`<div class="daily-wk"><span class="wk-lbl">Semaine ${w+1}</span><div class="daily-row">${DAILY_CAL.slice(w*7,w*7+7).map((d,k)=>cell(d,w*7+k)).join("")}</div></div>`).join("")}</div>
+      ${ready ? `<button class="btn btn-yellow" data-action="daily-claim">${ic("gift",18)} Récupérer ${esc(dailyText(r))}</button>`
         : `<span class="daily-done">${ic("check",18,2.5)} Bonbec du jour récupéré</span>
-           <p>Reviens dans <b data-quest-timer>${untilMidnight()}</b> pour le jour ${next+1} : ${fmt(DAILY[next])} ${CUR.many}${next===6?" et un Sac Premium":""}.</p>`}
+           <p>Reviens dans <b data-quest-timer>${untilMidnight()}</b> pour le jour ${next+1} : ${esc(dailyText(dailyRew(next)))}.</p>`}
       <p class="meta">Si tu sautes un jour, ta série recommence au jour 1.</p>
     </div></div>`;
   el.hidden = false;
@@ -3182,6 +3345,9 @@ function openDaily(){
 }
 function renderTop(){
   document.getElementById("jetons").textContent = fmt(S.jetons);
+  const db = document.getElementById("daily-btn");
+  if(!db.querySelector("svg")) db.insertAdjacentHTML("afterbegin", ic("gift",21));
+  db.classList.toggle("ready", dailyReady());
   document.getElementById("top-name").textContent = S.name;
   document.getElementById("top-level").textContent = S.title;
   const a = activeSpec();
@@ -3230,7 +3396,7 @@ document.addEventListener("keydown", e=>{ if(e.key==="Escape") toggleProfPop(fal
 function go(view){ toggleProfPop(false); if(view==="atelier"){ view="confiserie"; ui.confTab="fusion" } if(view==="billepedia"){ view="collection"; ui.tab="pedia" } ui.view=view; renderNav(); renderView(); window.scrollTo({top:0}); }
 function renderView(){
   const v = document.getElementById("view");
-  const map = {succes:viewSucces, accueil:viewHome, sacs:viewBags, collection:viewCollection, jeux:viewGames, tir:viewGame, pot:viewArena, chateau:viewArena, casse:viewCasse, tic:viewArena, course:viewArena, quetes:viewQuests, billepedia:viewPedia, passe:viewPass, profil:viewProfile, atelier:viewCraft, confiserie:viewConfiserie};
+  const map = {cour:viewCour, succes:viewSucces, accueil:viewHome, sacs:viewBags, collection:viewCollection, jeux:viewGames, tir:viewGame, pot:viewArena, chateau:viewArena, casse:viewCasse, tic:viewArena, course:viewArena, quetes:viewQuests, billepedia:viewPedia, passe:viewPass, profil:viewProfile, atelier:viewCraft, confiserie:viewConfiserie};
   v.innerHTML = (map[ui.view] || viewSoon)();
   if(ui.view==="passe") focusTrack();
   if(ui.view==="tir") initGame();
@@ -3352,7 +3518,7 @@ function drawExplainer(){
       <div class="draw-step"><span class="n">1</span><b>La taille</b><small>La rareté principale. Les chances sont sur chaque sac, plus haut.</small></div>
       <div class="draw-step"><span class="n">2</span><b>Le décor</b><small>${FAMILIES.length} décors rangés en ${rows.length} paniers, du plus courant au plus rare (ci-dessous).</small></div>
       <div class="draw-step"><span class="n">3</span><b>Le coloris</b><small>${BASE_PALS} coloris, tous aussi fréquents : 1 chance sur ${BASE_PALS} chacun.</small></div>
-      <div class="draw-step"><span class="n">4</span><b>Shiny ou pas</b><small>${oneIn(SHINY_RATE)} billes, 5 fois plus dans le Sac Collector.</small></div>
+      <div class="draw-step"><span class="n">4</span><b>Shiny ou pas</b><small>${oneIn(SHINY_RATE)} billes, 2 fois plus dans le Sac Premium, 5 fois plus dans le Collector.</small></div>
     </div>
     <div class="dec-table">
       <div class="dec-head"><span>Panier de décors</span><span>Décors</span><span>Un décor précis</span><span>Tout le panier</span></div>
@@ -3412,7 +3578,7 @@ function viewBags(){
     <button class="panel" data-action="nav" data-view="jeux">${ic("target",26)}<div><b>Jeux de la cour</b><p>Une récompense par jour et par jeu, et des mises à plusieurs.</p></div></button>
     <button class="panel" data-action="mj-open">${ic("quest",26)}<div><b>Ma journée</b><p>Bonbec du jour, 3 quêtes, et ${QUEST_BONUS} ${CUR.many} de bonus.</p></div></button>
     <button class="panel" data-action="nav" data-view="passe">${ic("ticket",26)}<div><b>Passe de saison</b><p>Des sacs offerts et des billes exclusives à chaque palier.</p></div></button>
-    <button class="panel" data-action="nav" data-view="confiserie">${ic("candy",26)}<div><b>La Confiserie</b><p>Échange tes doubles, ou fusionne-en ${CRAFT_N} pour une bille plus grosse.</p></div></button>
+    <button class="panel" data-action="nav" data-view="confiserie">${ic("candy",26)}<div><b>La Confiserie</b><p>Échange tes doubles, ou fusionne-les pour une bille plus grosse.</p></div></button>
   </div>`;
 }
 
@@ -3566,7 +3732,7 @@ function viewCollection(){
     </div>
     <div class="f-right">
       ${ui.tab==="album"&&show==="all"?`<label class="check"><input type="checkbox" id="f-hide" ${ui.hideMissing?"checked":""}> Masquer les billes à trouver</label>`:""}
-      ${ui.tab==="billes"&&show!=="secret"&&show!=="dups"?`<label class="sort">Trier <select id="f-sort">${[["recent","Plus récentes"],["size","Plus grosses"],["decor","Par décor"],["color","Par coloris"]].map(([k,l])=>`<option value="${k}"${(ui.sort||"recent")===k?" selected":""}>${l}</option>`).join("")}</select></label>`:""}
+      ${ui.tab==="billes"&&show!=="secret"&&show!=="dups"?`<label class="sort">Trier <select id="f-sort">${[["recent","Plus récentes"],["size","Plus grosses"],["decor","Par décor"],["rar","Décors les plus rares"],["color","Par coloris"]].map(([k,l])=>`<option value="${k}"${(ui.sort||"recent")===k?" selected":""}>${l}</option>`).join("")}</select></label>`:""}
       ${S.unseen.some(id=>specById(id))?`<button class="btn btn-ghost seen-all" data-action="seen-all">${ic("check",16)} Tout marquer comme vu (${S.unseen.filter(id=>specById(id)).length})</button>`:""}
     </div>
   </div>`;
@@ -3586,16 +3752,16 @@ function viewCollection(){
   if(ui.tab==="album"){
     body = types.map(t=>{
       const have = FAMILIES.filter((_,f)=>slots.has(t+"|"+f)).length;
-      const cards = FAMILIES.map((F,f)=>{
-        const list = slots.get(t+"|"+f);
+      const cards = FAM_ORDER.map(f=>{
+        const F = FAMILIES[f], list = slots.get(t+"|"+f);
         if(showFn && !(list||[]).some(showFn)) return "";
-        if(!list){ if(ui.hideMissing) return ""; return `<button class="m-card missing" data-action="missing" data-type="${t}" data-fam="${f}" aria-label="${TYPES[t].label} ${F.name} : pas encore trouvée"><span class="ball">${mImg(ghost(t,f),160,Math.round(84*scaleOf(t)+6),"")}</span><b>${F.name}</b><small>À trouver</small></button>` }
+        if(!list){ if(ui.hideMissing) return ""; return `<button class="m-card missing" data-action="missing" data-type="${t}" data-fam="${f}" aria-label="${TYPES[t].label} ${F.name} : pas encore trouvée"><span class="ball">${mImg(ghost(t,f),160,Math.round(84*scaleOf(t)+6),"")}</span><b>${F.name}</b>${rarTag(f)}<small>À trouver</small></button>` }
         const best = coverOf(list), got = casePals(list), full = got===BASE_PALS;
         const isNew = list.some(s=>S.unseen.includes(s.id));
         return `<button class="m-card case${best.shiny?" is-shiny":""}${full?" full":""}" data-action="sheet" data-type="${t}" data-fam="${f}" aria-label="${TYPES[t].label} ${F.name} : ${got} coloris sur ${BASE_PALS}"${isNew?` data-unseen="${list.filter(s=>S.unseen.includes(s.id)).map(s=>s.id).join(",")}"`:""}>
           ${best.shiny?`<span class="shiny-mark">${shinyPill(best)}</span>`:""}
           ${full?`<span class="full-tag">${ic("star",11,2.6)} Complète</span>`:""}${isNew?`<span class="new">Nouveau</span>`:""}
-          <span class="ball">${mImg(best,160,Math.round(84*scaleOf(t)+6))}</span><b>${F.name}</b>
+          <span class="ball">${mImg(best,160,Math.round(84*scaleOf(t)+6))}</span><b>${F.name}</b>${rarTag(f)}
           <span class="case-prog"><span class="bar"><i style="width:${got/BASE_PALS*100}%"></i></span><small>${got} / ${BASE_PALS} coloris</small></span></button>`;
       }).join("");
       return `<section class="type-block">
@@ -3615,6 +3781,7 @@ function viewCollection(){
     let list = S.specs.filter(x=>inType(x) && (!showFn || showFn(x)));
     const srt = show==="dups" ? "slot" : ui.sort||"recent";
     const by = {recent:(a,b)=>b.at-a.at, size:(a,b)=>tierSort(a,b), decor:(a,b)=>FAMILIES[a.family].name.localeCompare(FAMILIES[b.family].name,"fr")||tierSort(a,b),
+      rar:(a,b)=>FAMILIES[b.family].rar-FAMILIES[a.family].rar || FAMILIES[a.family].name.localeCompare(FAMILIES[b.family].name,"fr") || tierSort(a,b),
       color:(a,b)=>PALETTES[a.pal][0].localeCompare(PALETTES[b.pal][0],"fr")||tierSort(a,b),
       slot:(a,b)=>TIDX[b.type]-TIDX[a.type] || a.family-b.family || a.pal-b.pal || (keep.has(b.id)?1:0)-(keep.has(a.id)?1:0) || tierSort(a,b)};
     list.sort(by[srt]);
@@ -3734,23 +3901,27 @@ function focusTrack(){
 }
 
 /* =====================================================================
-   ATELIER : 10 billes d'une taille -> 1 bille de la taille au-dessus
+   ATELIER : 3 à 8 billes d'une taille -> 1 bille de la taille au-dessus
    ===================================================================== */
-const CRAFT_N = 10, CRAFT_SHINY = .0005;   // même chance de shiny que le Sac Collector
+// Fusion : combien de billes d'une taille pour une de la taille au-dessus. Toujours environ la moitié de leur valeur
+// à la Confiserie (on troque des bonbecs contre une plus grosse bille, au décor tout neuf).
+const CRAFT_NS = [3,5,5,6,8];
+const craftN = t => CRAFT_NS[t];
+const craftShiny = t => SHINY_RATE*craftN(t);   // les chances de shiny des billes fusionnées s'additionnent
 const RAR_F  = TK.map(t=>TYPES[t].label);
 const RAR_PL = TK.map(t=>TYPES[t].pl);
 // billes qu'on peut fusionner : jamais les shiny, la bille active, la vitrine ni les billes de saison
-const craftPool = t => S.specs.filter(s=>tierOf(s)===t && !s.shiny && !s.secret && s.id!==S.active && !S.vitrine.includes(s.id) && s.pal<BASE_PALS);
+const craftPool = t => S.specs.filter(s=>tierOf(s)===t && !s.shiny && !s.secret && s.id!==S.active && !S.vitrine.includes(s.id) && s.pal<BASE_PALS && (!srvOn() || s.srv));
 const slotCounts = () => { const c={}; S.specs.forEach(s=>{ const k=colorKey(s); c[k]=(c[k]||0)+1 }); return c };   // exemplaires de chaque bille (doubles stricts)
 // la taille au-dessus ; le décor et le coloris sont tirés au hasard avec leurs chances habituelles
 function craftResult(T){
-  return makeSpec(TK[T],{shiny:Math.random()<CRAFT_SHINY ? rollShiny() : 0});
+  return makeSpec(TK[T],{shiny:Math.random()<craftShiny(T-1) ? rollShiny() : 0});
 }
 // remplissage auto : d'abord les doubles, pour ne pas vider d'emplacement de l'album
 function craftAuto(t){
   const cnt = slotCounts(), pool = [...craftPool(t)].sort((a,b)=>cnt[colorKey(b)]-cnt[colorKey(a)] || a.at-b.at), sel = [];
-  for(const s of pool){ if(sel.length>=CRAFT_N) break; const k=colorKey(s); if(cnt[k]>1){ sel.push(s.id); cnt[k]-- } }
-  for(const s of pool){ if(sel.length>=CRAFT_N) break; if(!sel.includes(s.id)) sel.push(s.id) }
+  for(const s of pool){ if(sel.length>=craftN(t)) break; const k=colorKey(s); if(cnt[k]>1){ sel.push(s.id); cnt[k]-- } }
+  for(const s of pool){ if(sel.length>=craftN(t)) break; if(!sel.includes(s.id)) sel.push(s.id) }
   return sel;
 }
 function viewCraft(){
@@ -3759,21 +3930,22 @@ function viewCraft(){
   C.sel = C.sel.filter(id=>pool.some(s=>s.id===id));
   const A = RARITY[C.t].c, B = RARITY[C.t+1].c;
   const recipes = TK.slice(0,-1).map((_,t)=>`<button class="recipe" data-action="craft-t" data-t="${t}" aria-pressed="${C.t===t}" style="--a:${RARITY[t].c};--b:${RARITY[t+1].c}">
-      <span class="rc-line"><i class="a"></i>${CRAFT_N} ${RAR_PL[t]}</span>${ic("arrow",14)}<span class="rc-line"><i class="b"></i>1 ${RAR_F[t+1]}</span><small>${craftPool(t).length} disponible${craftPool(t).length>1?"s":""}</small></button>`).join("");
-  const slots = Array.from({length:CRAFT_N},(_,i)=>{ const s=specById(C.sel[i]);
+      <span class="rc-line"><i class="a"></i>${craftN(t)} ${RAR_PL[t]}</span>${ic("arrow",14)}<span class="rc-line"><i class="b"></i>1 ${RAR_F[t+1]}</span><small>${craftPool(t).length} disponible${craftPool(t).length>1?"s":""}</small></button>`).join("");
+  const N = craftN(C.t);
+  const slots = Array.from({length:N},(_,i)=>{ const s=specById(C.sel[i]);
     return s ? `<button class="fz-slot filled" data-action="craft-toggle" data-id="${s.id}" aria-label="Retirer ${esc(specName(s))}">${mImg(s,120,44,"")}</button>` : `<span class="fz-slot"></span>` }).join("");
   const last = C.sel.filter(id=>{ const s=specById(id); return !S.specs.some(x=>colorKey(x)===colorKey(s) && !C.sel.includes(x.id)) }).length;
-  return `<p class="conf-intro">Fusionne ${CRAFT_N} billes d'une même taille pour obtenir une bille de la taille au-dessus : 10 Mini billes donnent une Bille, 10 Billes une Bille chinoise, et ainsi de suite jusqu'au Mammouth. La nouvelle bille a un décor et un coloris tirés au hasard.</p>
+  return `<p class="conf-intro">Fusionne des billes d'une même taille pour obtenir une bille de la taille au-dessus : ${CRAFT_NS[0]} Mini billes donnent une Bille, ${CRAFT_NS[1]} Billes une Bille chinoise… jusqu'à ${CRAFT_NS[4]} Boulets pour un Mammouth. La nouvelle bille a un décor et un coloris tirés au hasard.</p>
   <div class="recipes">${recipes}</div>
   <section class="panel fuse" style="--a:${A};--b:${B}">
     <div class="fz-grid">${slots}</div>
     <div class="fz-arrow">${ic("arrow",30)}</div>
-    <div class="fz-out"><span class="orb-mini">?</span><b>1 ${RAR_F[C.t+1]}</b><small>dont ${pct(CRAFT_SHINY*100)} de shiny</small></div>
+    <div class="fz-out"><span class="orb-mini">?</span><b>1 ${RAR_F[C.t+1]}</b><small>dont ${pct(+(craftShiny(C.t)*100).toFixed(2))} de shiny</small></div>
     <div class="fz-actions">
-      <span class="fz-count">${C.sel.length} / ${CRAFT_N} billes</span>
-      <button class="btn btn-ghost" data-action="craft-auto" ${pool.length<CRAFT_N?"disabled":""}>Remplir avec mes doubles</button>
+      <span class="fz-count">${C.sel.length} / ${N} billes</span>
+      <button class="btn btn-ghost" data-action="craft-auto" ${pool.length<N?"disabled":""}>Remplir avec mes doubles</button>
       <button class="btn btn-ghost" data-action="craft-clear" ${C.sel.length?"":"disabled"}>Vider</button>
-      <button class="btn btn-yellow" data-action="craft-go" ${C.sel.length===CRAFT_N?"":"disabled"}>${ic("flask",18)} Fusionner</button>
+      <button class="btn btn-yellow" data-action="craft-go" ${C.sel.length===N?"":"disabled"}>${ic("flask",18)} Fusionner</button>
     </div>
     ${last?`<p class="warn-note fz-warn">Attention : ${last} de ces billes ${last>1?"sont les dernières":"est la dernière"} de ce coloris : l'album perdra ${last} bille${last>1?"s":""}.</p>`:""}
   </section>
@@ -3801,7 +3973,7 @@ function showCraft(inputs, out, pxp){
     Sound.whoosh();
     const [x,y] = FX.at(document.querySelector(".fuse-core"));
     FX.burst(x,y, scoreCols(k), 60+k*16, 1.2+k*.08); FX.ring(x,y, scoreCol(k));
-    if(out.shiny) FX.burst(x,y, SHINY_COLS, 90, 1.5);
+    if(out.shiny){ FX.burst(x,y, SHINY_COLS, 90, 1.5); FX.fireworks(SHINY_COLS, 8) }
     ov.style.setProperty("--flash", rgba(scoreCol(k), .6));
     FX.setDust(false);
     const ed = editionOf(out);
@@ -3813,7 +3985,7 @@ function showCraft(inputs, out, pxp){
         <div class="slot-info"><b>${esc(specName(out))}</b><span style="display:flex;gap:4px;flex-wrap:wrap;justify-content:center">${typePill(out.type,true)}${shinyPill(out)}</span>${tierTag(out)}${k>=BIG?`<span class="ed-no">${edLabel(ed)}</span>`:""}<span class="zoom-hint">${ic("search",14)} Agrandir</span></div>
       </button></div>
       <div class="ov-actions"><span class="ov-xp" style="flex-basis:100%;justify-content:center">${ic("ticket",18)} +${pxp} XP de saison</span>
-        ${craftPool(ui.craft.t).length>=CRAFT_N?`<button class="btn btn-yellow" data-action="craft-again">Préparer une autre fusion</button>`:""}
+        ${craftPool(ui.craft.t).length>=craftN(ui.craft.t)?`<button class="btn btn-yellow" data-action="craft-again">Préparer une autre fusion</button>`:""}
         <button class="btn btn-ghost" data-action="craft-see" data-id="${out.id}">Voir la fiche</button>
         <button class="btn btn-ghost" data-action="close-ov">Retour à la Confiserie</button></div>`;
     Sound.reveal(FMT_TIER[out.type], !!out.shiny);
@@ -3826,14 +3998,14 @@ function showCraft(inputs, out, pxp){
 function viewConfiserie(){
   const tab = ui.confTab==="fusion" ? "fusion" : "echange";
   const dups = recyclableDups(), dupVal = dups.reduce((a,s)=>a+recycleValue(s),0);
-  const fusions = TK.slice(0,-1).reduce((a,_,t)=>a+Math.floor(craftPool(t).length/CRAFT_N),0);
+  const fusions = TK.slice(0,-1).reduce((a,_,t)=>a+Math.floor(craftPool(t).length/craftN(t)),0);
   return `<div class="page-head"><div><h1>La Confiserie</h1><p>Comme à la boulangerie du coin après l'école. Tes billes en trop, deux façons d'en profiter : les échanger contre des ${CUR.many}, ou tenter la fusion pour une plus grosse.</p></div>
     <span class="hand-note">Rien ne se perd, tout se transforme !</span></div>
   <div class="conf-choices">
     <button class="conf-choice" data-action="conf-tab" data-tab="echange" aria-pressed="${tab==="echange"}">${ic("candy",26)}
       <div><b>Échanger contre des ${CUR.many}</b><small>${dups.length?`${dups.length} double${dups.length>1?"s":""} · +${fmt(dupVal)} ${CUR.many}`:"De 5 (Mini) à 400 (Mammouth) par bille"}</small></div></button>
     <button class="conf-choice" data-action="conf-tab" data-tab="fusion" aria-pressed="${tab==="fusion"}">${ic("flask",26)}
-      <div><b>Fusionner ${CRAFT_N} billes</b><small>${fusions?`${fusions} fusion${fusions>1?"s":""} possible${fusions>1?"s":""}`:`${CRAFT_N} billes d'une taille → 1 de la taille au-dessus`}</small></div></button>
+      <div><b>Fusionner des billes</b><small>${fusions?`${fusions} fusion${fusions>1?"s":""} possible${fusions>1?"s":""}`:`${CRAFT_NS[0]} à ${CRAFT_NS[4]} billes d'une taille → 1 de la taille au-dessus`}</small></div></button>
   </div>
   ${tab==="fusion" ? viewCraft() : confEchange(dups, dupVal)}`;
 }
@@ -3850,7 +4022,7 @@ function confEchange(dups, dupVal){
   <section class="panel" style="margin-top:18px">
     <div class="panel-head"><h2>Les tarifs de la maison</h2><span class="sample-tag">Par bille</span></div>
     <div class="tarif-grid">${TK.map((t,i)=>`<div class="tarif" style="${tstyle(t)}">${mImg(SHOWCASE[i],120,Math.round(26*scaleOf(t)+18),"")}<b>${TYPES[t].label}</b><span class="price">${COIN}${fmt(RECYCLE[t])}</span></div>`).join("")}
-      <div class="tarif is-shiny"><span class="shiny-pill">${SPARK}Shiny</span><b>Toutes tailles</b><span class="price">×${SHINY_RECYCLE_MULT}</span></div></div>
+      <div class="tarif is-shiny"><span class="shiny-pill">${SPARK}Shiny</span><b>×${SHINY_RECYCLE_MULT} + une prime</b><span class="price" style="font-size:12px">${SHINIES.slice(1).map((x,i)=>`${x.name} +${fmt(SHINY_BONUS[i+1])}`).join("<br>")}</span></div></div>
   </section>
   <p class="meta" style="margin-top:14px">Pour échanger une autre bille, ouvre sa fiche dans ta boîte à billes.</p>`;
 }
@@ -3920,9 +4092,9 @@ function viewPedia(){
   const base = {seed:hash("pedia-shiny"), type:"calot", family:1, pal:5};
   const shinyTiles = [0,1,2,3].map(k=>{
     const s = {...base, shiny:k}, i = pv(s);
-    const p = k ? FREE_BAG.shiny*SHINIES[k].w/sw : 1-FREE_BAG.shiny;
+    const pIn = b => b.shiny*SHINIES[k].w/sw;
     return `<button class="sh-tile${k?" is-shiny":""}" data-action="preview" data-k="${i}">${k?shinyPill(s):`<span class="pill" style="${tstyle("calot")}">Normale</span>`}
-      ${mImg(s,240)}<b>${k?SHINIES[k].name:"Sans effet"}</b><small>${k?SHINIES[k].desc:"Le même décor, sans effet spécial."}</small><small>${k?oneIn(p)+" billes":"Presque toutes les billes"}</small></button>`}).join("");
+      ${mImg(s,240)}<b>${k?SHINIES[k].name:"Sans effet"}</b><small>${k?SHINIES[k].desc:"Le même décor, sans effet spécial."}</small>${k?`<span class="sh-odds"><span>Gratuit, Classique <b>${oneIn(pIn(FREE_BAG))}</b></span><span>Premium <b>${oneIn(pIn(BAG_BY.premium))}</b></span><span>Collector <b>${oneIn(pIn(BAG_BY.collector))}</b></span></span>`:`<small>Presque toutes les billes</small>`}</button>`}).join("");
   // décors regroupés par rareté ; pour chacun, les 6 tailles dans l'ordre (trouvées en couleur, les autres grisées)
   const owned = slotsOwned();
   const SHORT = {mini:"Mini", bille:"Bille", chinoise:"Chinoise", calot:"Calot", boulet:"Boulet", mammouth:"Mammouth"};
@@ -3956,7 +4128,7 @@ function viewPedia(){
   const pals = PALETTES.slice(0,BASE_PALS).map(P=>`<div class="pal"><span>${[P[1],P[2],P[3]].map(c=>`<i style="background:${c}"></i>`).join("")}</span>${P[0]}</div>`).join("");
   const combos = TK.length*FAMILIES.length*BASE_PALS;
   return `<div class="page-head"><div><h1>Billepedia</h1><p>Tout ce qui existe dans Billy. Chaque bille ouverte est unique : son motif est tiré au hasard au moment de l'ouverture, il n'y en aura jamais deux pareilles. ${TK.length} formats × ${FAMILIES.length} décors × ${BASE_PALS} coloris = ${fmt(combos)} combinaisons, ×4 avec les shiny.</p></div></div>
-  <section class="pedia-sec"><h2>Les shiny</h2><p>Un effet spécial qui peut tomber sur n'importe quelle bille, quel que soit son format. Touche une bille pour la voir tourner.</p><div class="shiny-show">${shinyTiles}</div></section>
+  <section class="pedia-sec"><h2>Les shiny</h2><p>Un effet spécial qui peut tomber sur n'importe quelle bille, quel que soit son format. Sous chaque shiny : ses chances pour chaque bille, selon le sac d'où elle sort. Touche une bille pour la voir tourner.</p><div class="shiny-show">${shinyTiles}</div></section>
   <section class="pedia-sec"><h2>Les décors</h2><p>Chaque décor existe dans les ${TK.length} tailles, de la Mini au Mammouth : la rangée sous chaque décor te montre celles que tu as déjà (en couleur) et celles qui te manquent (grisées). Certains décors tombent souvent, d'autres une bille sur plusieurs centaines. Un Mammouth avec un décor légendaire, en shiny, c'est le graal.</p>${famGroups}</section>
   <section class="pedia-sec"><h2>Les tailles</h2><p>Du plus petit au plus gros : plus une bille est grosse, plus elle est rare. Chaque taille a sa couleur, partout sur le site.</p><div class="fmt-grid">${fmts}</div></section>
   <section class="pedia-sec"><h2>Les coloris</h2><p>${BASE_PALS} coloris, tous aussi fréquents les uns que les autres.</p><div class="pal-grid">${pals}</div><p class="meta" style="margin-top:10px">Et chaque mois, un coloris exclusif qu'on ne trouve que dans le passe de saison.</p></section>`;
@@ -3979,7 +4151,7 @@ function openModal(id, pv){
   const fromSheet = ui.fromSheet && ui.sheet && ui.sheet.t===s.type && ui.sheet.f===s.family; ui.fromSheet = false;
   const el = document.getElementById("modal");
   const F = FAMILIES[s.family], T = TYPES[s.type];
-  el.innerHTML = `<div class="modal drawer" role="dialog" aria-modal="true" aria-label="${esc(specName(s))}" style="${tstyle(s.type)}">
+  el.innerHTML = `<div class="modal drawer mid" role="dialog" aria-modal="true" aria-label="${esc(specName(s))}" style="${tstyle(s.type)}">
     <button class="close-x" data-action="close-modal" aria-label="Fermer">×</button>
     <div class="modal-visual${s.shiny===3?" lum":""}"${s.shiny===3?` style="--lc:${PALETTES[s.pal][2]}"`:""}>
       <div id="live-slot"></div>
@@ -3993,16 +4165,17 @@ function openModal(id, pv){
       <p class="desc">${F.desc}${s.shiny?` ${SHINIES[s.shiny].desc}`:""}</p>
       <dl class="facts">
         <dt>Format</dt><dd>${T.label} · ${T.mm} mm</dd>
-        <dt>Décor</dt><dd>${F.name} · ${famOdds(s.family)}</dd>
+        <dt>Décor</dt><dd>${F.name} · ${DECOR_RAR[F.rar].name} <small class="meta">(${famOdds(s.family)} a ce décor)</small></dd>
         <dt>Coloris</dt><dd>${PALETTES[s.pal][0]}</dd>
         <dt>Chance</dt><dd>${s.secret?"Bille secrète : une seule par joueur":isSeason(s)?"Exclusive au passe de saison":`${oneIn(chanceOf(s))} <small class="meta">par bille du sac gratuit</small>`}</dd>
         ${pv||s.pal>=BASE_PALS?"":`<dt>Édition</dt><dd>${editionOf(s)===1?`<span class="first-pill">Première mondiale</span>`:`n° ${fmt(editionOf(s))}`} <small class="meta">de ce modèle dans le monde (simulé)</small></dd>`}
         ${pv?"":`<dt>N° de série</dt><dd><code>${serial(s)}</code></dd>
         <dt>Obtenue le</dt><dd>${new Date(s.at).toLocaleDateString("fr-FR",{day:"numeric",month:"long",year:"numeric"})}</dd>`}
       </dl>
-      ${pv?`<p class="meta">Aperçu Billepedia · ${S.specs.some(x=>slotKey(x)===slotKey(s))?"tu as déjà ce format dans ce décor.":"pas encore dans ta boîte à billes."}</p>`:`<div class="modal-actions">
+      ${pv&&pv.cour?`<p class="meta">${esc(pv.cour)}</p>`:pv?`<p class="meta">Aperçu Billepedia · ${S.specs.some(x=>slotKey(x)===slotKey(s))?"tu as déjà ce format dans ce décor.":"pas encore dans ta boîte à billes."}</p>`:`<div class="modal-actions">
         ${S.active===s.id?`<button class="btn btn-ghost" disabled>Bille active</button>`:`<button class="btn btn-blue" data-action="set-active" data-id="${s.id}">Jouer avec cette bille</button>`}
         ${S.vitrine.includes(s.id)?`<button class="btn btn-ghost" data-action="vit-rm" data-id="${s.id}">${ic("layers",16)} Retirer de la vitrine</button>`:`<button class="btn btn-ghost" data-action="vit-add" data-id="${s.id}">${ic("layers",16)} Mettre en vitrine</button>`}
+        ${srvOn() && s.srv && !s.secret ? `<button class="btn btn-ghost" data-action="cour-sell-this" data-id="${s.id}">${ic("cour",16)} Vendre au marché</button>` : ""}
         ${S.active===s.id||s.secret?"":`<button class="btn btn-ghost" data-action="recycle" data-id="${s.id}">${ic("candy",16)} Échanger · +${fmt(recycleValue(s))} ${CUR.many}</button>`}
         ${sib.length>1 && keepOf(sib).id!==s.id?`<button class="btn btn-ghost" data-action="keep-copy" data-id="${s.id}">${ic("check",16)} Garder cet exemplaire</button>`:""}
         ${caseList.length>1 && coverOf(caseList).id!==s.id?`<button class="btn btn-ghost" data-action="cover" data-id="${s.id}">${ic("star",16)} Afficher dans l'album</button>`:""}
@@ -4019,10 +4192,10 @@ function openModal(id, pv){
     slot.appendChild(liveCanvas);
     liveCanvas.toggleAttribute("data-lum", s.shiny===3);
     liveCanvas.style.setProperty("--lc", PALETTES[s.pal][2]);
-    // la taille à l'écran suit le diamètre : de 90 px pour une Mini (10 mm) à 280 px pour un Mammouth (40 mm)
-    const px = Math.round(90+190*(T.mm-10)/30);
+    // la taille à l'écran suit le diamètre : de 120 px pour une Mini (10 mm) à 420 px pour un Mammouth (40 mm)
+    const px = Math.round(120+300*(T.mm-10)/30);
     liveCanvas.style.width = `min(${px}px,100%)`;
-    const dpr = window.devicePixelRatio||1, base = Math.min(560, Math.round(px*dpr));
+    const dpr = window.devicePixelRatio||1, base = Math.min(900, Math.round(px*dpr));
     cancelAnimationFrame(liveRAF);
     const reduce = matchMedia("(prefers-reduced-motion: reduce)").matches;
     // rotation : elle tourne toute seule, on peut la prendre à la souris (ou au doigt) et la lancer
@@ -4043,7 +4216,7 @@ function openModal(id, pv){
       liveRAF = requestAnimationFrame(tick);
     };
     tick();
-  } else slot.innerHTML = mImg(s,440,Math.round(80+170*(T.mm-10)/30));
+  } else slot.innerHTML = mImg(s,840,Math.round(120+300*(T.mm-10)/30));
   el.querySelector(".close-x").focus();
 }
 // Planche d'une case : les coloris, dans le même ordre partout ; ceux qui manquent en silhouette
@@ -4102,20 +4275,27 @@ function pullBag(bag){
   }
   return res.sort((a,b)=>TIDX[a.type]-TIDX[b.type] || (a.shiny?1:0)-(b.shiny?1:0));
 }
-function openBag(bagId, gift){
+async function openBag(bagId, gift){
   const bag = BAG_BY[bagId];
-  if(gift){
-    if(!(S.bagInv[bagId]>0)){ toast("Tu n'as plus de sac offert de ce type."); return }
-    S.bagInv[bagId]--;
-  } else if(bag.price===0){
-    if(!freeReady()){ toast(`Ton prochain sac gratuit arrive dans ${freeLeft()}.`); return }
-    useFree();
+  if(gift){ if(!(S.bagInv[bagId]>0)){ toast("Tu n'as plus de sac offert de ce type."); return } }
+  else if(bag.price===0){ if(!freeReady()){ toast(`Ton prochain sac gratuit arrive dans ${freeLeft()}.`); return } }
+  else if(S.jetons < bag.price){ toast(`Il te manque ${fmt(bag.price-S.jetons)} ${CUR.many} pour ce sac.`); return }
+  let pulls;
+  if(srvOn()){   // le serveur encaisse et tire les billes
+    if(eco.busy) return; eco.busy = true;
+    try{
+      const r = await srv(()=>Cloud.eco.openBag(bagId, !!gift));
+      pulls = srvAdopt(r.billes).sort((a,b)=>TIDX[a.type]-TIDX[b.type] || (a.shiny?1:0)-(b.shiny?1:0));
+      pulls.forced = r.force; applyEco(r.eco);
+    }catch(e){ srvFail(e); return }
+    finally{ eco.busy = false }
   } else {
-    if(S.jetons < bag.price){ toast(`Il te manque ${fmt(bag.price-S.jetons)} ${CUR.many} pour ce sac.`); return }
-    S.jetons -= bag.price;
+    if(gift) S.bagInv[bagId]--;
+    else if(bag.price===0) useFree();
+    else S.jetons -= bag.price;
+    pulls = pullBag(bag);
+    S.pity = pulls.some(s=>tierOf(s)>=BIG) ? 0 : (S.pity||0)+1;
   }
-  const pulls = pullBag(bag);
-  S.pity = pulls.some(s=>tierOf(s)>=BIG) ? 0 : (S.pity||0)+1;
   S.bags = (S.bags||0)+1;
   pulls.forEach(s=>{ if(tierOf(s)>=BIG || s.shiny) logFind(s) });
   const before = slotsOwned();
@@ -4163,6 +4343,20 @@ const FX = {
       this.parts.push({x,y,vx:Math.cos(a)*v,vy:Math.sin(a)*v-1.2*pow,life:1,dec:.009+Math.random()*.015,sz:1.5+Math.random()*3*pow,c:cols[i%cols.length],spark:Math.random()<.6,g:.1}) }
     this.start() },
   ring(x,y,c){ if(this.reduce()) return; this.parts.push({ring:true,x,y,r:20,life:1,dec:.028,c}); this.start() },
+  // feu d'artifice : des fusées partent du bas de l'écran et éclatent en gerbes (pour une shiny)
+  fireworks(cols,n=7){ if(this.reduce()) return;
+    for(let i=0;i<n;i++) setTimeout(()=>{
+      const x=innerWidth*(.12+.76*Math.random()), y=innerHeight+10, top=innerHeight*(.12+.3*Math.random()), g=.12;
+      this.parts.push({rocket:true,x,y,vx:(Math.random()-.5)*1.6,vy:-Math.sqrt(2*g*(y-top)),g,life:1,dec:0,sz:2.4,c:"#FFF3D6",col:cols[i%cols.length],alt:cols[(i+2)%cols.length]});
+      Sound.firework(); this.start();
+    }, i*380+Math.random()*160) },
+  explode(p,add){
+    const n=70+Math.floor(Math.random()*30);
+    for(let i=0;i<n;i++){ const a=i/n*TAU+Math.random()*.1, v=2.2+Math.random()*3.4;
+      add.push({x:p.x,y:p.y,vx:Math.cos(a)*v,vy:Math.sin(a)*v,life:1,dec:.008+Math.random()*.01,sz:1.6+Math.random()*2,c:i%3?p.col:p.alt,spark:Math.random()<.7,g:.045}) }
+    for(let i=0;i<16;i++) add.push({x:p.x,y:p.y,vx:(Math.random()-.5)*1.5,vy:(Math.random()-.5)*1.5,life:1,dec:.006,sz:1.2,c:"#FFF3D6",g:.02,twinkle:true});
+    add.push({ring:true,x:p.x,y:p.y,r:10,life:.7,dec:.03,c:p.col});
+  },
   at(el){ const r=el.getBoundingClientRect(); return [r.left+r.width/2, r.top+r.height/2] },
   setDust(on){ this.dust=on && !this.reduce(); if(this.dust) this.start() },
   start(){ if(!this.raf){ if(!this.ctx) this.fit(); this.raf=requestAnimationFrame(()=>this.loop()) } },
@@ -4170,15 +4364,20 @@ const FX = {
     const c=this.ctx; c.clearRect(0,0,innerWidth,innerHeight);
     if(this.dust && Math.random()<.3) this.parts.push({x:Math.random()*innerWidth,y:innerHeight+6,vx:(Math.random()-.5)*.3,vy:-.35-Math.random()*.7,life:1,dec:.003+Math.random()*.003,sz:.8+Math.random()*2,c:"#FFE3B0",dust:true,g:0});
     c.globalCompositeOperation="lighter";
+    const add = [];
     this.parts = this.parts.filter(p=>{
+      if(p.rocket && p.vy>=-.6){ this.explode(p,add); return false }
       p.life -= p.dec; if(p.life<=0) return false;
       if(p.ring){ p.r += 9*p.life+2; c.globalAlpha=p.life*.8; c.strokeStyle=p.c; c.lineWidth=4*p.life+1; c.beginPath(); c.arc(p.x,p.y,p.r,0,TAU); c.stroke(); return true }
       p.vx*=.982; p.vy=p.vy*.982+p.g; p.x+=p.vx; p.y+=p.vy;
-      c.globalAlpha = Math.min(1,p.life*1.5)*(p.dust?.45:1); c.fillStyle=p.c; c.strokeStyle=p.c;
+      c.globalAlpha = Math.min(1,p.life*1.5)*(p.dust?.45:1)*(p.twinkle?(Math.random()<.5?1:.2):1); c.fillStyle=p.c; c.strokeStyle=p.c;
+      if(p.rocket){ c.lineWidth=2.2; c.beginPath(); c.moveTo(p.x,p.y); c.lineTo(p.x-p.vx*4,p.y-p.vy*4); c.stroke();
+        if(Math.random()<.7) add.push({x:p.x,y:p.y,vx:(Math.random()-.5)*.6,vy:Math.random()*.8,life:.7,dec:.03,sz:1.4,c:"#FFC98A",g:.03}); return true }
       if(p.spark){ c.lineWidth=p.sz*.7; c.beginPath(); c.moveTo(p.x,p.y); c.lineTo(p.x-p.vx*3,p.y-p.vy*3); c.stroke() }
       else { c.beginPath(); c.arc(p.x,p.y,p.sz*(p.dust?1:.4+p.life*.6),0,TAU); c.fill() }
       return true;
     });
+    if(add.length) this.parts.push(...add);
     c.globalAlpha=1; c.globalCompositeOperation="source-over";
     this.raf = (this.parts.length||this.dust) ? requestAnimationFrame(()=>this.loop()) : 0;
   },
@@ -4262,24 +4461,21 @@ function tear(){
   st.querySelector("svg").style.transform = "";
   document.querySelector(".bag-tools")?.setAttribute("hidden","");
   document.querySelector(".ov-hint")?.setAttribute("hidden","");
-  // le halo monte en couleur jusqu'à la meilleure rareté du sac : ça annonce la couleur
-  const best = Math.max(...ovState.results.map(r=>pullScore(r.s)));
-  const steps = [0, Math.min(best,2), best];
+  // le sac ne dit rien de ce qu'il contient : même lueur et même explosion (couleur du sac) quel que soit le tirage
+  const bc = ovState.bag.color, bcs = [bc, shade(bc,.45), "#FFF3D6"];
   zone.classList.add("charging");
   { const r = st.getBoundingClientRect(); ovState.from = [r.left+r.width/2, r.top+r.height*.2] }
-  steps.forEach((k,i)=>setTimeout(()=>{
-    zone.style.setProperty("--glow", rgba(scoreCol(k), .75));
+  [0,1,2].forEach(i=>setTimeout(()=>{
+    zone.style.setProperty("--glow", rgba(shade(bc,.25*i), .55+i*.1));
     Sound.shake(1+i*.12);
-    if(i===2 && best>=BIG) FX.burst(...FX.at(st), scoreCols(best), 16, .5);
   }, reduce?0:i*340));
   setTimeout(()=>{
     Sound.whoosh();
     zone.classList.remove("charging"); st.classList.add("burst");
-    document.getElementById("ov").style.setProperty("--flash", rgba(scoreCol(best), best>=BIG?.75:.5));
+    document.getElementById("ov").style.setProperty("--flash", rgba(shade(bc,.3), .55));
     const [x,y] = FX.at(st);
-    FX.burst(x,y, scoreCols(best), 60+best*18, 1.2+best*.08);
-    FX.ring(x,y, scoreCol(best));
-    if(best>=6) FX.burst(x,y, SHINY_COLS, 90, 1.6);
+    FX.burst(x,y, bcs, 90, 1.3);
+    FX.ring(x,y, shade(bc,.3));
   }, reduce?0:1050);
   setTimeout(showReveal, reduce?50:1500);
 }
@@ -4289,11 +4485,11 @@ function showReveal(){
   FX.setDust(false);
   document.getElementById("ov-body").innerHTML = `
     <div class="ov-title">${results.length} billes trouvées !</div>
-    <p class="ov-sub">${ovState.forced?"Garantie Boulet activée : un gros t'attend !":"Touche chaque bille pour la découvrir. La couleur de la lueur annonce sa taille…"}</p>
+    <p class="ov-sub">${ovState.forced?"Garantie Boulet activée : un gros t'attend !":"Touche chaque bille pour la découvrir…"}</p>
     <div class="reveal-row">
       ${results.map(({s,isNew,newColor,wish},i)=>{
         const k = pullScore(s), big = k>=BIG;
-        return `<button class="slot ${k>=FMT_TIER.calot||wish?"hint":""}${wish?" wished":""} ${big?"big":""} ${s.shiny?"shiny":""}" style="--d:${i*130}ms;--tc:${scoreCol(k)};${tstyle(s.type)}" data-action="reveal" data-i="${i}" aria-label="Découvrir la bille ${i+1}">
+        return `<button class="slot${wish?" wished":""} ${big?"big":""} ${s.shiny?"shiny":""}" style="--d:${i*130}ms;--tc:${shade(ovState.bag.color,.2)};${tstyle(s.type)}" data-tc="${scoreCol(k)}" data-action="reveal" data-i="${i}" aria-label="Découvrir la bille ${i+1}">
         ${wish?`<span class="slot-banner">Ta liste !</span>`:s.secret?`<span class="slot-banner">Secrète !</span>`:BANNER[k]?`<span class="slot-banner${k<2?" low":""}">${BANNER[k]}</span>`:""}
         <div class="slot-ball"><span class="rays"></span><span class="ball-shadow"></span><span class="orb"><span class="orb-spin"><i>?</i></span></span>${mImg(s,300,Math.round(150*scaleOf(s.type)),"")}</div>
         <div class="slot-info"><b>${esc(specName(s))}</b><span style="display:flex;gap:4px;flex-wrap:wrap;justify-content:center">${wish||s.secret?typePill(s.type,true):""}${shinyPill(s)}${edPill(s)}</span>${tierTag(s)}${k>=BIG?`<span class="ed-no">${edLabel(editionOf(s))}</span>`:""}${isNew?`<span class="new">Nouvelle case !</span>`:newColor?`<span class="new">Nouveau coloris</span>`:`<span class="dup">Déjà dans ta boîte</span>`}<span class="zoom-hint">${ic("search",14)} Agrandir</span></div>
@@ -4364,33 +4560,42 @@ function reveal(i){
   ovState.opened.add(i);
   const el = document.querySelector(`.slot[data-i="${i}"]`);
   el._roll?.forEach(a=>{ try{ a.finish() }catch(e){} }); el._roll = null;
-  el.classList.add("is-open"); el.classList.remove("hint");
+  el.style.setProperty("--tc", el.dataset.tc); el.classList.add("is-open"); el.classList.remove("hint");
   el.setAttribute("aria-label", specName(ovState.results[i].s));
   const rs = ovState.results[i].s, k = pullScore(rs);
   const [x,y] = FX.at(el.querySelector(".slot-ball"));
   FX.burst(x,y, scoreCols(k), 18+k*14, .6+k*.12);
   if(k>=FMT_TIER.calot) FX.ring(x,y, scoreCol(k));
-  if(k>=6) FX.burst(x,y, SHINY_COLS, 70, 1.3);
+  if(k>=6){ FX.burst(x,y, SHINY_COLS, 70, 1.3); FX.fireworks(SHINY_COLS, 8) }
+  else if(k===FMT_TIER.mammouth){ FX.burst(x,y, scoreCols(k), 120, 1.6); setTimeout(()=>FX.ring(x,y, "#FFE3B0"), 180) }
   if(k>=BIG){ const b=document.getElementById("ov-body"); b.classList.remove("quake"); void b.offsetWidth; b.classList.add("quake") }
   Sound.reveal(TIDX[rs.type], !!rs.shiny);
   if(ovState.results[i].wish){ Sound.reveal(5,false); setTimeout(()=>toast(`Sur ta liste de souhaits : ${specName(rs)} ! Elle rejoint ta boîte à billes.`),500) }
   if(ovState.opened.size === ovState.results.length) finishReveal();
 }
-// « Tout révéler » : une par une, tranquillement ; avant un Boulet, un Mammouth ou une shiny, la bille tremble et le tambour roule
+// Suspense avant un gros : plus la bille est rare, plus ça dure. Boulet : elle tremble. Mammouth : elle tremble,
+// s'arrête… et repart de plus belle, pendant que le reste s'assombrit. Shiny : pareil en plus long, puis feu d'artifice.
+const suspenseFor = k => k>=6 ? 4200 : k===FMT_TIER.mammouth ? 3400 : k===FMT_TIER.boulet ? 1500 : 0;
+function revealDrama(i, then){
+  const st = ovState; if(!st || st.opened.has(i)) return;
+  const k = pullScore(st.results[i].s), el = document.querySelector(`.slot[data-i="${i}"]`), wait = suspenseFor(k);
+  if(!wait || !el || FX.reduce()){ reveal(i); then?.(k); return }
+  if(el.classList.contains("suspense")) return;
+  const ov = document.getElementById("ov"), mega = k>=FMT_TIER.mammouth;
+  el.style.setProperty("--sd", wait+"ms"); el.style.setProperty("--tc", "#FFE3B0");
+  el.classList.add("suspense"); if(mega){ el.classList.add("mega"); ov.classList.add("dim") }
+  Sound.suspense(wait/1000, k);
+  setTimeout(()=>{ if(ovState!==st) return; el.classList.remove("suspense","mega"); ov.classList.remove("dim"); reveal(i); then?.(k) }, wait);
+}
+// « Tout révéler » : une par une, tranquillement
 function revealAll(btn){
   const st = ovState; if(!st || st.auto) return;
   st.auto = true; btn.disabled = true;
-  const reduce = FX.reduce();
   const next = i => {
     if(ovState!==st) return;
     while(i<st.results.length && st.opened.has(i)) i++;
     if(i>=st.results.length) return;
-    const k = pullScore(st.results[i].s), el = document.querySelector(`.slot[data-i="${i}"]`);
-    if(k>=BIG && el && !reduce){
-      const wait = k>=6 ? 2400 : k>=FMT_TIER.mammouth ? 2000 : 1500;
-      el.style.setProperty("--sd", wait+"ms"); el.classList.add("suspense"); Sound.suspense(wait/1000, k);
-      setTimeout(()=>{ if(ovState!==st) return; el.classList.remove("suspense"); reveal(i); setTimeout(()=>next(i+1), 1300) }, wait);
-    } else { reveal(i); setTimeout(()=>next(i+1), k>=FMT_TIER.calot ? 900 : 650) }
+    revealDrama(i, k=>setTimeout(()=>next(i+1), k>=6 ? 2600 : k>=BIG ? 1300 : k>=FMT_TIER.calot ? 900 : 650));
   };
   next(0);
 }
@@ -4473,7 +4678,7 @@ function viewGame(){
         <div class="hole-list" id="g-holes"></div>
       </section>
       <section class="panel">
-        <div class="panel-head"><h3>Ta bille</h3><button class="see-all" data-action="nav" data-view="collection">Changer ${ic("chev",14)}</button></div>
+        <div class="panel-head"><h3>Ta bille</h3><button class="see-all" data-action="to-collection">Changer ${ic("chev",14)}</button></div>
         ${act?`<div class="my-ball">${mImg(act,120,48,"")}<div><b>${esc(specName(act))}</b><small>${TYPES[act.type].label} · ${TYPES[act.type].mm} mm</small></div></div>`:""}
       </section>
       <section class="panel">
@@ -4618,7 +4823,7 @@ function finishHole(success){
     const rec = !S.best[game.lvl] || game.strokes<S.best[game.lvl];
     if(rec) S.best[game.lvl] = game.strokes;
     const P = playedToday(), paid = !P.tir[game.lvl];
-    if(paid){ P.tir[game.lvl] = 1; S.jetons += rew }
+    if(paid){ P.tir[game.lvl] = 1; earn("jeu", `tir|${game.lvl}`, rew) }
     S.holes++; save(); renderTop(); updHud(); renderHoles();
     const pxp = paid ? passXP(PASS_XP.star*st) : 0;
     questEvent("hole");
@@ -4796,7 +5001,7 @@ function viewArena(){
     </section>
     <aside style="display:grid;gap:20px">
       <section class="panel"><div class="panel-head"><h3>Règles</h3></div><ul class="soon-list">${G.rules.map(r=>`<li>${r}</li>`).join("")}</ul></section>
-      <section class="panel"><div class="panel-head"><h3>Ta bille</h3><button class="see-all" data-action="nav" data-view="collection">Changer ${ic("chev",14)}</button></div>
+      <section class="panel"><div class="panel-head"><h3>Ta bille</h3><button class="see-all" data-action="to-collection">Changer ${ic("chev",14)}</button></div>
         ${act?`<div class="my-ball">${mImg(act,120,48,"")}<div><b>${esc(specName(act))}</b><small>${TYPES[act.type].label} · ${TYPES[act.type].mm} mm</small></div></div>`:""}</section>
     </aside>
   </div>`;
@@ -5031,12 +5236,22 @@ const FUN_NOTE = " Ta récompense du jour est déjà prise : cette partie était
 // Jeux à plusieurs : on mise des bonbecs, autant de parties qu'on veut. Plus la mise est grosse, plus les adversaires sont forts.
 const BETS = [0,10,25,50,100];
 const VERSUS = {tic:1, course:1};
-function payOut(rew, st, key, xp=true){
-  S.jetons += rew;
+// src : "pot", "chateau", "casse" (récompense du jour) ou "mise" (Course, Tic)
+function payOut(rew, st, key, xp=true, src=null){
+  if(src==="mise") settleBet(rew);
+  else if(src) earn("jeu", src, rew);
+  else S.jetons += rew;
   if(key && st===3) S.stats.best3[key] = 1;
   save(); renderTop(); renderNav();
   if(st && xp) passXP(PASS_XP.star*st);
   if(rew) Sound.coin();
+}
+// mise en cours au serveur (Course, Tic) : payée à la fin de la partie
+let betP = null;
+function settleBet(gain){
+  if(gain) S.jetons += gain;
+  const p = betP; betP = null;
+  if(p && srvOn()) srv(async()=>{ const r = await p; return Cloud.eco.settle(r.mise, gain) }).then(applyEco, srvFail);
 }
 function pickBet(){
   const el = document.getElementById("a-result"), mode = arena.mode;
@@ -5069,7 +5284,7 @@ const SETUP = {
       if(A.shots>0){ let y=A.start.y; for(let k=0;k<12 && A.balls.some(b=>b.alive && Math.hypot(b.x-A.start.x,b.y-y)<34);k++) y = 80+((y+70)%360); spawnMine(A.start.x,y); updArenaHud(); return }
       const n=A.potted, st = n>=5?3:n>=3?2:n>=1?1:0, rew = n*10+[0,10,25,50][st];
       const paid = soloClaim("pot");
-      S.stats.pot += n; payOut(paid?rew:0, st, "pot", paid);
+      S.stats.pot += n; payOut(paid?rew:0, st, "pot", paid, paid?"pot":null);
       arenaResult(n>=5?"Le grand chelem !":n?"Dans le pot !":"Raté !", st, `${n} bille${n>1?"s":""} dans le pot sur 5 lancers.${paid?"":FUN_NOTE}`, paid?rew:0);
     };
     A.hud = ()=>[["Lancers restants",A.shots],["Dans le pot",A.potted]];
@@ -5093,8 +5308,12 @@ const SETUP = {
       S.stats.castle += n;
       const paid = soloClaim("chateau");
       let prize = "";
-      if(st===3 && paid){ const s=makeSpec("bille"); S.specs.push(s); S.unseen.push(s.id); prize = ` Et pour de vrai : tu gagnes une bille du château, ${specName(s)} !` }
-      payOut(paid?rew:0, st, "chateau", paid);
+      if(st===3 && paid){
+        if(srvOn()){ prize = " Et pour de vrai : tu gagnes une Bille du château !";
+          srv(()=>Cloud.eco.marble("chateau","")).then(r=>{ const s = srvAdopt([r.bille])[0]; S.specs.push(s); S.unseen.push(s.id); applyEco(r.eco); toast(`Ta Bille du château : ${specName(s)} !`) }, srvFail) }
+        else { const s=makeSpec("bille"); S.specs.push(s); S.unseen.push(s.id); prize = ` Et pour de vrai : tu gagnes une bille du château, ${specName(s)} !` }
+      }
+      payOut(paid?rew:0, st, "chateau", paid, paid?"chateau":null);
       arenaResult(n>=10?"Château rasé !":n>=6?"Belle démolition !":n?"Quelques briques en moins":"Le château tient bon", st, `${n} bille${n>1?"s":""} sortie${n>1?"s":""} du cercle sur 10.${prize}${paid?"":FUN_NOTE}`, paid?rew:0);
     };
     A.hud = ()=>[["Tirs restants",A.shots],["Billes sorties",`${A.out} / 10`]];
@@ -5212,7 +5431,7 @@ function endCourse(){
   const pos = me.done ? A.rank.indexOf(me)+1 : 4;
   const gain = pos===1 ? bet*4 : pos===2 ? bet : 0, st = [3,2,1,0][pos-1];
   if(pos===1 && bet) S.stats.race++;
-  payOut(gain, st, pos===1?"course":null, bet>0);
+  payOut(gain, st, pos===1?"course":null, bet>0, "mise");
   const money = !bet ? " Partie pour de faux : rien de gagné, rien de perdu."
     : pos===1 ? ` Tu rafles les 4 mises : +${gain} ${CUR.many} !` : pos===2 ? " Tu récupères ta mise." : ` Ta mise de ${bet} ${CUR.many} est perdue.`;
   arenaResult(pos===1?"Maillot jaune !":pos===2?"Deuxième !":pos===3?"Sur le podium !":me.done?"Quatrième":"Pas fini…", st,
@@ -5231,12 +5450,13 @@ function endTic(res){
   const A = arena, bet = A.bet||0;
   if(res==="win"){
     if(bet) S.stats.tic++;
-    payOut(bet*2, 3, "tic", bet>0);
+    payOut(bet*2, 3, "tic", bet>0, "mise");
     arenaResult("Tic !", 3, `Tu as touché la bille de ${esc(A.foe.name)}. ${bet?`Tu rafles la mise : +${bet*2} ${CUR.many} !`:"Bien visé ! (partie pour de faux)"}`, bet*2);
   } else if(res==="lose"){
+    settleBet(0);
     arenaResult("Tic… pour lui !", 0, `${esc(A.foe.name)} a touché ta bille en premier. ${bet?`Ta mise de ${bet} ${CUR.many} est perdue, mais tu gardes ta bille.`:"Partie pour de faux : rien de perdu."}`, 0);
   } else {
-    payOut(bet, 0, null, false);
+    payOut(bet, 0, null, false, "mise");
     arenaResult("Match nul", null, `Personne n'a fait tic en 5 tirs.${bet?" Chacun récupère sa mise.":""}`, bet);
   }
 }
@@ -5280,7 +5500,7 @@ function viewCasse(){
     </section>
     <aside style="display:grid;gap:20px">
       <section class="panel"><div class="panel-head"><h3>Règles</h3></div><ul class="soon-list">${G.rules.map(r=>`<li>${r}</li>`).join("")}</ul></section>
-      <section class="panel"><div class="panel-head"><h3>Ta bille</h3><button class="see-all" data-action="nav" data-view="collection">Changer ${ic("chev",14)}</button></div>
+      <section class="panel"><div class="panel-head"><h3>Ta bille</h3><button class="see-all" data-action="to-collection">Changer ${ic("chev",14)}</button></div>
         ${act?`<div class="my-ball">${mImg(act,120,48,"")}<div><b>${esc(specName(act))}</b><small>${TYPES[act.type].label} · ${TYPES[act.type].mm} mm</small></div></div>`:""}</section>
     </aside>
   </div>`;
@@ -5454,7 +5674,7 @@ function cbFinish(){
   const paid = soloClaim("casse");
   S.stats.casse = Math.max(S.stats.casse||0, n);
   S.stats.casseScore = Math.max(S.stats.casseScore||0, cb.score);
-  payOut(paid?rew:0, st, "casse", paid);
+  payOut(paid?rew:0, st, "casse", paid, paid?"casse":null);
   const el = document.getElementById("c-result"); if(!el) return;
   el.innerHTML = `<div class="g-card"><h2>${n>=5?"Le mur est tombé !":n?"Bien joué !":"Raté !"}</h2><div class="stars">${[1,2,3].map(k=>STAR(k<=st)).join("")}</div>
     <p>${n} niveau${n>1?"x":""} réussi${n>1?"s":""} et ${fmt(cb.score)} points.${paid?"":FUN_NOTE}</p>
@@ -5570,7 +5790,7 @@ function viewSoon(){
         : `<p>Crée un compte pour garder ta collection en sécurité et la retrouver sur tous tes appareils.</p>
         <div style="display:flex;gap:10px;flex-wrap:wrap;margin-top:14px">${window.Cloud?.available ? `<button class="btn btn-yellow" data-action="acct-signup">Créer un compte</button><button class="btn btn-ghost" data-action="acct-login">Se connecter</button>` : `<p>Connexion impossible pour l'instant.</p>`}</div>`}
       </section>
-      <section class="panel"><div class="panel-head"><h3>Outils de test</h3></div>
+      ${devTools() ? `<section class="panel"><div class="panel-head"><h3>Outils de test</h3></div>
         <p>Pour tester sans attendre : ajoute des ${CUR.many}, recharge tout de suite le sac gratuit ou reçois une bille shiny.</p>
         <div style="display:flex;gap:10px;flex-wrap:wrap;margin-top:14px">
           <button class="btn btn-ghost" data-action="add-jetons">+ 1 000 ${CUR.many}</button>
@@ -5585,7 +5805,7 @@ function viewSoon(){
       <section class="panel"><div class="panel-head"><h3>Recommencer</h3></div>
         <p>Remet la boîte à billes, les ${CUR.many}, les records, le passe et les défis comme au premier lancement.</p>
         <div style="margin-top:14px"><button class="btn btn-ghost" data-action="reset" id="reset-btn">Réinitialiser la démo</button></div>
-      </section>
+      </section>` : ""}
     </div>`;
   const [title,lead,points] = SOON[ui.view] || ["Bientôt","",[]];
   let extra = "";
@@ -5605,6 +5825,226 @@ function viewSoon(){
 }
 
 /* =====================================================================
+   LA COUR DE RÉCRÉ : copains, troc, marché (supabase/cour.sql)
+   Tout se décide sur le serveur ; ici on affiche et on envoie les demandes.
+   ===================================================================== */
+var cour = {ok:null, moi:null, fil:null, trocs:null, marche:null, annonces:null, loading:{}, f:{taille:"", shiny:"", tri:"recent"},
+  compose:null, sell:null, specs:[]};
+const COUR_ERR = {inconnu:"Personne ne s'appelle comme ça dans la cour.", soi_meme:"C'est toi ! Donne plutôt ton pseudo à tes copains.",
+  deja_ami:"Vous êtes déjà copains.", trop_amis:"Tu as déjà 200 copains !", trop_demandes:"Tu as déjà beaucoup de demandes en attente.",
+  plus_de_demande:"Cette demande n'existe plus.", pas_ami:"Vous n'êtes pas (ou plus) copains.", bille_indisponible:"Une de ces billes n'est plus disponible.",
+  troc_invalide:"Ce troc n'est pas possible.", trop_trocs:"Tu as déjà 20 trocs en attente.", plus_de_troc:"Ce troc n'existe plus.",
+  prix_invalide:"Choisis un prix entre 1 et 1 000 000.", trop_annonces:"Tu as déjà 30 billes en vente.", plus_en_vente:"Cette bille n'est plus en vente.",
+  ta_bille:"C'est ta propre bille !", pas_assez:`Il te manque des ${CUR.many}.`, reseau:"Pas de connexion : réessaie dans un instant."};
+function courFail(e){ console.warn("Cour :", e); toast(COUR_ERR[e?.code] || "Oups, ça n'a pas marché. Réessaie dans un instant.") }
+const courCount = () => cour.moi ? (cour.moi.trocs||0) + (cour.moi.recues||[]).length : 0;
+// charge une partie de la cour, puis réaffiche si on y est toujours
+function courLoad(kind, force){
+  if(!srvOn() || cour.loading[kind] || (cour[kind] && !force)) return;
+  cour.loading[kind] = true;
+  const f = {moi:()=>Cloud.cour.moi(), fil:()=>Cloud.cour.fil(), trocs:()=>Cloud.cour.trocs(),
+    marche:()=>Cloud.cour.marche(cour.f), annonces:()=>Cloud.cour.annonces()}[kind];
+  f().then(d=>{ cour[kind] = d; cour.ok = true;
+      if(ui.view==="cour" || (kind==="fil" && ui.view==="accueil")) renderView();
+      if(kind==="moi") renderNav() },
+    e=>{ if(e.code==="serveur_absent") cour.ok = false; else if(ui.view==="cour") courFail(e); if(ui.view==="cour") renderView() })
+    .finally(()=>{ cour.loading[kind] = false });
+}
+const courRefresh = (...kinds) => kinds.forEach(k=>courLoad(k, true));
+// une bille vue dans la cour (celle d'un copain, d'une annonce…) : on peut l'ouvrir en grand
+function courSpec(s, note){ cour.specs.push(Object.assign({}, s, {cour:note||"Une bille de la cour de récré."})); return cour.specs.length-1 }
+const courBall = (s, px=46, note) => `<button data-action="cour-see" data-k="${courSpec(s, note)}" title="${esc(TYPES[s.type].label+" "+specName(s))}">${mImg(s,120,px,"")}</button>`;
+const courName = s => `${TYPES[s.type].label} ${specName(s)}`;
+const timeAgo = t => ago(typeof t==="number" ? t : Date.parse(t));
+
+// les billes qui ont changé de main (vendues, troquées, achetées) : la boîte se cale sur la base
+async function syncMarbles(){
+  if(!srvOn()) return;
+  let list; try{ list = await srv(()=>Cloud.billes(sync.uid)) }catch(e){ return }
+  const there = new Map(list.map(x=>[x.id,x])), here = new Set(S.specs.map(x=>x.id));
+  const gone = new Set(S.specs.filter(x=>sync.known.has(x.id) && !there.has(x.id)).map(x=>x.id));
+  const come = list.filter(x=>!here.has(x.id));
+  if(!gone.size && !come.length) return;
+  S.specs = S.specs.filter(x=>!gone.has(x.id)); gone.forEach(id=>sync.known.delete(id));
+  S.unseen = S.unseen.filter(id=>!gone.has(id));
+  S.vitrine = S.vitrine.map(id=>gone.has(id) ? null : id);
+  if(gone.has(S.active)) S.active = [...S.specs].sort(tierSort)[0]?.id;
+  come.forEach(x=>{ S.specs.push(x); S.unseen.push(x.id); sync.known.add(x.id) });
+  save(); renderTop(); renderNav();
+  if(ui.view!=="cour" && document.getElementById("ov").hidden) renderView();
+  if(come.length) toast(come.length>1 ? `${come.length} billes sont arrivées dans ta boîte !` : `${courName(come[0])} est arrivée dans ta boîte !`);
+}
+// de temps en temps : nouvelles demandes, trocs reçus, ventes (et les bonbecs qui vont avec)
+setInterval(()=>{ if(srvOn() && document.visibilityState==="visible"){ courLoad("moi", true); ecoRefresh(); syncMarbles() } }, 60000);
+
+function viewCour(){
+  cour.specs = [];
+  const head = `<div class="page-head"><div><h1>La cour de récré</h1><p>Retrouve tes copains, troque tes billes et fais de bonnes affaires au marché.</p></div><span class="hand-note">On échange ?</span></div>`;
+  if(!sync.on) return head + `<section class="panel cour-lock">${ic("cour",40)}<h2>Il te faut un compte</h2>
+    <p class="cour-lead">La cour, c'est pour échanger avec les autres joueurs : ta collection doit être sauvegardée sur ton compte.</p>
+    ${window.Cloud?.available ? `<div class="btns"><button class="btn btn-yellow" data-action="acct-signup">Créer un compte</button><button class="btn btn-ghost" data-action="acct-login">Se connecter</button></div>` : ""}</section>`;
+  if(!eco.ready || cour.ok===false) return head + `<section class="panel cour-lock">${ic("cour",40)}<h2>La cour ouvre bientôt</h2>
+    <p class="cour-lead">Le serveur de la cour n'est pas encore en place. Reviens un peu plus tard !</p></section>`;
+  courLoad("moi");
+  const tab = ui.courTab || "copains", M = cour.moi;
+  const tb = (k,l,n) => `<button class="tab" role="tab" data-action="cour-tab" data-tab="${k}" aria-selected="${tab===k}">${l}${n?`<span class="n">${n}</span>`:""}</button>`;
+  const tabs = `<div class="tabs cour-tabs" role="tablist">${tb("copains","Copains",(M?.recues||[]).length)}${tb("troc","Troc",M?.trocs||0)}${tb("marche","Marché")}</div>`;
+  const body = tab==="troc" ? courTroc() : tab==="marche" ? courMarche() : courCopains();
+  return head + tabs + body;
+}
+const courWait = () => `<p class="empty">Un instant…</p>`;
+
+function courCopains(){
+  const M = cour.moi; if(!M) return courWait();
+  courLoad("fil");
+  const rec = M.recues||[], env = M.envoyees||[], amis = M.amis||[];
+  return `<div class="cour-grid">
+    <section class="panel"><div class="panel-head"><h3>Ajouter un copain</h3><span class="sample-tag">Ton pseudo : ${esc(S.name)}</span></div>
+      <form class="cour-form" id="ami-form"><input type="text" id="ami-pseudo" maxlength="20" placeholder="Le pseudo de ton copain" autocomplete="off" aria-label="Pseudo"><button class="btn btn-yellow" type="submit">${ic("plus",16)} Ajouter</button></form>
+      <p class="cour-lead">Donne ton pseudo à tes copains. Une fois que vous vous êtes ajoutés, vous pouvez voir vos vitrines et vous proposer des trocs.</p></section>
+    ${rec.length ? `<section class="panel"><div class="panel-head"><h3>Ils veulent être tes copains</h3></div>
+      ${rec.map(r=>`<div class="cour-row"><span class="who">${esc(r.pseudo)}<small>${timeAgo(r.le)}</small></span>
+        <button class="btn btn-yellow btn-sm" data-action="ami-oui" data-id="${r.id}">Accepter</button><button class="btn btn-ghost btn-sm" data-action="ami-non" data-id="${r.id}">Refuser</button></div>`).join("")}</section>` : ""}
+    <section class="panel"><div class="panel-head"><h3>Mes copains <small class="meta">${amis.length}</small></h3></div>
+      ${amis.length ? `<div class="friends">${amis.map(a=>`<div class="friend"><span class="ball">${a.active ? mImg(a.active,120,Math.round(40*scaleOf(a.active.type)+18),"") : ""}</span>
+          <b>${esc(a.pseudo)}</b><small>${esc(a.titre||"")}</small>
+          <div class="acts"><button class="btn btn-ghost btn-sm" data-action="ami-voir" data-id="${a.id}">Voir</button><button class="btn btn-yellow btn-sm" data-action="troc-new" data-id="${a.id}">Troquer</button></div></div>`).join("")}</div>`
+        : `<p class="empty">Pas encore de copain. Ajoute quelqu'un avec son pseudo !</p>`}
+      ${env.length ? `<p class="meta" style="margin-top:14px">En attente de réponse : ${env.map(r=>`<b>${esc(r.pseudo)}</b> <button class="see-all" data-action="ami-retirer" data-id="${r.id}">annuler</button>`).join(" · ")}</p>` : ""}
+    </section>
+    ${cour.fil && cour.fil.length ? `<section class="panel"><div class="panel-head"><h3>Les trouvailles des copains</h3><span class="sample-tag">Boulets, Mammouths et shiny</span></div>
+      ${cour.fil.map(e=>`<div class="cour-row">${courBall(e.s,44,`Trouvée par ${e.who}.`)}<span class="who">${esc(e.who)} a trouvé ${e.s.shiny?"une shiny ":""}${esc(courName(e.s))}<small>${timeAgo(e.at)}</small></span></div>`).join("")}</section>` : ""}
+  </div>`;
+}
+
+async function openProfil(id){
+  const el = document.getElementById("modal");
+  let P; try{ P = await Cloud.cour.profil(id) }catch(e){ courFail(e); return }
+  cour.specs = cour.specs || [];
+  el.innerHTML = `<div class="modal profil" role="dialog" aria-modal="true" aria-label="${esc(P.pseudo)}">
+    <button class="close-x" data-action="close-modal" aria-label="Fermer">×</button>
+    <div class="pf-body">
+      ${P.active ? mImg(P.active,240,96,"") : ""}
+      <h2>${esc(P.pseudo)}</h2>${P.titre?`<span class="pill" style="--rc:var(--ink-2);--rb:var(--panel-2)">${esc(P.titre)}</span>`:""}
+      <div class="pf-stats"><div><b>${fmt(P.billes)}</b><small>Billes</small></div><div><b>${fmt(P.cases)}</b><small>Cases</small></div><div><b>${fmt(P.shiny)}</b><small>Shiny</small></div></div>
+      ${P.vitrine.length ? `<div><div class="lbl" style="margin-bottom:6px">Sa vitrine</div><div class="troc-balls" style="justify-content:center">${P.vitrine.map(x=>courBall(x,64,`Dans la vitrine de ${P.pseudo}.`)).join("")}</div></div>` : ""}
+      ${P.trouvailles.length ? `<div><div class="lbl" style="margin-bottom:6px">Ses belles trouvailles</div><div class="troc-balls" style="justify-content:center">${P.trouvailles.map(x=>courBall(x,52,`Une belle trouvaille de ${P.pseudo}.`)).join("")}</div></div>` : ""}
+      <div class="troc-act"><button class="btn btn-yellow" data-action="troc-new" data-id="${P.id}">Lui proposer un troc</button>
+        <button class="btn btn-ghost" data-action="ami-retirer" data-id="${P.id}" data-pseudo="${esc(P.pseudo)}">Retirer de mes copains</button></div>
+    </div></div>`;
+  el.hidden = false;
+}
+
+// ---------- troc ----------
+const TROC_ST = {accepte:"Accepté", refuse:"Refusé", annule:"Annulé", impossible:"Plus possible"};
+function trocCard(t, kind){
+  const me = kind==="recu" ? "vers" : "de";
+  const get = me==="vers" ? t.donne : t.demande, give = me==="vers" ? t.demande : t.donne;
+  const other = me==="vers" ? t.de_pseudo : t.vers_pseudo;
+  const side = (lbl, list) => `<div class="troc-side"><small>${lbl}</small><div class="troc-balls">${list.length ? list.map(x=>courBall(x,48)).join("") : `<span class="meta">rien</span>`}</div></div>`;
+  return `<div class="troc${kind==="fini"?" fini":""}">
+    <div class="troc-head">${kind==="recu" ? `<span><b>${esc(other)}</b> te propose un troc</span>` : kind==="envoye" ? `<span>Ton troc avec <b>${esc(other)}</b></span>` : `<span>Troc avec <b>${esc(t.de_pseudo===S.name?t.vers_pseudo:t.de_pseudo)}</b></span><span class="st">${TROC_ST[t.statut]||t.statut}</span>`}<time>${timeAgo(t.le)}</time></div>
+    <div class="troc-sides">${side("Tu reçois", get)}<span class="troc-arrow">${ic("swap",22)}</span>${side("Tu donnes", give)}</div>
+    ${t.mot ? `<p class="troc-mot">« ${esc(t.mot)} »</p>` : ""}
+    ${kind==="recu" ? `<div class="troc-act"><button class="btn btn-yellow btn-sm" data-action="troc-oui" data-id="${t.id}">${ic("check",16)} Accepter</button><button class="btn btn-ghost btn-sm" data-action="troc-non" data-id="${t.id}">Refuser</button></div>`
+      : kind==="envoye" ? `<div class="troc-act"><button class="btn btn-ghost btn-sm" data-action="troc-annuler" data-id="${t.id}">Annuler ce troc</button></div>` : ""}
+  </div>`;
+}
+function courTroc(){
+  if(cour.compose) return trocCompose();
+  courLoad("trocs");
+  const T = cour.trocs, amis = cour.moi?.amis || [];
+  if(!T) return courWait();
+  return `<div class="cour-grid">
+    <section class="panel"><div class="panel-head"><h3>Proposer un troc</h3></div>
+      ${amis.length ? `<div class="chips">${amis.map(a=>`<button class="chip" data-action="troc-new" data-id="${a.id}">${esc(a.pseudo)}</button>`).join("")}</div>
+        <p class="cour-lead">Choisis un copain, puis les billes que tu donnes et celles que tu voudrais. Il reçoit ta proposition et décide.</p>`
+        : `<p class="cour-lead">Pour troquer, ajoute d'abord des copains dans l'onglet Copains.</p>`}</section>
+    <section class="panel"><div class="panel-head"><h3>On te propose</h3></div>${T.recus.length ? T.recus.map(t=>trocCard(t,"recu")).join("") : `<p class="empty">Aucun troc reçu pour l'instant.</p>`}</section>
+    ${T.envoyes.length ? `<section class="panel"><div class="panel-head"><h3>Tu as proposé</h3></div>${T.envoyes.map(t=>trocCard(t,"envoye")).join("")}</section>` : ""}
+    ${T.finis.length ? `<section class="panel"><div class="panel-head"><h3>Derniers trocs</h3></div>${T.finis.map(t=>trocCard(t,"fini")).join("")}</section>` : ""}
+  </div>`;
+}
+const pickCard = (x, side, on) => `<button class="pick" data-action="troc-pick" data-side="${side}" data-id="${x.id}" aria-pressed="${on}"><span class="ball">${mImg(x,120,Math.round(28*scaleOf(x.type)+16),"")}</span>${esc(specName(x))}<small class="meta">${TYPES[x.type].label}</small></button>`;
+function pickList(list, side, sel, filt){
+  if(!list) return courWait();
+  const shown = list.filter(x=>!filt || x.type===filt);
+  const chips = `<div class="pick-filters"><button class="chip" data-action="troc-filt" data-side="${side}" data-t="" aria-pressed="${!filt}">Toutes</button>${TK.filter(t=>list.some(x=>x.type===t)).map(t=>`<button class="chip" data-action="troc-filt" data-side="${side}" data-t="${t}" aria-pressed="${filt===t}">${TYPES[t].pl}</button>`).join("")}</div>`;
+  return list.length ? chips + `<div class="pick-grid">${shown.map(x=>pickCard(x, side, sel.includes(x.id))).join("")}</div>` : `<p class="empty">Aucune bille à troquer.</p>`;
+}
+function trocCompose(){
+  const C = cour.compose;
+  return `<div class="cour-grid">
+    <section class="panel"><div class="panel-head"><h3>Troc avec ${esc(C.pseudo)}</h3><button class="see-all" data-action="troc-close">${ic("chevl",14)} Retour</button></div>
+      <p class="cour-lead">Jusqu'à 6 billes de chaque côté. Seules les billes tirées dans les sacs, les fusions ou le passe peuvent être troquées (pas les billes de départ ni les billes secrètes).</p></section>
+    <div class="compose">
+      <section class="panel"><div class="panel-head"><h3>Tu donnes</h3><span class="sample-tag">${C.give.length} / 6</span></div>${pickList(C.mine, "give", C.give, C.fg)}</section>
+      <section class="panel"><div class="panel-head"><h3>Tu demandes à ${esc(C.pseudo)}</h3><span class="sample-tag">${C.want.length} / 6</span></div>${pickList(C.theirs, "want", C.want, C.fw)}</section>
+    </div>
+    <section class="panel"><form class="cour-form" id="troc-form"><input type="text" id="troc-mot" maxlength="140" placeholder="Un petit mot (facultatif)" value="${esc(C.mot||"")}" aria-label="Petit mot">
+      <button class="btn btn-yellow" type="submit" ${C.give.length+C.want.length?"":"disabled"}>${ic("swap",18)} Envoyer la proposition</button></form></section>
+  </div>`;
+}
+function trocStart(id){
+  const a = (cour.moi?.amis||[]).find(x=>x.id===id); if(!a) return;
+  cour.compose = {id, pseudo:a.pseudo, mine:null, theirs:null, give:[], want:[], mot:""};
+  ui.courTab = "troc"; closeModal(); if(ui.view!=="cour") go("cour"); else renderView();
+  const C = cour.compose;
+  // tes billes : sans la bille active ni celles de ta vitrine
+  Cloud.cour.echangeables(sync.uid).then(l=>{ if(cour.compose===C){ C.mine = l.filter(x=>x.id!==S.active && !S.vitrine.includes(x.id)); renderView() } }, courFail);
+  Cloud.cour.echangeables(id).then(l=>{ if(cour.compose===C){ C.theirs = l; renderView() } }, courFail);
+}
+
+// ---------- marché ----------
+function courMarche(){
+  if(cour.sell) return sellView();
+  courLoad("marche"); courLoad("annonces");
+  const L = cour.marche, A = cour.annonces, f = cour.f;
+  const sel = (id, opts, v) => `<select id="${id}" aria-label="${id}">${opts.map(([k,l])=>`<option value="${k}"${v===k?" selected":""}>${l}</option>`).join("")}</select>`;
+  const card = a => { const x = a.bille;
+    return `<div class="mk${a.moi?" mine":""}"><span class="ball" data-action="cour-see" data-k="${courSpec(x, a.moi?"Ta bille en vente.":`En vente par ${a.vendeur}.`)}">${mImg(x,160,Math.round(44*scaleOf(x.type)+22),"")}</span>
+      <b>${esc(specName(x))}</b><span style="display:flex;gap:4px;flex-wrap:wrap;justify-content:center">${typePill(x.type)}${shinyPill(x)}</span>
+      <span class="price">${COIN}${fmt(a.prix)}</span>
+      <small>${a.moyen?`Prix moyen : ${fmt(a.moyen)} · `:""}${a.moi?"ta bille":`par ${esc(a.vendeur)}`}</small>
+      ${a.moi ? `<button class="btn btn-ghost btn-sm" data-action="mk-retirer" data-id="${a.id}">Retirer</button>`
+        : `<button class="btn btn-yellow btn-sm" data-action="mk-acheter" data-id="${a.id}" data-prix="${a.prix}" ${S.jetons<a.prix?"disabled":""}>Acheter</button>`}</div>` };
+  const mine = (A||[]);
+  return `<div class="cour-grid">
+    <section class="panel"><div class="panel-head"><h3>Le marché</h3><button class="btn btn-yellow btn-sm" data-action="mk-vendre">${ic("candy",16)} Vendre une bille</button></div>
+      <div class="cour-form" id="mk-filters">
+        ${sel("mk-taille", [["","Toutes les tailles"], ...TK.map(t=>[t,TYPES[t].pl])], f.taille)}
+        ${sel("mk-shiny", [["","Shiny ou pas"],["1","Shiny seulement"],["0","Sans shiny"]], f.shiny)}
+        ${sel("mk-tri", [["recent","Plus récentes"],["prix","Moins chères"],["rare","Plus rares"]], f.tri)}
+      </div>
+      <p class="cour-lead">Chacun fixe son prix, et le vendeur reçoit tous les ${CUR.many}. Le prix moyen montre ce que les joueurs ont payé ce modèle ces 30 derniers jours.</p></section>
+    ${!L ? courWait() : L.length ? `<div class="mk-grid">${L.map(card).join("")}</div>` : `<p class="empty">Rien en vente avec ces filtres pour l'instant.</p>`}
+    ${mine.length ? `<section class="panel"><div class="panel-head"><h3>Mes annonces</h3></div><div class="mk-grid">${mine.map(a=>{ const x=a.bille;
+      return `<div class="mk mine${a.vendue?" sold":""}"><span class="ball" data-action="cour-see" data-k="${courSpec(x)}">${mImg(x,160,Math.round(40*scaleOf(x.type)+20),"")}</span><b>${esc(specName(x))}</b>
+        <span class="price">${COIN}${fmt(a.prix)}</span>
+        ${a.vendue ? `<small>Vendue à ${esc(a.acheteur||"?")}</small>` : `<button class="btn btn-ghost btn-sm" data-action="mk-retirer" data-id="${a.id}">Retirer</button>`}</div>` }).join("")}</div></section>` : ""}
+  </div>`;
+}
+function sellStart(pick){
+  cour.sell = {list:null, pick:pick||null, prix:""};
+  ui.courTab = "marche"; closeModal(); if(ui.view!=="cour") go("cour"); else renderView();
+  const X = cour.sell;
+  Cloud.cour.echangeables(sync.uid).then(l=>{ if(cour.sell===X){ X.list = l.filter(x=>x.id!==S.active); renderView() } }, courFail);
+}
+function sellView(){
+  const X = cour.sell, p = X.pick && (X.list||[]).find(x=>x.id===X.pick);
+  return `<div class="cour-grid">
+    <section class="panel"><div class="panel-head"><h3>Vendre une bille</h3><button class="see-all" data-action="mk-close">${ic("chevl",14)} Retour</button></div>
+      ${p ? `<div class="cour-row">${mImg(p,120,56,"")}<span class="who">${esc(courName(p))}<small>À la Confiserie, elle vaut ${fmt(recycleValue(p))} ${CUR.many}.</small></span></div>
+        <form class="cour-form" id="sell-form"><input type="number" id="sell-prix" min="1" max="1000000" step="1" placeholder="Prix" value="${X.prix||""}" aria-label="Prix en ${CUR.many}" required>
+          <span class="meta">${CUR.many}</span><button class="btn btn-yellow" type="submit">Mettre en vente</button></form>
+        <p class="cour-lead">Tu peux la retirer quand tu veux tant que personne ne l'a achetée. Pendant qu'elle est en vente, elle ne peut pas être troquée.</p>`
+        : `<p class="cour-lead">Choisis la bille à vendre. Ta bille active, les billes de départ et les billes secrètes ne peuvent pas être vendues.</p>`}
+    </section>
+    <section class="panel">${pickList(X.list, "sell", X.pick?[X.pick]:[], X.f)}</section>
+  </div>`;
+}
+
+/* =====================================================================
    INTERACTIONS
    ===================================================================== */
 let toastT;
@@ -5615,9 +6055,61 @@ document.addEventListener("click", e=>{
   if(e.target.id==="modal"){ closeModal(); return }
   if(e.target.id==="mj-sheet"){ openDay(false); return }
   const t = e.target.closest("[data-action]"); if(!t) return;
+  if(DEV_ACTIONS.includes(t.dataset.action) && !devTools()) return;
   switch(t.dataset.action){
     case "nav": closeModal(); openDay(false); if(t.dataset.conftab) ui.confTab=t.dataset.conftab; go(t.dataset.view); break;
     case "conf-tab": ui.confTab=t.dataset.tab; renderView(); break;
+    // ----- la cour de récré -----
+    case "cour-tab": ui.courTab = t.dataset.tab; cour.compose = null; cour.sell = null;
+      if(t.dataset.tab==="troc") courRefresh("trocs"); if(t.dataset.tab==="marche") courRefresh("marche","annonces");
+      renderView(); break;
+    case "cour-see": openModal(null, cour.specs[+t.dataset.k]); break;
+    case "ami-oui": case "ami-non": {
+      const oui = t.dataset.action==="ami-oui";
+      Cloud.cour.repondre(t.dataset.id, oui).then(()=>{ toast(oui ? "Vous êtes maintenant copains !" : "Demande refusée."); courRefresh("moi","fil") }, courFail);
+      break;
+    }
+    case "ami-voir": openProfil(t.dataset.id); break;
+    case "ami-retirer": {
+      if(t.dataset.pseudo && !arm("ami-retirer"+t.dataset.id, t, "Sûr ? Clique encore")) break;
+      Cloud.cour.retirer(t.dataset.id).then(()=>{ closeModal(); toast(t.dataset.pseudo ? `${t.dataset.pseudo} n'est plus dans tes copains.` : "Demande annulée."); courRefresh("moi","fil") }, courFail);
+      break;
+    }
+    case "troc-new": trocStart(t.dataset.id); break;
+    case "troc-close": cour.compose = null; renderView(); break;
+    case "troc-filt": { const X = t.dataset.side==="sell" ? cour.sell : cour.compose; if(!X) break;
+      X[{give:"fg", want:"fw", sell:"f"}[t.dataset.side]] = t.dataset.t; renderView(); break }
+    case "troc-pick": {
+      if(t.dataset.side==="sell"){ cour.sell.pick = t.dataset.id; renderView(); document.getElementById("sell-prix")?.focus(); break }
+      const C = cour.compose, list = t.dataset.side==="give" ? C.give : C.want, i = list.indexOf(t.dataset.id);
+      C.mot = document.getElementById("troc-mot")?.value || C.mot;
+      if(i>=0) list.splice(i,1); else if(list.length<6) list.push(t.dataset.id); else { toast("6 billes au maximum de chaque côté."); break }
+      renderView(); break;
+    }
+    case "troc-oui": case "troc-non": {
+      const oui = t.dataset.action==="troc-oui";
+      if(oui && !arm("troc"+t.dataset.id, t, "Sûr ? Clique encore")) break;
+      Cloud.cour.repondreTroc(+t.dataset.id, oui).then(r=>{
+        toast(r.statut==="accepte" ? "Troc fait ! Tes nouvelles billes sont dans ta boîte." : r.statut==="impossible" ? "Ce troc n'est plus possible : une des billes n'est plus disponible." : "Troc refusé.");
+        if(r.statut==="accepte"){ Sound.coin(); syncMarbles() }
+        courRefresh("trocs","moi");
+      }, courFail);
+      break;
+    }
+    case "troc-annuler": Cloud.cour.annuler(+t.dataset.id).then(()=>{ toast("Troc annulé."); courRefresh("trocs") }, courFail); break;
+    case "mk-vendre": sellStart(); break;
+    case "cour-sell-this": sellStart(t.dataset.id); break;
+    case "mk-close": cour.sell = null; renderView(); break;
+    case "mk-retirer": Cloud.cour.retirerAnnonce(+t.dataset.id).then(()=>{ toast("Annonce retirée : la bille reste dans ta boîte."); courRefresh("marche","annonces") }, courFail); break;
+    case "mk-acheter": {
+      if(!arm("mk"+t.dataset.id, t, `Payer ${fmt(+t.dataset.prix)} ?`)) break;
+      srv(()=>Cloud.cour.acheter(+t.dataset.id)).then(r=>{
+        applyEco(r.eco); const x = srvAdopt([r.bille])[0];
+        if(!specById(x.id)){ S.specs.push(x); S.unseen.push(x.id) } save();
+        Sound.coin(); toast(`${courName(x)} est à toi !`); courRefresh("marche","annonces");
+      }, e=>{ courFail(e); courRefresh("marche") });
+      break;
+    }
     case "tab": if(t.dataset.tab==="defis"){ closeModal(); go("succes"); break }
       ui.tab=t.dataset.tab; closeModal(); if(ui.view!=="collection") go("collection"); else renderView(); break;
     case "ftype": ui.type=t.dataset.type; renderView(); break;
@@ -5632,6 +6124,7 @@ document.addEventListener("click", e=>{
     case "theme": Theme.toggle(); renderThemeBtn(); break;
     case "seen-all": S.unseen = []; save(); renderView(); break;
     case "give-shiny": {
+      if(sync.on && eco.ready){ srv(()=>Cloud.eco.test("shiny")).then(r=>{ const s = srvAdopt([r.bille])[0]; S.specs.push(s); S.unseen.push(s.id); applyEco(r.eco); renderView(); openModal(s.id) }, srvFail); break }
       const s = makeSpec(TK[2+Math.floor(Math.random()*(TK.length-2))], {shiny:1+Math.floor(Math.random()*3)});
       S.specs.push(s); S.unseen.push(s.id); save(); renderTop(); renderView(); openModal(s.id);
       toast(`Nouvelle shiny ${SHINIES[s.shiny].name} : ${specName(s)} (démo).`);
@@ -5676,7 +6169,10 @@ document.addEventListener("click", e=>{
     case "c-restart": initCasse(); break;
     case "bet": {
       const v = +t.dataset.v; if(S.jetons<v) break;
-      S.jetons -= v; save(); renderTop(); initArena(ui.view, v);
+      S.jetons -= v; save(); renderTop();
+      betP = v && srvOn() ? srv(()=>Cloud.eco.bet(ui.view, v)).then(r=>{ applyEco(r.eco); return r }) : null;
+      betP?.catch(srvFail);
+      initArena(ui.view, v);
       toast(v ? `Mise de ${v} ${CUR.many} : bonne chance !` : "Partie pour de faux : rien à gagner, rien à perdre.");
       break;
     }
@@ -5684,7 +6180,7 @@ document.addEventListener("click", e=>{
     case "daily-claim": {
       const r = claimDaily(); if(!r) break; save();
       Sound.coin(); Sound.ding(); closeModal(); renderTop(); renderNav(); renderView();
-      toast(`+${fmt(r.j)} ${CUR.many}${r.bags?" et un Sac Premium":""} ! À demain pour le jour ${r.idx===6?1:r.idx+2}.`);
+      toast(`${dailyText(r).replace(/^un /,"Un ")} ! À demain pour le jour ${dailyDay(r.streak+1)+1}.`);
       break;
     }
     case "mj-open": openDay(true); break;
@@ -5697,25 +6193,34 @@ document.addEventListener("click", e=>{
     case "craft-toggle": {
       const C = ui.craft, id = t.dataset.id, i = C.sel.indexOf(id);
       if(i>=0) C.sel.splice(i,1);
-      else if(C.sel.length<CRAFT_N) C.sel.push(id);
-      else { toast(`Il y a déjà ${CRAFT_N} billes dans la fusion.`); break }
+      else if(C.sel.length<craftN(C.t)) C.sel.push(id);
+      else { toast(`Il y a déjà ${craftN(C.t)} billes dans la fusion.`); break }
       renderView(); break;
     }
     case "craft-auto": ui.craft.sel = craftAuto(ui.craft.t); renderView(); break;
     case "craft-clear": ui.craft.sel = []; renderView(); break;
     case "craft-go": {
       const C = ui.craft, pool = craftPool(C.t);
-      if(C.t>=TK.length-1 || C.sel.length!==CRAFT_N || !C.sel.every(id=>pool.some(s=>s.id===id))) break;
+      if(C.t>=TK.length-1 || C.sel.length!==craftN(C.t) || !C.sel.every(id=>pool.some(s=>s.id===id))) break;
       if(!arm("craft", t, "Confirmer la fusion")) break;
       const inputs = C.sel.map(specById), gone = new Set(C.sel);
-      gone.forEach(id=>sync.why[id]="fusionnee");
+      const done = out => {
+        S.specs.push(out); S.unseen.push(out.id);
+        if(tierOf(out)>=BIG || out.shiny) logFind(out);
+        S.crafts = (S.crafts||0)+1; C.sel = []; save(); questEvent("craft");
+        showCraft(inputs, out, passXP(PASS_XP.craft));
+      };
       S.specs = S.specs.filter(s=>!gone.has(s.id));
       S.unseen = S.unseen.filter(id=>!gone.has(id));
-      const out = craftResult(C.t+1);
-      S.specs.push(out); S.unseen.push(out.id);
-      if(tierOf(out)>=BIG || out.shiny) logFind(out);
-      S.crafts = (S.crafts||0)+1; C.sel = []; save(); questEvent("craft");
-      showCraft(inputs, out, passXP(PASS_XP.craft));
+      if(srvOn()){   // c'est le serveur qui tire la nouvelle bille
+        if(eco.busy) break; eco.busy = true;
+        gone.forEach(id=>sync.known.delete(id));
+        srv(()=>Cloud.eco.fuse([...gone])).then(r=>{ applyEco(r.eco); done(srvAdopt([r.bille])[0]) },
+          e=>{ inputs.forEach(x=>{ S.specs.push(x); sync.known.add(x.id) }); srvFail(e); renderView() }).finally(()=>{ eco.busy = false });
+        break;
+      }
+      gone.forEach(id=>sync.why[id]="fusionnee");
+      done(craftResult(C.t+1));
       break;
     }
     case "craft-again": closeOv(); ui.craft.sel = craftAuto(ui.craft.t); renderView(); break;
@@ -5787,7 +6292,7 @@ document.addEventListener("click", e=>{
       break;
     }
     case "sound": Sound.toggle(); renderSoundBtn(); toast(Sound.on?"Son activé.":"Son coupé."); break;
-    case "reveal": reveal(+t.dataset.i); break;
+    case "reveal": { const i=+t.dataset.i; if(ovState?.opened.has(i)) reveal(i); else revealDrama(i); break }
     case "reveal-all": revealAll(t); break;
     case "buy-again": openBag(ovState.bag.id, ovState.gift); break;
     case "to-bags": closeOv(); go("sacs"); break;
@@ -5797,15 +6302,42 @@ document.addEventListener("click", e=>{
     case "g-restart": loadLevel(game.lvl); break;
     case "g-level": loadLevel(+t.dataset.l); break;
     case "pass-xp": passXP(3*TIER_XP); renderNav(); toast("+3 paliers de passe (démo)."); break;
-    case "add-jetons": S.jetons+=1000; save(); renderTop(); toast(`+1 000 ${CUR.many} ajoutés (démo).`); break;
-    case "refill-free": S.freeT0=Date.now()-FREE_MAX*FREE_EVERY; save(); renderTop(); renderNav(); renderView(); toast(`${FREE_MAX} sacs gratuits en stock (démo).`); break;
+    case "add-jetons": if(sync.on && eco.ready){ srv(()=>Cloud.eco.test("bonbecs")).then(r=>{ applyEco(r.eco); toast(`+1 000 ${CUR.many} (test).`) }, srvFail); break }
+      S.jetons+=1000; save(); renderTop(); toast(`+1 000 ${CUR.many} ajoutés (démo).`); break;
+    case "refill-free": if(sync.on && eco.ready){ srv(()=>Cloud.eco.test("gratuit")).then(r=>{ applyEco(r.eco); renderView(); toast(`${FREE_MAX} sacs gratuits en stock (test).`) }, srvFail); break }
+      S.freeT0=Date.now()-FREE_MAX*FREE_EVERY; save(); renderTop(); renderNav(); renderView(); toast(`${FREE_MAX} sacs gratuits en stock (démo).`); break;
     case "reset":
       if(!resetArmed){ resetArmed=true; t.textContent="Clique encore pour confirmer"; setTimeout(()=>{resetArmed=false; const b=document.getElementById("reset-btn"); if(b) b.textContent="Réinitialiser la démo"},3000); break }
-      resetArmed=false; S=starterState(); save(); renderTop(); renderNav(); renderView(); toast("La démo est revenue à zéro."); break;
+      resetArmed=false; S=starterState(); save(); ecoRefresh(); renderTop(); renderNav(); renderView(); toast("La démo est revenue à zéro."); break;
   }
 });
+document.addEventListener("change", e=>{
+  const k = {"mk-taille":"taille", "mk-shiny":"shiny", "mk-tri":"tri"}[e.target.id];
+  if(k){ cour.f[k] = e.target.value; courRefresh("marche") }
+});
 document.addEventListener("submit", e=>{
-  if(e.target.id!=="name-form") return;
+  const id = e.target.id;
+  if(id==="ami-form"){
+    e.preventDefault();
+    const v = document.getElementById("ami-pseudo").value.trim(); if(!v) return;
+    Cloud.cour.ajouter(v).then(r=>{ toast(r==="ami" ? `${v} t'avait déjà demandé : vous êtes copains !` : `Demande envoyée à ${v}.`); courRefresh("moi","fil") }, courFail);
+    return;
+  }
+  if(id==="troc-form"){
+    e.preventDefault();
+    const C = cour.compose; if(!C) return;
+    const mot = document.getElementById("troc-mot").value;
+    Cloud.cour.proposer(C.id, C.give, C.want, mot).then(()=>{ toast(`Proposition envoyée à ${C.pseudo} !`); cour.compose = null; courRefresh("trocs") }, courFail);
+    return;
+  }
+  if(id==="sell-form"){
+    e.preventDefault();
+    const X = cour.sell, prix = Math.round(+document.getElementById("sell-prix").value);
+    if(!X?.pick || !(prix>=1)) return;
+    Cloud.cour.vendre(X.pick, prix).then(()=>{ toast(`En vente pour ${fmt(prix)} ${CUR.many} !`); cour.sell = null; courRefresh("marche","annonces") }, courFail);
+    return;
+  }
+  if(id!=="name-form") return;
   e.preventDefault();
   const v = e.target.pseudo.value.trim().replace(/\s+/g," ");
   if(!/^[\p{L}\p{N}_\- ]{3,20}$/u.test(v)){ toast("Ton pseudo doit faire 3 à 20 caractères : lettres, chiffres, espaces, - et _."); return }
@@ -5849,6 +6381,55 @@ setInterval(()=>{
    Le reste de la partie (bonbecs, titres, défis…) est une sauvegarde en bloc.
    ===================================================================== */
 var sync = {on:false, uid:null, email:"", known:new Set(), timer:0, busy:false, again:false, edits:0, why:{}};
+
+/* ---------- le serveur décide (supabase/serveur.sql) ----------
+   Avec un compte, les bonbecs, les sacs offerts, le sac gratuit et les billes tirées viennent du serveur :
+   le jeu affiche tout de suite, puis se cale sur ce que le serveur répond. Sans compte (ou si serveur.sql
+   n'est pas encore installé), tout reste calculé ici comme avant. */
+var eco = {ready:false, q:Promise.resolve(), testeur:false, busy:false};
+// outils de test : pour les comptes testeurs, ou quand le jeu tourne sur l'ordinateur (pas en ligne)
+const DEV_HOST = location.protocol==="file:" || /^(localhost|127\.0\.0\.1|)$/.test(location.hostname);
+const devTools = () => sync.on ? eco.testeur : DEV_HOST;
+const DEV_ACTIONS = ["add-jetons","refill-free","give-shiny","pass-xp","daily-reset","pity-max","reset"];
+function srvOn(){ return !!(sync.on && eco.ready) }
+// les appels partent un par un, dans l'ordre : le dernier état reçu est toujours le bon
+function srv(fn){ const p = eco.q.then(fn); eco.q = p.catch(()=>{}); return p }
+function applyEco(e){
+  if(!e) return;
+  S.jetons = e.bonbecs; S.bagInv = Object.assign({}, e.sacs||{}); S.freeT0 = e.gratuit_t0; S.pity = e.pity;
+  if(e.serie_jour){ const [y,m,d] = e.serie_jour.split("-").map(Number); S.daily = {last:`${y}-${m}-${d}`, streak:e.serie} }
+  eco.testeur = !!e.testeur;
+  save(); renderTop(); renderNav();
+}
+const ECO_ERR = {pas_assez:`Il te manque des ${CUR.many}.`, pas_encore:"Ton sac gratuit n'est pas encore prêt.", plus_de_sac:"Tu n'as plus de sac offert de ce type.",
+  reseau:"Pas de connexion : réessaie dans un instant.", fusion_invalide:"Cette fusion n'est pas possible.", reserve_aux_testeurs:"Ces outils sont réservés aux comptes de test."};
+function srvFail(e){
+  console.warn("Serveur :", e);
+  if(e?.code!=="deja") toast(ECO_ERR[e?.code] || "Le serveur n'a pas pu enregistrer ça. Réessaie dans un instant.");
+  srv(()=>Cloud.eco.state()).then(applyEco, ()=>{});
+}
+// un gain (quête, jeu, succès, passe…) : compté tout de suite, confirmé ou corrigé par le serveur
+function earn(source, cle, j, bag){
+  if(j) S.jetons += j; if(bag) S.bagInv[bag] = (S.bagInv[bag]||0)+1;
+  if(srvOn()) srv(()=>Cloud.eco.gain(source, cle, j||0, bag)).then(applyEco, srvFail);
+}
+// une bille créée ici dont le serveur fixe tout (billes du passe, billes secrètes) : même identifiant des deux côtés
+function srvMint(sp, source, cle){
+  if(!srvOn()) return;
+  sp.pend = true;   // pas envoyée par la sauvegarde habituelle : c'est le serveur qui la crée
+  srv(()=>Cloud.eco.marble(source, cle, sp.seed, sp.id)).then(r=>{ delete sp.pend; sp.srv = true; sp.no = r.bille.no; sync.known.add(sp.id); applyEco(r.eco) },
+    e=>{ delete sp.pend; srvFail(e) });
+}
+// billes tirées par le serveur : déjà en base
+function srvAdopt(list){ list.forEach(x=>sync.known.add(x.id)); return list }
+// première connexion avec le serveur : il reprend les bonbecs et les sacs offerts de la partie
+async function ecoStart(){
+  try{ applyEco(await Cloud.eco.start(S.jetons, S.bagInv||{}, S.pity||0)); eco.ready = true }
+  catch(e){ eco.ready = false; if(e.code!=="serveur_absent") console.warn("Serveur indisponible, la partie continue sur l'appareil", e) }
+}
+function ecoRefresh(){ if(srvOn()) srv(()=>Cloud.eco.state()).then(applyEco, ()=>{}) }
+// une fois connecté au serveur : les nouvelles de la cour (demandes, trocs) et les billes reçues entre-temps
+function courStart(){ if(!srvOn()) return; courLoad("moi", true); syncMarbles() }
 const DEVICE = (()=>{ try{ let d = localStorage.getItem("billy-device"); if(!d){ d = newId(); localStorage.setItem("billy-device", d) } return d }catch(e){ return newId() } })();
 const GUEST_FLAG = "billy-guest";   // le joueur a choisi de jouer sans compte sur cet appareil
 const lsGet = k => { try{ return localStorage.getItem(k) }catch(e){ return null } };
@@ -5868,7 +6449,7 @@ async function cloudFlush(){
   const edits = sync.edits;
   try{
     const ids = new Set(S.specs.map(s=>s.id));
-    const add = S.specs.filter(s=>!sync.known.has(s.id));
+    const add = S.specs.filter(s=>!sync.known.has(s.id) && !s.pend);
     const gone = [...sync.known].filter(id=>!ids.has(id));
     if(add.length){
       const rows = await Cloud.addBilles(add);
@@ -5952,7 +6533,9 @@ async function cloudStart0(user){
       adoptState(st);
     }
     if(P.profil) S.name = P.profil.pseudo;
-    sync.on = true; save(); authHide(); rerenderAll();
+    sync.on = true; save();
+    await ecoStart();
+    authHide(); rerenderAll(); courStart();
     return;
   }
   // premier passage de ce compte : on récupère (ou pas) la collection jouée sans compte
@@ -5965,11 +6548,14 @@ async function cloudStart0(user){
     sync.known = new Set(); sync.on = true; save();
     authShow("loading");
     await cloudFlush();
+    await ecoStart();
     if(fromGuest) lsSet(GUEST_KEY, null);   // la collection appartient maintenant au compte : elle ne peut pas partir sur un autre
     authHide(); rerenderAll();
     toast(fromGuest ? "Ta collection est maintenant sauvegardée sur ton compte." : `Bienvenue dans la cour, ${S.name} !`);
   };
-  if(guest && Array.isArray(guest.specs) && guest.specs.length) authShow("import", {n:guest.specs.length, begin});
+  // on ne propose de reprendre la partie sans compte que si elle a vraiment été jouée (pas juste les billes de départ)
+  const played = guest && Array.isArray(guest.specs) && guest.specs.length && ((guest.bags||0)>0 || guest.specs.length!==11 || (guest.chal||[]).length>0);
+  if(played) authShow("import", {n:guest.specs.length, begin});
   else begin(false);
 }
 
@@ -5997,6 +6583,7 @@ document.addEventListener("visibilitychange", async ()=>{
     sync.known = new Set(P.billes.map(s=>s.id));
     adoptState(st); if(P.profil) S.name = P.profil.pseudo;
     try{ localStorage.setItem(STORE_KEY, JSON.stringify(S)) }catch(e){}
+    ecoRefresh(); courStart();
     rerenderAll();
   }catch(e){}
 });
@@ -6401,6 +6988,8 @@ function accountBoot(){
    DÉMARRAGE
    ===================================================================== */
 document.getElementById("logo-marble").src = marbleURL(SHOWCASE[1],96);
+// l'icône de l'onglet : la même bille que le logo
+try{ const fav = document.getElementById("favicon"); fav.type = "image/png"; fav.href = marbleURL(SHOWCASE[1],64) }catch(e){}
 document.getElementById("coin-slot").outerHTML = COIN;
 renderThemeBtn(); renderSoundBtn(); renderTop(); renderNav(); renderView();
 accountBoot();

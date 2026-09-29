@@ -1011,6 +1011,14 @@ button.vit-slot:hover{background:var(--panel-2);color:var(--ink)}
 .day b{font-weight:900;font-size:13px;font-variant-numeric:tabular-nums}
 .day.today{border-color:#F2AE12;background:var(--gold-bg);box-shadow:0 0 0 3px color-mix(in srgb,#FFC93F 30%,transparent)}
 .day.got{opacity:.55}
+.daily-cal{display:flex;flex-direction:column;gap:8px;width:100%;margin:4px 0;max-height:min(52vh,430px);overflow:auto;padding:2px}
+.daily-wk{display:flex;flex-direction:column;gap:4px;text-align:left}
+.wk-lbl{font-size:11px;font-weight:900;color:var(--muted);text-transform:uppercase;letter-spacing:.06em}
+.daily-cal .daily-row{margin:0}
+.day.has-bag{background:color-mix(in srgb,var(--bc) 14%,var(--panel));border-color:color-mix(in srgb,var(--bc) 45%,var(--line))}
+.day-bag{color:var(--bc);display:grid;place-items:center;height:26px}
+.day em{font-style:normal;font-size:10.5px;font-weight:900;color:color-mix(in srgb,var(--bc) 70%,var(--ink))}
+.day.wk-end.has-bag{box-shadow:inset 0 0 0 1px color-mix(in srgb,var(--bc) 40%,transparent)}
 .day-ok{position:absolute;top:4px;right:4px;width:18px;height:18px;border-radius:50%;background:var(--green);color:#fff;display:grid;place-items:center}
 .day-bonus{font-size:10px;font-weight:900;color:var(--green)}
 #daily-btn{color:var(--ink-2)}
@@ -1020,7 +1028,7 @@ button.vit-slot:hover{background:var(--panel-2);color:var(--ink)}
 #daily-btn.ready svg{animation:giftwiggle 2.4s ease-in-out infinite}
 .daily-done{display:inline-flex;align-items:center;gap:8px;font-weight:800;color:var(--green)}
 @keyframes giftwiggle{0%,80%,100%{transform:none}85%{transform:rotate(-12deg)}90%{transform:rotate(10deg)}95%{transform:rotate(-6deg)}}
-@media (max-width:560px){ .daily-row{grid-template-columns:repeat(4,minmax(0,1fr))} }
+@media (max-width:560px){ .daily-row{gap:4px} .day{padding:7px 1px;border-radius:9px} .day .coin{width:18px;height:18px} .day b{font-size:11px} .day em{font-size:9px} .day-bag{height:18px} .day-bag svg{width:16px;height:16px} .daily-body{padding:26px 14px 20px} }
 
 /* ---------- placeholder ---------- */
 .soon-page{display:grid;gap:18px;max-width:760px}
@@ -1129,6 +1137,15 @@ button.vit-slot:hover{background:var(--panel-2);color:var(--ink)}
 /* suspense avant un gros : la bille tremble de plus en plus et sa lueur grossit */
 .slot.suspense .orb{animation:susp-shake var(--sd,1.5s) ease-in both,hintglow .5s ease-in-out infinite}
 .slot.suspense .rays{opacity:1;animation:susp-rays var(--sd,1.5s) ease-in both}
+/* Mammouth et shiny : tremble, fausse accalmie, puis tremble de plus belle ; tout le reste s'assombrit */
+.slot.suspense.mega .orb{animation:susp-mega var(--sd,3s) ease-in both,hintglow .45s ease-in-out infinite}
+@keyframes susp-mega{0%{transform:none;filter:none}8%,16%,24%,32%{transform:translate(-2px,1px) rotate(-3deg)}12%,20%,28%,36%{transform:translate(2px,-1px) rotate(3deg)}
+  42%,58%{transform:scale(1.03);filter:brightness(1.1)}
+  62%,70%,78%,86%,94%{transform:translate(-4px,2px) rotate(-7deg) scale(1.08)}66%,74%,82%,90%{transform:translate(4px,-2px) rotate(7deg) scale(1.1)}
+  100%{transform:scale(1.2);filter:brightness(1.9) drop-shadow(0 0 30px #FFE3B0)}}
+.ov .slot{transition:opacity .5s ease}
+.ov.dim .slot:not(.suspense){opacity:.25}
+.ov.dim::before{background:radial-gradient(circle at 50% 50%,transparent 10%,rgba(0,0,0,.55) 60%)}
 @keyframes susp-shake{0%{transform:none}10%,30%,50%,70%,90%{transform:translate(-2px,1px) rotate(-3deg)}20%,40%,60%,80%{transform:translate(2px,-1px) rotate(3deg)}95%{transform:translate(-4px,2px) rotate(-6deg) scale(1.08)}100%{transform:scale(1.12)}}
 @keyframes susp-rays{from{opacity:.2;transform:scale(.6)}to{opacity:1;transform:scale(1.15)}}
 @keyframes hintglow{0%,100%{box-shadow:inset 0 -10px 20px rgba(0,0,0,.4),0 0 14px -4px var(--tc)}50%{box-shadow:inset 0 -10px 20px rgba(0,0,0,.4),0 0 40px 8px var(--tc)}}
@@ -1643,7 +1660,7 @@ const SHINIES = [null,
 // tirage pondéré : r dans [0,1[, w = poids
 function pickW(r,w){ const tot=w.reduce((a,b)=>a+b,0); let x=r*tot; for(let i=0;i<w.length;i++){ x-=w[i]; if(x<0) return i } return w.length-1 }
 const rollShiny = () => 1+pickW(Math.random(), SHINIES.slice(1).map(x=>x.w));
-const SHINY_RATE = .0001;  // 0,01 % par bille : le graal ultime (0,05 % dans le Sac Collector)
+const SHINY_RATE = .0001;  // 0,01 % par bille : le graal ultime (0,02 % dans le Sac Premium, 0,05 % dans le Sac Collector)
 
 // Recyclage : ce que rapporte une bille échangée. Proportionnel à sa rareté dans le sac gratuit
 // (chaque taille rapporte donc autant en moyenne), et toujours bien moins que ce qu'elle coûte à trouver.
@@ -1675,7 +1692,7 @@ const FREE_BAG = {id:"gratuit", name:"Sac gratuit", desc:"3 billes offertes. Un 
 const BAGS = [FREE_BAG,
   {id:"classique", name:"Sac Classique", desc:"5 billes, avec de meilleures chances que le sac gratuit.", price:300, n:5, color:"#2A8A74", tint:"#D5EFE7", shiny:SHINY_RATE,
    odds:{mini:38,bille:32,chinoise:16,calot:9,boulet:4,mammouth:1}},
-  {id:"premium", name:"Sac Premium", desc:"5 billes, dont au moins un Calot ou mieux.", price:600, n:5, guarantee:"calot", color:"#34469C", tint:"#DCE0F6", shiny:SHINY_RATE,
+  {id:"premium", name:"Sac Premium", desc:"5 billes, dont au moins un Calot ou mieux. 2 fois plus de chances de shiny.", price:600, n:5, guarantee:"calot", color:"#34469C", tint:"#DCE0F6", shiny:SHINY_RATE*2,
    odds:{mini:27,bille:30,chinoise:20,calot:14,boulet:7,mammouth:2}},
   {id:"collector", name:"Sac Collector", desc:"5 billes, dont au moins un Boulet ou plus gros. 5 fois plus de chances de shiny.", price:1500, n:5, guarantee:"boulet", color:"#D9A020", tint:"#FBEBC0", shiny:SHINY_RATE*5,
    odds:{mini:14,bille:20,chinoise:20,calot:19,boulet:19,mammouth:8}},
@@ -1851,6 +1868,11 @@ const Sound = (()=>{
     suspense(dur,k){ if(!init()) return; const t0=now(); let t=t0, dt=.14;
       while(t<t0+dur-.05){ const p=(t-t0)/dur; thud(t,.12+.35*p,120+80*p); t+=dt; dt=Math.max(.035,dt*.9) }
       osc(t0,"sine",180,.06,dur*.9,.12,null,k>=6?720:520) },
+    firework(){ if(!init()) return; const t=now(), up=.95+Math.random()*.2;
+      osc(t,"sine",700,.035,.05,up,null,2100);
+      env(noise(t,up,[{type:"bandpass",f:3000,f2:6000,Q:2}]),t,.05,.05,up);
+      const b=t+up; thud(b,.55,90); env(noise(b,.5,[{type:"lowpass",f:1600,f2:300}]),b,.35,.004,.45);
+      for(let i=0;i<14;i++){ const c=b+.12+Math.random()*.9; env(noise(c,.02,[{type:"highpass",f:3500}]),c,.12*Math.random()+.04,.001,.015) } },
     ding(){ if(!ctx||!on||ctx.state!=="running") return; const t=now(); chime(t,880,.12); chime(t+.12,1318.5,.1) },
     pop(){ if(!init()) return; clack(now(),.5,1.1) },
     // tout petit clic quand on prend une bille pour la regarder de près
@@ -2979,15 +3001,20 @@ const passTier = () => Math.min(PASS_TIERS, Math.floor(ensurePass().xp/TIER_XP))
 function passLeft(){ const ms=Math.max(0,seasonNow().end-Date.now()), d=Math.floor(ms/86400000), hh=Math.floor(ms/3600000)%24; return d ? `${d} j ${hh} h` : `${hh} h ${Math.floor(ms/60000)%60} min` }
 const seasonStyle = se => { const P=PALETTES[se.pal]; return `--s1:${P[1]};--s2:${P[2]};--s3:${P[3]}` };
 // récompenses d'un palier (1 à 30) sur la piste gratuite ("free") ou premium ("prem")
+// Récompenses d'un palier (1 à 30) sur la piste gratuite ("free") ou premium ("prem").
+// Trois étapes de 10 paliers : les bonbecs montent d'une étape à l'autre, un sac tous les 5 paliers,
+// et les billes de la saison aux paliers ronds (10, 20, 30).
+const PASS_J = {free:[100,150,200], prem:[200,300,400]};
 function passReward(track,t){
-  const fam = seasonNow().def.fam;
+  const fam = seasonNow().def.fam, stage = Math.floor((t-1)/10);
   const M = (type,shiny=0) => ({k:"marble", type, fam, shiny});
   if(track==="free"){
     if(t===30) return M("calot");
     if(t===20) return M("bille");
     if(t===10) return M("mini");
+    if(t===25) return {k:"bag", bag:"premium"};
     if(t%5===0) return {k:"bag", bag:"classique"};
-    return {k:"jetons", n:(t%2?40:70)+t*4};
+    return {k:"jetons", n:PASS_J.free[stage]};
   }
   if(t===30) return M("mammouth",3);
   if(t===25) return {k:"bag", bag:"collector"};
@@ -2996,9 +3023,8 @@ function passReward(track,t){
   if(t===10) return M("calot",1);
   if(t===5)  return M("chinoise");
   if(t===1)  return {k:"title", name:"Collectionneur"};
-  if(t%4===0) return {k:"bag", bag:"premium"};
-  if(t%3===0) return {k:"bag", bag:"classique"};
-  return {k:"jetons", n:120+t*8};
+  if(t%5===3) return {k:"bag", bag:stage===0?"classique":"premium"};
+  return {k:"jetons", n:PASS_J.prem[stage]};
 }
 function rewardSpec(track,t,r){ const se=seasonNow(); return {seed:hash(se.id+track+t), type:r.type, family:r.fam, pal:se.pal, shiny:r.shiny, ed:se.label} }
 function rewardLabel(r){
@@ -3076,11 +3102,11 @@ function dayHTML(inSheet){
   ensureQuests();
   const Q = S.quests, n = mjClaimable();
   // le bonbec du jour
-  const dReady = dailyReady(), streak = dReady ? dailyStreak() : (S.daily?.streak||1), idx = (streak-1)%7, amount = DAILY[idx]*(isWednesday()?2:1);
-  const next = idx===6 ? 0 : idx+1;
+  const dReady = dailyReady(), streak = dReady ? dailyStreak() : (S.daily?.streak||1), idx = dailyDay(streak), dToday = dailyRew(idx, isWednesday()?2:1);
+  const next = dailyDay(streak+1);
   const rows1 = [mjRow({icon:"gift", title:"Le bonbec du jour", ready:dReady, done:!dReady,
-    text: dReady ? `Jour ${idx+1} sur 7${isWednesday()?" · mercredi : doublé !":""}` : `Demain : ${fmt(DAILY[next])} ${CUR.many} (jour ${next+1})`,
-    btn: dReady ? `<button class="btn btn-yellow" data-action="daily-claim">+${fmt(amount)} ${COIN}</button>` : "", act:'data-action="daily-open"'})];
+    text: dReady ? `Jour ${idx+1} sur ${DAILY_N}${isWednesday()?" · mercredi : doublé !":""}` : `Demain : ${dailyText(dailyRew(next))} (jour ${next+1})`,
+    btn: dReady ? `<button class="btn btn-yellow" data-action="daily-claim">${dToday.bag?ic("bag",16):""}${dToday.j?`+${fmt(dToday.j)} ${COIN}`:""}</button>` : "", act:'data-action="daily-open"'})];
   // les sacs
   const st = freeStock(), gifts = giftCount();
   rows1.push(mjRow({icon:"bag", title: st ? `${st} sac${st>1?"s":""} gratuit${st>1?"s":""} à ouvrir` : "Sac gratuit",
@@ -3142,10 +3168,10 @@ function openDay(open){
 // Les récompenses : une fonction par sorte, pour les boutons un par un et pour « Tout récupérer »
 function claimDaily(){
   if(!dailyReady()) return null;
-  const streak = dailyStreak(), idx = (streak-1)%7, amount = DAILY[idx]*(isWednesday()?2:1);
-  S.jetons += amount; if(idx===6) S.bagInv.premium = (S.bagInv.premium||0)+1;
+  const streak = dailyStreak(), idx = dailyDay(streak), r = dailyRew(idx, isWednesday()?2:1);
+  S.jetons += r.j; if(r.bag) S.bagInv[r.bag] = (S.bagInv[r.bag]||0)+1;
   S.daily = {last:dayKey(), streak};
-  return {j:amount, bags:idx===6?1:0, idx};
+  return {...r, idx, streak};
 }
 function claimQuest(i){
   ensureQuests(); const q = S.quests.items[i];
@@ -3188,30 +3214,46 @@ function claimAll(){
   const dj = S.jetons-j0, db = giftCount()-b0;
   toast(`Récupéré : ${got.join(", ")}. +${fmt(dj)} ${CUR.many}${db>0?` et ${db} sac${db>1?"s":""}`:""} !`);
 }
-// Le bonbec du jour : un cadeau à la première visite de chaque jour, sur une série de 7 jours
-const DAILY = [50,80,110,150,200,250,300];
+// Le bonbec du jour : un cadeau à la première visite de chaque jour, sur un calendrier de 4 semaines.
+// Chaque semaine rapporte plus que la précédente, avec un sac au milieu (jour 4) et un plus beau à la fin (jour 7).
+// Après le 28ᵉ jour, la 4ᵉ semaine recommence tant qu'on ne rate pas de jour. Un jour sauté : retour au jour 1.
+const DAILY_CAL = [
+  {j:60},  {j:80},  {j:100}, {bag:"classique"}, {j:120}, {j:150}, {bag:"classique"},
+  {j:100}, {j:120}, {j:150}, {bag:"classique"}, {j:180}, {j:200}, {bag:"premium"},
+  {j:120}, {j:150}, {j:180}, {bag:"classique"}, {j:200}, {j:250}, {bag:"premium", j:200},
+  {j:150}, {j:180}, {j:200}, {bag:"premium"},   {j:250}, {j:300}, {bag:"collector"},
+];
+const DAILY_N = DAILY_CAL.length;
+const dailyDay = streak => streak<=DAILY_N ? streak-1 : DAILY_N-7 + (streak-DAILY_N-1)%7;   // 0 à 27
+const dailyRew = (i, mult=1) => ({j:(DAILY_CAL[i].j||0)*mult, bag:DAILY_CAL[i].bag});
+const dailyText = r => [r.j?`${fmt(r.j)} ${CUR.many}`:"", r.bag?`un ${BAG_BY[r.bag].name}`:""].filter(Boolean).join(" et ");
 const dailyReady = () => !S.daily || S.daily.last!==dayKey();
 const dailyStreak = () => S.daily && S.daily.last===dayKey(new Date(Date.now()-864e5)) ? S.daily.streak+1 : 1;
 const isWednesday = () => new Date().getDay()===3;   // le mercredi, pas d'école : bonbecs doublés
 function openDaily(){
-  const ready = dailyReady();
-  const streak = ready ? dailyStreak() : (S.daily?.streak||1), idx = (streak-1)%7, mult = isWednesday()?2:1, amount = DAILY[idx]*mult;
-  const next = idx===6 ? 0 : idx+1;
+  const ready = dailyReady(), mult = isWednesday()?2:1;
+  const streak = ready ? dailyStreak() : (S.daily?.streak||1), idx = dailyDay(streak), r = dailyRew(idx, mult);
+  const next = dailyDay(streak+1), looped = streak>DAILY_N;
+  const cell = (d,i) => { const got = i<idx || (!ready && i===idx), today = ready && i===idx, B = d.bag && BAG_BY[d.bag];
+    return `<div class="day ${got?"got":today?"today":""}${B?" has-bag":""}${i%7===6?" wk-end":""}" ${B?`style="--bc:${B.color}"`:""} title="Jour ${i+1} : ${esc(dailyText(dailyRew(i)))}">
+      <small>${i+1}</small>${B?`<span class="day-bag">${ic("bag",20,2.2)}</span><em>${B.name.replace("Sac ","")}</em>`:`${COIN}`}${d.j?`<b>${fmt(d.j*(today?mult:1))}</b>`:""}
+      ${got?`<span class="day-ok">${ic("check",11,3)}</span>`:""}</div>` };
   const el = document.getElementById("modal");
   el.innerHTML = `<div class="modal daily" role="dialog" aria-modal="true" aria-label="Le bonbec du jour">
     <button class="close-x" data-action="close-modal" aria-label="Fermer">×</button>
     <div class="daily-body">
       <span class="daily-kicker">${ic("gift",16)} Le bonbec du jour</span>
       <h2>${ready ? (streak>1?`${streak} jours de suite !`:"Coucou, te revoilà !") : "C'est dans la poche !"}</h2>
-      <p>${isWednesday()?"<b>Le mercredi, pas d'école : tes bonbecs sont doublés !</b> ":""}Passe chaque jour pour remplir ta semaine : le 7ᵉ jour, un Sac Premium t'attend en plus.</p>
-      <div class="daily-row">${DAILY.map((v,i)=>`<div class="day ${i<idx||(!ready&&i===idx)?"got":i===idx?"today":""}"><small>Jour ${i+1}</small>${COIN}<b>${fmt(v*(i===idx?mult:1))}</b>${i===6?`<span class="day-bonus">+ 1 sac</span>`:""}${i<idx||(!ready&&i===idx)?`<span class="day-ok">${ic("check",11,3)}</span>`:""}</div>`).join("")}</div>
-      ${ready ? `<button class="btn btn-yellow" data-action="daily-claim">${ic("gift",18)} Récupérer ${fmt(amount)} ${CUR.many}${idx===6?" et un Sac Premium":""}</button>`
+      <p>${isWednesday()?"<b>Le mercredi, pas d'école : tes bonbecs sont doublés !</b> ":""}Passe chaque jour sans en rater un : chaque semaine rapporte plus que la précédente, avec un sac au milieu et un plus beau à la fin.${looped?" Tu as fini le calendrier : la dernière semaine recommence tant que tu reviens chaque jour.":""}</p>
+      <div class="daily-cal">${[0,1,2,3].map(w=>`<div class="daily-wk"><span class="wk-lbl">Semaine ${w+1}</span><div class="daily-row">${DAILY_CAL.slice(w*7,w*7+7).map((d,k)=>cell(d,w*7+k)).join("")}</div></div>`).join("")}</div>
+      ${ready ? `<button class="btn btn-yellow" data-action="daily-claim">${ic("gift",18)} Récupérer ${esc(dailyText(r))}</button>`
         : `<span class="daily-done">${ic("check",18,2.5)} Bonbec du jour récupéré</span>
-           <p>Reviens dans <b data-quest-timer>${untilMidnight()}</b> pour le jour ${next+1} : ${fmt(DAILY[next])} ${CUR.many}${next===6?" et un Sac Premium":""}.</p>`}
+           <p>Reviens dans <b data-quest-timer>${untilMidnight()}</b> pour le jour ${next+1} : ${esc(dailyText(dailyRew(next)))}.</p>`}
       <p class="meta">Si tu sautes un jour, ta série recommence au jour 1.</p>
     </div></div>`;
   el.hidden = false;
   (el.querySelector(".btn-yellow")||el.querySelector(".close-x")).focus();
+  el.querySelector(".day.today")?.scrollIntoView?.({block:"nearest"});
 }
 function renderTop(){
   document.getElementById("jetons").textContent = fmt(S.jetons);
@@ -3385,7 +3427,7 @@ function drawExplainer(){
       <div class="draw-step"><span class="n">1</span><b>La taille</b><small>La rareté principale. Les chances sont sur chaque sac, plus haut.</small></div>
       <div class="draw-step"><span class="n">2</span><b>Le décor</b><small>${FAMILIES.length} décors rangés en ${rows.length} paniers, du plus courant au plus rare (ci-dessous).</small></div>
       <div class="draw-step"><span class="n">3</span><b>Le coloris</b><small>${BASE_PALS} coloris, tous aussi fréquents : 1 chance sur ${BASE_PALS} chacun.</small></div>
-      <div class="draw-step"><span class="n">4</span><b>Shiny ou pas</b><small>${oneIn(SHINY_RATE)} billes, 5 fois plus dans le Sac Collector.</small></div>
+      <div class="draw-step"><span class="n">4</span><b>Shiny ou pas</b><small>${oneIn(SHINY_RATE)} billes, 2 fois plus dans le Sac Premium, 5 fois plus dans le Collector.</small></div>
     </div>
     <div class="dec-table">
       <div class="dec-head"><span>Panier de décors</span><span>Décors</span><span>Un décor précis</span><span>Tout le panier</span></div>
@@ -3839,7 +3881,7 @@ function showCraft(inputs, out, pxp){
     Sound.whoosh();
     const [x,y] = FX.at(document.querySelector(".fuse-core"));
     FX.burst(x,y, scoreCols(k), 60+k*16, 1.2+k*.08); FX.ring(x,y, scoreCol(k));
-    if(out.shiny) FX.burst(x,y, SHINY_COLS, 90, 1.5);
+    if(out.shiny){ FX.burst(x,y, SHINY_COLS, 90, 1.5); FX.fireworks(SHINY_COLS, 8) }
     ov.style.setProperty("--flash", rgba(scoreCol(k), .6));
     FX.setDust(false);
     const ed = editionOf(out);
@@ -4201,6 +4243,20 @@ const FX = {
       this.parts.push({x,y,vx:Math.cos(a)*v,vy:Math.sin(a)*v-1.2*pow,life:1,dec:.009+Math.random()*.015,sz:1.5+Math.random()*3*pow,c:cols[i%cols.length],spark:Math.random()<.6,g:.1}) }
     this.start() },
   ring(x,y,c){ if(this.reduce()) return; this.parts.push({ring:true,x,y,r:20,life:1,dec:.028,c}); this.start() },
+  // feu d'artifice : des fusées partent du bas de l'écran et éclatent en gerbes (pour une shiny)
+  fireworks(cols,n=7){ if(this.reduce()) return;
+    for(let i=0;i<n;i++) setTimeout(()=>{
+      const x=innerWidth*(.12+.76*Math.random()), y=innerHeight+10, top=innerHeight*(.12+.3*Math.random()), g=.12;
+      this.parts.push({rocket:true,x,y,vx:(Math.random()-.5)*1.6,vy:-Math.sqrt(2*g*(y-top)),g,life:1,dec:0,sz:2.4,c:"#FFF3D6",col:cols[i%cols.length],alt:cols[(i+2)%cols.length]});
+      Sound.firework(); this.start();
+    }, i*380+Math.random()*160) },
+  explode(p,add){
+    const n=70+Math.floor(Math.random()*30);
+    for(let i=0;i<n;i++){ const a=i/n*TAU+Math.random()*.1, v=2.2+Math.random()*3.4;
+      add.push({x:p.x,y:p.y,vx:Math.cos(a)*v,vy:Math.sin(a)*v,life:1,dec:.008+Math.random()*.01,sz:1.6+Math.random()*2,c:i%3?p.col:p.alt,spark:Math.random()<.7,g:.045}) }
+    for(let i=0;i<16;i++) add.push({x:p.x,y:p.y,vx:(Math.random()-.5)*1.5,vy:(Math.random()-.5)*1.5,life:1,dec:.006,sz:1.2,c:"#FFF3D6",g:.02,twinkle:true});
+    add.push({ring:true,x:p.x,y:p.y,r:10,life:.7,dec:.03,c:p.col});
+  },
   at(el){ const r=el.getBoundingClientRect(); return [r.left+r.width/2, r.top+r.height/2] },
   setDust(on){ this.dust=on && !this.reduce(); if(this.dust) this.start() },
   start(){ if(!this.raf){ if(!this.ctx) this.fit(); this.raf=requestAnimationFrame(()=>this.loop()) } },
@@ -4208,15 +4264,20 @@ const FX = {
     const c=this.ctx; c.clearRect(0,0,innerWidth,innerHeight);
     if(this.dust && Math.random()<.3) this.parts.push({x:Math.random()*innerWidth,y:innerHeight+6,vx:(Math.random()-.5)*.3,vy:-.35-Math.random()*.7,life:1,dec:.003+Math.random()*.003,sz:.8+Math.random()*2,c:"#FFE3B0",dust:true,g:0});
     c.globalCompositeOperation="lighter";
+    const add = [];
     this.parts = this.parts.filter(p=>{
+      if(p.rocket && p.vy>=-.6){ this.explode(p,add); return false }
       p.life -= p.dec; if(p.life<=0) return false;
       if(p.ring){ p.r += 9*p.life+2; c.globalAlpha=p.life*.8; c.strokeStyle=p.c; c.lineWidth=4*p.life+1; c.beginPath(); c.arc(p.x,p.y,p.r,0,TAU); c.stroke(); return true }
       p.vx*=.982; p.vy=p.vy*.982+p.g; p.x+=p.vx; p.y+=p.vy;
-      c.globalAlpha = Math.min(1,p.life*1.5)*(p.dust?.45:1); c.fillStyle=p.c; c.strokeStyle=p.c;
+      c.globalAlpha = Math.min(1,p.life*1.5)*(p.dust?.45:1)*(p.twinkle?(Math.random()<.5?1:.2):1); c.fillStyle=p.c; c.strokeStyle=p.c;
+      if(p.rocket){ c.lineWidth=2.2; c.beginPath(); c.moveTo(p.x,p.y); c.lineTo(p.x-p.vx*4,p.y-p.vy*4); c.stroke();
+        if(Math.random()<.7) add.push({x:p.x,y:p.y,vx:(Math.random()-.5)*.6,vy:Math.random()*.8,life:.7,dec:.03,sz:1.4,c:"#FFC98A",g:.03}); return true }
       if(p.spark){ c.lineWidth=p.sz*.7; c.beginPath(); c.moveTo(p.x,p.y); c.lineTo(p.x-p.vx*3,p.y-p.vy*3); c.stroke() }
       else { c.beginPath(); c.arc(p.x,p.y,p.sz*(p.dust?1:.4+p.life*.6),0,TAU); c.fill() }
       return true;
     });
+    if(add.length) this.parts.push(...add);
     c.globalAlpha=1; c.globalCompositeOperation="source-over";
     this.raf = (this.parts.length||this.dust) ? requestAnimationFrame(()=>this.loop()) : 0;
   },
@@ -4405,27 +4466,36 @@ function reveal(i){
   const [x,y] = FX.at(el.querySelector(".slot-ball"));
   FX.burst(x,y, scoreCols(k), 18+k*14, .6+k*.12);
   if(k>=FMT_TIER.calot) FX.ring(x,y, scoreCol(k));
-  if(k>=6) FX.burst(x,y, SHINY_COLS, 70, 1.3);
+  if(k>=6){ FX.burst(x,y, SHINY_COLS, 70, 1.3); FX.fireworks(SHINY_COLS, 8) }
+  else if(k===FMT_TIER.mammouth){ FX.burst(x,y, scoreCols(k), 120, 1.6); setTimeout(()=>FX.ring(x,y, "#FFE3B0"), 180) }
   if(k>=BIG){ const b=document.getElementById("ov-body"); b.classList.remove("quake"); void b.offsetWidth; b.classList.add("quake") }
   Sound.reveal(TIDX[rs.type], !!rs.shiny);
   if(ovState.results[i].wish){ Sound.reveal(5,false); setTimeout(()=>toast(`Sur ta liste de souhaits : ${specName(rs)} ! Elle rejoint ta boîte à billes.`),500) }
   if(ovState.opened.size === ovState.results.length) finishReveal();
 }
-// « Tout révéler » : une par une, tranquillement ; avant un Boulet, un Mammouth ou une shiny, la bille tremble et le tambour roule
+// Suspense avant un gros : plus la bille est rare, plus ça dure. Boulet : elle tremble. Mammouth : elle tremble,
+// s'arrête… et repart de plus belle, pendant que le reste s'assombrit. Shiny : pareil en plus long, puis feu d'artifice.
+const suspenseFor = k => k>=6 ? 4200 : k===FMT_TIER.mammouth ? 3400 : k===FMT_TIER.boulet ? 1500 : 0;
+function revealDrama(i, then){
+  const st = ovState; if(!st || st.opened.has(i)) return;
+  const k = pullScore(st.results[i].s), el = document.querySelector(`.slot[data-i="${i}"]`), wait = suspenseFor(k);
+  if(!wait || !el || FX.reduce()){ reveal(i); then?.(k); return }
+  if(el.classList.contains("suspense")) return;
+  const ov = document.getElementById("ov"), mega = k>=FMT_TIER.mammouth;
+  el.style.setProperty("--sd", wait+"ms"); el.style.setProperty("--tc", "#FFE3B0");
+  el.classList.add("suspense"); if(mega){ el.classList.add("mega"); ov.classList.add("dim") }
+  Sound.suspense(wait/1000, k);
+  setTimeout(()=>{ if(ovState!==st) return; el.classList.remove("suspense","mega"); ov.classList.remove("dim"); reveal(i); then?.(k) }, wait);
+}
+// « Tout révéler » : une par une, tranquillement
 function revealAll(btn){
   const st = ovState; if(!st || st.auto) return;
   st.auto = true; btn.disabled = true;
-  const reduce = FX.reduce();
   const next = i => {
     if(ovState!==st) return;
     while(i<st.results.length && st.opened.has(i)) i++;
     if(i>=st.results.length) return;
-    const k = pullScore(st.results[i].s), el = document.querySelector(`.slot[data-i="${i}"]`);
-    if(k>=BIG && el && !reduce){
-      const wait = k>=6 ? 2400 : k>=FMT_TIER.mammouth ? 2000 : 1500;
-      el.style.setProperty("--sd", wait+"ms"); el.style.setProperty("--tc", "#FFE3B0"); el.classList.add("suspense"); Sound.suspense(wait/1000, k);
-      setTimeout(()=>{ if(ovState!==st) return; el.classList.remove("suspense"); reveal(i); setTimeout(()=>next(i+1), 1300) }, wait);
-    } else { reveal(i); setTimeout(()=>next(i+1), k>=FMT_TIER.calot ? 900 : 650) }
+    revealDrama(i, k=>setTimeout(()=>next(i+1), k>=6 ? 2600 : k>=BIG ? 1300 : k>=FMT_TIER.calot ? 900 : 650));
   };
   next(0);
 }
@@ -5719,7 +5789,7 @@ document.addEventListener("click", e=>{
     case "daily-claim": {
       const r = claimDaily(); if(!r) break; save();
       Sound.coin(); Sound.ding(); closeModal(); renderTop(); renderNav(); renderView();
-      toast(`+${fmt(r.j)} ${CUR.many}${r.bags?" et un Sac Premium":""} ! À demain pour le jour ${r.idx===6?1:r.idx+2}.`);
+      toast(`${dailyText(r).replace(/^un /,"Un ")} ! À demain pour le jour ${dailyDay(r.streak+1)+1}.`);
       break;
     }
     case "mj-open": openDay(true); break;
@@ -5822,7 +5892,7 @@ document.addEventListener("click", e=>{
       break;
     }
     case "sound": Sound.toggle(); renderSoundBtn(); toast(Sound.on?"Son activé.":"Son coupé."); break;
-    case "reveal": reveal(+t.dataset.i); break;
+    case "reveal": { const i=+t.dataset.i; if(ovState?.opened.has(i)) reveal(i); else revealDrama(i); break }
     case "reveal-all": revealAll(t); break;
     case "buy-again": openBag(ovState.bag.id, ovState.gift); break;
     case "to-bags": closeOv(); go("sacs"); break;

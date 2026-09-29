@@ -1298,6 +1298,10 @@ button.vit-slot:hover{background:var(--panel-2);color:var(--ink)}
   .modal.sheet.drawer{width:min(560px,100%)}
   .modal.drawer .modal-visual{min-height:280px}
   .modal.sheet.drawer .sheet-grid{grid-template-columns:repeat(6,minmax(0,1fr))}
+  /* la fiche d'une bille, elle, s'ouvre au milieu de l'écran */
+  .scrim:has(> .drawer.mid){place-items:center;padding:20px;background:rgba(27,24,40,.55);backdrop-filter:blur(4px)}
+  .modal.drawer.mid{width:min(700px,100%);height:auto;max-height:calc(100% - 20px);border-radius:22px;grid-template-columns:minmax(0,1fr) minmax(0,1.1fr);align-content:stretch;animation:auth-card .24s cubic-bezier(.2,.9,.3,1)}
+  .modal.drawer.mid .modal-visual{min-height:300px}
 }
 @media (max-width:820px){
   .scrim:has(> .drawer){place-items:end stretch;padding:0}
@@ -3979,7 +3983,7 @@ function openModal(id, pv){
   const fromSheet = ui.fromSheet && ui.sheet && ui.sheet.t===s.type && ui.sheet.f===s.family; ui.fromSheet = false;
   const el = document.getElementById("modal");
   const F = FAMILIES[s.family], T = TYPES[s.type];
-  el.innerHTML = `<div class="modal drawer" role="dialog" aria-modal="true" aria-label="${esc(specName(s))}" style="${tstyle(s.type)}">
+  el.innerHTML = `<div class="modal drawer mid" role="dialog" aria-modal="true" aria-label="${esc(specName(s))}" style="${tstyle(s.type)}">
     <button class="close-x" data-action="close-modal" aria-label="Fermer">×</button>
     <div class="modal-visual${s.shiny===3?" lum":""}"${s.shiny===3?` style="--lc:${PALETTES[s.pal][2]}"`:""}>
       <div id="live-slot"></div>
@@ -4473,7 +4477,7 @@ function viewGame(){
         <div class="hole-list" id="g-holes"></div>
       </section>
       <section class="panel">
-        <div class="panel-head"><h3>Ta bille</h3><button class="see-all" data-action="nav" data-view="collection">Changer ${ic("chev",14)}</button></div>
+        <div class="panel-head"><h3>Ta bille</h3><button class="see-all" data-action="to-collection">Changer ${ic("chev",14)}</button></div>
         ${act?`<div class="my-ball">${mImg(act,120,48,"")}<div><b>${esc(specName(act))}</b><small>${TYPES[act.type].label} · ${TYPES[act.type].mm} mm</small></div></div>`:""}
       </section>
       <section class="panel">
@@ -4796,7 +4800,7 @@ function viewArena(){
     </section>
     <aside style="display:grid;gap:20px">
       <section class="panel"><div class="panel-head"><h3>Règles</h3></div><ul class="soon-list">${G.rules.map(r=>`<li>${r}</li>`).join("")}</ul></section>
-      <section class="panel"><div class="panel-head"><h3>Ta bille</h3><button class="see-all" data-action="nav" data-view="collection">Changer ${ic("chev",14)}</button></div>
+      <section class="panel"><div class="panel-head"><h3>Ta bille</h3><button class="see-all" data-action="to-collection">Changer ${ic("chev",14)}</button></div>
         ${act?`<div class="my-ball">${mImg(act,120,48,"")}<div><b>${esc(specName(act))}</b><small>${TYPES[act.type].label} · ${TYPES[act.type].mm} mm</small></div></div>`:""}</section>
     </aside>
   </div>`;
@@ -5280,7 +5284,7 @@ function viewCasse(){
     </section>
     <aside style="display:grid;gap:20px">
       <section class="panel"><div class="panel-head"><h3>Règles</h3></div><ul class="soon-list">${G.rules.map(r=>`<li>${r}</li>`).join("")}</ul></section>
-      <section class="panel"><div class="panel-head"><h3>Ta bille</h3><button class="see-all" data-action="nav" data-view="collection">Changer ${ic("chev",14)}</button></div>
+      <section class="panel"><div class="panel-head"><h3>Ta bille</h3><button class="see-all" data-action="to-collection">Changer ${ic("chev",14)}</button></div>
         ${act?`<div class="my-ball">${mImg(act,120,48,"")}<div><b>${esc(specName(act))}</b><small>${TYPES[act.type].label} · ${TYPES[act.type].mm} mm</small></div></div>`:""}</section>
     </aside>
   </div>`;

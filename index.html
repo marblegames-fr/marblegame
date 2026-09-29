@@ -1417,6 +1417,30 @@ button.vit-slot:hover{background:var(--panel-2);color:var(--ink)}
 .troc-mot{font-family:var(--hand);font-size:20px;color:var(--ink-2)}
 .troc-act{display:flex;gap:8px;flex-wrap:wrap}
 .troc.fini{opacity:.7}
+/* demande de confirmation */
+.ask-scrim{z-index:78}
+.ask{width:min(440px,100%);background:var(--panel);border-radius:22px;padding:26px 22px 20px;display:flex;flex-direction:column;align-items:center;gap:12px;text-align:center;box-shadow:0 30px 60px -20px rgba(0,0,0,.5);animation:ask-in .18s ease-out}
+@keyframes ask-in{from{transform:scale(.94);opacity:0}}
+.ask h2{font-family:var(--display);font-weight:400;font-size:28px;line-height:1.05}
+.ask p{color:var(--ink-2);font-weight:700;font-size:14.5px;line-height:1.4}
+.ask .warn-note{display:block;margin-top:6px;font-size:13.5px}
+.ask-balls{display:flex;flex-wrap:wrap;justify-content:center;gap:6px}
+.ask .troc-sides{width:100%;text-align:left}
+.ask-btns{display:flex;gap:10px;flex-wrap:wrap;justify-content:center;margin-top:6px}
+.ask-btns .btn{min-width:130px}
+.btn-danger{background:#E5484D;color:#fff;box-shadow:0 3px 0 #B8363A}
+.btn-danger:hover{background:#D63F44}
+/* historique et nouvelles de la cour */
+.jr{align-items:flex-start}
+.jr-ic{flex:none;width:34px;height:34px;border-radius:50%;display:grid;place-items:center;background:var(--panel-2);color:var(--ink-2);border:1px solid var(--line)}
+.jr.new .jr-ic{background:var(--yellow);color:#24253D;border-color:var(--yellow-2)}
+.jr .who{font-weight:700}
+.jr .who b{font-weight:900}
+.jr-balls{display:flex;flex-wrap:wrap;align-items:center;gap:2px;max-width:48%;justify-content:flex-end}
+.jr-balls button{border-radius:50%;padding:1px}
+.jr-balls .troc-arrow{margin:0 2px}
+.news-list{width:100%;text-align:left;max-height:48vh;overflow:auto}
+.rc-body .btns{display:flex;gap:10px;flex-wrap:wrap;justify-content:center}
 .troc .st{font-size:12px;font-weight:900;padding:2px 10px;border-radius:999px;background:var(--panel);border:1px solid var(--line)}
 .compose{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:16px}
 .pick-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(92px,1fr));gap:8px;max-height:420px;overflow:auto;padding:2px}
@@ -1619,6 +1643,7 @@ button.vit-slot:hover{background:var(--panel-2);color:var(--ink)}
 <div class="mj-scrim" id="mj-sheet" hidden></div>
 
 <div class="scrim" id="modal" hidden></div>
+<div class="scrim ask-scrim" id="ask" hidden></div>
 <div class="ov" id="ov" hidden>
   <div class="ov-bg" aria-hidden="true"></div>
   <canvas id="ov-fx" aria-hidden="true"></canvas>
@@ -2800,14 +2825,33 @@ function recycleSpecs(ids){
   Sound.recycle();
   return total;
 }
-let armed = null;   // confirmation en deux clics
-function arm(key, btn, label){
-  if(armed && armed.key===key){ clearTimeout(armed.t); armed=null; return true }
-  if(armed){ clearTimeout(armed.t); armed.restore() }
-  const old = btn.innerHTML;
-  btn.innerHTML = label;
-  armed = {key, restore:()=>{ if(document.body.contains(btn)) btn.innerHTML=old }, t:setTimeout(()=>{ armed&&armed.restore(); armed=null },3500)};
-  return false;
+// demande de confirmation pour les actions importantes (vente, troc, fusion, Confiserie…) : renvoie une promesse, true si le joueur confirme
+// text et extra sont du HTML (échapper les pseudos et les noms avant)
+function ask({title, text="", extra="", balls=[], ok="Confirmer", no="Annuler", danger=false}){
+  const el = document.getElementById("ask");
+  return new Promise(res=>{
+    el.innerHTML = `<div class="ask" role="alertdialog" aria-modal="true" aria-labelledby="ask-t">
+      ${balls.length ? `<div class="ask-balls">${balls.slice(0,6).map(x=>mImg(x,120,balls.length>2?44:64,"")).join("")}${balls.length>6?`<small class="meta">+${balls.length-6}</small>`:""}</div>` : ""}
+      <h2 id="ask-t">${esc(title)}</h2>${text?`<p>${text}</p>`:""}${extra}
+      <div class="ask-btns"><button class="btn btn-ghost" data-ask="0">${esc(no)}</button><button class="btn ${danger?"btn-danger":"btn-yellow"}" data-ask="1">${esc(ok)}</button></div></div>`;
+    el.hidden = false;
+    const done = v => { el.hidden = true; el.innerHTML = ""; el.onclick = null; document.removeEventListener("keydown", key, true); res(v) };
+    const key = e => { if(e.key==="Escape"){ e.stopPropagation(); done(false) } };
+    el.onclick = e => { e.stopPropagation(); const b = e.target.closest("[data-ask]"); if(b) done(b.dataset.ask==="1"); else if(e.target===el) done(false) };
+    document.addEventListener("keydown", key, true);
+    el.querySelector('[data-ask="1"]').focus();
+  });
+}
+const nbBilles = l => { const n = (l||[]).length; return n ? `${n} bille${n>1?"s":""}` : "rien" };
+// ce que chacun reçoit dans un troc, en petit (pour les confirmations)
+const trocSummary = (get, give) => { const side = (lbl, l) => `<div class="troc-side"><small>${lbl}</small><div class="troc-balls">${(l||[]).length ? l.map(x=>mImg(x,120,40,"")).join("") : `<span class="meta">rien</span>`}</div></div>`;
+  return `<div class="troc-sides">${side("Tu reçois", get)}<span class="troc-arrow">${ic("swap",20)}</span>${side("Tu donnes", give)}</div>` };
+// avertissements avant de se séparer d'une bille
+function partWarn(s){
+  const w = [];
+  if(s.shiny) w.push("Attention, c'est une shiny !");
+  if(s.pal<BASE_PALS && S.specs.filter(x=>colorKey(x)===colorKey(s)).length<=1) w.push("C'est ton seul exemplaire : elle quittera ton album.");
+  return w.map(x=>`<span class="warn-note">${x}</span>`).join("");
 }
 
 /* =====================================================================
@@ -4231,6 +4275,7 @@ function viewPedia(){
 const liveCanvas = document.createElement("canvas");
 const liveGL = makeGL(liveCanvas);
 let liveRAF = null, liveSpec = null;
+const dateFr = t => new Date(t).toLocaleDateString("fr-FR",{day:"numeric",month:"long",year:"numeric"});
 function openModal(id, pv){
   const s = pv || specById(id); if(!s) return;
   // on n'enregistre (et n'envoie en ligne) que si la bille était encore marquée « Nouveau »
@@ -4261,9 +4306,9 @@ function openModal(id, pv){
         <dt>Chance</dt><dd>${s.secret?"Bille secrète : une seule par joueur":isSeason(s)?"Exclusive au passe de saison":`${oneIn(chanceOf(s))} <small class="meta">par bille du sac gratuit</small>`}</dd>
         ${pv||!editionOf(s)?"":`<dt>Édition</dt><dd>${editionOf(s)===1?`<span class="first-pill">Première mondiale</span>`:`n° ${fmt(editionOf(s))}`} <small class="meta">de ce modèle trouvée dans le monde${s.edn?"":" (estimation)"}</small></dd>`}
         ${pv||!s.no?"":`<dt>N° de série</dt><dd><code>#${String(s.no).padStart(7,"0")}</code> <small class="meta">unique, dans l'ordre d'apparition</small></dd>`}
-        ${pv||!SRC_LABEL[s.src]?"":`<dt>Trouvée</dt><dd>${SRC_LABEL[s.src]}</dd>`}
+        ${pv||!SRC_LABEL[s.src]?"":`<dt>Trouvée</dt><dd>${SRC_LABEL[s.src]}${s.via&&s.found?` <small class="meta">le ${dateFr(s.found)}</small>`:""}</dd>`}
         ${pv?"":`<dt>Motif</dt><dd><code>${serial(s)}</code></dd>
-        <dt>Obtenue le</dt><dd>${new Date(s.at).toLocaleDateString("fr-FR",{day:"numeric",month:"long",year:"numeric"})}</dd>`}
+        <dt>Obtenue le</dt><dd>${dateFr(s.at)}${s.via?` <small class="meta">${s.via.k==="vente"?`achetée à <b>${esc(s.via.de||"?")}</b> au marché`:`en troc avec <b>${esc(s.via.de||"?")}</b>`}</small>`:""}</dd>`}
       </dl>
       ${pv&&pv.cour?`<p class="meta">${esc(pv.cour)}</p>`:pv?`<p class="meta">Aperçu Billepedia · ${S.specs.some(x=>slotKey(x)===slotKey(s))?"tu as déjà ce format dans ce décor.":"pas encore dans ta boîte à billes."}</p>`:`<div class="modal-actions">
         ${S.active===s.id?`<button class="btn btn-ghost" disabled>Bille active</button>`:`<button class="btn btn-blue" data-action="set-active" data-id="${s.id}">Jouer avec cette bille</button>`}
@@ -5930,13 +5975,13 @@ const COUR_ERR = {inconnu:"Personne ne s'appelle comme ça dans la cour.", soi_m
   prix_invalide:"Choisis un prix entre 1 et 1 000 000.", duree_invalide:"Choisis une durée : 1, 3 ou 7 jours.", trop_annonces:"Tu as déjà 30 billes en vente.", plus_en_vente:"Cette bille n'est plus en vente.",
   ta_bille:"C'est ta propre bille !", pas_assez:`Il te manque des ${CUR.many}.`, reseau:"Pas de connexion : réessaie dans un instant."};
 function courFail(e){ console.warn("Cour :", e); toast(COUR_ERR[e?.code] || "Oups, ça n'a pas marché. Réessaie dans un instant.") }
-const courCount = () => cour.moi ? (cour.moi.trocs||0) + (cour.moi.recues||[]).length : 0;
+const courCount = () => cour.moi ? (cour.moi.trocs||0) + (cour.moi.recues||[]).length + (cour.unread||0) : 0;
 // charge une partie de la cour, puis réaffiche si on y est toujours
 function courLoad(kind, force){
   if(!srvOn() || cour.loading[kind] || (cour[kind] && !force)) return;
   cour.loading[kind] = true;
   const f = {moi:()=>Cloud.cour.moi(), fil:()=>Cloud.cour.fil(), trocs:()=>Cloud.cour.trocs(),
-    marche:()=>Cloud.cour.marche(cour.f), annonces:()=>Cloud.cour.annonces()}[kind];
+    marche:()=>Cloud.cour.marche(cour.f), annonces:()=>Cloud.cour.annonces(), journal:()=>Cloud.cour.journal(0, 120)}[kind];
   f().then(d=>{ cour[kind] = d; cour.ok = true;
       if(ui.view==="cour" || (kind==="fil" && ui.view==="accueil")) renderView();
       if(kind==="moi") renderNav() },
@@ -5954,10 +5999,11 @@ function finDans(fin){ const ms = fin - Date.now(); if(!(ms>0)) return "Se termi
   return d>=1 ? `Encore ${d} j ${h%24} h` : h>=1 ? `Encore ${h} h` : `Encore ${Math.max(1,Math.floor(ms/6e4))} min` }
 
 // les billes qui ont changé de main (vendues, troquées, achetées) : la boîte se cale sur la base
-async function syncMarbles(){
+async function syncMarbles(quiet){
   if(!srvOn()) return;
   let list; try{ list = await srv(()=>Cloud.billes(sync.uid)) }catch(e){ return }
   const there = new Map(list.map(x=>[x.id,x])), here = new Set(S.specs.map(x=>x.id));
+  S.specs.forEach(x=>{ const y = there.get(x.id); if(y && y.via && !x.via) Object.assign(x, {via:y.via, at:y.at, found:y.found}) });
   const gone = new Set(S.specs.filter(x=>sync.known.has(x.id) && !there.has(x.id)).map(x=>x.id));
   const come = list.filter(x=>!here.has(x.id));
   if(!gone.size && !come.length) return;
@@ -5968,10 +6014,91 @@ async function syncMarbles(){
   come.forEach(x=>{ S.specs.push(x); S.unseen.push(x.id); sync.known.add(x.id) });
   save(); renderTop(); renderNav();
   if(ui.view!=="cour" && document.getElementById("ov").hidden) renderView();
-  if(come.length) toast(come.length>1 ? `${come.length} billes sont arrivées dans ta boîte !` : `${courName(come[0])} est arrivée dans ta boîte !`);
+  if(come.length && !quiet) toast(come.length>1 ? `${come.length} billes sont arrivées dans ta boîte !` : `${courName(come[0])} est arrivée dans ta boîte !`);
 }
 // de temps en temps : nouvelles demandes, trocs reçus, ventes (et les bonbecs qui vont avec)
-setInterval(()=>{ if(srvOn() && document.visibilityState==="visible"){ courLoad("moi", true); ecoRefresh(); syncMarbles() } }, 60000);
+setInterval(()=>{ if(srvOn() && document.visibilityState==="visible"){ courLoad("moi", true); ecoRefresh(); syncMarbles(true); courNews(false) } }, 60000);
+
+// ---------- le journal : l'historique du troc et du marché, et les nouvelles ----------
+// ce qui mérite d'être annoncé : ce que les autres ont fait (pas ce qu'on a fait soi-même)
+const isNews = e => e.k==="troc" ? (e.statut==="attente" || e.statut==="impossible" || (e.moi_de ? ["accepte","refuse","contre"] : ["annule"]).includes(e.statut))
+  : e.k==="vendue" || e.k==="expiree";
+function journalInfo(e){
+  const o = `<b>${esc(e.autre||"?")}</b>`, b = e.bille ? `<b>${esc(courName(e.bille))}</b>` : "", pr = `${fmt(e.prix||0)} ${CUR.many}`;
+  if(e.k==="troc") return {ic:"swap", txt:{
+      attente: `${o} te propose un troc`,
+      accepte: e.moi_de ? `${o} a accepté ton troc` : `Tu as accepté le troc de ${o}`,
+      refuse: e.moi_de ? `${o} a refusé ton troc` : `Tu as refusé le troc de ${o}`,
+      annule: e.moi_de ? `Tu as annulé ton troc avec ${o}` : `${o} a annulé son troc`,
+      contre: e.moi_de ? `${o} t'a fait une contre-proposition` : `Tu as fait une contre-proposition à ${o}`,
+      impossible: `Le troc avec ${o} n'est plus possible : une des billes n'est plus disponible`}[e.statut] || `Troc avec ${o}`};
+  return {
+    annonce: {ic:"candy", txt:`Tu as mis ${b} en vente à ${pr}`},
+    vendue: {ic:"candy", txt:`${b} vendue à ${o} : +${pr}`},
+    expiree: {ic:"clock", txt:`Personne n'a acheté ${b} : elle est restée dans ta boîte`},
+    retiree: {ic:"clock", txt:`Tu as retiré ${b} de la vente`},
+    achat: {ic:"bag", txt:`Tu as acheté ${b} à ${o} pour ${pr}`}}[e.k] || {ic:"star", txt:""};
+}
+function journalRow(e, click){
+  const J = journalInfo(e), fresh = click && isNews(e) && e.le > (cour.hlSince ?? Infinity);
+  const ball = x => click ? courBall(x, 36) : mImg(x,120,36,"");
+  const balls = e.k==="troc" ? `${(e.recu||[]).map(ball).join("")}${(e.recu||[]).length && (e.donne||[]).length ? `<span class="troc-arrow">${ic("swap",14)}</span>` : ""}${(e.donne||[]).map(ball).join("")}` : e.bille ? ball(e.bille) : "";
+  return `<div class="cour-row jr${fresh?" new":""}"><span class="jr-ic">${ic(J.ic,17)}</span><span class="who">${J.txt}<small>${timeAgo(e.le)}${e.k==="troc"&&e.mot?` · « ${esc(e.mot)} »`:""}</small></span><span class="jr-balls">${balls}</span></div>`;
+}
+// l'onglet Historique : on retient ce qui était nouveau pour le souligner, puis tout est lu
+function courSeeJournal(){ cour.hlSince = S.courHist || 0; S.courHist = Date.now(); cour.unread = 0; save(); courRefresh("journal"); renderNav() }
+function courJournal(){
+  courLoad("journal");
+  const J = cour.journal; if(!J) return courWait();
+  const f = ui.jf || "", list = J.filter(e=>!f || (f==="troc") === (e.k==="troc"));
+  const chip = (k,l) => `<button class="chip" data-action="jr-filt" data-f="${k}" aria-pressed="${f===k}">${l}</button>`;
+  return `<div class="cour-grid"><section class="panel"><div class="panel-head"><h3>Historique</h3><div class="chips">${chip("","Tout")}${chip("troc","Troc")}${chip("marche","Marché")}</div></div>
+    ${list.length ? list.map(e=>journalRow(e, true)).join("") : `<p class="empty">Rien pour l'instant. Tes trocs, ventes et achats s'afficheront ici.</p>`}</section></div>`;
+}
+// les nouvelles depuis la dernière visite : un récapitulatif en arrivant, puis un petit message à chaque nouveauté
+function courNews(welcome){
+  if(!srvOn() || cour.newsBusy) return;
+  const since = S.courVu;
+  if(!since){ S.courVu = Date.now(); save(); return }
+  cour.newsBusy = true;
+  Cloud.cour.journal(since, 60).then(list=>{
+    if(!list.length) return;
+    S.courVu = Math.max(since, ...list.map(e=>e.le)); save();
+    const news = list.filter(isNews);
+    cour.journal = null; if(ui.view==="cour" && ui.courTab==="journal") courLoad("journal");
+    if(!news.length) return;
+    if(!(ui.view==="cour" && ui.courTab==="journal")) cour.unread = (cour.unread||0) + news.length;
+    if(news.some(e=>e.k==="troc")) courRefresh("trocs"); if(news.some(e=>e.k!=="troc")) courRefresh("annonces");
+    renderNav(); if(ui.view==="cour") renderView();
+    const free = document.getElementById("modal").hidden && document.getElementById("ov").hidden && document.getElementById("ask").hidden;
+    if(welcome && free) openNews(news);
+    else { const tmp = document.createElement("div"); tmp.innerHTML = journalInfo(news[0]).txt;
+      toast(news.length>1 ? `${news.length} nouveautés dans la cour : va voir l'historique !` : tmp.textContent + (news[0].k==="troc"&&news[0].statut==="accepte" ? " : tes nouvelles billes sont dans ta boîte !" : ".")) }
+  }, ()=>{}).finally(()=>{ cour.newsBusy = false });
+}
+function openNews(news){
+  const gain = news.filter(e=>e.k==="vendue").reduce((n,e)=>n+e.prix, 0);
+  const el = document.getElementById("modal");
+  el.innerHTML = `<div class="modal recap" role="dialog" aria-modal="true" aria-label="Du nouveau dans la cour">
+    <button class="close-x" data-action="close-modal" aria-label="Fermer">×</button>
+    <div class="rc-body">
+      <span class="daily-kicker">${ic("cour",16)} Pendant ton absence</span>
+      <h2>Du nouveau dans la cour !</h2>
+      ${gain ? `<div class="rc-coins">${COIN}<b>+${fmt(gain)}</b><small>${CUR.many} de ventes</small></div>` : ""}
+      <div class="news-list">${news.slice(0,8).map(e=>journalRow(e, false)).join("")}</div>
+      ${news.length>8 ? `<p class="meta">et ${news.length-8} autre${news.length-8>1?"s":""} nouveauté${news.length-8>1?"s":""}</p>` : ""}
+      <div class="btns"><button class="btn btn-ghost" data-action="news-see">Voir l'historique</button><button class="btn btn-yellow" data-action="close-modal">Super !</button></div>
+    </div></div>`;
+  el.hidden = false;
+}
+// acheter une annonce du marché (après confirmation)
+function buyAnnonce(id){
+  srv(()=>Cloud.cour.acheter(id)).then(r=>{
+    applyEco(r.eco); const x = srvAdopt([r.bille])[0];
+    if(!specById(x.id)){ S.specs.push(x); S.unseen.push(x.id) } save();
+    Sound.coin(); toast(`${courName(x)} est à toi !`); courRefresh("marche","annonces","journal");
+  }, e=>{ courFail(e); courRefresh("marche") });
+}
 
 function viewCour(){
   cour.specs = [];
@@ -5984,8 +6111,8 @@ function viewCour(){
   courLoad("moi");
   const tab = ui.courTab || "copains", M = cour.moi;
   const tb = (k,l,n) => `<button class="tab" role="tab" data-action="cour-tab" data-tab="${k}" aria-selected="${tab===k}">${l}${n?`<span class="n">${n}</span>`:""}</button>`;
-  const tabs = `<div class="tabs cour-tabs" role="tablist">${tb("copains","Copains",(M?.recues||[]).length)}${tb("troc","Troc",M?.trocs||0)}${tb("marche","Marché")}</div>`;
-  const body = tab==="troc" ? courTroc() : tab==="marche" ? courMarche() : courCopains();
+  const tabs = `<div class="tabs cour-tabs" role="tablist">${tb("copains","Copains",(M?.recues||[]).length)}${tb("troc","Troc",M?.trocs||0)}${tb("marche","Marché")}${tb("journal","Historique",cour.unread||0)}</div>`;
+  const body = tab==="troc" ? courTroc() : tab==="marche" ? courMarche() : tab==="journal" ? courJournal() : courCopains();
   return head + tabs + body;
 }
 const courWait = () => `<p class="empty">Un instant…</p>`;
@@ -6032,7 +6159,7 @@ async function openProfil(id){
 }
 
 // ---------- troc ----------
-const TROC_ST = {accepte:"Accepté", refuse:"Refusé", annule:"Annulé", impossible:"Plus possible"};
+const TROC_ST = {accepte:"Accepté", refuse:"Refusé", annule:"Annulé", impossible:"Plus possible", contre:"Contre-proposition"};
 function trocCard(t, kind){
   const me = kind==="recu" ? "vers" : "de";
   const get = me==="vers" ? t.donne : t.demande, give = me==="vers" ? t.demande : t.donne;
@@ -6042,7 +6169,7 @@ function trocCard(t, kind){
     <div class="troc-head">${kind==="recu" ? `<span><b>${esc(other)}</b> te propose un troc</span>` : kind==="envoye" ? `<span>Ton troc avec <b>${esc(other)}</b></span>` : `<span>Troc avec <b>${esc(t.de_pseudo===S.name?t.vers_pseudo:t.de_pseudo)}</b></span><span class="st">${TROC_ST[t.statut]||t.statut}</span>`}<time>${timeAgo(t.le)}</time></div>
     <div class="troc-sides">${side("Tu reçois", get)}<span class="troc-arrow">${ic("swap",22)}</span>${side("Tu donnes", give)}</div>
     ${t.mot ? `<p class="troc-mot">« ${esc(t.mot)} »</p>` : ""}
-    ${kind==="recu" ? `<div class="troc-act"><button class="btn btn-yellow btn-sm" data-action="troc-oui" data-id="${t.id}">${ic("check",16)} Accepter</button><button class="btn btn-ghost btn-sm" data-action="troc-non" data-id="${t.id}">Refuser</button></div>`
+    ${kind==="recu" ? `<div class="troc-act"><button class="btn btn-yellow btn-sm" data-action="troc-oui" data-id="${t.id}">${ic("check",16)} Accepter</button><button class="btn btn-ghost btn-sm" data-action="troc-contre" data-id="${t.id}">${ic("swap",16)} Contre-proposer</button><button class="btn btn-ghost btn-sm" data-action="troc-non" data-id="${t.id}">Refuser</button></div>`
       : kind==="envoye" ? `<div class="troc-act"><button class="btn btn-ghost btn-sm" data-action="troc-annuler" data-id="${t.id}">Annuler ce troc</button></div>` : ""}
   </div>`;
 }
@@ -6071,24 +6198,26 @@ function pickList(list, side, sel, filt){
 function trocCompose(){
   const C = cour.compose;
   return `<div class="cour-grid">
-    <section class="panel"><div class="panel-head"><h3>Troc avec ${esc(C.pseudo)}</h3><button class="see-all" data-action="troc-close">${ic("chevl",14)} Retour</button></div>
+    <section class="panel"><div class="panel-head"><h3>${C.remplace?"Contre-proposition à":"Troc avec"} ${esc(C.pseudo)}</h3><button class="see-all" data-action="troc-close">${ic("chevl",14)} Retour</button></div>
+      ${C.remplace ? `<p class="cour-lead">On est reparti de son troc, à l'envers : change les billes comme tu veux. Ta proposition remplacera la sienne.</p>` : ""}
       <p class="cour-lead">Jusqu'à 6 billes de chaque côté. Seules les billes tirées dans les sacs, les fusions ou le passe peuvent être troquées (pas les billes de départ ni les billes secrètes).</p></section>
     <div class="compose">
       <section class="panel"><div class="panel-head"><h3>Tu donnes</h3><span class="sample-tag">${C.give.length} / 6</span></div>${pickList(C.mine, "give", C.give, C.fg)}</section>
       <section class="panel"><div class="panel-head"><h3>Tu demandes à ${esc(C.pseudo)}</h3><span class="sample-tag">${C.want.length} / 6</span></div>${pickList(C.theirs, "want", C.want, C.fw)}</section>
     </div>
     <section class="panel"><form class="cour-form" id="troc-form"><input type="text" id="troc-mot" maxlength="140" placeholder="Un petit mot (facultatif)" value="${esc(C.mot||"")}" aria-label="Petit mot">
-      <button class="btn btn-yellow" type="submit" ${C.give.length+C.want.length?"":"disabled"}>${ic("swap",18)} Envoyer la proposition</button></form></section>
+      <button class="btn btn-yellow" type="submit" ${C.give.length+C.want.length?"":"disabled"}>${ic("swap",18)} ${C.remplace?"Envoyer la contre-proposition":"Envoyer la proposition"}</button></form></section>
   </div>`;
 }
-function trocStart(id){
+function trocStart(id, pre){
   const a = (cour.moi?.amis||[]).find(x=>x.id===id); if(!a) return;
-  cour.compose = {id, pseudo:a.pseudo, mine:null, theirs:null, give:[], want:[], mot:""};
+  cour.compose = {id, pseudo:a.pseudo, mine:null, theirs:null, give:[...(pre?.give||[])], want:[...(pre?.want||[])], mot:"", remplace:pre?.remplace||null};
   ui.courTab = "troc"; closeModal(); if(ui.view!=="cour") go("cour"); else renderView();
   const C = cour.compose;
   // tes billes : sans la bille active ni celles de ta vitrine
-  Cloud.cour.echangeables(sync.uid).then(l=>{ if(cour.compose===C){ C.mine = l.filter(x=>x.id!==S.active && !S.vitrine.includes(x.id)); renderView() } }, courFail);
-  Cloud.cour.echangeables(id).then(l=>{ if(cour.compose===C){ C.theirs = l; renderView() } }, courFail);
+  // (une bille choisie d'avance qui n'est plus disponible est simplement retirée du troc)
+  Cloud.cour.echangeables(sync.uid).then(l=>{ if(cour.compose===C){ C.mine = l.filter(x=>x.id!==S.active && !S.vitrine.includes(x.id)); C.give = C.give.filter(i=>C.mine.some(x=>x.id===i)); renderView() } }, courFail);
+  Cloud.cour.echangeables(id).then(l=>{ if(cour.compose===C){ C.theirs = l; C.want = C.want.filter(i=>l.some(x=>x.id===i)); renderView() } }, courFail);
 }
 
 // ---------- marché ----------
@@ -6156,6 +6285,27 @@ function toast(msg){
 }
 document.getElementById("toast").addEventListener("click", e=>{ e.currentTarget.classList.remove("show"); clearTimeout(toastT) });
 
+// la fusion, une fois confirmée
+function craftGo(C){
+  const inputs = C.sel.map(specById), gone = new Set(C.sel);
+  const done = out => {
+    S.specs.push(out); S.unseen.push(out.id);
+    if(tierOf(out)>=BIG || out.shiny) logFind(out);
+    S.crafts = (S.crafts||0)+1; C.sel = []; save(); questEvent("craft");
+    showCraft(inputs, out, passXP(PASS_XP.craft));
+  };
+  S.specs = S.specs.filter(s=>!gone.has(s.id));
+  S.unseen = S.unseen.filter(id=>!gone.has(id));
+  if(srvOn()){   // c'est le serveur qui tire la nouvelle bille
+    if(eco.busy) return; eco.busy = true;
+    gone.forEach(id=>sync.known.delete(id));
+    srv(()=>Cloud.eco.fuse([...gone])).then(r=>{ applyEco(r.eco); done(srvAdopt([r.bille])[0]) },
+      e=>{ inputs.forEach(x=>{ S.specs.push(x); sync.known.add(x.id) }); srvFail(e); renderView() }).finally(()=>{ eco.busy = false });
+    return;
+  }
+  gone.forEach(id=>sync.why[id]="fusionnee");
+  done(craftResult(C.t+1));
+}
 let resetArmed = false;
 document.addEventListener("click", e=>{
   if(e.target.id==="modal"){ closeModal(); return }
@@ -6168,6 +6318,7 @@ document.addEventListener("click", e=>{
     // ----- la cour de récré -----
     case "cour-tab": ui.courTab = t.dataset.tab; cour.compose = null; cour.sell = null;
       if(t.dataset.tab==="troc") courRefresh("trocs"); if(t.dataset.tab==="marche") courRefresh("marche","annonces");
+      if(t.dataset.tab==="journal") courSeeJournal();
       renderView(); break;
     case "cour-see": openModal(null, cour.specs[+t.dataset.k]); break;
     case "ami-oui": case "ami-non": {
@@ -6177,11 +6328,17 @@ document.addEventListener("click", e=>{
     }
     case "ami-voir": openProfil(t.dataset.id); break;
     case "ami-retirer": {
-      if(t.dataset.pseudo && !arm("ami-retirer"+t.dataset.id, t, "Sûr ? Clique encore")) break;
-      Cloud.cour.retirer(t.dataset.id).then(()=>{ closeModal(); toast(t.dataset.pseudo ? `${t.dataset.pseudo} n'est plus dans tes copains.` : "Demande annulée."); courRefresh("moi","fil") }, courFail);
+      const pseudo = t.dataset.pseudo, run = () => Cloud.cour.retirer(t.dataset.id).then(()=>{ closeModal(); toast(pseudo ? `${pseudo} n'est plus dans tes copains.` : "Demande annulée."); courRefresh("moi","fil") }, courFail);
+      if(!pseudo){ run(); break }
+      ask({title:`Retirer ${pseudo} de tes copains ?`, text:"Vous ne verrez plus vos vitrines, et les trocs en attente entre vous seront annulés.", ok:"Retirer", danger:true}).then(ok=>ok&&run());
       break;
     }
     case "troc-new": trocStart(t.dataset.id); break;
+    case "troc-contre": {   // contre-proposition : on repart du troc reçu, à l'envers, et on le modifie
+      const T0 = (cour.trocs?.recus||[]).find(x=>x.id===+t.dataset.id); if(!T0) break;
+      trocStart(T0.de, {give:T0.demande.map(x=>x.id), want:T0.donne.map(x=>x.id), remplace:T0.id});
+      break;
+    }
     case "troc-close": cour.compose = null; renderView(); break;
     case "troc-filt": { const X = t.dataset.side==="sell" ? cour.sell : cour.compose; if(!X) break;
       X[{give:"fg", want:"fw", sell:"f"}[t.dataset.side]] = t.dataset.t; renderView(); break }
@@ -6193,29 +6350,42 @@ document.addEventListener("click", e=>{
       renderView(); break;
     }
     case "troc-oui": case "troc-non": {
-      const oui = t.dataset.action==="troc-oui";
-      if(oui && !arm("troc"+t.dataset.id, t, "Sûr ? Clique encore")) break;
-      Cloud.cour.repondreTroc(+t.dataset.id, oui).then(r=>{
-        toast(r.statut==="accepte" ? "Troc fait ! Tes nouvelles billes sont dans ta boîte." : r.statut==="impossible" ? "Ce troc n'est plus possible : une des billes n'est plus disponible." : "Troc refusé.");
-        if(r.statut==="accepte"){ Sound.coin(); syncMarbles() }
-        courRefresh("trocs","moi");
-      }, courFail);
+      const oui = t.dataset.action==="troc-oui", id = +t.dataset.id, T0 = (cour.trocs?.recus||[]).find(x=>x.id===id), who = esc(T0?.de_pseudo||"ton copain");
+      ask(oui ? {title:`Accepter le troc de ${T0?.de_pseudo||"ton copain"} ?`, extra:T0 ? trocSummary(T0.donne, T0.demande) : "",
+                 text:`Tu reçois ${nbBilles(T0?.donne)} et tu donnes ${nbBilles(T0?.demande)}. L'échange se fait tout de suite, et c'est définitif.${(T0?.demande||[]).map(partWarn).join("")}`, ok:"Accepter le troc"}
+              : {title:`Refuser le troc de ${T0?.de_pseudo||"ton copain"} ?`, text:`${who} sera prévenu. Tu peux aussi lui faire une contre-proposition.`, ok:"Refuser", danger:true})
+      .then(ok=>{ if(!ok) return;
+        Cloud.cour.repondreTroc(id, oui).then(r=>{
+          toast(r.statut==="accepte" ? "Troc fait ! Tes nouvelles billes sont dans ta boîte." : r.statut==="impossible" ? "Ce troc n'est plus possible : une des billes n'est plus disponible." : "Troc refusé.");
+          if(r.statut==="accepte"){ Sound.coin(); syncMarbles() }
+          courRefresh("trocs","moi","journal");
+        }, courFail) });
       break;
     }
-    case "troc-annuler": Cloud.cour.annuler(+t.dataset.id).then(()=>{ toast("Troc annulé."); courRefresh("trocs") }, courFail); break;
+    case "troc-annuler": {
+      const id = +t.dataset.id, T0 = (cour.trocs?.envoyes||[]).find(x=>x.id===id);
+      ask({title:"Annuler ce troc ?", text:`${esc(T0?.vers_pseudo||"Ton copain")} ne pourra plus l'accepter.`, ok:"Annuler le troc", no:"Le garder", danger:true})
+        .then(ok=>ok && Cloud.cour.annuler(id).then(()=>{ toast("Troc annulé."); courRefresh("trocs","journal") }, courFail));
+      break;
+    }
     case "mk-vendre": sellStart(); break;
     case "cour-sell-this": sellStart(t.dataset.id); break;
     case "mk-close": cour.sell = null; renderView(); break;
-    case "mk-retirer": Cloud.cour.retirerAnnonce(+t.dataset.id).then(()=>{ toast("Annonce retirée : la bille reste dans ta boîte."); courRefresh("marche","annonces") }, courFail); break;
-    case "mk-acheter": {
-      if(!arm("mk"+t.dataset.id, t, `Payer ${fmt(+t.dataset.prix)} ?`)) break;
-      srv(()=>Cloud.cour.acheter(+t.dataset.id)).then(r=>{
-        applyEco(r.eco); const x = srvAdopt([r.bille])[0];
-        if(!specById(x.id)){ S.specs.push(x); S.unseen.push(x.id) } save();
-        Sound.coin(); toast(`${courName(x)} est à toi !`); courRefresh("marche","annonces");
-      }, e=>{ courFail(e); courRefresh("marche") });
+    case "mk-retirer": {
+      const id = +t.dataset.id, a = [...(cour.annonces||[]), ...(cour.marche||[])].find(x=>x.id===id);
+      ask({title:"Retirer cette bille de la vente ?", balls:a?[a.bille]:[], text:"Elle reste dans ta boîte, et tu pourras la remettre en vente quand tu veux.", ok:"Retirer de la vente"})
+        .then(ok=>ok && Cloud.cour.retirerAnnonce(id).then(()=>{ toast("Annonce retirée : la bille reste dans ta boîte."); courRefresh("marche","annonces","journal") }, courFail));
       break;
     }
+    case "mk-acheter": {
+      const id = +t.dataset.id, prix = +t.dataset.prix, a = (cour.marche||[]).find(x=>x.id===id);
+      ask({title:`Acheter pour ${fmt(prix)} ${CUR.many} ?`, balls:a?[a.bille]:[], ok:"Acheter",
+           text:`${a?`${esc(courName(a.bille))}, vendue par <b>${esc(a.vendeur)}</b>. `:""}Il te restera ${fmt(S.jetons-prix)} ${CUR.many}.`})
+        .then(ok=>ok && buyAnnonce(id));
+      break;
+    }
+    case "news-see": closeModal(); ui.courTab = "journal"; cour.compose = null; cour.sell = null; courSeeJournal(); if(ui.view!=="cour") go("cour"); else renderView(); break;
+    case "jr-filt": ui.jf = t.dataset.f; renderView(); break;
     case "tab": if(t.dataset.tab==="defis"){ closeModal(); go("succes"); break }
       ui.tab=t.dataset.tab; closeModal(); if(ui.view!=="collection") go("collection"); else renderView(); break;
     case "ftype": ui.type=t.dataset.type; renderView(); break;
@@ -6264,9 +6434,9 @@ document.addEventListener("click", e=>{
     }
     case "buy-pass": {
       const P = ensurePass(); if(P.premium) break;
-      if(!arm("pass", t, "Confirmer (démo : aucun paiement)")) break;
+      ask({title:"Débloquer le passe premium ?", text:"Démo : aucun paiement n'est demandé.", ok:"Débloquer"}).then(ok=>{ if(!ok || P.premium) return;
       P.premium = true; save(); Sound.ding(); renderNav(); renderView();
-      toast("Passe premium débloqué ! Les récompenses premium déjà atteintes t'attendent.");
+      toast("Passe premium débloqué ! Les récompenses premium déjà atteintes t'attendent.") });
       break;
     }
     case "set-title": S.title = t.dataset.title; save(); renderTop(); renderView(); break;
@@ -6306,27 +6476,12 @@ document.addEventListener("click", e=>{
     case "craft-auto": ui.craft.sel = craftAuto(ui.craft.t); renderView(); break;
     case "craft-clear": ui.craft.sel = []; renderView(); break;
     case "craft-go": {
-      const C = ui.craft, pool = craftPool(C.t);
-      if(C.t>=TK.length-1 || C.sel.length!==craftN(C.t) || !C.sel.every(id=>pool.some(s=>s.id===id))) break;
-      if(!arm("craft", t, "Confirmer la fusion")) break;
-      const inputs = C.sel.map(specById), gone = new Set(C.sel);
-      const done = out => {
-        S.specs.push(out); S.unseen.push(out.id);
-        if(tierOf(out)>=BIG || out.shiny) logFind(out);
-        S.crafts = (S.crafts||0)+1; C.sel = []; save(); questEvent("craft");
-        showCraft(inputs, out, passXP(PASS_XP.craft));
-      };
-      S.specs = S.specs.filter(s=>!gone.has(s.id));
-      S.unseen = S.unseen.filter(id=>!gone.has(id));
-      if(srvOn()){   // c'est le serveur qui tire la nouvelle bille
-        if(eco.busy) break; eco.busy = true;
-        gone.forEach(id=>sync.known.delete(id));
-        srv(()=>Cloud.eco.fuse([...gone])).then(r=>{ applyEco(r.eco); done(srvAdopt([r.bille])[0]) },
-          e=>{ inputs.forEach(x=>{ S.specs.push(x); sync.known.add(x.id) }); srvFail(e); renderView() }).finally(()=>{ eco.busy = false });
-        break;
-      }
-      gone.forEach(id=>sync.why[id]="fusionnee");
-      done(craftResult(C.t+1));
+      const C = ui.craft, valid = () => { const pool = craftPool(C.t); return C.t<TK.length-1 && C.sel.length===craftN(C.t) && C.sel.every(id=>pool.some(s=>s.id===id)) };
+      if(!valid()) break;
+      const ins = C.sel.map(specById);
+      ask({title:"Lancer la fusion ?", balls:ins, ok:"Fusionner",
+           text:`Ces ${ins.length} billes disparaissent pour donner une ${TYPES[TK[C.t+1]].label}. C'est définitif.${ins.some(x=>x.shiny)?`<span class="warn-note">Il y a une shiny dans la fusion !</span>`:""}`})
+        .then(yes=>{ if(yes && valid()) craftGo(C) });
       break;
     }
     case "craft-again": closeOv(); ui.craft.sel = craftAuto(ui.craft.t); renderView(); break;
@@ -6373,16 +6528,20 @@ document.addEventListener("click", e=>{
     case "shake-bag": shakeBag(); break;
     case "recycle": {
       const s = specById(t.dataset.id); if(!s) break;
-      if(!arm("r"+s.id, t, `Confirmer : +${fmt(recycleValue(s))} ${CUR.many}`)) break;
-      const name = specName(s), got = recycleSpecs([s.id]);
-      closeModal(); renderView(); toast(`${name} échangée à la Confiserie : +${fmt(got)} ${CUR.many}.`);
+      ask({title:`Échanger contre ${fmt(recycleValue(s))} ${CUR.many} ?`, balls:[s], ok:"Échanger",
+           text:`${esc(courName(s))} part à la Confiserie et disparaît de ta boîte.${partWarn(s)}`})
+        .then(ok=>{ if(!ok || !specById(s.id)) return;
+          const name = specName(s), got = recycleSpecs([s.id]);
+          closeModal(); renderView(); toast(`${name} échangée à la Confiserie : +${fmt(got)} ${CUR.many}.`) });
       break;
     }
     case "recycle-dups": {
       const dups = recyclableDups(); if(!dups.length) break;
-      if(!arm("dups", t, `Confirmer : échanger ${dups.length} billes`)) break;
-      const got = recycleSpecs(dups.map(s=>s.id));
-      renderView(); toast(`${dups.length} doubles échangés : +${fmt(got)} ${CUR.many}.`);
+      ask({title:`Échanger ${dups.length} double${dups.length>1?"s":""} ?`, balls:dups, ok:"Tout échanger",
+           text:`Tu gardes toujours un exemplaire de chaque bille. Tu reçois ${fmt(dups.reduce((n,x)=>n+recycleValue(x),0))} ${CUR.many}.`})
+        .then(ok=>{ if(!ok) return; const d = recyclableDups(); if(!d.length) return;
+          const got = recycleSpecs(d.map(s=>s.id));
+          renderView(); toast(`${d.length} doubles échangés : +${fmt(got)} ${CUR.many}.`) });
       break;
     }
     case "q-claim": {
@@ -6432,15 +6591,24 @@ document.addEventListener("submit", e=>{
   if(id==="troc-form"){
     e.preventDefault();
     const C = cour.compose; if(!C) return;
-    const mot = document.getElementById("troc-mot").value;
-    Cloud.cour.proposer(C.id, C.give, C.want, mot).then(()=>{ toast(`Proposition envoyée à ${C.pseudo} !`); cour.compose = null; courRefresh("trocs") }, courFail);
+    const mot = document.getElementById("troc-mot").value; C.mot = mot;
+    const give = (C.mine||[]).filter(x=>C.give.includes(x.id)), want = (C.theirs||[]).filter(x=>C.want.includes(x.id));
+    ask({title: C.remplace ? `Envoyer ta contre-proposition à ${C.pseudo} ?` : `Envoyer ce troc à ${C.pseudo} ?`, extra:trocSummary(want, give),
+         text:`${C.remplace?"Son troc sera remplacé par le tien. ":""}Si ${esc(C.pseudo)} accepte, l'échange se fait tout de suite. Tu peux l'annuler tant qu'il n'a pas répondu.${give.map(partWarn).join("")}`, ok:"Envoyer"})
+      .then(ok=>{ if(!ok || cour.compose!==C) return;
+        Cloud.cour.proposer(C.id, C.give, C.want, mot, C.remplace).then(()=>{ toast(C.remplace ? `Contre-proposition envoyée à ${C.pseudo} !` : `Proposition envoyée à ${C.pseudo} !`); cour.compose = null; courRefresh("trocs","moi","journal") }, courFail) });
     return;
   }
   if(id==="sell-form"){
     e.preventDefault();
     const X = cour.sell, prix = Math.round(+document.getElementById("sell-prix").value), jours = +document.getElementById("sell-jours").value || 3;
     if(!X?.pick || !(prix>=1)) return;
-    Cloud.cour.vendre(X.pick, prix, jours).then(()=>{ toast(`En vente pour ${fmt(prix)} ${CUR.many} !`); cour.sell = null; courRefresh("marche","annonces") }, courFail);
+    X.prix = prix;
+    const b = (X.list||[]).find(x=>x.id===X.pick), rv = b ? recycleValue(b) : 0;
+    ask({title:`Mettre en vente pour ${fmt(prix)} ${CUR.many} ?`, balls:b?[b]:[], ok:"Mettre en vente",
+         text:`${b?esc(courName(b))+", ":""}pendant ${jours} jour${jours>1?"s":""}. Le premier qui l'achète l'emporte, sans te redemander ton avis.${b && prix<rv?`<span class="warn-note">C'est moins que ce qu'en donne la Confiserie (${fmt(rv)} ${CUR.many}).</span>`:""}${b?partWarn(b):""}`})
+      .then(ok=>{ if(!ok || cour.sell!==X) return;
+        Cloud.cour.vendre(X.pick, prix, jours).then(()=>{ toast(`En vente pour ${fmt(prix)} ${CUR.many} !`); cour.sell = null; courRefresh("marche","annonces","journal") }, courFail) });
     return;
   }
   if(id!=="name-form") return;
@@ -6535,7 +6703,7 @@ async function ecoStart(){
 }
 function ecoRefresh(){ if(srvOn()) srv(()=>Cloud.eco.state()).then(applyEco, ()=>{}) }
 // une fois connecté au serveur : les nouvelles de la cour (demandes, trocs) et les billes reçues entre-temps
-function courStart(){ if(!srvOn()) return; courLoad("moi", true); syncMarbles() }
+function courStart(){ if(!srvOn()) return; courLoad("moi", true); syncMarbles(true); courNews(true) }
 const DEVICE = (()=>{ try{ let d = localStorage.getItem("billy-device"); if(!d){ d = newId(); localStorage.setItem("billy-device", d) } return d }catch(e){ return newId() } })();
 const GUEST_FLAG = "billy-guest";   // le joueur a choisi de jouer sans compte sur cet appareil
 const lsGet = k => { try{ return localStorage.getItem(k) }catch(e){ return null } };
@@ -7035,7 +7203,7 @@ document.addEventListener("click", async e=>{
     case "auth-resend": try{ await Cloud.resendConfirm(auth.email); toast("E-mail renvoyé !") }catch(err){ authFail(err) } break;
     case "acct-login": authOpen("login"); break;
     case "acct-signup": authOpen("signup"); break;
-    case "acct-logout": if(arm("logout", t, "Confirmer la déconnexion")) logout(); break;
+    case "acct-logout": ask({title:"Te déconnecter ?", text:"Ta partie reste sauvegardée sur ton compte.", ok:"Me déconnecter"}).then(ok=>ok&&logout()); break;
   }
 });
 document.addEventListener("submit", async e=>{

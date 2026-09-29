@@ -1677,7 +1677,8 @@ const SHINY_RATE = .0001;  // 0,01 % par bille : le graal ultime (0,02 % dans le
 const RECYCLE = {mini:5, bille:8, chinoise:20, calot:50, boulet:150, mammouth:600};
 // une shiny (tirée dans un sac ou une fusion) vaut 10 fois sa taille, plus une prime selon son éclat ; celles du passe, non
 const SHINY_RECYCLE_MULT = 10, SHINY_BONUS = [0, 2000, 5000, 15000];
-const recycleValue = s => s.shiny && !isSeason(s) ? RECYCLE[s.type]*SHINY_RECYCLE_MULT + SHINY_BONUS[s.shiny] : RECYCLE[s.type];
+// avec un compte, seules les billes tirées par le serveur rapportent (pas les billes de départ ni celles d'une partie sans compte)
+const recycleValue = s => srvOn() && !s.srv ? 0 : s.shiny && !isSeason(s) ? RECYCLE[s.type]*SHINY_RECYCLE_MULT + SHINY_BONUS[s.shiny] : RECYCLE[s.type];
 
 // Quêtes du jour : 3 tirées chaque jour dans cette liste
 const QUESTS = {
@@ -2688,6 +2689,7 @@ function recycleSpecs(ids){
   S.specs = S.specs.filter(s=>!gone.includes(s));
   S.unseen = S.unseen.filter(id=>!set.has(id));
   S.jetons += total;
+  if(srvOn()){ const ids = gone.map(s=>s.id); ids.forEach(id=>sync.known.delete(id)); srv(()=>Cloud.eco.recycle(ids)).then(r=>applyEco(r.eco), srvFail) }
   save(); renderTop();
   questEvent("recycle", gone.length);
   passXP(PASS_XP.recycle*gone.length);
@@ -2962,7 +2964,7 @@ function feedItems(){
 function grantSecret(id){
   if(S.specs.some(s=>s.secret===id)) return null;
   const X = SECRETS[id], s = makeSpec(X.type,{seed:hash("secret-"+id), family:X.family, pal:X.palIdx, shiny:X.shiny});
-  s.secret = id; S.specs.push(s); S.unseen.push(s.id); logFind(s);
+  s.secret = id; srvMint(s, "secrete", id); S.specs.push(s); S.unseen.push(s.id); logFind(s);
   if(id==="folle" && !S.titles.includes("Perd la boule")) S.titles.push("Perd la boule");
   save(); return s;
 }
@@ -3053,10 +3055,11 @@ function grantReward(track,t){
   const P = ensurePass(), r = passReward(track,t);
   if(!r || t>passTier() || (track==="prem" && !P.premium) || P[track].includes(t)) return null;
   P[track].push(t);
-  if(r.k==="jetons") S.jetons += r.n;
-  else if(r.k==="bag") S.bagInv[r.bag] = (S.bagInv[r.bag]||0)+1;
+  const key = `${seasonNow().id}|${track}|${t}`;
+  if(r.k==="jetons") earn("passe", key, r.n);
+  else if(r.k==="bag") earn("passe", key, 0, r.bag);
   else if(r.k==="title"){ if(!S.titles.includes(r.name)) S.titles.push(r.name); S.title = r.name }
-  else { const sp = rewardSpec(track,t,r), s = makeSpec(sp.type,sp); s.ed = sp.ed; S.specs.push(s); S.unseen.push(s.id); r.spec = s }
+  else { const sp = rewardSpec(track,t,r), s = makeSpec(sp.type,sp); s.ed = sp.ed; srvMint(s, "passe", key); S.specs.push(s); S.unseen.push(s.id); r.spec = s }
   return r;
 }
 function passXP(n){
@@ -3181,33 +3184,33 @@ function claimDaily(){
   const streak = dailyStreak(), idx = dailyDay(streak), r = dailyRew(idx);
   S.jetons += r.j; if(r.bag) S.bagInv[r.bag] = (S.bagInv[r.bag]||0)+1;
   S.daily = {last:dayKey(), streak};
+  if(srvOn()) srv(()=>Cloud.eco.daily()).then(x=>applyEco(x.eco), srvFail);
   return {...r, idx, streak};
 }
 function claimQuest(i){
   ensureQuests(); const q = S.quests.items[i];
   if(!q || q.claimed || !questDone(q)) return 0;
-  q.claimed = true; S.jetons += QUESTS[q.id].reward; passXP(PASS_XP.quest);
+  q.claimed = true; earn("quete", q.id, QUESTS[q.id].reward); passXP(PASS_XP.quest);
   return QUESTS[q.id].reward;
 }
 function claimBonus(){
   ensureQuests(); const Q = S.quests;
   if(Q.bonus || !Q.items.every(q=>q.claimed)) return 0;
-  Q.bonus = true; S.jetons += QUEST_BONUS; S.stats.bonus++; passXP(PASS_XP.bonus);
+  Q.bonus = true; earn("quetes-bonus", dayKey(), QUEST_BONUS); S.stats.bonus++; passXP(PASS_XP.bonus);
   return QUEST_BONUS;
 }
-function claimRew(r){   // récompense d'un succès ou d'une série
-  if(r.j) S.jetons += r.j;
-  if(r.bag) S.bagInv[r.bag] = (S.bagInv[r.bag]||0)+1;
+function claimRew(r, source, key){   // récompense d'un succès ou d'une série
+  if(r.j || r.bag) earn(source, key, r.j||0, r.bag);
   if(r.title && !S.titles.includes(r.title)){ S.titles.push(r.title); S.title = r.title }
 }
 function claimChal(c){
   if(!c || S.chal.includes(c.id) || chalProg(c)<c.goal) return false;
-  S.chal.push(c.id); claimRew(c.rew); return true;
+  S.chal.push(c.id); claimRew(c.rew, "succes", c.id); return true;
 }
 function claimSeries(se){
   S.seriesDone = S.seriesDone||[];
   if(!se || S.seriesDone.includes(se.id) || seriesProg(se)<se.items.length) return false;
-  S.seriesDone.push(se.id); claimRew(se.rew); return true;
+  S.seriesDone.push(se.id); claimRew(se.rew, "serie", se.id); return true;
 }
 function claimAll(){
   const j0 = S.jetons, b0 = giftCount(), got = [];
@@ -3830,7 +3833,7 @@ const craftShiny = t => SHINY_RATE*craftN(t);   // les chances de shiny des bill
 const RAR_F  = TK.map(t=>TYPES[t].label);
 const RAR_PL = TK.map(t=>TYPES[t].pl);
 // billes qu'on peut fusionner : jamais les shiny, la bille active, la vitrine ni les billes de saison
-const craftPool = t => S.specs.filter(s=>tierOf(s)===t && !s.shiny && !s.secret && s.id!==S.active && !S.vitrine.includes(s.id) && s.pal<BASE_PALS);
+const craftPool = t => S.specs.filter(s=>tierOf(s)===t && !s.shiny && !s.secret && s.id!==S.active && !S.vitrine.includes(s.id) && s.pal<BASE_PALS && (!srvOn() || s.srv));
 const slotCounts = () => { const c={}; S.specs.forEach(s=>{ const k=colorKey(s); c[k]=(c[k]||0)+1 }); return c };   // exemplaires de chaque bille (doubles stricts)
 // la taille au-dessus ; le décor et le coloris sont tirés au hasard avec leurs chances habituelles
 function craftResult(T){
@@ -4193,20 +4196,27 @@ function pullBag(bag){
   }
   return res.sort((a,b)=>TIDX[a.type]-TIDX[b.type] || (a.shiny?1:0)-(b.shiny?1:0));
 }
-function openBag(bagId, gift){
+async function openBag(bagId, gift){
   const bag = BAG_BY[bagId];
-  if(gift){
-    if(!(S.bagInv[bagId]>0)){ toast("Tu n'as plus de sac offert de ce type."); return }
-    S.bagInv[bagId]--;
-  } else if(bag.price===0){
-    if(!freeReady()){ toast(`Ton prochain sac gratuit arrive dans ${freeLeft()}.`); return }
-    useFree();
+  if(gift){ if(!(S.bagInv[bagId]>0)){ toast("Tu n'as plus de sac offert de ce type."); return } }
+  else if(bag.price===0){ if(!freeReady()){ toast(`Ton prochain sac gratuit arrive dans ${freeLeft()}.`); return } }
+  else if(S.jetons < bag.price){ toast(`Il te manque ${fmt(bag.price-S.jetons)} ${CUR.many} pour ce sac.`); return }
+  let pulls;
+  if(srvOn()){   // le serveur encaisse et tire les billes
+    if(eco.busy) return; eco.busy = true;
+    try{
+      const r = await srv(()=>Cloud.eco.openBag(bagId, !!gift));
+      pulls = srvAdopt(r.billes).sort((a,b)=>TIDX[a.type]-TIDX[b.type] || (a.shiny?1:0)-(b.shiny?1:0));
+      pulls.forced = r.force; applyEco(r.eco);
+    }catch(e){ srvFail(e); return }
+    finally{ eco.busy = false }
   } else {
-    if(S.jetons < bag.price){ toast(`Il te manque ${fmt(bag.price-S.jetons)} ${CUR.many} pour ce sac.`); return }
-    S.jetons -= bag.price;
+    if(gift) S.bagInv[bagId]--;
+    else if(bag.price===0) useFree();
+    else S.jetons -= bag.price;
+    pulls = pullBag(bag);
+    S.pity = pulls.some(s=>tierOf(s)>=BIG) ? 0 : (S.pity||0)+1;
   }
-  const pulls = pullBag(bag);
-  S.pity = pulls.some(s=>tierOf(s)>=BIG) ? 0 : (S.pity||0)+1;
   S.bags = (S.bags||0)+1;
   pulls.forEach(s=>{ if(tierOf(s)>=BIG || s.shiny) logFind(s) });
   const before = slotsOwned();
@@ -4734,7 +4744,7 @@ function finishHole(success){
     const rec = !S.best[game.lvl] || game.strokes<S.best[game.lvl];
     if(rec) S.best[game.lvl] = game.strokes;
     const P = playedToday(), paid = !P.tir[game.lvl];
-    if(paid){ P.tir[game.lvl] = 1; S.jetons += rew }
+    if(paid){ P.tir[game.lvl] = 1; earn("jeu", `tir|${game.lvl}`, rew) }
     S.holes++; save(); renderTop(); updHud(); renderHoles();
     const pxp = paid ? passXP(PASS_XP.star*st) : 0;
     questEvent("hole");
@@ -5147,12 +5157,22 @@ const FUN_NOTE = " Ta récompense du jour est déjà prise : cette partie était
 // Jeux à plusieurs : on mise des bonbecs, autant de parties qu'on veut. Plus la mise est grosse, plus les adversaires sont forts.
 const BETS = [0,10,25,50,100];
 const VERSUS = {tic:1, course:1};
-function payOut(rew, st, key, xp=true){
-  S.jetons += rew;
+// src : "pot", "chateau", "casse" (récompense du jour) ou "mise" (Course, Tic)
+function payOut(rew, st, key, xp=true, src=null){
+  if(src==="mise") settleBet(rew);
+  else if(src) earn("jeu", src, rew);
+  else S.jetons += rew;
   if(key && st===3) S.stats.best3[key] = 1;
   save(); renderTop(); renderNav();
   if(st && xp) passXP(PASS_XP.star*st);
   if(rew) Sound.coin();
+}
+// mise en cours au serveur (Course, Tic) : payée à la fin de la partie
+let betP = null;
+function settleBet(gain){
+  if(gain) S.jetons += gain;
+  const p = betP; betP = null;
+  if(p && srvOn()) srv(async()=>{ const r = await p; return Cloud.eco.settle(r.mise, gain) }).then(applyEco, srvFail);
 }
 function pickBet(){
   const el = document.getElementById("a-result"), mode = arena.mode;
@@ -5185,7 +5205,7 @@ const SETUP = {
       if(A.shots>0){ let y=A.start.y; for(let k=0;k<12 && A.balls.some(b=>b.alive && Math.hypot(b.x-A.start.x,b.y-y)<34);k++) y = 80+((y+70)%360); spawnMine(A.start.x,y); updArenaHud(); return }
       const n=A.potted, st = n>=5?3:n>=3?2:n>=1?1:0, rew = n*10+[0,10,25,50][st];
       const paid = soloClaim("pot");
-      S.stats.pot += n; payOut(paid?rew:0, st, "pot", paid);
+      S.stats.pot += n; payOut(paid?rew:0, st, "pot", paid, paid?"pot":null);
       arenaResult(n>=5?"Le grand chelem !":n?"Dans le pot !":"Raté !", st, `${n} bille${n>1?"s":""} dans le pot sur 5 lancers.${paid?"":FUN_NOTE}`, paid?rew:0);
     };
     A.hud = ()=>[["Lancers restants",A.shots],["Dans le pot",A.potted]];
@@ -5209,8 +5229,12 @@ const SETUP = {
       S.stats.castle += n;
       const paid = soloClaim("chateau");
       let prize = "";
-      if(st===3 && paid){ const s=makeSpec("bille"); S.specs.push(s); S.unseen.push(s.id); prize = ` Et pour de vrai : tu gagnes une bille du château, ${specName(s)} !` }
-      payOut(paid?rew:0, st, "chateau", paid);
+      if(st===3 && paid){
+        if(srvOn()){ prize = " Et pour de vrai : tu gagnes une Bille du château !";
+          srv(()=>Cloud.eco.marble("chateau","")).then(r=>{ const s = srvAdopt([r.bille])[0]; S.specs.push(s); S.unseen.push(s.id); applyEco(r.eco); toast(`Ta Bille du château : ${specName(s)} !`) }, srvFail) }
+        else { const s=makeSpec("bille"); S.specs.push(s); S.unseen.push(s.id); prize = ` Et pour de vrai : tu gagnes une bille du château, ${specName(s)} !` }
+      }
+      payOut(paid?rew:0, st, "chateau", paid, paid?"chateau":null);
       arenaResult(n>=10?"Château rasé !":n>=6?"Belle démolition !":n?"Quelques briques en moins":"Le château tient bon", st, `${n} bille${n>1?"s":""} sortie${n>1?"s":""} du cercle sur 10.${prize}${paid?"":FUN_NOTE}`, paid?rew:0);
     };
     A.hud = ()=>[["Tirs restants",A.shots],["Billes sorties",`${A.out} / 10`]];
@@ -5328,7 +5352,7 @@ function endCourse(){
   const pos = me.done ? A.rank.indexOf(me)+1 : 4;
   const gain = pos===1 ? bet*4 : pos===2 ? bet : 0, st = [3,2,1,0][pos-1];
   if(pos===1 && bet) S.stats.race++;
-  payOut(gain, st, pos===1?"course":null, bet>0);
+  payOut(gain, st, pos===1?"course":null, bet>0, "mise");
   const money = !bet ? " Partie pour de faux : rien de gagné, rien de perdu."
     : pos===1 ? ` Tu rafles les 4 mises : +${gain} ${CUR.many} !` : pos===2 ? " Tu récupères ta mise." : ` Ta mise de ${bet} ${CUR.many} est perdue.`;
   arenaResult(pos===1?"Maillot jaune !":pos===2?"Deuxième !":pos===3?"Sur le podium !":me.done?"Quatrième":"Pas fini…", st,
@@ -5347,12 +5371,13 @@ function endTic(res){
   const A = arena, bet = A.bet||0;
   if(res==="win"){
     if(bet) S.stats.tic++;
-    payOut(bet*2, 3, "tic", bet>0);
+    payOut(bet*2, 3, "tic", bet>0, "mise");
     arenaResult("Tic !", 3, `Tu as touché la bille de ${esc(A.foe.name)}. ${bet?`Tu rafles la mise : +${bet*2} ${CUR.many} !`:"Bien visé ! (partie pour de faux)"}`, bet*2);
   } else if(res==="lose"){
+    settleBet(0);
     arenaResult("Tic… pour lui !", 0, `${esc(A.foe.name)} a touché ta bille en premier. ${bet?`Ta mise de ${bet} ${CUR.many} est perdue, mais tu gardes ta bille.`:"Partie pour de faux : rien de perdu."}`, 0);
   } else {
-    payOut(bet, 0, null, false);
+    payOut(bet, 0, null, false, "mise");
     arenaResult("Match nul", null, `Personne n'a fait tic en 5 tirs.${bet?" Chacun récupère sa mise.":""}`, bet);
   }
 }
@@ -5570,7 +5595,7 @@ function cbFinish(){
   const paid = soloClaim("casse");
   S.stats.casse = Math.max(S.stats.casse||0, n);
   S.stats.casseScore = Math.max(S.stats.casseScore||0, cb.score);
-  payOut(paid?rew:0, st, "casse", paid);
+  payOut(paid?rew:0, st, "casse", paid, paid?"casse":null);
   const el = document.getElementById("c-result"); if(!el) return;
   el.innerHTML = `<div class="g-card"><h2>${n>=5?"Le mur est tombé !":n?"Bien joué !":"Raté !"}</h2><div class="stars">${[1,2,3].map(k=>STAR(k<=st)).join("")}</div>
     <p>${n} niveau${n>1?"x":""} réussi${n>1?"s":""} et ${fmt(cb.score)} points.${paid?"":FUN_NOTE}</p>
@@ -5748,6 +5773,7 @@ document.addEventListener("click", e=>{
     case "theme": Theme.toggle(); renderThemeBtn(); break;
     case "seen-all": S.unseen = []; save(); renderView(); break;
     case "give-shiny": {
+      if(sync.on && eco.ready){ srv(()=>Cloud.eco.test("shiny")).then(r=>{ const s = srvAdopt([r.bille])[0]; S.specs.push(s); S.unseen.push(s.id); applyEco(r.eco); renderView(); openModal(s.id) }, srvFail); break }
       const s = makeSpec(TK[2+Math.floor(Math.random()*(TK.length-2))], {shiny:1+Math.floor(Math.random()*3)});
       S.specs.push(s); S.unseen.push(s.id); save(); renderTop(); renderView(); openModal(s.id);
       toast(`Nouvelle shiny ${SHINIES[s.shiny].name} : ${specName(s)} (démo).`);
@@ -5792,7 +5818,10 @@ document.addEventListener("click", e=>{
     case "c-restart": initCasse(); break;
     case "bet": {
       const v = +t.dataset.v; if(S.jetons<v) break;
-      S.jetons -= v; save(); renderTop(); initArena(ui.view, v);
+      S.jetons -= v; save(); renderTop();
+      betP = v && srvOn() ? srv(()=>Cloud.eco.bet(ui.view, v)).then(r=>{ applyEco(r.eco); return r }) : null;
+      betP?.catch(srvFail);
+      initArena(ui.view, v);
       toast(v ? `Mise de ${v} ${CUR.many} : bonne chance !` : "Partie pour de faux : rien à gagner, rien à perdre.");
       break;
     }
@@ -5824,14 +5853,23 @@ document.addEventListener("click", e=>{
       if(C.t>=TK.length-1 || C.sel.length!==craftN(C.t) || !C.sel.every(id=>pool.some(s=>s.id===id))) break;
       if(!arm("craft", t, "Confirmer la fusion")) break;
       const inputs = C.sel.map(specById), gone = new Set(C.sel);
-      gone.forEach(id=>sync.why[id]="fusionnee");
+      const done = out => {
+        S.specs.push(out); S.unseen.push(out.id);
+        if(tierOf(out)>=BIG || out.shiny) logFind(out);
+        S.crafts = (S.crafts||0)+1; C.sel = []; save(); questEvent("craft");
+        showCraft(inputs, out, passXP(PASS_XP.craft));
+      };
       S.specs = S.specs.filter(s=>!gone.has(s.id));
       S.unseen = S.unseen.filter(id=>!gone.has(id));
-      const out = craftResult(C.t+1);
-      S.specs.push(out); S.unseen.push(out.id);
-      if(tierOf(out)>=BIG || out.shiny) logFind(out);
-      S.crafts = (S.crafts||0)+1; C.sel = []; save(); questEvent("craft");
-      showCraft(inputs, out, passXP(PASS_XP.craft));
+      if(srvOn()){   // c'est le serveur qui tire la nouvelle bille
+        if(eco.busy) break; eco.busy = true;
+        gone.forEach(id=>sync.known.delete(id));
+        srv(()=>Cloud.eco.fuse([...gone])).then(r=>{ applyEco(r.eco); done(srvAdopt([r.bille])[0]) },
+          e=>{ inputs.forEach(x=>{ S.specs.push(x); sync.known.add(x.id) }); srvFail(e); renderView() }).finally(()=>{ eco.busy = false });
+        break;
+      }
+      gone.forEach(id=>sync.why[id]="fusionnee");
+      done(craftResult(C.t+1));
       break;
     }
     case "craft-again": closeOv(); ui.craft.sel = craftAuto(ui.craft.t); renderView(); break;
@@ -5913,11 +5951,13 @@ document.addEventListener("click", e=>{
     case "g-restart": loadLevel(game.lvl); break;
     case "g-level": loadLevel(+t.dataset.l); break;
     case "pass-xp": passXP(3*TIER_XP); renderNav(); toast("+3 paliers de passe (démo)."); break;
-    case "add-jetons": S.jetons+=1000; save(); renderTop(); toast(`+1 000 ${CUR.many} ajoutés (démo).`); break;
-    case "refill-free": S.freeT0=Date.now()-FREE_MAX*FREE_EVERY; save(); renderTop(); renderNav(); renderView(); toast(`${FREE_MAX} sacs gratuits en stock (démo).`); break;
+    case "add-jetons": if(sync.on && eco.ready){ srv(()=>Cloud.eco.test("bonbecs")).then(r=>{ applyEco(r.eco); toast(`+1 000 ${CUR.many} (test).`) }, srvFail); break }
+      S.jetons+=1000; save(); renderTop(); toast(`+1 000 ${CUR.many} ajoutés (démo).`); break;
+    case "refill-free": if(sync.on && eco.ready){ srv(()=>Cloud.eco.test("gratuit")).then(r=>{ applyEco(r.eco); renderView(); toast(`${FREE_MAX} sacs gratuits en stock (test).`) }, srvFail); break }
+      S.freeT0=Date.now()-FREE_MAX*FREE_EVERY; save(); renderTop(); renderNav(); renderView(); toast(`${FREE_MAX} sacs gratuits en stock (démo).`); break;
     case "reset":
       if(!resetArmed){ resetArmed=true; t.textContent="Clique encore pour confirmer"; setTimeout(()=>{resetArmed=false; const b=document.getElementById("reset-btn"); if(b) b.textContent="Réinitialiser la démo"},3000); break }
-      resetArmed=false; S=starterState(); save(); renderTop(); renderNav(); renderView(); toast("La démo est revenue à zéro."); break;
+      resetArmed=false; S=starterState(); save(); ecoRefresh(); renderTop(); renderNav(); renderView(); toast("La démo est revenue à zéro."); break;
   }
 });
 document.addEventListener("submit", e=>{
@@ -5965,6 +6005,49 @@ setInterval(()=>{
    Le reste de la partie (bonbecs, titres, défis…) est une sauvegarde en bloc.
    ===================================================================== */
 var sync = {on:false, uid:null, email:"", known:new Set(), timer:0, busy:false, again:false, edits:0, why:{}};
+
+/* ---------- le serveur décide (supabase/serveur.sql) ----------
+   Avec un compte, les bonbecs, les sacs offerts, le sac gratuit et les billes tirées viennent du serveur :
+   le jeu affiche tout de suite, puis se cale sur ce que le serveur répond. Sans compte (ou si serveur.sql
+   n'est pas encore installé), tout reste calculé ici comme avant. */
+var eco = {ready:false, q:Promise.resolve(), testeur:false, busy:false};
+function srvOn(){ return !!(sync.on && eco.ready) }
+// les appels partent un par un, dans l'ordre : le dernier état reçu est toujours le bon
+function srv(fn){ const p = eco.q.then(fn); eco.q = p.catch(()=>{}); return p }
+function applyEco(e){
+  if(!e) return;
+  S.jetons = e.bonbecs; S.bagInv = Object.assign({}, e.sacs||{}); S.freeT0 = e.gratuit_t0; S.pity = e.pity;
+  if(e.serie_jour){ const [y,m,d] = e.serie_jour.split("-").map(Number); S.daily = {last:`${y}-${m}-${d}`, streak:e.serie} }
+  eco.testeur = !!e.testeur;
+  save(); renderTop(); renderNav();
+}
+const ECO_ERR = {pas_assez:`Il te manque des ${CUR.many}.`, pas_encore:"Ton sac gratuit n'est pas encore prêt.", plus_de_sac:"Tu n'as plus de sac offert de ce type.",
+  reseau:"Pas de connexion : réessaie dans un instant.", fusion_invalide:"Cette fusion n'est pas possible.", reserve_aux_testeurs:"Ces outils sont réservés aux comptes de test."};
+function srvFail(e){
+  console.warn("Serveur :", e);
+  if(e?.code!=="deja") toast(ECO_ERR[e?.code] || "Le serveur n'a pas pu enregistrer ça. Réessaie dans un instant.");
+  srv(()=>Cloud.eco.state()).then(applyEco, ()=>{});
+}
+// un gain (quête, jeu, succès, passe…) : compté tout de suite, confirmé ou corrigé par le serveur
+function earn(source, cle, j, bag){
+  if(j) S.jetons += j; if(bag) S.bagInv[bag] = (S.bagInv[bag]||0)+1;
+  if(srvOn()) srv(()=>Cloud.eco.gain(source, cle, j||0, bag)).then(applyEco, srvFail);
+}
+// une bille créée ici dont le serveur fixe tout (billes du passe, billes secrètes) : même identifiant des deux côtés
+function srvMint(sp, source, cle){
+  if(!srvOn()) return;
+  sp.pend = true;   // pas envoyée par la sauvegarde habituelle : c'est le serveur qui la crée
+  srv(()=>Cloud.eco.marble(source, cle, sp.seed, sp.id)).then(r=>{ delete sp.pend; sp.srv = true; sp.no = r.bille.no; sync.known.add(sp.id); applyEco(r.eco) },
+    e=>{ delete sp.pend; srvFail(e) });
+}
+// billes tirées par le serveur : déjà en base
+function srvAdopt(list){ list.forEach(x=>sync.known.add(x.id)); return list }
+// première connexion avec le serveur : il reprend les bonbecs et les sacs offerts de la partie
+async function ecoStart(){
+  try{ applyEco(await Cloud.eco.start(S.jetons, S.bagInv||{}, S.pity||0)); eco.ready = true }
+  catch(e){ eco.ready = false; if(e.code!=="serveur_absent") console.warn("Serveur indisponible, la partie continue sur l'appareil", e) }
+}
+function ecoRefresh(){ if(srvOn()) srv(()=>Cloud.eco.state()).then(applyEco, ()=>{}) }
 const DEVICE = (()=>{ try{ let d = localStorage.getItem("billy-device"); if(!d){ d = newId(); localStorage.setItem("billy-device", d) } return d }catch(e){ return newId() } })();
 const GUEST_FLAG = "billy-guest";   // le joueur a choisi de jouer sans compte sur cet appareil
 const lsGet = k => { try{ return localStorage.getItem(k) }catch(e){ return null } };
@@ -5984,7 +6067,7 @@ async function cloudFlush(){
   const edits = sync.edits;
   try{
     const ids = new Set(S.specs.map(s=>s.id));
-    const add = S.specs.filter(s=>!sync.known.has(s.id));
+    const add = S.specs.filter(s=>!sync.known.has(s.id) && !s.pend);
     const gone = [...sync.known].filter(id=>!ids.has(id));
     if(add.length){
       const rows = await Cloud.addBilles(add);
@@ -6068,7 +6151,9 @@ async function cloudStart0(user){
       adoptState(st);
     }
     if(P.profil) S.name = P.profil.pseudo;
-    sync.on = true; save(); authHide(); rerenderAll();
+    sync.on = true; save();
+    await ecoStart();
+    authHide(); rerenderAll();
     return;
   }
   // premier passage de ce compte : on récupère (ou pas) la collection jouée sans compte
@@ -6081,6 +6166,7 @@ async function cloudStart0(user){
     sync.known = new Set(); sync.on = true; save();
     authShow("loading");
     await cloudFlush();
+    await ecoStart();
     if(fromGuest) lsSet(GUEST_KEY, null);   // la collection appartient maintenant au compte : elle ne peut pas partir sur un autre
     authHide(); rerenderAll();
     toast(fromGuest ? "Ta collection est maintenant sauvegardée sur ton compte." : `Bienvenue dans la cour, ${S.name} !`);
@@ -6113,6 +6199,7 @@ document.addEventListener("visibilitychange", async ()=>{
     sync.known = new Set(P.billes.map(s=>s.id));
     adoptState(st); if(P.profil) S.name = P.profil.pseudo;
     try{ localStorage.setItem(STORE_KEY, JSON.stringify(S)) }catch(e){}
+    ecoRefresh();
     rerenderAll();
   }catch(e){}
 });

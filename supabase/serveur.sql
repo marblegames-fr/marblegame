@@ -144,6 +144,14 @@ $$ select (now() at time zone 'Europe/Paris')::date $$;
 create or replace function interne.saison() returns text language sql stable as
 $$ select to_char(now() at time zone 'Europe/Paris', 'YYYY') || '-' || extract(month from now() at time zone 'Europe/Paris')::int $$;
 
+-- une saison du passe dont on peut encore payer les paliers : celle du mois,
+-- ou celle du mois d'avant pendant les 7 premiers jours (récompenses oubliées versées au changement de mois)
+create or replace function interne.saison_valide(s text, quand timestamptz default now()) returns boolean language sql stable as $$
+  select s = to_char(quand at time zone 'Europe/Paris', 'YYYY') || '-' || extract(month from quand at time zone 'Europe/Paris')::int
+      or (extract(day from quand at time zone 'Europe/Paris') <= 7
+          and s = to_char((quand at time zone 'Europe/Paris') - interval '1 month', 'YYYY') || '-' || extract(month from (quand at time zone 'Europe/Paris') - interval '1 month')::int)
+$$;
+
 -- =====================================================================
 --  OUTILS INTERNES
 -- =====================================================================
@@ -370,7 +378,7 @@ begin
       if montant > 6000 then raise exception 'montant_invalide'; end if;
       k := cle;
     when 'passe' then   -- paliers de la saison en cours seulement
-      if split_part(cle, '|', 1) <> interne.saison() or montant > 400 then raise exception 'montant_invalide'; end if;
+      if not interne.saison_valide(split_part(cle, '|', 1)) or montant > 400 then raise exception 'montant_invalide'; end if;
       k := cle;
     else raise exception 'source_inconnue';
   end case;
@@ -397,7 +405,7 @@ begin
       exception when unique_violation then raise exception 'deja'; end;
       b := interne.nouvelle_bille(qui, 'bille', src => 'chateau');
     when 'passe' then     -- cle : « 2026-9|free|10 »
-      if split_part(cle, '|', 1) <> interne.saison() then raise exception 'montant_invalide'; end if;
+      if not interne.saison_valide(split_part(cle, '|', 1)) then raise exception 'montant_invalide'; end if;
       select x.t, x.sh into t, sh from (values ('free|10','mini',0), ('free|20','bille',0), ('free|30','calot',0),
         ('prem|5','chinoise',0), ('prem|10','calot',1), ('prem|20','boulet',0), ('prem|30','mammouth',3)) x(k, t, sh)
         where x.k = split_part(cle,'|',2) || '|' || split_part(cle,'|',3);

@@ -95,6 +95,25 @@
       settle: (mise, gain) => rpc("regler_mise", {mise, gain}),
       test: action => rpc("outil_test", {action}),
     },
+    // ---------- la cour de récré : copains, troc, marché (supabase/cour.sql) ----------
+    cour: {
+      moi: () => rpc("cour_moi"),
+      ajouter: pseudo => rpc("ami_demander", {pseudo}),
+      repondre: (de, oui) => rpc("ami_repondre", {de, oui}),
+      retirer: ami => rpc("ami_retirer", {ami}),
+      profil: qui => rpc("profil_joueur", {qui}),
+      echangeables: qui => rpc("billes_echangeables", {qui}),
+      fil: () => rpc("fil_amis"),
+      proposer: (vers, donne, demande, mot) => rpc("troc_proposer", {vers, donne, demande, mot:mot||null}),
+      repondreTroc: (troc, oui) => rpc("troc_repondre", {troc, oui}),
+      annuler: troc => rpc("troc_annuler", {troc}),
+      trocs: () => rpc("mes_trocs"),
+      vendre: (bille, prix) => rpc("vendre", {bille, prix}),
+      retirerAnnonce: annonce => rpc("retirer_annonce", {annonce}),
+      acheter: annonce => rpc("acheter", {annonce}),
+      marche: f => rpc("marche", {taille:f.taille||null, decor:f.decor??null, coloris:f.coloris??null, shiny:f.shiny===""||f.shiny==null?null:f.shiny==="1", tri:f.tri||"recent", page:f.page||0}),
+      annonces: () => rpc("mes_annonces"),
+    },
     async setPseudo(uid, pseudo){
       need();
       const {error} = await db.from("profils").update({pseudo}).eq("id", uid);

@@ -127,6 +127,8 @@ button.profile-mini:hover,button.profile-mini[aria-expanded="true"]{background:v
 .profile-mini small{color:var(--muted);font-size:12px;font-weight:600}
 .wallet{display:flex;align-items:center;gap:8px;height:38px;padding:0 14px 0 7px;border-radius:999px;background:var(--panel);border:1px solid var(--line);font-weight:800;font-variant-numeric:tabular-nums}
 .wallet small{font-weight:700;color:var(--ink-2);font-size:12px}
+@media (max-width:420px){ .wallet .w-plus{display:none} #daily-btn{width:34px} }
+@media (max-width:400px){ #daily-btn{display:none} }
 .coin{width:24px;height:24px;flex:none}
 button.wallet:hover{background:var(--panel-2)}
 
@@ -251,7 +253,7 @@ button.mj-row:hover{border-color:var(--line-2)}
 /* ---------- barre du bas (téléphone) : le sac au centre ---------- */
 .tabbar{display:none}
 @media (max-width:820px){
-  .tabbar{position:fixed;left:0;right:0;bottom:0;z-index:40;display:grid;grid-template-columns:repeat(5,minmax(0,1fr));align-items:end;height:calc(68px + env(safe-area-inset-bottom,0px));padding:0 4px env(safe-area-inset-bottom,0px);background:var(--panel);border-top:1px solid var(--line)}
+  .tabbar{position:fixed;left:0;right:0;bottom:0;z-index:40;display:grid;grid-template-columns:repeat(6,minmax(0,1fr));align-items:end;height:calc(68px + env(safe-area-inset-bottom,0px));padding:0 4px env(safe-area-inset-bottom,0px);background:var(--panel);border-top:1px solid var(--line)}
   .mj-scrim{align-items:flex-end}
   .mj-panel{width:100%;height:auto;max-height:88%;border-left:0;border-radius:24px 24px 0 0;padding-bottom:calc(26px + env(safe-area-inset-bottom,0px));animation:mjup .28s cubic-bezier(.2,.9,.3,1)}
 }
@@ -1350,6 +1352,71 @@ button.vit-slot:hover{background:var(--panel-2);color:var(--ink)}
   .modal.drawer{width:100%;max-height:92%;border-radius:24px 24px 0 0;grid-template-columns:minmax(0,1fr);animation:mjup .28s cubic-bezier(.2,.9,.3,1)}
 }
 
+/* ---------- LA COUR DE RÉCRÉ ---------- */
+.cour-tabs{display:flex;flex-wrap:wrap}
+.cour-tabs .tab{display:inline-flex;align-items:center;gap:6px}
+.cour-tabs .tab .n{min-width:18px;height:18px;padding:0 5px;border-radius:999px;background:#E5484D;color:#fff;font-size:11px;display:grid;place-items:center}
+.cour-grid{display:grid;gap:16px}
+.cour-row{display:flex;align-items:center;gap:12px;padding:10px 0;border-top:1px solid var(--line)}
+.cour-row:first-of-type{border-top:0}
+.cour-row .who{flex:1;min-width:0;font-weight:800}
+.cour-row .who small{display:block;color:var(--muted);font-weight:700;font-size:12px}
+.btn-sm{height:34px;padding:0 14px;font-size:13.5px;gap:6px}
+.friends{display:grid;grid-template-columns:repeat(auto-fill,minmax(170px,1fr));gap:12px}
+.friend{display:flex;flex-direction:column;align-items:center;gap:6px;padding:16px 10px 12px;border-radius:var(--r-md);background:var(--panel-2);border:1px solid var(--line);text-align:center}
+.friend .ball{height:64px;display:grid;place-items:center}
+.friend b{font-size:15px;font-weight:900}
+.friend small{font-size:12px;color:var(--muted);font-weight:700;min-height:1.2em}
+.friend .acts{display:flex;gap:6px;margin-top:4px;flex-wrap:wrap;justify-content:center}
+.cour-lead{color:var(--ink-2);font-weight:600;margin-top:8px}
+.troc{padding:14px;border-radius:var(--r-md);background:var(--panel-2);border:1px solid var(--line);display:grid;gap:10px}
+.troc + .troc{margin-top:10px}
+.troc-head{font-weight:800;display:flex;gap:8px;flex-wrap:wrap;align-items:baseline}
+.troc-head time{color:var(--muted);font-size:12px;font-weight:700}
+.troc-sides{display:grid;grid-template-columns:minmax(0,1fr) auto minmax(0,1fr);gap:10px;align-items:center}
+.troc-side{display:grid;gap:6px;padding:10px;border-radius:12px;background:var(--panel);border:1px solid var(--line);min-height:84px;align-content:start}
+.troc-side small{font-size:11px;font-weight:900;text-transform:uppercase;letter-spacing:.06em;color:var(--muted)}
+.troc-balls{display:flex;flex-wrap:wrap;gap:4px}
+.troc-balls button{border-radius:50%;padding:2px}
+.troc-balls button:hover{background:var(--panel-2)}
+.troc-arrow{color:var(--muted)}
+.troc-mot{font-family:var(--hand);font-size:20px;color:var(--ink-2)}
+.troc-act{display:flex;gap:8px;flex-wrap:wrap}
+.troc.fini{opacity:.7}
+.troc .st{font-size:12px;font-weight:900;padding:2px 10px;border-radius:999px;background:var(--panel);border:1px solid var(--line)}
+.compose{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:16px}
+.pick-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(92px,1fr));gap:8px;max-height:420px;overflow:auto;padding:2px}
+.pick{position:relative;display:flex;flex-direction:column;align-items:center;gap:2px;padding:8px 4px;border-radius:12px;border:1.5px solid var(--line);background:var(--panel-2);font-size:11px;font-weight:800;text-align:center;line-height:1.15}
+.pick[aria-pressed="true"]{border-color:var(--blue);background:color-mix(in srgb,var(--blue) 14%,var(--panel));box-shadow:0 0 0 2px color-mix(in srgb,var(--blue) 35%,transparent)}
+.pick .ball{height:52px;display:grid;place-items:center}
+.pick-filters{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:10px}
+.chip{height:30px;padding:0 12px;border-radius:999px;border:1px solid var(--line);background:var(--panel);font-weight:800;font-size:12.5px;color:var(--ink-2)}
+.chip[aria-pressed="true"]{background:var(--ink);color:var(--on-ink);border-color:var(--ink)}
+.cour-form{display:flex;gap:10px;flex-wrap:wrap;align-items:center}
+.cour-form input,.cour-form select{height:40px;padding:0 12px;border-radius:12px;border:1.5px solid var(--line-2);background:var(--panel-2);color:var(--ink);font:inherit;font-weight:800;font-size:15px;min-width:0}
+.cour-form input[type=text]{flex:1 1 200px}
+.cour-form input[type=number]{width:140px}
+.mk-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(170px,1fr));gap:12px}
+.mk{display:flex;flex-direction:column;align-items:center;gap:5px;padding:14px 10px 12px;border-radius:var(--r-md);background:var(--panel);border:1px solid var(--line);text-align:center}
+.mk .ball{height:76px;display:grid;place-items:center;cursor:zoom-in}
+.mk b{font-size:14px;font-weight:900;line-height:1.2}
+.mk .price{display:inline-flex;align-items:center;gap:6px;font-family:var(--display);font-size:22px;line-height:1}
+.mk .price .coin{width:22px;height:22px}
+.mk small{font-size:11.5px;font-weight:700;color:var(--muted)}
+.mk .btn{margin-top:4px}
+.mk.mine{border-style:dashed}
+.mk.sold{opacity:.65}
+.cour-lock{display:grid;place-items:center;text-align:center;gap:10px;padding:40px 20px}
+.cour-lock .btns{display:flex;gap:10px;flex-wrap:wrap;justify-content:center}
+.pf-stats{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px;width:100%}
+.pf-stats div{padding:10px;border-radius:12px;background:var(--panel-2);text-align:center}
+.pf-stats b{display:block;font-size:20px;font-weight:900}
+.pf-stats small{font-size:11px;font-weight:800;color:var(--muted);text-transform:uppercase}
+.modal.profil{display:block;width:min(620px,100%)}
+.modal.profil .pf-body{padding:26px 22px 22px;display:grid;gap:14px;justify-items:center;text-align:center}
+.modal.profil h2{font-family:var(--display);font-weight:400;font-size:32px;line-height:1}
+@media (max-width:700px){ .compose{grid-template-columns:minmax(0,1fr)} .troc-sides{grid-template-columns:minmax(0,1fr)} .troc-arrow{justify-self:center;transform:rotate(90deg)} }
+
 /* ---------- LA CONFISERIE ---------- */
 .cf-sum{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:20px;align-items:center;margin-bottom:18px}
 .cf-big{display:flex;align-items:center;gap:10px;font-family:var(--display);font-size:44px;line-height:1.1;margin:4px 0 6px}
@@ -1388,6 +1455,7 @@ button.vit-slot:hover{background:var(--panel-2);color:var(--ink)}
   .logo{font-size:30px}
   .icon-btn.bell{display:none}
   .wallet small,.mj-btn .lbl{display:none}
+  .wallet{white-space:nowrap;gap:5px;padding:0 10px 0 5px}
   .mj-btn{padding:0 9px}
   .hero{padding:24px 20px 170px}
   .hero-main{top:auto;bottom:0;right:50%;transform:translateX(50%);animation:none}
@@ -2955,8 +3023,10 @@ function fakeFind(at=Date.now()){
 function logFind(s){ S.log.unshift({who:S.name, me:true, s:{seed:s.seed,type:s.type,family:s.family,pal:s.pal,shiny:s.shiny,at:s.at}, at:s.at}); S.log = S.log.slice(0,12) }
 function ago(t){ const m=Math.max(0,Math.round((Date.now()-t)/60000)); return m<1?"à l'instant":m<60?`il y a ${m} min`:`il y a ${Math.round(m/60)} h` }
 function feedItems(){
-  if(!feed.length) for(let i=0;i<5;i++) feed.push(fakeFind(Date.now()-(i*7+2)*60000));
-  return [...S.log.slice(0,4), ...feed].sort((a,b)=>b.at-a.at).slice(0,6).map(e=>{
+  let others;
+  if(srvOn()){ courLoad("fil"); others = cour.fil || [] }   // avec un compte : les vraies trouvailles des copains
+  else { if(!feed.length) for(let i=0;i<5;i++) feed.push(fakeFind(Date.now()-(i*7+2)*60000)); others = feed }
+  return [...S.log.slice(0,4), ...others].sort((a,b)=>b.at-a.at).slice(0,6).map(e=>{
     const ed = editionOf(e.s);
     return `<li>${mImg(e.s,60,28,"")}<span><b>${esc(e.me?e.who+" (toi)":e.who)}</b> a trouvé ${e.s.shiny?"une shiny ":""}<b>${esc(TYPES[e.s.type].label+" "+specName(e.s))}</b> ${tierTag(e.s)}${ed===1?` <span class="first-pill">Première mondiale</span>`:""}<time>${ago(e.at)}</time></span></li>`}).join("");
 }
@@ -3074,7 +3144,7 @@ const giftCount = () => Object.values(S.bagInv).reduce((a,b)=>a+b,0);
 /* =====================================================================
    NAVIGATION & HAUT DE PAGE
    ===================================================================== */
-const NAV = [["accueil","Accueil","home"],["sacs","Ouvrir des sacs","bag"],["collection","Boîte à billes","layers"],["jeux","Jeux de la cour","pad"],["confiserie","La Confiserie","candy"]];
+const NAV = [["accueil","Accueil","home"],["sacs","Ouvrir des sacs","bag"],["collection","Boîte à billes","layers"],["jeux","Jeux de la cour","pad"],["confiserie","La Confiserie","candy"],["cour","La cour de récré","cour"]];
 // les pages qui ne sont pas dans le menu allument leur « parent »
 const NAV_PARENT = {billepedia:"collection", tir:"jeux", pot:"jeux", chateau:"jeux", casse:"jeux", tic:"jeux", course:"jeux", atelier:"confiserie"};
 const SOLO_GAMES = [["pot","Le Pot"],["chateau","Le Château"],["casse","Le Casse-briques"]];
@@ -3088,16 +3158,16 @@ function renderNav(){
   document.getElementById("nav").innerHTML = NAV.map(n=>
     `<button class="nav-btn" data-action="nav" data-view="${n[0]}" ${cur===n[0]?'aria-current="page"':""}>${ic(n[2])}<span>${n[1]}</span>${
       n[0]==="sacs"&&bags?`<span class="cnt" aria-label="${bags} sac${bags>1?"s":""} à ouvrir">${bags}</span>`:""}${
-      n[0]==="jeux"&&games?'<span class="ready" aria-label="Récompense du jour à gagner"></span>':""}</button>`
+      n[0]==="jeux"&&games?'<span class="ready" aria-label="Récompense du jour à gagner"></span>':""}${
+      n[0]==="cour"&&courCount()?`<span class="cnt" aria-label="${courCount()} nouveauté${courCount()>1?"s":""} dans la cour">${courCount()}</span>`:""}</button>`
   ).join("") + (()=>{ const pc = passClaimable();
     return `<button class="nav-btn nav-apart" data-action="nav" data-view="passe" ${cur==="passe"?'aria-current="page"':""}>${ic("ticket")}<span>Passe de saison</span>${pc?`<span class="cnt gold" aria-label="${pc} récompense${pc>1?"s":""} à prendre">${pc}</span>`:""}</button>` })()
-    + `<div class="side-friends"><b>${ic("users",18)} Les copains</b>Amis, cour de récré et classement arriveront ici, tous au même endroit.</div>
-    <p class="side-quote">Les plus grandes aventures commencent toujours par une petite bille.
+    + `<p class="side-quote">Les plus grandes aventures commencent toujours par une petite bille.
     <svg width="40" height="36" viewBox="0 0 40 36" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"><path d="M6 2c-4 12 2 24 26 28"/><path d="M26 24l6 6-8 3"/></svg></p>`;
   const tab = (v,l,i,dot) => `<button class="tb" data-action="nav" data-view="${v}" ${cur===v?'aria-current="page"':""}>${ic(i,24)}${l}${dot?'<span class="dot"></span>':""}</button>`;
   document.getElementById("tabbar").innerHTML = tab("accueil","Accueil","home") + tab("collection","Boîte","layers")
     + `<button class="tab-bag" data-action="nav" data-view="sacs" ${cur==="sacs"?'aria-current="page"':""}><span class="bb">${bagSVG(FREE_BAG)}${bags?`<span class="n">${bags}</span>`:""}</span>Sacs</button>`
-    + tab("jeux","Jeux","pad",games) + tab("confiserie","Confiserie","candy");
+    + tab("jeux","Jeux","pad",games) + tab("confiserie","Confiserie","candy") + tab("cour","Cour","cour",courCount());
   renderDay();
 }
 
@@ -3319,7 +3389,7 @@ document.addEventListener("keydown", e=>{ if(e.key==="Escape") toggleProfPop(fal
 function go(view){ toggleProfPop(false); if(view==="atelier"){ view="confiserie"; ui.confTab="fusion" } if(view==="billepedia"){ view="collection"; ui.tab="pedia" } ui.view=view; renderNav(); renderView(); window.scrollTo({top:0}); }
 function renderView(){
   const v = document.getElementById("view");
-  const map = {succes:viewSucces, accueil:viewHome, sacs:viewBags, collection:viewCollection, jeux:viewGames, tir:viewGame, pot:viewArena, chateau:viewArena, casse:viewCasse, tic:viewArena, course:viewArena, quetes:viewQuests, billepedia:viewPedia, passe:viewPass, profil:viewProfile, atelier:viewCraft, confiserie:viewConfiserie};
+  const map = {cour:viewCour, succes:viewSucces, accueil:viewHome, sacs:viewBags, collection:viewCollection, jeux:viewGames, tir:viewGame, pot:viewArena, chateau:viewArena, casse:viewCasse, tic:viewArena, course:viewArena, quetes:viewQuests, billepedia:viewPedia, passe:viewPass, profil:viewProfile, atelier:viewCraft, confiserie:viewConfiserie};
   v.innerHTML = (map[ui.view] || viewSoon)();
   if(ui.view==="passe") focusTrack();
   if(ui.view==="tir") initGame();
@@ -4094,9 +4164,10 @@ function openModal(id, pv){
         ${pv?"":`<dt>N° de série</dt><dd><code>${serial(s)}</code></dd>
         <dt>Obtenue le</dt><dd>${new Date(s.at).toLocaleDateString("fr-FR",{day:"numeric",month:"long",year:"numeric"})}</dd>`}
       </dl>
-      ${pv?`<p class="meta">Aperçu Billepedia · ${S.specs.some(x=>slotKey(x)===slotKey(s))?"tu as déjà ce format dans ce décor.":"pas encore dans ta boîte à billes."}</p>`:`<div class="modal-actions">
+      ${pv&&pv.cour?`<p class="meta">${esc(pv.cour)}</p>`:pv?`<p class="meta">Aperçu Billepedia · ${S.specs.some(x=>slotKey(x)===slotKey(s))?"tu as déjà ce format dans ce décor.":"pas encore dans ta boîte à billes."}</p>`:`<div class="modal-actions">
         ${S.active===s.id?`<button class="btn btn-ghost" disabled>Bille active</button>`:`<button class="btn btn-blue" data-action="set-active" data-id="${s.id}">Jouer avec cette bille</button>`}
         ${S.vitrine.includes(s.id)?`<button class="btn btn-ghost" data-action="vit-rm" data-id="${s.id}">${ic("layers",16)} Retirer de la vitrine</button>`:`<button class="btn btn-ghost" data-action="vit-add" data-id="${s.id}">${ic("layers",16)} Mettre en vitrine</button>`}
+        ${srvOn() && s.srv && !s.secret ? `<button class="btn btn-ghost" data-action="cour-sell-this" data-id="${s.id}">${ic("cour",16)} Vendre au marché</button>` : ""}
         ${S.active===s.id||s.secret?"":`<button class="btn btn-ghost" data-action="recycle" data-id="${s.id}">${ic("candy",16)} Échanger · +${fmt(recycleValue(s))} ${CUR.many}</button>`}
         ${sib.length>1 && keepOf(sib).id!==s.id?`<button class="btn btn-ghost" data-action="keep-copy" data-id="${s.id}">${ic("check",16)} Garder cet exemplaire</button>`:""}
         ${caseList.length>1 && coverOf(caseList).id!==s.id?`<button class="btn btn-ghost" data-action="cover" data-id="${s.id}">${ic("star",16)} Afficher dans l'album</button>`:""}
@@ -5746,6 +5817,226 @@ function viewSoon(){
 }
 
 /* =====================================================================
+   LA COUR DE RÉCRÉ : copains, troc, marché (supabase/cour.sql)
+   Tout se décide sur le serveur ; ici on affiche et on envoie les demandes.
+   ===================================================================== */
+var cour = {ok:null, moi:null, fil:null, trocs:null, marche:null, annonces:null, loading:{}, f:{taille:"", shiny:"", tri:"recent"},
+  compose:null, sell:null, specs:[]};
+const COUR_ERR = {inconnu:"Personne ne s'appelle comme ça dans la cour.", soi_meme:"C'est toi ! Donne plutôt ton pseudo à tes copains.",
+  deja_ami:"Vous êtes déjà copains.", trop_amis:"Tu as déjà 200 copains !", trop_demandes:"Tu as déjà beaucoup de demandes en attente.",
+  plus_de_demande:"Cette demande n'existe plus.", pas_ami:"Vous n'êtes pas (ou plus) copains.", bille_indisponible:"Une de ces billes n'est plus disponible.",
+  troc_invalide:"Ce troc n'est pas possible.", trop_trocs:"Tu as déjà 20 trocs en attente.", plus_de_troc:"Ce troc n'existe plus.",
+  prix_invalide:"Choisis un prix entre 1 et 1 000 000.", trop_annonces:"Tu as déjà 30 billes en vente.", plus_en_vente:"Cette bille n'est plus en vente.",
+  ta_bille:"C'est ta propre bille !", pas_assez:`Il te manque des ${CUR.many}.`, reseau:"Pas de connexion : réessaie dans un instant."};
+function courFail(e){ console.warn("Cour :", e); toast(COUR_ERR[e?.code] || "Oups, ça n'a pas marché. Réessaie dans un instant.") }
+const courCount = () => cour.moi ? (cour.moi.trocs||0) + (cour.moi.recues||[]).length : 0;
+// charge une partie de la cour, puis réaffiche si on y est toujours
+function courLoad(kind, force){
+  if(!srvOn() || cour.loading[kind] || (cour[kind] && !force)) return;
+  cour.loading[kind] = true;
+  const f = {moi:()=>Cloud.cour.moi(), fil:()=>Cloud.cour.fil(), trocs:()=>Cloud.cour.trocs(),
+    marche:()=>Cloud.cour.marche(cour.f), annonces:()=>Cloud.cour.annonces()}[kind];
+  f().then(d=>{ cour[kind] = d; cour.ok = true;
+      if(ui.view==="cour" || (kind==="fil" && ui.view==="accueil")) renderView();
+      if(kind==="moi") renderNav() },
+    e=>{ if(e.code==="serveur_absent") cour.ok = false; else if(ui.view==="cour") courFail(e); if(ui.view==="cour") renderView() })
+    .finally(()=>{ cour.loading[kind] = false });
+}
+const courRefresh = (...kinds) => kinds.forEach(k=>courLoad(k, true));
+// une bille vue dans la cour (celle d'un copain, d'une annonce…) : on peut l'ouvrir en grand
+function courSpec(s, note){ cour.specs.push(Object.assign({}, s, {cour:note||"Une bille de la cour de récré."})); return cour.specs.length-1 }
+const courBall = (s, px=46, note) => `<button data-action="cour-see" data-k="${courSpec(s, note)}" title="${esc(TYPES[s.type].label+" "+specName(s))}">${mImg(s,120,px,"")}</button>`;
+const courName = s => `${TYPES[s.type].label} ${specName(s)}`;
+const timeAgo = t => ago(typeof t==="number" ? t : Date.parse(t));
+
+// les billes qui ont changé de main (vendues, troquées, achetées) : la boîte se cale sur la base
+async function syncMarbles(){
+  if(!srvOn()) return;
+  let list; try{ list = await srv(()=>Cloud.billes(sync.uid)) }catch(e){ return }
+  const there = new Map(list.map(x=>[x.id,x])), here = new Set(S.specs.map(x=>x.id));
+  const gone = new Set(S.specs.filter(x=>sync.known.has(x.id) && !there.has(x.id)).map(x=>x.id));
+  const come = list.filter(x=>!here.has(x.id));
+  if(!gone.size && !come.length) return;
+  S.specs = S.specs.filter(x=>!gone.has(x.id)); gone.forEach(id=>sync.known.delete(id));
+  S.unseen = S.unseen.filter(id=>!gone.has(id));
+  S.vitrine = S.vitrine.map(id=>gone.has(id) ? null : id);
+  if(gone.has(S.active)) S.active = [...S.specs].sort(tierSort)[0]?.id;
+  come.forEach(x=>{ S.specs.push(x); S.unseen.push(x.id); sync.known.add(x.id) });
+  save(); renderTop(); renderNav();
+  if(ui.view!=="cour" && document.getElementById("ov").hidden) renderView();
+  if(come.length) toast(come.length>1 ? `${come.length} billes sont arrivées dans ta boîte !` : `${courName(come[0])} est arrivée dans ta boîte !`);
+}
+// de temps en temps : nouvelles demandes, trocs reçus, ventes (et les bonbecs qui vont avec)
+setInterval(()=>{ if(srvOn() && document.visibilityState==="visible"){ courLoad("moi", true); ecoRefresh(); syncMarbles() } }, 60000);
+
+function viewCour(){
+  cour.specs = [];
+  const head = `<div class="page-head"><div><h1>La cour de récré</h1><p>Retrouve tes copains, troque tes billes et fais de bonnes affaires au marché.</p></div><span class="hand-note">On échange ?</span></div>`;
+  if(!sync.on) return head + `<section class="panel cour-lock">${ic("cour",40)}<h2>Il te faut un compte</h2>
+    <p class="cour-lead">La cour, c'est pour échanger avec les autres joueurs : ta collection doit être sauvegardée sur ton compte.</p>
+    ${window.Cloud?.available ? `<div class="btns"><button class="btn btn-yellow" data-action="acct-signup">Créer un compte</button><button class="btn btn-ghost" data-action="acct-login">Se connecter</button></div>` : ""}</section>`;
+  if(!eco.ready || cour.ok===false) return head + `<section class="panel cour-lock">${ic("cour",40)}<h2>La cour ouvre bientôt</h2>
+    <p class="cour-lead">Le serveur de la cour n'est pas encore en place. Reviens un peu plus tard !</p></section>`;
+  courLoad("moi");
+  const tab = ui.courTab || "copains", M = cour.moi;
+  const tb = (k,l,n) => `<button class="tab" role="tab" data-action="cour-tab" data-tab="${k}" aria-selected="${tab===k}">${l}${n?`<span class="n">${n}</span>`:""}</button>`;
+  const tabs = `<div class="tabs cour-tabs" role="tablist">${tb("copains","Copains",(M?.recues||[]).length)}${tb("troc","Troc",M?.trocs||0)}${tb("marche","Marché")}</div>`;
+  const body = tab==="troc" ? courTroc() : tab==="marche" ? courMarche() : courCopains();
+  return head + tabs + body;
+}
+const courWait = () => `<p class="empty">Un instant…</p>`;
+
+function courCopains(){
+  const M = cour.moi; if(!M) return courWait();
+  courLoad("fil");
+  const rec = M.recues||[], env = M.envoyees||[], amis = M.amis||[];
+  return `<div class="cour-grid">
+    <section class="panel"><div class="panel-head"><h3>Ajouter un copain</h3><span class="sample-tag">Ton pseudo : ${esc(S.name)}</span></div>
+      <form class="cour-form" id="ami-form"><input type="text" id="ami-pseudo" maxlength="20" placeholder="Le pseudo de ton copain" autocomplete="off" aria-label="Pseudo"><button class="btn btn-yellow" type="submit">${ic("plus",16)} Ajouter</button></form>
+      <p class="cour-lead">Donne ton pseudo à tes copains. Une fois que vous vous êtes ajoutés, vous pouvez voir vos vitrines et vous proposer des trocs.</p></section>
+    ${rec.length ? `<section class="panel"><div class="panel-head"><h3>Ils veulent être tes copains</h3></div>
+      ${rec.map(r=>`<div class="cour-row"><span class="who">${esc(r.pseudo)}<small>${timeAgo(r.le)}</small></span>
+        <button class="btn btn-yellow btn-sm" data-action="ami-oui" data-id="${r.id}">Accepter</button><button class="btn btn-ghost btn-sm" data-action="ami-non" data-id="${r.id}">Refuser</button></div>`).join("")}</section>` : ""}
+    <section class="panel"><div class="panel-head"><h3>Mes copains <small class="meta">${amis.length}</small></h3></div>
+      ${amis.length ? `<div class="friends">${amis.map(a=>`<div class="friend"><span class="ball">${a.active ? mImg(a.active,120,Math.round(40*scaleOf(a.active.type)+18),"") : ""}</span>
+          <b>${esc(a.pseudo)}</b><small>${esc(a.titre||"")}</small>
+          <div class="acts"><button class="btn btn-ghost btn-sm" data-action="ami-voir" data-id="${a.id}">Voir</button><button class="btn btn-yellow btn-sm" data-action="troc-new" data-id="${a.id}">Troquer</button></div></div>`).join("")}</div>`
+        : `<p class="empty">Pas encore de copain. Ajoute quelqu'un avec son pseudo !</p>`}
+      ${env.length ? `<p class="meta" style="margin-top:14px">En attente de réponse : ${env.map(r=>`<b>${esc(r.pseudo)}</b> <button class="see-all" data-action="ami-retirer" data-id="${r.id}">annuler</button>`).join(" · ")}</p>` : ""}
+    </section>
+    ${cour.fil && cour.fil.length ? `<section class="panel"><div class="panel-head"><h3>Les trouvailles des copains</h3><span class="sample-tag">Boulets, Mammouths et shiny</span></div>
+      ${cour.fil.map(e=>`<div class="cour-row">${courBall(e.s,44,`Trouvée par ${e.who}.`)}<span class="who">${esc(e.who)} a trouvé ${e.s.shiny?"une shiny ":""}${esc(courName(e.s))}<small>${timeAgo(e.at)}</small></span></div>`).join("")}</section>` : ""}
+  </div>`;
+}
+
+async function openProfil(id){
+  const el = document.getElementById("modal");
+  let P; try{ P = await Cloud.cour.profil(id) }catch(e){ courFail(e); return }
+  cour.specs = cour.specs || [];
+  el.innerHTML = `<div class="modal profil" role="dialog" aria-modal="true" aria-label="${esc(P.pseudo)}">
+    <button class="close-x" data-action="close-modal" aria-label="Fermer">×</button>
+    <div class="pf-body">
+      ${P.active ? mImg(P.active,240,96,"") : ""}
+      <h2>${esc(P.pseudo)}</h2>${P.titre?`<span class="pill" style="--rc:var(--ink-2);--rb:var(--panel-2)">${esc(P.titre)}</span>`:""}
+      <div class="pf-stats"><div><b>${fmt(P.billes)}</b><small>Billes</small></div><div><b>${fmt(P.cases)}</b><small>Cases</small></div><div><b>${fmt(P.shiny)}</b><small>Shiny</small></div></div>
+      ${P.vitrine.length ? `<div><div class="lbl" style="margin-bottom:6px">Sa vitrine</div><div class="troc-balls" style="justify-content:center">${P.vitrine.map(x=>courBall(x,64,`Dans la vitrine de ${P.pseudo}.`)).join("")}</div></div>` : ""}
+      ${P.trouvailles.length ? `<div><div class="lbl" style="margin-bottom:6px">Ses belles trouvailles</div><div class="troc-balls" style="justify-content:center">${P.trouvailles.map(x=>courBall(x,52,`Une belle trouvaille de ${P.pseudo}.`)).join("")}</div></div>` : ""}
+      <div class="troc-act"><button class="btn btn-yellow" data-action="troc-new" data-id="${P.id}">Lui proposer un troc</button>
+        <button class="btn btn-ghost" data-action="ami-retirer" data-id="${P.id}" data-pseudo="${esc(P.pseudo)}">Retirer de mes copains</button></div>
+    </div></div>`;
+  el.hidden = false;
+}
+
+// ---------- troc ----------
+const TROC_ST = {accepte:"Accepté", refuse:"Refusé", annule:"Annulé", impossible:"Plus possible"};
+function trocCard(t, kind){
+  const me = kind==="recu" ? "vers" : "de";
+  const get = me==="vers" ? t.donne : t.demande, give = me==="vers" ? t.demande : t.donne;
+  const other = me==="vers" ? t.de_pseudo : t.vers_pseudo;
+  const side = (lbl, list) => `<div class="troc-side"><small>${lbl}</small><div class="troc-balls">${list.length ? list.map(x=>courBall(x,48)).join("") : `<span class="meta">rien</span>`}</div></div>`;
+  return `<div class="troc${kind==="fini"?" fini":""}">
+    <div class="troc-head">${kind==="recu" ? `<span><b>${esc(other)}</b> te propose un troc</span>` : kind==="envoye" ? `<span>Ton troc avec <b>${esc(other)}</b></span>` : `<span>Troc avec <b>${esc(t.de_pseudo===S.name?t.vers_pseudo:t.de_pseudo)}</b></span><span class="st">${TROC_ST[t.statut]||t.statut}</span>`}<time>${timeAgo(t.le)}</time></div>
+    <div class="troc-sides">${side("Tu reçois", get)}<span class="troc-arrow">${ic("swap",22)}</span>${side("Tu donnes", give)}</div>
+    ${t.mot ? `<p class="troc-mot">« ${esc(t.mot)} »</p>` : ""}
+    ${kind==="recu" ? `<div class="troc-act"><button class="btn btn-yellow btn-sm" data-action="troc-oui" data-id="${t.id}">${ic("check",16)} Accepter</button><button class="btn btn-ghost btn-sm" data-action="troc-non" data-id="${t.id}">Refuser</button></div>`
+      : kind==="envoye" ? `<div class="troc-act"><button class="btn btn-ghost btn-sm" data-action="troc-annuler" data-id="${t.id}">Annuler ce troc</button></div>` : ""}
+  </div>`;
+}
+function courTroc(){
+  if(cour.compose) return trocCompose();
+  courLoad("trocs");
+  const T = cour.trocs, amis = cour.moi?.amis || [];
+  if(!T) return courWait();
+  return `<div class="cour-grid">
+    <section class="panel"><div class="panel-head"><h3>Proposer un troc</h3></div>
+      ${amis.length ? `<div class="chips">${amis.map(a=>`<button class="chip" data-action="troc-new" data-id="${a.id}">${esc(a.pseudo)}</button>`).join("")}</div>
+        <p class="cour-lead">Choisis un copain, puis les billes que tu donnes et celles que tu voudrais. Il reçoit ta proposition et décide.</p>`
+        : `<p class="cour-lead">Pour troquer, ajoute d'abord des copains dans l'onglet Copains.</p>`}</section>
+    <section class="panel"><div class="panel-head"><h3>On te propose</h3></div>${T.recus.length ? T.recus.map(t=>trocCard(t,"recu")).join("") : `<p class="empty">Aucun troc reçu pour l'instant.</p>`}</section>
+    ${T.envoyes.length ? `<section class="panel"><div class="panel-head"><h3>Tu as proposé</h3></div>${T.envoyes.map(t=>trocCard(t,"envoye")).join("")}</section>` : ""}
+    ${T.finis.length ? `<section class="panel"><div class="panel-head"><h3>Derniers trocs</h3></div>${T.finis.map(t=>trocCard(t,"fini")).join("")}</section>` : ""}
+  </div>`;
+}
+const pickCard = (x, side, on) => `<button class="pick" data-action="troc-pick" data-side="${side}" data-id="${x.id}" aria-pressed="${on}"><span class="ball">${mImg(x,120,Math.round(28*scaleOf(x.type)+16),"")}</span>${esc(specName(x))}<small class="meta">${TYPES[x.type].label}</small></button>`;
+function pickList(list, side, sel, filt){
+  if(!list) return courWait();
+  const shown = list.filter(x=>!filt || x.type===filt);
+  const chips = `<div class="pick-filters"><button class="chip" data-action="troc-filt" data-side="${side}" data-t="" aria-pressed="${!filt}">Toutes</button>${TK.filter(t=>list.some(x=>x.type===t)).map(t=>`<button class="chip" data-action="troc-filt" data-side="${side}" data-t="${t}" aria-pressed="${filt===t}">${TYPES[t].pl}</button>`).join("")}</div>`;
+  return list.length ? chips + `<div class="pick-grid">${shown.map(x=>pickCard(x, side, sel.includes(x.id))).join("")}</div>` : `<p class="empty">Aucune bille à troquer.</p>`;
+}
+function trocCompose(){
+  const C = cour.compose;
+  return `<div class="cour-grid">
+    <section class="panel"><div class="panel-head"><h3>Troc avec ${esc(C.pseudo)}</h3><button class="see-all" data-action="troc-close">${ic("chevl",14)} Retour</button></div>
+      <p class="cour-lead">Jusqu'à 6 billes de chaque côté. Seules les billes tirées dans les sacs, les fusions ou le passe peuvent être troquées (pas les billes de départ ni les billes secrètes).</p></section>
+    <div class="compose">
+      <section class="panel"><div class="panel-head"><h3>Tu donnes</h3><span class="sample-tag">${C.give.length} / 6</span></div>${pickList(C.mine, "give", C.give, C.fg)}</section>
+      <section class="panel"><div class="panel-head"><h3>Tu demandes à ${esc(C.pseudo)}</h3><span class="sample-tag">${C.want.length} / 6</span></div>${pickList(C.theirs, "want", C.want, C.fw)}</section>
+    </div>
+    <section class="panel"><form class="cour-form" id="troc-form"><input type="text" id="troc-mot" maxlength="140" placeholder="Un petit mot (facultatif)" value="${esc(C.mot||"")}" aria-label="Petit mot">
+      <button class="btn btn-yellow" type="submit" ${C.give.length+C.want.length?"":"disabled"}>${ic("swap",18)} Envoyer la proposition</button></form></section>
+  </div>`;
+}
+function trocStart(id){
+  const a = (cour.moi?.amis||[]).find(x=>x.id===id); if(!a) return;
+  cour.compose = {id, pseudo:a.pseudo, mine:null, theirs:null, give:[], want:[], mot:""};
+  ui.courTab = "troc"; closeModal(); if(ui.view!=="cour") go("cour"); else renderView();
+  const C = cour.compose;
+  // tes billes : sans la bille active ni celles de ta vitrine
+  Cloud.cour.echangeables(sync.uid).then(l=>{ if(cour.compose===C){ C.mine = l.filter(x=>x.id!==S.active && !S.vitrine.includes(x.id)); renderView() } }, courFail);
+  Cloud.cour.echangeables(id).then(l=>{ if(cour.compose===C){ C.theirs = l; renderView() } }, courFail);
+}
+
+// ---------- marché ----------
+function courMarche(){
+  if(cour.sell) return sellView();
+  courLoad("marche"); courLoad("annonces");
+  const L = cour.marche, A = cour.annonces, f = cour.f;
+  const sel = (id, opts, v) => `<select id="${id}" aria-label="${id}">${opts.map(([k,l])=>`<option value="${k}"${v===k?" selected":""}>${l}</option>`).join("")}</select>`;
+  const card = a => { const x = a.bille;
+    return `<div class="mk${a.moi?" mine":""}"><span class="ball" data-action="cour-see" data-k="${courSpec(x, a.moi?"Ta bille en vente.":`En vente par ${a.vendeur}.`)}">${mImg(x,160,Math.round(44*scaleOf(x.type)+22),"")}</span>
+      <b>${esc(specName(x))}</b><span style="display:flex;gap:4px;flex-wrap:wrap;justify-content:center">${typePill(x.type)}${shinyPill(x)}</span>
+      <span class="price">${COIN}${fmt(a.prix)}</span>
+      <small>${a.moyen?`Prix moyen : ${fmt(a.moyen)} · `:""}${a.moi?"ta bille":`par ${esc(a.vendeur)}`}</small>
+      ${a.moi ? `<button class="btn btn-ghost btn-sm" data-action="mk-retirer" data-id="${a.id}">Retirer</button>`
+        : `<button class="btn btn-yellow btn-sm" data-action="mk-acheter" data-id="${a.id}" data-prix="${a.prix}" ${S.jetons<a.prix?"disabled":""}>Acheter</button>`}</div>` };
+  const mine = (A||[]);
+  return `<div class="cour-grid">
+    <section class="panel"><div class="panel-head"><h3>Le marché</h3><button class="btn btn-yellow btn-sm" data-action="mk-vendre">${ic("candy",16)} Vendre une bille</button></div>
+      <div class="cour-form" id="mk-filters">
+        ${sel("mk-taille", [["","Toutes les tailles"], ...TK.map(t=>[t,TYPES[t].pl])], f.taille)}
+        ${sel("mk-shiny", [["","Shiny ou pas"],["1","Shiny seulement"],["0","Sans shiny"]], f.shiny)}
+        ${sel("mk-tri", [["recent","Plus récentes"],["prix","Moins chères"],["rare","Plus rares"]], f.tri)}
+      </div>
+      <p class="cour-lead">Chacun fixe son prix, et le vendeur reçoit tous les ${CUR.many}. Le prix moyen montre ce que les joueurs ont payé ce modèle ces 30 derniers jours.</p></section>
+    ${!L ? courWait() : L.length ? `<div class="mk-grid">${L.map(card).join("")}</div>` : `<p class="empty">Rien en vente avec ces filtres pour l'instant.</p>`}
+    ${mine.length ? `<section class="panel"><div class="panel-head"><h3>Mes annonces</h3></div><div class="mk-grid">${mine.map(a=>{ const x=a.bille;
+      return `<div class="mk mine${a.vendue?" sold":""}"><span class="ball" data-action="cour-see" data-k="${courSpec(x)}">${mImg(x,160,Math.round(40*scaleOf(x.type)+20),"")}</span><b>${esc(specName(x))}</b>
+        <span class="price">${COIN}${fmt(a.prix)}</span>
+        ${a.vendue ? `<small>Vendue à ${esc(a.acheteur||"?")}</small>` : `<button class="btn btn-ghost btn-sm" data-action="mk-retirer" data-id="${a.id}">Retirer</button>`}</div>` }).join("")}</div></section>` : ""}
+  </div>`;
+}
+function sellStart(pick){
+  cour.sell = {list:null, pick:pick||null, prix:""};
+  ui.courTab = "marche"; closeModal(); if(ui.view!=="cour") go("cour"); else renderView();
+  const X = cour.sell;
+  Cloud.cour.echangeables(sync.uid).then(l=>{ if(cour.sell===X){ X.list = l.filter(x=>x.id!==S.active); renderView() } }, courFail);
+}
+function sellView(){
+  const X = cour.sell, p = X.pick && (X.list||[]).find(x=>x.id===X.pick);
+  return `<div class="cour-grid">
+    <section class="panel"><div class="panel-head"><h3>Vendre une bille</h3><button class="see-all" data-action="mk-close">${ic("chevl",14)} Retour</button></div>
+      ${p ? `<div class="cour-row">${mImg(p,120,56,"")}<span class="who">${esc(courName(p))}<small>À la Confiserie, elle vaut ${fmt(recycleValue(p))} ${CUR.many}.</small></span></div>
+        <form class="cour-form" id="sell-form"><input type="number" id="sell-prix" min="1" max="1000000" step="1" placeholder="Prix" value="${X.prix||""}" aria-label="Prix en ${CUR.many}" required>
+          <span class="meta">${CUR.many}</span><button class="btn btn-yellow" type="submit">Mettre en vente</button></form>
+        <p class="cour-lead">Tu peux la retirer quand tu veux tant que personne ne l'a achetée. Pendant qu'elle est en vente, elle ne peut pas être troquée.</p>`
+        : `<p class="cour-lead">Choisis la bille à vendre. Ta bille active, les billes de départ et les billes secrètes ne peuvent pas être vendues.</p>`}
+    </section>
+    <section class="panel">${pickList(X.list, "sell", X.pick?[X.pick]:[], X.f)}</section>
+  </div>`;
+}
+
+/* =====================================================================
    INTERACTIONS
    ===================================================================== */
 let toastT;
@@ -5759,6 +6050,57 @@ document.addEventListener("click", e=>{
   switch(t.dataset.action){
     case "nav": closeModal(); openDay(false); if(t.dataset.conftab) ui.confTab=t.dataset.conftab; go(t.dataset.view); break;
     case "conf-tab": ui.confTab=t.dataset.tab; renderView(); break;
+    // ----- la cour de récré -----
+    case "cour-tab": ui.courTab = t.dataset.tab; cour.compose = null; cour.sell = null;
+      if(t.dataset.tab==="troc") courRefresh("trocs"); if(t.dataset.tab==="marche") courRefresh("marche","annonces");
+      renderView(); break;
+    case "cour-see": openModal(null, cour.specs[+t.dataset.k]); break;
+    case "ami-oui": case "ami-non": {
+      const oui = t.dataset.action==="ami-oui";
+      Cloud.cour.repondre(t.dataset.id, oui).then(()=>{ toast(oui ? "Vous êtes maintenant copains !" : "Demande refusée."); courRefresh("moi","fil") }, courFail);
+      break;
+    }
+    case "ami-voir": openProfil(t.dataset.id); break;
+    case "ami-retirer": {
+      if(t.dataset.pseudo && !arm("ami-retirer"+t.dataset.id, t, "Sûr ? Clique encore")) break;
+      Cloud.cour.retirer(t.dataset.id).then(()=>{ closeModal(); toast(t.dataset.pseudo ? `${t.dataset.pseudo} n'est plus dans tes copains.` : "Demande annulée."); courRefresh("moi","fil") }, courFail);
+      break;
+    }
+    case "troc-new": trocStart(t.dataset.id); break;
+    case "troc-close": cour.compose = null; renderView(); break;
+    case "troc-filt": { const X = t.dataset.side==="sell" ? cour.sell : cour.compose; if(!X) break;
+      X[{give:"fg", want:"fw", sell:"f"}[t.dataset.side]] = t.dataset.t; renderView(); break }
+    case "troc-pick": {
+      if(t.dataset.side==="sell"){ cour.sell.pick = t.dataset.id; renderView(); document.getElementById("sell-prix")?.focus(); break }
+      const C = cour.compose, list = t.dataset.side==="give" ? C.give : C.want, i = list.indexOf(t.dataset.id);
+      C.mot = document.getElementById("troc-mot")?.value || C.mot;
+      if(i>=0) list.splice(i,1); else if(list.length<6) list.push(t.dataset.id); else { toast("6 billes au maximum de chaque côté."); break }
+      renderView(); break;
+    }
+    case "troc-oui": case "troc-non": {
+      const oui = t.dataset.action==="troc-oui";
+      if(oui && !arm("troc"+t.dataset.id, t, "Sûr ? Clique encore")) break;
+      Cloud.cour.repondreTroc(+t.dataset.id, oui).then(r=>{
+        toast(r.statut==="accepte" ? "Troc fait ! Tes nouvelles billes sont dans ta boîte." : r.statut==="impossible" ? "Ce troc n'est plus possible : une des billes n'est plus disponible." : "Troc refusé.");
+        if(r.statut==="accepte"){ Sound.coin(); syncMarbles() }
+        courRefresh("trocs","moi");
+      }, courFail);
+      break;
+    }
+    case "troc-annuler": Cloud.cour.annuler(+t.dataset.id).then(()=>{ toast("Troc annulé."); courRefresh("trocs") }, courFail); break;
+    case "mk-vendre": sellStart(); break;
+    case "cour-sell-this": sellStart(t.dataset.id); break;
+    case "mk-close": cour.sell = null; renderView(); break;
+    case "mk-retirer": Cloud.cour.retirerAnnonce(+t.dataset.id).then(()=>{ toast("Annonce retirée : la bille reste dans ta boîte."); courRefresh("marche","annonces") }, courFail); break;
+    case "mk-acheter": {
+      if(!arm("mk"+t.dataset.id, t, `Payer ${fmt(+t.dataset.prix)} ?`)) break;
+      srv(()=>Cloud.cour.acheter(+t.dataset.id)).then(r=>{
+        applyEco(r.eco); const x = srvAdopt([r.bille])[0];
+        if(!specById(x.id)){ S.specs.push(x); S.unseen.push(x.id) } save();
+        Sound.coin(); toast(`${courName(x)} est à toi !`); courRefresh("marche","annonces");
+      }, e=>{ courFail(e); courRefresh("marche") });
+      break;
+    }
     case "tab": if(t.dataset.tab==="defis"){ closeModal(); go("succes"); break }
       ui.tab=t.dataset.tab; closeModal(); if(ui.view!=="collection") go("collection"); else renderView(); break;
     case "ftype": ui.type=t.dataset.type; renderView(); break;
@@ -5960,8 +6302,33 @@ document.addEventListener("click", e=>{
       resetArmed=false; S=starterState(); save(); ecoRefresh(); renderTop(); renderNav(); renderView(); toast("La démo est revenue à zéro."); break;
   }
 });
+document.addEventListener("change", e=>{
+  const k = {"mk-taille":"taille", "mk-shiny":"shiny", "mk-tri":"tri"}[e.target.id];
+  if(k){ cour.f[k] = e.target.value; courRefresh("marche") }
+});
 document.addEventListener("submit", e=>{
-  if(e.target.id!=="name-form") return;
+  const id = e.target.id;
+  if(id==="ami-form"){
+    e.preventDefault();
+    const v = document.getElementById("ami-pseudo").value.trim(); if(!v) return;
+    Cloud.cour.ajouter(v).then(r=>{ toast(r==="ami" ? `${v} t'avait déjà demandé : vous êtes copains !` : `Demande envoyée à ${v}.`); courRefresh("moi","fil") }, courFail);
+    return;
+  }
+  if(id==="troc-form"){
+    e.preventDefault();
+    const C = cour.compose; if(!C) return;
+    const mot = document.getElementById("troc-mot").value;
+    Cloud.cour.proposer(C.id, C.give, C.want, mot).then(()=>{ toast(`Proposition envoyée à ${C.pseudo} !`); cour.compose = null; courRefresh("trocs") }, courFail);
+    return;
+  }
+  if(id==="sell-form"){
+    e.preventDefault();
+    const X = cour.sell, prix = Math.round(+document.getElementById("sell-prix").value);
+    if(!X?.pick || !(prix>=1)) return;
+    Cloud.cour.vendre(X.pick, prix).then(()=>{ toast(`En vente pour ${fmt(prix)} ${CUR.many} !`); cour.sell = null; courRefresh("marche","annonces") }, courFail);
+    return;
+  }
+  if(id!=="name-form") return;
   e.preventDefault();
   const v = e.target.pseudo.value.trim().replace(/\s+/g," ");
   if(!/^[\p{L}\p{N}_\- ]{3,20}$/u.test(v)){ toast("Ton pseudo doit faire 3 à 20 caractères : lettres, chiffres, espaces, - et _."); return }
@@ -6048,6 +6415,8 @@ async function ecoStart(){
   catch(e){ eco.ready = false; if(e.code!=="serveur_absent") console.warn("Serveur indisponible, la partie continue sur l'appareil", e) }
 }
 function ecoRefresh(){ if(srvOn()) srv(()=>Cloud.eco.state()).then(applyEco, ()=>{}) }
+// une fois connecté au serveur : les nouvelles de la cour (demandes, trocs) et les billes reçues entre-temps
+function courStart(){ if(!srvOn()) return; courLoad("moi", true); syncMarbles() }
 const DEVICE = (()=>{ try{ let d = localStorage.getItem("billy-device"); if(!d){ d = newId(); localStorage.setItem("billy-device", d) } return d }catch(e){ return newId() } })();
 const GUEST_FLAG = "billy-guest";   // le joueur a choisi de jouer sans compte sur cet appareil
 const lsGet = k => { try{ return localStorage.getItem(k) }catch(e){ return null } };
@@ -6153,7 +6522,7 @@ async function cloudStart0(user){
     if(P.profil) S.name = P.profil.pseudo;
     sync.on = true; save();
     await ecoStart();
-    authHide(); rerenderAll();
+    authHide(); rerenderAll(); courStart();
     return;
   }
   // premier passage de ce compte : on récupère (ou pas) la collection jouée sans compte
@@ -6199,7 +6568,7 @@ document.addEventListener("visibilitychange", async ()=>{
     sync.known = new Set(P.billes.map(s=>s.id));
     adoptState(st); if(P.profil) S.name = P.profil.pseudo;
     try{ localStorage.setItem(STORE_KEY, JSON.stringify(S)) }catch(e){}
-    ecoRefresh();
+    ecoRefresh(); courStart();
     rerenderAll();
   }catch(e){}
 });

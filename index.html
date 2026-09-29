@@ -5790,7 +5790,7 @@ function viewSoon(){
         : `<p>Crée un compte pour garder ta collection en sécurité et la retrouver sur tous tes appareils.</p>
         <div style="display:flex;gap:10px;flex-wrap:wrap;margin-top:14px">${window.Cloud?.available ? `<button class="btn btn-yellow" data-action="acct-signup">Créer un compte</button><button class="btn btn-ghost" data-action="acct-login">Se connecter</button>` : `<p>Connexion impossible pour l'instant.</p>`}</div>`}
       </section>
-      <section class="panel"><div class="panel-head"><h3>Outils de test</h3></div>
+      ${devTools() ? `<section class="panel"><div class="panel-head"><h3>Outils de test</h3></div>
         <p>Pour tester sans attendre : ajoute des ${CUR.many}, recharge tout de suite le sac gratuit ou reçois une bille shiny.</p>
         <div style="display:flex;gap:10px;flex-wrap:wrap;margin-top:14px">
           <button class="btn btn-ghost" data-action="add-jetons">+ 1 000 ${CUR.many}</button>
@@ -5805,7 +5805,7 @@ function viewSoon(){
       <section class="panel"><div class="panel-head"><h3>Recommencer</h3></div>
         <p>Remet la boîte à billes, les ${CUR.many}, les records, le passe et les défis comme au premier lancement.</p>
         <div style="margin-top:14px"><button class="btn btn-ghost" data-action="reset" id="reset-btn">Réinitialiser la démo</button></div>
-      </section>
+      </section>` : ""}
     </div>`;
   const [title,lead,points] = SOON[ui.view] || ["Bientôt","",[]];
   let extra = "";
@@ -6055,6 +6055,7 @@ document.addEventListener("click", e=>{
   if(e.target.id==="modal"){ closeModal(); return }
   if(e.target.id==="mj-sheet"){ openDay(false); return }
   const t = e.target.closest("[data-action]"); if(!t) return;
+  if(DEV_ACTIONS.includes(t.dataset.action) && !devTools()) return;
   switch(t.dataset.action){
     case "nav": closeModal(); openDay(false); if(t.dataset.conftab) ui.confTab=t.dataset.conftab; go(t.dataset.view); break;
     case "conf-tab": ui.confTab=t.dataset.tab; renderView(); break;
@@ -6386,6 +6387,10 @@ var sync = {on:false, uid:null, email:"", known:new Set(), timer:0, busy:false, 
    le jeu affiche tout de suite, puis se cale sur ce que le serveur répond. Sans compte (ou si serveur.sql
    n'est pas encore installé), tout reste calculé ici comme avant. */
 var eco = {ready:false, q:Promise.resolve(), testeur:false, busy:false};
+// outils de test : pour les comptes testeurs, ou quand le jeu tourne sur l'ordinateur (pas en ligne)
+const DEV_HOST = location.protocol==="file:" || /^(localhost|127\.0\.0\.1|)$/.test(location.hostname);
+const devTools = () => sync.on ? eco.testeur : DEV_HOST;
+const DEV_ACTIONS = ["add-jetons","refill-free","give-shiny","pass-xp","daily-reset","pity-max","reset"];
 function srvOn(){ return !!(sync.on && eco.ready) }
 // les appels partent un par un, dans l'ordre : le dernier état reçu est toujours le bon
 function srv(fn){ const p = eco.q.then(fn); eco.q = p.catch(()=>{}); return p }

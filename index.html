@@ -1011,7 +1011,16 @@ button.vit-slot:hover{background:var(--panel-2);color:var(--ink)}
 .day b{font-weight:900;font-size:13px;font-variant-numeric:tabular-nums}
 .day.today{border-color:#F2AE12;background:var(--gold-bg);box-shadow:0 0 0 3px color-mix(in srgb,#FFC93F 30%,transparent)}
 .day.got{opacity:.55}
-.daily-cal{display:flex;flex-direction:column;gap:8px;width:100%;margin:4px 0;max-height:min(52vh,430px);overflow:auto;padding:2px}
+.sh-odds{display:flex;flex-direction:column;gap:1px;font-size:11px;font-weight:700;color:var(--muted);width:100%}
+.sh-odds span{display:flex;justify-content:space-between;gap:6px}
+.sh-odds b{color:var(--ink-2);font-weight:900;font-variant-numeric:tabular-nums}
+.daily-cal{display:flex;flex-direction:column;gap:6px;width:100%;margin:2px 0}
+.daily-cal .day{padding:6px 2px;gap:2px;border-radius:10px}
+.daily-cal .day .coin{width:20px;height:20px}
+.daily-cal .day-bag{height:20px}
+.daily-cal .day b{font-size:12px}
+.modal.daily .daily-body{gap:8px;padding-top:22px}
+.modal.daily .daily-body h2{font-size:28px}
 .daily-wk{display:flex;flex-direction:column;gap:4px;text-align:left}
 .wk-lbl{font-size:11px;font-weight:900;color:var(--muted);text-transform:uppercase;letter-spacing:.06em}
 .daily-cal .daily-row{margin:0}
@@ -1487,6 +1496,7 @@ button.vit-slot:hover{background:var(--panel-2);color:var(--ink)}
   <div class="tagline">Ouvre. Collectionne. Joue.</div>
   <div class="top-spacer"></div>
   <button class="mj-btn" id="mj-btn" data-action="mj-open" aria-label="Ma journée"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3.5" y="8" width="17" height="4" rx="1"/><path d="M5 12v8h14v-8M12 8v12M12 8C10.5 4 7 4 7 6s3 2 5 2c2 0 5 0 5-2s-3.5-2-5 2"/></svg><span class="lbl">Ma journée</span><span class="n" id="mj-n" hidden></span></button>
+  <button class="icon-btn" id="daily-btn" data-action="daily-open" aria-label="Le bonbec du jour"><span class="dot"></span></button>
   <button class="wallet" data-action="nav" data-view="sacs" aria-label="Mes bonbecs, ouvrir des sacs"><span id="coin-slot"></span><span id="jetons">0</span><small>bonbecs</small><span class="w-plus" aria-hidden="true"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg></span></button>
   <div class="prof-wrap">
     <button class="profile-mini" data-action="prof-pop" aria-label="Mon profil" aria-expanded="false" aria-haspopup="true">
@@ -3102,10 +3112,10 @@ function dayHTML(inSheet){
   ensureQuests();
   const Q = S.quests, n = mjClaimable();
   // le bonbec du jour
-  const dReady = dailyReady(), streak = dReady ? dailyStreak() : (S.daily?.streak||1), idx = dailyDay(streak), dToday = dailyRew(idx, isWednesday()?2:1);
+  const dReady = dailyReady(), streak = dReady ? dailyStreak() : (S.daily?.streak||1), idx = dailyDay(streak), dToday = dailyRew(idx);
   const next = dailyDay(streak+1);
   const rows1 = [mjRow({icon:"gift", title:"Le bonbec du jour", ready:dReady, done:!dReady,
-    text: dReady ? `Jour ${idx+1} sur ${DAILY_N}${isWednesday()?" · mercredi : doublé !":""}` : `Demain : ${dailyText(dailyRew(next))} (jour ${next+1})`,
+    text: dReady ? `Jour ${idx+1} sur ${DAILY_N}` : `Demain : ${dailyText(dailyRew(next))} (jour ${next+1})`,
     btn: dReady ? `<button class="btn btn-yellow" data-action="daily-claim">${dToday.bag?ic("bag",16):""}${dToday.j?`+${fmt(dToday.j)} ${COIN}`:""}</button>` : "", act:'data-action="daily-open"'})];
   // les sacs
   const st = freeStock(), gifts = giftCount();
@@ -3168,7 +3178,7 @@ function openDay(open){
 // Les récompenses : une fonction par sorte, pour les boutons un par un et pour « Tout récupérer »
 function claimDaily(){
   if(!dailyReady()) return null;
-  const streak = dailyStreak(), idx = dailyDay(streak), r = dailyRew(idx, isWednesday()?2:1);
+  const streak = dailyStreak(), idx = dailyDay(streak), r = dailyRew(idx);
   S.jetons += r.j; if(r.bag) S.bagInv[r.bag] = (S.bagInv[r.bag]||0)+1;
   S.daily = {last:dayKey(), streak};
   return {...r, idx, streak};
@@ -3220,23 +3230,22 @@ function claimAll(){
 const DAILY_CAL = [
   {j:60},  {j:80},  {j:100}, {bag:"classique"}, {j:120}, {j:150}, {bag:"classique"},
   {j:100}, {j:120}, {j:150}, {bag:"classique"}, {j:180}, {j:200}, {bag:"premium"},
-  {j:120}, {j:150}, {j:180}, {bag:"classique"}, {j:200}, {j:250}, {bag:"premium", j:200},
+  {j:120}, {j:150}, {j:180}, {bag:"classique"}, {j:200}, {j:250}, {bag:"premium"},  
   {j:150}, {j:180}, {j:200}, {bag:"premium"},   {j:250}, {j:300}, {bag:"collector"},
 ];
 const DAILY_N = DAILY_CAL.length;
 const dailyDay = streak => streak<=DAILY_N ? streak-1 : DAILY_N-7 + (streak-DAILY_N-1)%7;   // 0 à 27
-const dailyRew = (i, mult=1) => ({j:(DAILY_CAL[i].j||0)*mult, bag:DAILY_CAL[i].bag});
+const dailyRew = i => ({j:DAILY_CAL[i].j||0, bag:DAILY_CAL[i].bag});
 const dailyText = r => [r.j?`${fmt(r.j)} ${CUR.many}`:"", r.bag?`un ${BAG_BY[r.bag].name}`:""].filter(Boolean).join(" et ");
 const dailyReady = () => !S.daily || S.daily.last!==dayKey();
 const dailyStreak = () => S.daily && S.daily.last===dayKey(new Date(Date.now()-864e5)) ? S.daily.streak+1 : 1;
-const isWednesday = () => new Date().getDay()===3;   // le mercredi, pas d'école : bonbecs doublés
 function openDaily(){
-  const ready = dailyReady(), mult = isWednesday()?2:1;
-  const streak = ready ? dailyStreak() : (S.daily?.streak||1), idx = dailyDay(streak), r = dailyRew(idx, mult);
+  const ready = dailyReady();
+  const streak = ready ? dailyStreak() : (S.daily?.streak||1), idx = dailyDay(streak), r = dailyRew(idx);
   const next = dailyDay(streak+1), looped = streak>DAILY_N;
   const cell = (d,i) => { const got = i<idx || (!ready && i===idx), today = ready && i===idx, B = d.bag && BAG_BY[d.bag];
     return `<div class="day ${got?"got":today?"today":""}${B?" has-bag":""}${i%7===6?" wk-end":""}" ${B?`style="--bc:${B.color}"`:""} title="Jour ${i+1} : ${esc(dailyText(dailyRew(i)))}">
-      <small>${i+1}</small>${B?`<span class="day-bag">${ic("bag",20,2.2)}</span><em>${B.name.replace("Sac ","")}</em>`:`${COIN}`}${d.j?`<b>${fmt(d.j*(today?mult:1))}</b>`:""}
+      <small>${i+1}</small>${B?`<span class="day-bag">${ic("bag",20,2.2)}</span><em>${B.name.replace("Sac ","")}</em>`:`${COIN}`}${d.j?`<b>${fmt(d.j)}</b>`:""}
       ${got?`<span class="day-ok">${ic("check",11,3)}</span>`:""}</div>` };
   const el = document.getElementById("modal");
   el.innerHTML = `<div class="modal daily" role="dialog" aria-modal="true" aria-label="Le bonbec du jour">
@@ -3244,7 +3253,7 @@ function openDaily(){
     <div class="daily-body">
       <span class="daily-kicker">${ic("gift",16)} Le bonbec du jour</span>
       <h2>${ready ? (streak>1?`${streak} jours de suite !`:"Coucou, te revoilà !") : "C'est dans la poche !"}</h2>
-      <p>${isWednesday()?"<b>Le mercredi, pas d'école : tes bonbecs sont doublés !</b> ":""}Passe chaque jour sans en rater un : chaque semaine rapporte plus que la précédente, avec un sac au milieu et un plus beau à la fin.${looped?" Tu as fini le calendrier : la dernière semaine recommence tant que tu reviens chaque jour.":""}</p>
+      <p>Passe chaque jour sans en rater un : chaque semaine rapporte plus que la précédente, avec un sac au milieu et un plus beau à la fin.${looped?" Tu as fini le calendrier : la dernière semaine recommence tant que tu reviens chaque jour.":""}</p>
       <div class="daily-cal">${[0,1,2,3].map(w=>`<div class="daily-wk"><span class="wk-lbl">Semaine ${w+1}</span><div class="daily-row">${DAILY_CAL.slice(w*7,w*7+7).map((d,k)=>cell(d,w*7+k)).join("")}</div></div>`).join("")}</div>
       ${ready ? `<button class="btn btn-yellow" data-action="daily-claim">${ic("gift",18)} Récupérer ${esc(dailyText(r))}</button>`
         : `<span class="daily-done">${ic("check",18,2.5)} Bonbec du jour récupéré</span>
@@ -3253,10 +3262,12 @@ function openDaily(){
     </div></div>`;
   el.hidden = false;
   (el.querySelector(".btn-yellow")||el.querySelector(".close-x")).focus();
-  el.querySelector(".day.today")?.scrollIntoView?.({block:"nearest"});
 }
 function renderTop(){
   document.getElementById("jetons").textContent = fmt(S.jetons);
+  const db = document.getElementById("daily-btn");
+  if(!db.querySelector("svg")) db.insertAdjacentHTML("afterbegin", ic("gift",21));
+  db.classList.toggle("ready", dailyReady());
   document.getElementById("top-name").textContent = S.name;
   document.getElementById("top-level").textContent = S.title;
   const a = activeSpec();
@@ -4000,9 +4011,9 @@ function viewPedia(){
   const base = {seed:hash("pedia-shiny"), type:"calot", family:1, pal:5};
   const shinyTiles = [0,1,2,3].map(k=>{
     const s = {...base, shiny:k}, i = pv(s);
-    const p = k ? FREE_BAG.shiny*SHINIES[k].w/sw : 1-FREE_BAG.shiny;
+    const pIn = b => b.shiny*SHINIES[k].w/sw;
     return `<button class="sh-tile${k?" is-shiny":""}" data-action="preview" data-k="${i}">${k?shinyPill(s):`<span class="pill" style="${tstyle("calot")}">Normale</span>`}
-      ${mImg(s,240)}<b>${k?SHINIES[k].name:"Sans effet"}</b><small>${k?SHINIES[k].desc:"Le même décor, sans effet spécial."}</small><small>${k?oneIn(p)+" billes":"Presque toutes les billes"}</small></button>`}).join("");
+      ${mImg(s,240)}<b>${k?SHINIES[k].name:"Sans effet"}</b><small>${k?SHINIES[k].desc:"Le même décor, sans effet spécial."}</small>${k?`<span class="sh-odds"><span>Gratuit, Classique <b>${oneIn(pIn(FREE_BAG))}</b></span><span>Premium <b>${oneIn(pIn(BAG_BY.premium))}</b></span><span>Collector <b>${oneIn(pIn(BAG_BY.collector))}</b></span></span>`:`<small>Presque toutes les billes</small>`}</button>`}).join("");
   // décors regroupés par rareté ; pour chacun, les 6 tailles dans l'ordre (trouvées en couleur, les autres grisées)
   const owned = slotsOwned();
   const SHORT = {mini:"Mini", bille:"Bille", chinoise:"Chinoise", calot:"Calot", boulet:"Boulet", mammouth:"Mammouth"};
@@ -4036,7 +4047,7 @@ function viewPedia(){
   const pals = PALETTES.slice(0,BASE_PALS).map(P=>`<div class="pal"><span>${[P[1],P[2],P[3]].map(c=>`<i style="background:${c}"></i>`).join("")}</span>${P[0]}</div>`).join("");
   const combos = TK.length*FAMILIES.length*BASE_PALS;
   return `<div class="page-head"><div><h1>Billepedia</h1><p>Tout ce qui existe dans Billy. Chaque bille ouverte est unique : son motif est tiré au hasard au moment de l'ouverture, il n'y en aura jamais deux pareilles. ${TK.length} formats × ${FAMILIES.length} décors × ${BASE_PALS} coloris = ${fmt(combos)} combinaisons, ×4 avec les shiny.</p></div></div>
-  <section class="pedia-sec"><h2>Les shiny</h2><p>Un effet spécial qui peut tomber sur n'importe quelle bille, quel que soit son format. Touche une bille pour la voir tourner.</p><div class="shiny-show">${shinyTiles}</div></section>
+  <section class="pedia-sec"><h2>Les shiny</h2><p>Un effet spécial qui peut tomber sur n'importe quelle bille, quel que soit son format. Sous chaque shiny : ses chances pour chaque bille, selon le sac d'où elle sort. Touche une bille pour la voir tourner.</p><div class="shiny-show">${shinyTiles}</div></section>
   <section class="pedia-sec"><h2>Les décors</h2><p>Chaque décor existe dans les ${TK.length} tailles, de la Mini au Mammouth : la rangée sous chaque décor te montre celles que tu as déjà (en couleur) et celles qui te manquent (grisées). Certains décors tombent souvent, d'autres une bille sur plusieurs centaines. Un Mammouth avec un décor légendaire, en shiny, c'est le graal.</p>${famGroups}</section>
   <section class="pedia-sec"><h2>Les tailles</h2><p>Du plus petit au plus gros : plus une bille est grosse, plus elle est rare. Chaque taille a sa couleur, partout sur le site.</p><div class="fmt-grid">${fmts}</div></section>
   <section class="pedia-sec"><h2>Les coloris</h2><p>${BASE_PALS} coloris, tous aussi fréquents les uns que les autres.</p><div class="pal-grid">${pals}</div><p class="meta" style="margin-top:10px">Et chaque mois, un coloris exclusif qu'on ne trouve que dans le passe de saison.</p></section>`;

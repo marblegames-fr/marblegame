@@ -2035,7 +2035,7 @@ function makeSpec(type, o={}){
     pal: o.pal ?? Math.floor(r()*BASE_PALS),
     shiny: o.shiny ?? 0, at: o.at ?? Date.now()};
 }
-const specName = s => s.secret && SECRETS[s.secret] ? SECRETS[s.secret].name : `${FAMILIES[s.family].name} ${PALETTES[s.pal][0]}`;
+const specName = s => s.loan ? "Bille prêtée" : s.secret && SECRETS[s.secret] ? SECRETS[s.secret].name : `${FAMILIES[s.family].name} ${PALETTES[s.pal][0]}`;
 const serial = s => { const h=(s.seed>>>0).toString(16).toUpperCase().padStart(8,"0"); return h.slice(0,4)+"-"+h.slice(4) };
 const slotKey = s => s.type+"|"+s.family;
 
@@ -2641,14 +2641,10 @@ const ghost = (type,family) => ({seed:hash(type+family), type, family, pal:23, s
 const GUEST_KEY = "billy-proto-v2";                                // sauvegarde sans compte (dans ce navigateur)
 const CLOUD_UID = window.Cloud ? Cloud.cachedUserId() : null;       // joueur connecté (session gardée par le navigateur)
 let STORE_KEY = CLOUD_UID ? "billy-u-"+CLOUD_UID : GUEST_KEY;       // avec un compte : copie locale de la sauvegarde en ligne
+// une nouvelle partie part vraiment de zéro : aucune bille, 1 000 bonbecs et 5 sacs gratuits à ouvrir
 function starterState(){
-  const now = Date.now(), day = 86400000;
-  const list = [
-    ["boulet",0,6],["calot",2,5],["calot",4,5],["bille",0,0],["bille",1,1],["bille",5,20],["bille",7,12],
-    ["mini",1,0],["mini",6,7],["mini",3,15],["mini",4,13],
-  ];
-  const specs = list.map(([t,f,p],i)=>makeSpec(t,{family:f,pal:p,at:now-(i+1)*day/3}));
-  return {v:2, fv:2, pv:2, cover:{}, wish:[], seriesDone:[], jetons:1000, holes:23, specs, active:specs[1].id, unseen:[], freeT0:now-FREE_EVERY, best:{}, bagInv:{}, title:"Petit Boulet", titles:["Petit Boulet"], name:"AlexBilleur", vitrine:[null,null,null,null,null], chal:[], pity:0, bags:0, log:[]};
+  const now = Date.now();
+  return {v:2, fv:2, pv:2, cover:{}, wish:[], seriesDone:[], jetons:1000, holes:0, specs:[], active:null, unseen:[], freeT0:now-5*FREE_EVERY, best:{}, bagInv:{}, title:"Petit Boulet", titles:["Petit Boulet"], name:"AlexBilleur", vitrine:[null,null,null,null,null], chal:[], pity:0, bags:0, log:[]};
 }
 let S;
 // charge une sauvegarde (ou en crée une neuve) et la met à jour si elle vient d'une ancienne version du jeu
@@ -2690,7 +2686,10 @@ function save(){ try{ localStorage.setItem(STORE_KEY, JSON.stringify(S)) }catch(
 const ui = {view:"accueil", tab:"album", type:"all", hideMissing:true};
 
 const specById = id => S.specs.find(s=>s.id===id);
-const activeSpec = () => specById(S.active) || S.specs[0];
+// tant qu'on n'a aucune bille, les jeux se jouent avec une bille prêtée (elle n'est pas dans la boîte)
+const LOANER = {id:null, seed:hash("pretee"), type:"bille", family:0, pal:5, shiny:0, at:0, loan:true};
+const ownActive = () => specById(S.active) || [...S.specs].sort(tierSort)[0];
+const activeSpec = () => ownActive() || LOANER;
 function slotsOwned(){ const m=new Map(); S.specs.forEach(s=>{const k=slotKey(s); if(!m.has(k)) m.set(k,[]); m.get(k).push(s)}); return m }
 const TOTAL_SLOTS = TK.length*FAMILIES.length;              // cases de l'album : une par taille × décor
 // Chaque case se remplit coloris par coloris : l'album compte toutes les billes différentes (taille × décor × coloris)
@@ -3350,14 +3349,14 @@ function renderTop(){
   db.classList.toggle("ready", dailyReady());
   document.getElementById("top-name").textContent = S.name;
   document.getElementById("top-level").textContent = S.title;
-  const a = activeSpec();
+  const a = ownActive();
   document.getElementById("top-avatar").innerHTML = a ? mImg(a,120,40,"") : "";
   document.getElementById("top-ring").style.setProperty("--p", Math.max(1.5, albumFound().size/ALBUM_TOTAL*100));
   if(!document.getElementById("prof-pop").hidden){ renderProfPop(); renderThemeBtn(); renderSoundBtn() }
 }
 // Petit tableau de bord du joueur, sous son profil en haut à droite
 function renderProfPop(){
-  const a = activeSpec(), found = albumFound().size, slots = slotsOwned();
+  const a = ownActive(), found = albumFound().size, slots = slotsOwned();
   const full = [...slots.values()].filter(l=>casePals(l)===BASE_PALS).length;
   const tier = passTier(), streak = S.daily ? (dailyReady() ? (S.daily.last===dayKey(new Date(Date.now()-864e5)) ? S.daily.streak : 0) : S.daily.streak) : 0;
   const nChal = CHALLENGES.filter(c=>S.chal.includes(c.id)).length, claim = chalClaimable()+seriesClaimable()+questsClaimable();
@@ -3459,7 +3458,7 @@ function viewHome(){
         <div class="hm-act">
           <button class="hm-act-ball" data-action="spec" data-id="${act.id}" style="${tstyle(act.type)}">${mImg(act,220,96,"")}</button>
           <div><b>${esc(specName(act))}</b><div class="pills">${typePill(act.type)}${shinyPill(act)}</div>
-            <p class="meta">C'est elle que tu lances au Tir et dans tous les jeux de la cour.</p>
+            <p class="meta">${act.loan ? "La maîtresse te la prête en attendant ta première bille : ouvre un sac pour avoir la tienne !" : "C'est elle que tu lances au Tir et dans tous les jeux de la cour."}</p>
             <div class="hm-act-row">
               <button class="nav-arrow" data-action="active-step" data-dir="-1" aria-label="Bille précédente">${ic("chevl",14,2.5)}</button>
               <button class="btn btn-blue" data-action="nav" data-view="jeux">${ic("play",16)} Jouer</button>
@@ -6554,7 +6553,7 @@ async function cloudStart0(user){
     toast(fromGuest ? "Ta collection est maintenant sauvegardée sur ton compte." : `Bienvenue dans la cour, ${S.name} !`);
   };
   // on ne propose de reprendre la partie sans compte que si elle a vraiment été jouée (pas juste les billes de départ)
-  const played = guest && Array.isArray(guest.specs) && guest.specs.length && ((guest.bags||0)>0 || guest.specs.length!==11 || (guest.chal||[]).length>0);
+  const played = guest && Array.isArray(guest.specs) && (guest.specs.length>0 || (guest.bags||0)>0 || (guest.chal||[]).length>0);
   if(played) authShow("import", {n:guest.specs.length, begin});
   else begin(false);
 }

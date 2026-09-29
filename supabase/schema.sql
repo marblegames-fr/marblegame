@@ -140,7 +140,11 @@ grant execute on function public.detruire_billes(uuid[], text) to authenticated;
 create or replace function public.transferer_bille(b uuid, de_qui uuid, vers_qui uuid, motif text)
 returns void language plpgsql security definer set search_path = public as $$
 begin
-  update billes set proprietaire = vers_qui
+  -- la bille garde sa date de trouvaille (found) et note d'où elle vient : via = {k: 'echange' | 'vente', de: pseudo}
+  update billes set proprietaire = vers_qui, obtenue_le = now(),
+      donnees = donnees || jsonb_build_object('at', floor(extract(epoch from now())*1000)::bigint,
+        'found', coalesce(donnees->'found', donnees->'at'),
+        'via', jsonb_build_object('k', motif, 'de', (select p.pseudo from profils p where p.id = de_qui)))
     where id = b and proprietaire = de_qui and detruite_le is null;
   if not found then raise exception 'Cette bille n''appartient pas (ou plus) à ce joueur'; end if;
   insert into billes_historique (bille, de, vers, motif) values (b, de_qui, vers_qui, motif);

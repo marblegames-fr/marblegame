@@ -30,7 +30,7 @@ create table if not exists public.trocs (
   donne     uuid[] not null default '{}',     -- billes proposées par « de »
   demande   uuid[] not null default '{}',     -- billes demandées à « vers »
   mot       text check (char_length(mot) <= 140),
-  statut    text not null default 'attente',  -- attente, accepte, refuse, annule, impossible
+  statut    text not null default 'attente',  -- attente, accepte, refuse, annule, impossible, contre
   le        timestamptz not null default now(),
   fini_le   timestamptz
 );
@@ -200,11 +200,17 @@ end $$;
 -- =====================================================================
 --  TROC
 -- =====================================================================
-create or replace function public.troc_proposer(vers uuid, donne uuid[], demande uuid[], mot text default null)
+-- « remplace » : une contre-proposition à un troc reçu de ce copain ; l'ancien troc est clos (statut « contre »)
+drop function if exists public.troc_proposer(uuid, uuid[], uuid[], text);
+create or replace function public.troc_proposer(vers uuid, donne uuid[], demande uuid[], mot text default null, remplace bigint default null)
 returns bigint language plpgsql security definer set search_path = public as $$
 declare moi uuid := auth.uid(); b uuid; tid bigint;
 begin
   if moi is null then raise exception 'connexion_requise'; end if;
+  if remplace is not null then
+    update trocs t set statut = 'contre', fini_le = now() where t.id = remplace and t.vers = moi and t.de = troc_proposer.vers and t.statut = 'attente';
+    if not found then raise exception 'plus_de_troc'; end if;
+  end if;
   if not interne.sont_amis(moi, vers) then raise exception 'pas_ami'; end if;
   donne := coalesce(donne, '{}'); demande := coalesce(demande, '{}');
   if cardinality(donne) + cardinality(demande) = 0 or cardinality(donne) > 6 or cardinality(demande) > 6 then raise exception 'troc_invalide'; end if;
@@ -358,11 +364,58 @@ drop trigger if exists retirer_si_detruite on public.billes;
 create trigger retirer_si_detruite after update of detruite_le on public.billes for each row
   when (new.detruite_le is not null and old.detruite_le is null) execute function interne.retirer_si_detruite();
 
+-- =====================================================================
+--  JOURNAL : l'historique du troc et du marché (et les nouvelles depuis la dernière visite)
+--  depuis : en millisecondes, on ne renvoie que ce qui s'est passé après.
+-- =====================================================================
+create or replace function public.cour_journal(depuis bigint default 0, limite int default 80) returns jsonb language plpgsql security definer set search_path = public as $$
+declare moi uuid := auth.uid(); apres timestamptz := to_timestamp(greatest(coalesce(depuis,0),0) / 1000.0);
+begin
+  if moi is null then raise exception 'connexion_requise'; end if;
+  perform interne.expirer_annonces();
+  return coalesce((select jsonb_agg(e.j || jsonb_build_object('le', floor(extract(epoch from e.le)*1000)::bigint) order by e.le desc) from (
+    select * from (
+      -- trocs (reçus en attente, ou terminés)
+      select coalesce(t.fini_le, t.le) le, jsonb_build_object('k', 'troc', 'id', t.id, 'statut', t.statut, 'moi_de', t.de = moi,
+        'autre', interne.pseudo(case when t.de = moi then t.vers else t.de end), 'mot', t.mot,
+        'recu', coalesce((select jsonb_agg(interne.bille_json(b)) from billes b where b.id = any(case when t.de = moi then t.demande else t.donne end)), '[]'),
+        'donne', coalesce((select jsonb_agg(interne.bille_json(b)) from billes b where b.id = any(case when t.de = moi then t.donne else t.demande end)), '[]')) j
+      from trocs t where (t.de = moi or t.vers = moi) and (t.statut <> 'attente' or t.vers = moi)
+      union all
+      -- mes ventes : mise en vente, vendue, retirée ou arrivée au bout
+      select a.le, jsonb_build_object('k', 'annonce', 'prix', a.prix, 'bille', interne.bille_json(b)) from annonces a join billes b on b.id = a.bille where a.vendeur = moi
+      union all
+      select a.vendue_le, jsonb_build_object('k', 'vendue', 'prix', a.prix, 'autre', interne.pseudo(a.acheteur), 'bille', interne.bille_json(b))
+        from annonces a join billes b on b.id = a.bille where a.vendeur = moi and a.vendue_le is not null
+      union all
+      select a.retiree_le, jsonb_build_object('k', case when a.retiree_le = a.expire_le then 'expiree' else 'retiree' end, 'prix', a.prix, 'bille', interne.bille_json(b))
+        from annonces a join billes b on b.id = a.bille where a.vendeur = moi and a.retiree_le is not null
+      union all
+      -- mes achats
+      select a.vendue_le, jsonb_build_object('k', 'achat', 'prix', a.prix, 'autre', interne.pseudo(a.vendeur), 'bille', interne.bille_json(b))
+        from annonces a join billes b on b.id = a.bille where a.acheteur = moi
+    ) u where u.le > apres
+    order by u.le desc limit least(greatest(coalesce(limite, 80), 1), 200)
+  ) e), '[]');
+end $$;
+
+-- une seule fois : les billes déjà échangées ou vendues retrouvent leur provenance (voir transferer_bille dans schema.sql)
+do $$ begin
+  if not exists (select 1 from interne.migrations where nom = 'provenance-echanges') then
+    update public.billes b set obtenue_le = h.le,
+      donnees = b.donnees || jsonb_build_object('at', floor(extract(epoch from h.le)*1000)::bigint,
+        'found', coalesce(b.donnees->'found', b.donnees->'at'), 'via', jsonb_build_object('k', h.motif, 'de', interne.pseudo(h.de)))
+    from (select distinct on (bille) bille, de, motif, le from public.billes_historique where motif in ('echange', 'vente') order by bille, le desc) h
+    where h.bille = b.id;
+    insert into interne.migrations (nom) values ('provenance-echanges');
+  end if;
+end $$;
+
 -- droits : le site ne peut appeler que ces fonctions-là
 do $$ declare f text; begin
   foreach f in array array['cour_moi()','ami_demander(text)','ami_repondre(uuid,boolean)','ami_retirer(uuid)','profil_joueur(uuid)',
-    'billes_echangeables(uuid)','fil_amis()','troc_proposer(uuid,uuid[],uuid[],text)','troc_repondre(bigint,boolean)','troc_annuler(bigint)',
-    'mes_trocs()','vendre(uuid,int,int)','retirer_annonce(bigint)','acheter(bigint)','marche(text,int,int,boolean,text,int)','mes_annonces()'] loop
+    'billes_echangeables(uuid)','fil_amis()','troc_proposer(uuid,uuid[],uuid[],text,bigint)','troc_repondre(bigint,boolean)','troc_annuler(bigint)',
+    'mes_trocs()','vendre(uuid,int,int)','retirer_annonce(bigint)','acheter(bigint)','marche(text,int,int,boolean,text,int)','mes_annonces()','cour_journal(bigint,int)'] loop
     execute format('revoke all on function public.%s from public, anon', f);
     execute format('grant execute on function public.%s to authenticated', f);
   end loop;

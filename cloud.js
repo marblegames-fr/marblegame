@@ -104,7 +104,7 @@
       profil: qui => rpc("profil_joueur", {qui}),
       echangeables: qui => rpc("billes_echangeables", {qui}),
       fil: () => rpc("fil_amis"),
-      proposer: (vers, donne, demande, mot) => rpc("troc_proposer", {vers, donne, demande, mot:mot||null}),
+      proposer: (vers, donne, demande, mot, remplace) => rpc("troc_proposer", {vers, donne, demande, mot:mot||null, remplace:remplace||null}),
       repondreTroc: (troc, oui) => rpc("troc_repondre", {troc, oui}),
       annuler: troc => rpc("troc_annuler", {troc}),
       trocs: () => rpc("mes_trocs"),
@@ -113,6 +113,7 @@
       acheter: annonce => rpc("acheter", {annonce}),
       marche: f => rpc("marche", {taille:f.taille||null, decor:f.decor??null, coloris:f.coloris??null, shiny:f.shiny===""||f.shiny==null?null:f.shiny==="1", tri:f.tri||"recent", page:f.page||0}),
       annonces: () => rpc("mes_annonces"),
+      journal: (depuis, limite) => rpc("cour_journal", {depuis:depuis||0, limite:limite||80}),
     },
     async setPseudo(uid, pseudo){
       need();

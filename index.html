@@ -5155,6 +5155,7 @@ function openPicker(i){
    ===================================================================== */
 let pedia = [];   // billes d'exemple affichées, pour l'aperçu 3D
 function pv(s){ pedia.push(s); return pedia.length-1 }
+const PEDIA_PAL = PALETTES.findIndex(P=>P[0]==="Azur");   // le coloris des exemples de la Billepedia
 function viewPedia(){
   pedia = [];
   const fw = FAM_W.reduce((a,b)=>a+b,0), sw = SHINIES.slice(1).reduce((a,x)=>a+x.w,0);
@@ -5170,7 +5171,8 @@ function viewPedia(){
   const famCard = f => {
     const F = FAMILIES[f], dc = DECOR_RAR[F.rar].c;
     const mine = S.specs.filter(x=>x.family===f).sort(tierSort);   // comme l'album : les billes de saison comptent
-    const best = mine[0], sample = {seed:hash("pedia"+f), type:"calot", family:f, pal:(f*7+3)%BASE_PALS, shiny:0};
+    // les exemples sont tous dans le même coloris (Azur) : on compare les décors, pas les couleurs
+    const best = mine[0], sample = {seed:hash("pedia"+f), type:"calot", family:f, pal:PEDIA_PAL, shiny:0};
     const hero = best ? `<button class="fam-hero" data-action="spec" data-id="${best.id}" aria-label="Ta plus belle : ${esc(specName(best))}">${mImg(best,200,86,"")}</button>`
                       : `<button class="fam-hero" data-action="preview" data-k="${pv(sample)}" aria-label="Aperçu du décor ${esc(F.name)}">${mImg(sample,200,86,"")}</button>`;
     let got = 0;
@@ -5178,7 +5180,7 @@ function viewPedia(){
       const list = (owned.get(t+"|"+f)||[]).slice().sort(tierSort), px = Math.round(24+26*(scaleOf(t)-.5)*2);
       if(list.length){ got++; const x=list[0];
         return `<button class="owned" data-action="spec" data-id="${x.id}" style="${tstyle(t)}" aria-label="${TYPES[t].label} : trouvé (${esc(specName(x))})">${mImg(x,120,px,"")}<small>${SHORT[t]}</small></button>` }
-      const g = {seed:hash("pedia"+f+t), type:t, family:f, pal:(f*7+3)%BASE_PALS, shiny:0};
+      const g = {seed:hash("pedia"+f+t), type:t, family:f, pal:PEDIA_PAL, shiny:0};
       return `<button class="missing" data-action="preview" data-k="${pv(g)}" aria-label="${TYPES[t].label} : pas encore trouvé">${mImg(g,120,px,"")}<small>${SHORT[t]}</small></button>`;
     }).join("");
     const cols = new Set(mine.filter(x=>x.pal<BASE_PALS).map(x=>x.pal)).size;

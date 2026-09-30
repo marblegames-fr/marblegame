@@ -126,15 +126,29 @@ create or replace function interne.revente() returns int[] language sql immutabl
 create or replace function interne.prime_shiny() returns int[] language sql immutable as $$ select array[2000,5000,15000] $$;
 create or replace function interne.fusion_n() returns int[] language sql immutable as $$ select array[3,5,5,6,8] $$;
 
--- les sacs : prix, nombre de billes, taille garantie (rang), chances de shiny, chances de chaque taille
+-- les sacs : prix, nombre de billes, taille garantie (rang), chances de shiny, et chances de chaque taille position par position
+-- (une ligne par bille, dans l'ordre d'ouverture ; la dernière est la vedette). Mêmes valeurs que BAGS dans index.html.
+drop function if exists interne.sac(text);
 create or replace function interne.sac(nom text, out prix int, out n int, out garantie int, out shiny numeric, out cotes numeric[])
 language sql immutable as $$
   select v.prix, v.n, v.garantie, v.shiny, v.cotes from (values
-    ('gratuit',     0, 3, null::int, 0.0001, array[50,31,12,5,1.6,0.4]::numeric[]),
-    ('classique', 300, 5, null,      0.0001, array[38,32,16,9,4,1]::numeric[]),
-    ('premium',   600, 5, 3,         0.0002, array[27,30,20,14,7,2]::numeric[]),
-    ('collector',1500, 5, 4,         0.0005, array[14,20,20,19,19,8]::numeric[])
+    ('gratuit',     0, 3, null::int, 0.0001, array[[75,25,0,0,0,0],[55,35,10,0,0,0],[30,33,20,12,4,1]]::numeric[]),
+    ('classique', 300, 5, null,      0.0001, array[[70,30,0,0,0,0],[50,38,12,0,0,0],[35,40,20,5,0,0],[20,35,30,13,2,0],[10,25,30,20,12,3]]::numeric[]),
+    ('premium',   600, 5, 3,         0.0002, array[[0,80,20,0,0,0],[0,60,35,5,0,0],[0,40,45,15,0,0],[0,0,55,38,7,0],[0,0,0,60,34,6]]::numeric[]),
+    ('collector',1500, 5, 4,         0.0005, array[[0,0,85,15,0,0],[0,0,65,35,0,0],[0,0,40,50,10,0],[0,0,0,60,38,2],[0,0,0,0,87,13]]::numeric[]),
+    ('pirate',    800, 3, null,      0.0002, array[[60,32,8,0,0,0],[40,35,18,6,1,0],[20,28,24,17,8,3]]::numeric[])
   ) v(nom, prix, n, garantie, shiny, cotes) where v.nom = sac.nom
+$$;
+
+-- Événements : leurs dates (heure de Paris), le décor et les coloris de leurs billes (mêmes valeurs que EVENTS dans index.html)
+create or replace function interne.evenement(nom text, out debut timestamptz, out fin timestamptz, out sac text, out decor int, out coloris int[])
+language sql immutable as $$
+  select v.debut, v.fin, v.sac, v.decor, v.coloris from (values
+    ('pirates', timestamptz '2026-09-30 00:00:00 Europe/Paris', timestamptz '2026-10-14 23:59:59 Europe/Paris', 'pirate', 32, array[65,66,67,68,69])
+  ) v(nom, debut, fin, sac, decor, coloris) where v.nom = evenement.nom
+$$;
+create or replace function interne.evenement_du_sac(s text) returns text language sql immutable as $$
+  select case s when 'pirate' then 'pirates' end
 $$;
 
 -- la date du jour, à l'heure française (les quêtes et le bonbec du jour changent à minuit)
@@ -251,11 +265,14 @@ begin return interne.etat(interne.moi()); end $$;
 -- Ouvrir un sac (acheté, gratuit ou offert). Renvoie les billes tirées.
 create or replace function public.ouvrir_sac(nom text, offert boolean default false)
 returns jsonb language plpgsql security definer set search_path = public as $$
-declare qui uuid := interne.moi(); p portefeuilles; r record; stock int; t int; i int;
+declare qui uuid := interne.moi(); p portefeuilles; r record; ev record; evb boolean; stock int; t int; i int;
         tirees int[] := '{}'; shinies int[] := '{}'; billes jsonb := '[]'; force boolean := false;
 begin
   select * into r from interne.sac(nom);
   if r.n is null then raise exception 'sac_inconnu'; end if;
+  -- un sac d'événement : on ne l'achète que pendant l'événement (un sac offert s'ouvre quand on veut)
+  select * into ev from interne.evenement(coalesce(interne.evenement_du_sac(nom), ''));   -- aucune ligne : tout à null
+  if ev.sac is not null and not offert and not (now() between ev.debut and ev.fin) then raise exception 'evenement_fini'; end if;
   select * into p from portefeuilles where joueur = qui for update;
   if offert then
     if coalesce((p.sacs->>nom)::int,0) < 1 then raise exception 'plus_de_sac'; end if;
@@ -271,23 +288,25 @@ begin
   end if;
   -- les tailles
   for i in 1..r.n loop
-    t := interne.tirer(r.cotes) - 1;
-    if r.garantie is not null and i = r.n and not exists (select 1 from unnest(tirees) x where x >= r.garantie) then
-      t := interne.tirer(r.cotes, r.garantie + 1) - 1;
-    end if;
+    t := interne.tirer(array(select unnest(r.cotes[i:i][1:6]))) - 1;   -- les chances de la position i
     tirees := tirees || t;
     shinies := shinies || interne.tirer_shiny(r.shiny);
   end loop;
   -- garantie de la cour : un Boulet au plus tard tous les 10 sacs
   if p.pity + 1 >= 10 and not exists (select 1 from unnest(tirees) x where x >= 4) then
-    tirees[r.n] := case when random() * (r.cotes[5] + r.cotes[6]) < r.cotes[6] then 5 else 4 end;
+    tirees[r.n] := case when random() * (r.cotes[r.n][5] + r.cotes[r.n][6]) < r.cotes[r.n][6] then 5 else 4 end;
     force := true;
   end if;
   update portefeuilles set sacs_ouverts = sacs_ouverts + 1, maj_le = now(),
     pity = case when exists (select 1 from unnest(tirees) x where x >= 4) then 0 else pity + 1 end
     where joueur = qui;
   for i in 1..r.n loop
-    billes := billes || interne.nouvelle_bille(qui, (interne.tailles())[tirees[i]+1], shiny => shinies[i], src => nom);
+    -- sac d'événement : chaque bille a une chance d'être du décor de l'événement (12 %, 30 % pour la dernière,
+    -- garantie pour la dernière d'un sac offert), sinon c'est une bille normale
+    evb := ev.decor is not null and (case when i = r.n and offert then true else random() < case when i = r.n then 0.3 else 0.12 end end);
+    billes := billes || interne.nouvelle_bille(qui, (interne.tailles())[tirees[i]+1], shiny => shinies[i], src => nom,
+      decor => case when evb then ev.decor end,
+      coloris => case when evb then ev.coloris[1 + floor(random()*array_length(ev.coloris,1))::int] end);
   end loop;
   return jsonb_build_object('eco', interne.etat(qui), 'billes', billes, 'force', force);
 end $$;
@@ -351,12 +370,12 @@ end $$;
 -- Tous les autres gains : chacun ne paie qu'une fois, et jamais plus que ce que le jeu peut donner
 create or replace function public.gagner(source text, cle text, montant int, sac text default null)
 returns jsonb language plpgsql security definer set search_path = public as $$
-declare qui uuid := interne.moi(); today text := interne.aujourdhui()::text; k text; maxi int; nq int;
+declare qui uuid := interne.moi(); today text := interne.aujourdhui()::text; k text; maxi int; nq int; ev record;
         quetes jsonb := '{"open_bag":80,"open_free":100,"hole":90,"par":70,"twoshots":90,"find_bille":90,"find_calot":120,
                           "new_slot":100,"new_color":100,"open_paid":120,"craft":120,"shake":60,"recycle":60}';
 begin
   if montant < 0 then raise exception 'montant_invalide'; end if;
-  if sac is not null and sac not in ('classique','premium','collector') then raise exception 'sac_inconnu'; end if;
+  if sac is not null and sac not in ('classique','premium','collector','pirate') then raise exception 'sac_inconnu'; end if;
   perform 1 from portefeuilles where joueur = qui for update;
   case source
     when 'quete' then   -- 3 quêtes par jour, au tarif de la quête
@@ -376,6 +395,10 @@ begin
       k := cle;
     when 'serie' then
       if montant > 6000 then raise exception 'montant_invalide'; end if;
+      k := cle;
+    when 'evenement' then   -- le sac offert à chacun, une fois, pendant l'événement
+      select * into ev from interne.evenement(cle);
+      if ev.sac is null or montant <> 0 or sac is distinct from ev.sac or not (now() between ev.debut and ev.fin) then raise exception 'montant_invalide'; end if;
       k := cle;
     when 'passe' then   -- paliers de la saison en cours seulement
       if not interne.saison_valide(split_part(cle, '|', 1)) or montant > 400 then raise exception 'montant_invalide'; end if;
@@ -406,8 +429,8 @@ begin
       b := interne.nouvelle_bille(qui, 'bille', src => 'chateau');
     when 'passe' then     -- cle : « 2026-9|free|10 »
       if not interne.saison_valide(split_part(cle, '|', 1)) then raise exception 'montant_invalide'; end if;
-      select x.t, x.sh into t, sh from (values ('free|10','mini',0), ('free|20','bille',0), ('free|30','calot',0),
-        ('prem|5','chinoise',0), ('prem|10','calot',1), ('prem|20','boulet',0), ('prem|30','mammouth',3)) x(k, t, sh)
+      select x.t, x.sh into t, sh from (values ('free|1','mini',0), ('free|10','bille',0), ('free|20','chinoise',0), ('free|30','calot',1),
+        ('prem|5','boulet',0), ('prem|10','mammouth',0), ('prem|20','boulet',2), ('prem|30','mammouth',3)) x(k, t, sh)
         where x.k = split_part(cle,'|',2) || '|' || split_part(cle,'|',3);
       if t is null then raise exception 'montant_invalide'; end if;
       begin insert into gains (joueur, source, cle) values (qui, 'bille-passe', cle);
@@ -420,7 +443,8 @@ begin
         ('folle','calot',1,60,1), ('arcade','boulet',25,61,3), ('grenier','mammouth',8,62,2),
         ('gouter','calot',20,63,0), ('preau','boulet',16,64,0)) x(k, t, f, c, sh) where x.k = cle;
       if t is null then raise exception 'secrete_inconnue'; end if;
-      if exists (select 1 from billes where proprietaire = qui and secrete = cle) then raise exception 'deja'; end if;
+      -- une seule à la fois : si elle a été retirée (outil de test), on peut la retrouver
+      if exists (select 1 from billes where proprietaire = qui and secrete = cle and detruite_le is null) then raise exception 'deja'; end if;
       b := interne.nouvelle_bille(qui, t, m, c, sh, cle, graine, bid => bid, src => 'secrete');
     else raise exception 'source_inconnue';
   end case;

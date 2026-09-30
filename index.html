@@ -441,26 +441,26 @@ main{padding:22px 24px 40px;min-width:0}
 .bag-visual .tag{position:absolute;top:10px;left:10px;font-size:11px;font-weight:900;letter-spacing:.05em;text-transform:uppercase;padding:3px 10px;border-radius:999px;background:var(--ink);color:var(--on-ink)}
 .bag-card h3{font-size:19px;font-weight:900}
 .bag-card > p{color:var(--ink-2);font-weight:600;font-size:13.5px;min-height:2.9em}
-.bg-ladder{margin-top:12px;display:grid;gap:5px}
-.slot-pos{position:absolute;top:-6px;left:6px;z-index:3;font-size:11px;font-weight:900;color:rgba(255,255,255,.75);background:rgba(0,0,0,.35);border-radius:999px;padding:1px 7px}
-.slot-pos.star{color:#3A2A00;background:#FFD27A}
-.bl-h{font-size:11px;font-weight:800;color:var(--muted);margin-bottom:2px}
-.bl-row{display:grid;grid-template-columns:26px minmax(0,1fr) auto;align-items:center;gap:8px}
-.bl-n{font-size:12px;font-weight:900;color:var(--muted)}
-.bl-row .bg-bar{height:18px}
-.bl-row .bg-bar i{display:grid;place-items:center;min-width:3px}
-.bl-row .bg-bar em{font-style:normal;font-size:10px;font-weight:900;color:#fff;text-shadow:0 1px 2px rgba(0,0,0,.45)}
-.bl-row.star .bl-n{color:var(--ink)}
-.bl-tag{display:inline-flex;align-items:center;gap:3px;font-size:10.5px;font-weight:900;color:#C07A0C;background:var(--gold-bg);border-radius:999px;padding:1px 7px}
-.bl-more{justify-self:start;margin-top:4px;font-size:12px;font-weight:800;color:var(--ink-2);text-decoration:underline;text-underline-offset:3px}
-.odds-tbl{width:100%;border-collapse:collapse;font-variant-numeric:tabular-nums;font-size:13px;margin-top:10px}
-.odds-tbl th,.odds-tbl td{padding:7px 6px;text-align:center;border-bottom:1px solid var(--line)}
-.odds-tbl th{font-size:11px;font-weight:900;color:var(--muted)}
-.odds-tbl th i{display:inline-block;width:9px;height:9px;border-radius:50%;background:var(--rc);margin-right:4px}
-.odds-tbl td:first-child{font-weight:900;text-align:left}
-.odds-tbl td.z{color:var(--muted)}
-.odds-tbl tr.star td{background:var(--gold-bg)}
-.odds-tbl tfoot td{font-weight:900;border-bottom:0}
+/* chances d'un sac : une tuile par taille, puis le détail bille par bille dans une fenêtre */
+.od-tiles{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px;margin-top:4px}
+.od-tile{display:grid;justify-items:center;text-align:center;gap:2px;padding:10px 8px 11px;border-radius:14px;background:color-mix(in srgb,var(--rc) 10%,var(--panel-2));border:1px solid color-mix(in srgb,var(--rc) 24%,transparent)}
+.od-tile .od-ball{height:36px;display:grid;place-items:center;margin-bottom:2px}
+.od-tile small{font-size:11.5px;font-weight:800;color:var(--ink-2)}
+.od-tile b{font-size:18px;font-weight:900;line-height:1.1;white-space:nowrap;font-variant-numeric:tabular-nums;color:var(--ink)}
+.od-bar{width:70%;height:5px;border-radius:999px;background:color-mix(in srgb,var(--rc) 18%,transparent);overflow:hidden;margin-top:4px}
+.od-bar i{display:block;height:100%;border-radius:inherit;background:var(--rc)}
+.od-tile.off{opacity:.45;filter:grayscale(.6)}
+.od-more{margin-top:12px;width:100%}
+.od-modal{width:min(560px,calc(100vw - 32px))}
+.od-slots{display:grid;gap:8px;margin-top:14px}
+.od-slot{display:grid;grid-template-columns:92px minmax(0,1fr);align-items:center;gap:10px;padding:10px 12px;border-radius:14px;background:var(--panel-2);border:1px solid var(--line)}
+.od-slot.star{background:var(--gold-bg);border-color:color-mix(in srgb,#E0A417 45%,transparent)}
+.od-pos{display:inline-flex;align-items:center;gap:4px;font-size:13px;font-weight:900;color:var(--ink-2)}
+.od-slot.star .od-pos{color:#C07A0C}
+.od-chips{display:flex;flex-wrap:wrap;gap:6px}
+.od-chip{display:inline-flex;align-items:center;gap:6px;padding:3px 10px 3px 4px;border-radius:999px;background:color-mix(in srgb,var(--rc) 14%,var(--panel));border:1px solid color-mix(in srgb,var(--rc) 30%,transparent);font-size:12px;font-weight:800;color:var(--ink-2)}
+.od-chip b{font-weight:900;color:var(--ink);font-variant-numeric:tabular-nums}
+@media (max-width:520px){ .od-slot{grid-template-columns:1fr} }
 .bg-pick{position:relative}
 .ev-album{border-top:4px solid var(--ec)}
 .ev-head{display:flex;align-items:center;gap:14px;flex-wrap:wrap;margin-bottom:12px}
@@ -1395,6 +1395,7 @@ button.vit-slot:hover{background:var(--panel-2);color:var(--ink)}
 .hs-bonbec .hm-k{color:#FFC6E0}.hs-bonbec .hm-txt p{color:#F6D5E6}
 .hc .hc-slide.hs-cour{background:radial-gradient(ellipse 60% 90% at 80% 40%,rgba(255,180,90,.3),transparent 70%),linear-gradient(120deg,#1E1712,#3A2A1F)}
 .hs-cour .hm-chalk{color:rgba(255,255,255,.25)}
+.hs-bb{flex:none;width:34px;margin:-8px 0 -4px -8px}.hs-bb svg{width:100%;height:auto;display:block}
 .hs-ghost{background:rgba(255,255,255,.12);border-color:rgba(255,255,255,.3);color:#fff}
 .hs-bags{display:flex;gap:10px;flex-wrap:wrap}
 .hs-bag{display:grid;grid-template-columns:auto auto;align-items:center;column-gap:6px;padding:6px 12px 6px 6px;border-radius:14px;background:rgba(0,0,0,.25);border:1px solid rgba(255,255,255,.14)}
@@ -1558,10 +1559,6 @@ button.vit-slot:hover{background:var(--panel-2);color:var(--ink)}
 .bg-odds-h b{font-weight:900;font-size:13.5px}
 .bg-bar{display:flex;height:14px;border-radius:999px;overflow:hidden;gap:2px}
 .bg-bar i{display:block;min-width:4px}
-.bg-legend{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:6px 12px;margin-top:10px}
-.bg-legend span{display:flex;align-items:center;gap:6px;font-size:12px;font-weight:800;color:var(--ink-2)}
-.bg-legend i{width:9px;height:9px;border-radius:50%;background:var(--rc);flex:none}
-.bg-legend em{font-style:normal;margin-left:auto;color:var(--ink);white-space:nowrap;font-variant-numeric:tabular-nums}
 .bg-how{margin:18px 0;border-radius:18px;background:var(--panel);border:1px solid var(--line)}
 .bg-how summary{list-style:none;display:flex;align-items:center;gap:8px;padding:14px 16px;font-weight:900;cursor:pointer}
 .bg-how summary::-webkit-details-marker{display:none}
@@ -1575,7 +1572,7 @@ button.vit-slot:hover{background:var(--panel-2);color:var(--ink)}
   .bg-pick{padding:9px 2px}
   .bg-pick > svg{width:52px;height:60px}
   .bg-pick b{font-size:11.5px}
-  .bg-legend{grid-template-columns:repeat(2,minmax(0,1fr))}
+  
   .bg-info h2{font-size:28px}
   .page-head .hand-note{display:none}
 }
@@ -4284,8 +4281,8 @@ function renderView(){
   const map = {cour:viewCour, succes:viewSucces, accueil:viewHome, sacs:viewBags, collection:viewCollection, jeux:viewGames, tir:viewGame, pot:viewArena, chateau:viewArena, casse:viewCasse, tic:viewArena, course:viewArena, quetes:viewQuests, billepedia:viewPedia, passe:viewPass, profil:viewProfile, atelier:viewCraft, confiserie:viewConfiserie};
   v.innerHTML = (map[ui.view] || viewSoon)();
   if(ui.view==="passe") focusTrack();
+  document.querySelector(".layout")?.classList.toggle("on-home", ui.view==="accueil");   // avant hcInit : la largeur de l'accueil en dépend
   if(ui.view==="accueil") hcInit();
-  document.querySelector(".layout")?.classList.toggle("on-home", ui.view==="accueil");
   if(ui.view==="tir") initGame();
   if(ARENA[ui.view]) initArena(ui.view);
   if(ui.view==="casse") initCasse();
@@ -4379,7 +4376,7 @@ function heroSlides(){
         <h1>${esc(E.name)} Les billes Pirate débarquent !</h1>
         <p>Un décor inédit et ${E.pals.length} coloris qu'on ne trouve que dans le ${b.name}, pendant encore <b>${eventLeft(E)}</b>.${n?" Ton sac offert contient au moins une bille Pirate !":""}</p>
         ${n ? `<button class="btn btn-yellow btn-xl" data-action="open-gift" data-bag="${b.id}">${ic("gift",22)} Ouvrir mon ${b.name} offert</button>`
-            : `<button class="btn btn-yellow btn-xl" data-action="ev-bag" data-bag="${b.id}">${bagSVG(b)} Voir le ${b.name}</button>`}
+            : `<button class="btn btn-yellow btn-xl" data-action="ev-bag" data-bag="${b.id}"><span class="hs-bb">${bagSVG(b)}</span> Voir le ${b.name}</button>`}
       </div>`}) });
   // la cour : seulement s'il y a du nouveau
   const C = hcCourInfo();
@@ -4407,6 +4404,8 @@ function homeHero(){
 function hcInit(){
   const tr = document.getElementById("hc-track"); if(!tr) return;
   tr.scrollLeft = hc.i * tr.clientWidth;
+  // la largeur change (menu, fenêtre, barre de droite) : on reste sur la même diapo, sans animation
+  let w = tr.clientWidth; new ResizeObserver(()=>{ if(tr.clientWidth && tr.clientWidth!==w){ w = tr.clientWidth; tr.scrollTo({left:hc.i*w, behavior:"instant"}) } }).observe(tr);
   let tm; tr.addEventListener("scroll", ()=>{ clearTimeout(tm); tm = setTimeout(()=>{ const i = Math.round(tr.scrollLeft / tr.clientWidth); if(i!==hc.i){ hc.i = i; hcDots() } }, 80) }, {passive:true});
   const box = document.getElementById("hc");
   box.addEventListener("pointerenter", e=>{ if(e.pointerType==="mouse") hc.hover = true });
@@ -4426,8 +4425,6 @@ function hcGo(i, noWrap){
   const n = tr.children.length; hc.i = noWrap ? Math.max(0, Math.min(n-1, i)) : (i+n)%n;
   tr.scrollTo({left:hc.i*tr.clientWidth, behavior:matchMedia("(prefers-reduced-motion:reduce)").matches ? "auto" : "smooth"}); hcDots();
 }
-// la fenêtre change de taille : on reste sur la même diapo
-addEventListener("resize", ()=>{ const tr = document.getElementById("hc-track"); if(tr) tr.scrollTo({left:hc.i*tr.clientWidth}) });
 function hcDots(){ document.querySelectorAll(".hc-dots button").forEach((b,k)=>b.setAttribute("aria-selected", k===hc.i)) }
 setInterval(()=>{ if(ui.view!=="accueil" || Date.now() < hc.pause || hc.hover || document.hidden || matchMedia("(prefers-reduced-motion:reduce)").matches) return;
   if(document.getElementById("hc-track")) hcGo(hc.i+1) }, HC_EVERY);
@@ -4498,6 +4495,7 @@ function homeCour(){
 /* =====================================================================
    SACS
    ===================================================================== */
+const shortSize = k => TYPES[k].label.replace("Bille chinoise","Chinoise").replace("Mini bille","Mini");
 const pctBag = v => v<=0 ? "–" : v>=99.95 ? "100 %" : pct(v<1 ? +v.toFixed(1) : Math.round(v));
 function oddsList(b){
   return `<ul class="odds">
@@ -4562,10 +4560,10 @@ function viewBags(){
       ${free?`<div class="free-stock">${stackPips()}<span>${st} / ${FREE_MAX} en stock · ${freeFull()?"stock plein":`prochain dans <span class="timer" data-free-timer>${freeLeft()}</span>`}</span></div>`:""}
       <div class="panel bg-odds">
         <div class="bg-odds-h"><b>Dans un sac, au moins une…</b><span class="meta">shiny : ${pct(+(b.shiny*100).toFixed(2))} par bille</span></div>
-        <div class="bg-legend">${TK.map(k=>`<span style="--rc:${TYPES[k].rc}"><i></i>${TYPES[k].label.replace("Bille chinoise","Chinoise").replace("Mini bille","Mini")}<em>${pctBag(b.perBag[k])}</em></span>`).join("")}</div>
-        <div class="bg-ladder"><small class="bl-h">Bille par bille, dans l'ordre d'ouverture</small>
-        ${b.slots.map((o,i)=>`<div class="bl-row${i===b.n-1?" star":""}"><span class="bl-n">#${i+1}</span><div class="bg-bar">${TK.map(t=>o[t]?`<i style="flex:${o[t]};background:${TYPES[t].rc}" title="${TYPES[t].label} : ${pct(o[t])}">${o[t]>=12?`<em>${o[t]}</em>`:""}</i>`:"").join("")}</div>${i===b.n-1?`<span class="bl-tag">${ic("star",11,2.6)} Vedette</span>`:""}</div>`).join("")}
-        <button class="bl-more" data-action="odds-detail" data-bag="${b.id}">Voir le détail en %</button></div>
+        <div class="od-tiles">${TK.map((k,i)=>{ const v = b.perBag[k];
+          return `<div class="od-tile${v>0?"":" off"}" style="--rc:${TYPES[k].rc}"><span class="od-ball">${mImg(SHOWCASE[i],120,Math.round(18+16*scaleOf(k)),"")}</span>
+            <small>${shortSize(k)}</small><b>${pctBag(v)}</b><span class="od-bar"><i style="width:${Math.min(100,v)}%"></i></span></div>` }).join("")}</div>
+        <button class="btn btn-ghost od-more" data-action="odds-detail" data-bag="${b.id}">Voir les chances bille par bille ${ic("chev",14)}</button>
       </div>
     </div>
   </div>
@@ -4937,11 +4935,13 @@ const slotCounts = () => { const c={}; S.specs.forEach(s=>{ const k=colorKey(s);
 function craftResult(T){
   return makeSpec(TK[T],{shiny:Math.random()<craftShiny(T-1) ? rollShiny() : 0, src:"fusion"});
 }
-// remplissage auto : d'abord les doubles, pour ne pas vider d'emplacement de l'album
-function craftAuto(t){
-  const cnt = slotCounts(), pool = [...craftPool(t)].sort((a,b)=>cnt[colorKey(b)]-cnt[colorKey(a)] || a.at-b.at), sel = [];
-  for(const s of pool){ if(sel.length>=craftN(t)) break; const k=colorKey(s); if(cnt[k]>1){ sel.push(s.id); cnt[k]-- } }
-  for(const s of pool){ if(sel.length>=craftN(t)) break; if(!sel.includes(s.id)) sel.push(s.id) }
+// remplissage auto : seulement des doubles (on garde toujours un exemplaire de chaque bille, l'album ne perd rien).
+// Les billes déjà dans le chaudron restent ; s'il n'y a pas assez de doubles, on complète à la main.
+function craftAuto(t, keep=[]){
+  const cnt = slotCounts(), pool = craftPool(t), sel = keep.filter(id=>pool.some(s=>s.id===id)).slice(0, craftN(t));
+  sel.forEach(id=>cnt[colorKey(specById(id))]--);
+  const rest = pool.filter(s=>!sel.includes(s.id)).sort((a,b)=>cnt[colorKey(b)]-cnt[colorKey(a)] || a.at-b.at);
+  for(const s of rest){ if(sel.length>=craftN(t)) break; const k=colorKey(s); if(cnt[k]>1){ sel.push(s.id); cnt[k]-- } }
   return sel;
 }
 function viewCraft(){
@@ -4971,7 +4971,7 @@ function viewCraft(){
       ${last?`<p class="warn-note fz-warn">Attention : ${last} de ces billes ${last>1?"sont les dernières":"est la dernière"} de ce coloris : l'album perdra ${last} bille${last>1?"s":""}.</p>`:""}
       <div class="fz-actions">
         <button class="btn btn-yellow btn-xl" data-action="craft-go" ${full?"":"disabled"}>${ic("flask",20)} Fusionner</button>
-        <button class="btn btn-ghost" data-action="craft-auto" ${pool.length<N?"disabled":""}>Remplir avec mes doubles</button>
+        <button class="btn btn-ghost" data-action="craft-auto" ${full || craftAuto(C.t, C.sel).length===C.sel.length?"disabled":""}>Remplir avec mes doubles</button>
         <button class="btn btn-ghost" data-action="craft-clear" ${C.sel.length?"":"disabled"}>Vider</button>
       </div>
     </div>
@@ -5164,7 +5164,7 @@ function viewPedia(){
     const s = {...base, shiny:k}, i = pv(s);
     const pIn = b => b.shiny*SHINIES[k].w/sw;
     return `<button class="sh-tile${k?" is-shiny":""}" data-action="preview" data-k="${i}">${k?shinyPill(s):`<span class="pill" style="${tstyle("calot")}">Normale</span>`}
-      ${mImg(s,240)}<b>${k?SHINIES[k].name:"Sans effet"}</b><small>${k?SHINIES[k].desc:"Le même décor, sans effet spécial."}</small>${k?`<span class="sh-odds"><span>Gratuit, Classique <b>${oneIn(pIn(FREE_BAG))}</b></span><span>Premium <b>${oneIn(pIn(BAG_BY.premium))}</b></span><span>Collector <b>${oneIn(pIn(BAG_BY.collector))}</b></span></span>`:`<small>Presque toutes les billes</small>`}</button>`}).join("");
+      ${mImg(s,240)}<b>${k?SHINIES[k].name:"Sans effet"}</b><small>${k?SHINIES[k].desc:"Le même décor, sans effet spécial."}</small>${k?`<span class="sh-odds"><span>Gratuit, Classique <b>${oneIn(pIn(FREE_BAG))}</b></span><span>Premium${BAGS.some(x=>x.event && x.shiny===BAG_BY.premium.shiny && eventLive(EVENTS[x.event])) ? ", "+BAGS.filter(x=>x.event && x.shiny===BAG_BY.premium.shiny && eventLive(EVENTS[x.event])).map(x=>x.name.replace("Sac ","")).join(", ") : ""} <b>${oneIn(pIn(BAG_BY.premium))}</b></span><span>Collector <b>${oneIn(pIn(BAG_BY.collector))}</b></span></span>`:`<small>Presque toutes les billes</small>`}</button>`}).join("");
   // décors regroupés par rareté ; pour chacun, les 6 tailles dans l'ordre (trouvées en couleur, les autres grisées)
   const owned = slotsOwned();
   const SHORT = {mini:"Mini", bille:"Bille", chinoise:"Chinoise", calot:"Calot", boulet:"Boulet", mammouth:"Mammouth"};
@@ -5405,6 +5405,8 @@ async function openBag(bagId, gift){
   const hr = new Date().getHours(), mn = new Date().getMinutes();
   const sid = hr===0 && mn<15 ? "grenier" : hr===16 && mn>=30 && mn<40 ? "gouter" : null;
   if(sid){ const sp = grantSecret(sid); if(sp) results.push({s:sp, isNew:true, newColor:false}) }
+  // si la page se ferme avant la fin de l'ouverture, on montrera le résumé du sac à la prochaine visite
+  S.pendingBag = {bag:bag.id, r:results.map(({s,isNew,newColor,evNew})=>({id:s.id, isNew, newColor, evNew}))};
   save(); renderTop(); renderNav();
   questEvent("open_bag");
   if(bag.price===0) questEvent("open_free");
@@ -5581,7 +5583,7 @@ function showReveal(){
       ${results.map(({s,isNew,newColor,evNew,wish},i)=>{
         const k = pullScore(s), big = k>=BIG;
         return `<button class="slot${wish?" wished":""} ${big?"big":""} ${s.shiny?"shiny":""}" style="--d:${i*130}ms;--tc:${shade(ovState.bag.color,.2)};${tstyle(s.type)}" data-tc="${scoreCol(k)}" data-action="reveal" data-i="${i}" aria-label="Découvrir la bille ${i+1}">
-        ${ovState.bag&&i<ovState.bag.n?`<span class="slot-pos${i===ovState.bag.n-1?" star":""}">#${i+1}</span>`:""}${wish?`<span class="slot-banner">Ta liste !</span>`:s.secret?`<span class="slot-banner">Secrète !</span>`:BANNER[k]?`<span class="slot-banner${k<2?" low":""}">${BANNER[k]}</span>`:""}
+        ${wish?`<span class="slot-banner">Ta liste !</span>`:s.secret?`<span class="slot-banner">Secrète !</span>`:BANNER[k]?`<span class="slot-banner${k<2?" low":""}">${BANNER[k]}</span>`:""}
         <div class="slot-ball"><span class="rays"></span><span class="ball-shadow"></span><span class="orb"><span class="orb-spin"><i>?</i></span></span>${mImg(s,300,Math.round(150*scaleOf(s.type)),"")}</div>
         <div class="slot-info"><b>${esc(specName(s))}</b><span style="display:flex;gap:4px;flex-wrap:wrap;justify-content:center">${wish||s.secret?typePill(s.type,true):""}${shinyPill(s)}${edPill(s)}</span>${tierTag(s)}${k>=BIG&&editionOf(s)?`<span class="ed-no">${edLabel(editionOf(s))}</span>`:""}${eventOf(s)?`<span class="new">${evNew?`Nouvelle bille ${esc(FAMILIES[s.family].name)} !`:`${esc(FAMILIES[s.family].name)} · déjà dans ta boîte`}</span>`:isNew?`<span class="new">Nouvelle case !</span>`:newColor?`<span class="new">Nouveau coloris</span>`:`<span class="dup">Déjà dans ta boîte</span>`}<span class="zoom-hint">${ic("search",14)} Agrandir</span></div>
       </button>`}).join("")}
@@ -5692,6 +5694,7 @@ function revealAll(btn){
 }
 function finishReveal(){
   const {bag,results} = ovState;
+  if(S.pendingBag){ delete S.pendingBag; save() }
   const best = results[results.length-1].s;
   const shiny = results.find(r=>r.s.shiny);
   const top = [...results].sort((a,b)=>pullScore(b.s)-pullScore(a.s))[0].s, tk = pullScore(top);
@@ -5719,15 +5722,16 @@ function closeOv(quiet){
   document.getElementById("ov").hidden = true;
   document.body.style.overflow = "";
   ovState = null;
+  if(S.pendingBag){ delete S.pendingBag; save() }
   renderView();
   if(missed) showBagSummary(missed);
 }
-function showBagSummary({bag, results}){
+function showBagSummary({bag, results, left}){
   const el = document.getElementById("modal");
   el.innerHTML = `<div class="modal bag-sum" role="dialog" aria-modal="true" aria-labelledby="bag-sum-t">
     <button class="close-x" data-action="close-modal" aria-label="Fermer">×</button>
     <h2 id="bag-sum-t">${esc(bag.name)} : ${results.length} billes reçues</h2>
-    <p class="meta">Tu as fermé le sac avant la fin : pas de panique, tout est déjà rangé dans ta boîte à billes.</p>
+    <p class="meta">${left ? "Tu as quitté la page avant d'avoir ouvert tout ton sac" : "Tu as fermé le sac avant la fin"} : pas de panique, tout est déjà rangé dans ta boîte à billes.</p>
     <div class="bag-sum-grid">${results.map(({s,isNew,newColor,evNew})=>`<button class="m-card" data-action="spec" data-id="${s.id}"><span class="ball">${mImg(s,160,Math.round(58*scaleOf(s.type)+8))}</span><b>${esc(specName(s))}</b>${typePill(s.type)}${shinyPill(s)}${evNew?`<span class="new">Nouvelle ${esc(FAMILIES[s.family].name)} !</span>`:isNew?`<span class="new">Nouvelle case !</span>`:newColor?`<span class="new">Nouveau coloris</span>`:""}</button>`).join("")}</div>
   </div>`;
   el.hidden = false;
@@ -7520,13 +7524,13 @@ document.addEventListener("click", e=>{
     }
     case "ami-voir": openProfil(t.dataset.id); break;
     case "ev-bag": ui.bag = t.dataset.bag; go("sacs"); break;
-    case "odds-detail": { const b = BAG_BY[t.dataset.bag], el = document.getElementById("modal"), sh = s => s.replace("Mini bille","Mini").replace("Bille chinoise","Chinoise");
-      el.innerHTML = `<div class="modal bag-sum" role="dialog" aria-modal="true" aria-label="Chances du ${esc(b.name)}"><button class="close-x" data-action="close-modal" aria-label="Fermer">×</button>
+    case "odds-detail": { const b = BAG_BY[t.dataset.bag], el = document.getElementById("modal");
+      el.innerHTML = `<div class="modal bag-sum od-modal" role="dialog" aria-modal="true" aria-label="Chances du ${esc(b.name)}"><button class="close-x" data-action="close-modal" aria-label="Fermer">×</button>
         <h2>${esc(b.name)} : les chances</h2><p class="meta">Chaque bille a ses propres chances, dans l'ordre où tu les ouvres : elles montent au fil du sac, et la dernière est la vedette.${b.guarantee?` Garantie : au moins un ${TYPES[b.guarantee].label}.`:""}</p>
-        <div style="overflow-x:auto"><table class="odds-tbl"><thead><tr><th></th>${TK.map(t=>`<th style="${tstyle(t)}"><i></i>${sh(TYPES[t].label)}</th>`).join("")}</tr></thead>
-        <tbody>${b.slots.map((o,i)=>`<tr class="${i===b.n-1?"star":""}"><td>#${i+1}${i===b.n-1?" ★":""}</td>${TK.map(t=>`<td class="${o[t]?"":"z"}">${o[t]?pct(o[t]):"–"}</td>`).join("")}</tr>`).join("")}</tbody>
-        <tfoot><tr><td>Par sac</td>${TK.map(t=>`<td>${pctBag(b.perBag[t])}</td>`).join("")}</tr></tfoot></table></div>
-        <p class="meta" style="margin-top:10px">« Par sac » : les chances d'avoir au moins une bille de cette taille dans le sac. Shiny : ${pct(+(b.shiny*100).toFixed(2))} sur chaque bille.${b.event?` Bille ${FAMILIES[b.fam].name} : ${Math.round(b.evFill*100)} % par bille, ${Math.round(b.evStar*100)} % pour la vedette.`:""}</p></div>`;
+        <div class="od-slots">${b.slots.map((o,i)=>{ const star = i===b.n-1;
+          return `<div class="od-slot${star?" star":""}"><span class="od-pos">${star?`${ic("star",14,2.6)} Vedette`:`${i+1}${i?"ᵉ":"ʳᵉ"} bille`}</span>
+            <div class="od-chips">${TK.map((t,k)=>o[t]?`<span class="od-chip" style="--rc:${TYPES[t].rc}">${mImg(SHOWCASE[k],60,22,"")}<span>${shortSize(t)}</span><b>${pct(o[t])}</b></span>`:"").join("")}</div></div>` }).join("")}</div>
+        <p class="meta" style="margin-top:12px">Shiny : ${pct(+(b.shiny*100).toFixed(2))} sur chaque bille.${b.event?` Bille ${FAMILIES[b.fam].name} : ${Math.round(b.evFill*100)} % par bille, ${Math.round(b.evStar*100)} % pour la vedette.`:""}</p></div>`;
       el.hidden = false; el.querySelector(".close-x").focus(); break }
     case "ami-ajouter-pseudo": { const v = t.dataset.pseudo; t.disabled = true;
       Cloud.cour.ajouter(v).then(r=>{ toast(r==="ami" ? `${v} t'avait déjà demandé : vous êtes copains !` : `Demande envoyée à ${v}.`); courRefresh("moi","fil"); closeModal() }, e=>{ t.disabled = false; courFail(e) }); break }
@@ -7686,7 +7690,9 @@ document.addEventListener("click", e=>{
       else { toast(`Il y a déjà ${craftN(C.t)} billes dans la fusion.`); break }
       renderView(); break;
     }
-    case "craft-auto": ui.craft.sel = craftAuto(ui.craft.t); renderView(); break;
+    case "craft-auto": { const C = ui.craft, n0 = C.sel.length; C.sel = craftAuto(C.t, C.sel); renderView();
+      if(C.sel.length<craftN(C.t)) toast(C.sel.length>n0 ? `${C.sel.length-n0} double${C.sel.length-n0>1?"s":""} ajouté${C.sel.length-n0>1?"s":""} : il n'y en a pas d'autre, complète à la main.` : "Tu n'as pas d'autre double de cette taille.");
+      break }
     case "craft-clear": ui.craft.sel = []; renderView(); break;
     case "craft-add": { const C = ui.craft; if(C.sel.length>=craftN(C.t)){ toast("Le chaudron est plein."); break }
       const x = craftPool(C.t).find(y=>colorKey(y)===t.dataset.k && !C.sel.includes(y.id)); if(x){ C.sel.push(x.id); Sound.click() } renderView(); break }
@@ -8018,7 +8024,7 @@ function prepForCloud(){
   S.unseen = S.unseen.map(re);
   ["cover","keep"].forEach(k=>{ if(S[k]) for(const x in S[k]) S[k][x] = re(S[k][x]) });
 }
-function rerenderAll(){ closeModal(); renderTop(); renderNav(); renderView() }
+function rerenderAll(){ closeModal(); renderTop(); renderNav(); renderView(); setTimeout(bootPopups, 300) }
 
 // reprend la partie du joueur connecté (les événements de connexion peuvent arriver en double : on ne démarre qu'une fois)
 async function cloudStart(user){
@@ -8477,9 +8483,9 @@ document.addEventListener("click", async e=>{
   switch(t.dataset.action){
     case "auth-tab": auth.tab = t.dataset.tab; authShow("welcome"); break;
     case "auth-go": if(t.dataset.tab) auth.tab = t.dataset.tab; authShow(t.dataset.screen); break;
-    case "auth-close": authHide(); break;
+    case "auth-close": authHide(); setTimeout(bootPopups, 300); break;
     case "auth-balls": AuthFx.setOff(!AuthFx.off); t.innerHTML = authBallsLabel(); break;
-    case "auth-guest": lsSet(GUEST_FLAG, "1"); authHide(); break;
+    case "auth-guest": lsSet(GUEST_FLAG, "1"); authHide(); setTimeout(bootPopups, 300); break;
     case "auth-import": auth.opts.begin(t.dataset.keep==="1"); break;
     case "auth-retry": { const u = await Cloud.currentUser().catch(()=>null); if(u){ sync.uid = null; cloudStart(u) } else authShow("welcome"); break }
     case "auth-resend": try{ await Cloud.resendConfirm(auth.email, await Captcha.token()); Captcha.reset(); toast("E-mail renvoyé !") }catch(err){ Captcha.reset(); authFail(err) } break;
@@ -8565,8 +8571,17 @@ document.addEventListener("pointerout", e=>{
   const c = e.target.closest?.("[data-unseen]");
   if(c && c._seenT && !c.contains(e.relatedTarget)){ clearTimeout(c._seenT); c._seenT = 0 }
 });
-// le bonbec du jour s'ouvre tout seul à la première visite de la journée
-setTimeout(()=>{ if(dailyReady() && document.getElementById("modal").hidden && document.getElementById("ov").hidden) openDaily() }, 800);
+// à l'arrivée (et une fois la partie du compte chargée) : le résumé d'un sac pas fini d'ouvrir, sinon le bonbec du jour (une fois par jour)
+function bootPopups(){
+  if(!document.getElementById("auth").hidden || !document.getElementById("modal").hidden || !document.getElementById("ov").hidden) return;
+  const P = S.pendingBag;
+  if(P){ delete S.pendingBag; save();
+    const results = (P.r||[]).map(x=>({...x, s:specById(x.id)})).filter(x=>x.s);
+    if(results.length && BAG_BY[P.bag]){ showBagSummary({bag:BAG_BY[P.bag], results, left:true}); return }
+  }
+  if(dailyReady() && S.dailySeen!==dayKey()){ S.dailySeen = dayKey(); save(); openDaily() }
+}
+setTimeout(bootPopups, 800);
 // petits secrets
 document.getElementById("logo-marble").addEventListener("click", ()=>{
   S.logo = (S.logo||0)+1; save();

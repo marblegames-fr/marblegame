@@ -1239,6 +1239,94 @@ button.vit-slot:hover{background:var(--panel-2);color:var(--ink)}
 
 /* ---------- ACCUEIL : la prochaine chose à faire, puis tes objectifs ---------- */
 .hm{display:grid;gap:18px}
+/* le carrousel « À la une » */
+.hc{position:relative;border-radius:24px;overflow:hidden;box-shadow:var(--shadow)}
+.hc-track{display:flex;overflow-x:auto;scroll-snap-type:x mandatory;scrollbar-width:none;overscroll-behavior-x:contain;cursor:grab}
+.hc-track::-webkit-scrollbar{display:none}
+.hc-track.drag{scroll-snap-type:none;cursor:grabbing;user-select:none}
+.hc-track.drag img{pointer-events:none}
+.hc-slide{flex:0 0 100%;width:100%;min-width:0;scroll-snap-align:start;scroll-snap-stop:always;border-radius:0;box-shadow:none;min-height:320px;padding-bottom:58px}
+.hc-arrow{position:absolute;top:50%;translate:0 -50%;z-index:3;width:40px;height:40px;border-radius:50%;display:grid;place-items:center;color:#fff;background:rgba(0,0,0,.28);border:1px solid rgba(255,255,255,.25);-webkit-backdrop-filter:blur(6px);backdrop-filter:blur(6px);opacity:0;transition:opacity .2s,background .15s}
+.hc:hover .hc-arrow,.hc-arrow:focus-visible{opacity:1}
+.hc-arrow:hover{background:rgba(0,0,0,.45)}
+.hc-arrow.l{left:12px}.hc-arrow.r{right:12px}
+.hc-dots{position:absolute;left:0;right:0;bottom:14px;z-index:3;display:flex;justify-content:center;gap:6px;flex-wrap:wrap;padding:0 12px}
+.hc-dots button{display:inline-flex;align-items:center;gap:6px;height:28px;padding:0 11px 0 9px;border-radius:999px;background:rgba(0,0,0,.28);border:1px solid rgba(255,255,255,.18);color:rgba(255,255,255,.75);font-size:11.5px;font-weight:800;-webkit-backdrop-filter:blur(6px);backdrop-filter:blur(6px);transition:background .15s,color .15s}
+.hc-dots button i{width:7px;height:7px;border-radius:50%;background:currentColor;opacity:.6}
+.hc-dots button[aria-selected="true"]{background:#fff;color:#24253D;border-color:#fff}
+.hc-dots button[aria-selected="true"] i{opacity:1;background:#E0A417}
+.hs-art{position:absolute;inset:0 0 0 auto;width:58%;z-index:1;pointer-events:none}
+.hs-m{position:absolute;height:auto;filter:drop-shadow(0 12px 12px rgba(0,0,0,.5))}
+.hs-m.big{animation:hs-bob 5s ease-in-out infinite}
+@keyframes hs-bob{50%{transform:translateY(-8px)}}
+/* diapos aux couleurs de la saison (passe, événement, bientôt) */
+.hc .hc-slide.hs-passe,.hc .hc-slide.hs-saison,.hc .hc-slide.hs-bientot{background:radial-gradient(ellipse 60% 90% at 85% 40%,color-mix(in srgb,var(--s2) 55%,transparent),transparent 70%),linear-gradient(120deg,color-mix(in srgb,var(--s1) 75%,#000),var(--s1))}
+.hs-passe .hm-k,.hs-saison .hm-k,.hs-bientot .hm-k,.hs-cour .hm-k{color:rgba(255,255,255,.8)}
+.hs-passe .hm-txt p,.hs-saison .hm-txt p,.hs-bientot .hm-txt p,.hs-passe .hm-foot,.hs-saison .hm-foot{color:rgba(255,255,255,.82)}
+.hs-bientot .hs-m.veil{filter:blur(7px) brightness(.8) drop-shadow(0 12px 12px rgba(0,0,0,.5))}
+.hs-soon{position:absolute;right:13%;top:50%;translate:0 -50%;font-family:var(--hand);font-size:44px;font-weight:700;color:#fff;transform:rotate(-8deg);text-shadow:0 3px 12px rgba(0,0,0,.5)}
+.hc .hc-slide.hs-bonbec{background:radial-gradient(ellipse 60% 90% at 85% 50%,rgba(255,95,168,.45),transparent 70%),linear-gradient(120deg,#3A1330,#6B1F4F)}
+.hs-bonbec .hm-k{color:#FFC6E0}.hs-bonbec .hm-txt p{color:#F6D5E6}
+.hc .hc-slide.hs-cour{background:radial-gradient(ellipse 60% 90% at 80% 40%,rgba(255,180,90,.3),transparent 70%),linear-gradient(120deg,#1E1712,#3A2A1F)}
+.hs-cour .hm-chalk{color:rgba(255,255,255,.25)}
+.hs-ghost{background:rgba(255,255,255,.12);border-color:rgba(255,255,255,.3);color:#fff}
+.hs-bags{display:flex;gap:10px;flex-wrap:wrap}
+.hs-bag{display:grid;grid-template-columns:auto auto;align-items:center;column-gap:6px;padding:6px 12px 6px 6px;border-radius:14px;background:rgba(0,0,0,.25);border:1px solid rgba(255,255,255,.14)}
+.hs-bag .bb{grid-row:span 2;width:40px}
+.hs-bag .bb svg{width:100%;height:auto;display:block}
+.hs-bag b{font-family:var(--display);font-weight:400;font-size:20px;line-height:1}
+.hs-bag small{font-size:11px;font-weight:800;color:rgba(255,255,255,.7)}
+.hs-week{position:absolute;right:30px;top:50%;translate:0 -58%;z-index:2;display:grid;grid-template-columns:repeat(7,64px);gap:8px}
+.hs-day{position:relative;display:grid;justify-items:center;align-content:center;gap:2px;height:84px;border-radius:14px;background:rgba(255,255,255,.08);border:1.5px solid rgba(255,255,255,.14);color:#fff}
+.hs-day small{font-size:10.5px;font-weight:900;opacity:.7}
+.hs-day .coin{width:20px;height:20px}
+.hs-day b{font-size:13px;font-weight:900}
+.hs-day svg:not(.coin){width:34px;height:auto}
+.hs-day.today{background:#FFC93F;border-color:#FFE08A;color:#3A1330;transform:scale(1.1);box-shadow:0 10px 24px -8px rgba(255,201,63,.7)}
+.hs-day.done{opacity:.55}
+.hs-day.done i{position:absolute;top:-6px;right:-6px;width:20px;height:20px;border-radius:50%;display:grid;place-items:center;background:#4CC27A;color:#fff}
+.hs-xp{display:grid;gap:5px;width:min(340px,100%)}
+.hs-xp .bar{height:10px;background:rgba(255,255,255,.2)}
+.hs-xp .bar i{background:#FFC93F}
+.hs-xp small{font-size:12.5px;font-weight:800;color:rgba(255,255,255,.8)}
+.hs-lanes{display:grid;grid-template-columns:1fr 1fr;gap:8px;width:min(400px,100%)}
+.hs-lane{display:grid;gap:1px;padding:9px 12px;border-radius:12px;background:rgba(0,0,0,.25);border:1px solid rgba(255,255,255,.14)}
+.hs-lane small{display:inline-flex;align-items:center;gap:4px;font-size:10.5px;font-weight:900;text-transform:uppercase;letter-spacing:.06em;color:rgba(255,255,255,.7)}
+.hs-lane b{font-size:13.5px;font-weight:900;line-height:1.2}
+.hs-lane i{font-style:normal;font-size:11px;font-weight:700;color:rgba(255,255,255,.6)}
+.hs-lane:last-child{background:linear-gradient(135deg,rgba(255,201,63,.25),rgba(0,0,0,.2));border-color:rgba(255,201,63,.45)}
+.hs-lane.locked b{opacity:.8}
+.hs-lines{display:grid;gap:8px;width:min(380px,100%)}
+.hs-line{display:flex;align-items:center;gap:10px;padding:11px 14px;border-radius:14px;background:rgba(255,255,255,.1);border:1px solid rgba(255,255,255,.18);color:#fff;text-align:left}
+.hs-line b{flex:1;font-size:15px;font-weight:900}
+.hs-line:hover{background:rgba(255,255,255,.16)}
+/* « Ma journée » en grand sur l'accueil (la colonne de droite est alors cachée) */
+.ardoise.wide{padding:20px 22px 22px}
+.ardoise.wide .mj-head{display:flex;align-items:center;gap:16px}
+.ardoise.wide .mj-cols{display:grid;grid-template-columns:repeat(auto-fit,minmax(250px,1fr));gap:6px 28px;align-items:start}
+.ardoise.wide .mj-all{width:auto;justify-self:start;align-self:flex-start}
+@media (min-width:1340px){ .layout.on-home{grid-template-columns:216px minmax(0,1fr)} .layout.on-home .mj-rail{display:none} }
+@media (max-width:1100px){ .hs-week{grid-template-columns:repeat(7,52px);gap:6px} .hs-day{height:72px} }
+@media (max-width:820px){
+  .hc-slide{min-height:0;padding-bottom:64px}
+  .hs-week{position:relative;right:auto;top:auto;translate:none;z-index:2;margin-top:18px;grid-template-columns:repeat(7,minmax(0,1fr))}
+  .hs-art{opacity:.45;width:70%}
+  .hc-dots button span{display:none}
+  .hc-dots button{padding:0 9px}
+  .hc-arrow{display:none}
+}
+@media (max-width:560px){
+  .hc-slide.hm-hero{padding:24px 18px 64px}
+  .hc-slide .hm-art,.hc-slide .hs-art{opacity:.22}
+  .hc-slide .hm-txt{max-width:none}
+  .hs-bags{gap:6px}
+  .hs-day{height:60px;border-radius:10px}
+  .hs-day .coin{width:16px;height:16px}
+  .hs-day b{font-size:11px}
+  .hs-day svg:not(.coin){width:24px}
+  .hs-lanes{grid-template-columns:1fr}
+  .hs-m.big{width:130px!important}
+}
 .hm-hero{position:relative;overflow:hidden;border-radius:24px;padding:34px 36px;min-height:290px;color:#F5EEE2;
   background:radial-gradient(120% 90% at 75% 40%,#2F5A40 0%,#1C3326 45%,#0F1D15 100%);box-shadow:var(--shadow)}
 :root[data-theme="light"] .hm-hero{background:radial-gradient(120% 90% at 75% 40%,#3C7050 0%,#24452F 50%,#16291E 100%)}
@@ -3621,7 +3709,7 @@ function mjRow(o){
     ${o.btn || (o.done?"" : o.rw?`<span class="mj-rw">${COIN}${fmt(o.rw)}</span>` : o.act?`<span class="go">${ic("chev",16)}</span>`:"")}
   </${tag}>`;
 }
-function dayHTML(inSheet){
+function dayHTML(inSheet, wide){
   ensureQuests();
   const Q = S.quests, n = mjClaimable();
   // le bonbec du jour
@@ -3657,20 +3745,20 @@ function dayHTML(inSheet){
   const finalSpec = rewardSpec("prem",30,passReward("prem",30));
   const tasks = [!dReady, ...Q.items.map(q=>q.claimed), Q.bonus], nDone = tasks.filter(Boolean).length;
   const today = new Date().toLocaleDateString("fr-FR",{weekday:"long",day:"numeric",month:"long"});
-  return `<div class="ardoise"><div class="mj-head"><div><span class="ard-date">${today.charAt(0).toUpperCase()+today.slice(1)}</span><h2>Ma journée</h2></div><div class="sp"></div>${inSheet?`<button class="mj-x" data-action="mj-close" aria-label="Fermer">×</button>`:""}</div>
+  return `<div class="ardoise${wide?" wide":""}"><div class="mj-head"><div><span class="ard-date">${today.charAt(0).toUpperCase()+today.slice(1)}</span><h2>Ma journée</h2></div><div class="sp"></div>${inSheet?`<button class="mj-x" data-action="mj-close" aria-label="Fermer">×</button>`:""}</div>
   <div class="mj-prog"><span>${nDone} / ${tasks.length} faits</span><span class="bar"><i style="width:${nDone/tasks.length*100}%"></i></span></div>
   ${n ? `<button class="btn btn-yellow mj-all" data-action="claim-all">${ic("gift",18)} Tout récupérer (${n})</button>` : `<p class="mj-empty">Tout est récupéré. Reviens demain !</p>`}
-  <div class="mj-group"><div class="mj-gh">Tous les jours</div>${rows1.join("")}</div>
+  ${wide?'<div class="mj-cols">':""}<div class="mj-group"><div class="mj-gh">Tous les jours</div>${rows1.join("")}</div>
   <div class="mj-group"><div class="mj-gh">Quêtes du jour <small>nouvelles dans <span data-quest-timer>${untilMidnight()}</span></small></div>${rows2.join("")}</div>
   <div class="mj-group"><div class="mj-gh">Jeux de la cour</div>${rows3.join("")}</div>
-  ${rows4.length?`<div class="mj-group"><div class="mj-gh">Récompenses</div>${rows4.join("")}</div>`:""}
-  <div class="mj-group"><div class="mj-gh">Passe de saison</div>
+  ${rows4.length?`<div class="mj-group"><div class="mj-gh">Récompenses</div>${rows4.join("")}</div>`:""}${wide?"</div>":""}
+  ${wide ? "</div>" : `<div class="mj-group"><div class="mj-gh">Passe de saison</div>
     <div class="mj-pass" style="${seasonStyle(se)}"><img src="${marbleURL(finalSpec,120)}" alt="">
       <span class="k">Saison ${esc(se.def.name)}</span><b>Palier ${tier} / ${PASS_TIERS}</b>
       <span class="bar"><i style="width:${into/TIER_XP*100}%"></i></span>
       <small>${fmt(into)} / ${fmt(TIER_XP)} XP · fin dans <span data-pass-timer>${passLeft()}</span></small>
       ${pc ? `<button class="btn btn-yellow" data-action="pass-all">${ic("gift",16)} ${pc} récompense${pc>1?"s":""} à prendre</button>` : `<button class="btn btn-ghost" data-action="nav" data-view="passe">Voir le passe ${ic("arrow",14)}</button>`}
-    </div></div></div>`;
+    </div></div></div>`}`;
 }
 function renderDay(){
   const n = mjClaimable(), b = document.getElementById("mj-btn"), c = document.getElementById("mj-n");
@@ -3678,6 +3766,7 @@ function renderDay(){
   b.setAttribute("aria-label", n ? `Ma journée : ${n} récompense${n>1?"s":""} à récupérer` : "Ma journée");
   const rail = document.getElementById("mj-rail"), sc = rail.scrollTop;
   rail.innerHTML = dayHTML(false); rail.scrollTop = sc;
+  const hd = document.getElementById("hm-day"); if(hd) hd.innerHTML = dayHTML(false, true);
   const sh = document.getElementById("mj-sheet");
   if(!sh.hidden){ const pn = sh.querySelector(".mj-panel"), y = pn ? pn.scrollTop : 0; sh.innerHTML = `<div class="mj-panel" role="dialog" aria-modal="true" aria-label="Ma journée">${dayHTML(true)}</div>`; sh.firstChild.scrollTop = y }
 }
@@ -3862,6 +3951,8 @@ function renderView(){
   const map = {cour:viewCour, succes:viewSucces, accueil:viewHome, sacs:viewBags, collection:viewCollection, jeux:viewGames, tir:viewGame, pot:viewArena, chateau:viewArena, casse:viewCasse, tic:viewArena, course:viewArena, quetes:viewQuests, billepedia:viewPedia, passe:viewPass, profil:viewProfile, atelier:viewCraft, confiserie:viewConfiserie};
   v.innerHTML = (map[ui.view] || viewSoon)();
   if(ui.view==="passe") focusTrack();
+  if(ui.view==="accueil") hcInit();
+  document.querySelector(".layout")?.classList.toggle("on-home", ui.view==="accueil");
   if(ui.view==="tir") initGame();
   if(ARENA[ui.view]) initArena(ui.view);
   if(ui.view==="casse") initCasse();
@@ -3870,6 +3961,132 @@ function renderView(){
 /* =====================================================================
    ACCUEIL
    ===================================================================== */
+/* ---------- le bandeau « À la une » : un carrousel qu'on fait glisser (au doigt, à la souris ou avec les flèches) ---------- */
+const HC_EVERY = 8000;   // une diapo toutes les 8 secondes ; en pause pendant qu'on le survole, et 20 secondes après qu'on y a touché
+var hc = {i:0, pause:0, hover:false};   // pause : jusqu'à quand on attend après que le joueur y a touché
+// ce qui se passe dans la cour (seulement s'il y a du nouveau)
+function hcCourInfo(){
+  if(!srvOn()) return null;
+  courLoad("moi"); courLoad("encheres");
+  const M = cour.moi, dep = (cour.encheres||[]).filter(x=>!x.en_tete).length, req = (M?.recues||[]).length, tr = M?.trocs||0;
+  return tr || dep || req ? {trocs:tr, depasse:dep, demandes:req} : null;
+}
+function heroSlides(){
+  const out = [], st = freeStock(), gifts = giftCount(), dReady = dailyReady();
+  const se = seasonNow(), P = ensurePass(), tier = passTier(), pc = passClaimable();
+  const art = (k,list) => `<div class="hs-art ${k}" aria-hidden="true">${list}</div>`;
+  const img = (spec, px, style, cls="") => `<img class="hs-m ${cls}" style="${style}" src="${marbleURL(spec, px*2)}" width="${px}" height="${px}" alt="">`;
+  // les sacs : les gratuits et les offerts
+  const inv = Object.entries(S.bagInv||{}).filter(([,n])=>n>0);
+  const deco = [SHOWCASE[1], SHOWCASE[3], SHOWCASE[0], SHOWCASE[2]];
+  out.push({id:"sacs", label:"Tes sacs", score: st||gifts ? 100 : 10, html:`
+    <div class="hm-art" aria-hidden="true">
+      <svg class="hm-chalk" viewBox="0 0 400 300"><path d="M200 22C300 18 382 70 380 150S300 282 196 280 18 232 22 148 102 26 204 22" fill="none" stroke="currentColor" stroke-width="4" stroke-linecap="round"/></svg>
+      <div class="hm-bag">${bagSVG(!st && gifts ? BAG_BY[inv[0][0]] : FREE_BAG,{loose:true})}</div>
+      <img class="hm-m" style="right:13%;top:16%;width:70px" src="${marbleURL(deco[0],160)}" alt="">
+      <img class="hm-m" style="right:6%;bottom:22%;width:42px" src="${marbleURL(deco[2],100)}" alt="">
+      <img class="hm-m" style="right:3%;top:44%;width:48px" src="${marbleURL(deco[1],110)}" alt="">
+    </div>
+    <div class="hm-txt">
+      <span class="hm-k">${ic("bag",15)} Tes sacs</span>
+      <h1>${st ? (st>1 ? `${st} sacs gratuits t'attendent !` : "Ton sac gratuit est prêt !") : gifts ? `${gifts} sac${gifts>1?"s":""} offert${gifts>1?"s":""} à ouvrir !` : `Prochain sac dans <span data-free-timer>${freeLeft()}</span>`}</h1>
+      ${inv.length ? `<div class="hs-bags">${inv.map(([id,n])=>`<span class="hs-bag"><span class="bb">${bagSVG(BAG_BY[id])}</span><b>×${n}</b><small>${BAG_BY[id].name}</small></span>`).join("")}</div>`
+        : `<p>Un nouveau sac gratuit arrive toutes les 10 minutes, jusqu'à ${FREE_MAX} d'avance.</p>`}
+      ${st ? `<button class="btn btn-yellow btn-xl" data-action="open-free">${ic("bag",22)} Ouvrir un sac</button>`
+        : `<button class="btn btn-yellow btn-xl" data-action="nav" data-view="sacs">${ic(gifts?"gift":"bag",22)} ${gifts ? "Ouvrir mes sacs" : "Voir les sacs"}</button>`}
+      <div class="hm-foot">${stackPips()}<span>${st} / ${FREE_MAX} · ${freeFull()?"stock plein":`prochain dans <span data-free-timer>${freeLeft()}</span>`}</span></div>
+    </div>`});
+  // le bonbec du jour : la semaine en cours du calendrier
+  const streak = dReady ? dailyStreak() : (S.daily?.streak||1), idx = dailyDay(streak), w = Math.floor(idx/7), today = dailyRew(idx), nxt = dailyDay(streak+1);
+  const cell = (d, k) => { const state = k<idx || (k===idx && !dReady) ? "done" : k===idx ? "today" : "";
+    return `<span class="hs-day ${state}${d.bag?" bag":""}"><small>J${k+1}</small>${d.bag ? bagSVG(BAG_BY[d.bag]) : `${COIN}<b>${d.j}</b>`}${state==="done"?`<i>${ic("check",14,3.2)}</i>`:""}</span>` };
+  out.push({id:"bonbec", label:"Bonbec du jour", score: dReady ? 90 : 5, html:`
+    <div class="hm-txt">
+      <span class="hm-k">${ic("gift",15)} Le bonbec du jour · semaine ${w+1} sur 4</span>
+      <h1>${dReady ? "Ton bonbec du jour t'attend !" : "Bonbec du jour récupéré !"}</h1>
+      <p>${dReady ? `Jour ${idx+1} sur ${DAILY_N} : ${dailyText(today)}. Ne rate pas un jour : ta série recommencerait au jour 1.` : `Reviens demain pour ${dailyText(dailyRew(nxt))} (jour ${nxt+1}).`}</p>
+      ${dReady ? `<button class="btn btn-yellow btn-xl" data-action="daily-claim">${ic("gift",22)} Récupérer</button>` : `<button class="btn btn-ghost hs-ghost" data-action="daily-open">Voir le calendrier</button>`}
+    </div>
+    <div class="hs-week">${DAILY_CAL.slice(w*7, w*7+7).map((d,k)=>cell(d, w*7+k)).join("")}</div>`});
+  // le passe de saison : le palier, et la prochaine récompense de chaque voie
+  const into = tier>=PASS_TIERS ? TIER_XP : P.xp-tier*TIER_XP, t1 = Math.min(PASS_TIERS, tier+1);
+  const lane = (track, lbl) => { const r = passReward(track, t1), locked = track==="prem" && !P.premium;
+    return `<div class="hs-lane${locked?" locked":""}"><small>${lbl}${locked?` ${ic("lock",12,2.6)}`:""}</small><b>${rewardLabel(r)}</b><i>palier ${t1}</i></div>` };
+  const finalSpec = rewardSpec("prem",30,passReward("prem",30));
+  out.push({id:"passe", label:"Passe de saison", score: pc ? 85 : 40, style:seasonStyle(se), html:`
+    ${art("", img(finalSpec, 190, "right:7%;top:50%;translate:0 -50%", "big"))}
+    <div class="hm-txt">
+      <span class="hm-k">${ic("ticket",15)} Passe de saison · ${esc(se.def.name)}</span>
+      <h1>Palier ${tier} / ${PASS_TIERS}</h1>
+      <div class="hs-xp"><span class="bar"><i style="width:${into/TIER_XP*100}%"></i></span><small>${fmt(into)} / ${fmt(TIER_XP)} XP · fin dans <span data-pass-timer>${passLeft()}</span></small></div>
+      <div class="hs-lanes">${lane("free","Gratuit")}${lane("prem","Premium")}</div>
+      ${pc ? `<button class="btn btn-yellow btn-xl" data-action="pass-all">${ic("gift",22)} ${pc} récompense${pc>1?"s":""} à prendre</button>`
+        : `<button class="btn btn-yellow btn-xl" data-action="nav" data-view="passe">${ic("ticket",22)} Voir le passe</button>`}
+    </div>`});
+  // les 7 derniers jours : un avant-goût de la saison suivante
+  const left = se.end - Date.now();
+  if(left < 7*864e5){
+    const nx = seasonNow(new Date(se.y, se.m+1, 1)), nm = t => ({seed:hash(nx.id+"une"+t), type:t, family:nx.def.fam, pal:nx.pal, shiny:0});
+    out.push({id:"bientot", label:"Bientôt", score:35, style:seasonStyle(nx), html:`
+      ${art("teaser", img(nm("mammouth"),170,"right:9%;top:50%;translate:0 -50%","veil") + `<span class="hs-soon">Bientôt</span>`)}
+      <div class="hm-txt">
+        <span class="hm-k">${ic("clock",15)} La prochaine saison arrive</span>
+        <h1>Bientôt : ${esc(nx.def.name)}</h1>
+        <p>Dans <b><span data-pass-timer>${passLeft()}</span></b>, un nouveau coloris exclusif (<b>${esc(PALETTES[nx.pal][0])}</b>) et un nouveau décor vedette (<b>${esc(FAMILIES[nx.def.fam].name)}</b>). D'ici là, termine ton passe ${esc(se.def.name)} !</p>
+        <button class="btn btn-yellow btn-xl" data-action="nav" data-view="passe">${ic("ticket",22)} Finir mon passe</button>
+      </div>`});
+  }
+  // la cour : seulement s'il y a du nouveau
+  const C = hcCourInfo();
+  if(C){ const line = (n, txt, tab, icon) => n ? `<button class="hs-line" data-action="cour-go" data-tab="${tab}">${ic(icon,18,2.4)}<b>${txt}</b>${ic("chev",16)}</button>` : "";
+    out.push({id:"cour", label:"La cour", score:80, html:`
+      ${art("", `<svg class="hm-chalk" viewBox="0 0 400 300"><ellipse cx="200" cy="150" rx="170" ry="110" fill="none" stroke="currentColor" stroke-width="4"/></svg>`
+        + img(SHOWCASE[4],96,"right:20%;top:30%") + img(SHOWCASE[2],60,"right:8%;bottom:20%") + img(SHOWCASE[0],44,"right:36%;bottom:24%"))}
+      <div class="hm-txt">
+        <span class="hm-k">${ic("cour",15)} La cour de récré</span>
+        <h1>Du nouveau dans la cour !</h1>
+        <div class="hs-lines">${line(C.trocs, `${C.trocs} troc${C.trocs>1?"s":""} à voir`, "troc", "swap")}${line(C.depasse, `Dépassé sur ${C.depasse} enchère${C.depasse>1?"s":""}`, "marche", "gavel")}${line(C.demandes, `${C.demandes} demande${C.demandes>1?"s":""} de copain`, "copains", "users")}</div>
+      </div>`});
+  }
+  return out.map((x,k)=>Object.assign(x, {k})).sort((a,b)=>b.score-a.score || a.k-b.k);
+}
+function homeHero(){
+  const sl = heroSlides(); if(hc.i >= sl.length) hc.i = 0;
+  return `<section class="hc" id="hc" aria-roledescription="carrousel" aria-label="À la une">
+    <div class="hc-track" id="hc-track">${sl.map((x,i)=>`<article class="hm-hero hc-slide hs-${x.id}" style="${x.style||""}" aria-roledescription="diapositive" aria-label="${i+1} sur ${sl.length} : ${x.label}">${x.html}</article>`).join("")}</div>
+    ${sl.length>1 ? `<button class="hc-arrow l" data-action="hc-go" data-d="-1" aria-label="Précédent">${ic("chevl",20,2.6)}</button><button class="hc-arrow r" data-action="hc-go" data-d="1" aria-label="Suivant">${ic("chev",20,2.6)}</button>
+    <div class="hc-dots" role="tablist">${sl.map((x,i)=>`<button role="tab" data-action="hc-go" data-i="${i}" aria-selected="${i===hc.i}"><i></i><span>${x.label}</span></button>`).join("")}</div>` : ""}
+  </section>`;
+}
+// après l'affichage de l'accueil : on remet la bonne diapo, et on écoute le glissement
+function hcInit(){
+  const tr = document.getElementById("hc-track"); if(!tr) return;
+  tr.scrollLeft = hc.i * tr.clientWidth;
+  let tm; tr.addEventListener("scroll", ()=>{ clearTimeout(tm); tm = setTimeout(()=>{ const i = Math.round(tr.scrollLeft / tr.clientWidth); if(i!==hc.i){ hc.i = i; hcDots() } }, 80) }, {passive:true});
+  const box = document.getElementById("hc");
+  box.addEventListener("pointerenter", e=>{ if(e.pointerType==="mouse") hc.hover = true });
+  box.addEventListener("pointerleave", ()=>{ hc.hover = false });
+  tr.addEventListener("touchstart", ()=>{ hc.pause = Date.now() + 20000 }, {passive:true});
+  // à la souris : on attrape la diapo et on la fait glisser
+  let drag = null;
+  tr.addEventListener("pointerdown", e=>{ if(e.pointerType!=="mouse" || e.button!==0 || e.target.closest("button,a,input")) return;
+    drag = {x:e.clientX, s:tr.scrollLeft}; tr.setPointerCapture(e.pointerId); tr.classList.add("drag") });
+  tr.addEventListener("pointermove", e=>{ if(drag) tr.scrollLeft = drag.s - (e.clientX - drag.x) });
+  const end = e=>{ if(!drag) return; const dx = e.clientX - drag.x; drag = null; tr.classList.remove("drag"); hc.pause = Date.now() + 20000;
+    hcGo(hc.i + (dx < -40 ? 1 : dx > 40 ? -1 : 0), true) };
+  tr.addEventListener("pointerup", end); tr.addEventListener("pointercancel", end);
+}
+function hcGo(i, noWrap){
+  const tr = document.getElementById("hc-track"); if(!tr) return;
+  const n = tr.children.length; hc.i = noWrap ? Math.max(0, Math.min(n-1, i)) : (i+n)%n;
+  tr.scrollTo({left:hc.i*tr.clientWidth, behavior:matchMedia("(prefers-reduced-motion:reduce)").matches ? "auto" : "smooth"}); hcDots();
+}
+// la fenêtre change de taille : on reste sur la même diapo
+addEventListener("resize", ()=>{ const tr = document.getElementById("hc-track"); if(tr) tr.scrollTo({left:hc.i*tr.clientWidth}) });
+function hcDots(){ document.querySelectorAll(".hc-dots button").forEach((b,k)=>b.setAttribute("aria-selected", k===hc.i)) }
+setInterval(()=>{ if(ui.view!=="accueil" || Date.now() < hc.pause || hc.hover || document.hidden || matchMedia("(prefers-reduced-motion:reduce)").matches) return;
+  if(document.getElementById("hc-track")) hcGo(hc.i+1) }, HC_EVERY);
+
 const SHOWCASE = TK.map((t,i)=>({seed:hash("vitrine"+t), type:t, family:[1,0,7,2,6,0][i], pal:[4,0,12,5,1,13][i], shiny:0}));
 
 function viewHome(){
@@ -3879,40 +4096,9 @@ function viewHome(){
   const rareKey = s => isSeason(s) ? 0 : chanceOf(s);
   const treasure = [...S.specs].sort((a,b)=>rareKey(a)-rareKey(b))[0];
   const unseen = new Set(S.unseen);
-  // le haut de l'accueil : toujours LA prochaine chose utile à faire
-  let hero;
-  if(st) hero = {k:"Sac gratuit", h:st>1?`${st} sacs gratuits t'attendent !`:"Ton sac gratuit est prêt !",
-    p:`Un nouveau sac arrive toutes les 10 minutes, jusqu'à ${FREE_MAX} d'avance.`,
-    cta:`<button class="btn btn-yellow btn-xl" data-action="open-free">${ic("bag",22)} Ouvrir un sac</button>`,
-    foot:`${stackPips()}<span>${st} / ${FREE_MAX} · ${freeFull()?"stock plein":`prochain dans <span data-free-timer>${freeLeft()}</span>`}</span>`};
-  else if(dailyReady()) hero = {k:"Le bonbec du jour", h:"Ton bonbec du jour t'attend !", p:"Passe chaque jour pour remplir ta semaine : le 7ᵉ jour, un Sac Premium en plus.",
-    cta:`<button class="btn btn-yellow btn-xl" data-action="daily-open">${ic("gift",22)} Récupérer</button>`, foot:`<span>Prochain sac gratuit dans <span data-free-timer>${freeLeft()}</span></span>`};
-  else if(gifts) hero = {k:"Sacs offerts", h:`${gifts} sac${gifts>1?"s":""} offert${gifts>1?"s":""} à ouvrir !`, p:"Gagnés au passe de saison, aux séries ou aux succès.",
-    cta:`<button class="btn btn-yellow btn-xl" data-action="nav" data-view="sacs">${ic("gift",22)} Ouvrir mes sacs</button>`, foot:`<span>Prochain sac gratuit dans <span data-free-timer>${freeLeft()}</span></span>`};
-  else { const g = gamesReady();
-    hero = {k:"Sac gratuit", h:`Prochain sac dans <span data-free-timer>${freeLeft()}</span>`,
-      p: g.length ? `En attendant, ${g[0]} a encore une récompense aujourd'hui.` : `En attendant, gagne des ${CUR.many} pour ouvrir un sac payant.`,
-      cta: g.length ? `<button class="btn btn-yellow btn-xl" data-action="nav" data-view="jeux">${ic("play",20)} Jouer</button>` : `<button class="btn btn-yellow btn-xl" data-action="nav" data-view="sacs">${ic("bag",20)} Voir les sacs</button>`,
-      foot:`${stackPips()}<span>0 / ${FREE_MAX}</span>`} }
-  const deco = [SHOWCASE[1], SHOWCASE[3], SHOWCASE[0], SHOWCASE[2]];
   return `<div class="hm">
-  <section class="hm-hero">
-    <div class="hm-art" aria-hidden="true">
-      <svg class="hm-chalk" viewBox="0 0 400 300"><path d="M200 22C300 18 382 70 380 150S300 282 196 280 18 232 22 148 102 26 204 22" fill="none" stroke="currentColor" stroke-width="4" stroke-linecap="round"/><path d="M60 250c40-6 90-4 120 2" stroke="currentColor" stroke-width="3" stroke-linecap="round" opacity=".6" fill="none"/></svg>
-      <div class="hm-bag">${bagSVG(hero.k==="Sacs offerts"?BAG_BY.premium:FREE_BAG,{loose:true})}</div>
-      <img class="hm-m" style="right:13%;top:16%;width:70px" src="${marbleURL(deco[0],160)}" alt="">
-      <img class="hm-m" style="right:6%;bottom:22%;width:42px" src="${marbleURL(deco[2],100)}" alt="">
-      <img class="hm-m" style="right:25%;top:10%;width:28px" src="${marbleURL(deco[3],80)}" alt="">
-      <img class="hm-m" style="right:3%;top:44%;width:48px" src="${marbleURL(deco[1],110)}" alt="">
-    </div>
-    <div class="hm-txt">
-      <span class="hm-k">${ic(hero.k==="Le bonbec du jour"||hero.k==="Sacs offerts"?"gift":"bag",15)} ${hero.k}</span>
-      <h1>${hero.h}</h1>
-      <p>${hero.p}</p>
-      ${hero.cta}
-      <div class="hm-foot">${hero.foot}</div>
-    </div>
-  </section>
+  ${homeHero()}
+  <section class="hm-day" id="hm-day">${dayHTML(false, true)}</section>
 
   <div class="hm-grid">
     ${goalsPanel()}
@@ -6904,6 +7090,7 @@ document.addEventListener("click", e=>{
       break;
     }
     case "mk-vendre": sellStart(); break;
+    case "hc-go": hc.pause = Date.now() + 20000; hcGo(t.dataset.i!=null ? +t.dataset.i : hc.i + +t.dataset.d); break;
     case "cour-go": ui.courTab = t.dataset.tab; cour.compose = null; cour.sell = null; if(t.dataset.tab==="journal") courSeeJournal(); go("cour"); break;
     case "mk-encherir": bidAsk(+t.dataset.id); break;
     case "sell-mode": if(!cour.sell) break; cour.sell.prix = document.getElementById("sell-prix")?.value || cour.sell.prix; cour.sell.mode = t.dataset.m; renderView(); break;

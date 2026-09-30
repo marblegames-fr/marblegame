@@ -1387,36 +1387,117 @@ button.vit-slot:hover{background:var(--panel-2);color:var(--ink)}
 @media (prefers-reduced-motion:reduce){ .rc-burst{display:none} .rc-item,.rc-coins{animation:none} }
 
 /* ---------- LA COUR DE RÉCRÉ ---------- */
-.cour-tabs{display:flex;flex-wrap:wrap}
-.cour-tabs .tab{display:inline-flex;align-items:center;gap:6px}
-.cour-tabs .tab .n{min-width:18px;height:18px;padding:0 5px;border-radius:999px;background:#E5484D;color:#fff;font-size:11px;display:grid;place-items:center}
+/* le haut de la page : la cour le soir, dessinée à la craie, avec ta bille et celles des copains par terre */
+.cour-hero{position:relative;overflow:hidden;isolation:isolate;border-radius:var(--r-lg);min-height:214px;padding:26px 30px;margin-bottom:14px;display:flex;align-items:center;color:#fff;background:#2A211B;box-shadow:var(--shadow)}
+.ch-scene{position:absolute;inset:0;width:100%;height:100%;z-index:-1}
+.ch-txt{position:relative;z-index:1;display:grid;gap:8px;justify-items:start;max-width:min(480px,100%)}
+.ch-kick{display:inline-flex;align-items:center;gap:6px;font-size:11.5px;font-weight:900;letter-spacing:.08em;text-transform:uppercase;background:rgba(255,255,255,.12);padding:4px 11px;border-radius:999px;color:#FFE3B0}
+.ch-txt h1{font-family:var(--display);font-weight:400;font-size:clamp(32px,4vw,46px);line-height:.98;letter-spacing:.01em;text-shadow:0 3px 0 rgba(0,0,0,.3)}
+.ch-txt p{font-weight:600;color:#F1E3D2;max-width:40ch}
+.ch-stats{display:flex;flex-wrap:wrap;gap:8px;margin-top:4px}
+.ch-stats > *{display:inline-flex;align-items:center;gap:6px;height:32px;padding:0 12px;border-radius:999px;background:rgba(0,0,0,.3);border:1px solid rgba(255,255,255,.14);font-size:13px;font-weight:700;color:#F1E3D2;-webkit-backdrop-filter:blur(6px);backdrop-filter:blur(6px)}
+.ch-stats b{color:#fff;font-weight:900}
+.ch-stats .hot{background:rgba(255,201,63,.2);border-color:rgba(255,201,63,.5);color:#FFE3B0}
+.ch-stats button:hover{background:rgba(0,0,0,.45);border-color:rgba(255,255,255,.3)}
+.ch-stats button svg{opacity:.7}
+.ch-floor{position:absolute;inset:0;pointer-events:none}
+.ch-ball{position:absolute;display:grid;justify-items:center;gap:1px;transform:translateX(50%)}
+.ch-ball img{filter:drop-shadow(0 10px 7px rgba(0,0,0,.6))}
+.ch-ball i{font-style:normal;font-family:var(--hand);font-size:18px;line-height:1;color:rgba(255,255,255,.8);text-shadow:0 2px 6px rgba(0,0,0,.6);white-space:nowrap}
+.ch-ball.me{right:19%;bottom:44px;animation:ch-bob 4s ease-in-out infinite}
+.ch-ball.me i{color:var(--yellow)}
+.ch-ball.f0{right:34%;bottom:18px}
+.ch-ball.f1{right:6%;bottom:22px}
+.ch-ball.f2{right:31%;bottom:118px}
+.ch-ball.f3{right:8%;bottom:124px}
+@keyframes ch-bob{50%{transform:translateX(50%) translateY(-5px)}}
+/* les onglets : quatre grosses touches */
+.cour-nav{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:8px;margin-bottom:18px}
+.cn-tab{position:relative;display:flex;align-items:center;justify-content:center;gap:9px;height:52px;padding:0 10px;border-radius:14px;background:var(--panel);border:1px solid var(--line);font-weight:900;font-size:14.5px;color:var(--ink-2);transition:transform .12s,background .12s,color .12s,box-shadow .12s}
+.cn-tab svg{flex:none}
+.cn-tab:hover{color:var(--ink);transform:translateY(-1px);border-color:var(--line-2)}
+.cn-tab[aria-selected="true"]{background:var(--yellow);border-color:var(--yellow-2);color:#24253D;box-shadow:0 3px 0 var(--yellow-2)}
+.cn-tab .n{position:absolute;top:-8px;right:-4px;min-width:22px;height:22px;padding:0 6px;border-radius:999px;background:#E5484D;color:#fff;font-size:11.5px;font-weight:900;display:grid;place-items:center;border:2px solid var(--bg)}
 .cour-grid{display:grid;gap:16px}
 .cour-row{display:flex;align-items:center;gap:12px;padding:10px 0;border-top:1px solid var(--line)}
 .cour-row:first-of-type{border-top:0}
 .cour-row .who{flex:1;min-width:0;font-weight:800}
 .cour-row .who small{display:block;color:var(--muted);font-weight:700;font-size:12px}
 .btn-sm{height:34px;padding:0 14px;font-size:13.5px;gap:6px}
-.friends{display:grid;grid-template-columns:repeat(auto-fill,minmax(170px,1fr));gap:12px}
-.friend{display:flex;flex-direction:column;align-items:center;gap:6px;padding:16px 10px 12px;border-radius:var(--r-md);background:var(--panel-2);border:1px solid var(--line);text-align:center}
-.friend .ball{height:64px;display:grid;place-items:center}
-.friend b{font-size:15px;font-weight:900}
-.friend small{font-size:12px;color:var(--muted);font-weight:700;min-height:1.2em}
-.friend .acts{display:flex;gap:6px;margin-top:4px;flex-wrap:wrap;justify-content:center}
 .cour-lead{color:var(--ink-2);font-weight:600;margin-top:8px}
-.troc{padding:14px;border-radius:var(--r-md);background:var(--panel-2);border:1px solid var(--line);display:grid;gap:10px}
-.troc + .troc{margin-top:10px}
-.troc-head{font-weight:800;display:flex;gap:8px;flex-wrap:wrap;align-items:baseline}
+.cour-info{display:flex;gap:10px;align-items:flex-start;color:var(--ink-2);font-weight:600;font-size:13px;line-height:1.45}
+.cour-info svg{flex:none;margin-top:1px;color:var(--muted)}
+.panel-head h3 .cnt-n{display:inline-grid;place-items:center;min-width:24px;height:22px;padding:0 7px;margin-left:6px;border-radius:999px;background:var(--panel-2);border:1px solid var(--line);font-size:12px;font-weight:900;color:var(--ink-2);vertical-align:1px}
+/* l'initiale d'un joueur dans un rond coloré (la couleur vient de son pseudo) */
+.av-ini{width:var(--sz);height:var(--sz);flex:none;border-radius:50%;display:inline-grid;place-items:center;font-family:var(--display);font-size:calc(var(--sz)*.5);line-height:1;color:#fff;background:linear-gradient(150deg,hsl(var(--h) 72% 60%),hsl(var(--h) 58% 40%));box-shadow:inset 0 -2px 0 rgba(0,0,0,.18)}
+/* copains */
+.req-list{display:grid;grid-template-columns:repeat(auto-fill,minmax(290px,1fr));gap:10px}
+.req{display:flex;flex-wrap:wrap;align-items:center;gap:12px;padding:12px;border-radius:14px;background:var(--gold-bg);border:1.5px solid var(--gold-line)}
+.req .who{flex:1 1 150px;min-width:0;font-weight:900;font-size:15px}
+.req .who small{display:block;color:var(--ink-2);font-weight:700;font-size:12px}
+.req .acts{display:flex;gap:6px}
+.friends{display:grid;grid-template-columns:repeat(auto-fill,minmax(178px,1fr));gap:14px}
+.friend{--rc:#8E8898;position:relative;overflow:hidden;display:flex;flex-direction:column;align-items:center;gap:3px;padding:0 12px 14px;border-radius:var(--r-md);background:var(--panel-2);border:1px solid var(--line);text-align:center;transition:transform .15s,box-shadow .15s}
+.friend:hover{transform:translateY(-3px);box-shadow:var(--shadow)}
+.fr-band{position:absolute;inset:0 0 auto;height:74px;background:radial-gradient(ellipse 70% 90% at 50% 100%,color-mix(in srgb,var(--rc) 45%,transparent),transparent 75%),linear-gradient(180deg,color-mix(in srgb,var(--rc) 24%,var(--panel-2)),var(--panel-2));border-bottom:1.5px dashed color-mix(in srgb,var(--rc) 35%,var(--line))}
+.friend .ball{position:relative;height:108px;width:100%;display:grid;place-items:center;margin-top:6px}
+.friend .ball img{filter:drop-shadow(0 10px 8px rgba(0,0,0,.35));transition:transform .25s}
+.friend .ball:hover img{transform:scale(1.07) rotate(-8deg)}
+.friend b{font-family:var(--display);font-weight:400;font-size:21px;line-height:1.05;letter-spacing:.01em;max-width:100%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.fr-title{display:inline-flex;align-items:center;gap:4px;font-size:11.5px;font-weight:800;color:var(--muted);min-height:18px}
+.fr-title.on{color:#C07A0C}
+.friend .acts{display:grid;grid-template-columns:1fr 1fr;gap:6px;margin-top:8px;width:100%}
+.friend .acts .btn{width:100%;padding:0 8px}
+.friend.wait{background:transparent;border-style:dashed}
+.friend.wait .ball{opacity:.75}
+.friend.wait .acts{grid-template-columns:1fr}
+.friend.add{justify-content:center;gap:8px;padding:18px 14px;background:transparent;border:1.5px dashed var(--line-2)}
+.friend.add:hover{transform:none;box-shadow:none}
+.add-ic{width:58px;height:58px;border-radius:50%;display:grid;place-items:center;background:var(--gold-bg);color:#C07A0C;border:1.5px dashed var(--gold-line)}
+.friend.add b{font-size:19px;white-space:normal}
+.friend.add form{display:grid;gap:8px;width:100%;margin-top:4px}
+.friend.add input{height:40px;padding:0 12px;border-radius:12px;border:1.5px solid var(--line-2);background:var(--panel-2);color:var(--ink);font:inherit;font-weight:800;font-size:14px;min-width:0;text-align:center}
+.friend.add input:focus{outline:none;border-color:var(--yellow);box-shadow:0 0 0 4px color-mix(in srgb,var(--yellow) 22%,transparent)}
+.friend.add small{font-size:11.5px;font-weight:700;color:var(--muted);line-height:1.35}
+.finds{display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:10px}
+.find{--rc:#8E8898;display:flex;align-items:center;gap:12px;padding:8px 12px 8px 8px;border-radius:14px;background:var(--panel-2);border:1px solid var(--line)}
+.find .fb{flex:none;width:62px;height:62px;display:grid;place-items:center;border-radius:12px;background:radial-gradient(circle,color-mix(in srgb,var(--rc) 42%,transparent),transparent 68%)}
+.find .fb img{filter:drop-shadow(0 6px 5px rgba(0,0,0,.35))}
+.find .who{flex:1;min-width:0;display:grid;gap:3px;justify-items:start;font-weight:900;font-size:13.5px;line-height:1.2}
+.find .who small{font-size:12px;font-weight:700;color:var(--muted)}
+.find .who small b{color:var(--ink-2);font-weight:900}
+/* troc */
+.fchips{display:flex;flex-wrap:wrap;gap:8px}
+.fchip{display:inline-flex;align-items:center;gap:8px;height:42px;padding:0 16px 0 5px;border-radius:999px;background:var(--panel-2);border:1.5px solid var(--line-2);font-weight:900;font-size:14px;transition:border-color .12s,background .12s,transform .12s}
+.fchip:hover{border-color:var(--yellow-2);background:var(--gold-bg);transform:translateY(-1px)}
+.fchip img{filter:drop-shadow(0 3px 3px rgba(0,0,0,.3))}
+.troc{position:relative;padding:14px 16px 16px;border-radius:var(--r-md);background:var(--panel-2);border:1px solid var(--line);display:grid;gap:12px}
+.troc + .troc{margin-top:12px}
+.troc.recu{border-color:var(--gold-line);box-shadow:inset 4px 0 0 var(--yellow)}
+.troc-head{display:flex;gap:10px;flex-wrap:wrap;align-items:center;font-weight:700}
+.troc-head .t{flex:1;min-width:0}
+.troc-head b{font-weight:900}
 .troc-head time{color:var(--muted);font-size:12px;font-weight:700}
-.troc-sides{display:grid;grid-template-columns:minmax(0,1fr) auto minmax(0,1fr);gap:10px;align-items:center}
-.troc-side{display:grid;gap:6px;padding:10px;border-radius:12px;background:var(--panel);border:1px solid var(--line);min-height:84px;align-content:start}
-.troc-side small{font-size:11px;font-weight:900;text-transform:uppercase;letter-spacing:.06em;color:var(--muted)}
-.troc-balls{display:flex;flex-wrap:wrap;gap:4px}
-.troc-balls button{border-radius:50%;padding:2px}
-.troc-balls button:hover{background:var(--panel-2)}
-.troc-arrow{color:var(--muted)}
-.troc-mot{font-family:var(--hand);font-size:20px;color:var(--ink-2)}
+.troc-sides{display:grid;grid-template-columns:minmax(0,1fr) auto minmax(0,1fr);align-items:stretch}
+.troc-side{--tc:var(--muted);display:grid;gap:8px;padding:10px 12px 12px;border-radius:12px;background:color-mix(in srgb,var(--tc) 8%,var(--panel));border:1.5px solid color-mix(in srgb,var(--tc) 30%,var(--line));min-height:88px;align-content:start}
+.troc-side.get{--tc:var(--green)}
+.troc-side.give{--tc:#E8743B}
+.troc-side small{display:flex;align-items:center;gap:5px;font-size:11px;font-weight:900;text-transform:uppercase;letter-spacing:.06em;color:color-mix(in srgb,var(--tc) 70%,var(--ink))}
+.troc-balls{display:flex;flex-wrap:wrap;align-items:center;gap:4px}
+.troc-balls button{border-radius:50%;padding:2px;transition:transform .15s}
+.troc-balls button:hover{transform:scale(1.1) rotate(-6deg)}
+.troc-balls img{filter:drop-shadow(0 5px 4px rgba(0,0,0,.3))}
+.troc-arrow{position:relative;z-index:1;align-self:center;display:grid;place-items:center;width:38px;height:38px;margin:0 -7px;border-radius:50%;background:var(--panel);border:1.5px solid var(--line-2);color:var(--ink-2);box-shadow:var(--shadow)}
+/* le petit mot : un post-it collé sur le troc */
+.troc-mot{justify-self:start;position:relative;max-width:100%;padding:9px 16px 8px;background:#FFF1A8;color:#4A3B12;font-family:var(--hand);font-size:21px;line-height:1.15;border-radius:2px 2px 14px 2px;box-shadow:0 8px 14px -10px rgba(0,0,0,.6);transform:rotate(-1.2deg);overflow-wrap:anywhere}
+.troc-mot::before{content:"";position:absolute;top:-7px;left:50%;width:46px;height:14px;margin-left:-23px;background:rgba(255,255,255,.5);transform:rotate(3deg)}
 .troc-act{display:flex;gap:8px;flex-wrap:wrap}
-.troc.fini{opacity:.7}
+.troc.fini{padding:12px 14px;background:transparent}
+.troc.fini .troc-side{min-height:0}
+.troc .st{display:inline-flex;align-items:center;gap:4px;font-size:11.5px;font-weight:900;padding:2px 10px;border-radius:999px;background:var(--panel);border:1px solid var(--line);color:var(--ink-2)}
+.troc .st.accepte{background:var(--green-soft);border-color:var(--green-line);color:var(--green)}
+.troc .st.refuse,.troc .st.impossible{background:color-mix(in srgb,#E5484D 14%,var(--panel));border-color:color-mix(in srgb,#E5484D 35%,var(--line));color:var(--warn)}
+.troc .st.contre{background:var(--blue-soft);border-color:var(--blue-line);color:var(--blue-2)}
 /* demande de confirmation */
 .ask-scrim{z-index:78}
 .ask{width:min(440px,100%);background:var(--panel);border-radius:22px;padding:26px 22px 20px;display:flex;flex-direction:column;align-items:center;gap:12px;text-align:center;box-shadow:0 30px 60px -20px rgba(0,0,0,.5);animation:ask-in .18s ease-out}
@@ -1428,52 +1509,168 @@ button.vit-slot:hover{background:var(--panel-2);color:var(--ink)}
 .ask .troc-sides{width:100%;text-align:left}
 .ask-btns{display:flex;gap:10px;flex-wrap:wrap;justify-content:center;margin-top:6px}
 .ask-btns .btn{min-width:130px}
+.bb-chip{display:inline-flex;align-items:center;gap:3px;font-weight:900;font-size:13px;padding:2px 9px 2px 4px;border-radius:999px;background:var(--panel);border:1px solid var(--line);white-space:nowrap}
+.bb-chip .coin{width:18px;height:18px}
+.bb-in{display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin-top:14px;padding-top:14px;border-top:1px dashed var(--line-2);font-weight:800;font-size:14px}
+.bb-in input{width:110px;height:36px;padding:0 10px;border-radius:10px;border:1.5px solid var(--line-2);background:var(--panel-2);color:var(--ink);font:inherit;font-weight:900}
+.bb-in input:focus{outline:none;border-color:var(--yellow)}
+.bb-in .coin{width:20px;height:20px}
 .btn-danger{background:#E5484D;color:#fff;box-shadow:0 3px 0 #B8363A}
 .btn-danger:hover{background:#D63F44}
-/* historique et nouvelles de la cour */
-.jr{align-items:flex-start}
-.jr-ic{flex:none;width:34px;height:34px;border-radius:50%;display:grid;place-items:center;background:var(--panel-2);color:var(--ink-2);border:1px solid var(--line)}
-.jr.new .jr-ic{background:var(--yellow);color:#24253D;border-color:var(--yellow-2)}
-.jr .who{font-weight:700}
-.jr .who b{font-weight:900}
-.jr-balls{display:flex;flex-wrap:wrap;align-items:center;gap:2px;max-width:48%;justify-content:flex-end}
-.jr-balls button{border-radius:50%;padding:1px}
-.jr-balls .troc-arrow{margin:0 2px}
-.news-list{width:100%;text-align:left;max-height:48vh;overflow:auto}
-.rc-body .btns{display:flex;gap:10px;flex-wrap:wrap;justify-content:center}
-.troc .st{font-size:12px;font-weight:900;padding:2px 10px;border-radius:999px;background:var(--panel);border:1px solid var(--line)}
+/* composer un troc */
+.cmp-head{display:flex;align-items:center;gap:12px;margin-bottom:10px}
+.cmp-head h3{flex:1;font-size:18px;font-weight:900}
 .compose{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:16px}
-.pick-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(92px,1fr));gap:8px;max-height:420px;overflow:auto;padding:2px}
-.pick{position:relative;display:flex;flex-direction:column;align-items:center;gap:2px;padding:8px 4px;border-radius:12px;border:1.5px solid var(--line);background:var(--panel-2);font-size:11px;font-weight:800;text-align:center;line-height:1.15}
-.pick[aria-pressed="true"]{border-color:var(--blue);background:color-mix(in srgb,var(--blue) 14%,var(--panel));box-shadow:0 0 0 2px color-mix(in srgb,var(--blue) 35%,transparent)}
-.pick .ball{height:52px;display:grid;place-items:center}
+.cmp{border-top:4px solid var(--tc)}
+.cmp.give{--tc:#E8743B}
+.cmp.want{--tc:var(--green)}
+.cmp .panel-head{align-items:center}
+.cmp .panel-head h3{display:flex;align-items:center;gap:8px}
+.cmp .panel-head h3 svg{color:var(--tc)}
+.cmp-dots{display:inline-flex;gap:4px}
+.cmp-dots i{width:10px;height:10px;border-radius:50%;background:var(--track)}
+.cmp-dots i.on{background:var(--tc)}
+.cmp-send{position:sticky;bottom:14px;z-index:5;border:1.5px solid var(--gold-line);box-shadow:0 22px 44px -20px rgba(0,0,0,.65)}
+.cmp-sum{display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin-bottom:12px}
+.cmp-sum .sd{--tc:#E8743B;display:flex;align-items:center;gap:2px;flex-wrap:wrap;min-height:40px;padding:3px 12px 3px 4px;border-radius:999px;background:color-mix(in srgb,var(--tc) 10%,var(--panel));border:1.5px solid color-mix(in srgb,var(--tc) 30%,var(--line));font-size:12px;font-weight:800;color:var(--ink-2)}
+.cmp-sum .sd.get{--tc:var(--green)}
+.cmp-sum .sd em{font-style:normal;padding-left:8px}
+.cmp-sum > svg{color:var(--muted)}
+.pick-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(96px,1fr));gap:8px;max-height:420px;overflow:auto;padding:4px 2px 2px}
+.pick{position:relative;display:flex;flex-direction:column;align-items:center;gap:2px;padding:8px 4px;border-radius:12px;border:1.5px solid var(--line);background:var(--panel-2);font-size:11px;font-weight:800;text-align:center;line-height:1.15;transition:transform .12s,border-color .12s}
+.pick:hover{transform:translateY(-2px);border-color:var(--line-2)}
+.pick[aria-pressed="true"]{border-color:var(--tc,var(--blue));background:color-mix(in srgb,var(--tc,var(--blue)) 14%,var(--panel));box-shadow:0 0 0 2px color-mix(in srgb,var(--tc,var(--blue)) 35%,transparent)}
+.pick[aria-pressed="true"]::after{content:"";position:absolute;top:5px;right:5px;width:20px;height:20px;border-radius:50%;background:var(--tc,var(--blue)) url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='white' stroke-width='3.4' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M5 12.5l4.5 4.5L19 7.5'/%3E%3C/svg%3E") center/13px no-repeat}
+.pick .ball{height:54px;display:grid;place-items:center}
+.pick .ball img{filter:drop-shadow(0 4px 3px rgba(0,0,0,.3))}
 .pick-filters{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:10px}
 .chip{height:30px;padding:0 12px;border-radius:999px;border:1px solid var(--line);background:var(--panel);font-weight:800;font-size:12.5px;color:var(--ink-2)}
 .chip[aria-pressed="true"]{background:var(--ink);color:var(--on-ink);border-color:var(--ink)}
 .cour-form{display:flex;gap:10px;flex-wrap:wrap;align-items:center}
-.cour-form input,.cour-form select{height:40px;padding:0 12px;border-radius:12px;border:1.5px solid var(--line-2);background:var(--panel-2);color:var(--ink);font:inherit;font-weight:800;font-size:15px;min-width:0}
+.cour-form input,.cour-form select{height:42px;padding:0 14px;border-radius:12px;border:1.5px solid var(--line-2);background:var(--panel-2);color:var(--ink);font:inherit;font-weight:800;font-size:14.5px;min-width:0}
+.cour-form input:focus{outline:none;border-color:var(--yellow);box-shadow:0 0 0 4px color-mix(in srgb,var(--yellow) 22%,transparent)}
+.cour-form select{-webkit-appearance:none;appearance:none;padding-right:34px;border-radius:999px;cursor:pointer;background-image:linear-gradient(45deg,transparent 50%,var(--ink-2) 50%),linear-gradient(135deg,var(--ink-2) 50%,transparent 50%);background-position:calc(100% - 18px) 52%,calc(100% - 13px) 52%;background-size:5px 5px;background-repeat:no-repeat}
+.cour-form select:hover{border-color:var(--ink-2)}
 .cour-form input[type=text]{flex:1 1 200px}
 .cour-form input[type=number]{width:140px}
-.mk-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(170px,1fr));gap:12px}
-.mk{display:flex;flex-direction:column;align-items:center;gap:5px;padding:14px 10px 12px;border-radius:var(--r-md);background:var(--panel);border:1px solid var(--line);text-align:center}
-.mk .ball{height:76px;display:grid;place-items:center;cursor:zoom-in}
-.mk b{font-size:14px;font-weight:900;line-height:1.2}
-.mk .price{display:inline-flex;align-items:center;gap:6px;font-family:var(--display);font-size:22px;line-height:1}
-.mk .price .coin{width:22px;height:22px}
-.mk small{font-size:11.5px;font-weight:700;color:var(--muted)}
-.mk .btn{margin-top:4px}
-.mk.mine{border-style:dashed}
-.mk.sold{opacity:.65}
+/* marché */
+.mk-bar{display:flex;align-items:center;gap:10px;flex-wrap:wrap}
+.mk-bar h3{font-size:17px;font-weight:900;margin-right:auto}
+.mk-bar .cour-form{margin-top:14px;width:100%}
+.mk-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(188px,1fr));gap:14px}
+.mk{--rc:#8E8898;position:relative;display:flex;flex-direction:column;border-radius:var(--r-md);background:var(--panel);border:1px solid var(--line);overflow:hidden;text-align:center;box-shadow:var(--shadow);transition:transform .15s,box-shadow .15s}
+.mk:hover{transform:translateY(-3px)}
+.mk-vis{position:relative;height:128px;display:grid;place-items:center;cursor:zoom-in;background:radial-gradient(circle at 50% 56%,color-mix(in srgb,var(--rc) 40%,transparent) 0,transparent 60%),linear-gradient(180deg,color-mix(in srgb,var(--rc) 16%,var(--panel-2)),var(--panel-2));border-bottom:1px solid var(--line)}
+.mk-vis img{filter:drop-shadow(0 10px 8px rgba(0,0,0,.35));transition:transform .25s}
+.mk:hover .mk-vis img{transform:scale(1.07) rotate(-8deg)}
+.mk-info{flex:1;display:flex;flex-direction:column;align-items:center;gap:5px;padding:12px 12px 14px}
+.mk b{font-size:14.5px;font-weight:900;line-height:1.2}
+.mk .pills{display:flex;gap:4px;flex-wrap:wrap;justify-content:center}
+.mk .price{display:inline-flex;align-items:center;gap:6px;font-family:var(--display);font-size:25px;line-height:1;margin-top:4px}
+.mk .price .coin{width:24px;height:24px}
+.mk .avg{font-size:11.5px;font-weight:700;color:var(--muted)}
+.mk .avg.good{color:var(--green)}
+.mk-meta{display:flex;justify-content:space-between;align-items:center;gap:6px;width:100%;margin-top:auto;padding-top:9px;border-top:1px dashed var(--line-2);font-size:11.5px;font-weight:800;color:var(--ink-2)}
+.mk-meta > span{display:inline-flex;align-items:center;gap:5px;min-width:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.mk-meta .soon{color:var(--warn)}
+.mk .btn{width:100%;margin-top:8px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;padding:0 8px}
+.mk-rib{position:absolute;top:10px;left:10px;z-index:1;display:inline-flex;align-items:center;gap:4px;font-size:10.5px;font-weight:900;letter-spacing:.05em;text-transform:uppercase;padding:3px 9px;border-radius:999px;background:var(--ink);color:var(--on-ink)}
+.mk-rib.deal{background:var(--green);color:#fff}
+.mk.mine{border-style:dashed;border-color:var(--line-2);box-shadow:none}
+.ann-list{display:grid;gap:8px}
+.ann{display:grid;grid-template-columns:auto minmax(0,1fr) auto auto auto;align-items:center;gap:12px;padding:6px 12px 6px 6px;border-radius:14px;background:var(--panel-2);border:1px solid var(--line)}
+.ann > button:first-child{width:56px;height:56px;display:grid;place-items:center}
+.ann .who{font-weight:900;font-size:14px;line-height:1.2}
+.ann .who small{display:block;font-size:12px;font-weight:700;color:var(--muted)}
+.ann .price{font-family:var(--display);font-size:20px;white-space:nowrap}
+.ann-st{display:inline-flex;align-items:center;gap:5px;font-size:12px;font-weight:900;padding:4px 10px;border-radius:999px;background:var(--panel);border:1px solid var(--line);color:var(--ink-2);white-space:nowrap}
+.ann.sold .ann-st{background:var(--green-soft);border-color:var(--green-line);color:var(--green)}
+.ann.sold > button{opacity:.7}
+/* vendre une bille */
+.sell-card{display:grid;grid-template-columns:170px minmax(0,1fr);gap:22px;align-items:center}
+.sell-vis{--rc:#8E8898;aspect-ratio:1;border-radius:18px;display:grid;place-items:center;background:radial-gradient(circle at 50% 55%,color-mix(in srgb,var(--rc) 45%,transparent),transparent 62%),linear-gradient(180deg,color-mix(in srgb,var(--rc) 16%,var(--panel-2)),var(--panel-2));border:1px solid var(--line)}
+.sell-vis img{filter:drop-shadow(0 12px 10px rgba(0,0,0,.4))}
+.sell-card h4{margin:0;font-size:19px;font-weight:900;line-height:1.2}
+.sell-card .pills{display:flex;gap:4px;flex-wrap:wrap;margin:6px 0 2px}
+.sell-form{display:grid;gap:12px;justify-items:start;margin-top:14px}
+.price-in{display:flex;align-items:center;gap:8px;height:58px;padding:0 16px;border-radius:14px;border:2px solid var(--line-2);background:var(--panel-2);width:min(280px,100%)}
+.price-in:focus-within{border-color:var(--yellow);box-shadow:0 0 0 4px color-mix(in srgb,var(--yellow) 22%,transparent)}
+.price-in input{flex:1;min-width:0;height:100%;border:0;background:none;color:var(--ink);font-family:var(--display);font-size:28px;outline:none}
+.price-in .coin{width:28px;height:28px}
+.price-in small{font-weight:800;color:var(--muted)}
+.seg{display:inline-flex;gap:4px;padding:4px;border-radius:999px;background:var(--panel-2);border:1px solid var(--line)}
+.seg label{position:relative}
+.seg input{position:absolute;opacity:0;pointer-events:none}
+.seg span{display:grid;place-items:center;height:34px;padding:0 14px;border-radius:999px;font-weight:800;font-size:13.5px;color:var(--ink-2);cursor:pointer;white-space:nowrap}
+.seg input:checked + span{background:var(--ink);color:var(--on-ink)}
+.seg input:focus-visible + span{outline:3px solid var(--blue);outline-offset:2px}
 .cour-lock{display:grid;place-items:center;text-align:center;gap:10px;padding:40px 20px}
 .cour-lock .btns{display:flex;gap:10px;flex-wrap:wrap;justify-content:center}
+/* historique et nouvelles de la cour */
+.jr-day{margin:18px 4px 6px;font-size:11px;font-weight:900;letter-spacing:.08em;text-transform:uppercase;color:var(--muted)}
+.jr-day:first-of-type{margin-top:2px}
+.cour-row.jr{align-items:center;padding:10px 12px;border:1px solid transparent;border-radius:14px}
+.jr + .jr{margin-top:2px}
+.panel .jr:hover{background:var(--panel-2)}
+.jr-ic{--kc:var(--muted);flex:none;width:38px;height:38px;border-radius:12px;display:grid;place-items:center;background:color-mix(in srgb,var(--kc) 15%,var(--panel));color:var(--kc);border:1px solid color-mix(in srgb,var(--kc) 30%,var(--line))}
+.jr.k-troc .jr-ic{--kc:var(--blue)}
+.jr.k-vendue .jr-ic{--kc:var(--green)}
+.jr.k-achat .jr-ic{--kc:#9A5CE6}
+.jr.k-annonce .jr-ic{--kc:#E0A417}
+.jr.new{background:var(--gold-bg);border-color:var(--gold-line)}
+.jr.new .jr-ic{background:var(--yellow);color:#24253D;border-color:var(--yellow-2)}
+.jr .who{font-weight:700}
+.jr .who b{font-weight:900}
+.jr-amt{font-family:var(--display);font-size:18px;white-space:nowrap;color:var(--ink-2)}
+.jr-amt.plus{color:var(--green)}
+.jr-balls{display:flex;flex-wrap:wrap;align-items:center;gap:2px;max-width:48%;justify-content:flex-end}
+.jr-balls button{border-radius:50%;padding:1px}
+.jr-balls .troc-arrow{width:auto;height:auto;margin:0 3px;border:0;background:none;box-shadow:none;color:var(--muted)}
+.news-list{width:100%;text-align:left;max-height:48vh;overflow:auto}
+.rc-body .btns{display:flex;gap:10px;flex-wrap:wrap;justify-content:center}
+/* la fiche d'un copain */
 .pf-stats{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px;width:100%}
-.pf-stats div{padding:10px;border-radius:12px;background:var(--panel-2);text-align:center}
-.pf-stats b{display:block;font-size:20px;font-weight:900}
+.pf-stats div{padding:10px;border-radius:12px;background:var(--panel-2);border:1px solid var(--line);text-align:center}
+.pf-stats b{display:block;font-size:22px;font-family:var(--display);font-weight:400}
 .pf-stats small{font-size:11px;font-weight:800;color:var(--muted);text-transform:uppercase}
 .modal.profil{display:block;width:min(620px,100%)}
-.modal.profil .pf-body{padding:26px 22px 22px;display:grid;gap:14px;justify-items:center;text-align:center}
-.modal.profil h2{font-family:var(--display);font-weight:400;font-size:32px;line-height:1}
-@media (max-width:700px){ .compose{grid-template-columns:minmax(0,1fr)} .troc-sides{grid-template-columns:minmax(0,1fr)} .troc-arrow{justify-self:center;transform:rotate(90deg)} }
+.modal.profil .pf-band{--rc:#8E8898;position:absolute;inset:0 0 auto;height:150px;background:radial-gradient(ellipse 55% 100% at 50% 100%,color-mix(in srgb,var(--rc) 45%,transparent),transparent 75%),linear-gradient(180deg,color-mix(in srgb,var(--rc) 24%,var(--panel)),var(--panel));-webkit-mask-image:linear-gradient(#000 45%,transparent);mask-image:linear-gradient(#000 45%,transparent);pointer-events:none}
+.modal.profil .pf-body{position:relative;padding:26px 22px 22px;display:grid;gap:14px;justify-items:center;text-align:center}
+.modal.profil .pf-body > img{filter:drop-shadow(0 14px 12px rgba(0,0,0,.45))}
+.modal.profil h2{font-family:var(--display);font-weight:400;font-size:34px;line-height:1}
+.pf-shelf{width:100%;display:grid;gap:8px}
+.pf-shelf .troc-balls{justify-content:center;gap:8px;padding:12px 12px 14px;border-radius:14px;background:var(--panel-2);border:1px solid var(--line);box-shadow:inset 0 -7px 0 var(--line)}
+@media (max-width:1100px){ .ch-ball.f2,.ch-ball.f3{display:none} }
+@media (max-width:820px){ .cmp-send{bottom:calc(80px + env(safe-area-inset-bottom,0px))} }
+@media (max-width:700px){ .compose{grid-template-columns:minmax(0,1fr)} .troc-sides{grid-template-columns:minmax(0,1fr)} .troc-arrow{justify-self:center;margin:-7px 0;transform:rotate(90deg)} .jr-balls .troc-arrow{transform:none} .sell-card{grid-template-columns:110px minmax(0,1fr);gap:14px} }
+@media (max-width:560px){
+  .cour-hero{flex-direction:column;align-items:stretch;padding:20px 18px 112px;min-height:0}
+  .ch-txt p{font-size:13.5px}
+  .ch-ball.me{right:50%;bottom:16px}
+  .ch-ball.f0{right:20%;bottom:14px}
+  .ch-ball.f1{right:80%;bottom:14px}
+  .cour-nav{gap:6px}
+  .cn-tab{flex-direction:column;gap:3px;height:60px;font-size:12px;padding:0 4px}
+  .friends{grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}
+  .friend{padding:0 8px 12px}
+  .friend .acts{grid-template-columns:1fr}
+  .friend b{font-size:18px}
+  .mk-grid{grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}
+  .mk-vis{height:108px}
+  .mk-info{padding:10px 8px 12px}
+  .mk .price{font-size:21px}
+  .mk-meta{flex-direction:column;gap:2px}
+  .ann{grid-template-columns:auto minmax(0,1fr) auto;row-gap:6px}
+  .ann .ann-st{grid-column:2;justify-self:start}
+  .ann .btn{grid-column:3}
+  .jr-balls{max-width:40%}
+
+  .sell-card{grid-template-columns:minmax(0,1fr);justify-items:center;text-align:center}
+  .sell-vis{width:140px}
+  .sell-form{justify-items:center}
+  .sell-card .pills{justify-content:center}
+}
+@media (prefers-reduced-motion:reduce){ .ch-ball.me{animation:none} }
 
 /* ---------- LA CONFISERIE ---------- */
 .cf-sum{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:20px;align-items:center;margin-bottom:18px}
@@ -2843,9 +3040,13 @@ function ask({title, text="", extra="", balls=[], ok="Confirmer", no="Annuler", 
   });
 }
 const nbBilles = l => { const n = (l||[]).length; return n ? `${n} bille${n>1?"s":""}` : "rien" };
+const TROC_BONBECS_MAX = 5000;   // bonbecs qu'on peut ajouter à un troc (même valeur dans supabase/cour.sql)
+const bbChip = n => n>0 ? `<span class="bb-chip">${COIN}${fmt(n)}</span>` : "";
+// « 2 billes et 300 bonbecs »
+const nbTroc = (l, n) => n>0 ? ((l||[]).length ? `${nbBilles(l)} et ${fmt(n)} ${CUR.many}` : `${fmt(n)} ${CUR.many}`) : nbBilles(l);
 // ce que chacun reçoit dans un troc, en petit (pour les confirmations)
-const trocSummary = (get, give) => { const side = (lbl, l) => `<div class="troc-side"><small>${lbl}</small><div class="troc-balls">${(l||[]).length ? l.map(x=>mImg(x,120,40,"")).join("") : `<span class="meta">rien</span>`}</div></div>`;
-  return `<div class="troc-sides">${side("Tu reçois", get)}<span class="troc-arrow">${ic("swap",20)}</span>${side("Tu donnes", give)}</div>` };
+const trocSummary = (get, give, getB, giveB) => { const side = (lbl, l, n) => `<div class="troc-side ${lbl==="Tu reçois"?"get":"give"}"><small>${lbl}</small><div class="troc-balls">${(l||[]).map(x=>mImg(x,120,40,"")).join("")}${bbChip(n)}${!(l||[]).length && !(n>0) ? `<span class="meta">rien</span>` : ""}</div></div>`;
+  return `<div class="troc-sides">${side("Tu reçois", get, getB)}<span class="troc-arrow">${ic("swap",20)}</span>${side("Tu donnes", give, giveB)}</div>` };
 // avertissements avant de se séparer d'une bille
 function partWarn(s){
   const w = [];
@@ -2909,6 +3110,7 @@ const ICON = {
   flask:'<path d="M9.5 3h5M10.5 3v5.5L5 18.2A1.8 1.8 0 0 0 6.6 21h10.8a1.8 1.8 0 0 0 1.6-2.8L13.5 8.5V3"/><path d="M7.5 14.5h9"/>',
   user:'<circle cx="12" cy="8" r="4"/><path d="M4.5 20.5a7.5 7.5 0 0 1 15 0"/>',
   plus:'<path d="M12 5v14M5 12h14"/>',
+  copy:'<rect x="8.5" y="8.5" width="11.5" height="11.5" rx="2"/><path d="M15.5 8.5V5.5A1.5 1.5 0 0 0 14 4H5.5A1.5 1.5 0 0 0 4 5.5V14a1.5 1.5 0 0 0 1.5 1.5h3"/>',
   shield:'<path d="M12 3l7.5 3v5.5c0 4.6-3.2 8.3-7.5 9.5-4.3-1.2-7.5-4.9-7.5-9.5V6z"/><path d="M8.5 12l2.5 2.5 4.5-5"/>',
   gift:'<rect x="3.5" y="8" width="17" height="4" rx="1"/><path d="M5 12v8h14v-8M12 8v12M12 8C10.5 4 7 4 7 6s3 2 5 2c2 0 5 0 5-2s-3.5-2-5 2"/>',
   star:'<path d="M12 3.5l2.6 5.4 5.9.8-4.3 4.1 1 5.8L12 16.8l-5.2 2.8 1-5.8-4.3-4.1 5.9-.8z"/>',
@@ -3106,7 +3308,7 @@ function fakeFind(at=Date.now()){
   return {who:FEED_NAMES[Math.floor(r()*FEED_NAMES.length)], s, at};
 }
 function logFind(s){ S.log.unshift({who:S.name, me:true, s:{seed:s.seed,type:s.type,family:s.family,pal:s.pal,shiny:s.shiny,at:s.at}, at:s.at}); S.log = S.log.slice(0,12) }
-function ago(t){ const m=Math.max(0,Math.round((Date.now()-t)/60000)); return m<1?"à l'instant":m<60?`il y a ${m} min`:`il y a ${Math.round(m/60)} h` }
+function ago(t){ const m=Math.max(0,Math.round((Date.now()-t)/60000)); return m<1?"à l'instant":m<60?`il y a ${m} min`:m<48*60?`il y a ${Math.round(m/60)} h`:`il y a ${Math.round(m/1440)} j` }
 function feedItems(){
   let others;
   if(srvOn()){ courLoad("fil"); others = cour.fil || [] }   // avec un compte : les vraies trouvailles des copains
@@ -4310,10 +4512,11 @@ function openModal(id, pv){
         ${pv?"":`<dt>Motif</dt><dd><code>${serial(s)}</code></dd>
         <dt>Obtenue le</dt><dd>${dateFr(s.at)}${s.via?` <small class="meta">${s.via.k==="vente"?`achetée à <b>${esc(s.via.de||"?")}</b> au marché`:`en troc avec <b>${esc(s.via.de||"?")}</b>`}</small>`:""}</dd>`}
       </dl>
-      ${pv&&pv.cour?`<p class="meta">${esc(pv.cour)}</p>`:pv?`<p class="meta">Aperçu Billepedia · ${S.specs.some(x=>slotKey(x)===slotKey(s))?"tu as déjà ce format dans ce décor.":"pas encore dans ta boîte à billes."}</p>`:`<div class="modal-actions">
+      ${pv&&pv.cour?`<p class="meta">${esc(pv.cour)}</p>${findBtn(s)}`:pv?`<p class="meta">Aperçu Billepedia · ${S.specs.some(x=>slotKey(x)===slotKey(s))?"tu as déjà ce format dans ce décor.":"pas encore dans ta boîte à billes."}</p>${findBtn(s)}`:`<div class="modal-actions">
         ${S.active===s.id?`<button class="btn btn-ghost" disabled>Bille active</button>`:`<button class="btn btn-blue" data-action="set-active" data-id="${s.id}">Jouer avec cette bille</button>`}
         ${S.vitrine.includes(s.id)?`<button class="btn btn-ghost" data-action="vit-rm" data-id="${s.id}">${ic("layers",16)} Retirer de la vitrine</button>`:`<button class="btn btn-ghost" data-action="vit-add" data-id="${s.id}">${ic("layers",16)} Mettre en vitrine</button>`}
         ${srvOn() && s.srv && !s.secret ? `<button class="btn btn-ghost" data-action="cour-sell-this" data-id="${s.id}">${ic("cour",16)} Vendre au marché</button>` : ""}
+        ${findBtn(s)}
         ${S.active===s.id||s.secret?"":`<button class="btn btn-ghost" data-action="recycle" data-id="${s.id}">${ic("candy",16)} Échanger · +${fmt(recycleValue(s))} ${CUR.many}</button>`}
         ${sib.length>1 && keepOf(sib).id!==s.id?`<button class="btn btn-ghost" data-action="keep-copy" data-id="${s.id}">${ic("check",16)} Garder cet exemplaire</button>`:""}
         ${caseList.length>1 && coverOf(caseList).id!==s.id?`<button class="btn btn-ghost" data-action="cover" data-id="${s.id}">${ic("star",16)} Afficher dans l'album</button>`:""}
@@ -6034,16 +6237,24 @@ function journalInfo(e){
       impossible: `Le troc avec ${o} n'est plus possible : une des billes n'est plus disponible`}[e.statut] || `Troc avec ${o}`};
   return {
     annonce: {ic:"candy", txt:`Tu as mis ${b} en vente à ${pr}`},
-    vendue: {ic:"candy", txt:`${b} vendue à ${o} : +${pr}`},
+    vendue: {ic:"candy", txt:`${b} vendue à ${o}`},
     expiree: {ic:"clock", txt:`Personne n'a acheté ${b} : elle est restée dans ta boîte`},
     retiree: {ic:"clock", txt:`Tu as retiré ${b} de la vente`},
-    achat: {ic:"bag", txt:`Tu as acheté ${b} à ${o} pour ${pr}`}}[e.k] || {ic:"star", txt:""};
+    achat: {ic:"bag", txt:`Tu as acheté ${b} à ${o}`}}[e.k] || {ic:"star", txt:""};
 }
 function journalRow(e, click){
   const J = journalInfo(e), fresh = click && isNews(e) && e.le > (cour.hlSince ?? Infinity);
   const ball = x => click ? courBall(x, 36) : mImg(x,120,36,"");
-  const balls = e.k==="troc" ? `${(e.recu||[]).map(ball).join("")}${(e.recu||[]).length && (e.donne||[]).length ? `<span class="troc-arrow">${ic("swap",14)}</span>` : ""}${(e.donne||[]).map(ball).join("")}` : e.bille ? ball(e.bille) : "";
-  return `<div class="cour-row jr${fresh?" new":""}"><span class="jr-ic">${ic(J.ic,17)}</span><span class="who">${J.txt}<small>${timeAgo(e.le)}${e.k==="troc"&&e.mot?` · « ${esc(e.mot)} »`:""}</small></span><span class="jr-balls">${balls}</span></div>`;
+  const got = (e.recu||[]).map(ball).join("") + bbChip(e.bonbecs_recus), gave = (e.donne||[]).map(ball).join("") + bbChip(e.bonbecs_donnes);
+  const balls = e.k==="troc" ? `${got}${got && gave ? `<span class="troc-arrow">${ic("swap",14)}</span>` : ""}${gave}` : e.bille ? ball(e.bille) : "";
+  const amt = e.k==="vendue" ? `<span class="jr-amt plus">+${fmt(e.prix||0)}</span>` : e.k==="achat" ? `<span class="jr-amt">−${fmt(e.prix||0)}</span>` : "";
+  return `<div class="cour-row jr k-${e.k}${fresh?" new":""}"><span class="jr-ic">${ic(J.ic,18)}</span><span class="who">${J.txt}<small>${timeAgo(e.le)}${e.k==="troc"&&e.mot?` · « ${esc(e.mot)} »`:""}</small></span>${amt}<span class="jr-balls">${balls}</span></div>`;
+}
+// « Aujourd'hui », « Hier », puis le jour en toutes lettres
+function jourDe(t){
+  const d = new Date(t), a = new Date(); a.setHours(0,0,0,0);
+  const n = Math.round((a - new Date(d).setHours(0,0,0,0)) / 864e5);
+  return n<=0 ? "Aujourd'hui" : n===1 ? "Hier" : d.toLocaleDateString("fr-FR", n<7 ? {weekday:"long"} : {weekday:"long", day:"numeric", month:"long"});
 }
 // l'onglet Historique : on retient ce qui était nouveau pour le souligner, puis tout est lu
 function courSeeJournal(){ cour.hlSince = S.courHist || 0; S.courHist = Date.now(); cour.unread = 0; save(); courRefresh("journal"); renderNav() }
@@ -6052,8 +6263,10 @@ function courJournal(){
   const J = cour.journal; if(!J) return courWait();
   const f = ui.jf || "", list = J.filter(e=>!f || (f==="troc") === (e.k==="troc"));
   const chip = (k,l) => `<button class="chip" data-action="jr-filt" data-f="${k}" aria-pressed="${f===k}">${l}</button>`;
+  let day = "";
+  const rows = list.map(e=>{ const d = jourDe(e.le), h = d!==day ? `<div class="jr-day">${d}</div>` : ""; day = d; return h + journalRow(e, true) }).join("");
   return `<div class="cour-grid"><section class="panel"><div class="panel-head"><h3>Historique</h3><div class="chips">${chip("","Tout")}${chip("troc","Troc")}${chip("marche","Marché")}</div></div>
-    ${list.length ? list.map(e=>journalRow(e, true)).join("") : `<p class="empty">Rien pour l'instant. Tes trocs, ventes et achats s'afficheront ici.</p>`}</section></div>`;
+    ${list.length ? rows : `<p class="empty">Rien pour l'instant. Tes trocs, ventes et achats s'afficheront ici.</p>`}</section></div>`;
 }
 // les nouvelles depuis la dernière visite : un récapitulatif en arrivant, puis un petit message à chaque nouveauté
 function courNews(welcome){
@@ -6069,11 +6282,12 @@ function courNews(welcome){
     if(!news.length) return;
     if(!(ui.view==="cour" && ui.courTab==="journal")) cour.unread = (cour.unread||0) + news.length;
     if(news.some(e=>e.k==="troc")) courRefresh("trocs"); if(news.some(e=>e.k!=="troc")) courRefresh("annonces");
+    if(news.some(e=>e.k==="vendue" || (e.k==="troc" && e.statut==="accepte" && (e.bonbecs_recus||e.bonbecs_donnes)))) ecoRefresh();
     renderNav(); if(ui.view==="cour") renderView();
     const free = document.getElementById("modal").hidden && document.getElementById("ov").hidden && document.getElementById("ask").hidden;
     if(welcome && free) openNews(news);
     else { const tmp = document.createElement("div"); tmp.innerHTML = journalInfo(news[0]).txt;
-      toast(news.length>1 ? `${news.length} nouveautés dans la cour : va voir l'historique !` : tmp.textContent + (news[0].k==="troc"&&news[0].statut==="accepte" ? " : tes nouvelles billes sont dans ta boîte !" : ".")) }
+      toast(news.length>1 ? `${news.length} nouveautés dans la cour : va voir l'historique !` : tmp.textContent + (news[0].k==="vendue" ? ` : +${fmt(news[0].prix||0)} ${CUR.many}` : "") + (news[0].k==="troc"&&news[0].statut==="accepte" ? " : tes nouvelles billes sont dans ta boîte !" : ".")) }
   }, ()=>{}).finally(()=>{ cour.newsBusy = false });
 }
 function openNews(news){
@@ -6102,41 +6316,76 @@ function buyAnnonce(id){
 
 function viewCour(){
   cour.specs = [];
-  const head = `<div class="page-head"><div><h1>La cour de récré</h1><p>Retrouve tes copains, troque tes billes et fais de bonnes affaires au marché.</p></div><span class="hand-note">On échange ?</span></div>`;
-  if(!sync.on) return head + `<section class="panel cour-lock">${ic("cour",40)}<h2>Il te faut un compte</h2>
+  const head = `<div class="page-head"><div><h1>La cour de récré</h1><p>Retrouve tes copains, troque tes billes et fais de bonnes affaires au marché.</p></div><span class="hand-note">On échange ?</span></div>`;  if(!sync.on) return head + `<section class="panel cour-lock">${ic("cour",40)}<h2>Il te faut un compte</h2>
     <p class="cour-lead">La cour, c'est pour échanger avec les autres joueurs : ta collection doit être sauvegardée sur ton compte.</p>
     ${window.Cloud?.available ? `<div class="btns"><button class="btn btn-yellow" data-action="acct-signup">Créer un compte</button><button class="btn btn-ghost" data-action="acct-login">Se connecter</button></div>` : ""}</section>`;
   if(!eco.ready || cour.ok===false) return head + `<section class="panel cour-lock">${ic("cour",40)}<h2>La cour ouvre bientôt</h2>
     <p class="cour-lead">Le serveur de la cour n'est pas encore en place. Reviens un peu plus tard !</p></section>`;
   courLoad("moi");
   const tab = ui.courTab || "copains", M = cour.moi;
-  const tb = (k,l,n) => `<button class="tab" role="tab" data-action="cour-tab" data-tab="${k}" aria-selected="${tab===k}">${l}${n?`<span class="n">${n}</span>`:""}</button>`;
-  const tabs = `<div class="tabs cour-tabs" role="tablist">${tb("copains","Copains",(M?.recues||[]).length)}${tb("troc","Troc",M?.trocs||0)}${tb("marche","Marché")}${tb("journal","Historique",cour.unread||0)}</div>`;
+  const tb = (k,l,icon,n) => `<button class="cn-tab" role="tab" data-action="cour-tab" data-tab="${k}" aria-selected="${tab===k}">${ic(icon,20,2.2)}<span>${l}</span>${n?`<span class="n">${n}</span>`:""}</button>`;
+  const tabs = `<div class="cour-nav" role="tablist">${tb("copains","Copains","users",(M?.recues||[]).length)}${tb("troc","Troc","swap",M?.trocs||0)}${tb("marche","Marché","candy")}${tb("journal","Historique","clock",cour.unread||0)}</div>`;
   const body = tab==="troc" ? courTroc() : tab==="marche" ? courMarche() : tab==="journal" ? courJournal() : courCopains();
-  return head + tabs + body;
+  return courHero() + tabs + body;
 }
 const courWait = () => `<p class="empty">Un instant…</p>`;
+// l'initiale d'un joueur dans un rond, toujours de la même couleur pour le même pseudo
+function avatarIni(p, px=36){
+  const s = String(p||"?"); let h = 7; for(const c of s) h = (h*31 + c.codePointAt(0)) % 360;
+  return `<span class="av-ini" style="--h:${h};--sz:${px}px" aria-hidden="true">${esc([...s][0].toUpperCase())}</span>`;
+}
+// la cour le soir, dessinée à la craie : une marelle, le rond du pot, quelques gribouillis
+const courScene = () => `<svg class="ch-scene" viewBox="0 0 800 240" preserveAspectRatio="xMaxYMid slice" aria-hidden="true">
+  <defs><radialGradient id="chs-glow" cx="80%" cy="-10%" r="75%"><stop offset="0" stop-color="#FFB45A" stop-opacity=".38"/><stop offset="1" stop-color="#FFB45A" stop-opacity="0"/></radialGradient>
+    <linearGradient id="chs-fade" x1="0" x2="1"><stop offset=".15" stop-color="#1E1712" stop-opacity=".92"/><stop offset=".6" stop-color="#1E1712" stop-opacity="0"/></linearGradient>
+    <pattern id="chs-grain" width="9" height="9" patternUnits="userSpaceOnUse"><circle cx="2" cy="3" r=".9" fill="#fff" opacity=".05"/><circle cx="6.5" cy="7" r=".7" fill="#000" opacity=".16"/></pattern>
+    <filter id="chs-chalk"><feTurbulence type="fractalNoise" baseFrequency=".8" numOctaves="2" seed="3"/><feDisplacementMap in="SourceGraphic" scale="3.5"/></filter></defs>
+  <rect width="800" height="240" fill="#2E241D"/><rect width="800" height="240" fill="url(#chs-grain)"/><rect width="800" height="240" fill="url(#chs-glow)"/>
+  <g filter="url(#chs-chalk)" fill="none" stroke="#fff" stroke-linecap="round" stroke-linejoin="round">
+    <g stroke-opacity=".2" stroke-width="3"><path d="M405 46h44v44h-44zM449 46h44v22h-44zM449 68h44v22h-44zM493 46h44v44h-44zM537 46h44v22h-44zM537 68h44v22h-44zM581 46h44v44h-44z"/><path d="M625 46q48 22 0 44"/></g>
+    <g fill="#fff" fill-opacity=".2" stroke="none" font-family="Caveat,cursive" font-size="17" font-weight="700" text-anchor="middle"><text x="427" y="74">1</text><text x="471" y="63">2</text><text x="471" y="85">3</text><text x="515" y="74">4</text><text x="559" y="63">5</text><text x="559" y="85">6</text><text x="603" y="74">7</text><text x="643" y="73" font-size="14">CIEL</text></g>
+    <ellipse cx="640" cy="160" rx="118" ry="40" stroke-opacity=".26" stroke-width="3.5"/><path d="M510 212l30-6" stroke-opacity=".18" stroke-width="3"/>
+    <path d="M718 96l4 9 10 1-7 7 2 10-9-5-9 5 2-10-7-7 10-1z" stroke-opacity=".2" stroke-width="2.5"/>
+    <path d="M430 150c-6-10 8-16 12-6 4-10 18-4 12 6l-12 12z" stroke-opacity=".16" stroke-width="2.5"/>
+  </g>
+  <rect width="800" height="240" fill="url(#chs-fade)"/></svg>`;
+function courHero(){
+  const M = cour.moi, me = specById(S.active), amis = (M?.amis||[]).filter(a=>a.active).slice(0,4);
+  const n = (v, one, many) => `<b>${fmt(v)}</b> ${v>1?many:one}`;
+  const ball = (x, px, cls, name) => `<span class="ch-ball ${cls}">${mImg(x,200,px,"")}${name?`<i>${esc(name)}</i>`:""}</span>`;
+  return `<section class="cour-hero">${courScene()}
+    <div class="ch-txt"><span class="ch-kick">${ic("cour",14,2.4)} Tout le monde dehors !</span><h1>La cour de récré</h1>
+      <p>Retrouve tes copains, troque tes billes et fais de bonnes affaires au marché.</p>
+      ${M ? `<div class="ch-stats"><span>${ic("users",15)} ${n((M.amis||[]).length,"copain","copains")}</span>${M.trocs?`<span class="hot">${ic("swap",15)} ${n(M.trocs,"troc à voir","trocs à voir")}</span>`:""}
+        <button data-action="cour-copy" title="Copier ton pseudo pour le donner à tes copains">Ton pseudo : <b>${esc(S.name)}</b> ${ic("copy",14)}</button></div>` : ""}</div>
+    <div class="ch-floor" aria-hidden="true">${me ? ball(me, Math.round(46*scaleOf(me.type)+40), "me", "toi") : ""}${amis.map((a,i)=>ball(a.active, Math.round(30*scaleOf(a.active.type)+20), "f"+i, a.pseudo)).join("")}</div>
+  </section>`;
+}
 
 function courCopains(){
   const M = cour.moi; if(!M) return courWait();
   courLoad("fil");
   const rec = M.recues||[], env = M.envoyees||[], amis = M.amis||[];
+  const friend = a => `<div class="friend"${a.active?` style="${tstyle(a.active.type)}"`:""}><span class="fr-band"></span>
+      <button class="ball" data-action="ami-voir" data-id="${a.id}" aria-label="Voir la fiche de ${esc(a.pseudo)}">${a.active ? mImg(a.active,160,Math.round(44*scaleOf(a.active.type)+34),"") : avatarIni(a.pseudo,64)}</button>
+      <b>${esc(a.pseudo)}</b><span class="fr-title${a.titre?" on":""}">${a.titre ? `${ic("trophy",13,2.4)} ${esc(a.titre)}` : "Pas encore de titre"}</span>
+      <div class="acts"><button class="btn btn-ghost btn-sm" data-action="ami-voir" data-id="${a.id}">Voir</button><button class="btn btn-yellow btn-sm" data-action="troc-new" data-id="${a.id}">${ic("swap",15)} Troquer</button></div></div>`;
+  const wait = r => `<div class="friend wait"><span class="fr-band"></span><span class="ball">${avatarIni(r.pseudo,64)}</span>
+      <b>${esc(r.pseudo)}</b><span class="fr-title">${ic("clock",13,2.4)} Attend ta demande</span>
+      <div class="acts"><button class="btn btn-ghost btn-sm" data-action="ami-retirer" data-id="${r.id}">Annuler</button></div></div>`;
+  const add = `<div class="friend add"><span class="add-ic">${ic("plus",26,2.6)}</span><b>Ajouter un copain</b>
+      <form id="ami-form"><input type="text" id="ami-pseudo" maxlength="20" placeholder="Son pseudo" autocomplete="off" aria-label="Pseudo de ton copain"><button class="btn btn-yellow btn-sm" type="submit">Ajouter</button></form>
+      <small>Quand vous vous êtes ajoutés, vous voyez vos vitrines et vous pouvez troquer.</small></div>`;
   return `<div class="cour-grid">
-    <section class="panel"><div class="panel-head"><h3>Ajouter un copain</h3><span class="sample-tag">Ton pseudo : ${esc(S.name)}</span></div>
-      <form class="cour-form" id="ami-form"><input type="text" id="ami-pseudo" maxlength="20" placeholder="Le pseudo de ton copain" autocomplete="off" aria-label="Pseudo"><button class="btn btn-yellow" type="submit">${ic("plus",16)} Ajouter</button></form>
-      <p class="cour-lead">Donne ton pseudo à tes copains. Une fois que vous vous êtes ajoutés, vous pouvez voir vos vitrines et vous proposer des trocs.</p></section>
-    ${rec.length ? `<section class="panel"><div class="panel-head"><h3>Ils veulent être tes copains</h3></div>
-      ${rec.map(r=>`<div class="cour-row"><span class="who">${esc(r.pseudo)}<small>${timeAgo(r.le)}</small></span>
-        <button class="btn btn-yellow btn-sm" data-action="ami-oui" data-id="${r.id}">Accepter</button><button class="btn btn-ghost btn-sm" data-action="ami-non" data-id="${r.id}">Refuser</button></div>`).join("")}</section>` : ""}
-    <section class="panel"><div class="panel-head"><h3>Mes copains <small class="meta">${amis.length}</small></h3></div>
-      ${amis.length ? `<div class="friends">${amis.map(a=>`<div class="friend"><span class="ball">${a.active ? mImg(a.active,120,Math.round(40*scaleOf(a.active.type)+18),"") : ""}</span>
-          <b>${esc(a.pseudo)}</b><small>${esc(a.titre||"")}</small>
-          <div class="acts"><button class="btn btn-ghost btn-sm" data-action="ami-voir" data-id="${a.id}">Voir</button><button class="btn btn-yellow btn-sm" data-action="troc-new" data-id="${a.id}">Troquer</button></div></div>`).join("")}</div>`
-        : `<p class="empty">Pas encore de copain. Ajoute quelqu'un avec son pseudo !</p>`}
-      ${env.length ? `<p class="meta" style="margin-top:14px">En attente de réponse : ${env.map(r=>`<b>${esc(r.pseudo)}</b> <button class="see-all" data-action="ami-retirer" data-id="${r.id}">annuler</button>`).join(" · ")}</p>` : ""}
+    ${rec.length ? `<section class="panel"><div class="panel-head"><h3>Ils veulent être tes copains<span class="cnt-n">${rec.length}</span></h3></div>
+      <div class="req-list">${rec.map(r=>`<div class="req">${avatarIni(r.pseudo,44)}<span class="who">${esc(r.pseudo)}<small>veut être ton copain · ${timeAgo(r.le)}</small></span>
+        <span class="acts"><button class="btn btn-yellow btn-sm" data-action="ami-oui" data-id="${r.id}">${ic("check",15,2.6)} Accepter</button><button class="btn btn-ghost btn-sm" data-action="ami-non" data-id="${r.id}">Refuser</button></span></div>`).join("")}</div></section>` : ""}
+    <section class="panel"><div class="panel-head"><h3>Mes copains<span class="cnt-n">${amis.length}</span></h3>${amis.length ? "" : `<span class="sample-tag">Donne ton pseudo à tes copains !</span>`}</div>
+      <div class="friends">${amis.map(friend).join("")}${env.map(wait).join("")}${add}</div>
     </section>
     ${cour.fil && cour.fil.length ? `<section class="panel"><div class="panel-head"><h3>Les trouvailles des copains</h3><span class="sample-tag">Boulets, Mammouths et shiny</span></div>
-      ${cour.fil.map(e=>`<div class="cour-row">${courBall(e.s,44,`Trouvée par ${e.who}.`)}<span class="who">${esc(e.who)} a trouvé ${e.s.shiny?"une shiny ":""}${esc(courName(e.s))}<small>${timeAgo(e.at)}</small></span></div>`).join("")}</section>` : ""}
+      <div class="finds">${cour.fil.map(e=>`<div class="find" style="${tstyle(e.s.type)}"><span class="fb">${courBall(e.s,Math.round(22*scaleOf(e.s.type)+28),`Trouvée par ${e.who}.`)}</span>
+        <span class="who">${esc(courName(e.s))}${shinyPill(e.s)}<small>Trouvée par <b>${esc(e.who)}</b> · ${timeAgo(e.at)}</small></span></div>`).join("")}</div></section>` : ""}
   </div>`;
 }
 
@@ -6145,14 +6394,15 @@ async function openProfil(id){
   let P; try{ P = await Cloud.cour.profil(id) }catch(e){ courFail(e); return }
   cour.specs = cour.specs || [];
   el.innerHTML = `<div class="modal profil" role="dialog" aria-modal="true" aria-label="${esc(P.pseudo)}">
+    <span class="pf-band"${P.active?` style="${tstyle(P.active.type)}"`:""}></span>
     <button class="close-x" data-action="close-modal" aria-label="Fermer">×</button>
     <div class="pf-body">
-      ${P.active ? mImg(P.active,240,96,"") : ""}
-      <h2>${esc(P.pseudo)}</h2>${P.titre?`<span class="pill" style="--rc:var(--ink-2);--rb:var(--panel-2)">${esc(P.titre)}</span>`:""}
+      ${P.active ? mImg(P.active,240,110,"") : avatarIni(P.pseudo,96)}
+      <h2>${esc(P.pseudo)}</h2>${P.titre?`<span class="pill" style="--rc:#C07A0C;--rb:var(--gold-bg)">${ic("trophy",12,2.4)} ${esc(P.titre)}</span>`:""}
       <div class="pf-stats"><div><b>${fmt(P.billes)}</b><small>Billes</small></div><div><b>${fmt(P.cases)}</b><small>Cases</small></div><div><b>${fmt(P.shiny)}</b><small>Shiny</small></div></div>
-      ${P.vitrine.length ? `<div><div class="lbl" style="margin-bottom:6px">Sa vitrine</div><div class="troc-balls" style="justify-content:center">${P.vitrine.map(x=>courBall(x,64,`Dans la vitrine de ${P.pseudo}.`)).join("")}</div></div>` : ""}
-      ${P.trouvailles.length ? `<div><div class="lbl" style="margin-bottom:6px">Ses belles trouvailles</div><div class="troc-balls" style="justify-content:center">${P.trouvailles.map(x=>courBall(x,52,`Une belle trouvaille de ${P.pseudo}.`)).join("")}</div></div>` : ""}
-      <div class="troc-act"><button class="btn btn-yellow" data-action="troc-new" data-id="${P.id}">Lui proposer un troc</button>
+      ${P.vitrine.length ? `<div class="pf-shelf"><div class="lbl">Sa vitrine</div><div class="troc-balls">${P.vitrine.map(x=>courBall(x,64,`Dans la vitrine de ${P.pseudo}.`)).join("")}</div></div>` : ""}
+      ${P.trouvailles.length ? `<div class="pf-shelf"><div class="lbl">Ses belles trouvailles</div><div class="troc-balls">${P.trouvailles.map(x=>courBall(x,52,`Une belle trouvaille de ${P.pseudo}.`)).join("")}</div></div>` : ""}
+      <div class="troc-act"><button class="btn btn-yellow" data-action="troc-new" data-id="${P.id}">${ic("swap",18)} Lui proposer un troc</button>
         <button class="btn btn-ghost" data-action="ami-retirer" data-id="${P.id}" data-pseudo="${esc(P.pseudo)}">Retirer de mes copains</button></div>
     </div></div>`;
   el.hidden = false;
@@ -6163,11 +6413,14 @@ const TROC_ST = {accepte:"Accepté", refuse:"Refusé", annule:"Annulé", impossi
 function trocCard(t, kind){
   const me = kind==="recu" ? "vers" : "de";
   const get = me==="vers" ? t.donne : t.demande, give = me==="vers" ? t.demande : t.donne;
+  const getB = me==="vers" ? t.donne_bonbecs : t.demande_bonbecs, giveB = me==="vers" ? t.demande_bonbecs : t.donne_bonbecs;
   const other = me==="vers" ? t.de_pseudo : t.vers_pseudo;
-  const side = (lbl, list) => `<div class="troc-side"><small>${lbl}</small><div class="troc-balls">${list.length ? list.map(x=>courBall(x,48)).join("") : `<span class="meta">rien</span>`}</div></div>`;
-  return `<div class="troc${kind==="fini"?" fini":""}">
-    <div class="troc-head">${kind==="recu" ? `<span><b>${esc(other)}</b> te propose un troc</span>` : kind==="envoye" ? `<span>Ton troc avec <b>${esc(other)}</b></span>` : `<span>Troc avec <b>${esc(t.de_pseudo===S.name?t.vers_pseudo:t.de_pseudo)}</b></span><span class="st">${TROC_ST[t.statut]||t.statut}</span>`}<time>${timeAgo(t.le)}</time></div>
-    <div class="troc-sides">${side("Tu reçois", get)}<span class="troc-arrow">${ic("swap",22)}</span>${side("Tu donnes", give)}</div>
+  const px = kind==="fini" ? 40 : 52;
+  const side = (cls, lbl, list, n) => `<div class="troc-side ${cls}"><small>${lbl}</small><div class="troc-balls">${list.map(x=>courBall(x,px)).join("")}${bbChip(n)}${!list.length && !(n>0) ? `<span class="meta">rien</span>` : ""}</div></div>`;
+  const who = kind==="fini" ? (t.de_pseudo===S.name ? t.vers_pseudo : t.de_pseudo) : other;
+  return `<div class="troc ${kind}">
+    <div class="troc-head">${avatarIni(who, kind==="fini"?28:34)}<span class="t">${kind==="recu" ? `<b>${esc(other)}</b> te propose un troc` : kind==="envoye" ? `Ton troc avec <b>${esc(other)}</b>` : `Troc avec <b>${esc(who)}</b>`}</span>${kind==="fini" ? `<span class="st ${t.statut}">${t.statut==="accepte"?ic("check",12,3):""}${TROC_ST[t.statut]||t.statut}</span>` : kind==="envoye" ? `<span class="st">${ic("clock",12,2.6)} En attente</span>` : ""}<time>${timeAgo(t.le)}</time></div>
+    <div class="troc-sides">${side("get", `${ic("arrow",13,2.6)} Tu reçois`, get, getB)}<span class="troc-arrow">${ic("swap",20)}</span>${side("give", `Tu donnes`, give, giveB)}</div>
     ${t.mot ? `<p class="troc-mot">« ${esc(t.mot)} »</p>` : ""}
     ${kind==="recu" ? `<div class="troc-act"><button class="btn btn-yellow btn-sm" data-action="troc-oui" data-id="${t.id}">${ic("check",16)} Accepter</button><button class="btn btn-ghost btn-sm" data-action="troc-contre" data-id="${t.id}">${ic("swap",16)} Contre-proposer</button><button class="btn btn-ghost btn-sm" data-action="troc-non" data-id="${t.id}">Refuser</button></div>`
       : kind==="envoye" ? `<div class="troc-act"><button class="btn btn-ghost btn-sm" data-action="troc-annuler" data-id="${t.id}">Annuler ce troc</button></div>` : ""}
@@ -6179,16 +6432,16 @@ function courTroc(){
   const T = cour.trocs, amis = cour.moi?.amis || [];
   if(!T) return courWait();
   return `<div class="cour-grid">
-    <section class="panel"><div class="panel-head"><h3>Proposer un troc</h3></div>
-      ${amis.length ? `<div class="chips">${amis.map(a=>`<button class="chip" data-action="troc-new" data-id="${a.id}">${esc(a.pseudo)}</button>`).join("")}</div>
+    <section class="panel"><div class="panel-head"><h3>Proposer un troc à…</h3></div>
+      ${amis.length ? `<div class="fchips">${amis.map(a=>`<button class="fchip" data-action="troc-new" data-id="${a.id}">${a.active ? mImg(a.active,80,32,"") : avatarIni(a.pseudo,32)}${esc(a.pseudo)}</button>`).join("")}</div>
         <p class="cour-lead">Choisis un copain, puis les billes que tu donnes et celles que tu voudrais. Il reçoit ta proposition et décide.</p>`
         : `<p class="cour-lead">Pour troquer, ajoute d'abord des copains dans l'onglet Copains.</p>`}</section>
-    <section class="panel"><div class="panel-head"><h3>On te propose</h3></div>${T.recus.length ? T.recus.map(t=>trocCard(t,"recu")).join("") : `<p class="empty">Aucun troc reçu pour l'instant.</p>`}</section>
-    ${T.envoyes.length ? `<section class="panel"><div class="panel-head"><h3>Tu as proposé</h3></div>${T.envoyes.map(t=>trocCard(t,"envoye")).join("")}</section>` : ""}
+    <section class="panel"><div class="panel-head"><h3>On te propose${T.recus.length?`<span class="cnt-n">${T.recus.length}</span>`:""}</h3></div>${T.recus.length ? T.recus.map(t=>trocCard(t,"recu")).join("") : `<p class="empty">Aucun troc reçu pour l'instant.</p>`}</section>
+    ${T.envoyes.length ? `<section class="panel"><div class="panel-head"><h3>Tu as proposé<span class="cnt-n">${T.envoyes.length}</span></h3></div>${T.envoyes.map(t=>trocCard(t,"envoye")).join("")}</section>` : ""}
     ${T.finis.length ? `<section class="panel"><div class="panel-head"><h3>Derniers trocs</h3></div>${T.finis.map(t=>trocCard(t,"fini")).join("")}</section>` : ""}
   </div>`;
 }
-const pickCard = (x, side, on) => `<button class="pick" data-action="troc-pick" data-side="${side}" data-id="${x.id}" aria-pressed="${on}"><span class="ball">${mImg(x,120,Math.round(28*scaleOf(x.type)+16),"")}</span>${esc(specName(x))}<small class="meta">${TYPES[x.type].label}</small></button>`;
+const pickCard = (x, side, on) => `<button class="pick" data-action="troc-pick" data-side="${side}" data-id="${x.id}" aria-pressed="${on}"><span class="ball">${mImg(x,120,Math.round(28*scaleOf(x.type)+18),"")}</span>${esc(specName(x))}<small class="meta">${TYPES[x.type].label}</small></button>`;
 function pickList(list, side, sel, filt){
   if(!list) return courWait();
   const shown = list.filter(x=>!filt || x.type===filt);
@@ -6197,21 +6450,27 @@ function pickList(list, side, sel, filt){
 }
 function trocCompose(){
   const C = cour.compose;
+  const dots = n => `<span class="cmp-dots" aria-label="${n} sur 6">${[0,1,2,3,4,5].map(i=>`<i class="${i<n?"on":""}"></i>`).join("")}</span>`;
+  const chosen = (list, ids) => (list||[]).filter(x=>ids.includes(x.id)).map(x=>mImg(x,80,30,"")).join("");
+  const sd = (cls, lbl, list, ids) => { const b = chosen(list, ids); return `<span class="sd ${cls}">${b || ""}<em>${b ? lbl : `${lbl} : rien pour l'instant`}</em></span>` };
   return `<div class="cour-grid">
-    <section class="panel"><div class="panel-head"><h3>${C.remplace?"Contre-proposition à":"Troc avec"} ${esc(C.pseudo)}</h3><button class="see-all" data-action="troc-close">${ic("chevl",14)} Retour</button></div>
-      ${C.remplace ? `<p class="cour-lead">On est reparti de son troc, à l'envers : change les billes comme tu veux. Ta proposition remplacera la sienne.</p>` : ""}
-      <p class="cour-lead">Jusqu'à 6 billes de chaque côté. Seules les billes tirées dans les sacs, les fusions ou le passe peuvent être troquées (pas les billes de départ ni les billes secrètes).</p></section>
+    <section class="panel"><div class="cmp-head">${avatarIni(C.pseudo,40)}<h3>${C.remplace?"Contre-proposition à":"Troc avec"} ${esc(C.pseudo)}</h3><button class="see-all" data-action="troc-close">${ic("chevl",14)} Retour</button></div>
+      ${C.remplace ? `<p class="cour-lead" style="margin:0 0 8px">On est reparti de son troc, à l'envers : change les billes comme tu veux. Ta proposition remplacera la sienne.</p>` : ""}
+      <p class="cour-info">${ic("quest",16)}<span>Jusqu'à 6 billes de chaque côté, et si tu veux jusqu'à ${fmt(TROC_BONBECS_MAX)} ${CUR.many} en plus (d'un seul côté : tu en ajoutes ou tu en demandes). Seules les billes tirées dans les sacs, les fusions ou le passe peuvent être troquées (pas les billes de départ ni les billes secrètes).</span></p></section>
     <div class="compose">
-      <section class="panel"><div class="panel-head"><h3>Tu donnes</h3><span class="sample-tag">${C.give.length} / 6</span></div>${pickList(C.mine, "give", C.give, C.fg)}</section>
-      <section class="panel"><div class="panel-head"><h3>Tu demandes à ${esc(C.pseudo)}</h3><span class="sample-tag">${C.want.length} / 6</span></div>${pickList(C.theirs, "want", C.want, C.fw)}</section>
+      <section class="panel cmp give"><div class="panel-head"><h3>${ic("swap",18)} Tu donnes</h3>${dots(C.give.length)}</div><div style="--tc:#E8743B">${pickList(C.mine, "give", C.give, C.fg)}</div>
+        <label class="bb-in">${ic("plus",16)} Ajouter <input type="number" id="troc-gb" min="0" max="${TROC_BONBECS_MAX}" step="1" placeholder="0" value="${C.gb||""}"> ${CUR.many} ${COIN}</label></section>
+      <section class="panel cmp want"><div class="panel-head"><h3>${ic("arrow",18)} Tu demandes à ${esc(C.pseudo)}</h3>${dots(C.want.length)}</div><div style="--tc:var(--green)">${pickList(C.theirs, "want", C.want, C.fw)}</div>
+        <label class="bb-in">${ic("plus",16)} Demander <input type="number" id="troc-wb" min="0" max="${TROC_BONBECS_MAX}" step="1" placeholder="0" value="${C.wb||""}"> ${CUR.many} ${COIN}</label></section>
     </div>
-    <section class="panel"><form class="cour-form" id="troc-form"><input type="text" id="troc-mot" maxlength="140" placeholder="Un petit mot (facultatif)" value="${esc(C.mot||"")}" aria-label="Petit mot">
+    <section class="panel cmp-send"><div class="cmp-sum">${sd("give","Tu donnes",C.mine,C.give)}${ic("swap",18)}${sd("get","Tu reçois",C.theirs,C.want)}</div>
+      <form class="cour-form" id="troc-form"><input type="text" id="troc-mot" maxlength="140" placeholder="Un petit mot pour ${esc(C.pseudo)} (facultatif)" value="${esc(C.mot||"")}" aria-label="Petit mot">
       <button class="btn btn-yellow" type="submit" ${C.give.length+C.want.length?"":"disabled"}>${ic("swap",18)} ${C.remplace?"Envoyer la contre-proposition":"Envoyer la proposition"}</button></form></section>
   </div>`;
 }
 function trocStart(id, pre){
   const a = (cour.moi?.amis||[]).find(x=>x.id===id); if(!a) return;
-  cour.compose = {id, pseudo:a.pseudo, mine:null, theirs:null, give:[...(pre?.give||[])], want:[...(pre?.want||[])], mot:"", remplace:pre?.remplace||null};
+  cour.compose = {id, pseudo:a.pseudo, mine:null, theirs:null, give:[...(pre?.give||[])], want:[...(pre?.want||[])], mot:"", remplace:pre?.remplace||null, gb:pre?.gb||0, wb:pre?.wb||0};
   ui.courTab = "troc"; closeModal(); if(ui.view!=="cour") go("cour"); else renderView();
   const C = cour.compose;
   // tes billes : sans la bille active ni celles de ta vitrine
@@ -6221,32 +6480,47 @@ function trocStart(id, pre){
 }
 
 // ---------- marché ----------
+// « Voir au marché » : le marché filtré sur la même taille et le même décor
+const findBtn = s => srvOn() && !s.secret && !s.loan ? `<button class="btn btn-ghost" data-action="cour-find" data-type="${s.type}" data-fam="${s.family}">${ic("search",16)} Voir au marché</button>` : "";
+// le choix du décor, du plus courant au plus rare
+function decorSel(v){
+  const groups = DECOR_RAR.map((r,k)=>{ const fams = FAM_ORDER.filter(i=>FAMILIES[i].rar===k);
+    return fams.length ? `<optgroup label="${r.name}">${fams.map(i=>`<option value="${i}"${v===i?" selected":""}>${esc(FAMILIES[i].name)}</option>`).join("")}</optgroup>` : "" }).join("");
+  return `<select id="mk-decor" aria-label="Décor"><option value="">Tous les décors</option>${groups}</select>`;
+}
 function courMarche(){
   if(cour.sell) return sellView();
   courLoad("marche"); courLoad("annonces");
   const L = cour.marche, A = cour.annonces, f = cour.f;
   const sel = (id, opts, v) => `<select id="${id}" aria-label="${id}">${opts.map(([k,l])=>`<option value="${k}"${v===k?" selected":""}>${l}</option>`).join("")}</select>`;
-  const card = a => { const x = a.bille;
-    return `<div class="mk${a.moi?" mine":""}"><span class="ball" data-action="cour-see" data-k="${courSpec(x, a.moi?"Ta bille en vente.":`En vente par ${a.vendeur}.`)}">${mImg(x,160,Math.round(44*scaleOf(x.type)+22),"")}</span>
-      <b>${esc(specName(x))}</b><span style="display:flex;gap:4px;flex-wrap:wrap;justify-content:center">${typePill(x.type)}${shinyPill(x)}</span>
+  const card = a => { const x = a.bille, deal = !a.moi && a.moyen && a.prix <= a.moyen*.85, soon = a.fin - Date.now() < 36e5;
+    return `<div class="mk${a.moi?" mine":""}" style="${tstyle(x.type)}">${a.moi ? `<span class="mk-rib">Ta bille</span>` : deal ? `<span class="mk-rib deal">${ic("star",11,2.8)} Bonne affaire</span>` : ""}
+      <span class="mk-vis" data-action="cour-see" data-k="${courSpec(x, a.moi?"Ta bille en vente.":`En vente par ${a.vendeur}.`)}">${mImg(x,160,Math.round(44*scaleOf(x.type)+30),"")}</span>
+      <div class="mk-info"><b>${esc(specName(x))}</b><span class="pills">${typePill(x.type)}${shinyPill(x)}</span>
       <span class="price">${COIN}${fmt(a.prix)}</span>
-      <small>${a.moyen?`Prix moyen : ${fmt(a.moyen)} · `:""}${a.moi?"ta bille":`par ${esc(a.vendeur)}`}</small><small>${finDans(a.fin)}</small>
+      <small class="avg${deal?" good":""}">${a.moyen ? `Prix moyen : ${fmt(a.moyen)}` : "Pas encore de prix moyen"}</small>
+      <div class="mk-meta"><span>${a.moi ? `${ic("user",13,2.4)} toi` : `${avatarIni(a.vendeur,18)} ${esc(a.vendeur)}`}</span><span class="${soon?"soon":""}">${ic("clock",13,2.4)} ${finDans(a.fin)}</span></div>
       ${a.moi ? `<button class="btn btn-ghost btn-sm" data-action="mk-retirer" data-id="${a.id}">Retirer</button>`
-        : `<button class="btn btn-yellow btn-sm" data-action="mk-acheter" data-id="${a.id}" data-prix="${a.prix}" ${S.jetons<a.prix?"disabled":""}>Acheter</button>`}</div>` };
-  const mine = (A||[]);
+        : S.jetons<a.prix ? `<button class="btn btn-yellow btn-sm" disabled>Il te manque ${fmt(a.prix-S.jetons)}</button>`
+        : `<button class="btn btn-yellow btn-sm" data-action="mk-acheter" data-id="${a.id}" data-prix="${a.prix}">Acheter</button>`}</div></div>` };
+  const mine = (A||[]), sold = mine.filter(a=>a.vendue).length;
+  const ann = a => { const x = a.bille;
+    return `<div class="ann${a.vendue?" sold":""}">${courBall(x, Math.round(20*scaleOf(x.type)+28), a.vendue?`Vendue à ${a.acheteur||"?"}.`:"Ta bille en vente.")}
+      <span class="who">${esc(specName(x))}<small>${TYPES[x.type].label}${x.shiny?" · shiny":""}</small></span>
+      <span class="price">${COIN}${fmt(a.prix)}</span>
+      ${a.vendue ? `<span class="ann-st">${ic("check",13,3)} Vendue à ${esc(a.acheteur||"?")}</span>` : `<span class="ann-st">${ic("clock",13,2.4)} ${finDans(a.fin)}</span><button class="btn btn-ghost btn-sm" data-action="mk-retirer" data-id="${a.id}">Retirer</button>`}</div>` };
   return `<div class="cour-grid">
-    <section class="panel"><div class="panel-head"><h3>Le marché</h3><button class="btn btn-yellow btn-sm" data-action="mk-vendre">${ic("candy",16)} Vendre une bille</button></div>
+    <section class="panel"><div class="mk-bar"><h3>Le marché</h3>${mine.length ? `<button class="btn btn-ghost btn-sm" data-action="mk-mine">Mes annonces · ${mine.length}</button>` : ""}<button class="btn btn-yellow btn-sm" data-action="mk-vendre">${ic("candy",16)} Vendre une bille</button>
       <div class="cour-form" id="mk-filters">
         ${sel("mk-taille", [["","Toutes les tailles"], ...TK.map(t=>[t,TYPES[t].pl])], f.taille)}
+        ${decorSel(f.decor)}
         ${sel("mk-shiny", [["","Shiny ou pas"],["1","Shiny seulement"],["0","Sans shiny"]], f.shiny)}
         ${sel("mk-tri", [["recent","Plus récentes"],["prix","Moins chères"],["rare","Plus rares"]], f.tri)}
-      </div>
-      <p class="cour-lead">Chacun fixe son prix, et le vendeur reçoit tous les ${CUR.many}. Le prix moyen montre ce que les joueurs ont payé ce modèle ces 30 derniers jours.</p></section>
-    ${!L ? courWait() : L.length ? `<div class="mk-grid">${L.map(card).join("")}</div>` : `<p class="empty">Rien en vente avec ces filtres pour l'instant.</p>`}
-    ${mine.length ? `<section class="panel"><div class="panel-head"><h3>Mes annonces</h3></div><div class="mk-grid">${mine.map(a=>{ const x=a.bille;
-      return `<div class="mk mine${a.vendue?" sold":""}"><span class="ball" data-action="cour-see" data-k="${courSpec(x)}">${mImg(x,160,Math.round(40*scaleOf(x.type)+20),"")}</span><b>${esc(specName(x))}</b>
-        <span class="price">${COIN}${fmt(a.prix)}</span>
-        ${a.vendue ? `<small>Vendue à ${esc(a.acheteur||"?")}</small>` : `<small>${finDans(a.fin)}</small><button class="btn btn-ghost btn-sm" data-action="mk-retirer" data-id="${a.id}">Retirer</button>`}</div>` }).join("")}</div></section>` : ""}
+      </div></div>
+      <p class="cour-info" style="margin-top:12px">${ic("quest",16)}<span>Chacun fixe son prix, et le vendeur reçoit tous les ${CUR.many}. Le prix moyen montre ce que les joueurs ont payé ce modèle ces 30 derniers jours.</span></p></section>
+    ${!L ? courWait() : L.length ? `<div class="mk-grid">${L.map(card).join("")}</div>` : `<p class="empty">Rien en vente avec ces filtres pour l'instant.${f.taille||f.decor!=null||f.shiny ? `<br><button class="btn btn-ghost btn-sm" style="margin-top:12px" data-action="mk-reset">Effacer les filtres</button>` : ""}</p>`}
+    ${mine.length ? `<section class="panel" id="mes-annonces"><div class="panel-head"><h3>Mes annonces<span class="cnt-n">${mine.length}</span></h3>${sold ? `<span class="sample-tag">${sold} vendue${sold>1?"s":""}</span>` : ""}</div>
+      <div class="ann-list">${mine.map(ann).join("")}</div></section>` : ""}
   </div>`;
 }
 function sellStart(pick){
@@ -6259,12 +6533,12 @@ function sellView(){
   const X = cour.sell, p = X.pick && (X.list||[]).find(x=>x.id===X.pick);
   return `<div class="cour-grid">
     <section class="panel"><div class="panel-head"><h3>Vendre une bille</h3><button class="see-all" data-action="mk-close">${ic("chevl",14)} Retour</button></div>
-      ${p ? `<div class="cour-row">${mImg(p,120,56,"")}<span class="who">${esc(courName(p))}<small>À la Confiserie, elle vaut ${fmt(recycleValue(p))} ${CUR.many}.</small></span></div>
-        <form class="cour-form" id="sell-form"><input type="number" id="sell-prix" min="1" max="1000000" step="1" placeholder="Prix" value="${X.prix||""}" aria-label="Prix en ${CUR.many}" required>
-          <span class="meta">${CUR.many}</span>
-          <select id="sell-jours" aria-label="Durée de la vente"><option value="1">pendant 1 jour</option><option value="3" selected>pendant 3 jours</option><option value="7">pendant 7 jours</option></select>
-          <button class="btn btn-yellow" type="submit">Mettre en vente</button></form>
-        <p class="cour-lead">Si personne ne l'achète avant la fin, elle reste simplement dans ta boîte. Tu peux aussi la retirer quand tu veux. Pendant qu'elle est en vente, elle ne peut pas être troquée.</p>`
+      ${p ? `<div class="sell-card"><span class="sell-vis" style="${tstyle(p.type)}">${mImg(p,200,Math.round(50*scaleOf(p.type)+50),"")}</span>
+        <div><h4>${esc(specName(p))}</h4><span class="pills">${typePill(p.type)}${shinyPill(p)}</span><p class="meta">À la Confiserie, elle vaut ${fmt(recycleValue(p))} ${CUR.many}.</p>
+        <form class="sell-form" id="sell-form"><label class="price-in">${COIN}<input type="number" id="sell-prix" min="1" max="1000000" step="1" placeholder="Ton prix" value="${X.prix||""}" aria-label="Prix en ${CUR.many}" required><small>${CUR.many}</small></label>
+          <div class="seg" role="radiogroup" aria-label="Durée de la vente">${[1,3,7].map(j=>`<label><input type="radio" name="sell-jours" value="${j}"${j===3?" checked":""}><span>${j} jour${j>1?"s":""}</span></label>`).join("")}</div>
+          <button class="btn btn-yellow" type="submit">${ic("candy",18)} Mettre en vente</button></form></div></div>
+        <p class="cour-info" style="margin-top:16px">${ic("quest",16)}<span>Si personne ne l'achète avant la fin, elle reste simplement dans ta boîte. Tu peux aussi la retirer quand tu veux. Pendant qu'elle est en vente, elle ne peut pas être troquée.</span></p>`
         : `<p class="cour-lead">Choisis la bille à vendre. Ta bille active, les billes de départ et les billes secrètes ne peuvent pas être vendues.</p>`}
     </section>
     <section class="panel">${pickList(X.list, "sell", X.pick?[X.pick]:[], X.f)}</section>
@@ -6336,7 +6610,7 @@ document.addEventListener("click", e=>{
     case "troc-new": trocStart(t.dataset.id); break;
     case "troc-contre": {   // contre-proposition : on repart du troc reçu, à l'envers, et on le modifie
       const T0 = (cour.trocs?.recus||[]).find(x=>x.id===+t.dataset.id); if(!T0) break;
-      trocStart(T0.de, {give:T0.demande.map(x=>x.id), want:T0.donne.map(x=>x.id), remplace:T0.id});
+      trocStart(T0.de, {give:T0.demande.map(x=>x.id), want:T0.donne.map(x=>x.id), gb:T0.demande_bonbecs, wb:T0.donne_bonbecs, remplace:T0.id});
       break;
     }
     case "troc-close": cour.compose = null; renderView(); break;
@@ -6351,12 +6625,14 @@ document.addEventListener("click", e=>{
     }
     case "troc-oui": case "troc-non": {
       const oui = t.dataset.action==="troc-oui", id = +t.dataset.id, T0 = (cour.trocs?.recus||[]).find(x=>x.id===id), who = esc(T0?.de_pseudo||"ton copain");
-      ask(oui ? {title:`Accepter le troc de ${T0?.de_pseudo||"ton copain"} ?`, extra:T0 ? trocSummary(T0.donne, T0.demande) : "",
-                 text:`Tu reçois ${nbBilles(T0?.donne)} et tu donnes ${nbBilles(T0?.demande)}. L'échange se fait tout de suite, et c'est définitif.${(T0?.demande||[]).map(partWarn).join("")}`, ok:"Accepter le troc"}
+      if(oui && T0?.demande_bonbecs > S.jetons){ toast(`Ce troc te demande ${fmt(T0.demande_bonbecs)} ${CUR.many} : il t'en manque ${fmt(T0.demande_bonbecs-S.jetons)}.`); break }
+      ask(oui ? {title:`Accepter le troc de ${T0?.de_pseudo||"ton copain"} ?`, extra:T0 ? trocSummary(T0.donne, T0.demande, T0.donne_bonbecs, T0.demande_bonbecs) : "",
+                 text:`Tu reçois ${nbTroc(T0?.donne, T0?.donne_bonbecs)} et tu donnes ${nbTroc(T0?.demande, T0?.demande_bonbecs)}. L'échange se fait tout de suite, et c'est définitif.${(T0?.demande||[]).map(partWarn).join("")}`, ok:"Accepter le troc"}
               : {title:`Refuser le troc de ${T0?.de_pseudo||"ton copain"} ?`, text:`${who} sera prévenu. Tu peux aussi lui faire une contre-proposition.`, ok:"Refuser", danger:true})
       .then(ok=>{ if(!ok) return;
         Cloud.cour.repondreTroc(id, oui).then(r=>{
           toast(r.statut==="accepte" ? "Troc fait ! Tes nouvelles billes sont dans ta boîte." : r.statut==="impossible" ? "Ce troc n'est plus possible : une des billes n'est plus disponible." : "Troc refusé.");
+          if(r.eco) applyEco(r.eco);
           if(r.statut==="accepte"){ Sound.coin(); syncMarbles() }
           courRefresh("trocs","moi","journal");
         }, courFail) });
@@ -6369,6 +6645,11 @@ document.addEventListener("click", e=>{
       break;
     }
     case "mk-vendre": sellStart(); break;
+    case "mk-reset": Object.assign(cour.f, {taille:"", decor:null, shiny:""}); courRefresh("marche"); renderView(); break;
+    case "cour-find": Object.assign(cour.f, {taille:t.dataset.type, decor:+t.dataset.fam, shiny:""}); cour.marche = null;
+      ui.courTab = "marche"; cour.compose = null; cour.sell = null; closeModal(); courRefresh("marche","annonces"); if(ui.view!=="cour") go("cour"); else renderView(); break;
+    case "mk-mine": document.getElementById("mes-annonces")?.scrollIntoView({behavior:"smooth", block:"start"}); break;
+    case "cour-copy": (navigator.clipboard ? navigator.clipboard.writeText(S.name) : Promise.reject()).then(()=>toast(`Pseudo copié : colle-le à tes copains pour qu'ils t'ajoutent !`), ()=>toast(`Ton pseudo : ${S.name}`)); break;
     case "cour-sell-this": sellStart(t.dataset.id); break;
     case "mk-close": cour.sell = null; renderView(); break;
     case "mk-retirer": {
@@ -6577,8 +6858,14 @@ document.addEventListener("click", e=>{
   }
 });
 document.addEventListener("change", e=>{
-  const k = {"mk-taille":"taille", "mk-shiny":"shiny", "mk-tri":"tri"}[e.target.id];
-  if(k){ cour.f[k] = e.target.value; courRefresh("marche") }
+  const k = {"mk-taille":"taille", "mk-decor":"decor", "mk-shiny":"shiny", "mk-tri":"tri"}[e.target.id];
+  if(k){ cour.f[k] = k==="decor" ? (e.target.value==="" ? null : +e.target.value) : e.target.value; courRefresh("marche") }
+});
+document.addEventListener("input", e=>{
+  const C = cour.compose; if(!C || !["troc-gb","troc-wb"].includes(e.target.id)) return;
+  const v = Math.max(0, Math.round(+e.target.value||0)), other = document.getElementById(e.target.id==="troc-gb" ? "troc-wb" : "troc-gb");
+  C[e.target.id==="troc-gb" ? "gb" : "wb"] = v;
+  if(v>0 && other && +other.value){ other.value = ""; C[e.target.id==="troc-gb" ? "wb" : "gb"] = 0 }
 });
 document.addEventListener("submit", e=>{
   const id = e.target.id;
@@ -6593,15 +6880,20 @@ document.addEventListener("submit", e=>{
     const C = cour.compose; if(!C) return;
     const mot = document.getElementById("troc-mot").value; C.mot = mot;
     const give = (C.mine||[]).filter(x=>C.give.includes(x.id)), want = (C.theirs||[]).filter(x=>C.want.includes(x.id));
-    ask({title: C.remplace ? `Envoyer ta contre-proposition à ${C.pseudo} ?` : `Envoyer ce troc à ${C.pseudo} ?`, extra:trocSummary(want, give),
-         text:`${C.remplace?"Son troc sera remplacé par le tien. ":""}Si ${esc(C.pseudo)} accepte, l'échange se fait tout de suite. Tu peux l'annuler tant qu'il n'a pas répondu.${give.map(partWarn).join("")}`, ok:"Envoyer"})
+    const gb = Math.round(+document.getElementById("troc-gb").value||0), wb = Math.round(+document.getElementById("troc-wb").value||0);
+    if(gb<0 || wb<0 || gb>TROC_BONBECS_MAX || wb>TROC_BONBECS_MAX){ toast(`Entre 0 et ${fmt(TROC_BONBECS_MAX)} ${CUR.many} dans un troc.`); return }
+    if(gb>0 && wb>0){ toast(`Des ${CUR.many} d'un seul côté : tu en ajoutes, ou tu en demandes.`); return }
+    if(gb>S.jetons){ toast(`Tu n'as que ${fmt(S.jetons)} ${CUR.many}.`); return }
+    C.gb = gb; C.wb = wb;
+    ask({title: C.remplace ? `Envoyer ta contre-proposition à ${C.pseudo} ?` : `Envoyer ce troc à ${C.pseudo} ?`, extra:trocSummary(want, give, wb, gb),
+         text:`${C.remplace?"Son troc sera remplacé par le tien. ":""}Si ${esc(C.pseudo)} accepte, l'échange se fait tout de suite. Tu peux l'annuler tant qu'il n'a pas répondu.${gb?` Tes ${CUR.many} ne partent que s'il accepte.`:""}${give.map(partWarn).join("")}`, ok:"Envoyer"})
       .then(ok=>{ if(!ok || cour.compose!==C) return;
-        Cloud.cour.proposer(C.id, C.give, C.want, mot, C.remplace).then(()=>{ toast(C.remplace ? `Contre-proposition envoyée à ${C.pseudo} !` : `Proposition envoyée à ${C.pseudo} !`); cour.compose = null; courRefresh("trocs","moi","journal") }, courFail) });
+        Cloud.cour.proposer(C.id, C.give, C.want, mot, C.remplace, gb, wb).then(()=>{ toast(C.remplace ? `Contre-proposition envoyée à ${C.pseudo} !` : `Proposition envoyée à ${C.pseudo} !`); cour.compose = null; courRefresh("trocs","moi","journal") }, courFail) });
     return;
   }
   if(id==="sell-form"){
     e.preventDefault();
-    const X = cour.sell, prix = Math.round(+document.getElementById("sell-prix").value), jours = +document.getElementById("sell-jours").value || 3;
+    const X = cour.sell, prix = Math.round(+document.getElementById("sell-prix").value), jours = +document.querySelector('input[name="sell-jours"]:checked')?.value || 3;
     if(!X?.pick || !(prix>=1)) return;
     X.prix = prix;
     const b = (X.list||[]).find(x=>x.id===X.pick), rv = b ? recycleValue(b) : 0;

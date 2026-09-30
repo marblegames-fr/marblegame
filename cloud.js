@@ -104,7 +104,7 @@
       profil: qui => rpc("profil_joueur", {qui}),
       echangeables: qui => rpc("billes_echangeables", {qui}),
       fil: () => rpc("fil_amis"),
-      proposer: (vers, donne, demande, mot, remplace) => rpc("troc_proposer", {vers, donne, demande, mot:mot||null, remplace:remplace||null}),
+      proposer: (vers, donne, demande, mot, remplace, donneB, demandeB) => rpc("troc_proposer", {vers, donne, demande, mot:mot||null, remplace:remplace||null, donne_bonbecs:donneB||0, demande_bonbecs:demandeB||0}),
       repondreTroc: (troc, oui) => rpc("troc_repondre", {troc, oui}),
       annuler: troc => rpc("troc_annuler", {troc}),
       trocs: () => rpc("mes_trocs"),

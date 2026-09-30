@@ -34,6 +34,9 @@ create table if not exists public.trocs (
   le        timestamptz not null default now(),
   fini_le   timestamptz
 );
+-- des bonbecs en plus des billes, d'un seul côté (au plus TROC_BONBECS_MAX = 5000 ; même valeur dans index.html)
+alter table public.trocs add column if not exists donne_bonbecs   int not null default 0 check (donne_bonbecs between 0 and 5000);
+alter table public.trocs add column if not exists demande_bonbecs int not null default 0 check (demande_bonbecs between 0 and 5000);
 create index if not exists trocs_vers on public.trocs (vers) where statut = 'attente';
 create index if not exists trocs_de on public.trocs (de) where statut = 'attente';
 
@@ -201,12 +204,17 @@ end $$;
 --  TROC
 -- =====================================================================
 -- « remplace » : une contre-proposition à un troc reçu de ce copain ; l'ancien troc est clos (statut « contre »)
+-- « donne_bonbecs » / « demande_bonbecs » : des bonbecs ajoutés d'un côté du troc (payés seulement quand le troc est accepté)
 drop function if exists public.troc_proposer(uuid, uuid[], uuid[], text);
-create or replace function public.troc_proposer(vers uuid, donne uuid[], demande uuid[], mot text default null, remplace bigint default null)
+drop function if exists public.troc_proposer(uuid, uuid[], uuid[], text, bigint);
+create or replace function public.troc_proposer(vers uuid, donne uuid[], demande uuid[], mot text default null, remplace bigint default null,
+  donne_bonbecs int default 0, demande_bonbecs int default 0)
 returns bigint language plpgsql security definer set search_path = public as $$
-declare moi uuid := auth.uid(); b uuid; tid bigint;
+declare moi uuid := interne.moi(); b uuid; tid bigint;
 begin
-  if moi is null then raise exception 'connexion_requise'; end if;
+  donne_bonbecs := coalesce(donne_bonbecs, 0); demande_bonbecs := coalesce(demande_bonbecs, 0);
+  if donne_bonbecs not between 0 and 5000 or demande_bonbecs not between 0 and 5000 or (donne_bonbecs > 0 and demande_bonbecs > 0) then raise exception 'troc_invalide'; end if;
+  if donne_bonbecs > 0 and not exists (select 1 from portefeuilles p where p.joueur = moi and p.bonbecs >= donne_bonbecs) then raise exception 'pas_assez'; end if;
   if remplace is not null then
     update trocs t set statut = 'contre', fini_le = now() where t.id = remplace and t.vers = moi and t.de = troc_proposer.vers and t.statut = 'attente';
     if not found then raise exception 'plus_de_troc'; end if;
@@ -218,13 +226,14 @@ begin
   foreach b in array donne loop if not interne.bille_libre(b, moi) then raise exception 'bille_indisponible'; end if; end loop;
   foreach b in array demande loop if not interne.bille_libre(b, vers) then raise exception 'bille_indisponible'; end if; end loop;
   if (select count(*) from trocs t where t.de = moi and t.statut = 'attente') >= 20 then raise exception 'trop_trocs'; end if;
-  insert into trocs (de, vers, donne, demande, mot) values (moi, troc_proposer.vers, donne, demande, nullif(trim(mot), ''))
+  insert into trocs (de, vers, donne, demande, mot, donne_bonbecs, demande_bonbecs)
+    values (moi, troc_proposer.vers, donne, demande, nullif(trim(mot), ''), troc_proposer.donne_bonbecs, troc_proposer.demande_bonbecs)
     returning id into tid;
   return tid;
 end $$;
 
 create or replace function public.troc_repondre(troc bigint, oui boolean) returns jsonb language plpgsql security definer set search_path = public as $$
-declare moi uuid := auth.uid(); t trocs; b uuid;
+declare moi uuid := interne.moi(); t trocs; b uuid;
 begin
   select * into t from trocs where id = troc and vers = moi and statut = 'attente' for update;
   if t.id is null then raise exception 'plus_de_troc'; end if;
@@ -239,6 +248,17 @@ begin
     update trocs set statut = 'impossible', fini_le = now() where id = t.id;
     return jsonb_build_object('statut', 'impossible');
   end if;
+  -- les bonbecs : celui qui les propose doit toujours les avoir, sinon le troc tombe ; celui qui accepte doit avoir ceux qu'on lui demande
+  if t.donne_bonbecs > 0 or t.demande_bonbecs > 0 then
+    perform 1 from portefeuilles where joueur in (t.de, t.vers) order by joueur for update;
+    if not exists (select 1 from portefeuilles where joueur = t.vers and bonbecs >= t.demande_bonbecs) then raise exception 'pas_assez'; end if;
+    if not exists (select 1 from portefeuilles where joueur = t.de and bonbecs >= t.donne_bonbecs) then
+      update trocs set statut = 'impossible', fini_le = now() where id = t.id;
+      return jsonb_build_object('statut', 'impossible');
+    end if;
+    update portefeuilles set bonbecs = bonbecs - t.donne_bonbecs + t.demande_bonbecs, maj_le = now() where joueur = t.de;
+    update portefeuilles set bonbecs = bonbecs + t.donne_bonbecs - t.demande_bonbecs, maj_le = now() where joueur = t.vers;
+  end if;
   perform 1 from billes where id = any(t.donne || t.demande) for update;
   foreach b in array t.donne loop perform public.transferer_bille(b, t.de, t.vers, 'echange'); end loop;
   foreach b in array t.demande loop perform public.transferer_bille(b, t.vers, t.de, 'echange'); end loop;
@@ -246,7 +266,7 @@ begin
   -- les autres trocs qui comptaient sur ces billes ne sont plus possibles
   update trocs x set statut = 'impossible', fini_le = now() where x.statut = 'attente' and x.id <> t.id
     and (x.donne && (t.donne || t.demande) or x.demande && (t.donne || t.demande));
-  return jsonb_build_object('statut', 'accepte');
+  return jsonb_build_object('statut', 'accepte', 'eco', interne.etat(moi));
 end $$;
 
 create or replace function public.troc_annuler(troc bigint) returns void language plpgsql security definer set search_path = public as $$
@@ -258,6 +278,7 @@ end $$;
 create or replace function interne.troc_json(t public.trocs) returns jsonb language sql stable as $$
   select jsonb_build_object('id', t.id, 'de', t.de, 'vers', t.vers, 'de_pseudo', interne.pseudo(t.de), 'vers_pseudo', interne.pseudo(t.vers),
     'mot', t.mot, 'statut', t.statut, 'le', floor(extract(epoch from t.le)*1000)::bigint,
+    'donne_bonbecs', t.donne_bonbecs, 'demande_bonbecs', t.demande_bonbecs,
     'donne', coalesce((select jsonb_agg(interne.bille_json(b)) from public.billes b where b.id = any(t.donne)), '[]'),
     'demande', coalesce((select jsonb_agg(interne.bille_json(b)) from public.billes b where b.id = any(t.demande)), '[]'))
 $$;
@@ -378,6 +399,8 @@ begin
       -- trocs (reçus en attente, ou terminés)
       select coalesce(t.fini_le, t.le) le, jsonb_build_object('k', 'troc', 'id', t.id, 'statut', t.statut, 'moi_de', t.de = moi,
         'autre', interne.pseudo(case when t.de = moi then t.vers else t.de end), 'mot', t.mot,
+        'bonbecs_recus', case when t.de = moi then t.demande_bonbecs else t.donne_bonbecs end,
+        'bonbecs_donnes', case when t.de = moi then t.donne_bonbecs else t.demande_bonbecs end,
         'recu', coalesce((select jsonb_agg(interne.bille_json(b)) from billes b where b.id = any(case when t.de = moi then t.demande else t.donne end)), '[]'),
         'donne', coalesce((select jsonb_agg(interne.bille_json(b)) from billes b where b.id = any(case when t.de = moi then t.donne else t.demande end)), '[]')) j
       from trocs t where (t.de = moi or t.vers = moi) and (t.statut <> 'attente' or t.vers = moi)
@@ -414,7 +437,7 @@ end $$;
 -- droits : le site ne peut appeler que ces fonctions-là
 do $$ declare f text; begin
   foreach f in array array['cour_moi()','ami_demander(text)','ami_repondre(uuid,boolean)','ami_retirer(uuid)','profil_joueur(uuid)',
-    'billes_echangeables(uuid)','fil_amis()','troc_proposer(uuid,uuid[],uuid[],text,bigint)','troc_repondre(bigint,boolean)','troc_annuler(bigint)',
+    'billes_echangeables(uuid)','fil_amis()','troc_proposer(uuid,uuid[],uuid[],text,bigint,int,int)','troc_repondre(bigint,boolean)','troc_annuler(bigint)',
     'mes_trocs()','vendre(uuid,int,int)','retirer_annonce(bigint)','acheter(bigint)','marche(text,int,int,boolean,text,int)','mes_annonces()','cour_journal(bigint,int)'] loop
     execute format('revoke all on function public.%s from public, anon', f);
     execute format('grant execute on function public.%s to authenticated', f);

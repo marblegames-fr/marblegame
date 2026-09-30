@@ -2220,10 +2220,10 @@ const DECOR_RAR = [
 const FAMILIES = [
   {name:"Œil-de-chat", rar:0, desc:"Des pétales de verre coloré pris au cœur de la bille."},
   {name:"Tourbillon",  rar:1, desc:"De fins filets de couleur qui s'enroulent en spirale sous la surface."},
-  {name:"Galaxie",     rar:4, desc:"Un verre sombre avec des nébuleuses et des étoiles."},
+  {name:"Galaxie",     rar:4, desc:"Une galaxie spirale qui tourne au cœur d'un verre sombre, entourée de nébuleuses et d'étoiles."},
   {name:"Agate",       rar:2, desc:"Une pierre opaque, veinée comme une vraie agate."},
   {name:"Opaline",     rar:0, desc:"Un verre laiteux qui garde la lumière."},
-  {name:"Pailletée",   rar:2, desc:"Un verre teinté rempli de paillettes."},
+  {name:"Pailletée",   rar:2, desc:"Un verre teinté rempli de paillettes qui scintillent à la lumière."},
   {name:"Oignon",      rar:0, desc:"Une couche colorée étirée juste sous la surface."},
   {name:"Berlingot",   rar:1, desc:"Des rayures de sucre d'orge, opaques et brillantes."},
   {name:"Terre",       rar:0, desc:"La bille des grands-parents : de l'argile cuite, peinte à la main."},
@@ -2747,13 +2747,24 @@ vec4 fam(vec3 q, out vec3 e){
     return vec4(pal3(floor(s)), dens*60.0);
   }
 #elif MODE==2
-  { // galaxie
-    float n=fbm(q*2.2+so), n2=fbm(q*4.0-so);
-    vec3 c=mix(uC1,uC2,smoothstep(0.35,0.7,n)); c=mix(c,uC3,smoothstep(0.55,0.8,n2));
-    e=c*(pow(smoothstep(0.25,0.8,n),1.6)*4.5+0.25)*smoothstep(0.97,0.4,r);
+  { // galaxie : une galaxie spirale (cœur brillant, deux bras qui s'enroulent), des nébuleuses et des étoiles dans le verre sombre
+    float r=length(q);
+    vec3 nrm=normalize(vec3(sin(so.x)*0.7, 2.0, cos(so.y)*0.7));
+    vec3 ua=normalize(cross(nrm,vec3(0.0,0.0,1.0))), va=cross(nrm,ua);
+    float h=dot(q,nrm); vec3 ip=q-h*nrm; float rr=length(ip);
+    float ang=atan(dot(ip,va),dot(ip,ua));
+    float arm=0.5+0.5*cos(2.0*(ang-log(rr+0.04)*2.4)+fbm(q*3.0+so)*1.6);
+    arm=pow(arm,2.5)*(0.7+0.6*noise(q*9.0+so));
+    float thick=0.05+0.12*exp(-rr*4.0);
+    float disk=exp(-(h*h)/(thick*thick))*smoothstep(0.92,0.25,rr);
+    float core=exp(-dot(q,q)*30.0);
+    vec3 c=mix(mix(vec3(1.0,0.93,0.8),uC3,0.5),uC2,smoothstep(0.08,0.55,rr));
+    e=c*disk*arm*7.0+mix(vec3(1.0,0.95,0.85),uC3,0.25)*core*9.0;
+    float neb=fbm(q*2.2+so*0.5);
+    e+=mix(uC1,uC2,0.3)*smoothstep(0.58,0.82,neb)*(1.0-disk)*smoothstep(0.95,0.45,r)*1.1;
     vec3 g=q*16.0+so; vec3 fc=fract(g)-0.5;
-    e+=vec3(step(0.955,h31(floor(g)))*smoothstep(0.2,0.0,length(fc)))*9.0;
-    return vec4(uC1*0.25, 1.6);
+    e+=vec3(step(0.955,h31(floor(g)))*smoothstep(0.2,0.0,length(fc)))*9.0*(1.0-disk*0.7);
+    return vec4(uC1*0.12, 1.1+disk*arm*3.0);
   }
 #elif MODE==3
   { // agate
@@ -2771,12 +2782,15 @@ vec4 fam(vec3 q, out vec3 e){
     return vec4(c, 3.5);
   }
 #elif MODE==5
-  { // pailletee
-    vec3 g=q*22.0+so; vec3 fc=fract(g)-0.5;
-    float fl=step(0.86,h31(floor(g)))*smoothstep(0.22,0.05,length(fc));
-    float sw=smoothstep(0.55,0.7,fbm(q*2.0+so));
-    e=uC3*fl*6.0*smoothstep(0.95,0.7,r);
-    return vec4(mix(uC1,uC2,sw), 0.8+fl*40.0+sw*1.5);
+  { // pailletée : un verre clair teinté rempli de paillettes de toutes les tailles qui accrochent la lumière
+    vec3 g=q*17.0+so; vec3 id=floor(g), fc=fract(g)-0.5;
+    vec3 off=vec3(h31(id+1.7),h31(id+5.3),h31(id+9.1))-0.5;
+    float sz=0.05+0.11*h31(id+2.2);
+    float fl=step(0.42,h31(id))*smoothstep(sz,sz*0.35,length(fc-off*0.55))*smoothstep(0.93,0.82,length(q));
+    float k=h31(id+7.7);
+    vec3 col=k<0.4?uC3:(k<0.75?mix(uC2,vec3(1.0),0.45):vec3(1.0,0.95,0.82));
+    e=col*fl*(6.0+10.0*h31(id+4.4));   // chaque paillette brille plus ou moins, selon comment elle est tournée
+    return vec4(mix(uC1,col,fl), 0.45+fl*70.0);   // le verre prend la couleur du coloris
   }
 #elif MODE==6
   { // oignon

@@ -204,7 +204,7 @@ begin
     -- ses 12 plus belles billes : les plus grosses, puis les shiny, puis les décors les plus rares
     'meilleures', coalesce((select jsonb_agg(x.j) from (select interne.bille_json(b) j from billes b
                  where b.proprietaire = qui and b.detruite_le is null and coalesce(b.donnees->>'src', '') <> 'test'
-                 order by interne.rang(b.taille) desc, b.shiny desc, (interne.decor_rarete())[b.decor+1] desc nulls last, b.numero
+                 order by interne.rang(b.taille) desc, b.shiny desc, nullif((interne.decor_rarete())[b.decor+1], 5) desc nulls last, b.numero
                  limit 12) x), '[]'),
     'vitrine', coalesce((select jsonb_agg(interne.bille_json(b)) from billes b
                  where b.proprietaire = qui and b.detruite_le is null
@@ -635,7 +635,7 @@ create or replace function interne.scores() returns table (joueur uuid, total in
   with b as (
     select proprietaire j, interne.rang(taille) t, decor d, coloris c, shiny sh from public.billes
     where detruite_le is null and origine = 'serveur' and secrete is null and coalesce(donnees->>'src', '') <> 'test'
-      and decor < array_length(interne.decor_rarete(), 1)),   -- les décors d'événement ne comptent pas
+      and coalesce((interne.decor_rarete())[decor+1], 5) < 5),   -- les décors d'événement ne comptent pas
   k as (   -- les cases
     select j, t, d, count(distinct c)::int nc, count(distinct c) filter (where c < interne.coloris_base())::int nb,
       (interne.pts_taille())[t+1] pt, (interne.mult_decor())[(interne.decor_rarete())[d+1]+1] m
@@ -644,7 +644,7 @@ create or replace function interne.scores() returns table (joueur uuid, total in
   sh as (select j, sum((interne.pts_shiny())[sh])::int p from (select distinct j, t, d, c, sh from b where sh > 0 and c < interne.coloris_base()) x group by j),
   sd as (select j, sum(round(200 * m))::int p, count(*)::int n from (select j, d, max(m) m from k group by j, d having count(*) = 6) x group by j),
   st as (select j, sum(20 * pt)::int p, count(*)::int n from (select j, t, max(pt) pt from k group by j, t
-           having count(*) = array_length(interne.decor_rarete(), 1)) x group by j),
+           having count(*) = (select count(*) from unnest(interne.decor_rarete()) x where x < 5)) x group by j),
   sc as (select j, sum(20 * pt)::int p, count(*)::int n from k where nb >= interne.coloris_base() group by j),
   -- séries à thème : toutes les cases de la série trouvées ; « Les grands formats » dès qu'un décor est dans les 6 tailles
   se as (select p.j, sum(d.pts)::int p, count(*)::int n from (select distinct j from b) p

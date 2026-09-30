@@ -265,7 +265,7 @@ begin return interne.etat(interne.moi()); end $$;
 -- Ouvrir un sac (acheté, gratuit ou offert). Renvoie les billes tirées.
 create or replace function public.ouvrir_sac(nom text, offert boolean default false)
 returns jsonb language plpgsql security definer set search_path = public as $$
-declare qui uuid := interne.moi(); p portefeuilles; r record; ev record; stock int; t int; i int;
+declare qui uuid := interne.moi(); p portefeuilles; r record; ev record; evb boolean; stock int; t int; i int;
         tirees int[] := '{}'; shinies int[] := '{}'; billes jsonb := '[]'; force boolean := false;
 begin
   select * into r from interne.sac(nom);
@@ -301,8 +301,11 @@ begin
     pity = case when exists (select 1 from unnest(tirees) x where x >= 4) then 0 else pity + 1 end
     where joueur = qui;
   for i in 1..r.n loop
+    -- sac d'événement : chaque bille a une chance d'être du décor de l'événement (25 %, 50 % pour la dernière), sinon c'est une bille normale
+    evb := ev.decor is not null and random() < case when i = r.n then 0.5 else 0.25 end;
     billes := billes || interne.nouvelle_bille(qui, (interne.tailles())[tirees[i]+1], shiny => shinies[i], src => nom,
-      decor => ev.decor, coloris => case when ev.coloris is null then null else ev.coloris[1 + floor(random()*array_length(ev.coloris,1))::int] end);
+      decor => case when evb then ev.decor end,
+      coloris => case when evb then ev.coloris[1 + floor(random()*array_length(ev.coloris,1))::int] end);
   end loop;
   return jsonb_build_object('eco', interne.etat(qui), 'billes', billes, 'force', force);
 end $$;

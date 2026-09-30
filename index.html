@@ -459,6 +459,7 @@ main{padding:22px 24px 40px;min-width:0}
 @media (max-width:640px){ .ev-row{grid-template-columns:78px repeat(6,minmax(40px,1fr))} .ev-cell{height:52px} }
 .bg-ev{position:absolute;top:6px;left:50%;translate:-50% 0;z-index:2;font-size:9.5px;font-weight:900;text-transform:uppercase;letter-spacing:.05em;background:#C8322F;color:#fff;border-radius:999px;padding:1px 7px;white-space:nowrap}
 .ev-pals{display:flex;gap:6px;margin-top:10px}
+.ev-rate{display:flex;align-items:center;gap:6px;margin-top:10px;font-size:13px;font-weight:800;color:#E25A4E}
 .ev-pals img{filter:drop-shadow(0 4px 4px rgba(0,0,0,.3))}
 .bg-slot small{display:block;font-size:11px;font-weight:800;color:var(--muted);margin-bottom:4px}
 .odds{list-style:none;margin:0;padding:10px 12px;display:grid;gap:5px;background:var(--panel-2);border-radius:12px;border:1px solid var(--line)}
@@ -913,6 +914,11 @@ button.vit-slot:hover{background:var(--panel-2);color:var(--ink)}
 .conf-choice[aria-pressed="true"].cc-echange{border-color:#E0588E;background:color-mix(in srgb,#E0588E 9%,var(--panel))}
 .conf-choice[aria-pressed="true"].cc-fusion{border-color:#7A4FE0;background:color-mix(in srgb,#7A4FE0 9%,var(--panel))}
 .cf-filter{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:14px}
+.cf-subf{display:grid;gap:8px;margin:0 0 14px;padding:12px 14px;border-radius:16px;background:var(--panel);border:1px solid var(--line)}
+.cf-fg{display:flex;align-items:center;gap:6px;flex-wrap:wrap}
+.cf-fg .f-lbl{min-width:52px;font-size:11px;font-weight:900;text-transform:uppercase;letter-spacing:.06em;color:var(--muted)}
+.cf-fg .chip .dot{width:9px;height:9px;border-radius:50%;background:var(--rc);display:inline-block}
+.cf-count{display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin:-4px 0 12px}
 .cf-warn{display:flex;gap:14px;align-items:flex-start;margin-bottom:16px;border-color:#E9A23B;background:color-mix(in srgb,#E9A23B 10%,var(--panel))}
 .cf-warn>svg{color:#D98A1C;flex:none;margin-top:2px}
 .cf-warn b{display:block;margin-bottom:2px}
@@ -2307,7 +2313,7 @@ const EVENTS = {
   // dates à l'heure de Paris (mêmes dates dans supabase/serveur.sql : interne.evenement)
   pirates: {name:"À l'abordage !", fam:"Pirate", color:"#C8322F", bag:"pirate",
     start:Date.parse("2026-09-30T00:00:00+02:00"), end:Date.parse("2026-10-14T23:59:59+02:00"),
-    desc:"Hissez le pavillon noir : pendant deux semaines, les billes Pirate se cachent dans le Sac Pirate.",
+    desc:"Hissez le pavillon noir : pendant deux semaines, des billes Pirate se cachent dans le Sac Pirate.",
     pals:[["Pavillon noir","#15151B","#D4A537","#F1E9D2","#2A2A30"],
           ["Corsaire","#1B2C5A","#C8322F","#F4EEDC","#22335E"],
           ["Coffre au trésor","#4A2A12","#F2C230","#FFF4D6","#5A3A1E"],
@@ -2371,7 +2377,8 @@ const BAGS = [FREE_BAG,
    fill:sizeOdds([24.5,30,25,15,5,0.5]), star:sizeOdds([0,0,0,0,85,15])},
 ];
 // sacs d'événement : en vente seulement pendant l'événement ; toutes leurs billes ont le décor de l'événement et un de ses coloris
-BAGS.push({id:"pirate", event:"pirates", name:"Sac Pirate", desc:"3 billes Pirate, chacune dans un des 5 coloris pirates. Seulement pendant l'événement « À l'abordage ! ». 2 fois plus de chances de shiny.",
+BAGS.push({id:"pirate", event:"pirates", name:"Sac Pirate", desc:"3 billes, avec la chance d'y trouver des billes Pirate (une en moyenne par sac), chacune dans un des 5 coloris pirates. Seulement pendant l'événement « À l'abordage ! ». 2 fois plus de chances de shiny.",
+  evFill:.25, evStar:.5,   // chances qu'une bille soit Pirate : 25 %, et 50 % pour la dernière (même chose dans serveur.sql)
   price:800, n:3, color:"#2E2B36", tint:"#EADFC4", shiny:SHINY_RATE*2,
   fam:FAMILIES.findIndex(F=>F.event==="pirates"), pals:EVENTS.pirates.palIdx,
   fill:sizeOdds([50,30,12,6,1.8,0.2]), star:sizeOdds([20,30,25,16,7,2])});
@@ -4292,7 +4299,7 @@ function heroSlides(){
       <div class="hm-txt">
         <span class="hm-k">${ic("flag",15)} Événement · jusqu'au ${dayMonth(E.end)}</span>
         <h1>${esc(E.name)} Les billes Pirate débarquent !</h1>
-        <p>Un décor inédit et ${E.pals.length} coloris qu'on ne trouve que dans le ${b.name}, pendant encore <b>${eventLeft(E)}</b>.</p>
+        <p>Un décor inédit et ${E.pals.length} coloris qu'on ne trouve que dans le ${b.name} (une bille Pirate par sac en moyenne), pendant encore <b>${eventLeft(E)}</b>.</p>
         ${n ? `<button class="btn btn-yellow btn-xl" data-action="open-gift" data-bag="${b.id}">${ic("gift",22)} Ouvrir mon ${b.name} offert</button>`
             : `<button class="btn btn-yellow btn-xl" data-action="ev-bag" data-bag="${b.id}">${bagSVG(b)} Voir le ${b.name}</button>`}
       </div>`}) });
@@ -4472,7 +4479,7 @@ function viewBags(){
     <div class="bg-show" style="--bag-tint:${b.tint};--bc:${b.color}">${bagSVG(b,{loose:true})}</div>
     <div class="bg-info">
       <div><span class="sample-tag">${b.n} billes${b.guarantee?` · au moins un ${TYPES[b.guarantee].label}`:""}${free?" · toutes les 10 min":""}${b.event&&eventLive(EVENTS[b.event])?` · encore ${eventLeft(EVENTS[b.event])}`:""}</span><h2>${b.name}</h2><p>${b.desc}</p>
-        ${b.event?`<div class="ev-pals">${b.pals.map(pl=>`<span title="${esc(PALETTES[pl][0])}">${mImg({seed:hash("evp"+pl),type:"calot",family:b.fam,pal:pl,shiny:0},80,34,"")}</span>`).join("")}</div>`:""}</div>
+        ${b.event?`<p class="ev-rate">${ic("flag",14)} Bille Pirate : ${Math.round(b.evFill*100)} % par bille, ${Math.round(b.evStar*100)} % pour la dernière · au moins une dans ${Math.round(100*(1-Math.pow(1-b.evFill,b.n-1)*(1-b.evStar)))} % des sacs</p><div class="ev-pals">${b.pals.map(pl=>`<span title="${esc(PALETTES[pl][0])}">${mImg({seed:hash("evp"+pl),type:"calot",family:b.fam,pal:pl,shiny:0},80,34,"")}</span>`).join("")}</div>`:""}</div>
       <div class="bg-cta">${cta}</div>
       ${free?`<div class="free-stock">${stackPips()}<span>${st} / ${FREE_MAX} en stock · ${freeFull()?"stock plein":`prochain dans <span class="timer" data-free-timer>${freeLeft()}</span>`}</span></div>`:""}
       <div class="panel bg-odds">
@@ -4966,7 +4973,19 @@ function viewConfiserie(){
 }
 function confEchange(dups, dupVal){
   const seules = ui.confF==="seules", singles = recyclableSingles();
-  const list = seules ? singles : dups, groups = byModel(list);
+  const base = seules ? singles : dups, sz = ui.confSize||"all", cat = ui.confCat||"all";
+  // filtres : la taille, et d'où vient la bille (album, événement, grosses billes…)
+  const CATS = [["all","Toutes",()=>true],["album","Album",x=>!eventOf(x)],["event","Événement",x=>!!eventOf(x)],["big","Calot et +",x=>TIDX[x.type]>=TIDX.calot]];
+  const catF = (CATS.find(c=>c[0]===cat)||CATS[0])[2];
+  const list = base.filter(x=>(sz==="all" || x.type===sz) && catF(x)), groups = byModel(list);
+  const nb = f => base.filter(f).length;
+  const filters = `<div class="cf-subf">
+      <div class="cf-fg"><span class="f-lbl">Taille</span><button class="chip" data-action="conf-size" data-v="all" aria-pressed="${sz==="all"}">Toutes</button>${TK.map(t=>{ const n = nb(x=>x.type===t&&catF(x));
+        return n || sz===t ? `<button class="chip" data-action="conf-size" data-v="${t}" aria-pressed="${sz===t}" style="${tstyle(t)}"><i class="dot"></i>${TYPES[t].label.replace("Mini bille","Mini").replace("Bille chinoise","Chinoise")} <span class="n">${n}</span></button>` : "" }).join("")}</div>
+      <div class="cf-fg"><span class="f-lbl">Sorte</span>${CATS.map(([k,l,f])=>{ const n = nb(x=>(sz==="all"||x.type===sz)&&f(x));
+        return k==="all" || n || cat===k ? `<button class="chip" data-action="conf-cat" data-v="${k}" aria-pressed="${cat===k}">${k==="event"?ic("flag",13):""}${l}${k==="all"?"":` <span class="n">${n}</span>`}</button>` : "" }).join("")}</div>
+    </div>`;
+  const total = list.reduce((a,x)=>a+recycleValue(x),0);
   const card = ([k,l]) => { const x = l[0], v = recycleValue(x);
     return `<div class="cf-card" style="${tstyle(x.type)}">${l.length>1?`<span class="cf-n">×${l.length}</span>`:""}
       <button class="ball" data-action="spec" data-id="${x.id}" aria-label="Voir ${esc(specName(x))}">${mImg(x,160,Math.round(58*scaleOf(x.type)+14),"")}</button>
@@ -4987,8 +5006,9 @@ function confEchange(dups, dupVal){
       <div class="cf-side"><p class="meta">Pour chaque modèle (taille, décor, coloris), ton plus bel exemplaire reste toujours dans ta boîte : celui que tu as choisi dans sa fiche, sinon le plus récent. Les shiny, les billes secrètes, ta bille active et ta vitrine ne partent jamais.</p>
         <button class="btn btn-yellow btn-xl" data-action="recycle-dups" ${dups.length?"":"disabled"}>${ic("candy",20)} Tout échanger · +${fmt(dupVal)}</button></div>
     </section>`}
-  ${groups.length ? `<div class="cf-grid">${groups.map(card).join("")}</div>`
-    : `<p class="empty">${seules ? "Aucune bille unique à échanger." : "Pas de double pour l'instant. Reviens après avoir ouvert quelques sacs !"}</p>`}
+  ${base.length ? filters : ""}
+  ${groups.length ? `${sz!=="all"||cat!=="all" ? `<p class="meta cf-count">${list.length} bille${list.length>1?"s":""} · ${fmt(total)} ${CUR.many}${!seules&&list.length>1?` <button class="cf-all" data-action="recycle-ids" data-ids="${list.map(x=>x.id).join(",")}">Échanger ces ${list.length} · +${fmt(total)}</button>`:""}</p>` : ""}<div class="cf-grid">${groups.map(card).join("")}</div>`
+    : `<p class="empty">${base.length ? "Aucune bille avec ces filtres." : seules ? "Aucune bille unique à échanger." : "Pas de double pour l'instant. Reviens après avoir ouvert quelques sacs !"}</p>`}
   <section class="panel cf-tarifs">
     <div class="panel-head"><h2>Les tarifs de la maison</h2><span class="sample-tag">Par bille</span></div>
     <div class="tarif-grid">${TK.map((t,i)=>`<div class="tarif" style="${tstyle(t)}">${mImg(SHOWCASE[i],120,Math.round(26*scaleOf(t)+18),"")}<b>${TYPES[t].label}</b><span class="price">${COIN}${fmt(RECYCLE[t])}</span></div>`).join("")}
@@ -5243,7 +5263,8 @@ function pullBag(bag){
   for(let i=0;i<bag.n;i++){
     const t = rollType(i===bag.n-1 ? bag.star : bag.fill);   // la dernière bille est la vedette du sac
     const shinyX = Math.random()<bag.shiny ? rollShiny() : 0;
-    res.push(makeSpec(t,{shiny:shinyX, src:bag.id, ...eventSpec(bag)}));
+    const ev = bag.fam!=null && Math.random() < (i===bag.n-1 ? bag.evStar : bag.evFill);
+    res.push(makeSpec(t,{shiny:shinyX, src:bag.id, ...(ev ? eventSpec(bag) : {})}));
   }
   if((S.pity||0)+1>=PITY && !res.some(s=>tierOf(s)>=BIG)){
     const last = res[res.length-1];
@@ -7390,6 +7411,8 @@ document.addEventListener("click", e=>{
     case "nav": closeModal(); openDay(false); if(t.dataset.conftab) ui.confTab=t.dataset.conftab; go(t.dataset.view); break;
     case "conf-tab": ui.confTab=t.dataset.tab; renderView(); break;
     case "conf-filter": ui.confF=t.dataset.f; renderView(); break;
+    case "conf-size": ui.confSize=t.dataset.v; renderView(); break;
+    case "conf-cat": ui.confCat=t.dataset.v; renderView(); break;
     case "recycle-ids": {
       const l = t.dataset.ids.split(",").map(specById).filter(Boolean); if(!l.length) break;
       const tot = l.reduce((n,x)=>n+recycleValue(x),0);

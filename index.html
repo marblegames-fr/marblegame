@@ -3350,7 +3350,8 @@ const specById = id => S.specs.find(s=>s.id===id);
 const LOANER = {id:null, seed:hash("pretee"), type:"bille", family:0, pal:5, shiny:0, at:0, loan:true};
 const ownActive = () => specById(S.active) || [...S.specs].sort(tierSort)[0];
 const activeSpec = () => ownActive() || LOANER;
-function slotsOwned(list=S.specs){ const m=new Map(); list.forEach(s=>{const k=slotKey(s); if(!m.has(k)) m.set(k,[]); m.get(k).push(s)}); return m }
+// les cases de l'album (une taille × un décor) ; les billes d'événement n'en font pas partie (elles ont leur onglet Événements)
+function slotsOwned(list=S.specs){ const m=new Map(); list.forEach(s=>{ if(FAMILIES[s.family]?.event) return; const k=slotKey(s); if(!m.has(k)) m.set(k,[]); m.get(k).push(s)}); return m }
 const TOTAL_SLOTS = TK.length*N_DECORS;              // cases de l'album : une par taille × décor
 // Chaque case se remplit coloris par coloris : l'album compte toutes les billes différentes (taille × décor × coloris)
 const colorKey = s => s.type+"|"+s.family+"|"+s.pal;
@@ -5326,9 +5327,11 @@ async function openBag(bagId, gift){
   }
   S.bags = (S.bags||0)+1;
   pulls.forEach(s=>{ if(tierOf(s)>=BIG || s.shiny) logFind(s) });
-  const before = slotsOwned();
+  const before = slotsOwned(), evBefore = new Set(S.specs.filter(x=>eventOf(x)).map(colorKey));
   const results = pulls.map(s=>{
     const k = slotKey(s);
+    // bille d'événement : « nouvelle » si ce modèle manquait dans l'album de l'événement (elle ne compte pas dans l'album principal)
+    if(eventOf(s)){ const ev = !evBefore.has(colorKey(s)); evBefore.add(colorKey(s)); S.specs.push(s); S.unseen.push(s.id); return {s, isNew:false, newColor:false, evNew:ev, wish:false} }
     const isNew = !before.has(k);
     const newColor = !isNew && !before.get(k).some(x=>x.pal===s.pal);   // une nouvelle bille dans une case déjà commencée
     if(!before.has(k)) before.set(k,[]); before.get(k).push(s);
@@ -5515,12 +5518,12 @@ function showReveal(){
     <div class="ov-title">${results.length} billes trouvées !</div>
     <p class="ov-sub">${ovState.forced?"Garantie Boulet activée : un gros t'attend !":"Touche chaque bille pour la découvrir…"}</p>
     <div class="reveal-row">
-      ${results.map(({s,isNew,newColor,wish},i)=>{
+      ${results.map(({s,isNew,newColor,evNew,wish},i)=>{
         const k = pullScore(s), big = k>=BIG;
         return `<button class="slot${wish?" wished":""} ${big?"big":""} ${s.shiny?"shiny":""}" style="--d:${i*130}ms;--tc:${shade(ovState.bag.color,.2)};${tstyle(s.type)}" data-tc="${scoreCol(k)}" data-action="reveal" data-i="${i}" aria-label="Découvrir la bille ${i+1}">
         ${ovState.bag&&i<ovState.bag.n?`<span class="slot-pos${i===ovState.bag.n-1?" star":""}">#${i+1}</span>`:""}${wish?`<span class="slot-banner">Ta liste !</span>`:s.secret?`<span class="slot-banner">Secrète !</span>`:BANNER[k]?`<span class="slot-banner${k<2?" low":""}">${BANNER[k]}</span>`:""}
         <div class="slot-ball"><span class="rays"></span><span class="ball-shadow"></span><span class="orb"><span class="orb-spin"><i>?</i></span></span>${mImg(s,300,Math.round(150*scaleOf(s.type)),"")}</div>
-        <div class="slot-info"><b>${esc(specName(s))}</b><span style="display:flex;gap:4px;flex-wrap:wrap;justify-content:center">${wish||s.secret?typePill(s.type,true):""}${shinyPill(s)}${edPill(s)}</span>${tierTag(s)}${k>=BIG&&editionOf(s)?`<span class="ed-no">${edLabel(editionOf(s))}</span>`:""}${isNew?`<span class="new">Nouvelle case !</span>`:newColor?`<span class="new">Nouveau coloris</span>`:`<span class="dup">Déjà dans ta boîte</span>`}<span class="zoom-hint">${ic("search",14)} Agrandir</span></div>
+        <div class="slot-info"><b>${esc(specName(s))}</b><span style="display:flex;gap:4px;flex-wrap:wrap;justify-content:center">${wish||s.secret?typePill(s.type,true):""}${shinyPill(s)}${edPill(s)}</span>${tierTag(s)}${k>=BIG&&editionOf(s)?`<span class="ed-no">${edLabel(editionOf(s))}</span>`:""}${eventOf(s)?`<span class="new">${evNew?`Nouvelle bille ${esc(FAMILIES[s.family].name)} !`:`${esc(FAMILIES[s.family].name)} · déjà dans ta boîte`}</span>`:isNew?`<span class="new">Nouvelle case !</span>`:newColor?`<span class="new">Nouveau coloris</span>`:`<span class="dup">Déjà dans ta boîte</span>`}<span class="zoom-hint">${ic("search",14)} Agrandir</span></div>
       </button>`}).join("")}
     </div>
     <div class="ov-actions" id="ov-actions">
@@ -5665,7 +5668,7 @@ function showBagSummary({bag, results}){
     <button class="close-x" data-action="close-modal" aria-label="Fermer">×</button>
     <h2 id="bag-sum-t">${esc(bag.name)} : ${results.length} billes reçues</h2>
     <p class="meta">Tu as fermé le sac avant la fin : pas de panique, tout est déjà rangé dans ta boîte à billes.</p>
-    <div class="bag-sum-grid">${results.map(({s,isNew,newColor})=>`<button class="m-card" data-action="spec" data-id="${s.id}"><span class="ball">${mImg(s,160,Math.round(58*scaleOf(s.type)+8))}</span><b>${esc(specName(s))}</b>${typePill(s.type)}${shinyPill(s)}${isNew?`<span class="new">Nouvelle case !</span>`:newColor?`<span class="new">Nouveau coloris</span>`:""}</button>`).join("")}</div>
+    <div class="bag-sum-grid">${results.map(({s,isNew,newColor,evNew})=>`<button class="m-card" data-action="spec" data-id="${s.id}"><span class="ball">${mImg(s,160,Math.round(58*scaleOf(s.type)+8))}</span><b>${esc(specName(s))}</b>${typePill(s.type)}${shinyPill(s)}${evNew?`<span class="new">Nouvelle ${esc(FAMILIES[s.family].name)} !</span>`:isNew?`<span class="new">Nouvelle case !</span>`:newColor?`<span class="new">Nouveau coloris</span>`:""}</button>`).join("")}</div>
   </div>`;
   el.hidden = false;
   el.querySelector(".close-x").focus();

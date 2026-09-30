@@ -406,7 +406,7 @@ begin
       b := interne.nouvelle_bille(qui, 'bille', src => 'chateau');
     when 'passe' then     -- cle : « 2026-9|free|10 »
       if not interne.saison_valide(split_part(cle, '|', 1)) then raise exception 'montant_invalide'; end if;
-      select x.t, x.sh into t, sh from (values ('free|10','mini',0), ('free|20','bille',0), ('free|30','calot',0),
+      select x.t, x.sh into t, sh from (values ('free|1','mini',0), ('free|10','bille',0), ('free|20','chinoise',0), ('free|30','calot',0),
         ('prem|5','chinoise',0), ('prem|10','calot',1), ('prem|20','boulet',0), ('prem|30','mammouth',3)) x(k, t, sh)
         where x.k = split_part(cle,'|',2) || '|' || split_part(cle,'|',3);
       if t is null then raise exception 'montant_invalide'; end if;
@@ -420,7 +420,8 @@ begin
         ('folle','calot',1,60,1), ('arcade','boulet',25,61,3), ('grenier','mammouth',8,62,2),
         ('gouter','calot',20,63,0), ('preau','boulet',16,64,0)) x(k, t, f, c, sh) where x.k = cle;
       if t is null then raise exception 'secrete_inconnue'; end if;
-      if exists (select 1 from billes where proprietaire = qui and secrete = cle) then raise exception 'deja'; end if;
+      -- une seule à la fois : si elle a été retirée (outil de test), on peut la retrouver
+      if exists (select 1 from billes where proprietaire = qui and secrete = cle and detruite_le is null) then raise exception 'deja'; end if;
       b := interne.nouvelle_bille(qui, t, m, c, sh, cle, graine, bid => bid, src => 'secrete');
     else raise exception 'source_inconnue';
   end case;

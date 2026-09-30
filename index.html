@@ -714,7 +714,16 @@ button.rw:hover{transform:translateY(-2px)}
 .sh-cell.cover{border:2px solid #E0A417}
 .sh-cell img{height:auto;filter:drop-shadow(0 5px 4px rgba(0,0,0,.28))}
 .sh-cell .x{position:absolute;top:4px;right:5px;font-style:normal;font-size:10px;font-weight:900;background:var(--ink);color:var(--on-ink);border-radius:999px;padding:0 5px}
-.sh-cell .nw{position:absolute;top:6px;left:6px;width:8px;height:8px;border-radius:50%;background:#E5484D}
+.modal.bag-sum{display:block;width:min(640px,100%);padding:26px 22px}
+.bag-sum h2{margin:0 0 4px}
+.bag-sum-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(120px,1fr));gap:10px;margin-top:14px}
+.sh-wrap{position:relative;display:flex;flex-direction:column}
+.sh-wrap>.sh-cell{flex:1}
+.sh-pin{position:absolute;top:3px;left:3px;width:22px;height:22px;display:grid;place-items:center;border-radius:50%;background:var(--panel);border:1px solid var(--line);color:color-mix(in srgb,var(--ink) 35%,transparent);cursor:pointer;transition:transform .15s,color .15s}
+.sh-pin:hover{color:#E0A417;transform:scale(1.12)}
+.sh-pin.on{background:#E0A417;border-color:#E0A417;color:#fff;cursor:default}
+.sh-pin.on svg{fill:currentColor}
+.sh-cell .nw{position:absolute;bottom:6px;left:6px;width:8px;height:8px;border-radius:50%;background:#E5484D}
 .sh-cell.missing{opacity:.75;border-style:dashed}
 .sh-cell .sil{width:54px;height:54px;border-radius:50%;background:radial-gradient(circle at 35% 30%,color-mix(in srgb,var(--c2) 35%,transparent),color-mix(in srgb,var(--c1) 30%,transparent) 70%);box-shadow:inset 0 0 0 2px color-mix(in srgb,var(--ink) 12%,transparent);filter:grayscale(.55)}
 .sheet-back{align-self:flex-start;display:inline-flex;align-items:center;gap:4px;font-size:12.5px;font-weight:800;color:var(--ink-2);padding:6px 10px;border-radius:999px;background:var(--panel)}
@@ -2093,7 +2102,7 @@ const DECOR_RAR = [
 // Familles de décor (chacune a son propre rendu). L'ordre ne doit pas changer : il sert d'identifiant.
 const FAMILIES = [
   {name:"Œil-de-chat", rar:0, desc:"Des pétales de verre coloré pris au cœur de la bille."},
-  {name:"Tourbillon",  rar:1, desc:"Des rubans torsadés qui s'enroulent dans le verre."},
+  {name:"Tourbillon",  rar:1, desc:"De fins filets de couleur qui s'enroulent en spirale sous la surface."},
   {name:"Galaxie",     rar:4, desc:"Un verre sombre avec des nébuleuses et des étoiles."},
   {name:"Agate",       rar:2, desc:"Une pierre opaque, veinée comme une vraie agate."},
   {name:"Opaline",     rar:0, desc:"Un verre laiteux qui garde la lumière."},
@@ -2218,9 +2227,9 @@ const recycleValue = s => srvOn() && !s.srv ? 0 : s.shiny && !isSeason(s) ? RECY
 const QUESTS = {
   open_bag:      {title:"Ouvre 2 sacs", goal:2, reward:80, icon:"bag", desc:"Gratuits ou payants, tous les sacs comptent."},
   open_free:     {title:"Ouvre 2 sacs gratuits", goal:2, reward:100, icon:"clock", desc:"Un nouveau sac gratuit arrive toutes les 10 minutes."},
-  hole:          {title:"Réussis 3 trous au Tir", goal:3, reward:90, icon:"target", desc:"N'importe quel trou du parcours."},
-  par:           {title:"Fais un trou au par ou mieux", goal:1, reward:70, icon:"target", desc:"Trois étoiles sur un trou du Tir."},
-  twoshots:      {title:"Mets ta bille dans le trou en 2 coups", goal:1, reward:90, icon:"target", desc:"Ou moins ! Le trou 1 est un bon candidat."},
+  hole:          {title:"Réussis le trou du jour au Tir", goal:1, reward:90, icon:"target", desc:"Un nouveau trou chaque jour, le même pour toute la cour."},
+  par:           {title:"Fais un trou au par ou mieux", goal:1, reward:70, icon:"target", desc:"Trois étoiles sur le trou du jour du Tir."},
+  twoshots:      {title:"Mets ta bille dans le trou en 2 coups", goal:1, reward:90, icon:"target", desc:"Ou moins, sur le trou du jour du Tir. Tu peux réessayer autant que tu veux."},
   find_bille:    {title:"Trouve 2 Billes ou plus grosses", goal:2, reward:90, icon:"layers", desc:"Bille, Bille chinoise, Calot, Boulet ou Mammouth : les Mini billes ne comptent pas."},
   find_calot:    {title:"Trouve un Calot ou mieux", goal:1, reward:120, icon:"layers", desc:"Calot, Boulet ou Mammouth."},
   new_slot:      {title:"Commence une nouvelle case", goal:1, reward:100, icon:"book", desc:"Une taille et un décor que tu n'avais pas encore dans l'album."},
@@ -2426,6 +2435,7 @@ const Sound = (()=>{
       else clack(t,.18,1.3) },
     shot(pw){ if(!init()) return; const t=now(); clack(t,.4+pw*.6,.85); thud(t,.3+pw*.4,220) },
     wall(a){ if(!init()) return; const t=now(); a=Math.min(1,a); thud(t,a,140); clack(t,a*.35,.7) },
+    splash(){ if(!init()) return; const t=now(); env(noise(t,.55,[{type:"lowpass",f:1800,f2:260}]),t,.55,.01,.5); osc(t,"sine",460,.22,.005,.2,null,130); osc(t+.08,"sine",300,.12,.005,.16,null,120) },
     bumper(){ if(!init()) return; const t=now(); osc(t,"triangle",260,.35,.003,.22,null,620); osc(t,"sine",130,.3,.003,.15,null,90) },
     // bille recyclée : verre qui se brise, puis pièces
     recycle(){ if(!init()) return; const t=now();
@@ -2558,19 +2568,22 @@ vec4 fam(vec3 q, out vec3 e){
   float r=length(q); vec3 so=uSeed.xyz*40.0;
   float tw=uPar.x, k=uPar.y, w=uPar.z, nb=uPar.w;
 #if MODE==0
-  { // oeil-de-chat
-    float ang=atan(q.z,q.x)+q.y*tw;
-    float d=abs(sin(ang*k*0.5))*length(q.xz);
-    float dens=smoothstep(w,w*0.25,d)*smoothstep(0.93,0.78,r);
+  { // oeil-de-chat : des pétales presque droits qui se croisent au centre, du verre clair tout autour
+    float ang=atan(q.z,q.x)+q.y*tw*0.18;
+    float rx=length(q.xz), d=abs(sin(ang*k*0.5))*rx;
+    float th=w*0.3+w*2.2*smoothstep(0.72,0.05,rx)*smoothstep(0.75,0.2,abs(q.y));   // en forme de feuille : épais au cœur, fin au bout
+    float dens=smoothstep(th,th*0.35,d)*smoothstep(0.6,0.48,r);
     return vec4(pal3(floor(ang/6.2831853*k+0.5)), dens*45.0);
   }
 #elif MODE==1
-  { // tourbillon
-    vec3 wq=q+0.45*vec3(fbm(q*1.7+so),fbm(q*1.7+so+5.2),fbm(q*1.7+so+9.7))-0.22;
-    float ang=atan(wq.z,wq.x)+wq.y*tw*1.3;
-    float b=sin(ang*nb);
-    float dens=smoothstep(1.0-w*3.2,1.0,abs(b))*smoothstep(0.93,0.62,r)*smoothstep(0.12,0.3,r);
-    return vec4(pal3(floor(ang*nb/3.14159)), dens*32.0);
+  { // tourbillon : de fins filets de couleur qui s'enroulent en spirale juste sous la surface, le cœur reste clair
+    vec3 wq=q+0.08*vec3(fbm(q*2.0+so),fbm(q*2.0+so+5.2),fbm(q*2.0+so+9.7))-0.04;
+    float n=nb+4.0;
+    float ang=atan(wq.z,wq.x)+wq.y*(tw<0.0?-1.0:1.0)*(4.5+abs(tw));
+    float s=ang/6.2831853*n;
+    float d=abs(fract(s)-0.5)*6.2831853/n*length(wq.xz);
+    float dens=smoothstep(w*0.4,w*0.1,d)*smoothstep(0.52,0.7,r)*smoothstep(0.93,0.84,r);
+    return vec4(pal3(floor(s)), dens*60.0);
   }
 #elif MODE==2
   { // galaxie
@@ -2666,7 +2679,7 @@ vec4 fam(vec3 q, out vec3 e){
   }
 #elif MODE==13
   { // ruban
-    float a=q.y*tw*1.5+so.x; float ca=cos(a), sa=sin(a);
+    float a=q.y*(tw<0.0?-1.0:1.0)*(2.4+abs(tw)*0.5)+so.x; float ca=cos(a), sa=sin(a);   // toujours bien torsadé
     vec2 p=vec2(ca*q.x-sa*q.z, sa*q.x+ca*q.z);
     float dens=smoothstep(w*1.1,w*0.4,abs(p.y))*smoothstep(0.62,0.5,abs(p.x))*smoothstep(0.93,0.8,r);
     return vec4(pal3(floor((p.x+0.62)*nb*1.3)), dens*55.0);
@@ -3592,7 +3605,7 @@ function ensurePass(){
 // (si on revient dans les 7 premiers jours ; le serveur accepte le mois d'avant pendant ce temps-là).
 function passRollover(P){
   if(new Date().getDate() > PASS_GRACE) return;
-  const se = seasonOf(P.id), tier = Math.min(PASS_TIERS, Math.floor((P.xp||0)/TIER_XP));
+  const se = seasonOf(P.id), tier = tierOfXP(P.xp);
   if(se.id===seasonNow().id) return;
   let n = 0;
   for(let t=1; t<=tier; t++) ["free","prem"].forEach(tr=>{
@@ -3601,21 +3614,24 @@ function passRollover(P){
   });
   if(n) setTimeout(()=>{ toast(`Passe ${se.label} terminé : ${n} récompense${n>1?"s":""} que tu n'avais pas récupérée${n>1?"s":""} ${n>1?"sont":"est"} dans ta boîte !`); Sound.ding(); renderTop(); renderNav() }, 900);
 }
-const passTier = () => Math.min(PASS_TIERS, Math.floor(ensurePass().xp/TIER_XP));
+// on commence la saison au palier 1 (sa récompense est tout de suite à récupérer) : 1 000 XP par palier ensuite
+const tierOfXP = xp => Math.min(PASS_TIERS, 1+Math.floor((xp||0)/TIER_XP));
+const passTier = () => tierOfXP(ensurePass().xp);
 function passLeft(){ const ms=Math.max(0,seasonNow().end-Date.now()), d=Math.floor(ms/86400000), hh=Math.floor(ms/3600000)%24; return d ? `${d} j ${hh} h` : `${hh} h ${Math.floor(ms/60000)%60} min` }
 const seasonStyle = se => { const P=PALETTES[se.pal]; return `--s1:${P[1]};--s2:${P[2]};--s3:${P[3]}` };
 // récompenses d'un palier (1 à 30) sur la piste gratuite ("free") ou premium ("prem")
 // Récompenses d'un palier (1 à 30) sur la piste gratuite ("free") ou premium ("prem").
 // Trois étapes de 10 paliers : les bonbecs montent d'une étape à l'autre, un sac tous les 5 paliers,
-// et les billes de la saison aux paliers ronds (10, 20, 30).
+// et les billes de la saison aux paliers ronds (10, 20, 30). Palier 1 : une Mini de saison pour bien démarrer.
 const PASS_J = {free:[100,150,200], prem:[200,300,400]};
 function passReward(track,t,se=seasonNow()){
   const fam = se.def.fam, stage = Math.floor((t-1)/10);
   const M = (type,shiny=0) => ({k:"marble", type, fam, shiny});
   if(track==="free"){
     if(t===30) return M("calot");
-    if(t===20) return M("bille");
-    if(t===10) return M("mini");
+    if(t===20) return M("chinoise");
+    if(t===10) return M("bille");
+    if(t===1)  return M("mini");
     if(t===25) return {k:"bag", bag:"premium"};
     if(t%5===0) return {k:"bag", bag:"classique"};
     return {k:"jetons", n:PASS_J.free[stage]};
@@ -3662,7 +3678,7 @@ function grantPassReward(P, se, track, t){
 }
 function passXP(n){
   const P = ensurePass(), before = passTier();
-  P.xp = Math.min(PASS_TIERS*TIER_XP, P.xp+n); save();
+  P.xp = Math.min((PASS_TIERS-1)*TIER_XP, P.xp+n); save();
   const after = passTier();
   if(after>before){ setTimeout(()=>{ toast(`Passe de saison : palier ${after} atteint !`); Sound.ding() }, 400); renderNav() }
   return n;
@@ -3678,7 +3694,7 @@ const NAV_PARENT = {billepedia:"collection", tir:"jeux", pot:"jeux", chateau:"je
 const SOLO_GAMES = [["pot","Le Pot"],["chateau","Le Château"],["casse","Le Casse-briques"]];
 function gamesReady(){
   const out = SOLO_GAMES.filter(g=>soloReady(g[0])).map(g=>g[1]);
-  if(LEVELS.length - Object.keys(playedToday().tir).length > 0) out.unshift("Le Tir");
+  if(!playedToday().tir[0]) out.unshift("Le Tir");
   return out;
 }
 function renderNav(){
@@ -3741,7 +3757,7 @@ function dayHTML(inSheet, wide){
   if(ns) rows4.push(mjRow({icon:"book", title:`${ns} série${ns>1?"s":""} terminée${ns>1?"s":""}`, text:"Ta récompense t'attend", ready:true, act:'data-action="series-go"'}));
   // le passe de saison
   const P = ensurePass(), se = seasonNow(), tier = passTier(), pc = passClaimable();
-  const into = tier>=PASS_TIERS ? TIER_XP : P.xp-tier*TIER_XP;
+  const into = tier>=PASS_TIERS ? TIER_XP : P.xp-(tier-1)*TIER_XP;
   const finalSpec = rewardSpec("prem",30,passReward("prem",30));
   const tasks = [!dReady, ...Q.items.map(q=>q.claimed), Q.bonus], nDone = tasks.filter(Boolean).length;
   const today = new Date().toLocaleDateString("fr-FR",{weekday:"long",day:"numeric",month:"long"});
@@ -4009,7 +4025,7 @@ function heroSlides(){
     </div>
     <div class="hs-week">${DAILY_CAL.slice(w*7, w*7+7).map((d,k)=>cell(d, w*7+k)).join("")}</div>`});
   // le passe de saison : le palier, et la prochaine récompense de chaque voie
-  const into = tier>=PASS_TIERS ? TIER_XP : P.xp-tier*TIER_XP, t1 = Math.min(PASS_TIERS, tier+1);
+  const into = tier>=PASS_TIERS ? TIER_XP : P.xp-(tier-1)*TIER_XP, t1 = Math.min(PASS_TIERS, tier+1);
   const lane = (track, lbl) => { const r = passReward(track, t1), locked = track==="prem" && !P.premium;
     return `<div class="hs-lane${locked?" locked":""}"><small>${lbl}${locked?` ${ic("lock",12,2.6)}`:""}</small><b>${rewardLabel(r)}</b><i>palier ${t1}</i></div>` };
   const finalSpec = rewardSpec("prem",30,passReward("prem",30));
@@ -4479,7 +4495,7 @@ function rewardInner(track,t,r){
 function viewPass(){
   pedia = [];
   const P = ensurePass(), se = seasonNow(), tier = passTier(), claim = passClaimable();
-  const into = tier>=PASS_TIERS ? TIER_XP : P.xp-tier*TIER_XP;
+  const into = tier>=PASS_TIERS ? TIER_XP : P.xp-(tier-1)*TIER_XP;
   const finalR = passReward("prem",30), finalSpec = rewardSpec("prem",30,finalR);
   const cols = Array.from({length:PASS_TIERS},(_,i)=>{
     const t = i+1, reached = t<=tier;
@@ -4836,7 +4852,6 @@ function openModal(id, pv){
         ${findBtn(s)}
         ${S.active===s.id||s.secret?"":`<button class="btn btn-ghost" data-action="recycle" data-id="${s.id}">${ic("candy",16)} Échanger · +${fmt(recycleValue(s))} ${CUR.many}</button>`}
         ${sib.length>1 && keepOf(sib).id!==s.id?`<button class="btn btn-ghost" data-action="keep-copy" data-id="${s.id}">${ic("check",16)} Garder cet exemplaire</button>`:""}
-        ${caseList.length>1 && coverOf(caseList).id!==s.id?`<button class="btn btn-ghost" data-action="cover" data-id="${s.id}">${ic("star",16)} Afficher dans l'album</button>`:""}
         ${fromSheet?"":`<button class="btn btn-ghost" data-action="sheet" data-type="${s.type}" data-fam="${s.family}">${ic("layers",16)} Coloris de la case · ${casePals(caseList)} / ${BASE_PALS}</button>`}
       </div>
       ${sib.length>1 && keepOf(sib).id===s.id?`<p class="meta">C'est l'exemplaire que tu gardes : les autres sont proposés comme doubles à la Confiserie.</p>`:""}
@@ -4885,7 +4900,8 @@ function openSheet(t,f){
   const got = casePals(list), full = got===BASE_PALS;
   const cell = p => { const P=PALETTES[p], l=by[p];
     if(l){ const b=[...l].sort(tierSort)[0];
-      return `<button class="sh-cell owned${cov&&cov.id===b.id?" cover":""}" data-action="spec" data-id="${b.id}" data-from-sheet="1" aria-label="${esc(specName(b))}">${mImg(b,120,54,"")}<small>${P[0]}</small>${l.length>1?`<i class="x">×${l.length}</i>`:""}${S.unseen.some(id=>l.some(x=>x.id===id))?`<i class="nw"></i>`:""}</button>` }
+      const isCov = cov&&cov.id===b.id;
+      return `<div class="sh-wrap"><button class="sh-cell owned${isCov?" cover":""}" data-action="spec" data-id="${b.id}" data-from-sheet="1" aria-label="${esc(specName(b))}">${mImg(b,120,54,"")}<small>${P[0]}</small>${l.length>1?`<i class="x">×${l.length}</i>`:""}${S.unseen.some(id=>l.some(x=>x.id===id))?`<i class="nw"></i>`:""}</button>${list.length>1?`<button class="sh-pin${isCov?" on":""}" data-action="cover" data-id="${b.id}" data-in-sheet="1" aria-pressed="${!!isCov}" title="${isCov?"C'est ce coloris qui s'affiche dans l'album":"Afficher ce coloris dans l'album"}" aria-label="${isCov?"Coloris affiché dans l'album":`Afficher ${esc(P[0])} dans l'album`}">${ic("star",12,2.6)}</button>`:""}</div>` }
     const wk = k+"|"+p, wished = (S.wish||[]).includes(wk);
     return `<button class="sh-cell missing${wished?" wished":""}" data-action="wish-toggle" data-k="${wk}" title="${P[0]} : pas encore trouvée. Touche pour ${wished?"la retirer de":"l'ajouter à"} ta liste de souhaits"><span class="sil" style="--c1:${P[1]};--c2:${P[2]}"></span><small>${P[0]}</small>${wished?`<i class="wstar">${ic("star",12,2.6)}</i>`:""}</button>` };
   const extra = Object.keys(by).map(Number).filter(p=>p>=BASE_PALS);
@@ -4897,7 +4913,7 @@ function openSheet(t,f){
       <div class="pills">${typePill(t,true)}<span class="dec-pill" style="--dc:${DECOR_RAR[F.rar].c}">${DECOR_RAR[F.rar].name}</span>${full?`<span class="full-tag static">${ic("star",11,2.6)} Case complète</span>`:""}</div>
       <h2>${F.name} <small>· ${T.label}</small></h2>
       <div class="sheet-prog"><span class="bar"><i class="${full?"done":""}" style="width:${got/BASE_PALS*100}%"></i></span><b>${got} / ${BASE_PALS} coloris</b></div>
-      <p class="meta">${got?`Touche une bille pour l'ouvrir, ou un coloris manquant pour l'ajouter à ta liste de souhaits (★). ${cov?`Dans l'album, c'est ${esc(PALETTES[cov.pal][0])} qui s'affiche : tu peux en choisir une autre depuis sa fiche.`:""}`:`Tu n'as pas encore de ${T.label.toLowerCase()} ${F.name}. Elle se cache peut-être dans ton prochain sac !`}</p>
+      <p class="meta">${got?`Touche une bille pour l'ouvrir, ou un coloris manquant pour l'ajouter à ta liste de souhaits (★). ${cov&&list.length>1?`Dans l'album, c'est ${esc(PALETTES[cov.pal][0])} qui s'affiche : touche l'étoile d'un autre coloris pour le mettre à sa place.`:""}`:`Tu n'as pas encore de ${T.label.toLowerCase()} ${F.name}. Elle se cache peut-être dans ton prochain sac !`}</p>
     </div>
     <div class="sheet-grid">${Array.from({length:BASE_PALS},(_,p)=>cell(p)).join("")}</div>
     ${extra.length?`<h3 class="sub-h">Éditions spéciales</h3><div class="sheet-grid">${extra.map(cell).join("")}</div>`:""}
@@ -4938,6 +4954,13 @@ async function openBag(bagId, gift){
   if(gift){ if(!(S.bagInv[bagId]>0)){ toast("Tu n'as plus de sac offert de ce type."); return } }
   else if(bag.price===0){ if(!freeReady()){ toast(`Ton prochain sac gratuit arrive dans ${freeLeft()}.`); return } }
   else if(S.jetons < bag.price){ toast(`Il te manque ${fmt(bag.price-S.jetons)} ${CUR.many} pour ce sac.`); return }
+  else {   // sac payant : on confirme l'achat avant d'encaisser
+    if(openBag.asking) return; openBag.asking = true;
+    const ok = await ask({title:`Acheter le ${bag.name} ?`, text:`${bag.n} billes pour <b>${COIN}${fmt(bag.price)}</b>. Il te restera ${fmt(S.jetons-bag.price)} ${CUR.many}.`, ok:"Acheter et ouvrir"}).finally(()=>openBag.asking = false);
+    if(!ok) return;
+    if(S.jetons < bag.price){ toast(`Il te manque ${fmt(bag.price-S.jetons)} ${CUR.many} pour ce sac.`); return }
+    if(ovState) closeOv();   // « Rouvrir un sac » : on repart d'une ouverture neuve
+  }
   let pulls;
   if(srvOn()){   // le serveur encaisse et tire les billes
     if(eco.busy) return; eco.busy = true;
@@ -5278,6 +5301,8 @@ function finishReveal(){
   document.getElementById("ov-actions").innerHTML = `<span class="ov-xp" style="flex-basis:100%;justify-content:center">${ic("ticket",18)} +${ovState.pxp} XP de saison</span>${again}<button class="btn btn-ghost" data-action="to-collection">Voir ma boîte à billes</button>`;
 }
 function closeOv(){
+  // fermé avant d'avoir tout découvert : les billes sont déjà rangées, on montre quand même ce qu'il y avait
+  const missed = ovState && ovState.results && ovState.opened.size < ovState.results.length ? ovState : null;
   FX.stop();
   if(ovState?.rollRaf) cancelAnimationFrame(ovState.rollRaf);
   Sound.rollStop();
@@ -5285,6 +5310,18 @@ function closeOv(){
   document.body.style.overflow = "";
   ovState = null;
   renderView();
+  if(missed) showBagSummary(missed);
+}
+function showBagSummary({bag, results}){
+  const el = document.getElementById("modal");
+  el.innerHTML = `<div class="modal bag-sum" role="dialog" aria-modal="true" aria-labelledby="bag-sum-t">
+    <button class="close-x" data-action="close-modal" aria-label="Fermer">×</button>
+    <h2 id="bag-sum-t">${esc(bag.name)} : ${results.length} billes reçues</h2>
+    <p class="meta">Tu as fermé le sac avant la fin : pas de panique, tout est déjà rangé dans ta boîte à billes.</p>
+    <div class="bag-sum-grid">${results.map(({s,isNew,newColor})=>`<button class="m-card" data-action="spec" data-id="${s.id}"><span class="ball">${mImg(s,160,Math.round(58*scaleOf(s.type)+8))}</span><b>${esc(specName(s))}</b>${typePill(s.type)}${shinyPill(s)}${isNew?`<span class="new">Nouvelle case !</span>`:newColor?`<span class="new">Nouveau coloris</span>`:""}</button>`).join("")}</div>
+  </div>`;
+  el.hidden = false;
+  el.querySelector(".close-x").focus();
 }
 
 /* =====================================================================
@@ -5292,14 +5329,47 @@ function closeOv(){
    ===================================================================== */
 const W=900, H=520, HOLE_R=15, MAXV=21;
 let BR=12;   // rayon de la bille au Tir : il suit sa taille (réglé au lancement de la partie)
+// Un seul trou par jour, le même pour tout le monde, pris dans ce grand parcours (walls/sand/water : [x,y,l,h], bumpers : [x,y,r]).
+// Les 6 premiers sont l'ancien parcours : leur place dans la liste garde les records déjà faits (S.best est rangé par numéro de trou).
 const LEVELS = [
   {name:"Première ligne", par:2, start:[130,260], hole:[770,260], walls:[[430,190,40,140]], bumpers:[], sand:[]},
   {name:"Le coude", par:3, start:[110,430], hole:[775,105], walls:[[20,20,620,320]], bumpers:[], sand:[[700,270,160,60]]},
   {name:"Les champignons", par:3, start:[110,260], hole:[800,260], walls:[], bumpers:[[320,160,28],[320,360,28],[470,260,34],[620,150,26],[620,370,26]], sand:[[420,36,150,80],[420,404,150,80]]},
   {name:"Le zigzag", par:4, start:[110,90], hole:[800,440], walls:[[240,20,30,350],[450,150,30,350],[660,20,30,350]], bumpers:[], sand:[]},
   {name:"Le bunker", par:3, start:[110,260], hole:[760,260], walls:[[650,150,230,24],[650,346,230,24]], bumpers:[[400,140,24],[400,380,24]], sand:[[520,130,110,260]]},
-  {name:"La spirale", par:4, start:[100,80], hole:[800,420], walls:[[20,140,660,26],[220,300,660,26]], bumpers:[[450,233,22]], sand:[]},
+  {name:"La spirale", par:4, start:[100,80], hole:[800,420], walls:[[20,140,660,26],[220,300,660,26]], bumpers:[[450,233,14]], sand:[]},
+  {name:"Le couloir", par:2, start:[110,260], hole:[790,260], walls:[[180,20,700,140],[180,360,700,140]], bumpers:[[480,260,22]], sand:[]},
+  {name:"La chicane", par:3, start:[100,420], hole:[800,100], walls:[[300,200,30,300],[570,20,30,300]], bumpers:[], sand:[]},
+  {name:"Le lac", par:3, start:[110,260], hole:[790,260], walls:[], bumpers:[], sand:[], water:[[320,130,260,260]]},
+  {name:"Le pont", par:2, start:[110,260], hole:[790,260], walls:[], bumpers:[], sand:[], water:[[390,20,130,195],[390,305,130,195]]},
+  {name:"Les dunes", par:3, start:[100,100], hole:[800,420], walls:[], bumpers:[], sand:[[240,20,130,320],[530,180,130,320]]},
+  {name:"La fourche", par:3, start:[110,260], hole:[835,260], walls:[[300,230,500,60]], bumpers:[], sand:[[430,20,200,80]], water:[[430,400,200,100]]},
+  {name:"Le flipper", par:3, start:[100,260], hole:[820,110], walls:[], bumpers:[[260,140,26],[260,380,26],[410,260,30],[560,140,26],[560,380,26],[710,260,30]], sand:[]},
+  {name:"L'escalier", par:4, start:[90,450], hole:[820,80], walls:[[200,200,30,300],[420,20,30,330],[640,170,30,330]], bumpers:[], sand:[]},
+  {name:"L'île", par:3, start:[110,260], hole:[700,260], walls:[], bumpers:[], sand:[], water:[[540,140,280,40],[540,340,280,40],[540,180,40,40],[540,300,40,40],[780,180,40,160]]},
+  {name:"Le slalom", par:3, start:[90,260], hole:[810,260], walls:[], bumpers:[[250,225,24],[370,295,24],[490,225,24],[610,295,24],[730,225,24]], sand:[]},
+  {name:"Le U", par:3, start:[110,110], hole:[110,410], walls:[[20,230,640,60]], bumpers:[], sand:[[700,200,120,120]]},
+  {name:"Le bac à sable", par:3, start:[110,260], hole:[790,260], walls:[], bumpers:[], sand:[[260,70,380,380]]},
+  {name:"Les portes", par:3, start:[110,260], hole:[790,400], walls:[[300,20,30,180],[300,320,30,180],[600,20,30,110],[600,230,30,270]], bumpers:[], sand:[]},
+  {name:"La mare aux canards", par:3, start:[100,100], hole:[800,420], walls:[], bumpers:[], sand:[], water:[[250,200,150,300],[500,20,150,300]]},
+  {name:"Le goulot", par:3, start:[100,260], hole:[800,260], walls:[[420,20,60,200],[420,300,60,200]], bumpers:[[250,260,24]], sand:[]},
+  {name:"La boîte", par:4, start:[110,260], hole:[680,260], walls:[[560,170,200,24],[560,326,200,24],[560,194,24,132]], bumpers:[], sand:[]},
+  {name:"Le serpent", par:5, start:[100,75], hole:[800,445], walls:[[20,130,700,24],[180,250,700,24],[20,370,700,24]], bumpers:[], sand:[]},
+  {name:"Les deux bosses", par:3, start:[100,260], hole:[800,260], walls:[], bumpers:[[330,260,60],[600,260,60]], sand:[[440,40,60,110],[440,370,60,110]]},
+  {name:"La croix", par:3, start:[100,100], hole:[800,420], walls:[[430,90,40,340],[280,240,340,40]], bumpers:[], sand:[]},
+  {name:"Le trou perdu", par:4, start:[800,420], hole:[100,80], walls:[[20,170,330,24],[190,20,24,90]], bumpers:[[600,260,26]], sand:[]},
+  {name:"La plage", par:3, start:[100,240], hole:[800,300], walls:[], bumpers:[[450,250,26]], sand:[[20,390,860,110]], water:[[300,20,300,110]]},
+  {name:"Le labyrinthe", par:5, start:[90,450], hole:[800,90], walls:[[180,20,24,340],[340,160,24,340],[500,20,24,340],[660,160,24,340]], bumpers:[], sand:[]},
+  {name:"Le rond-point", par:3, start:[100,260], hole:[800,260], walls:[], bumpers:[[450,260,70],[450,70,22],[450,450,22]], sand:[]},
+  {name:"Les marais", par:4, start:[90,260], hole:[830,260], walls:[], bumpers:[], sand:[], water:[[220,60,120,140],[220,320,120,140],[470,180,120,160],[700,60,100,120],[700,340,100,120]]},
+  {name:"Le grand final", par:4, start:[100,420], hole:[800,440], walls:[[300,20,30,300],[600,200,30,300]], bumpers:[[450,400,26],[760,380,26]], sand:[[380,40,170,110],[680,40,150,100]]},
 ];
+LEVELS.forEach(L=>{ L.water = L.water||[] });
+// le trou du jour : chaque trou revient une fois par tour du parcours, dans un ordre mélangé (le même pour tous)
+const TIR_ORDER = (()=>{ const r=rng(20260930), o=LEVELS.map((_,i)=>i); for(let i=o.length-1;i>0;i--){ const j=Math.floor(r()*(i+1)); [o[i],o[j]]=[o[j],o[i]] } return o })();
+const dayNum = (d=new Date()) => Math.round(Date.UTC(d.getFullYear(),d.getMonth(),d.getDate())/864e5);
+const tirOfDay = (d) => TIR_ORDER[dayNum(d) % LEVELS.length];
+function tirLeftTime(){ const d=new Date(), m=new Date(d.getFullYear(),d.getMonth(),d.getDate()+1)-d, h=Math.floor(m/36e5); return h ? `${h} h ${Math.floor(m/6e4)%60} min` : `${Math.floor(m/6e4)} min` }
 const BORDER = [[0,0,W,20],[0,H-20,W,20],[0,0,20,H],[W-20,0,20,H]];
 const game = {lvl:0, raf:null};
 const ballCanvas = document.createElement("canvas");
@@ -5312,8 +5382,8 @@ function rewardFor(strokes,par){ const st=starsFor(strokes,par); return [0,20,40
 function viewGame(){
   const act = activeSpec();
   return `<div class="page-head">
-    <div><button class="back-link" data-action="nav" data-view="jeux">${ic("chevl",14)} Tous les jeux</button><h1>Le Tir</h1><p>Vise le trou avec ta bille active. Plus tu tires loin en arrière, plus le tir est fort. Chaque trou réussi rapporte des ${CUR.many}.</p></div>
-    <span class="hand-note">Pas plus de 10 coups par trou !</span>
+    <div><button class="back-link" data-action="nav" data-view="jeux">${ic("chevl",14)} Tous les jeux</button><h1>Le Tir</h1><p>Chaque jour, un nouveau trou (le même pour toute la cour). Vise-le avec ta bille active : plus tu tires loin en arrière, plus le tir est fort.</p></div>
+    <span class="hand-note">Pas plus de 10 coups !</span>
   </div>
   <div class="game-wrap">
     <section class="panel">
@@ -5322,18 +5392,17 @@ function viewGame(){
         <div class="hud-stat"><small>Par</small><b id="g-par">0</b></div>
         <div class="hud-stat"><small>Coups</small><b id="g-strokes">0</b></div>
         <div class="hud-stat"><small>Record</small><b id="g-best">–</b></div>
-        <button class="btn btn-ghost" data-action="g-restart">Recommencer</button>
       </div>
       <div class="game-stage">
         <canvas id="g-canvas" aria-label="Parcours du Tir. Clique et tire en arrière pour viser, relâche pour tirer."></canvas>
         <div class="g-result" id="g-result" hidden></div>
       </div>
-      <div class="g-help"><span>${ic("target",16)} Clique, tire en arrière, relâche.</span><span>Le sable freine, les champignons rouges font rebondir.</span></div>
+      <div class="g-help"><span>${ic("target",16)} Clique, tire en arrière, relâche.</span><span>Le sable freine, les champignons rouges font rebondir, l'eau te ramène en arrière (+1 coup).</span></div>
     </section>
     <aside style="display:grid;gap:20px">
       <section class="panel">
-        <div class="panel-head"><h3>Parcours</h3></div>
-        <div class="hole-list" id="g-holes"></div>
+        <div class="panel-head"><h3>Le trou du jour</h3></div>
+        <div id="g-holes"></div>
       </section>
       <section class="panel">
         <div class="panel-head"><h3>Ta bille</h3><button class="see-all" data-action="to-collection">Changer ${ic("chev",14)}</button></div>
@@ -5346,7 +5415,7 @@ function viewGame(){
           <li><span>Par + 1 (2 étoiles)</span><b>40 ${CUR.many}</b></li>
           <li><span>Au-delà (1 étoile)</span><b>20 ${CUR.many}</b></li>
           <li><span>Trou en un (bonus)</span><b>+40 ${CUR.many}</b></li>
-          <li><span>Chaque trou rapporte une fois par jour</span><b>↻ minuit</b></li>
+          <li><span>Ta première réussite du jour rapporte</span><b>↻ minuit</b></li>
         </ul>
       </section>
     </aside>
@@ -5354,10 +5423,11 @@ function viewGame(){
 }
 function renderHoles(){
   const el = document.getElementById("g-holes"); if(!el) return;
-  el.innerHTML = LEVELS.map((L,i)=>{
-    const b = S.best[i]; const st = b ? starsFor(b,L.par) : 0;
-    return `<button class="hole-btn" data-action="g-level" data-l="${i}" aria-current="${game.lvl===i}"><span class="n">${i+1}</span><span><b>${L.name}</b><small>Par ${L.par}${b?` · record ${b}`:""}${playedToday().tir[i]?" · récompense prise":""}</small></span><span class="mini-stars">${[1,2,3].map(k=>STAR(k<=st)).join("")}</span></button>`;
-  }).join("");
+  const i = game.lvl, L = LEVELS[i], b = S.best[i], st = b ? starsFor(b,L.par) : 0, done = playedToday().tir[0];
+  const seen = Object.keys(S.best).filter(k=>LEVELS[k]).length;
+  el.innerHTML = `<div class="hole-btn" aria-current="true"><span class="n">${i+1}</span><span><b>${L.name}</b><small>Par ${L.par}${b?` · ton record : ${b}`:" · jamais réussi"}</small></span><span class="mini-stars">${[1,2,3].map(k=>STAR(k<=st)).join("")}</span></div>
+    <p class="meta" style="margin-top:10px">${done?`Récompense du jour prise : rejoue pour le plaisir ou pour battre ton record.`:`Pas encore réussi aujourd'hui : la récompense t'attend.`} Nouveau trou dans ${tirLeftTime()}.</p>
+    <p class="meta">${seen} / ${LEVELS.length} trous du parcours déjà réussis.</p>`;
 }
 function initGame(){
   cancelAnimationFrame(game.raf);
@@ -5379,7 +5449,7 @@ function initGame(){
   cv.addEventListener("pointermove", gMove);
   cv.addEventListener("pointerup", gUp);
   cv.addEventListener("pointercancel", ()=>{ game.aim=null });
-  loadLevel(game.lvl);
+  loadLevel(tirOfDay());
   game.last = performance.now();
   game.raf = requestAnimationFrame(gLoop);
 }
@@ -5387,7 +5457,7 @@ function loadLevel(i){
   game.lvl = i;
   const L = LEVELS[i];
   game.L = L;
-  game.ball = {x:L.start[0], y:L.start[1], vx:0, vy:0};
+  game.ball = {x:L.start[0], y:L.start[1], vx:0, vy:0}; game.from = [...L.start]; game.splash = null;
   game.R = I3.slice();
   game.strokes = 0; game.moving = false; game.aim = null; game.sink = 0; game.done = false; game.bumpHit = {};
   game.walls = [...BORDER, ...L.walls];
@@ -5396,7 +5466,7 @@ function loadLevel(i){
 }
 function updHud(){
   const L = game.L;
-  document.getElementById("g-name").innerHTML = `<small>Trou ${game.lvl+1}/${LEVELS.length}</small>${L.name}`;
+  document.getElementById("g-name").innerHTML = `<small>Trou du jour · n° ${game.lvl+1}</small>${L.name}`;
   document.getElementById("g-par").textContent = L.par;
   document.getElementById("g-strokes").textContent = game.strokes;
   document.getElementById("g-best").textContent = S.best[game.lvl] || "–";
@@ -5410,6 +5480,7 @@ function gUp(){
   const power = Math.min(len/180,1);
   game.aim = null;
   if(power<.04 || len===0) return;
+  game.from = [b.x, b.y];
   [b.vx, b.vy] = wobble(game.spec, dx/len*power*MAXV, dy/len*power*MAXV);
   game.moving = true; game.strokes++; updHud();
   Sound.rollStart(); Sound.shot(power);
@@ -5443,6 +5514,13 @@ function physStep(){
         if(vn<0){ b.vx -= 2.1*vn*nx; b.vy -= 2.1*vn*ny; game.bumpHit[i]=performance.now(); Sound.bumper() }
       }
     });
+    // plouf : la bille revient d'où elle est partie, avec un coup de pénalité
+    if(L.water.some(r=>inRect(b.x,b.y,r))){
+      game.splash = {x:b.x, y:b.y, t:performance.now()}; Sound.splash();
+      b.vx = b.vy = 0; [b.x, b.y] = game.from; game.moving = false; game.strokes++; updHud();
+      if(game.strokes>=10) finishHole(false);
+      return;
+    }
   }
   const sand = L.sand.some(r=>inRect(b.x,b.y,r));
   const f = sand ? .93 : rollFric(Math.hypot(b.vx,b.vy), .984);
@@ -5480,8 +5558,8 @@ function finishHole(success){
     const st = starsFor(game.strokes,L.par), rew = rewardFor(game.strokes,L.par);
     const rec = !S.best[game.lvl] || game.strokes<S.best[game.lvl];
     if(rec) S.best[game.lvl] = game.strokes;
-    const P = playedToday(), paid = !P.tir[game.lvl];
-    if(paid){ P.tir[game.lvl] = 1; earn("jeu", `tir|${game.lvl}`, rew) }
+    const P = playedToday(), paid = !P.tir[0];
+    if(paid){ P.tir[0] = 1; earn("jeu", "tir|0", rew) }   // une récompense par jour (le serveur compte « tir|0 »)
     S.holes++; save(); renderTop(); updHud(); renderHoles();
     const pxp = paid ? passXP(PASS_XP.star*st) : 0;
     questEvent("hole");
@@ -5490,12 +5568,11 @@ function finishHole(success){
     const msg = game.strokes===1 ? "Trou en un !" : game.strokes<L.par ? "Sous le par !" : game.strokes===L.par ? "Pile au par !" : "Dans le trou !";
     html = `<h2>${msg}</h2><div class="stars">${[1,2,3].map(k=>STAR(k<=st)).join("")}</div>
       <p>${game.strokes} coup${game.strokes>1?"s":""} pour un par de ${L.par}${rec?" · nouveau record":""}</p>
-      ${paid ? `<span class="reward">${COIN}+${rew} ${CUR.many} · +${pxp} XP</span>` : `<p class="meta">Ce trou a déjà rapporté aujourd'hui : celui-ci était pour le plaisir.</p>`}`;
+      ${paid ? `<span class="reward">${COIN}+${rew} ${CUR.many} · +${pxp} XP</span>` : `<p class="meta">Le trou du jour a déjà rapporté : celui-ci était pour le plaisir.</p>`}`;
   } else {
     html = `<h2>Trop de coups</h2><p>10 coups, c'est le maximum. Retente ta chance !</p>`;
   }
-  const next = game.lvl<LEVELS.length-1;
-  html += `<div class="row"><button class="btn btn-ghost" data-action="g-restart">Rejouer ce trou</button>${next?`<button class="btn btn-yellow" data-action="g-level" data-l="${game.lvl+1}">Trou suivant ${ic("arrow",16)}</button>`:`<button class="btn btn-yellow" data-action="nav" data-view="sacs">Dépenser mes ${CUR.many}</button>`}</div>`;
+  html += `<p class="meta">Nouveau trou dans ${tirLeftTime()}.</p><div class="row"><button class="btn btn-ghost" data-action="g-restart">${success?"Rejouer pour le plaisir":"Réessayer"}</button><button class="btn btn-yellow" data-action="nav" data-view="jeux">Tous les jeux</button></div>`;
   el.innerHTML = `<div class="g-card">${html}</div>`;
   el.hidden = false;
 }
@@ -5515,6 +5592,13 @@ function gDraw(){
   // sable
   L.sand.forEach(([x,y,w,h])=>{ rrect(c,x,y,w,h,22); c.fillStyle="#E8D3A0"; c.fill(); c.strokeStyle="rgba(150,110,50,.35)"; c.lineWidth=2; c.stroke();
     c.fillStyle="rgba(150,110,50,.25)"; const r=rng(x*7+y); for(let i=0;i<w*h/140;i++){ c.fillRect(x+10+r()*(w-20), y+10+r()*(h-20), 2, 2) } });
+  // eau
+  L.water.forEach(([x,y,w,h])=>{ rrect(c,x,y,w,h,18); const wg=c.createLinearGradient(x,y,x,y+h); wg.addColorStop(0,"#5BB8E8"); wg.addColorStop(1,"#2D7FC0"); c.fillStyle=wg; c.fill();
+    c.strokeStyle="rgba(20,70,120,.45)"; c.lineWidth=3; c.stroke();
+    c.save(); rrect(c,x,y,w,h,18); c.clip(); c.strokeStyle="rgba(255,255,255,.35)"; c.lineWidth=2; const ph=performance.now()/900;
+    for(let yy=y+16; yy<y+h; yy+=22){ c.beginPath(); for(let xx=x; xx<=x+w; xx+=6){ const yv=yy+Math.sin(xx/14+ph+yy)*2.5; xx===x?c.moveTo(xx,yv):c.lineTo(xx,yv) } c.stroke() }
+    c.restore() });
+  if(game.splash){ const k=(performance.now()-game.splash.t)/700; if(k<1){ c.strokeStyle=`rgba(255,255,255,${1-k})`; c.lineWidth=3; [0,.3].forEach(o=>{ const kk=k-o; if(kk>0){ c.beginPath(); c.arc(game.splash.x,game.splash.y,8+kk*40,0,TAU); c.stroke() } }) } else game.splash=null }
   // murs
   L.walls.forEach(([x,y,w,h])=>{
     c.fillStyle="rgba(0,0,0,.25)"; c.fillRect(x+4,y+6,w,h);
@@ -5609,15 +5693,15 @@ function artCourse(){ return `<svg viewBox="0 0 240 130" preserveAspectRatio="xM
   <circle cx="40" cy="103" r="7" fill="#2E8CFF" stroke="#fff" stroke-width="1.5"/><circle cx="92" cy="58" r="6.5" fill="#E5484D"/><circle cx="140" cy="45" r="6.5" fill="#FFC93F"/>
   <path d="M205 20v42" stroke="#5A3A20" stroke-width="2.5"/><path d="M205 20h24v14h-24z" fill="#fff"/><path d="M205 20h6v7h-6zM217 20h6v7h-6zM211 27h6v7h-6zM223 27h6v7h-6z" fill="#24253D"/></svg>` }
 function viewGames(){
-  const P = playedToday(), tirLeft = LEVELS.length - Object.keys(P.tir).length;
+  const P = playedToday(), tirLeft = P.tir[0] ? 0 : 1, tirL = LEVELS[tirOfDay()];
   const tile = c => `<article class="panel game-tile">
     <button class="gt-art" data-action="nav" data-view="${c.v}" aria-label="Jouer : ${c.t}">${c.art}<span class="gt-state ${c.ok?"ok":""}">${c.state}</span></button>
     <div class="gt-body"><h2>${c.t}</h2><p>${c.d}</p>
       <div class="gt-foot"><small>${c.stat}</small><button class="btn btn-blue" data-action="nav" data-view="${c.v}">${ic("play",16)} Jouer</button></div></div>
   </article>`;
   const solo = [
-    {v:"tir", t:"Le Tir", d:"Un parcours de 6 trous avec des murs, du sable et des champignons. Vise le trou en un minimum de coups.", art:artTir(),
-      stat:`${S.holes} trou${S.holes>1?"s":""} réussi${S.holes>1?"s":""}`, ok:tirLeft>0, state:tirLeft?`${ic("gift",14)} ${tirLeft} trou${tirLeft>1?"s":""} à récompense aujourd'hui`:"Tous les trous ont rapporté : pour le plaisir"},
+    {v:"tir", t:"Le Tir", d:`Un nouveau trou chaque jour, parmi ${LEVELS.length} : murs, sable, eau et champignons. Aujourd'hui : « ${tirL.name} », par ${tirL.par}.`, art:artTir(),
+      stat:`${S.holes} trou${S.holes>1?"s":""} réussi${S.holes>1?"s":""}`, ok:tirLeft>0, state:tirLeft?`${ic("gift",14)} Trou du jour à réussir`:"Trou du jour réussi : pour le plaisir"},
     {v:"pot", t:"Le Pot", d:ARENA.pot.lead, art:artPot(), stat:`${S.stats.pot} bille${S.stats.pot>1?"s":""} dans le pot`,
       ok:soloReady("pot"), state:soloReady("pot")?`${ic("gift",14)} Récompense du jour disponible`:"Déjà joué aujourd'hui : pour le plaisir"},
     {v:"chateau", t:"Le Château", d:ARENA.chateau.lead, art:artChateau(), stat:`${S.stats.castle} bille${S.stats.castle>1?"s":""} sortie${S.stats.castle>1?"s":""} du cercle`,
@@ -5641,7 +5725,7 @@ function viewGames(){
     <button class="nav-arrow" data-action="active-step" data-dir="1" aria-label="Bille suivante">${ic("chev",14,2.5)}</button>
     <button class="btn btn-ghost" data-action="to-collection">Choisir dans ma boîte</button>
   </div>`:""}
-  <section class="games-sec"><div class="gs-head"><h2>Jeux solo</h2><p>Une récompense par jour et par jeu (au Tir, chaque trou). Tu peux rejouer autant que tu veux pour le plaisir, et les compteurs repartent à minuit.</p></div>
+  <section class="games-sec"><div class="gs-head"><h2>Jeux solo</h2><p>Une récompense par jour et par jeu. Tu peux rejouer autant que tu veux pour le plaisir, et les compteurs repartent à minuit.</p></div>
     <div class="games-grid">${solo.map(tile).join("")}</div></section>
   <section class="games-sec"><div class="gs-head"><h2>Jeux à plusieurs</h2><p>Mise des ${CUR.many} contre d'autres joueurs, autant de parties que tu veux. Plus la mise est grosse, plus les adversaires sont forts. En attendant le vrai multijoueur (avec la section Amis), tes adversaires sont simulés.</p></div>
     <div class="games-grid">${multi.map(tile).join("")}</div></section>`;
@@ -5707,7 +5791,7 @@ function initArena(mode, bet){
 }
 function updArenaHud(){
   const el = document.getElementById("a-hud"); if(!el) return;
-  el.innerHTML = `<div class="hole-name">${ARENA[arena.mode].title}</div>${arena.hud().map(([k,v])=>`<div class="hud-stat"><small>${k}</small><b>${v}</b></div>`).join("")}<button class="btn btn-ghost" data-action="a-restart">${VERSUS[arena.mode] && arena.bet && !arena.done ? "Abandonner" : "Recommencer"}</button>`;
+  el.innerHTML = `<div class="hole-name">${ARENA[arena.mode].title}</div>${arena.hud().map(([k,v])=>`<div class="hud-stat"><small>${k}</small><b>${v}</b></div>`).join("")}${VERSUS[arena.mode] && arena.bet && !arena.done ? `<button class="btn btn-ghost" data-action="a-restart">Abandonner</button>` : ""}`;
 }
 const canShoot = () => !arena.moving && !arena.done && arena.shooter && arena.turn!=="opp";
 function aPos(e){ const r=arena.cv.getBoundingClientRect(); return {x:(e.clientX-r.left)/r.width*AW, y:(e.clientY-r.top)/r.height*AH} }
@@ -6152,7 +6236,7 @@ function viewCasse(){
   return `<div class="page-head"><div><button class="back-link" data-action="nav" data-view="jeux">${ic("chevl",14)} Tous les jeux</button><h1>${G.title}</h1><p>${G.lead}</p>${st}</div></div>
   <div class="game-wrap">
     <section class="panel">
-      <div class="hud"><div class="hole-name">${G.title}</div><div class="hud-stat"><small>Niveau</small><b id="c-lvl">1</b></div><div class="hud-stat"><small>Score</small><b id="c-score">0</b></div><div class="hud-stat"><small>Vies</small><b id="c-lives">3</b></div><button class="btn btn-ghost" data-action="c-restart">Recommencer</button></div>
+      <div class="hud"><div class="hole-name">${G.title}</div><div class="hud-stat"><small>Niveau</small><b id="c-lvl">1</b></div><div class="hud-stat"><small>Score</small><b id="c-score">0</b></div><div class="hud-stat"><small>Vies</small><b id="c-lives">3</b></div></div>
       <div class="game-stage"><canvas id="c-canvas" class="bricks" aria-label="${G.title} : bouge la règle avec la souris ou les flèches, clique pour lancer ta bille."></canvas><div class="g-result" id="c-result" hidden></div></div>
       <div class="g-help"><span>${ic("target",16)} Souris, doigt ou flèches pour bouger la règle.</span><span>Clic ou Espace pour lancer · P pour la pause.</span></div>
     </section>
@@ -7126,7 +7210,7 @@ document.addEventListener("click", e=>{
     case "sheet": openSheet(t.dataset.type, +t.dataset.fam); break;
     case "sheet-back": if(ui.sheet) openSheet(ui.sheet.t, ui.sheet.f); break;
     case "keep-copy": { const x=specById(t.dataset.id); if(!x) break; S.keep=S.keep||{}; S.keep[colorKey(x)]=x.id; save(); toast("C'est cet exemplaire que tu gardes. Les autres restent échangeables à la Confiserie."); ui.fromSheet = !!document.querySelector(".sheet-back"); openModal(x.id); if(ui.view==="collection"||ui.view==="confiserie") renderView(); break }
-    case "cover": { const x=specById(t.dataset.id); if(!x) break; S.cover=S.cover||{}; S.cover[slotKey(x)]=x.id; save(); toast(`${specName(x)} s'affiche maintenant dans l'album.`); ui.fromSheet = !!document.querySelector(".sheet-back"); openModal(x.id); if(ui.view==="collection") renderView(); break }
+    case "cover": { const x=specById(t.dataset.id); if(!x) break; S.cover=S.cover||{}; S.cover[slotKey(x)]=x.id; save(); Sound.click(); toast(`${PALETTES[x.pal][0]} s'affiche maintenant dans l'album.`); openSheet(x.type,x.family); if(ui.view==="collection") renderView(); break }
     case "preview": openModal(null, pedia[+t.dataset.k]); break;
     case "theme": Theme.toggle(); renderThemeBtn(); break;
     case "seen-all": S.unseen = []; save(); renderView(); break;
@@ -7443,7 +7527,18 @@ function srvMint(sp, source, cle){
   if(!srvOn()) return;
   sp.pend = true;   // pas envoyée par la sauvegarde habituelle : c'est le serveur qui la crée
   srv(()=>Cloud.eco.marble(source, cle, sp.seed, sp.id)).then(r=>{ delete sp.pend; sp.srv = true; sp.no = r.bille.no; sync.known.add(sp.id); applyEco(r.eco) },
-    e=>{ delete sp.pend; srvFail(e) });
+    e=>{ delete sp.pend; srvFail(e);
+      // le serveur ne la donne pas (déjà reçue) : on ne garde pas une bille qui disparaîtrait au prochain chargement
+      if(e?.code==="deja" || e?.code==="montant_invalide" || e?.code==="secrete_inconnue"){
+        dropLocal(sp.id);
+        toast(sp.secret ? `Tu as déjà trouvé ${SECRETS[sp.secret]?.name||"cette bille secrète"} : une seule par joueur !` : "Cette récompense a déjà été reçue.");
+      } });
+}
+function dropLocal(id){
+  S.specs = S.specs.filter(x=>x.id!==id); S.unseen = S.unseen.filter(x=>x!==id);
+  S.vitrine = S.vitrine.map(x=>x===id ? null : x);
+  if(S.active===id) S.active = [...S.specs].sort(tierSort)[0]?.id;
+  save(); renderTop(); renderNav(); if(document.getElementById("ov").hidden) renderView();
 }
 // billes tirées par le serveur : déjà en base
 function srvAdopt(list){ list.forEach(x=>sync.known.add(x.id)); return list }

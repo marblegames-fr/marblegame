@@ -116,9 +116,9 @@ $$ select array_position(interne.tailles(), t) - 1 $$;   -- 0 (Mini) à 5 (Mammo
 
 -- rareté de chaque décor (dans l'ordre de FAMILIES) et poids de chaque rareté
 create or replace function interne.decor_rarete() returns int[] language sql immutable as
-$$ select array[0,1,4,2,0,2,0,1,0,3,3,0,2,1,2,0,1,3,1,2,0,0,1,1,0,1,3,2,0,2,4,1] $$;
+$$ select array[0,0,4,2,0,1,0,1,2,3,3,0,2,1,3,0,1,3,2,2,0,0,1,1,0,1,3,3,1,2,4,2, 5, 3,4] $$;   -- 32 : Pirate (événement, 5 = jamais dans les sacs) ; 33 Vitrail ; 34 Trou noir
 create or replace function interne.poids_rarete() returns numeric[] language sql immutable as
-$$ select array[10,5,2.5,0.8,0.2]::numeric[] $$;
+$$ select array[10,5,2.5,0.8,0.2,0]::numeric[] $$;   -- la 6e : décors d'événement, jamais tirés
 
 create or replace function interne.coloris_base() returns int language sql immutable as $$ select 48 $$;
 create or replace function interne.taux_shiny() returns numeric language sql immutable as $$ select 0.0001::numeric $$;

@@ -12,7 +12,7 @@
 begin;
 
 -- la cour de récré
-truncate table public.annonces, public.trocs, public.demandes_amis, public.amis restart identity;
+truncate table public.offres, public.annonces, public.trocs, public.demandes_amis, public.amis restart identity cascade;
 -- l'économie
 truncate table public.gains, public.mises, public.portefeuilles restart identity;
 -- les billes (et leur historique) : les numéros de série repartent de 1

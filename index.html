@@ -5159,7 +5159,7 @@ const PEDIA_PAL = PALETTES.findIndex(P=>P[0]==="Azur");   // le coloris des exem
 function viewPedia(){
   pedia = [];
   const fw = FAM_W.reduce((a,b)=>a+b,0), sw = SHINIES.slice(1).reduce((a,x)=>a+x.w,0);
-  const base = {seed:hash("pedia-shiny"), type:"calot", family:1, pal:5};
+  const base = {seed:hash("pedia-shiny"), type:"calot", family:0, pal:PEDIA_PAL};   // même bille que « Les tailles » : seul l'effet change
   const shinyTiles = [0,1,2,3].map(k=>{
     const s = {...base, shiny:k}, i = pv(s);
     const pIn = b => b.shiny*SHINIES[k].w/sw;
@@ -5172,9 +5172,9 @@ function viewPedia(){
     const F = FAMILIES[f], dc = DECOR_RAR[F.rar].c;
     const mine = S.specs.filter(x=>x.family===f).sort(tierSort);   // comme l'album : les billes de saison comptent
     // les exemples sont tous dans le même coloris (Azur) : on compare les décors, pas les couleurs
-    const best = mine[0], sample = {seed:hash("pedia"+f), type:"calot", family:f, pal:PEDIA_PAL, shiny:0};
-    const hero = best ? `<button class="fam-hero" data-action="spec" data-id="${best.id}" aria-label="Ta plus belle : ${esc(specName(best))}">${mImg(best,200,86,"")}</button>`
-                      : `<button class="fam-hero" data-action="preview" data-k="${pv(sample)}" aria-label="Aperçu du décor ${esc(F.name)}">${mImg(sample,200,86,"")}</button>`;
+    // (tes billes à toi restent dans leur vrai coloris, dans la rangée des tailles)
+    const sample = {seed:hash("pedia"+f), type:"calot", family:f, pal:PEDIA_PAL, shiny:0};
+    const hero = `<button class="fam-hero" data-action="preview" data-k="${pv(sample)}" aria-label="Aperçu du décor ${esc(F.name)}">${mImg(sample,200,86,"")}</button>`;
     let got = 0;
     const sizes = TK.map(t=>{
       const list = (owned.get(t+"|"+f)||[]).slice().sort(tierSort), px = Math.round(24+26*(scaleOf(t)-.5)*2);
@@ -5194,7 +5194,8 @@ function viewPedia(){
   const famGroups = DECOR_RAR.map((R,k)=>({R,k,fams:DECOR_IDS.filter(i=>FAMILIES[i].rar===k)})).reverse().filter(g=>g.fams.length)
     .map(({R,fams})=>`<div class="rar-group" style="--dc:${R.c}"><h3><i></i>${R.name}<small>${fams.length} décor${fams.length>1?"s":""} · ${oneIn(R.w/fw)} billes chacun</small></h3>
       <div class="pedia-grid">${fams.map(famCard).join("")}</div></div>`).join("");
-  const fmts = TK.map((t,j)=>{ const s={seed:hash("pedia-fmt"+t), type:t, family:[0,1,4,6,5,11][j], pal:[0,2,12,3,9,13][j], shiny:0}, i=pv(s);
+  // les 6 tailles dans le même décor et le même coloris (Azur) : seule la taille change
+  const fmts = TK.map((t,j)=>{ const s={seed:hash("pedia-fmt"+t), type:t, family:0, pal:PEDIA_PAL, shiny:0}, i=pv(s);
     return `<button class="sh-tile" data-action="preview" data-k="${i}" style="${tstyle(t)}">${mImg(s,200,Math.round(92*scaleOf(t)+10))}${typePill(t,true)}<small>${TYPES[t].mm} mm</small><small>${pct(FREE_BAG.odds[t])} du sac gratuit</small></button>` }).join("");
   const pals = PALETTES.slice(0,BASE_PALS).map(P=>`<div class="pal"><span>${[P[1],P[2],P[3]].map(c=>`<i style="background:${c}"></i>`).join("")}</span>${P[0]}</div>`).join("");
   const combos = TK.length*N_DECORS*BASE_PALS;

@@ -6275,8 +6275,10 @@ function courNews(welcome){
   if(!since){ S.courVu = Date.now(); save(); return }
   cour.newsBusy = true;
   Cloud.cour.journal(since, 60).then(list=>{
+    // le serveur arrondit l'heure à la milliseconde inférieure : l'événement le plus récent revenait à chaque fois
+    list = list.filter(e=>e.le > since);
     if(!list.length) return;
-    S.courVu = Math.max(since, ...list.map(e=>e.le)); save();
+    S.courVu = 1 + Math.max(...list.map(e=>e.le)); save();
     const news = list.filter(isNews);
     cour.journal = null; if(ui.view==="cour" && ui.courTab==="journal") courLoad("journal");
     if(!news.length) return;

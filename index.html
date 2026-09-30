@@ -1268,6 +1268,7 @@ button.vit-slot:hover{background:var(--panel-2);color:var(--ink)}
 .hm-treasure{display:grid;grid-template-columns:auto minmax(0,1fr);gap:14px;align-items:center;background:linear-gradient(135deg,color-mix(in srgb,var(--rc) 16%,var(--panel)),var(--panel) 60%)}
 .hm-tr-ball{display:grid;place-items:center;width:78px;height:78px}
 .hm-treasure .sample-tag{display:block;margin-bottom:3px}
+.hm-treasure .pills{display:flex;flex-wrap:wrap;gap:5px}
 .hm-finds{display:flex;gap:10px;overflow-x:auto;padding-bottom:6px;scrollbar-width:thin}
 .hm-f{flex:0 0 124px;display:grid;justify-items:center;gap:6px;padding:14px 8px 10px;text-align:center}
 .hm-f .ball{height:70px;display:grid;place-items:center}
@@ -1280,6 +1281,37 @@ button.vit-slot:hover{background:var(--panel-2);color:var(--ink)}
 .hm-size small{font-size:11px;font-weight:800;color:var(--muted)}
 .hm-size .bar{width:80%;height:5px;display:block}
 @media (max-width:1000px){ .hm-grid{grid-template-columns:minmax(0,1fr)} .hm-sizes{grid-template-columns:repeat(3,minmax(0,1fr))} }
+.wish-empty{display:flex;gap:8px;align-items:flex-start;margin-top:14px;padding:10px 12px;border-radius:12px;border:1.5px dashed var(--line-2);font-size:12.5px;font-weight:700;color:var(--ink-2);line-height:1.4}
+.wish-empty svg{flex:none;margin-top:1px;color:#E0A417}
+.hc-grid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:10px}
+.hc-t{display:grid;justify-items:start;gap:3px;padding:14px;border-radius:14px;background:var(--panel-2);border:1px solid var(--line);text-align:left;transition:transform .12s,border-color .12s}
+.hc-t:hover{transform:translateY(-2px);border-color:var(--line-2)}
+.hc-t svg{color:var(--muted);margin-bottom:4px}
+.hc-t b{font-size:14.5px;font-weight:900;line-height:1.2}
+.hc-t small{font-size:12px;font-weight:700;color:var(--muted)}
+.hc-t.hot{background:var(--gold-bg);border:1.5px solid var(--gold-line)}
+.hc-t.hot svg{color:#C07A0C}
+.hm-cour.off{display:grid;grid-template-columns:auto minmax(0,1fr) auto;gap:14px;align-items:center}
+.hc-ic{width:52px;height:52px;border-radius:14px;display:grid;place-items:center;background:var(--panel-2);color:var(--ink-2)}
+.hm-cour.off b{font-size:16px;font-weight:900}
+@media (max-width:820px){ .hc-grid{grid-template-columns:repeat(2,minmax(0,1fr))} }
+/* téléphone : ta bille active et ton trésor côte à côte, en petit */
+@media (max-width:560px){
+  .hm-col{grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}
+  .hm-col > .panel{padding:14px 10px}
+  .hm-active .panel-head{justify-content:center;margin-bottom:8px}
+  .hm-active .panel-head h2{font-size:14px}
+  .hm-active .panel-head .sample-tag,.hm-act .meta,.hm-treasure .meta,.hm-act-row .nav-arrow{display:none}
+  .hm-act,.hm-treasure{grid-template-columns:minmax(0,1fr);justify-items:center;text-align:center;gap:8px;align-content:start}
+  .hm-act-ball{width:84px;height:84px}
+  .hm-act-ball img{width:74px;height:74px}
+  .hm-act b,.hm-treasure b{font-size:14px}
+  .hm-act .pills,.hm-treasure .pills{justify-content:center}
+  .hm-act-row{justify-content:center;margin-top:8px}
+  .hm-treasure .sample-tag{font-size:9.5px}
+  .hm-cour.off{grid-template-columns:auto minmax(0,1fr)}
+  .hm-cour.off .btn{grid-column:1/-1}
+}
 @media (max-width:620px){
   .hm-hero{padding:180px 20px 24px;min-height:0}
   .hm-art{inset:0 0 auto 0;width:100%;height:185px}
@@ -1412,7 +1444,7 @@ button.vit-slot:hover{background:var(--panel-2);color:var(--ink)}
 .ch-ball.f3{right:8%;bottom:124px}
 @keyframes ch-bob{50%{transform:translateX(50%) translateY(-5px)}}
 /* les onglets : quatre grosses touches */
-.cour-nav{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:8px;margin-bottom:18px}
+.cour-nav{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:8px;margin-bottom:18px}
 .cn-tab{position:relative;display:flex;align-items:center;justify-content:center;gap:9px;height:52px;padding:0 10px;border-radius:14px;background:var(--panel);border:1px solid var(--line);font-weight:900;font-size:14.5px;color:var(--ink-2);transition:transform .12s,background .12s,color .12s,box-shadow .12s}
 .cn-tab svg{flex:none}
 .cn-tab:hover{color:var(--ink);transform:translateY(-1px);border-color:var(--line-2)}
@@ -1570,15 +1602,94 @@ button.vit-slot:hover{background:var(--panel-2);color:var(--ink)}
 .mk .price .coin{width:24px;height:24px}
 .mk .avg{font-size:11.5px;font-weight:700;color:var(--muted)}
 .mk .avg.good{color:var(--green)}
-.mk-meta{display:flex;justify-content:space-between;align-items:center;gap:6px;width:100%;margin-top:auto;padding-top:9px;border-top:1px dashed var(--line-2);font-size:11.5px;font-weight:800;color:var(--ink-2)}
+.mk-meta{display:flex;flex-wrap:wrap;justify-content:space-between;align-items:center;gap:4px 10px;width:100%;margin-top:auto;padding-top:9px;border-top:1px dashed var(--line-2);font-size:11.5px;font-weight:800;color:var(--ink-2)}
 .mk-meta > span{display:inline-flex;align-items:center;gap:5px;min-width:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .mk-meta .soon{color:var(--warn)}
 .mk .btn{width:100%;margin-top:8px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;padding:0 8px}
 .mk-rib{position:absolute;top:10px;left:10px;z-index:1;display:inline-flex;align-items:center;gap:4px;font-size:10.5px;font-weight:900;letter-spacing:.05em;text-transform:uppercase;padding:3px 9px;border-radius:999px;background:var(--ink);color:var(--on-ink)}
 .mk-rib.deal{background:var(--green);color:#fff}
+/* enchères : la couleur orange du marteau */
+.btn-orange{background:#FF8A3D;color:#2B1606;box-shadow:0 3px 0 #D2641E}
+.btn-orange:hover{background:#FF9A55}
+.mk.ench{border-color:color-mix(in srgb,#FF8A3D 45%,var(--line))}
+.mk-tag{position:absolute;top:100px;left:50%;transform:translateX(-50%);z-index:1;white-space:nowrap;box-shadow:0 4px 10px -4px rgba(0,0,0,.5);display:inline-flex;align-items:center;gap:4px;font-size:10.5px;font-weight:900;letter-spacing:.05em;text-transform:uppercase;padding:3px 9px;border-radius:999px;background:#FF8A3D;color:#2B1606}
+.mk-rib.lead{background:var(--green);color:#fff}
+.mk-rib.out{background:#E5484D;color:#fff}
+.mk .p-lbl{font-size:10.5px;font-weight:900;letter-spacing:.06em;text-transform:uppercase;color:#E0782F;margin:4px 0 -4px}
+.fin{display:inline-flex;align-items:center;gap:5px;white-space:nowrap}
+.fin i{font-style:normal;font-variant-numeric:tabular-nums}
+.fin.soon{color:var(--warn)}
+.mes-ench{border-top:4px solid #FF8A3D}
+.mes-ench .panel-head h3 svg{color:#FF8A3D}
+.ann-end{display:flex;align-items:center;gap:10px;flex-wrap:wrap;justify-content:flex-end;font-size:12px;font-weight:800;color:var(--ink-2)}
+.ann-st.hot{background:color-mix(in srgb,#FF8A3D 16%,var(--panel));border-color:color-mix(in srgb,#FF8A3D 40%,var(--line));color:#E0782F}
+.sell-mode{display:inline-flex;gap:6px;margin-top:12px}
+.sell-mode button{display:inline-flex;align-items:center;gap:6px;height:38px;padding:0 14px;border-radius:12px;border:1.5px solid var(--line-2);background:var(--panel-2);font-weight:900;font-size:13.5px;color:var(--ink-2)}
+.sell-mode button[aria-pressed="true"]{border-color:var(--ink);background:var(--ink);color:var(--on-ink)}
+.ask .ask-in{margin:4px auto 0}
+.jr.k-gagnee .jr-ic{--kc:#E0A417}
+.jr.k-offre .jr-ic,.jr.k-mon_offre .jr-ic,.jr.k-depasse .jr-ic{--kc:#FF8A3D}
+/* classement */
+.cl-me{background:radial-gradient(ellipse 60% 120% at 0% 0%,color-mix(in srgb,var(--yellow) 18%,transparent),transparent 70%),var(--panel)}
+.cl-me-top{display:flex;align-items:center;gap:20px;flex-wrap:wrap}
+.cl-me-top .chips{margin-left:auto;align-self:flex-start}
+.cl-medal{--mc:#8E8898;width:104px;height:104px;flex:none;border-radius:50%;display:grid;place-content:center;text-align:center;color:#2B1C06;
+  background:radial-gradient(circle at 35% 30%,color-mix(in srgb,var(--mc) 40%,#fff),var(--mc) 70%);box-shadow:inset 0 -5px 0 rgba(0,0,0,.18),0 0 0 5px color-mix(in srgb,var(--mc) 35%,transparent),0 10px 20px -8px rgba(0,0,0,.5)}
+.cl-medal.r1{--mc:#F5B82E}.cl-medal.r2{--mc:#B9C4CE}.cl-medal.r3{--mc:#D68A4C}.cl-medal.r4{--mc:#8E9BB5}
+.cl-medal b{font-family:var(--display);font-weight:400;font-size:36px;line-height:1}
+.cl-medal small{font-size:10px;font-weight:900;text-transform:uppercase;letter-spacing:.04em;opacity:.8}
+.cl-score small{font-size:11px;font-weight:900;text-transform:uppercase;letter-spacing:.08em;color:var(--muted)}
+.cl-score > b{display:block;font-family:var(--display);font-weight:400;font-size:46px;line-height:1.05}
+.cl-score > b span{font-size:20px;color:var(--ink-2)}
+.cl-score p{font-weight:700;color:var(--ink-2);margin-top:2px}
+.cl-tiles{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:10px;margin-top:18px}
+.cl-tile{display:grid;justify-items:start;gap:1px;padding:12px 14px;border-radius:14px;background:var(--panel-2);border:1px solid var(--line)}
+.cl-tile svg{color:var(--muted);margin-bottom:4px}
+.cl-tile b{font-family:var(--display);font-weight:400;font-size:24px;line-height:1}
+.cl-tile small{font-size:11.5px;font-weight:900;color:var(--ink-2)}
+.cl-tile i{font-style:normal;font-size:11.5px;font-weight:700;color:var(--muted)}
+.cl-podium{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));align-items:end;gap:12px;max-width:560px;margin:0 auto}
+.cl-pod{--mc:#D68A4C;display:grid;justify-items:center;gap:3px;text-align:center;min-width:0}
+.cl-pod.p1{--mc:#F5B82E}.cl-pod.p2{--mc:#B9C4CE}
+.cl-pod[data-action]{cursor:pointer}
+.cl-pod .cl-face{display:grid;place-items:end center;min-height:70px}
+.cl-pod .cl-face img{filter:drop-shadow(0 10px 8px rgba(0,0,0,.4))}
+.cl-pod.p1 .cl-face{animation:cl-bob 3.5s ease-in-out infinite}
+@keyframes cl-bob{50%{transform:translateY(-5px)}}
+.cl-pod b{font-weight:900;font-size:15px;max-width:100%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.cl-pod.me b{color:#C07A0C}
+.cl-pts{font-family:var(--display);font-size:18px;white-space:nowrap}
+.cl-pts small{font-family:var(--body);font-size:11px;font-weight:800;color:var(--muted);margin-left:3px}
+.cl-step{width:100%;display:grid;place-items:start center;padding-top:10px;margin-top:6px;border-radius:14px 14px 4px 4px;
+  background:linear-gradient(180deg,color-mix(in srgb,var(--mc) 55%,var(--panel)),color-mix(in srgb,var(--mc) 25%,var(--panel)));box-shadow:inset 0 3px 0 color-mix(in srgb,var(--mc) 80%,#fff)}
+.cl-step i{font-style:normal;font-family:var(--display);font-size:30px;color:#fff;text-shadow:0 2px 0 rgba(0,0,0,.25)}
+.cl-pod.p1 .cl-step{height:96px}.cl-pod.p2 .cl-step{height:70px}.cl-pod.p3 .cl-step{height:52px}
+.cl-list{display:grid;gap:6px;margin-top:16px}
+.cl-row{display:grid;grid-template-columns:34px 48px minmax(0,1fr) auto;align-items:center;gap:10px;padding:6px 14px 6px 8px;border-radius:14px;background:var(--panel-2);border:1px solid var(--line)}
+.cl-row[data-action]{cursor:pointer}
+.cl-row[data-action]:hover{border-color:var(--line-2)}
+.cl-row.me{background:var(--gold-bg);border:1.5px solid var(--gold-line)}
+.cl-rank{font-family:var(--display);font-size:20px;text-align:center;color:var(--ink-2)}
+.cl-row .cl-face{display:grid;place-items:center;height:44px}
+.cl-row .who{font-weight:900;font-size:14.5px;min-width:0}
+.cl-row .who em{font-style:normal;font-size:10.5px;font-weight:900;text-transform:uppercase;letter-spacing:.05em;padding:1px 7px;border-radius:999px;background:var(--yellow);color:#24253D;vertical-align:2px}
+.cl-row .who small{display:flex;align-items:center;gap:4px;font-size:12px;font-weight:700;color:var(--muted)}
+.cl-gap{text-align:center;color:var(--muted);font-weight:900;letter-spacing:.3em}
+.cl-goals{display:grid;gap:14px}
+.cl-goal .g-top{display:flex;justify-content:space-between;gap:10px;align-items:baseline}
+.cl-goal b{font-weight:900;font-size:14px}
+.g-pts{font-family:var(--display);font-size:18px;color:var(--green);white-space:nowrap}
+.cl-goal .bar{margin:7px 0 5px;height:8px}
+.cl-goal .bar i{background:linear-gradient(90deg,var(--yellow-2),var(--yellow))}
+.cl-goal small{font-size:12px;font-weight:700;color:var(--muted)}
+.cl-rules{list-style:none;margin:0 0 12px;padding:0;display:grid;gap:10px}
+.cl-rules li{display:grid;gap:1px;padding:10px 12px;border-radius:12px;background:var(--panel-2);border:1px solid var(--line)}
+.cl-rules b{font-size:13.5px;font-weight:900}
+.cl-rules span{font-size:13px;font-weight:800;color:var(--ink-2)}
+.cl-rules small{font-size:12px;font-weight:700;color:var(--muted)}
 .mk.mine{border-style:dashed;border-color:var(--line-2);box-shadow:none}
 .ann-list{display:grid;gap:8px}
-.ann{display:grid;grid-template-columns:auto minmax(0,1fr) auto auto auto;align-items:center;gap:12px;padding:6px 12px 6px 6px;border-radius:14px;background:var(--panel-2);border:1px solid var(--line)}
+.ann{display:grid;grid-template-columns:auto minmax(0,1fr) auto auto;align-items:center;gap:12px;padding:6px 12px 6px 6px;border-radius:14px;background:var(--panel-2);border:1px solid var(--line)}
 .ann > button:first-child{width:56px;height:56px;display:grid;place-items:center}
 .ann .who{font-weight:900;font-size:14px;line-height:1.2}
 .ann .who small{display:block;font-size:12px;font-weight:700;color:var(--muted)}
@@ -1650,19 +1761,26 @@ button.vit-slot:hover{background:var(--panel-2);color:var(--ink)}
   .ch-ball.f0{right:20%;bottom:14px}
   .ch-ball.f1{right:80%;bottom:14px}
   .cour-nav{gap:6px}
-  .cn-tab{flex-direction:column;gap:3px;height:60px;font-size:12px;padding:0 4px}
+  .cn-tab{flex-direction:column;gap:3px;height:60px;font-size:11px;padding:0 2px}
+  .cl-tiles{grid-template-columns:repeat(2,minmax(0,1fr))}
+  .cl-me-top{gap:14px}
+  .cl-medal{width:86px;height:86px}
+  .cl-medal b{font-size:30px}
+  .cl-score > b{font-size:38px}
+  .cl-me-top .chips{margin-left:0}
+  .cl-row{grid-template-columns:28px 40px minmax(0,1fr) auto;padding:6px 10px 6px 6px}
+  .ann-end{grid-column:1/-1;justify-content:flex-start}
   .friends{grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}
   .friend{padding:0 8px 12px}
   .friend .acts{grid-template-columns:1fr}
   .friend b{font-size:18px}
   .mk-grid{grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}
   .mk-vis{height:108px}
+  .mk-tag{top:82px}
   .mk-info{padding:10px 8px 12px}
   .mk .price{font-size:21px}
   .mk-meta{flex-direction:column;gap:2px}
   .ann{grid-template-columns:auto minmax(0,1fr) auto;row-gap:6px}
-  .ann .ann-st{grid-column:2;justify-self:start}
-  .ann .btn{grid-column:3}
   .jr-balls{max-width:40%}
 
   .sell-card{grid-template-columns:minmax(0,1fr);justify-items:center;text-align:center}
@@ -2942,12 +3060,12 @@ const specById = id => S.specs.find(s=>s.id===id);
 const LOANER = {id:null, seed:hash("pretee"), type:"bille", family:0, pal:5, shiny:0, at:0, loan:true};
 const ownActive = () => specById(S.active) || [...S.specs].sort(tierSort)[0];
 const activeSpec = () => ownActive() || LOANER;
-function slotsOwned(){ const m=new Map(); S.specs.forEach(s=>{const k=slotKey(s); if(!m.has(k)) m.set(k,[]); m.get(k).push(s)}); return m }
+function slotsOwned(list=S.specs){ const m=new Map(); list.forEach(s=>{const k=slotKey(s); if(!m.has(k)) m.set(k,[]); m.get(k).push(s)}); return m }
 const TOTAL_SLOTS = TK.length*FAMILIES.length;              // cases de l'album : une par taille × décor
 // Chaque case se remplit coloris par coloris : l'album compte toutes les billes différentes (taille × décor × coloris)
 const colorKey = s => s.type+"|"+s.family+"|"+s.pal;
 const ALBUM_TOTAL = TOTAL_SLOTS*BASE_PALS;
-function albumFound(){ const set=new Set(); S.specs.forEach(s=>{ if(s.pal<BASE_PALS) set.add(colorKey(s)) }); return set }
+function albumFound(list=S.specs){ const set=new Set(); list.forEach(s=>{ if(s.pal<BASE_PALS) set.add(colorKey(s)) }); return set }
 const casePals = list => new Set(list.filter(x=>x.pal<BASE_PALS).map(x=>x.pal)).size;
 // bille affichée sur la case : celle que tu as choisie, sinon ta shiny, sinon la dernière trouvée
 function coverOf(list){ const pin=(S.cover||{})[slotKey(list[0])]; return list.find(x=>x.id===pin) || [...list].sort(tierSort)[0] }
@@ -3032,11 +3150,11 @@ function ask({title, text="", extra="", balls=[], ok="Confirmer", no="Annuler", 
       <h2 id="ask-t">${esc(title)}</h2>${text?`<p>${text}</p>`:""}${extra}
       <div class="ask-btns"><button class="btn btn-ghost" data-ask="0">${esc(no)}</button><button class="btn ${danger?"btn-danger":"btn-yellow"}" data-ask="1">${esc(ok)}</button></div></div>`;
     el.hidden = false;
-    const done = v => { el.hidden = true; el.innerHTML = ""; el.onclick = null; document.removeEventListener("keydown", key, true); res(v) };
-    const key = e => { if(e.key==="Escape"){ e.stopPropagation(); done(false) } };
+    const done = v => { ask.val = el.querySelector("#ask-val")?.value; el.hidden = true; el.innerHTML = ""; el.onclick = null; document.removeEventListener("keydown", key, true); res(v) };
+    const key = e => { if(e.key==="Escape"){ e.stopPropagation(); done(false) } else if(e.key==="Enter" && e.target.id==="ask-val"){ e.preventDefault(); done(true) } };
     el.onclick = e => { e.stopPropagation(); const b = e.target.closest("[data-ask]"); if(b) done(b.dataset.ask==="1"); else if(e.target===el) done(false) };
     document.addEventListener("keydown", key, true);
-    el.querySelector('[data-ask="1"]').focus();
+    const inp = el.querySelector("#ask-val"); if(inp){ inp.focus(); inp.select() } else el.querySelector('[data-ask="1"]').focus();
   });
 }
 const nbBilles = l => { const n = (l||[]).length; return n ? `${n} bille${n>1?"s":""}` : "rien" };
@@ -3114,6 +3232,7 @@ const ICON = {
   shield:'<path d="M12 3l7.5 3v5.5c0 4.6-3.2 8.3-7.5 9.5-4.3-1.2-7.5-4.9-7.5-9.5V6z"/><path d="M8.5 12l2.5 2.5 4.5-5"/>',
   gift:'<rect x="3.5" y="8" width="17" height="4" rx="1"/><path d="M5 12v8h14v-8M12 8v12M12 8C10.5 4 7 4 7 6s3 2 5 2c2 0 5 0 5-2s-3.5-2-5 2"/>',
   star:'<path d="M12 3.5l2.6 5.4 5.9.8-4.3 4.1 1 5.8L12 16.8l-5.2 2.8 1-5.8-4.3-4.1 5.9-.8z"/>',
+  gavel:'<path d="M13.2 3.6l7.2 7.2M11.4 5.4l7.2 7.2M12.3 4.5L8 8.8l7.2 7.2 4.3-4.3"/><path d="M11.6 12.4L4 20"/><path d="M13 21h8"/>',
 };
 const ic = (k,s=22,sw=2) => `<svg width="${s}" height="${s}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="${sw}" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${ICON[k]}</svg>`;
 const COIN = `<svg class="coin" viewBox="0 0 24 24" aria-hidden="true"><path d="M6.6 12 1.6 8.1l.9 3.9-.9 3.9z" fill="#FF9FD0" stroke="#D9468F" stroke-width="1" stroke-linejoin="round"/><path d="M17.4 12l5-3.9-.9 3.9.9 3.9z" fill="#FF9FD0" stroke="#D9468F" stroke-width="1" stroke-linejoin="round"/><circle cx="12" cy="12" r="6.3" fill="#FF5FA8" stroke="#D9468F" stroke-width="1.2"/><path d="M8.3 9.6c2.2.8 5 3.9 7 6.2M10 6.6c1.9 1.2 4.7 4.6 6 7.1" stroke="#fff" stroke-width="1.4" opacity=".8" fill="none" stroke-linecap="round"/><circle cx="9.8" cy="9.4" r="1.2" fill="#fff" opacity=".7"/></svg>`;
@@ -3217,41 +3336,43 @@ const FMT_GOAL = [32,32,30,28,24,20];
 // tailles à réunir pour un décor, selon sa rareté (de la Mini bille jusqu'à…)
 const FAM_SIZES = [6,6,5,4,2], FAM_REW = [450,750,550,850,500];
 const upTo = n => ({bille:"à la Bille", chinoise:"à la Bille chinoise", calot:"au Calot", boulet:"au Boulet", mammouth:"au Mammouth"})[TK[n-1]];
+// les succès ne comptent pas les billes secrètes (trop faciles à avoir) : elles ont leur succès à elles, « Détective de la cour »
+const SC = () => S.specs.filter(x=>!x.secret);
 const CHALLENGES = [
   ...TK.map((t,i)=>({id:"fmt-"+t, icon:"layers", title:FMT_GOAL[i]>=FAMILIES.length?`Tous les décors en ${TYPES[t].label}`:`${FMT_GOAL[i]} décors en ${TYPES[t].label}`,
     desc:FMT_GOAL[i]>=FAMILIES.length?`Trouve les ${FAMILIES.length} décors au format ${TYPES[t].label}.`:`Trouve ${FMT_GOAL[i]} décors différents (sur ${FAMILIES.length}) au format ${TYPES[t].label}.`, goal:Math.min(FMT_GOAL[i],FAMILIES.length),
-    prog:()=>FAMILIES.filter((_,f)=>S.specs.some(s=>s.type===t&&s.family===f)).length,
+    prog:()=>FAMILIES.filter((_,f)=>SC().some(s=>s.type===t&&s.family===f)).length,
     rew:{j:[400,500,700,900,1200,2500][i], bag:i>=3?"collector":"premium", title:t==="mammouth"?"Maître du Mammouth":null}})),
   ...FAMILIES.map((F,f)=>{ const n = FAM_SIZES[F.rar];
     return {id:"fam-"+f, icon:"star", title:n>=TK.length?`${F.name} dans tous les formats`:`${F.name} en ${n} tailles`,
     desc:n>=TK.length?`Un décor ${F.name} dans les ${TK.length} tailles, de la Mini bille au Mammouth.`:`Un décor ${F.name} dans ${n} tailles, de la Mini bille jusqu'${upTo(n)}.`, goal:n,
-    prog:()=>TK.slice(0,n).filter(t=>S.specs.some(s=>s.type===t&&s.family===f)).length,
+    prog:()=>TK.slice(0,n).filter(t=>SC().some(s=>s.type===t&&s.family===f)).length,
     rew:{j:FAM_REW[F.rar], bag:FAM_REW[F.rar]>=700?"premium":"classique"}} }),
   {id:"pal10", icon:"book", title:"Nuancier", desc:"Un même décor dans 10 coloris différents.", goal:10,
-    prog:()=>Math.max(0,...FAMILIES.map((_,f)=>new Set(S.specs.filter(s=>s.family===f&&!isSeason(s)).map(s=>s.pal)).size)), rew:{j:400}},
-  {id:"shiny1", icon:"star", title:"Premier éclat", desc:"Trouve ta première bille shiny dans un sac ou une fusion.", goal:1, prog:()=>S.specs.filter(s=>s.shiny&&!isSeason(s)).length, rew:{j:1000}},
-  {id:"shiny3", icon:"star", title:"Double éclat", desc:"Possède 2 billes shiny trouvées dans les sacs ou les fusions.", goal:2, prog:()=>S.specs.filter(s=>s.shiny&&!isSeason(s)).length, rew:{j:3000, title:"Chasseur d'éclats"}},
-  {id:"big5", icon:"trophy", title:"La cour des grands", desc:"Possède 5 Boulets ou Mammouths.", goal:5, prog:()=>S.specs.filter(s=>tierOf(s)>=BIG).length, rew:{j:400, bag:"premium"}},
-  {id:"mam3", icon:"trophy", title:"Chasseur de mammouths", desc:"Possède 3 Mammouths.", goal:3, prog:()=>S.specs.filter(s=>s.type==="mammouth").length, rew:{j:800, title:"Chasseur de mammouths"}},
+    prog:()=>Math.max(0,...FAMILIES.map((_,f)=>new Set(SC().filter(s=>s.family===f&&!isSeason(s)).map(s=>s.pal)).size)), rew:{j:400}},
+  {id:"shiny1", icon:"star", title:"Premier éclat", desc:"Trouve ta première bille shiny dans un sac ou une fusion.", goal:1, prog:()=>SC().filter(s=>s.shiny&&!isSeason(s)).length, rew:{j:1000}},
+  {id:"shiny3", icon:"star", title:"Double éclat", desc:"Possède 2 billes shiny trouvées dans les sacs ou les fusions.", goal:2, prog:()=>SC().filter(s=>s.shiny&&!isSeason(s)).length, rew:{j:3000, title:"Chasseur d'éclats"}},
+  {id:"big5", icon:"trophy", title:"La cour des grands", desc:"Possède 5 Boulets ou Mammouths.", goal:5, prog:()=>SC().filter(s=>tierOf(s)>=BIG).length, rew:{j:400, bag:"premium"}},
+  {id:"mam3", icon:"trophy", title:"Chasseur de mammouths", desc:"Possède 3 Mammouths.", goal:3, prog:()=>SC().filter(s=>s.type==="mammouth").length, rew:{j:800, title:"Chasseur de mammouths"}},
   {id:"t-pot", icon:"pot", title:"Champion du pot", desc:"Mets 25 billes dans le pot.", goal:25, prog:()=>S.stats.pot, rew:{j:500, title:"Champion du pot"}},
   {id:"t-castle", icon:"castle", title:"Démolisseur de châteaux", desc:"Fais sortir 60 billes du cercle au Château.", goal:60, prog:()=>S.stats.castle, rew:{j:500, title:"Démolisseur"}},
   {id:"t-tic", icon:"tic", title:"Terreur du préau", desc:"Gagne 10 parties de Tic avec une mise.", goal:10, prog:()=>S.stats.tic, rew:{j:600, title:"Terreur du préau"}},
   {id:"t-roi", icon:"trophy", title:"Roi de la cour", desc:"Fais 3 étoiles au Pot et au Château, et gagne une partie de Tic.", goal:3, prog:()=>["pot","chateau","tic"].filter(k=>S.stats.best3[k]).length, rew:{j:800, title:"Roi de la cour"}},
   {id:"t-race", icon:"flag", title:"Maillot jaune", desc:"Gagne 5 courses sur la plage avec une mise.", goal:5, prog:()=>S.stats.race, rew:{j:600, title:"Maillot jaune"}},
   {id:"t-chouchou", icon:"quest", title:"Chouchou de la maîtresse", desc:"Récupère 5 fois le bonus des quêtes du jour.", goal:5, prog:()=>S.stats.bonus, rew:{j:500, title:"Chouchou de la maîtresse"}},
-  {id:"t-caid", icon:"layers", title:"Caïd des billes", desc:"Possède 100 billes en même temps.", goal:100, prog:()=>S.specs.length, rew:{j:700, title:"Caïd des billes"}},
-  {id:"half", icon:"layers", title:"Mi-parcours", desc:"Commence la moitié des cases de l'album (une taille et un décor).", goal:Math.ceil(TOTAL_SLOTS/2), prog:()=>slotsOwned().size, rew:{j:600, bag:"premium"}},
-  {id:"full", icon:"trophy", title:"Album bien rempli", desc:`Commence 170 des ${TOTAL_SLOTS} cases de l'album (une taille et un décor).`, goal:170, prog:()=>slotsOwned().size, rew:{j:3000, bag:"collector"}},
+  {id:"t-caid", icon:"layers", title:"Caïd des billes", desc:"Possède 100 billes en même temps.", goal:100, prog:()=>SC().length, rew:{j:700, title:"Caïd des billes"}},
+  {id:"half", icon:"layers", title:"Mi-parcours", desc:"Commence la moitié des cases de l'album (une taille et un décor).", goal:Math.ceil(TOTAL_SLOTS/2), prog:()=>slotsOwned(SC()).size, rew:{j:600, bag:"premium"}},
+  {id:"full", icon:"trophy", title:"Album bien rempli", desc:`Commence 170 des ${TOTAL_SLOTS} cases de l'album (une taille et un décor).`, goal:170, prog:()=>slotsOwned(SC()).size, rew:{j:3000, bag:"collector"}},
   // paliers de billes trouvées (taille × décor × coloris)
   ...[[25,200],[50,300],[100,500,"premium"],[250,800,"premium"],[500,1200,"collector"],[1000,2000,"collector","Collectionneur fou"],[2000,3500,"collector"],[3000,5000,"collector","Encyclopédie vivante"],[4000,8000,"collector","Grand collectionneur"]]
-    .map(([n,j,bag,title])=>({id:"found-"+(n===ALBUM_TOTAL?"all":n), cat:"album", icon:n===ALBUM_TOTAL?"trophy":"book", title:n===ALBUM_TOTAL?"L'album entier":`${fmt(n)} billes`, desc:n===ALBUM_TOTAL?`Trouve les ${fmt(ALBUM_TOTAL)} billes différentes de l'album.`:`Trouve ${fmt(n)} billes différentes (taille, décor et coloris).`, goal:n, prog:()=>albumFound().size, rew:{j, bag, title}})),
-  {id:"case1", cat:"coloris", icon:"star", title:"Case complète", desc:`Une case dans les ${BASE_PALS} coloris.`, goal:1, prog:()=>[...slotsOwned().values()].filter(l=>casePals(l)===BASE_PALS).length, rew:{j:1500, bag:"collector", title:"Nuancier vivant"}},
-  {id:"case5", cat:"coloris", icon:"star", title:"Cinq cases complètes", desc:`Cinq cases dans les ${BASE_PALS} coloris.`, goal:5, prog:()=>[...slotsOwned().values()].filter(l=>casePals(l)===BASE_PALS).length, rew:{j:4000, bag:"collector"}},
-  {id:"pal24", cat:"coloris", icon:"book", title:"Grand nuancier", desc:"Un même décor dans 24 coloris différents.", goal:24, prog:()=>Math.max(0,...FAMILIES.map((_,f)=>new Set(S.specs.filter(s=>s.family===f&&s.pal<BASE_PALS).map(s=>s.pal)).size)), rew:{j:900}},
-  {id:"allpals", cat:"coloris", icon:"book", title:"Boîte de peinture", desc:`Trouve les ${BASE_PALS} coloris, tous décors et tailles confondus.`, goal:BASE_PALS, prog:()=>new Set(S.specs.filter(s=>s.pal<BASE_PALS).map(s=>s.pal)).size, rew:{j:500, title:"Peintre en billes"}},
-  {id:"leg1", cat:"rare", icon:"star", title:"Légende de poche", desc:"Trouve une bille au décor légendaire (Galaxie ou Aurore).", goal:1, prog:()=>S.specs.filter(s=>FAMILIES[s.family].rar===4).length, rew:{j:500}},
-  {id:"legmam", cat:"rare", icon:"trophy", title:"Légende de la cour", desc:"Un Mammouth au décor épique ou légendaire.", goal:1, prog:()=>S.specs.filter(s=>s.type==="mammouth"&&FAMILIES[s.family].rar>=3).length, rew:{j:5000, title:"Légende de la cour"}},
-  {id:"bigepic", cat:"rare", icon:"star", title:"Géant précieux", desc:"Un Boulet ou un Mammouth au décor épique ou légendaire.", goal:1, prog:()=>S.specs.filter(s=>tierOf(s)>=BIG&&FAMILIES[s.family].rar>=3).length, rew:{j:1000}},
+    .map(([n,j,bag,title])=>({id:"found-"+(n===ALBUM_TOTAL?"all":n), cat:"album", icon:n===ALBUM_TOTAL?"trophy":"book", title:n===ALBUM_TOTAL?"L'album entier":`${fmt(n)} billes`, desc:n===ALBUM_TOTAL?`Trouve les ${fmt(ALBUM_TOTAL)} billes différentes de l'album.`:`Trouve ${fmt(n)} billes différentes (taille, décor et coloris).`, goal:n, prog:()=>albumFound(SC()).size, rew:{j, bag, title}})),
+  {id:"case1", cat:"coloris", icon:"star", title:"Case complète", desc:`Une case dans les ${BASE_PALS} coloris.`, goal:1, prog:()=>[...slotsOwned(SC()).values()].filter(l=>casePals(l)===BASE_PALS).length, rew:{j:1500, bag:"collector", title:"Nuancier vivant"}},
+  {id:"case5", cat:"coloris", icon:"star", title:"Cinq cases complètes", desc:`Cinq cases dans les ${BASE_PALS} coloris.`, goal:5, prog:()=>[...slotsOwned(SC()).values()].filter(l=>casePals(l)===BASE_PALS).length, rew:{j:4000, bag:"collector"}},
+  {id:"pal24", cat:"coloris", icon:"book", title:"Grand nuancier", desc:"Un même décor dans 24 coloris différents.", goal:24, prog:()=>Math.max(0,...FAMILIES.map((_,f)=>new Set(SC().filter(s=>s.family===f&&s.pal<BASE_PALS).map(s=>s.pal)).size)), rew:{j:900}},
+  {id:"allpals", cat:"coloris", icon:"book", title:"Boîte de peinture", desc:`Trouve les ${BASE_PALS} coloris, tous décors et tailles confondus.`, goal:BASE_PALS, prog:()=>new Set(SC().filter(s=>s.pal<BASE_PALS).map(s=>s.pal)).size, rew:{j:500, title:"Peintre en billes"}},
+  {id:"leg1", cat:"rare", icon:"star", title:"Légende de poche", desc:"Trouve une bille au décor légendaire (Galaxie ou Aurore).", goal:1, prog:()=>SC().filter(s=>FAMILIES[s.family].rar===4).length, rew:{j:500}},
+  {id:"legmam", cat:"rare", icon:"trophy", title:"Légende de la cour", desc:"Un Mammouth au décor épique ou légendaire.", goal:1, prog:()=>SC().filter(s=>s.type==="mammouth"&&FAMILIES[s.family].rar>=3).length, rew:{j:5000, title:"Légende de la cour"}},
+  {id:"bigepic", cat:"rare", icon:"star", title:"Géant précieux", desc:"Un Boulet ou un Mammouth au décor épique ou légendaire.", goal:1, prog:()=>SC().filter(s=>tierOf(s)>=BIG&&FAMILIES[s.family].rar>=3).length, rew:{j:1000}},
   {id:"secrets", cat:"rare", icon:"lock", title:"Détective de la cour", desc:"Trouve toutes les billes secrètes.", goal:Object.keys(SECRETS).length, prog:()=>S.specs.filter(s=>s.secret).length, rew:{j:3000, title:"Détective"}},
   {id:"bags50", cat:"habitudes", icon:"bag", title:"Habitué du préau", desc:"Ouvre 50 sacs.", goal:50, prog:()=>S.bags||0, rew:{j:500, bag:"premium"}},
   {id:"bags250", cat:"habitudes", icon:"bag", title:"Sac sans fond", desc:"Ouvre 250 sacs.", goal:250, prog:()=>S.bags||0, rew:{j:1500, bag:"collector", title:"Sac sans fond"}},
@@ -3268,6 +3389,9 @@ const SERIES = [
   {id:"pierres", name:"Les pierres précieuses", desc:"Des pierres dans les coloris des joyaux.", items:[{fam:"Agate",pal:"Rubis"},{fam:"Marbre",pal:"Saphir"},{fam:"Cristal",pal:"Émeraude"},{fam:"Nacrée",pal:"Opale"}], rew:{j:6000, bag:"collector", title:"Joaillier"}},
   {id:"feuglace", name:"Le feu et la glace", desc:"Du plus chaud au plus froid.", items:[{fam:"Lave"},{fam:"Givrée"},{pal:"Volcan"},{pal:"Glacier"}], rew:{j:400, bag:"classique"}},
   {id:"cosmos", name:"Le système solaire", desc:"Les décors venus d'ailleurs.", items:[{fam:"Globe"},{fam:"Planète"},{fam:"Galaxie"},{fam:"Aurore"}], rew:{j:2000, bag:"collector", title:"Astronome"}},
+  {id:"grenier", name:"Le grenier de papi", desc:"Les billes d'autrefois, retrouvées dans une vieille boîte en fer.", items:[{fam:"Terre"},{fam:"Oignon"},{fam:"Opaline"},{fam:"Tourbillon"}], rew:{j:400, bag:"classique"}},
+  {id:"foire", name:"La fête foraine", desc:"Paillettes, rubans et barbe à papa.", items:[{fam:"Arlequin"},{fam:"Ruban"},{fam:"Pailletée"},{pal:"Pop"},{pal:"Sucre d'orge"}], rew:{j:400, bag:"classique"}},
+  {id:"atelier", name:"L'atelier du bricoleur", desc:"Des billes solides comme des outils.", items:[{fam:"Acier"},{fam:"Fumée"},{fam:"Craquelée"},{pal:"Cuivre"},{pal:"Pétrole"}], rew:{j:1200, bag:"premium", title:"Bricoleur"}},
   {id:"grands", name:"Les grands formats", desc:"De la plus petite à la plus grosse, dans un même décor.", items:TK.map(type=>({type})), same:"family", rew:{j:1200, bag:"premium", title:"Toutes tailles"}},
 ];
 const seriesMatch = (it,x) => (!it.fam || x.family===FAM_ID(it.fam)) && (!it.pal || x.pal===PAL_ID(it.pal)) && (!it.type || x.type===it.type);
@@ -3276,10 +3400,10 @@ const seriesLabel = it => [it.type?TYPES[it.type].label:"", it.fam||"", it.pal?(
 function seriesFill(se){
   if(se.same==="family"){
     let best=null;
-    FAMILIES.forEach((_,f)=>{ const got=se.items.map(it=>S.specs.filter(x=>x.family===f&&seriesMatch(it,x)).sort(tierSort)[0]); const n=got.filter(Boolean).length; if(!best||n>best.n) best={n,got,f} });
+    FAMILIES.forEach((_,f)=>{ const got=se.items.map(it=>SC().filter(x=>x.family===f&&seriesMatch(it,x)).sort(tierSort)[0]); const n=got.filter(Boolean).length; if(!best||n>best.n) best={n,got,f} });
     return best.got;
   }
-  return se.items.map(it=>S.specs.filter(x=>seriesMatch(it,x)).sort(tierSort)[0]);
+  return se.items.map(it=>SC().filter(x=>seriesMatch(it,x)).sort(tierSort)[0]);
 }
 const seriesProg = se => seriesFill(se).filter(Boolean).length;
 const seriesClaimable = () => SERIES.filter(se=>!(S.seriesDone||[]).includes(se.id) && seriesProg(se)>=se.items.length).length;
@@ -3818,19 +3942,24 @@ function viewHome(){
     <div class="hm-finds">${recent.map(s=>`<button class="m-card hm-f" data-action="spec" data-id="${s.id}"${unseen.has(s.id)?` data-unseen="${s.id}"`:""}>${unseen.has(s.id)?'<span class="new">Nouveau</span>':""}<span class="ball">${mImg(s,160,Math.round(58*scaleOf(s.type)+8))}</span><b>${esc(specName(s))}</b>${typePill(s.type)}</button>`).join("")}</div>
   </section>
 
-  <section class="panel">
-    <div class="panel-head"><h2>Ma boîte à billes</h2><span class="sample-tag">${fmt(found.size)} / ${fmt(ALBUM_TOTAL)} billes · ${slots.size} / ${TOTAL_SLOTS} cases</span><button class="see-all" data-action="nav" data-view="collection">Ouvrir ${ic("chev",14)}</button></div>
-    <div class="hm-sizes">${TK.map((t,i)=>{
-      const have = FAMILIES.filter((_,f)=>slots.has(t+"|"+f)).length;
-      const own = S.specs.filter(s=>s.type===t).sort(tierSort)[0];
-      return `<button class="hm-size" data-action="album-type" data-type="${t}"><span class="ball">${mImg(own||SHOWCASE[i],120,Math.round(40*scaleOf(t)+6),"")}</span><b>${TYPES[t].label}</b><small>${have} / ${FAMILIES.length} cases</small><span class="bar"><i style="width:${have/FAMILIES.length*100}%;background:${TYPES[t].rc}"></i></span></button>` }).join("")}</div>
-  </section>
-
-  <section class="panel feed">
-    <div class="panel-head"><h2>Dans la cour</h2><span class="sample-tag">Trouvailles des autres joueurs (simulées)</span></div>
-    <ul id="feed-list">${feedItems()}</ul>
-  </section>
+  ${homeCour()}
 </div>`;
+}
+// l'accueil : ce qui t'attend dans la cour de récré (trocs, copains, enchères, classement)
+function homeCour(){
+  if(!srvOn()) return `<section class="panel hm-cour off"><span class="hc-ic">${ic("cour",26)}</span><div><b>La cour de récré</b>
+      <p class="meta">Avec un compte, ajoute tes copains, troque tes billes, vends-les au marché et grimpe au classement.</p></div>
+      ${window.Cloud?.available ? `<button class="btn btn-yellow btn-sm" data-action="acct-signup">Créer un compte</button>` : ""}</section>`;
+  courLoad("moi"); courLoad("encheres"); courLoad("classement");
+  const M = cour.moi, E = cour.encheres||[], dep = E.filter(x=>!x.en_tete).length, C = cour.classement?.moi, req = (M?.recues||[]).length;
+  const tile = (tab, icon, titre, txt, hot) => `<button class="hc-t${hot?" hot":""}" data-action="cour-go" data-tab="${tab}">${ic(icon,20,2.2)}<b>${titre}</b><small>${txt}</small></button>`;
+  return `<section class="panel hm-cour"><div class="panel-head"><h2>Ta cour de récré</h2><button class="see-all" data-action="cour-go" data-tab="copains">Y aller ${ic("chev",14)}</button></div>
+    <div class="hc-grid">
+      ${tile("troc","swap", M?.trocs ? `${M.trocs} troc${M.trocs>1?"s":""} à voir` : "Troc", M?.trocs ? "Réponds vite !" : "Échange avec tes copains", M?.trocs)}
+      ${tile("copains","users", req ? `${req} demande${req>1?"s":""}` : `${(M?.amis||[]).length} copain${(M?.amis||[]).length>1?"s":""}`, req ? "Ils veulent être tes copains" : "Vois leurs vitrines", req)}
+      ${tile("marche","gavel", dep ? `Dépassé sur ${dep} enchère${dep>1?"s":""}` : E.length ? `En tête sur ${E.length} enchère${E.length>1?"s":""}` : "Le marché", dep ? "Refais une offre avant la fin !" : E.length ? "Garde ta place" : "Achète ou mets aux enchères", dep)}
+      ${tile("classement","trophy", C ? `${rangTxt(C.rang)} au classement` : "Classement", C ? `${fmt(C.total)} pts` : "Qui a la plus belle collection ?")}
+    </div></section>`;
 }
 
 /* =====================================================================
@@ -3987,11 +4116,11 @@ function goalsPanel(){
       <span class="g-main"><b>${g.title}</b><small>${g.text}</small>
         <span class="q-prog"><span class="bar"><i class="${g.p>=g.goal?"done":""}" style="width:${Math.min(100,g.p/g.goal*100)}%"></i></span><small>${fmt(Math.min(g.p,g.goal))} / ${fmt(g.goal)}</small></span></span>
       <span class="g-cta">${g.cta} ${ic("chev",13)}</span></button>`).join("")}</div>
-    <h3 class="sub-h">Ma liste de souhaits <small>${(S.wish||[]).length} / ${WISH_MAX}</small></h3>
+    ${wish.length ? `<h3 class="sub-h">Ma liste de souhaits <small>${(S.wish||[]).length} / ${WISH_MAX}</small></h3>` : ""}
     ${wish.length ? `<div class="wish-row">${wish.map(k=>{ const w=wishSpec(k), got=wishFound(k);
         return `<button class="wish${got?" got":""}" data-action="${got?"sheet":"wish-info"}" data-k="${k}" data-type="${w.type}" data-fam="${w.family}">${got?mImg(S.specs.filter(x=>colorKey(x)===k).sort(tierSort)[0],100,44,""):`<span class="sil" style="--c1:${PALETTES[w.pal][1]};--c2:${PALETTES[w.pal][2]}"></span>`}
           <b>${esc(specName(w))}</b><small>${got?"Trouvée !":TYPES[w.type].label+" · "+oneIn(chanceOf(w))}</small></button>` }).join("")}</div>`
-      : `<p class="meta">Chasse une bille précise : dans ta boîte à billes, ouvre une case et touche un coloris qui te manque pour l'ajouter ici. On te prévient dès qu'elle tombe d'un sac.</p>`}
+      : `<p class="wish-empty">${ic("star",14,2.4)} Une bille te fait rêver ? Dans ta boîte à billes, touche un coloris qui te manque : on te prévient dès qu'il tombe d'un sac.</p>`}
   </section>`;
 }
 
@@ -4503,10 +4632,10 @@ function openModal(id, pv){
       <p class="desc">${F.desc}${s.shiny?` ${SHINIES[s.shiny].desc}`:""}</p>
       <dl class="facts">
         <dt>Format</dt><dd>${T.label} · ${T.mm} mm</dd>
-        <dt>Décor</dt><dd>${F.name} · ${DECOR_RAR[F.rar].name} <small class="meta">(${famOdds(s.family)} a ce décor)</small></dd>
+        <dt>Décor</dt><dd>${F.name} · <b style="color:${DECOR_RAR[F.rar].c}">${DECOR_RAR[F.rar].name}</b></dd>
         <dt>Coloris</dt><dd>${PALETTES[s.pal][0]}</dd>
         <dt>Chance</dt><dd>${s.secret?"Bille secrète : une seule par joueur":isSeason(s)?"Exclusive au passe de saison":`${oneIn(chanceOf(s))} <small class="meta">par bille du sac gratuit</small>`}</dd>
-        ${pv||!editionOf(s)?"":`<dt>Édition</dt><dd>${editionOf(s)===1?`<span class="first-pill">Première mondiale</span>`:`n° ${fmt(editionOf(s))}`} <small class="meta">de ce modèle trouvée dans le monde${s.edn?"":" (estimation)"}</small></dd>`}
+        ${pv||!editionOf(s)?"":`<dt>Édition</dt><dd>${editionOf(s)===1?`<span class="first-pill">Première mondiale</span>`:`n° ${fmt(editionOf(s))} <small class="meta">de ce modèle trouvée dans le monde${s.edn?"":" (estimation)"}</small>`}</dd>`}
         ${pv||!s.no?"":`<dt>N° de série</dt><dd><code>#${String(s.no).padStart(7,"0")}</code> <small class="meta">unique, dans l'ordre d'apparition</small></dd>`}
         ${pv||!SRC_LABEL[s.src]?"":`<dt>Trouvée</dt><dd>${SRC_LABEL[s.src]}${s.via&&s.found?` <small class="meta">le ${dateFr(s.found)}</small>`:""}</dd>`}
         ${pv?"":`<dt>Motif</dt><dd><code>${serial(s)}</code></dd>
@@ -6169,14 +6298,16 @@ function viewSoon(){
    LA COUR DE RÉCRÉ : copains, troc, marché (supabase/cour.sql)
    Tout se décide sur le serveur ; ici on affiche et on envoie les demandes.
    ===================================================================== */
-var cour = {ok:null, moi:null, fil:null, trocs:null, marche:null, annonces:null, loading:{}, f:{taille:"", shiny:"", tri:"recent"},
+var cour = {ok:null, moi:null, fil:null, trocs:null, marche:null, annonces:null, encheres:null, classement:null, absent:{}, loading:{}, f:{taille:"", shiny:"", tri:"recent", genre:""},
   compose:null, sell:null, specs:[]};
 const COUR_ERR = {inconnu:"Personne ne s'appelle comme ça dans la cour.", soi_meme:"C'est toi ! Donne plutôt ton pseudo à tes copains.",
   deja_ami:"Vous êtes déjà copains.", trop_amis:"Tu as déjà 200 copains !", trop_demandes:"Tu as déjà beaucoup de demandes en attente.",
   plus_de_demande:"Cette demande n'existe plus.", pas_ami:"Vous n'êtes pas (ou plus) copains.", bille_indisponible:"Une de ces billes n'est plus disponible.",
   troc_invalide:"Ce troc n'est pas possible.", trop_trocs:"Tu as déjà 20 trocs en attente.", plus_de_troc:"Ce troc n'existe plus.",
   prix_invalide:"Choisis un prix entre 1 et 1 000 000.", duree_invalide:"Choisis une durée : 1, 3 ou 7 jours.", trop_annonces:"Tu as déjà 30 billes en vente.", plus_en_vente:"Cette bille n'est plus en vente.",
-  ta_bille:"C'est ta propre bille !", pas_assez:`Il te manque des ${CUR.many}.`, reseau:"Pas de connexion : réessaie dans un instant."};
+  ta_bille:"C'est ta propre bille !", pas_assez:`Il te manque des ${CUR.many}.`, reseau:"Pas de connexion : réessaie dans un instant.",
+  enchere_finie:"Cette enchère est terminée.", deja_en_tete:"Tu as déjà la meilleure offre !", offre_trop_basse:"Quelqu'un a déjà proposé plus : regarde la nouvelle offre minimum.",
+  deja_des_offres:"Des joueurs ont déjà enchéri : l'enchère doit aller jusqu'au bout.", en_enchere:"Cette bille est aux enchères avec des offres : elle est promise au gagnant."};
 function courFail(e){ console.warn("Cour :", e); toast(COUR_ERR[e?.code] || "Oups, ça n'a pas marché. Réessaie dans un instant.") }
 const courCount = () => cour.moi ? (cour.moi.trocs||0) + (cour.moi.recues||[]).length + (cour.unread||0) : 0;
 // charge une partie de la cour, puis réaffiche si on y est toujours
@@ -6184,11 +6315,12 @@ function courLoad(kind, force){
   if(!srvOn() || cour.loading[kind] || (cour[kind] && !force)) return;
   cour.loading[kind] = true;
   const f = {moi:()=>Cloud.cour.moi(), fil:()=>Cloud.cour.fil(), trocs:()=>Cloud.cour.trocs(),
-    marche:()=>Cloud.cour.marche(cour.f), annonces:()=>Cloud.cour.annonces(), journal:()=>Cloud.cour.journal(0, 120)}[kind];
+    marche:()=>Cloud.cour.marche(cour.f), annonces:()=>Cloud.cour.annonces(), journal:()=>Cloud.cour.journal(0, 120),
+    encheres:()=>Cloud.cour.encheres(), classement:()=>Cloud.cour.classement(ui.clPortee)}[kind];
   f().then(d=>{ cour[kind] = d; cour.ok = true;
-      if(ui.view==="cour" || (kind==="fil" && ui.view==="accueil")) renderView();
+      if(ui.view==="cour" || (["fil","moi","encheres","classement"].includes(kind) && ui.view==="accueil")) renderView();
       if(kind==="moi") renderNav() },
-    e=>{ if(e.code==="serveur_absent") cour.ok = false; else if(ui.view==="cour") courFail(e); if(ui.view==="cour") renderView() })
+    e=>{ if(e.code==="serveur_absent"){ if(kind==="moi") cour.ok = false; else cour.absent[kind] = true } else if(ui.view==="cour") courFail(e); if(ui.view==="cour") renderView() })
     .finally(()=>{ cour.loading[kind] = false });
 }
 const courRefresh = (...kinds) => kinds.forEach(k=>courLoad(k, true));
@@ -6198,8 +6330,19 @@ const courBall = (s, px=46, note) => `<button data-action="cour-see" data-k="${c
 const courName = s => `${TYPES[s.type].label} ${specName(s)}`;
 const timeAgo = t => ago(typeof t==="number" ? t : Date.parse(t));
 // temps restant avant la fin d'une annonce
-function finDans(fin){ const ms = fin - Date.now(); if(!(ms>0)) return "Se termine"; const h = Math.floor(ms/36e5), d = Math.floor(h/24);
-  return d>=1 ? `Encore ${d} j ${h%24} h` : h>=1 ? `Encore ${h} h` : `Encore ${Math.max(1,Math.floor(ms/6e4))} min` }
+// (la dernière heure se compte à la seconde : c'est là que tout se joue pour les enchères)
+function finDans(fin){ const ms = fin - Date.now(); if(!(ms>0)) return "Terminé"; const h = Math.floor(ms/36e5), d = Math.floor(h/24), m = Math.floor(ms/6e4)%60, sec = Math.floor(ms/1000)%60;
+  return d>=1 ? `Encore ${d} j ${h%24} h` : h>=1 ? `Encore ${h} h ${String(m).padStart(2,"0")}` : m>=1 ? `Encore ${m} min ${String(sec).padStart(2,"0")} s` : `Encore ${sec} s` }
+// le temps restant, qui se met à jour tout seul (data-fin) ; une enchère qui se termine sous nos yeux recharge le marché
+const finSpan = (fin, ench) => `<span class="fin${fin-Date.now()<36e5?" soon":""}" data-fin="${fin}"${ench?" data-ench":""}>${ic("clock",13,2.4)} <i>${finDans(fin)}</i></span>`;
+setInterval(()=>{
+  if(ui.view!=="cour") return;
+  let fini = false;
+  document.querySelectorAll("[data-fin]").forEach(el=>{ const fin = +el.dataset.fin, t = el.querySelector("i"); if(!t) return;
+    t.textContent = finDans(fin); el.classList.toggle("soon", fin-Date.now()<36e5);
+    if(el.hasAttribute("data-ench") && fin<=Date.now() && !el.dataset.done){ el.dataset.done = 1; fini = true } });
+  if(fini) setTimeout(()=>{ courRefresh("marche","annonces","encheres"); ecoRefresh(); syncMarbles(true) }, 1500);
+}, 1000);
 
 // les billes qui ont changé de main (vendues, troquées, achetées) : la boîte se cale sur la base
 async function syncMarbles(quiet){
@@ -6225,7 +6368,7 @@ setInterval(()=>{ if(srvOn() && document.visibilityState==="visible"){ courLoad(
 // ---------- le journal : l'historique du troc et du marché, et les nouvelles ----------
 // ce qui mérite d'être annoncé : ce que les autres ont fait (pas ce qu'on a fait soi-même)
 const isNews = e => e.k==="troc" ? (e.statut==="attente" || e.statut==="impossible" || (e.moi_de ? ["accepte","refuse","contre"] : ["annule"]).includes(e.statut))
-  : e.k==="vendue" || e.k==="expiree";
+  : ["vendue","expiree","gagnee","depasse","offre"].includes(e.k);
 function journalInfo(e){
   const o = `<b>${esc(e.autre||"?")}</b>`, b = e.bille ? `<b>${esc(courName(e.bille))}</b>` : "", pr = `${fmt(e.prix||0)} ${CUR.many}`;
   if(e.k==="troc") return {ic:"swap", txt:{
@@ -6235,19 +6378,24 @@ function journalInfo(e){
       annule: e.moi_de ? `Tu as annulé ton troc avec ${o}` : `${o} a annulé son troc`,
       contre: e.moi_de ? `${o} t'a fait une contre-proposition` : `Tu as fait une contre-proposition à ${o}`,
       impossible: `Le troc avec ${o} n'est plus possible : une des billes n'est plus disponible`}[e.statut] || `Troc avec ${o}`};
+  const E = e.enchere;
   return {
-    annonce: {ic:"candy", txt:`Tu as mis ${b} en vente à ${pr}`},
-    vendue: {ic:"candy", txt:`${b} vendue à ${o}`},
-    expiree: {ic:"clock", txt:`Personne n'a acheté ${b} : elle est restée dans ta boîte`},
+    annonce: {ic:E?"gavel":"candy", txt:E ? `Tu as mis ${b} aux enchères à partir de ${pr}` : `Tu as mis ${b} en vente à ${pr}`},
+    vendue: {ic:E?"gavel":"candy", txt:E ? `${b} vendue aux enchères à ${o}` : `${b} vendue à ${o}`},
+    expiree: {ic:"clock", txt:E ? `Personne n'a enchéri sur ${b} : elle est restée dans ta boîte` : `Personne n'a acheté ${b} : elle est restée dans ta boîte`},
     retiree: {ic:"clock", txt:`Tu as retiré ${b} de la vente`},
-    achat: {ic:"bag", txt:`Tu as acheté ${b} à ${o}`}}[e.k] || {ic:"star", txt:""};
+    achat: {ic:"bag", txt:`Tu as acheté ${b} à ${o}`},
+    gagnee: {ic:"trophy", txt:`Tu as gagné l'enchère : ${b} est à toi !`},
+    offre: {ic:"gavel", txt:`${o} a enchéri ${pr} sur ${b}`},
+    mon_offre: {ic:"gavel", txt:`Tu as enchéri ${pr} sur ${b}`},
+    depasse: {ic:"gavel", txt:`${o} a fait une meilleure offre que toi sur ${b} : tes ${CUR.many} te sont rendus`}}[e.k] || {ic:"star", txt:""};
 }
 function journalRow(e, click){
   const J = journalInfo(e), fresh = click && isNews(e) && e.le > (cour.hlSince ?? Infinity);
   const ball = x => click ? courBall(x, 36) : mImg(x,120,36,"");
   const got = (e.recu||[]).map(ball).join("") + bbChip(e.bonbecs_recus), gave = (e.donne||[]).map(ball).join("") + bbChip(e.bonbecs_donnes);
   const balls = e.k==="troc" ? `${got}${got && gave ? `<span class="troc-arrow">${ic("swap",14)}</span>` : ""}${gave}` : e.bille ? ball(e.bille) : "";
-  const amt = e.k==="vendue" ? `<span class="jr-amt plus">+${fmt(e.prix||0)}</span>` : e.k==="achat" ? `<span class="jr-amt">−${fmt(e.prix||0)}</span>` : "";
+  const amt = e.k==="vendue" ? `<span class="jr-amt plus">+${fmt(e.prix||0)}</span>` : e.k==="achat" || e.k==="gagnee" ? `<span class="jr-amt">−${fmt(e.prix||0)}</span>` : "";
   return `<div class="cour-row jr k-${e.k}${fresh?" new":""}"><span class="jr-ic">${ic(J.ic,18)}</span><span class="who">${J.txt}<small>${timeAgo(e.le)}${e.k==="troc"&&e.mot?` · « ${esc(e.mot)} »`:""}</small></span>${amt}<span class="jr-balls">${balls}</span></div>`;
 }
 // « Aujourd'hui », « Hier », puis le jour en toutes lettres
@@ -6283,8 +6431,9 @@ function courNews(welcome){
     cour.journal = null; if(ui.view==="cour" && ui.courTab==="journal") courLoad("journal");
     if(!news.length) return;
     if(!(ui.view==="cour" && ui.courTab==="journal")) cour.unread = (cour.unread||0) + news.length;
-    if(news.some(e=>e.k==="troc")) courRefresh("trocs"); if(news.some(e=>e.k!=="troc")) courRefresh("annonces");
-    if(news.some(e=>e.k==="vendue" || (e.k==="troc" && e.statut==="accepte" && (e.bonbecs_recus||e.bonbecs_donnes)))) ecoRefresh();
+    if(news.some(e=>e.k==="troc")) courRefresh("trocs"); if(news.some(e=>e.k!=="troc")) courRefresh("annonces","encheres","marche");
+    if(news.some(e=>["vendue","depasse","gagnee"].includes(e.k) || (e.k==="troc" && e.statut==="accepte" && (e.bonbecs_recus||e.bonbecs_donnes)))) ecoRefresh();
+    if(news.some(e=>e.k==="gagnee")) syncMarbles(true);
     renderNav(); if(ui.view==="cour") renderView();
     const free = document.getElementById("modal").hidden && document.getElementById("ov").hidden && document.getElementById("ask").hidden;
     if(welcome && free) openNews(news);
@@ -6316,6 +6465,73 @@ function buyAnnonce(id){
   }, e=>{ courFail(e); courRefresh("marche") });
 }
 
+// ---------- le classement : des points pour la collection (calculés par le serveur, supabase/cour.sql) ----------
+// mêmes valeurs que dans supabase/cour.sql (pts_taille, mult_decor, pts_shiny, séries)
+const SCORE = {taille:[10,15,20,30,60,120], decor:[1,1.5,2,3,5], shiny:[150,300,600], serieDecor:200, serie:20};
+// une série à thème terminée : un quart de sa récompense en bonbecs (même table dans supabase/cour.sql : interne.series)
+const seriePts = se => Math.round(se.rew.j/4);
+const rangTxt = r => r===1 ? "1er" : `${r}e`;
+// les séries presque finies : de quoi viser le prochain palier (d'après les billes de la boîte qui comptent)
+function scoreGoals(){
+  const mine = S.specs.filter(s=>s.srv && !s.secret && s.src!=="test");
+  const parDecor = new Map(), parTaille = new Map(), cases = new Set(mine.map(slotKey));
+  mine.forEach(s=>{ if(!parDecor.has(s.family)) parDecor.set(s.family, new Set()); parDecor.get(s.family).add(s.type);
+    if(!parTaille.has(s.type)) parTaille.set(s.type, new Set()); parTaille.get(s.type).add(s.family) });
+  const g = [];
+  parDecor.forEach((tailles, f)=>{ if(tailles.size>=3 && tailles.size<TK.length) g.push({titre:`Le décor ${FAMILIES[f].name} dans les 6 tailles`, n:tailles.size, of:TK.length,
+    pts:Math.round(SCORE.serieDecor*SCORE.decor[FAMILIES[f].rar]), manque:`Il te manque : ${TK.filter(t=>!tailles.has(t)).map(t=>TYPES[t].pl).join(", ")}`}) });
+  parTaille.forEach((decors, t)=>{ if(decors.size>=FAMILIES.length/2 && decors.size<FAMILIES.length) g.push({titre:`Tous les décors en ${TYPES[t].pl}`, n:decors.size, of:FAMILIES.length,
+    pts:SCORE.serie*SCORE.taille[TIDX[t]], manque:`Encore ${FAMILIES.length-decors.size} décor${FAMILIES.length-decors.size>1?"s":""} à trouver`}) });
+  SERIES.forEach(se=>{ const n = seriesFill(se).filter(Boolean).length; if(n>=se.items.length/2 && n<se.items.length)
+    g.push({titre:`La série « ${se.name} »`, n, of:se.items.length, pts:seriePts(se), manque:`Il te manque : ${se.items.filter((it,i)=>!seriesFill(se)[i]).map(seriesLabel).join(", ")}`}) });
+  g.sort((a,b)=>(a.of-a.n)-(b.of-b.n) || b.pts-a.pts);
+  if(g.length<3) g.push({titre:"Une nouvelle case dans l'album", n:cases.size, of:TOTAL_SLOTS, pts:SCORE.taille[0], manque:"Chaque nouvelle taille ou nouveau décor rapporte des points (et bien plus s'il est rare)"});
+  return g.slice(0,3);
+}
+function courClassement(){
+  if(cour.absent.classement) return `<section class="panel cour-lock">${ic("trophy",40)}<h2>Le classement arrive bientôt</h2><p class="cour-lead">Il est prêt, il reste juste à l'installer sur le serveur.</p></section>`;
+  courLoad("classement");
+  const C = cour.classement; if(!C) return courWait();
+  const P = ui.clPortee || "tous", M = C.moi || {rang:C.nb, total:0, cases:0, pts_cases:0, pts_coloris:0, pts_shiny:0, pts_series:0, nb_series:0};
+  const amis = new Set((cour.moi?.amis||[]).map(a=>a.id));
+  const chip = (k,l) => `<button class="chip" data-action="cl-portee" data-p="${k}" aria-pressed="${P===k}">${l}</button>`;
+  const face = (x, px) => x.active ? mImg(x.active,160,Math.round(px*(.55+.45*scaleOf(x.active.type))),"") : avatarIni(x.pseudo, Math.round(px*.8));
+  const voir = x => !x.moi && amis.has(x.id) ? ` data-action="ami-voir" data-id="${x.id}" role="button" tabindex="0"` : "";
+  const top = C.liste.slice(0,3), podium = [top[1], top[0], top[2]].filter(Boolean);
+  const row = x => `<div class="cl-row${x.moi?" me":""}"${voir(x)}><span class="cl-rank">${x.rang}</span><span class="cl-face">${face(x,40)}</span>
+      <span class="who">${esc(x.pseudo)}${x.moi?` <em>toi</em>`:""}<small>${x.titre ? `${ic("trophy",11,2.4)} ${esc(x.titre)} · ` : ""}${fmt(x.cases)} case${x.cases>1?"s":""}</small></span>
+      <span class="cl-pts">${fmt(x.total)}<small>pts</small></span></div>`;
+  const tile = (icon, lbl, pts, sub) => `<div class="cl-tile">${ic(icon,18,2.2)}<b>${fmt(pts)}</b><small>${lbl}</small>${sub?`<i>${sub}</i>`:""}</div>`;
+  return `<div class="cour-grid">
+    <section class="panel cl-me">
+      <div class="cl-me-top"><div class="cl-medal r${Math.min(M.rang,4)}"><b>${rangTxt(M.rang)}</b><small>sur ${C.nb}</small></div>
+        <div class="cl-score"><small>Ton score</small><b>${fmt(M.total)}<span> pts</span></b>
+          ${M.rang>1 && C.liste[M.rang-2] ? `<p>Plus que <b>${fmt(C.liste[M.rang-2].total - M.total + 1)} pts</b> pour passer devant ${esc(C.liste[M.rang-2].pseudo)} !</p>` : M.rang===1 && C.nb>1 ? `<p>Tu es en tête ! Garde ta place.</p>` : ""}</div>
+        <div class="chips">${chip("tous","Tout le monde")}${chip("copains","Mes copains")}</div></div>
+      <div class="cl-tiles">${tile("layers","Cases",M.pts_cases,`${fmt(M.cases)} case${M.cases>1?"s":""}`)}${tile("book","Coloris en plus",M.pts_coloris)}${tile("star","Shiny",M.pts_shiny)}${tile("trophy","Séries et collections",M.pts_series,`${M.nb_series} complétée${M.nb_series>1?"s":""}`)}</div>
+    </section>
+    ${podium.length ? `<section class="panel cl-podium-wrap"><div class="cl-podium">${podium.map(x=>`<div class="cl-pod p${x.rang<=3?x.rang:3}${x.moi?" me":""}"${voir(x)}>
+        <span class="cl-face">${face(x, x.rang===1?84:66)}</span><b>${esc(x.pseudo)}</b><span class="cl-pts">${fmt(x.total)}<small>pts</small></span>
+        <span class="cl-step"><i>${x.rang}</i></span></div>`).join("")}</div>
+      ${C.liste.length>3 ? `<div class="cl-list">${C.liste.slice(3).map(row).join("")}</div>` : ""}
+      ${C.moi && !C.liste.some(x=>x.moi) ? `<div class="cl-list"><div class="cl-gap">…</div>${row(Object.assign({pseudo:S.name, moi:true, active:specById(S.active)}, M))}</div>` : ""}
+    </section>` : ""}
+    <div class="row-2">
+      <section class="panel"><div class="panel-head"><h3>${ic("flag",18)} Pour grimper</h3></div>
+        <div class="cl-goals">${scoreGoals().map(g=>`<div class="cl-goal"><div class="g-top"><b>${esc(g.titre)}</b><span class="g-pts">+${fmt(g.pts)}</span></div>
+          <div class="bar"><i style="width:${Math.round(100*g.n/g.of)}%"></i></div><small>${g.n} / ${g.of} · ${esc(g.manque)}</small></div>`).join("")}</div></section>
+      <section class="panel"><div class="panel-head"><h3>${ic("quest",18)} Comment gagner des points</h3></div>
+        <ul class="cl-rules">
+          <li><b>Chaque case de l'album</b><span>${TK.map(t=>`${TYPES[t].label} ${SCORE.taille[TIDX[t]]}`).join(" · ")}</span><small>× la rareté du décor : ${DECOR_RAR.map((r,i)=>`${r.name.toLowerCase()} ×${String(SCORE.decor[i]).replace(".",",")}`).join(", ")}</small></li>
+          <li><b>Chaque coloris en plus</b><span>un cinquième des points de la taille</span><small>Les doubles (même coloris) ne comptent pas.</small></li>
+          <li><b>Chaque shiny différente</b><span>${SHINIES.slice(1).map((x,i)=>`${x.name} ${SCORE.shiny[i]}`).join(" · ")}</span></li>
+          <li><b>Les séries à thème</b><span>${SERIES.map(se=>`${se.name} ${seriePts(se)}`).join(" · ")}</span><small>Celles de l'onglet Séries de ta boîte à billes.</small></li>
+          <li><b>Les grandes collections</b><span>un décor dans les 6 tailles : ${SCORE.serieDecor} × la rareté du décor</span><small>Une taille dans tous les décors, ou une case avec ses ${BASE_PALS} coloris : ${SCORE.serie} × les points de la taille.</small></li>
+        </ul><p class="meta">Seules les billes des sacs, des fusions et du passe comptent (pas les billes de départ ni les secrètes, qui ont leur succès à elles). Une bille vendue ou échangée compte pour son nouveau propriétaire.</p></section>
+    </div>
+  </div>`;
+}
+
 function viewCour(){
   cour.specs = [];
   const head = `<div class="page-head"><div><h1>La cour de récré</h1><p>Retrouve tes copains, troque tes billes et fais de bonnes affaires au marché.</p></div><span class="hand-note">On échange ?</span></div>`;  if(!sync.on) return head + `<section class="panel cour-lock">${ic("cour",40)}<h2>Il te faut un compte</h2>
@@ -6323,11 +6539,11 @@ function viewCour(){
     ${window.Cloud?.available ? `<div class="btns"><button class="btn btn-yellow" data-action="acct-signup">Créer un compte</button><button class="btn btn-ghost" data-action="acct-login">Se connecter</button></div>` : ""}</section>`;
   if(!eco.ready || cour.ok===false) return head + `<section class="panel cour-lock">${ic("cour",40)}<h2>La cour ouvre bientôt</h2>
     <p class="cour-lead">Le serveur de la cour n'est pas encore en place. Reviens un peu plus tard !</p></section>`;
-  courLoad("moi");
+  courLoad("moi"); if(!cour.absent.classement) courLoad("classement");
   const tab = ui.courTab || "copains", M = cour.moi;
   const tb = (k,l,icon,n) => `<button class="cn-tab" role="tab" data-action="cour-tab" data-tab="${k}" aria-selected="${tab===k}">${ic(icon,20,2.2)}<span>${l}</span>${n?`<span class="n">${n}</span>`:""}</button>`;
-  const tabs = `<div class="cour-nav" role="tablist">${tb("copains","Copains","users",(M?.recues||[]).length)}${tb("troc","Troc","swap",M?.trocs||0)}${tb("marche","Marché","candy")}${tb("journal","Historique","clock",cour.unread||0)}</div>`;
-  const body = tab==="troc" ? courTroc() : tab==="marche" ? courMarche() : tab==="journal" ? courJournal() : courCopains();
+  const tabs = `<div class="cour-nav" role="tablist">${tb("copains","Copains","users",(M?.recues||[]).length)}${tb("troc","Troc","swap",M?.trocs||0)}${tb("marche","Marché","candy")}${tb("journal","Historique","clock",cour.unread||0)}${tb("classement","Classement","trophy")}</div>`;
+  const body = tab==="troc" ? courTroc() : tab==="marche" ? courMarche() : tab==="journal" ? courJournal() : tab==="classement" ? courClassement() : courCopains();
   return courHero() + tabs + body;
 }
 const courWait = () => `<p class="empty">Un instant…</p>`;
@@ -6358,7 +6574,7 @@ function courHero(){
   return `<section class="cour-hero">${courScene()}
     <div class="ch-txt"><span class="ch-kick">${ic("cour",14,2.4)} Tout le monde dehors !</span><h1>La cour de récré</h1>
       <p>Retrouve tes copains, troque tes billes et fais de bonnes affaires au marché.</p>
-      ${M ? `<div class="ch-stats"><span>${ic("users",15)} ${n((M.amis||[]).length,"copain","copains")}</span>${M.trocs?`<span class="hot">${ic("swap",15)} ${n(M.trocs,"troc à voir","trocs à voir")}</span>`:""}
+      ${M ? `<div class="ch-stats"><span>${ic("users",15)} ${n((M.amis||[]).length,"copain","copains")}</span>${M.trocs?`<span class="hot">${ic("swap",15)} ${n(M.trocs,"troc à voir","trocs à voir")}</span>`:""}${cour.classement?.moi && (ui.clPortee||"tous")==="tous" ? `<button data-action="cour-tab" data-tab="classement">${ic("trophy",15)} <b>${rangTxt(cour.classement.moi.rang)}</b> au classement</button>` : ""}
         <button data-action="cour-copy" title="Copier ton pseudo pour le donner à tes copains">Ton pseudo : <b>${esc(S.name)}</b> ${ic("copy",14)}</button></div>` : ""}</div>
     <div class="ch-floor" aria-hidden="true">${me ? ball(me, Math.round(46*scaleOf(me.type)+40), "me", "toi") : ""}${amis.map((a,i)=>ball(a.active, Math.round(30*scaleOf(a.active.type)+20), "f"+i, a.pseudo)).join("")}</div>
   </section>`;
@@ -6492,55 +6708,93 @@ function decorSel(v){
 }
 function courMarche(){
   if(cour.sell) return sellView();
-  courLoad("marche"); courLoad("annonces");
-  const L = cour.marche, A = cour.annonces, f = cour.f;
+  courLoad("marche"); courLoad("annonces"); courLoad("encheres");
+  const L = cour.marche, A = cour.annonces, f = cour.f, aucOK = !cour.absent.encheres, ME = aucOK ? (cour.encheres||[]) : [];
   const sel = (id, opts, v) => `<select id="${id}" aria-label="${id}">${opts.map(([k,l])=>`<option value="${k}"${v===k?" selected":""}>${l}</option>`).join("")}</select>`;
-  const card = a => { const x = a.bille, deal = !a.moi && a.moyen && a.prix <= a.moyen*.85, soon = a.fin - Date.now() < 36e5;
-    return `<div class="mk${a.moi?" mine":""}" style="${tstyle(x.type)}">${a.moi ? `<span class="mk-rib">Ta bille</span>` : deal ? `<span class="mk-rib deal">${ic("star",11,2.8)} Bonne affaire</span>` : ""}
-      <span class="mk-vis" data-action="cour-see" data-k="${courSpec(x, a.moi?"Ta bille en vente.":`En vente par ${a.vendeur}.`)}">${mImg(x,160,Math.round(44*scaleOf(x.type)+30),"")}</span>
-      <div class="mk-info"><b>${esc(specName(x))}</b><span class="pills">${typePill(x.type)}${shinyPill(x)}</span>
-      <span class="price">${COIN}${fmt(a.prix)}</span>
-      <small class="avg${deal?" good":""}">${a.moyen ? `Prix moyen : ${fmt(a.moyen)}` : "Pas encore de prix moyen"}</small>
-      <div class="mk-meta"><span>${a.moi ? `${ic("user",13,2.4)} toi` : `${avatarIni(a.vendeur,18)} ${esc(a.vendeur)}`}</span><span class="${soon?"soon":""}">${ic("clock",13,2.4)} ${finDans(a.fin)}</span></div>
-      ${a.moi ? `<button class="btn btn-ghost btn-sm" data-action="mk-retirer" data-id="${a.id}">Retirer</button>`
-        : S.jetons<a.prix ? `<button class="btn btn-yellow btn-sm" disabled>Il te manque ${fmt(a.prix-S.jetons)}</button>`
-        : `<button class="btn btn-yellow btn-sm" data-action="mk-acheter" data-id="${a.id}" data-prix="${a.prix}">Acheter</button>`}</div></div>` };
   const mine = (A||[]), sold = mine.filter(a=>a.vendue).length;
-  const ann = a => { const x = a.bille;
-    return `<div class="ann${a.vendue?" sold":""}">${courBall(x, Math.round(20*scaleOf(x.type)+28), a.vendue?`Vendue à ${a.acheteur||"?"}.`:"Ta bille en vente.")}
-      <span class="who">${esc(specName(x))}<small>${TYPES[x.type].label}${x.shiny?" · shiny":""}</small></span>
-      <span class="price">${COIN}${fmt(a.prix)}</span>
-      ${a.vendue ? `<span class="ann-st">${ic("check",13,3)} Vendue à ${esc(a.acheteur||"?")}</span>` : `<span class="ann-st">${ic("clock",13,2.4)} ${finDans(a.fin)}</span><button class="btn btn-ghost btn-sm" data-action="mk-retirer" data-id="${a.id}">Retirer</button>`}</div>` };
+  const ann = a => { const x = a.bille, E = a.enchere, st = a.vendue ? `<span class="ann-st">${ic("check",13,3)} Vendue à ${esc(a.acheteur||"?")}</span>`
+      : E && a.offre ? `<span class="ann-st hot">${ic("gavel",13,2.4)} ${a.nb_offres} offre${a.nb_offres>1?"s":""} · ${esc(a.meilleur||"?")} en tête</span>${finSpan(a.fin, true)}`
+      : `${E?`<span class="ann-st">${ic("gavel",13,2.4)} Aucune offre</span>`:""}${finSpan(a.fin, E)}<button class="btn btn-ghost btn-sm" data-action="mk-retirer" data-id="${a.id}">Retirer</button>`;
+    return `<div class="ann${a.vendue?" sold":""}${E?" ench":""}">${courBall(x, Math.round(20*scaleOf(x.type)+28), a.vendue?`Vendue à ${a.acheteur||"?"}.`:"Ta bille en vente.")}
+      <span class="who">${esc(specName(x))}<small>${TYPES[x.type].label}${x.shiny?" · shiny":""}${E && !a.vendue ? ` · ${a.offre?"meilleure offre":"mise à prix"}` : ""}</small></span>
+      <span class="price">${COIN}${fmt(a.offre ?? a.prix)}</span><span class="ann-end">${st}</span></div>` };
   return `<div class="cour-grid">
     <section class="panel"><div class="mk-bar"><h3>Le marché</h3>${mine.length ? `<button class="btn btn-ghost btn-sm" data-action="mk-mine">Mes annonces · ${mine.length}</button>` : ""}<button class="btn btn-yellow btn-sm" data-action="mk-vendre">${ic("candy",16)} Vendre une bille</button>
       <div class="cour-form" id="mk-filters">
+        ${aucOK ? sel("mk-genre", [["","Achat et enchères"],["fixe","Achat immédiat"],["enchere","Enchères"]], f.genre) : ""}
         ${sel("mk-taille", [["","Toutes les tailles"], ...TK.map(t=>[t,TYPES[t].pl])], f.taille)}
         ${decorSel(f.decor)}
         ${sel("mk-shiny", [["","Shiny ou pas"],["1","Shiny seulement"],["0","Sans shiny"]], f.shiny)}
-        ${sel("mk-tri", [["recent","Plus récentes"],["prix","Moins chères"],["rare","Plus rares"]], f.tri)}
+        ${sel("mk-tri", [["recent","Plus récentes"],["prix","Moins chères"],["rare","Plus rares"], ...(aucOK?[["fin","Fin bientôt"]]:[])], f.tri)}
       </div></div>
-      <p class="cour-info" style="margin-top:12px">${ic("quest",16)}<span>Chacun fixe son prix, et le vendeur reçoit tous les ${CUR.many}. Le prix moyen montre ce que les joueurs ont payé ce modèle ces 30 derniers jours.</span></p></section>
-    ${!L ? courWait() : L.length ? `<div class="mk-grid">${L.map(card).join("")}</div>` : `<p class="empty">Rien en vente avec ces filtres pour l'instant.${f.taille||f.decor!=null||f.shiny ? `<br><button class="btn btn-ghost btn-sm" style="margin-top:12px" data-action="mk-reset">Effacer les filtres</button>` : ""}</p>`}
+      <p class="cour-info" style="margin-top:12px">${ic("quest",16)}<span>Chacun fixe son prix, et le vendeur reçoit tous les ${CUR.many}. Le prix moyen montre ce que les joueurs ont payé ce modèle ces 30 derniers jours.${aucOK?` Aux enchères, la bille part au plus offrant quand le temps est écoulé.`:""}</span></p></section>
+    ${ME.length ? `<section class="panel mes-ench"><div class="panel-head"><h3>${ic("gavel",18)} Mes enchères<span class="cnt-n">${ME.length}</span></h3><span class="sample-tag">${ME.filter(a=>a.en_tete).length} en tête</span></div>
+      <div class="mk-grid">${ME.map(a=>mkCard(a, true)).join("")}</div></section>` : ""}
+    ${!L ? courWait() : L.length ? `<div class="mk-grid">${L.map(a=>mkCard(a)).join("")}</div>` : `<p class="empty">Rien en vente avec ces filtres pour l'instant.${f.taille||f.decor!=null||f.shiny||f.genre ? `<br><button class="btn btn-ghost btn-sm" style="margin-top:12px" data-action="mk-reset">Effacer les filtres</button>` : ""}</p>`}
     ${mine.length ? `<section class="panel" id="mes-annonces"><div class="panel-head"><h3>Mes annonces<span class="cnt-n">${mine.length}</span></h3>${sold ? `<span class="sample-tag">${sold} vendue${sold>1?"s":""}</span>` : ""}</div>
       <div class="ann-list">${mine.map(ann).join("")}</div></section>` : ""}
   </div>`;
 }
+// une carte du marché : achat immédiat ou enchère (mesEnch : dans « Mes enchères », on montre si on est en tête ou dépassé)
+function mkCard(a, mesEnch){
+  const x = a.bille, E = a.enchere, deal = !a.moi && !E && a.moyen && a.prix <= a.moyen*.85;
+  const rib = a.moi ? `<span class="mk-rib">Ta bille</span>`
+    : E && a.en_tete ? `<span class="mk-rib lead">${ic("trophy",11,2.6)} Tu es en tête</span>`
+    : E && mesEnch ? `<span class="mk-rib out">Dépassé</span>`
+    : deal ? `<span class="mk-rib deal">${ic("star",11,2.8)} Bonne affaire</span>` : "";
+  const btn = a.moi ? (E && a.offre ? `<button class="btn btn-ghost btn-sm" disabled>Enchère en cours</button>` : `<button class="btn btn-ghost btn-sm" data-action="mk-retirer" data-id="${a.id}">Retirer</button>`)
+    : E ? (a.en_tete ? `<button class="btn btn-ghost btn-sm" disabled>${ic("check",15,2.6)} Tu mènes</button>`
+        : S.jetons < a.min ? `<button class="btn btn-yellow btn-sm" disabled>Il te manque ${fmt(a.min-S.jetons)}</button>`
+        : `<button class="btn btn-orange btn-sm" data-action="mk-encherir" data-id="${a.id}">${ic("gavel",15,2.4)} Enchérir · ${fmt(a.min)}</button>`)
+    : S.jetons<a.prix ? `<button class="btn btn-yellow btn-sm" disabled>Il te manque ${fmt(a.prix-S.jetons)}</button>`
+    : `<button class="btn btn-yellow btn-sm" data-action="mk-acheter" data-id="${a.id}" data-prix="${a.prix}">Acheter</button>`;
+  return `<div class="mk${a.moi?" mine":""}${E?" ench":""}" style="${tstyle(x.type)}">${rib}${E?`<span class="mk-tag">${ic("gavel",12,2.4)} Enchère</span>`:""}
+    <span class="mk-vis" data-action="cour-see" data-k="${courSpec(x, a.moi?"Ta bille en vente.":E?`Aux enchères, par ${a.vendeur}.`:`En vente par ${a.vendeur}.`)}">${mImg(x,160,Math.round(44*scaleOf(x.type)+30),"")}</span>
+    <div class="mk-info"><b>${esc(specName(x))}</b><span class="pills">${typePill(x.type)}${shinyPill(x)}</span>
+    ${E ? `<small class="p-lbl">${a.offre ? "Meilleure offre" : "Mise à prix"}</small>` : ""}
+    <span class="price">${COIN}${fmt(E ? (a.offre ?? a.prix) : a.prix)}</span>
+    <small class="avg${deal?" good":""}">${E ? (a.offre ? `${a.nb_offres} offre${a.nb_offres>1?"s":""} · ${a.en_tete?"toi":esc(a.meilleur||"?")} en tête` : "Pas encore d'offre")
+      : a.moyen ? `Prix moyen : ${fmt(a.moyen)}` : "Pas encore de prix moyen"}</small>
+    <div class="mk-meta"><span>${a.moi ? `${ic("user",13,2.4)} toi` : `${avatarIni(a.vendeur,18)} ${esc(a.vendeur)}`}</span>${finSpan(a.fin, E)}</div>
+    ${btn}</div></div>`;
+}
+// enchérir : on propose au moins l'offre minimum ; les bonbecs sont mis de côté tout de suite
+function bidAsk(id){
+  const a = [...(cour.marche||[]), ...(cour.encheres||[])].find(x=>x.id===id); if(!a) return;
+  const min = a.min;
+  ask({title:`Enchérir sur ${specName(a.bille)} ?`, balls:[a.bille], ok:"Enchérir",
+       text:`${a.offre ? `Meilleure offre : <b>${fmt(a.offre)} ${CUR.many}</b> (${esc(a.meilleur||"?")}).` : `Mise à prix : <b>${fmt(a.prix)} ${CUR.many}</b>.`} Tes ${CUR.many} sont mis de côté tout de suite. Si quelqu'un propose plus, ils te sont rendus.`,
+       extra:`<label class="price-in ask-in">${COIN}<input type="number" id="ask-val" min="${min}" max="1000000" step="1" value="${min}" aria-label="Ton offre en ${CUR.many}"><small>${CUR.many}</small></label>
+         <small class="meta">Au moins ${fmt(min)} · tu as ${fmt(S.jetons)} ${CUR.many}</small>`})
+  .then(ok=>{ if(!ok) return;
+    const v = Math.round(+ask.val);
+    if(!(v>=min)){ toast(`Ton offre doit être d'au moins ${fmt(min)} ${CUR.many}.`); return }
+    if(v>S.jetons){ toast(`Tu n'as que ${fmt(S.jetons)} ${CUR.many}.`); return }
+    Cloud.cour.encherir(a.id, v).then(r=>{ applyEco(r.eco); Sound.coin(); toast(`C'est toi qui mènes l'enchère avec ${fmt(v)} ${CUR.many} !`); courRefresh("marche","encheres","journal") },
+      e=>{ courFail(e); courRefresh("marche","encheres") });
+  });
+}
 function sellStart(pick){
-  cour.sell = {list:null, pick:pick||null, prix:""};
+  cour.sell = {list:null, pick:pick||null, prix:"", mode:"fixe"};
   ui.courTab = "marche"; closeModal(); if(ui.view!=="cour") go("cour"); else renderView();
   const X = cour.sell;
   Cloud.cour.echangeables(sync.uid).then(l=>{ if(cour.sell===X){ X.list = l.filter(x=>x.id!==S.active); renderView() } }, courFail);
 }
 function sellView(){
-  const X = cour.sell, p = X.pick && (X.list||[]).find(x=>x.id===X.pick);
+  const X = cour.sell, p = X.pick && (X.list||[]).find(x=>x.id===X.pick), E = X.mode==="enchere" && !cour.absent.encheres;
+  const mode = (m, l, icon) => `<button type="button" data-action="sell-mode" data-m="${m}" aria-pressed="${(X.mode||"fixe")===m}">${ic(icon,16,2.4)} ${l}</button>`;
+  const durees = E ? [[1,"1 heure"],[6,"6 heures"],[24,"1 jour"],[72,"3 jours"]] : [[1,"1 jour"],[3,"3 jours"],[7,"7 jours"]];
   return `<div class="cour-grid">
     <section class="panel"><div class="panel-head"><h3>Vendre une bille</h3><button class="see-all" data-action="mk-close">${ic("chevl",14)} Retour</button></div>
       ${p ? `<div class="sell-card"><span class="sell-vis" style="${tstyle(p.type)}">${mImg(p,200,Math.round(50*scaleOf(p.type)+50),"")}</span>
         <div><h4>${esc(specName(p))}</h4><span class="pills">${typePill(p.type)}${shinyPill(p)}</span><p class="meta">À la Confiserie, elle vaut ${fmt(recycleValue(p))} ${CUR.many}.</p>
-        <form class="sell-form" id="sell-form"><label class="price-in">${COIN}<input type="number" id="sell-prix" min="1" max="1000000" step="1" placeholder="Ton prix" value="${X.prix||""}" aria-label="Prix en ${CUR.many}" required><small>${CUR.many}</small></label>
-          <div class="seg" role="radiogroup" aria-label="Durée de la vente">${[1,3,7].map(j=>`<label><input type="radio" name="sell-jours" value="${j}"${j===3?" checked":""}><span>${j} jour${j>1?"s":""}</span></label>`).join("")}</div>
-          <button class="btn btn-yellow" type="submit">${ic("candy",18)} Mettre en vente</button></form></div></div>
-        <p class="cour-info" style="margin-top:16px">${ic("quest",16)}<span>Si personne ne l'achète avant la fin, elle reste simplement dans ta boîte. Tu peux aussi la retirer quand tu veux. Pendant qu'elle est en vente, elle ne peut pas être troquée.</span></p>`
+        ${cour.absent.encheres ? "" : `<div class="sell-mode" role="group" aria-label="Façon de vendre">${mode("fixe","Prix fixe","candy")}${mode("enchere","Aux enchères","gavel")}</div>`}
+        <form class="sell-form" id="sell-form"><label class="price-in">${COIN}<input type="number" id="sell-prix" min="1" max="1000000" step="1" placeholder="${E?"Mise à prix":"Ton prix"}" value="${X.prix||""}" aria-label="${E?"Mise à prix":"Prix"} en ${CUR.many}" required><small>${CUR.many}</small></label>
+          <div class="seg" role="radiogroup" aria-label="Durée">${durees.map(([v,l],i)=>`<label><input type="radio" name="sell-duree" value="${v}"${i===(E?2:1)?" checked":""}><span>${l}</span></label>`).join("")}</div>
+          <button class="btn ${E?"btn-orange":"btn-yellow"}" type="submit">${E ? `${ic("gavel",18)} Mettre aux enchères` : `${ic("candy",18)} Mettre en vente`}</button></form></div></div>
+        <p class="cour-info" style="margin-top:16px">${ic("quest",16)}<span>${E
+          ? `Les joueurs font des offres à partir de ta mise à prix. À la fin, la bille part au plus offrant et tu reçois ses ${CUR.many}. Une offre dans la dernière minute rajoute une minute, pour que tout le monde puisse répondre. Si personne n'enchérit, elle reste dans ta boîte. Tu peux l'annuler tant que personne n'a fait d'offre.`
+          : `Si personne ne l'achète avant la fin, elle reste simplement dans ta boîte. Tu peux aussi la retirer quand tu veux. Pendant qu'elle est en vente, elle ne peut pas être troquée.`}</span></p>`
         : `<p class="cour-lead">Choisis la bille à vendre. Ta bille active, les billes de départ et les billes secrètes ne peuvent pas être vendues.</p>`}
     </section>
     <section class="panel">${pickList(X.list, "sell", X.pick?[X.pick]:[], X.f)}</section>
@@ -6593,7 +6847,8 @@ document.addEventListener("click", e=>{
     case "conf-tab": ui.confTab=t.dataset.tab; renderView(); break;
     // ----- la cour de récré -----
     case "cour-tab": ui.courTab = t.dataset.tab; cour.compose = null; cour.sell = null;
-      if(t.dataset.tab==="troc") courRefresh("trocs"); if(t.dataset.tab==="marche") courRefresh("marche","annonces");
+      if(t.dataset.tab==="troc") courRefresh("trocs"); if(t.dataset.tab==="marche") courRefresh("marche","annonces","encheres");
+      if(t.dataset.tab==="classement") courRefresh("classement");
       if(t.dataset.tab==="journal") courSeeJournal();
       renderView(); break;
     case "cour-see": openModal(null, cour.specs[+t.dataset.k]); break;
@@ -6647,7 +6902,10 @@ document.addEventListener("click", e=>{
       break;
     }
     case "mk-vendre": sellStart(); break;
-    case "mk-reset": Object.assign(cour.f, {taille:"", decor:null, shiny:""}); courRefresh("marche"); renderView(); break;
+    case "cour-go": ui.courTab = t.dataset.tab; cour.compose = null; cour.sell = null; if(t.dataset.tab==="journal") courSeeJournal(); go("cour"); break;
+    case "mk-encherir": bidAsk(+t.dataset.id); break;
+    case "sell-mode": if(!cour.sell) break; cour.sell.prix = document.getElementById("sell-prix")?.value || cour.sell.prix; cour.sell.mode = t.dataset.m; renderView(); break;
+    case "mk-reset": Object.assign(cour.f, {taille:"", decor:null, shiny:"", genre:""}); courRefresh("marche"); renderView(); break;
     case "cour-find": Object.assign(cour.f, {taille:t.dataset.type, decor:+t.dataset.fam, shiny:""}); cour.marche = null;
       ui.courTab = "marche"; cour.compose = null; cour.sell = null; closeModal(); courRefresh("marche","annonces"); if(ui.view!=="cour") go("cour"); else renderView(); break;
     case "mk-mine": document.getElementById("mes-annonces")?.scrollIntoView({behavior:"smooth", block:"start"}); break;
@@ -6669,6 +6927,7 @@ document.addEventListener("click", e=>{
     }
     case "news-see": closeModal(); ui.courTab = "journal"; cour.compose = null; cour.sell = null; courSeeJournal(); if(ui.view!=="cour") go("cour"); else renderView(); break;
     case "jr-filt": ui.jf = t.dataset.f; renderView(); break;
+    case "cl-portee": ui.clPortee = t.dataset.p; cour.classement = null; courRefresh("classement"); renderView(); break;
     case "tab": if(t.dataset.tab==="defis"){ closeModal(); go("succes"); break }
       ui.tab=t.dataset.tab; closeModal(); if(ui.view!=="collection") go("collection"); else renderView(); break;
     case "ftype": ui.type=t.dataset.type; renderView(); break;
@@ -6860,7 +7119,7 @@ document.addEventListener("click", e=>{
   }
 });
 document.addEventListener("change", e=>{
-  const k = {"mk-taille":"taille", "mk-decor":"decor", "mk-shiny":"shiny", "mk-tri":"tri"}[e.target.id];
+  const k = {"mk-genre":"genre", "mk-taille":"taille", "mk-decor":"decor", "mk-shiny":"shiny", "mk-tri":"tri"}[e.target.id];
   if(k){ cour.f[k] = k==="decor" ? (e.target.value==="" ? null : +e.target.value) : e.target.value; courRefresh("marche") }
 });
 document.addEventListener("input", e=>{
@@ -6895,9 +7154,18 @@ document.addEventListener("submit", e=>{
   }
   if(id==="sell-form"){
     e.preventDefault();
-    const X = cour.sell, prix = Math.round(+document.getElementById("sell-prix").value), jours = +document.querySelector('input[name="sell-jours"]:checked')?.value || 3;
+    const X = cour.sell, prix = Math.round(+document.getElementById("sell-prix").value), duree = +document.querySelector('input[name="sell-duree"]:checked')?.value;
     if(!X?.pick || !(prix>=1)) return;
     X.prix = prix;
+    if(X.mode==="enchere"){
+      const b = (X.list||[]).find(x=>x.id===X.pick), heures = duree || 24, quand = heures<24 ? `${heures} heure${heures>1?"s":""}` : `${heures/24} jour${heures>24?"s":""}`;
+      ask({title:`Mettre aux enchères à partir de ${fmt(prix)} ${CUR.many} ?`, balls:b?[b]:[], ok:"Mettre aux enchères",
+           text:`${b?esc(courName(b))+", ":""}pendant ${quand}. À la fin, elle part au plus offrant. Dès que quelqu'un a enchéri, tu ne peux plus l'annuler.${b?partWarn(b):""}`})
+        .then(ok=>{ if(!ok || cour.sell!==X) return;
+          Cloud.cour.mettreAuxEncheres(X.pick, prix, heures).then(()=>{ toast(`Aux enchères à partir de ${fmt(prix)} ${CUR.many} !`); cour.sell = null; courRefresh("marche","annonces","journal") }, courFail) });
+      return;
+    }
+    const jours = duree || 3;
     const b = (X.list||[]).find(x=>x.id===X.pick), rv = b ? recycleValue(b) : 0;
     ask({title:`Mettre en vente pour ${fmt(prix)} ${CUR.many} ?`, balls:b?[b]:[], ok:"Mettre en vente",
          text:`${b?esc(courName(b))+", ":""}pendant ${jours} jour${jours>1?"s":""}. Le premier qui l'achète l'emporte, sans te redemander ton avis.${b && prix<rv?`<span class="warn-note">C'est moins que ce qu'en donne la Confiserie (${fmt(rv)} ${CUR.many}).</span>`:""}${b?partWarn(b):""}`})

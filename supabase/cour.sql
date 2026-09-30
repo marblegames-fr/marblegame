@@ -634,7 +634,8 @@ create or replace function interne.scores() returns table (joueur uuid, total in
   pts_series int, nb_series int) language sql stable as $$
   with b as (
     select proprietaire j, interne.rang(taille) t, decor d, coloris c, shiny sh from public.billes
-    where detruite_le is null and origine = 'serveur' and secrete is null and coalesce(donnees->>'src', '') <> 'test'),
+    where detruite_le is null and origine = 'serveur' and secrete is null and coalesce(donnees->>'src', '') <> 'test'
+      and decor < array_length(interne.decor_rarete(), 1)),   -- les décors d'événement ne comptent pas
   k as (   -- les cases
     select j, t, d, count(distinct c)::int nc, count(distinct c) filter (where c < interne.coloris_base())::int nb,
       (interne.pts_taille())[t+1] pt, (interne.mult_decor())[(interne.decor_rarete())[d+1]+1] m

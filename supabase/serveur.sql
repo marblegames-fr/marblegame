@@ -132,11 +132,23 @@ drop function if exists interne.sac(text);
 create or replace function interne.sac(nom text, out prix int, out n int, out garantie int, out shiny numeric, out cotes numeric[], out vedette numeric[])
 language sql immutable as $$
   select v.prix, v.n, v.garantie, v.shiny, v.cotes, v.vedette from (values
-    ('gratuit',     0, 3, null::int, 0.0001, array[55,32,10,3,0,0]::numeric[],  array[30,33,20,12,4,1]::numeric[]),
-    ('classique', 300, 5, null,      0.0001, array[45,33,15,6,1,0]::numeric[],  array[15,30,25,18,9,3]::numeric[]),
-    ('premium',   600, 5, 3,         0.0002, array[35,33,20,10,2,0]::numeric[], array[0,0,0,64,30,6]::numeric[]),
-    ('collector',1500, 5, 4,         0.0005, array[25,30,25,15,5,0]::numeric[], array[0,0,0,0,85,15]::numeric[])
+    ('gratuit',     0, 3, null::int, 0.0001, array[54.55,32,10,3,0.4,0.05]::numeric[],  array[30,33,20,12,4,1]::numeric[]),
+    ('classique', 300, 5, null,      0.0001, array[44.9,33,15,6,1,0.1]::numeric[],  array[15,30,25,18,9,3]::numeric[]),
+    ('premium',   600, 5, 3,         0.0002, array[34.8,33,20,10,2,0.2]::numeric[], array[0,0,0,64,30,6]::numeric[]),
+    ('collector',1500, 5, 4,         0.0005, array[24.5,30,25,15,5,0.5]::numeric[], array[0,0,0,0,85,15]::numeric[]),
+    ('pirate',    800, 3, null,      0.0002, array[50,30,12,6,1.8,0.2]::numeric[], array[20,30,25,16,7,2]::numeric[])
   ) v(nom, prix, n, garantie, shiny, cotes, vedette) where v.nom = sac.nom
+$$;
+
+-- Événements : leurs dates (heure de Paris), le décor et les coloris de leurs billes (mêmes valeurs que EVENTS dans index.html)
+create or replace function interne.evenement(nom text, out debut timestamptz, out fin timestamptz, out sac text, out decor int, out coloris int[])
+language sql immutable as $$
+  select v.debut, v.fin, v.sac, v.decor, v.coloris from (values
+    ('pirates', timestamptz '2026-09-30 00:00:00 Europe/Paris', timestamptz '2026-10-14 23:59:59 Europe/Paris', 'pirate', 32, array[65,66,67,68,69])
+  ) v(nom, debut, fin, sac, decor, coloris) where v.nom = evenement.nom
+$$;
+create or replace function interne.evenement_du_sac(s text) returns text language sql immutable as $$
+  select case s when 'pirate' then 'pirates' end
 $$;
 
 -- la date du jour, à l'heure française (les quêtes et le bonbec du jour changent à minuit)
@@ -253,11 +265,14 @@ begin return interne.etat(interne.moi()); end $$;
 -- Ouvrir un sac (acheté, gratuit ou offert). Renvoie les billes tirées.
 create or replace function public.ouvrir_sac(nom text, offert boolean default false)
 returns jsonb language plpgsql security definer set search_path = public as $$
-declare qui uuid := interne.moi(); p portefeuilles; r record; stock int; t int; i int;
+declare qui uuid := interne.moi(); p portefeuilles; r record; ev record; stock int; t int; i int;
         tirees int[] := '{}'; shinies int[] := '{}'; billes jsonb := '[]'; force boolean := false;
 begin
   select * into r from interne.sac(nom);
   if r.n is null then raise exception 'sac_inconnu'; end if;
+  -- un sac d'événement : on ne l'achète que pendant l'événement (un sac offert s'ouvre quand on veut)
+  select * into ev from interne.evenement(coalesce(interne.evenement_du_sac(nom), ''));   -- aucune ligne : tout à null
+  if ev.sac is not null and not offert and not (now() between ev.debut and ev.fin) then raise exception 'evenement_fini'; end if;
   select * into p from portefeuilles where joueur = qui for update;
   if offert then
     if coalesce((p.sacs->>nom)::int,0) < 1 then raise exception 'plus_de_sac'; end if;
@@ -286,7 +301,8 @@ begin
     pity = case when exists (select 1 from unnest(tirees) x where x >= 4) then 0 else pity + 1 end
     where joueur = qui;
   for i in 1..r.n loop
-    billes := billes || interne.nouvelle_bille(qui, (interne.tailles())[tirees[i]+1], shiny => shinies[i], src => nom);
+    billes := billes || interne.nouvelle_bille(qui, (interne.tailles())[tirees[i]+1], shiny => shinies[i], src => nom,
+      decor => ev.decor, coloris => case when ev.coloris is null then null else ev.coloris[1 + floor(random()*array_length(ev.coloris,1))::int] end);
   end loop;
   return jsonb_build_object('eco', interne.etat(qui), 'billes', billes, 'force', force);
 end $$;
@@ -350,12 +366,12 @@ end $$;
 -- Tous les autres gains : chacun ne paie qu'une fois, et jamais plus que ce que le jeu peut donner
 create or replace function public.gagner(source text, cle text, montant int, sac text default null)
 returns jsonb language plpgsql security definer set search_path = public as $$
-declare qui uuid := interne.moi(); today text := interne.aujourdhui()::text; k text; maxi int; nq int;
+declare qui uuid := interne.moi(); today text := interne.aujourdhui()::text; k text; maxi int; nq int; ev record;
         quetes jsonb := '{"open_bag":80,"open_free":100,"hole":90,"par":70,"twoshots":90,"find_bille":90,"find_calot":120,
                           "new_slot":100,"new_color":100,"open_paid":120,"craft":120,"shake":60,"recycle":60}';
 begin
   if montant < 0 then raise exception 'montant_invalide'; end if;
-  if sac is not null and sac not in ('classique','premium','collector') then raise exception 'sac_inconnu'; end if;
+  if sac is not null and sac not in ('classique','premium','collector','pirate') then raise exception 'sac_inconnu'; end if;
   perform 1 from portefeuilles where joueur = qui for update;
   case source
     when 'quete' then   -- 3 quêtes par jour, au tarif de la quête
@@ -375,6 +391,10 @@ begin
       k := cle;
     when 'serie' then
       if montant > 6000 then raise exception 'montant_invalide'; end if;
+      k := cle;
+    when 'evenement' then   -- le sac offert à chacun, une fois, pendant l'événement
+      select * into ev from interne.evenement(cle);
+      if ev.sac is null or montant <> 0 or sac is distinct from ev.sac or not (now() between ev.debut and ev.fin) then raise exception 'montant_invalide'; end if;
       k := cle;
     when 'passe' then   -- paliers de la saison en cours seulement
       if not interne.saison_valide(split_part(cle, '|', 1)) or montant > 400 then raise exception 'montant_invalide'; end if;

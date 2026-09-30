@@ -126,15 +126,17 @@ create or replace function interne.revente() returns int[] language sql immutabl
 create or replace function interne.prime_shiny() returns int[] language sql immutable as $$ select array[2000,5000,15000] $$;
 create or replace function interne.fusion_n() returns int[] language sql immutable as $$ select array[3,5,5,6,8] $$;
 
--- les sacs : prix, nombre de billes, taille garantie (rang), chances de shiny, chances de chaque taille
-create or replace function interne.sac(nom text, out prix int, out n int, out garantie int, out shiny numeric, out cotes numeric[])
+-- les sacs : prix, nombre de billes, taille garantie (rang), chances de shiny, et chances de chaque taille
+-- par emplacement : « cotes » pour les premières billes, « vedette » pour la dernière (qui porte la garantie)
+drop function if exists interne.sac(text);
+create or replace function interne.sac(nom text, out prix int, out n int, out garantie int, out shiny numeric, out cotes numeric[], out vedette numeric[])
 language sql immutable as $$
-  select v.prix, v.n, v.garantie, v.shiny, v.cotes from (values
-    ('gratuit',     0, 3, null::int, 0.0001, array[50,31,12,5,1.6,0.4]::numeric[]),
-    ('classique', 300, 5, null,      0.0001, array[38,32,16,9,4,1]::numeric[]),
-    ('premium',   600, 5, 3,         0.0002, array[27,30,20,14,7,2]::numeric[]),
-    ('collector',1500, 5, 4,         0.0005, array[14,20,20,19,19,8]::numeric[])
-  ) v(nom, prix, n, garantie, shiny, cotes) where v.nom = sac.nom
+  select v.prix, v.n, v.garantie, v.shiny, v.cotes, v.vedette from (values
+    ('gratuit',     0, 3, null::int, 0.0001, array[55,32,10,3,0,0]::numeric[],  array[30,33,20,12,4,1]::numeric[]),
+    ('classique', 300, 5, null,      0.0001, array[45,33,15,6,1,0]::numeric[],  array[15,30,25,18,9,3]::numeric[]),
+    ('premium',   600, 5, 3,         0.0002, array[35,33,20,10,2,0]::numeric[], array[0,0,0,64,30,6]::numeric[]),
+    ('collector',1500, 5, 4,         0.0005, array[25,30,25,15,5,0]::numeric[], array[0,0,0,0,85,15]::numeric[])
+  ) v(nom, prix, n, garantie, shiny, cotes, vedette) where v.nom = sac.nom
 $$;
 
 -- la date du jour, à l'heure française (les quêtes et le bonbec du jour changent à minuit)
@@ -271,16 +273,13 @@ begin
   end if;
   -- les tailles
   for i in 1..r.n loop
-    t := interne.tirer(r.cotes) - 1;
-    if r.garantie is not null and i = r.n and not exists (select 1 from unnest(tirees) x where x >= r.garantie) then
-      t := interne.tirer(r.cotes, r.garantie + 1) - 1;
-    end if;
+    t := interne.tirer(case when i = r.n then r.vedette else r.cotes end) - 1;   -- la dernière bille : la vedette du sac
     tirees := tirees || t;
     shinies := shinies || interne.tirer_shiny(r.shiny);
   end loop;
   -- garantie de la cour : un Boulet au plus tard tous les 10 sacs
   if p.pity + 1 >= 10 and not exists (select 1 from unnest(tirees) x where x >= 4) then
-    tirees[r.n] := case when random() * (r.cotes[5] + r.cotes[6]) < r.cotes[6] then 5 else 4 end;
+    tirees[r.n] := case when random() * (r.vedette[5] + r.vedette[6]) < r.vedette[6] then 5 else 4 end;
     force := true;
   end if;
   update portefeuilles set sacs_ouverts = sacs_ouverts + 1, maj_le = now(),
@@ -406,8 +405,8 @@ begin
       b := interne.nouvelle_bille(qui, 'bille', src => 'chateau');
     when 'passe' then     -- cle : « 2026-9|free|10 »
       if not interne.saison_valide(split_part(cle, '|', 1)) then raise exception 'montant_invalide'; end if;
-      select x.t, x.sh into t, sh from (values ('free|1','mini',0), ('free|10','bille',0), ('free|20','chinoise',0), ('free|30','calot',0),
-        ('prem|5','boulet',0), ('prem|10','mammouth',0), ('prem|20','boulet',1), ('prem|30','mammouth',3)) x(k, t, sh)
+      select x.t, x.sh into t, sh from (values ('free|1','mini',0), ('free|10','bille',0), ('free|20','chinoise',0), ('free|30','calot',1),
+        ('prem|5','boulet',0), ('prem|10','mammouth',0), ('prem|20','boulet',2), ('prem|30','mammouth',3)) x(k, t, sh)
         where x.k = split_part(cle,'|',2) || '|' || split_part(cle,'|',3);
       if t is null then raise exception 'montant_invalide'; end if;
       begin insert into gains (joueur, source, cle) values (qui, 'bille-passe', cle);

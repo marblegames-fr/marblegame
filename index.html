@@ -441,6 +441,8 @@ main{padding:22px 24px 40px;min-width:0}
 .bag-visual .tag{position:absolute;top:10px;left:10px;font-size:11px;font-weight:900;letter-spacing:.05em;text-transform:uppercase;padding:3px 10px;border-radius:999px;background:var(--ink);color:var(--on-ink)}
 .bag-card h3{font-size:19px;font-weight:900}
 .bag-card > p{color:var(--ink-2);font-weight:600;font-size:13.5px;min-height:2.9em}
+.bg-slot{margin-top:10px}
+.bg-slot small{display:block;font-size:11px;font-weight:800;color:var(--muted);margin-bottom:4px}
 .odds{list-style:none;margin:0;padding:10px 12px;display:grid;gap:5px;background:var(--panel-2);border-radius:12px;border:1px solid var(--line)}
 .odds li{display:grid;grid-template-columns:10px 1fr auto;align-items:center;gap:8px;font-size:12.5px;font-weight:700;color:var(--ink-2)}
 .odds li i{width:10px;height:10px;border-radius:50%;background:var(--rc)}
@@ -2258,16 +2260,25 @@ const QUESTS = {
 };
 const QUEST_BONUS = 150;
 
+// Chances de taille par emplacement : les premières billes du sac (fill) sont surtout des petites,
+// la dernière (star, « la vedette ») a ses propres chances, bien meilleures ; c'est elle qui porte la garantie du sac.
+// Mêmes valeurs dans supabase/serveur.sql (interne.sac).
+const sizeOdds = a => Object.fromEntries(TK.map((k,i)=>[k,a[i]]));
 const FREE_BAG = {id:"gratuit", name:"Sac gratuit", desc:"3 billes offertes. Un nouveau sac toutes les 10 minutes, jusqu'à 5 en stock.", price:0, n:3, color:"#C98E4E", tint:"#F6E3C8", shiny:SHINY_RATE,
-  odds:{mini:50,bille:31,chinoise:12,calot:5,boulet:1.6,mammouth:.4}};
+  fill:sizeOdds([55,32,10,3,0,0]), star:sizeOdds([30,33,20,12,4,1])};
 const BAGS = [FREE_BAG,
   {id:"classique", name:"Sac Classique", desc:"5 billes, avec de meilleures chances que le sac gratuit.", price:300, n:5, color:"#2A8A74", tint:"#D5EFE7", shiny:SHINY_RATE,
-   odds:{mini:38,bille:32,chinoise:16,calot:9,boulet:4,mammouth:1}},
+   fill:sizeOdds([45,33,15,6,1,0]), star:sizeOdds([15,30,25,18,9,3])},
   {id:"premium", name:"Sac Premium", desc:"5 billes, dont au moins un Calot ou mieux. 2 fois plus de chances de shiny.", price:600, n:5, guarantee:"calot", color:"#34469C", tint:"#DCE0F6", shiny:SHINY_RATE*2,
-   odds:{mini:27,bille:30,chinoise:20,calot:14,boulet:7,mammouth:2}},
+   fill:sizeOdds([35,33,20,10,2,0]), star:sizeOdds([0,0,0,64,30,6])},
   {id:"collector", name:"Sac Collector", desc:"5 billes, dont au moins un Boulet ou plus gros. 5 fois plus de chances de shiny.", price:1500, n:5, guarantee:"boulet", color:"#D9A020", tint:"#FBEBC0", shiny:SHINY_RATE*5,
-   odds:{mini:14,bille:20,chinoise:20,calot:19,boulet:19,mammouth:8}},
+   fill:sizeOdds([25,30,25,15,5,0]), star:sizeOdds([0,0,0,0,85,15])},
 ];
+// par bille en moyenne (pour les chances d'une bille précise), et « au moins une » de chaque taille dans un sac
+BAGS.forEach(b=>{
+  b.odds = Object.fromEntries(TK.map(k=>[k, +(((b.n-1)*b.fill[k]+b.star[k])/b.n).toFixed(2)]));
+  b.perBag = Object.fromEntries(TK.map(k=>[k, 100*(1-Math.pow(1-b.fill[k]/100, b.n-1)*(1-b.star[k]/100))]));
+});
 const BAG_BY = Object.fromEntries(BAGS.map(b=>[b.id,b]));
 
 /* =====================================================================
@@ -3587,21 +3598,23 @@ const CHALLENGES = [
 // Séries : de petits albums à thème, chacun avec sa récompense (une case = un décor et/ou un coloris, n'importe quelle taille)
 const FAM_ID = n => FAMILIES.findIndex(F=>F.name===n), PAL_ID = n => PALETTES.findIndex(P=>P[0]===n);
 const SERIES = [
-  {id:"trousse", name:"La trousse d'écolier", desc:"Les motifs du cahier de classe.", items:[{fam:"Damier"},{fam:"Écossais"},{fam:"Pixel"},{fam:"Cible"}], rew:{j:300, bag:"classique"}},
-  {id:"bonbons", name:"La boulangerie du coin", desc:"Des billes qui donnent faim.", items:[{fam:"Berlingot"},{fam:"Millefiori"},{fam:"À pois"},{fam:"Nid d'abeille"},{pal:"Barbe à papa"},{pal:"Chocolat menthe"}], rew:{j:400, bag:"classique"}},
-  {id:"nature", name:"Au fond du jardin", desc:"Ce qu'on trouve en rentrant de l'école.", items:[{fam:"Bois"},{fam:"Écailles"},{fam:"Tigrée"},{fam:"Œil-de-chat"},{pal:"Forêt"},{pal:"Sauge"}], rew:{j:400, bag:"classique"}},
-  {id:"arcenciel", name:"L'arc-en-ciel", desc:"Une bille de chaque couleur, peu importe le décor.", items:["Cerise","Ambre","Citron","Émeraude","Azur","Saphir","Lavande"].map(pal=>({pal})), rew:{j:400, bag:"classique"}},
-  {id:"noiretblanc", name:"Noir et blanc", desc:"Pour les amateurs de contrastes.", items:[{pal:"Encre"},{pal:"Réglisse"},{pal:"Béton"},{pal:"Brume"},{pal:"Ciel d'orage"}], rew:{j:300, bag:"classique"}},
+  // min : la taille minimum de la bille qui remplit la case (sinon n'importe laquelle)
+  {id:"trousse", name:"La trousse d'écolier", desc:"Les motifs du cahier de classe, en Bille chinoise ou plus.", items:[{fam:"Damier",min:"chinoise"},{fam:"Écossais",min:"chinoise"},{fam:"Pixel",min:"chinoise"},{fam:"Cible",min:"chinoise"},{pal:"Encre",min:"chinoise"},{pal:"Citron",min:"chinoise"}], rew:{j:300, bag:"classique"}},
+  {id:"bonbons", name:"La boulangerie du coin", desc:"Des billes qui donnent faim.", items:[{fam:"Berlingot",min:"calot"},{fam:"Millefiori",min:"chinoise"},{fam:"À pois",min:"calot"},{fam:"Nid d'abeille",min:"chinoise"},{pal:"Barbe à papa"},{pal:"Chocolat menthe"},{pal:"Framboise"},{pal:"Sorbet"}], rew:{j:400, bag:"classique"}},
+  {id:"nature", name:"Au fond du jardin", desc:"Ce qu'on trouve en rentrant de l'école.", items:[{fam:"Bois",min:"calot"},{fam:"Écailles",min:"chinoise"},{fam:"Tigrée",min:"chinoise"},{fam:"Œil-de-chat",min:"calot"},{pal:"Forêt"},{pal:"Sauge"},{pal:"Kiwi"},{pal:"Menthe"}], rew:{j:400, bag:"classique"}},
+  {id:"arcenciel", name:"L'arc-en-ciel", desc:"Une Bille chinoise ou plus de chaque couleur, peu importe le décor.", items:["Cerise","Ambre","Citron","Émeraude","Azur","Saphir","Lavande"].map(pal=>({pal, min:"chinoise"})), rew:{j:400, bag:"classique"}},
+  {id:"noiretblanc", name:"Noir et blanc", desc:"Pour les amateurs de contrastes, en Bille chinoise ou plus.", items:["Encre","Réglisse","Béton","Brume","Ciel d'orage","Nuit"].map(pal=>({pal, min:"chinoise"})), rew:{j:300, bag:"classique"}},
   {id:"pierres", name:"Les pierres précieuses", desc:"Des pierres dans les coloris des joyaux.", items:[{fam:"Agate",pal:"Rubis"},{fam:"Marbre",pal:"Saphir"},{fam:"Cristal",pal:"Émeraude"},{fam:"Nacrée",pal:"Opale"}], rew:{j:6000, bag:"collector", title:"Joaillier"}},
-  {id:"feuglace", name:"Le feu et la glace", desc:"Du plus chaud au plus froid.", items:[{fam:"Lave"},{fam:"Givrée"},{pal:"Volcan"},{pal:"Glacier"}], rew:{j:400, bag:"classique"}},
+  {id:"feuglace", name:"Le feu et la glace", desc:"Du plus chaud au plus froid.", items:[{fam:"Lave"},{fam:"Givrée",min:"calot"},{fam:"Cristal",min:"calot"},{pal:"Volcan",min:"calot"},{pal:"Glacier",min:"calot"}], rew:{j:400, bag:"classique"}},
   {id:"cosmos", name:"Le système solaire", desc:"Les décors venus d'ailleurs.", items:[{fam:"Globe"},{fam:"Planète"},{fam:"Galaxie"},{fam:"Aurore"}], rew:{j:2000, bag:"collector", title:"Astronome"}},
-  {id:"grenier", name:"Le grenier de papi", desc:"Les billes d'autrefois, retrouvées dans une vieille boîte en fer.", items:[{fam:"Terre"},{fam:"Oignon"},{fam:"Opaline"},{fam:"Tourbillon"}], rew:{j:400, bag:"classique"}},
-  {id:"foire", name:"La fête foraine", desc:"Paillettes, rubans et barbe à papa.", items:[{fam:"Arlequin"},{fam:"Ruban"},{fam:"Pailletée"},{pal:"Pop"},{pal:"Sucre d'orge"}], rew:{j:400, bag:"classique"}},
-  {id:"atelier", name:"L'atelier du bricoleur", desc:"Des billes solides comme des outils.", items:[{fam:"Acier"},{fam:"Fumée"},{fam:"Craquelée"},{pal:"Cuivre"},{pal:"Pétrole"}], rew:{j:1200, bag:"premium", title:"Bricoleur"}},
+  {id:"grenier", name:"Le grenier de papi", desc:"Les billes d'autrefois, retrouvées dans une vieille boîte en fer. Que des Calots ou plus gros.", items:[{fam:"Terre",min:"calot"},{fam:"Oignon",min:"calot"},{fam:"Opaline",min:"calot"},{fam:"Tourbillon",min:"calot"},{fam:"Marbre",min:"calot"}], rew:{j:400, bag:"classique"}},
+  {id:"foire", name:"La fête foraine", desc:"Paillettes, rubans et barbe à papa.", items:[{fam:"Arlequin",min:"chinoise"},{fam:"Ruban",min:"chinoise"},{fam:"Pailletée",min:"chinoise"},{pal:"Pop"},{pal:"Sucre d'orge"},{pal:"Néon"},{pal:"Tropical"}], rew:{j:400, bag:"classique"}},
+  {id:"atelier", name:"L'atelier du bricoleur", desc:"Des billes solides comme des outils.", items:[{fam:"Acier"},{fam:"Fumée",min:"calot"},{fam:"Craquelée",min:"calot"},{pal:"Cuivre",min:"calot"},{pal:"Pétrole",min:"calot"}], rew:{j:1200, bag:"premium", title:"Bricoleur"}},
   {id:"grands", name:"Les grands formats", desc:"De la plus petite à la plus grosse, dans un même décor.", items:TK.map(type=>({type})), same:"family", rew:{j:1200, bag:"premium", title:"Toutes tailles"}},
 ];
-const seriesMatch = (it,x) => (!it.fam || x.family===FAM_ID(it.fam)) && (!it.pal || x.pal===PAL_ID(it.pal)) && (!it.type || x.type===it.type);
-const seriesLabel = it => [it.type?TYPES[it.type].label:"", it.fam||"", it.pal?(it.fam?it.pal:`Coloris ${it.pal}`):""].filter(Boolean).join(" ");
+const seriesMatch = (it,x) => (!it.fam || x.family===FAM_ID(it.fam)) && (!it.pal || x.pal===PAL_ID(it.pal)) && (!it.type || x.type===it.type) && (!it.min || TIDX[x.type]>=TIDX[it.min]);
+const MIN_LBL = {chinoise:"Chinoise ou +", calot:"Calot ou +", boulet:"Boulet ou +"};
+const seriesLabel = it => [it.type?TYPES[it.type].label:"", it.fam||"", it.pal?(it.fam?it.pal:`Coloris ${it.pal}`):"", it.min?`(${MIN_LBL[it.min]})`:""].filter(Boolean).join(" ");
 // ce qui remplit chaque case d'une série (pour « grands formats » : les 6 tailles dans un même décor, le décor le plus avancé)
 function seriesFill(se){
   if(se.same==="family"){
@@ -3681,10 +3694,16 @@ function secretGrid(){
 /* =====================================================================
    PASSE DE SAISON (une saison = un mois)
    ===================================================================== */
-const PASS_TIERS = 30, TIER_XP = 1000, PASS_PRICE = "4,99 €";
+const PASS_TIERS = 30, PASS_PRICE = "4,99 €";
+// XP pour passer au palier t : les premiers vont vite (600), puis 1 000, puis 1 300 pour les 10 derniers
+const TIER_COST = t => t<=10 ? 600 : t<=20 ? 1000 : 1300;
+const XP_AT = [0,0]; for(let t=2;t<=PASS_TIERS;t++) XP_AT[t] = XP_AT[t-1]+TIER_COST(t);   // XP totale pour atteindre le palier t
+const PASS_MAX_XP = XP_AT[PASS_TIERS];
+// où on en est dans le palier en cours : [XP déjà faite, XP à faire]
+const tierProg = (xp, tier) => tier>=PASS_TIERS ? [1,1] : [xp-XP_AT[tier], TIER_COST(tier+1)];
 // Rythme visé : un joueur régulier finit le passe en ~3 semaines, un joueur qui passe juste faire ses quêtes vers la fin du mois
 const BAG_XP = {gratuit:20, classique:60, premium:120, collector:300};
-const PASS_XP = {quest:150, bonus:200, star:15, recycle:2, craft:40};
+const PASS_XP = {quest:150, bonus:200, star:15, recycle:2, craft:40, daily:100};
 function seasonNow(d=new Date()){
   const m = d.getMonth(), y = d.getFullYear(), def = SEASONS[m];
   return {id:`${y}-${m+1}`, m, y, def, pal:BASE_PALS+m, end:new Date(y,m+1,1).getTime(), label:`${def.name} ${y}`,
@@ -3717,7 +3736,7 @@ function passRollover(P){
   if(n) setTimeout(()=>{ toast(`Passe ${se.label} terminé : ${n} récompense${n>1?"s":""} que tu n'avais pas récupérée${n>1?"s":""} ${n>1?"sont":"est"} dans ta boîte !`); Sound.ding(); renderTop(); renderNav() }, 900);
 }
 // on commence la saison au palier 1 (sa récompense est tout de suite à récupérer) : 1 000 XP par palier ensuite
-const tierOfXP = xp => Math.min(PASS_TIERS, 1+Math.floor((xp||0)/TIER_XP));
+const tierOfXP = xp => { let t=1; while(t<PASS_TIERS && (xp||0)>=XP_AT[t+1]) t++; return t };
 const passTier = () => tierOfXP(ensurePass().xp);
 function passLeft(){ const ms=Math.max(0,seasonNow().end-Date.now()), d=Math.floor(ms/86400000), hh=Math.floor(ms/3600000)%24; return d ? `${d} j ${hh} h` : `${hh} h ${Math.floor(ms/60000)%60} min` }
 const seasonStyle = se => { const P=PALETTES[se.pal]; return `--s1:${P[1]};--s2:${P[2]};--s3:${P[3]}` };
@@ -3730,7 +3749,7 @@ function passReward(track,t,se=seasonNow()){
   const fam = se.def.fam, stage = Math.floor((t-1)/10);
   const M = (type,shiny=0) => ({k:"marble", type, fam, shiny});
   if(track==="free"){
-    if(t===30) return M("calot");
+    if(t===30) return M("calot",1);   // la shiny Irisée, au bout du passe gratuit
     if(t===20) return M("chinoise");
     if(t===10) return M("bille");
     if(t===1)  return M("mini");
@@ -3738,10 +3757,11 @@ function passReward(track,t,se=seasonNow()){
     if(t%5===0) return {k:"bag", bag:"classique"};
     return {k:"jetons", n:PASS_J.free[stage]};
   }
-  // le gratuit a les petites tailles (Mini, Bille, Chinoise, Calot), le premium les grosses : jamais la même bille des deux côtés
+  // le gratuit a les petites tailles (Mini, Bille, Chinoise, Calot), le premium les grosses : jamais la même bille des deux côtés.
+  // Une shiny de chaque sorte : Irisée au bout du gratuit, Dorée au milieu du premium, Lumineuse à la fin (elles ne comptent ni dans les succès ni au classement)
   if(t===30) return M("mammouth",3);
   if(t===25) return {k:"bag", bag:"collector"};
-  if(t===20) return M("boulet",1);
+  if(t===20) return M("boulet",2);
   if(t===15) return {k:"title", name:"As de la saison"};
   if(t===10) return M("mammouth");
   if(t===5)  return M("boulet");
@@ -3781,7 +3801,7 @@ function grantPassReward(P, se, track, t){
 }
 function passXP(n){
   const P = ensurePass(), before = passTier();
-  P.xp = Math.min((PASS_TIERS-1)*TIER_XP, P.xp+n); save();
+  P.xp = Math.min(PASS_MAX_XP, P.xp+n); save();
   const after = passTier();
   if(after>before){ setTimeout(()=>{ toast(`Passe de saison : palier ${after} atteint !`); Sound.ding() }, 400); renderNav() }
   return n;
@@ -3860,7 +3880,7 @@ function dayHTML(inSheet, wide){
   if(ns) rows4.push(mjRow({icon:"book", title:`${ns} série${ns>1?"s":""} terminée${ns>1?"s":""}`, text:"Ta récompense t'attend", ready:true, act:'data-action="series-go"'}));
   // le passe de saison
   const P = ensurePass(), se = seasonNow(), tier = passTier(), pc = passClaimable();
-  const into = tier>=PASS_TIERS ? TIER_XP : P.xp-(tier-1)*TIER_XP;
+  const [into, need] = tierProg(P.xp, tier);
   const finalSpec = rewardSpec("prem",30,passReward("prem",30));
   const tasks = [!dReady, ...Q.items.map(q=>q.claimed), Q.bonus], nDone = tasks.filter(Boolean).length;
   const today = new Date().toLocaleDateString("fr-FR",{weekday:"long",day:"numeric",month:"long"});
@@ -3874,8 +3894,8 @@ function dayHTML(inSheet, wide){
   ${wide ? "</div>" : `<div class="mj-group"><div class="mj-gh">Passe de saison</div>
     <div class="mj-pass" style="${seasonStyle(se)}"><img src="${marbleURL(finalSpec,120)}" alt="">
       <span class="k">Saison ${esc(se.def.name)}</span><b>Palier ${tier} / ${PASS_TIERS}</b>
-      <span class="bar"><i style="width:${into/TIER_XP*100}%"></i></span>
-      <small>${fmt(into)} / ${fmt(TIER_XP)} XP · fin dans <span data-pass-timer>${passLeft()}</span></small>
+      <span class="bar"><i style="width:${into/need*100}%"></i></span>
+      <small>${fmt(into)} / ${fmt(need)} XP · fin dans <span data-pass-timer>${passLeft()}</span></small>
       ${pc ? `<button class="btn btn-yellow" data-action="pass-all">${ic("gift",16)} ${pc} récompense${pc>1?"s":""} à prendre</button>` : `<button class="btn btn-ghost" data-action="nav" data-view="passe">Voir le passe ${ic("arrow",14)}</button>`}
     </div></div></div>`}`;
 }
@@ -3902,6 +3922,7 @@ function claimDaily(){
   const streak = dailyStreak(), idx = dailyDay(streak), r = dailyRew(idx);
   S.jetons += r.j; if(r.bag) S.bagInv[r.bag] = (S.bagInv[r.bag]||0)+1;
   S.daily = {last:dayKey(), streak, best:Math.max(streak, S.daily?.best||0)};
+  passXP(PASS_XP.daily);
   if(srvOn()) srv(()=>Cloud.eco.daily()).then(x=>applyEco(x.eco), srvFail);
   return {...r, idx, streak};
 }
@@ -4128,7 +4149,7 @@ function heroSlides(){
     </div>
     <div class="hs-week">${DAILY_CAL.slice(w*7, w*7+7).map((d,k)=>cell(d, w*7+k)).join("")}</div>`});
   // le passe de saison : le palier, et la prochaine récompense de chaque voie
-  const into = tier>=PASS_TIERS ? TIER_XP : P.xp-(tier-1)*TIER_XP, t1 = Math.min(PASS_TIERS, tier+1);
+  const [into, need] = tierProg(P.xp, tier), t1 = Math.min(PASS_TIERS, tier+1);
   const lane = (track, lbl) => { const r = passReward(track, t1), locked = track==="prem" && !P.premium;
     return `<div class="hs-lane${locked?" locked":""}"><small>${lbl}${locked?` ${ic("lock",12,2.6)}`:""}</small><b>${rewardLabel(r)}</b><i>palier ${t1}</i></div>` };
   const finalSpec = rewardSpec("prem",30,passReward("prem",30));
@@ -4137,7 +4158,7 @@ function heroSlides(){
     <div class="hm-txt">
       <span class="hm-k">${ic("ticket",15)} Passe de saison · ${esc(se.def.name)}</span>
       <h1>Palier ${tier} / ${PASS_TIERS}</h1>
-      <div class="hs-xp"><span class="bar"><i style="width:${into/TIER_XP*100}%"></i></span><small>${fmt(into)} / ${fmt(TIER_XP)} XP · fin dans <span data-pass-timer>${passLeft()}</span></small></div>
+      <div class="hs-xp"><span class="bar"><i style="width:${into/need*100}%"></i></span><small>${fmt(into)} / ${fmt(need)} XP · fin dans <span data-pass-timer>${passLeft()}</span></small></div>
       <div class="hs-lanes">${lane("free","Gratuit")}${lane("prem","Premium")}</div>
       ${pc ? `<button class="btn btn-yellow btn-xl" data-action="pass-all">${ic("gift",22)} ${pc} récompense${pc>1?"s":""} à prendre</button>`
         : `<button class="btn btn-yellow btn-xl" data-action="nav" data-view="passe">${ic("ticket",22)} Voir le passe</button>`}
@@ -4272,10 +4293,11 @@ function homeCour(){
 /* =====================================================================
    SACS
    ===================================================================== */
+const pctBag = v => v<=0 ? "–" : v>=99.95 ? "100 %" : pct(v<1 ? +v.toFixed(1) : Math.round(v));
 function oddsList(b){
   return `<ul class="odds">
-    <li class="odds-h">Taille de chaque bille</li>
-    ${TK.map(k=>`<li style="${tstyle(k)}"><i></i><span>${TYPES[k].label}</span><span>${pct(b.odds[k])}</span></li>`).join("")}
+    <li class="odds-h">Au moins une dans le sac</li>
+    ${TK.map(k=>`<li style="${tstyle(k)}"><i></i><span>${TYPES[k].label}</span><span>${pctBag(b.perBag[k])}</span></li>`).join("")}
     <li class="sh"><i></i><span>Shiny (sur chaque bille)</span><span>${pct(+(b.shiny*100).toFixed(2))}</span></li>
     ${b.guarantee?`<li class="guar">Garantie : 1 ${TYPES[b.guarantee].label} ou mieux</li>`:""}
   </ul>`;
@@ -4333,9 +4355,9 @@ function viewBags(){
       <div class="bg-cta">${cta}</div>
       ${free?`<div class="free-stock">${stackPips()}<span>${st} / ${FREE_MAX} en stock · ${freeFull()?"stock plein":`prochain dans <span class="timer" data-free-timer>${freeLeft()}</span>`}</span></div>`:""}
       <div class="panel bg-odds">
-        <div class="bg-odds-h"><b>Taille de chaque bille</b><span class="meta">shiny : ${pct(+(b.shiny*100).toFixed(2))}</span></div>
-        <div class="bg-bar">${TK.map(k=>`<i style="flex:${b.odds[k]};background:${TYPES[k].rc}" title="${TYPES[k].label} : ${pct(b.odds[k])}"></i>`).join("")}</div>
-        <div class="bg-legend">${TK.map(k=>`<span style="--rc:${TYPES[k].rc}"><i></i>${TYPES[k].label.replace("Bille chinoise","Chinoise").replace("Mini bille","Mini")}<em>${pct(b.odds[k])}</em></span>`).join("")}</div>
+        <div class="bg-odds-h"><b>Dans un sac, au moins une…</b><span class="meta">shiny : ${pct(+(b.shiny*100).toFixed(2))} par bille</span></div>
+        <div class="bg-legend">${TK.map(k=>`<span style="--rc:${TYPES[k].rc}"><i></i>${TYPES[k].label.replace("Bille chinoise","Chinoise").replace("Mini bille","Mini")}<em>${pctBag(b.perBag[k])}</em></span>`).join("")}</div>
+        ${[["fill",`Les ${b.n-1} premières billes`],["star","La dernière, la vedette du sac"]].map(([k,l])=>`<div class="bg-slot"><small>${l}</small><div class="bg-bar">${TK.map(t=>b[k][t]?`<i style="flex:${b[k][t]};background:${TYPES[t].rc}" title="${TYPES[t].label} : ${pct(b[k][t])}"></i>`:"").join("")}</div></div>`).join("")}
       </div>
     </div>
   </div>
@@ -4446,7 +4468,7 @@ function chalRow(c){
 }
 function seriesView(){
   const done = S.seriesDone||[];
-  return `<p class="conf-intro">De petites collections à thème : remplis toutes les cases d'une série (n'importe quelle taille, sauf indication) pour gagner sa récompense. ${done.length} / ${SERIES.length} séries terminées.</p>
+  return `<p class="conf-intro">De petites collections à thème : remplis toutes les cases d'une série (n'importe quelle taille, sauf si une taille minimum est indiquée) pour gagner sa récompense. ${done.length} / ${SERIES.length} séries terminées.</p>
   <div class="series-grid">${SERIES.map(se=>{
     const fill = seriesFill(se), n = fill.filter(Boolean).length, full = n>=se.items.length, got = done.includes(se.id);
     return `<section class="panel serie${full&&!got?" ready":""}${got?" claimed":""}">
@@ -4598,7 +4620,7 @@ function rewardInner(track,t,r){
 function viewPass(){
   pedia = [];
   const P = ensurePass(), se = seasonNow(), tier = passTier(), claim = passClaimable();
-  const into = tier>=PASS_TIERS ? TIER_XP : P.xp-(tier-1)*TIER_XP;
+  const [into, need] = tierProg(P.xp, tier);
   const finalR = passReward("prem",30), finalSpec = rewardSpec("prem",30,finalR);
   const cols = Array.from({length:PASS_TIERS},(_,i)=>{
     const t = i+1, reached = t<=tier;
@@ -4625,8 +4647,8 @@ function viewPass(){
       <span class="eyebrow">Saison · ${se.month}</span>
       <h2>${se.def.name}</h2>
       <div class="ph-tier"><b>Palier ${tier}</b><span>/ ${PASS_TIERS}</span></div>
-      <div class="bar pass-bar"><i style="width:${into/TIER_XP*100}%"></i></div>
-      <p>${tier>=PASS_TIERS?"Tu as terminé le passe, chapeau !":`${fmt(into)} / ${fmt(TIER_XP)} XP avant le palier ${tier+1}`}</p>
+      <div class="bar pass-bar"><i style="width:${into/need*100}%"></i></div>
+      <p>${tier>=PASS_TIERS?"Tu as terminé le passe, chapeau !":`${fmt(into)} / ${fmt(need)} XP avant le palier ${tier+1}`}</p>
       <div class="ph-actions">
         ${claim?`<button class="btn btn-yellow" data-action="pass-all">${ic("gift",18)} Tout récupérer (${claim})</button>`:""}
         ${P.premium?`<span class="prem-badge">${ic("star",16)} Passe premium actif</span>`:`<button class="btn btn-light" data-action="buy-pass">${ic("star",18)} Débloquer le premium · ${PASS_PRICE}</button>`}
@@ -4646,6 +4668,7 @@ function viewPass(){
       <div class="panel-head"><h2>Gagner de l'XP de saison</h2></div>
       <ul class="xp-list">
         <li>${ic("bag",20)}<span>Ouvrir un sac</span><b>+${BAG_XP.gratuit} à +${BAG_XP.collector}</b></li>
+        <li>${ic("gift",20)}<span>Récupérer le bonbec du jour</span><b>+${PASS_XP.daily}</b></li>
         <li>${ic("quest",20)}<span>Récupérer une quête du jour</span><b>+${PASS_XP.quest}</b></li>
         <li>${ic("trophy",20)}<span>Bonus des 3 quêtes</span><b>+${PASS_XP.bonus}</b></li>
         <li>${ic("target",20)}<span>Jeux de la cour (Tir, Pot, Château, Casse-briques)</span><b>+${PASS_XP.star} par étoile</b></li>
@@ -4953,11 +4976,11 @@ function openModal(id, pv){
         ${pv?"":`<dt>Motif</dt><dd><code>${serial(s)}</code></dd>
         <dt>Obtenue le</dt><dd>${dateFr(s.at)}${s.via?` <small class="meta">${s.via.k==="vente"?`achetée à <b>${esc(s.via.de||"?")}</b> au marché`:`en troc avec <b>${esc(s.via.de||"?")}</b>`}</small>`:""}</dd>`}
       </dl>
-      ${pv&&pv.cour?`<p class="meta">${esc(pv.cour)}</p>${findBtn(s)}`:pv?`<p class="meta">Aperçu Billepedia · ${S.specs.some(x=>slotKey(x)===slotKey(s))?"tu as déjà ce format dans ce décor.":"pas encore dans ta boîte à billes."}</p>${findBtn(s)}`:`<div class="modal-actions">
+      ${pv&&pv.cour?`<p class="meta">${esc(pv.cour)}</p>`:pv?`<p class="meta">Aperçu Billepedia · ${S.specs.some(x=>slotKey(x)===slotKey(s))?"tu as déjà ce format dans ce décor.":"pas encore dans ta boîte à billes."}</p>`:`<div class="modal-actions">
         ${S.active===s.id?`<button class="btn btn-ghost" disabled>Bille active</button>`:`<button class="btn btn-blue" data-action="set-active" data-id="${s.id}">Jouer avec cette bille</button>`}
         ${S.vitrine.includes(s.id)?`<button class="btn btn-ghost" data-action="vit-rm" data-id="${s.id}">${ic("layers",16)} Retirer de la vitrine</button>`:`<button class="btn btn-ghost" data-action="vit-add" data-id="${s.id}">${ic("layers",16)} Mettre en vitrine</button>`}
         ${srvOn() && s.srv && !s.secret ? `<button class="btn btn-ghost" data-action="cour-sell-this" data-id="${s.id}">${ic("cour",16)} Vendre au marché</button>` : ""}
-        ${findBtn(s)}
+        
         ${S.active===s.id||s.secret?"":`<button class="btn btn-ghost" data-action="recycle" data-id="${s.id}">${ic("candy",16)} Échanger · +${fmt(recycleValue(s))} ${CUR.many}</button>`}
         ${sib.length>1 && keepOf(sib).id!==s.id?`<button class="btn btn-ghost" data-action="keep-copy" data-id="${s.id}">${ic("check",16)} Garder cet exemplaire</button>`:""}
         ${fromSheet?"":`<button class="btn btn-ghost" data-action="sheet" data-type="${s.type}" data-fam="${s.family}">${ic("layers",16)} Coloris de la case · ${casePals(caseList)} / ${BASE_PALS}</button>`}
@@ -5039,20 +5062,19 @@ function rollType(odds,min){
   const keys = TK.filter(k=>!min||TIDX[k]>=TIDX[min]);
   const tot = keys.reduce((a,k)=>a+odds[k],0);
   let x = Math.random()*tot;
-  for(const k of keys){ x-=odds[k]; if(x<=0) return k }
+  for(const k of keys){ x-=odds[k]; if(odds[k] && x<=0) return k }
   return keys[keys.length-1];
 }
 function pullBag(bag){
   const res = [];
   for(let i=0;i<bag.n;i++){
-    let t = rollType(bag.odds);
-    if(bag.guarantee && i===bag.n-1 && !res.some(s=>TIDX[s.type]>=TIDX[bag.guarantee])) t = rollType(bag.odds,bag.guarantee);
+    const t = rollType(i===bag.n-1 ? bag.star : bag.fill);   // la dernière bille est la vedette du sac
     const shiny = Math.random()<bag.shiny ? rollShiny() : 0;
     res.push(makeSpec(t,{shiny, src:bag.id}));
   }
   if((S.pity||0)+1>=PITY && !res.some(s=>tierOf(s)>=BIG)){
     const last = res[res.length-1];
-    res[res.length-1] = makeSpec(Math.random()*(bag.odds.boulet+bag.odds.mammouth)<bag.odds.mammouth ? "mammouth" : "boulet", {shiny:last.shiny, src:bag.id});
+    res[res.length-1] = makeSpec(Math.random()*(bag.star.boulet+bag.star.mammouth)<bag.star.mammouth ? "mammouth" : "boulet", {shiny:last.shiny, src:bag.id});
     res.forced = true;
   }
   return res.sort((a,b)=>TIDX[a.type]-TIDX[b.type] || (a.shiny?1:0)-(b.shiny?1:0));
@@ -5408,9 +5430,9 @@ function finishReveal(){
   }
   document.getElementById("ov-actions").innerHTML = `<span class="ov-xp" style="flex-basis:100%;justify-content:center">${ic("ticket",18)} +${ovState.pxp} XP de saison</span>${again}<button class="btn btn-ghost" data-action="to-collection">Voir ma boîte à billes</button>`;
 }
-function closeOv(){
+function closeOv(quiet){
   // fermé avant d'avoir tout découvert : les billes sont déjà rangées, on montre quand même ce qu'il y avait
-  const missed = ovState && ovState.results && ovState.opened.size < ovState.results.length ? ovState : null;
+  const missed = !quiet && ovState && ovState.results && ovState.opened.size < ovState.results.length ? ovState : null;
   FX.stop();
   if(ovState?.rollRaf) cancelAnimationFrame(ovState.rollRaf);
   Sound.rollStop();
@@ -6840,7 +6862,7 @@ function courClassement(){
   const amis = new Set((cour.moi?.amis||[]).map(a=>a.id));
   const chip = (k,l) => `<button class="chip" data-action="cl-portee" data-p="${k}" aria-pressed="${P===k}">${l}</button>`;
   const face = (x, px) => x.active ? mImg(x.active,160,Math.round(px*(.55+.45*scaleOf(x.active.type))),"") : avatarIni(x.pseudo, Math.round(px*.8));
-  const voir = x => !x.moi && amis.has(x.id) ? ` data-action="ami-voir" data-id="${x.id}" role="button" tabindex="0"` : "";
+  const voir = x => !x.moi ? ` data-action="ami-voir" data-id="${x.id}" role="button" tabindex="0" title="Voir sa collection"` : "";
   const top = C.liste.slice(0,3), podium = [top[1], top[0], top[2]].filter(Boolean);
   const row = x => `<div class="cl-row${x.moi?" me":""}"${voir(x)}><span class="cl-rank">${x.rang}</span><span class="cl-face">${face(x,40)}</span>
       <span class="who">${esc(x.pseudo)}${x.moi?` <em>toi</em>`:""}<small>${x.titre ? `${ic("trophy",11,2.4)} ${esc(x.titre)} · ` : ""}${fmt(x.cases)} case${x.cases>1?"s":""}</small></span>
@@ -6962,10 +6984,12 @@ async function openProfil(id){
       ${P.active ? mImg(P.active,240,110,"") : avatarIni(P.pseudo,96)}
       <h2>${esc(P.pseudo)}</h2>${P.titre?`<span class="pill" style="--rc:#C07A0C;--rb:var(--gold-bg)">${ic("trophy",12,2.4)} ${esc(P.titre)}</span>`:""}
       <div class="pf-stats"><div><b>${fmt(P.billes)}</b><small>Billes</small></div><div><b>${fmt(P.cases)}</b><small>Cases</small></div><div><b>${fmt(P.shiny)}</b><small>Shiny</small></div></div>
+      ${P.meilleures?.length ? `<div class="pf-shelf"><div class="lbl">Ses plus belles billes</div><div class="troc-balls">${P.meilleures.map(x=>courBall(x,56,`Une des plus belles billes de ${P.pseudo}.`)).join("")}</div></div>` : ""}
       ${P.vitrine.length ? `<div class="pf-shelf"><div class="lbl">Sa vitrine</div><div class="troc-balls">${P.vitrine.map(x=>courBall(x,64,`Dans la vitrine de ${P.pseudo}.`)).join("")}</div></div>` : ""}
       ${P.trouvailles.length ? `<div class="pf-shelf"><div class="lbl">Ses belles trouvailles</div><div class="troc-balls">${P.trouvailles.map(x=>courBall(x,52,`Une belle trouvaille de ${P.pseudo}.`)).join("")}</div></div>` : ""}
-      <div class="troc-act"><button class="btn btn-yellow" data-action="troc-new" data-id="${P.id}">${ic("swap",18)} Lui proposer un troc</button>
-        <button class="btn btn-ghost" data-action="ami-retirer" data-id="${P.id}" data-pseudo="${esc(P.pseudo)}">Retirer de mes copains</button></div>
+      ${P.ami===false ? `<div class="troc-act"><button class="btn btn-yellow" data-action="ami-ajouter-pseudo" data-pseudo="${esc(P.pseudo)}">${ic("plus",18)} L'ajouter à mes copains</button></div><p class="meta">Pour lui proposer un troc, ajoutez-vous d'abord comme copains.</p>`
+        : `<div class="troc-act"><button class="btn btn-yellow" data-action="troc-new" data-id="${P.id}">${ic("swap",18)} Lui proposer un troc</button>
+        <button class="btn btn-ghost" data-action="ami-retirer" data-id="${P.id}" data-pseudo="${esc(P.pseudo)}">Retirer de mes copains</button></div>`}
     </div></div>`;
   el.hidden = false;
 }
@@ -7043,7 +7067,6 @@ function trocStart(id, pre){
 
 // ---------- marché ----------
 // « Voir au marché » : le marché filtré sur la même taille et le même décor
-const findBtn = s => srvOn() && !s.secret && !s.loan ? `<button class="btn btn-ghost" data-action="cour-find" data-type="${s.type}" data-fam="${s.family}">${ic("search",16)} Voir au marché</button>` : "";
 // le choix du décor, du plus courant au plus rare
 function decorSel(v){
   const groups = DECOR_RAR.map((r,k)=>{ const fams = FAM_ORDER.filter(i=>FAMILIES[i].rar===k);
@@ -7119,6 +7142,7 @@ function bidAsk(id){
   });
 }
 function sellStart(pick){
+  if(!document.getElementById("ov").hidden) closeOv(true);   // depuis l'ouverture d'un sac : on la referme, sinon elle cache le marché
   cour.sell = {list:null, pick:pick||null, prix:"", mode:"fixe"};
   ui.courTab = "marche"; closeModal(); if(ui.view!=="cour") go("cour"); else renderView();
   const X = cour.sell;
@@ -7202,6 +7226,8 @@ document.addEventListener("click", e=>{
       break;
     }
     case "ami-voir": openProfil(t.dataset.id); break;
+    case "ami-ajouter-pseudo": { const v = t.dataset.pseudo; t.disabled = true;
+      Cloud.cour.ajouter(v).then(r=>{ toast(r==="ami" ? `${v} t'avait déjà demandé : vous êtes copains !` : `Demande envoyée à ${v}.`); courRefresh("moi","fil"); closeModal() }, e=>{ t.disabled = false; courFail(e) }); break }
     case "ami-retirer": {
       const pseudo = t.dataset.pseudo, run = () => Cloud.cour.retirer(t.dataset.id).then(()=>{ closeModal(); toast(pseudo ? `${pseudo} n'est plus dans tes copains.` : "Demande annulée."); courRefresh("moi","fil") }, courFail);
       if(!pseudo){ run(); break }
@@ -7251,8 +7277,6 @@ document.addEventListener("click", e=>{
     case "mk-encherir": bidAsk(+t.dataset.id); break;
     case "sell-mode": if(!cour.sell) break; cour.sell.prix = document.getElementById("sell-prix")?.value || cour.sell.prix; cour.sell.mode = t.dataset.m; renderView(); break;
     case "mk-reset": Object.assign(cour.f, {taille:"", decor:null, shiny:"", genre:""}); courRefresh("marche"); renderView(); break;
-    case "cour-find": Object.assign(cour.f, {taille:t.dataset.type, decor:+t.dataset.fam, shiny:""}); cour.marche = null;
-      ui.courTab = "marche"; cour.compose = null; cour.sell = null; closeModal(); courRefresh("marche","annonces"); if(ui.view!=="cour") go("cour"); else renderView(); break;
     case "mk-mine": document.getElementById("mes-annonces")?.scrollIntoView({behavior:"smooth", block:"start"}); break;
     case "cour-copy": (navigator.clipboard ? navigator.clipboard.writeText(S.name) : Promise.reject()).then(()=>toast(`Pseudo copié : colle-le à tes copains pour qu'ils t'ajoutent !`), ()=>toast(`Ton pseudo : ${S.name}`)); break;
     case "cour-sell-this": sellStart(t.dataset.id); break;
@@ -7453,7 +7477,7 @@ document.addEventListener("click", e=>{
     case "bell": toast(freeReady() ? "Ton sac gratuit est prêt !" : `Prochain sac gratuit dans ${freeLeft()}.`); break;
     case "g-restart": loadLevel(game.lvl); break;
     case "g-level": loadLevel(+t.dataset.l); break;
-    case "pass-xp": passXP(3*TIER_XP); renderNav(); toast("+3 paliers de passe (démo)."); break;
+    case "pass-xp": passXP(3*TIER_COST(PASS_TIERS)); renderNav(); toast("+3 paliers de passe (démo)."); break;
     case "add-jetons": if(sync.on && eco.ready){ srv(()=>Cloud.eco.test("bonbecs")).then(r=>{ applyEco(r.eco); toast(`+1 000 ${CUR.many} (test).`) }, srvFail); break }
       S.jetons+=1000; save(); renderTop(); toast(`+1 000 ${CUR.many} ajoutés (démo).`); break;
     case "refill-free": if(sync.on && eco.ready){ srv(()=>Cloud.eco.test("gratuit")).then(r=>{ applyEco(r.eco); renderView(); toast(`${FREE_MAX} sacs gratuits en stock (test).`) }, srvFail); break }

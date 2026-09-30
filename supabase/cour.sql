@@ -192,13 +192,20 @@ begin
 end $$;
 
 -- le profil d'un copain : sa vitrine, sa bille active, ses chiffres et ses dernières belles trouvailles
+-- le profil d'un joueur : tout le monde peut le voir (depuis le classement par exemple) ; le troc reste entre copains
 create or replace function public.profil_joueur(qui uuid) returns jsonb language plpgsql security definer set search_path = public as $$
 declare moi uuid := auth.uid(); vit jsonb;
 begin
   if moi is null then raise exception 'connexion_requise'; end if;
-  if qui <> moi and not interne.sont_amis(moi, qui) then raise exception 'pas_ami'; end if;
+  if not exists (select 1 from portefeuilles where joueur = qui) then raise exception 'inconnu'; end if;
   select s.donnees->'vitrine' into vit from sauvegardes s where s.joueur = qui;
   return interne.carte(qui) || jsonb_build_object(
+    'ami', qui = moi or interne.sont_amis(moi, qui), 'moi', qui = moi,
+    -- ses 12 plus belles billes : les plus grosses, puis les shiny, puis les décors les plus rares
+    'meilleures', coalesce((select jsonb_agg(x.j) from (select interne.bille_json(b) j from billes b
+                 where b.proprietaire = qui and b.detruite_le is null and coalesce(b.donnees->>'src', '') <> 'test'
+                 order by interne.rang(b.taille) desc, b.shiny desc, (interne.decor_rarete())[b.decor+1] desc nulls last, b.numero
+                 limit 12) x), '[]'),
     'vitrine', coalesce((select jsonb_agg(interne.bille_json(b)) from billes b
                  where b.proprietaire = qui and b.detruite_le is null
                    and b.id::text in (select jsonb_array_elements_text(coalesce(vit, '[]')) )), '[]'),
@@ -549,22 +556,77 @@ create or replace function interne.pts_taille() returns int[] language sql immut
 create or replace function interne.mult_decor() returns numeric[] language sql immutable as $$ select array[1,1.5,2,3,5]::numeric[] $$;
 create or replace function interne.pts_shiny() returns int[] language sql immutable as $$ select array[150,300,600] $$;
 
--- les séries à thème, case par case (mêmes séries que SERIES dans index.html : décor et/ou coloris, n'importe quelle taille).
--- « Les grands formats » (un décor dans les 6 tailles) est compté à part.
-create or replace function interne.series() returns table (serie text, pts int, decor int, coloris int) language sql immutable as $$
+-- les séries à thème, case par case (mêmes séries que SERIES dans index.html : décor et/ou coloris, taille minimum éventuelle
+-- (0 Mini … 5 Mammouth)). « Les grands formats » (un décor dans les 6 tailles) est compté à part.
+drop function if exists interne.series();
+create or replace function interne.series() returns table (serie text, pts int, decor int, coloris int, taille_min int) language sql immutable as $$
   select * from (values
-    ('trousse', 75, 21, null::int), ('trousse', 75, 22, null), ('trousse', 75, 25, null), ('trousse', 75, 24, null),
-    ('bonbons', 100, 7, null), ('bonbons', 100, 14, null), ('bonbons', 100, 20, null), ('bonbons', 100, 23, null), ('bonbons', 100, null, 24), ('bonbons', 100, null, 37),
-    ('nature', 100, 28, null), ('nature', 100, 29, null), ('nature', 100, 19, null), ('nature', 100, 0, null), ('nature', 100, null, 14), ('nature', 100, null, 47),
-    ('arcenciel', 100, null, 12), ('arcenciel', 100, null, 3), ('arcenciel', 100, null, 17), ('arcenciel', 100, null, 2), ('arcenciel', 100, null, 0), ('arcenciel', 100, null, 20), ('arcenciel', 100, null, 10),
-    ('noiretblanc', 75, null, 30), ('noiretblanc', 75, null, 18), ('noiretblanc', 75, null, 40), ('noiretblanc', 75, null, 23), ('noiretblanc', 75, null, 43),
-    ('pierres', 1500, 3, 19), ('pierres', 1500, 18, 20), ('pierres', 1500, 11, 2), ('pierres', 1500, 10, 21),
-    ('feuglace', 100, 17, null), ('feuglace', 100, 15, null), ('feuglace', 100, null, 6), ('feuglace', 100, null, 13),
-    ('cosmos', 500, 26, null), ('cosmos', 500, 27, null), ('cosmos', 500, 2, null), ('cosmos', 500, 30, null),
-    ('grenier', 100, 8, null), ('grenier', 100, 6, null), ('grenier', 100, 4, null), ('grenier', 100, 1, null),
-    ('foire', 100, 12, null), ('foire', 100, 13, null), ('foire', 100, 5, null), ('foire', 100, null, 31), ('foire', 100, null, 44),
-    ('atelier', 300, 9, null), ('atelier', 300, 16, null), ('atelier', 300, 31, null), ('atelier', 300, null, 22), ('atelier', 300, null, 35)
-  ) v (serie, pts, decor, coloris)
+    ('trousse', 75, 21, null, 2),
+    ('trousse', 75, 22, null, 2),
+    ('trousse', 75, 25, null, 2),
+    ('trousse', 75, 24, null, 2),
+    ('trousse', 75, null, 30, 2),
+    ('trousse', 75, null, 17, 2),
+    ('bonbons', 100, 7, null, 3),
+    ('bonbons', 100, 14, null, 2),
+    ('bonbons', 100, 20, null, 3),
+    ('bonbons', 100, 23, null, 2),
+    ('bonbons', 100, null, 24, null),
+    ('bonbons', 100, null, 37, null),
+    ('bonbons', 100, null, 36, null),
+    ('bonbons', 100, null, 33, null),
+    ('nature', 100, 28, null, 3),
+    ('nature', 100, 29, null, 2),
+    ('nature', 100, 19, null, 2),
+    ('nature', 100, 0, null, 3),
+    ('nature', 100, null, 14, null),
+    ('nature', 100, null, 47, null),
+    ('nature', 100, null, 42, null),
+    ('nature', 100, null, 8, null),
+    ('arcenciel', 100, null, 12, 2),
+    ('arcenciel', 100, null, 3, 2),
+    ('arcenciel', 100, null, 17, 2),
+    ('arcenciel', 100, null, 2, 2),
+    ('arcenciel', 100, null, 0, 2),
+    ('arcenciel', 100, null, 20, 2),
+    ('arcenciel', 100, null, 10, 2),
+    ('noiretblanc', 75, null, 30, 2),
+    ('noiretblanc', 75, null, 18, 2),
+    ('noiretblanc', 75, null, 40, 2),
+    ('noiretblanc', 75, null, 23, 2),
+    ('noiretblanc', 75, null, 43, 2),
+    ('noiretblanc', 75, null, 7, 2),
+    ('pierres', 1500, 3, 19, null),
+    ('pierres', 1500, 18, 20, null),
+    ('pierres', 1500, 11, 2, null),
+    ('pierres', 1500, 10, 21, null),
+    ('feuglace', 100, 17, null, null),
+    ('feuglace', 100, 15, null, 3),
+    ('feuglace', 100, 11, null, 3),
+    ('feuglace', 100, null, 6, 3),
+    ('feuglace', 100, null, 13, 3),
+    ('cosmos', 500, 26, null, null),
+    ('cosmos', 500, 27, null, null),
+    ('cosmos', 500, 2, null, null),
+    ('cosmos', 500, 30, null, null),
+    ('grenier', 100, 8, null, 3),
+    ('grenier', 100, 6, null, 3),
+    ('grenier', 100, 4, null, 3),
+    ('grenier', 100, 1, null, 3),
+    ('grenier', 100, 18, null, 3),
+    ('foire', 100, 12, null, 2),
+    ('foire', 100, 13, null, 2),
+    ('foire', 100, 5, null, 2),
+    ('foire', 100, null, 31, null),
+    ('foire', 100, null, 44, null),
+    ('foire', 100, null, 25, null),
+    ('foire', 100, null, 32, null),
+    ('atelier', 300, 9, null, null),
+    ('atelier', 300, 16, null, 3),
+    ('atelier', 300, 31, null, 3),
+    ('atelier', 300, null, 22, 3),
+    ('atelier', 300, null, 35, 3)
+  ) v (serie, pts, decor, coloris, taille_min)
 $$;
 create or replace function interne.pts_grands() returns int language sql immutable as $$ select 300 $$;   -- la série « Les grands formats »
 
@@ -577,7 +639,8 @@ create or replace function interne.scores() returns table (joueur uuid, total in
     select j, t, d, count(distinct c)::int nc, count(distinct c) filter (where c < interne.coloris_base())::int nb,
       (interne.pts_taille())[t+1] pt, (interne.mult_decor())[(interne.decor_rarete())[d+1]+1] m
     from b group by j, t, d),
-  sh as (select j, sum((interne.pts_shiny())[sh])::int p from (select distinct j, t, d, c, sh from b where sh > 0) x group by j),
+  -- les shiny du passe de saison (coloris de saison) ne comptent pas
+  sh as (select j, sum((interne.pts_shiny())[sh])::int p from (select distinct j, t, d, c, sh from b where sh > 0 and c < interne.coloris_base()) x group by j),
   sd as (select j, sum(round(200 * m))::int p, count(*)::int n from (select j, d, max(m) m from k group by j, d having count(*) = 6) x group by j),
   st as (select j, sum(20 * pt)::int p, count(*)::int n from (select j, t, max(pt) pt from k group by j, t
            having count(*) = array_length(interne.decor_rarete(), 1)) x group by j),
@@ -586,7 +649,8 @@ create or replace function interne.scores() returns table (joueur uuid, total in
   se as (select p.j, sum(d.pts)::int p, count(*)::int n from (select distinct j from b) p
            cross join (select distinct serie, pts from interne.series()) d
            where not exists (select 1 from interne.series() i where i.serie = d.serie
-                   and not exists (select 1 from b where b.j = p.j and (i.decor is null or b.d = i.decor) and (i.coloris is null or b.c = i.coloris)))
+                   and not exists (select 1 from b where b.j = p.j and (i.decor is null or b.d = i.decor) and (i.coloris is null or b.c = i.coloris)
+                                   and (i.taille_min is null or b.t >= i.taille_min)))
            group by p.j),
   tot as (select j, count(*)::int cases, sum(round(pt * m))::int pc, sum((pt / 5) * (nc - 1))::int pk from k group by j),
   x as (select tot.*, coalesce(sh.p,0) psh,

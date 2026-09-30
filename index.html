@@ -2114,7 +2114,7 @@ const FAMILIES = [
   {name:"Nacrée",      rar:3, desc:"Un reflet de perle qui change de couleur selon l'angle."},
   {name:"Cristal",     rar:0, desc:"Un verre clair où sont restées prisonnières de petites bulles d'air."},
   {name:"Arlequin",    rar:2, desc:"Des taches de couleur opaques cousues comme un patchwork."},
-  {name:"Ruban",       rar:1, desc:"Un ruban plat et torsadé en plein cœur du verre."},
+  {name:"Ruban",       rar:1, desc:"Un large ruban blanc torsadé en plein cœur du verre, rayé de fins filets de couleur."},
   {name:"Millefiori",  rar:2, desc:"Des centaines de petites fleurs de verre, comme à Venise."},
   {name:"Givrée",      rar:0, desc:"Un verre dépoli, doux comme le givre sur une vitre."},
   {name:"Fumée",       rar:1, desc:"Des volutes de fumée prisonnières du verre."},
@@ -2133,17 +2133,22 @@ const FAMILIES = [
   {name:"Écailles",    rar:2, desc:"Des écailles qui brillent, comme un poisson… ou un dragon."},
   {name:"Aurore",      rar:4, desc:"Un verre nuit où dansent des rideaux de lumière."},
   {name:"Craquelée",   rar:1, desc:"Un verre clair fêlé de l'intérieur, qui accroche la lumière."},
+  // décors d'événement : jamais dans les sacs ni dans l'album, on ne les trouve que pendant leur événement
+  {name:"Pirate",      rar:4, event:"pirates", desc:"Le drapeau noir des flibustiers : une tête de mort et ses deux os, cerclée d'or comme un coffre au trésor."},
 ];
-const FAM_W = FAMILIES.map(f=>DECOR_RAR[f.rar].w);
+const FAM_W = FAMILIES.map(f=>f.event ? 0 : DECOR_RAR[f.rar].w);
+// les décors de l'album (sans ceux des événements)
+const DECOR_IDS = FAMILIES.map((_,i)=>i).filter(i=>!FAMILIES[i].event), N_DECORS = DECOR_IDS.length;
+const EVENT_FAMS = FAMILIES.map((_,i)=>i).filter(i=>FAMILIES[i].event);
 // les décors rangés par rareté (Commun, Peu commun, Rare, Épique, Légendaire), puis par nom : l'ordre de l'album
-const FAM_ORDER = FAMILIES.map((_,i)=>i).sort((a,b)=>FAMILIES[a].rar-FAMILIES[b].rar || FAMILIES[a].name.localeCompare(FAMILIES[b].name,"fr"));
+const FAM_ORDER = DECOR_IDS.slice().sort((a,b)=>FAMILIES[a].rar-FAMILIES[b].rar || FAMILIES[a].name.localeCompare(FAMILIES[b].name,"fr"));
 // La rareté d'une bille, c'est sa taille (les décors ont seulement des fréquences différentes)
 const RARITY = Object.keys(TYPES).map(t=>({name:TYPES[t].label, c:TYPES[t].rc}));
 const FMT_TIER = {mini:0, bille:1, chinoise:2, calot:3, boulet:4, mammouth:5};
 const BIG = FMT_TIER.boulet;   // "un gros" : Boulet ou Mammouth
 const tierOf = s => FMT_TIER[s.type];
 const SHINY_COLS = ["#FF6FB5","#FFB547","#6FE3A8","#5AB8FF","#B07BFF"];
-const OPAQUE_FAMS = [3,7,8,9,10,12,14,17,18,19,20,21,22,23,24,25,26,27,28,29];
+const OPAQUE_FAMS = [3,7,8,9,10,12,14,17,18,19,20,21,22,23,24,25,26,27,28,29,32];
 const FIGURES = ["étoile","cœur","lune","fleur"];
 
 const PALETTES = [
@@ -2205,6 +2210,18 @@ const SECRETS = {
             hint:"Certains sacs se méritent : il faut vraiment, vraiment bien les secouer."},
 };
 Object.values(SECRETS).forEach(X=>{ X.palIdx = PALETTES.length; PALETTES.push(X.pal) });
+// Événements : un décor à part et ses coloris à lui, qu'on ne trouve que pendant l'événement
+const EVENTS = {
+  pirates: {name:"À l'abordage !", fam:"Pirate", color:"#C8322F",
+    desc:"Hissez le pavillon noir : pendant l'événement, des billes Pirate se cachent dans les sacs et les coffres de la cour.",
+    pals:[["Pavillon noir","#15151B","#D4A537","#F1E9D2","#2A2A30"],
+          ["Corsaire","#1B2C5A","#C8322F","#F4EEDC","#22335E"],
+          ["Coffre au trésor","#4A2A12","#F2C230","#FFF4D6","#5A3A1E"],
+          ["Caraïbes","#0E6E78","#E9D8A6","#FFFFFF","#1A7A84"],
+          ["Rhum ambré","#7A3B0C","#1D1410","#F6E3C0","#8A4A18"]]},
+};
+Object.values(EVENTS).forEach(E=>{ E.palIdx = E.pals.map(P=>{ PALETTES.push(P); return PALETTES.length-1 }) });
+const eventOf = s => FAMILIES[s.family]?.event ? EVENTS[FAMILIES[s.family].event] : null;
 const SHINIES = [null,
   {name:"Irisée",    w:70, desc:"Reflets arc-en-ciel à la surface."},
   {name:"Dorée",     w:25, desc:"Des paillettes d'or qui scintillent à la lumière."},
@@ -2568,11 +2585,10 @@ vec4 fam(vec3 q, out vec3 e){
   float r=length(q); vec3 so=uSeed.xyz*40.0;
   float tw=uPar.x, k=uPar.y, w=uPar.z, nb=uPar.w;
 #if MODE==0
-  { // oeil-de-chat : des pétales presque droits qui se croisent au centre, du verre clair tout autour
-    float ang=atan(q.z,q.x)+q.y*tw*0.18;
-    float rx=length(q.xz), d=abs(sin(ang*k*0.5))*rx;
-    float th=w*0.3+w*2.2*smoothstep(0.72,0.05,rx)*smoothstep(0.75,0.2,abs(q.y));   // en forme de feuille : épais au cœur, fin au bout
-    float dens=smoothstep(th,th*0.35,d)*smoothstep(0.6,0.48,r);
+  { // oeil-de-chat : des pétales de couleur torsadés, pris au cœur du verre clair
+    float ang=atan(q.z,q.x)+q.y*tw;
+    float d=abs(sin(ang*k*0.5))*length(q.xz);
+    float dens=smoothstep(w,w*0.25,d)*smoothstep(0.93,0.78,r);
     return vec4(pal3(floor(ang/6.2831853*k+0.5)), dens*45.0);
   }
 #elif MODE==1
@@ -2678,11 +2694,13 @@ vec4 fam(vec3 q, out vec3 e){
     return vec4(c, 200.0);
   }
 #elif MODE==13
-  { // ruban
-    float a=q.y*(tw<0.0?-1.0:1.0)*(2.4+abs(tw)*0.5)+so.x; float ca=cos(a), sa=sin(a);   // toujours bien torsadé
+  { // ruban : un large ruban blanc torsadé, rayé de fins filets de couleur sur toute sa longueur
+    float a=q.y*(tw<0.0?-1.0:1.0)*(2.0+abs(tw)*0.4)+so.x; float ca=cos(a), sa=sin(a);   // toujours bien torsadé
     vec2 p=vec2(ca*q.x-sa*q.z, sa*q.x+ca*q.z);
-    float dens=smoothstep(w*1.1,w*0.4,abs(p.y))*smoothstep(0.62,0.5,abs(p.x))*smoothstep(0.93,0.8,r);
-    return vec4(pal3(floor((p.x+0.62)*nb*1.3)), dens*55.0);
+    float dens=smoothstep(0.09,0.05,abs(p.y))*smoothstep(0.7,0.62,abs(p.x))*smoothstep(0.93,0.84,r);
+    float g=(p.x+0.7)*(3.0+nb*1.2), f=abs(fract(g)-0.5);
+    vec3 c=mix(vec3(0.97,0.95,0.9), pal3(floor(g)), smoothstep(0.32,0.2,f));
+    return vec4(c, dens*120.0);
   }
 #elif MODE==14
   { // millefiori : des fleurs de verre sur un fond sombre
@@ -2847,6 +2865,33 @@ vec4 fam(vec3 q, out vec3 e){
     float crack=smoothstep(0.035,0.0,sqrt(md2)-sqrt(md))*smoothstep(0.93,0.7,length(q));
     e=mix(vec3(1.0),uC3,0.3)*crack*2.0;
     return vec4(mix(uC2,vec3(1.0),0.5), 0.2+crack*30.0);
+  }
+#elif MODE==32
+  { // pirate : pavillon noir patiné, tête de mort et os croisés sur deux faces, cerclée d'une sangle d'or comme un coffre
+    float n=fbm(q*5.0+so);
+    vec3 c=uC1*(0.78+0.4*n)*(0.92+0.16*noise(q*40.0+so));
+    float ga=atan(q.y,q.z);
+    float strap=smoothstep(0.1,0.08,abs(q.x)), edge=smoothstep(0.1,0.085,abs(q.x))-smoothstep(0.085,0.07,abs(q.x));
+    float rivet=smoothstep(0.035,0.02,length(vec2(abs(q.x)-0.0,(fract(ga*1.9099)-0.5)*0.52)));
+    c=mix(c, uC2*(0.8+0.25*n)*(1.0-0.35*edge)+rivet*0.25, strap);
+    vec2 p=vec2(q.x>0.0?-q.z:q.z, q.y)*1.6;
+    float face=smoothstep(0.25,0.45,abs(q.x));
+    float head=length(p-vec2(0.0,0.14))-0.4;
+    vec2 jb=abs(p-vec2(0.0,-0.24))-vec2(0.2,0.12); float jaw=length(max(jb,0.0))+min(max(jb.x,jb.y),0.0)-0.04;
+    float holes=min(min(length(p-vec2(-0.15,0.12)),length(p-vec2(0.15,0.12)))-0.105, length(p-vec2(0.0,-0.07))-0.045);
+    float teeth=max(abs(fract(p.x*10.0+0.5)-0.5)*0.1-0.012, abs(p.y+0.26)-0.08);
+    float skull=max(min(head,jaw),-min(holes,teeth));
+    vec2 a1=vec2(-0.72,-0.72), b1=vec2(0.72,0.72), a2=vec2(-0.72,0.72), b2=vec2(0.72,-0.72);
+    vec2 pa=p-a1, ba=b1-a1; float d1=length(pa-ba*clamp(dot(pa,ba)/dot(ba,ba),0.0,1.0))-0.1;
+    pa=p-a2; ba=b2-a2; float d2=length(pa-ba*clamp(dot(pa,ba)/dot(ba,ba),0.0,1.0))-0.1;
+    vec2 k=abs(p); float knob=min(length(k-vec2(0.86,0.64)),length(k-vec2(0.64,0.86)))-0.13;
+    float bones=max(min(min(d1,d2),knob), -(head-0.06));
+    float emb=min(skull,bones);
+    float ink=smoothstep(0.02,0.0,emb)*face;
+    vec3 bone=uC3*(0.9+0.12*n);
+    c=mix(c, bone, ink);
+    c=mix(c, uC1*0.35, smoothstep(0.035,0.0,abs(emb))*face*0.8);
+    return vec4(c, 200.0);
   }
 #else
   { // à pois
@@ -3164,7 +3209,7 @@ const LOANER = {id:null, seed:hash("pretee"), type:"bille", family:0, pal:5, shi
 const ownActive = () => specById(S.active) || [...S.specs].sort(tierSort)[0];
 const activeSpec = () => ownActive() || LOANER;
 function slotsOwned(list=S.specs){ const m=new Map(); list.forEach(s=>{const k=slotKey(s); if(!m.has(k)) m.set(k,[]); m.get(k).push(s)}); return m }
-const TOTAL_SLOTS = TK.length*FAMILIES.length;              // cases de l'album : une par taille × décor
+const TOTAL_SLOTS = TK.length*N_DECORS;              // cases de l'album : une par taille × décor
 // Chaque case se remplit coloris par coloris : l'album compte toutes les billes différentes (taille × décor × coloris)
 const colorKey = s => s.type+"|"+s.family+"|"+s.pal;
 const ALBUM_TOTAL = TOTAL_SLOTS*BASE_PALS;
@@ -3439,47 +3484,105 @@ const FMT_GOAL = [32,32,30,28,24,20];
 // tailles à réunir pour un décor, selon sa rareté (de la Mini bille jusqu'à…)
 const FAM_SIZES = [6,6,5,4,2], FAM_REW = [450,750,550,850,500];
 const upTo = n => ({bille:"à la Bille", chinoise:"à la Bille chinoise", calot:"au Calot", boulet:"au Boulet", mammouth:"au Mammouth"})[TK[n-1]];
-// les succès ne comptent pas les billes secrètes (trop faciles à avoir) : elles ont leur succès à elles, « Détective de la cour »
-const SC = () => S.specs.filter(x=>!x.secret);
+// les succès ne comptent pas les billes secrètes (trop faciles à avoir : elles ont leur succès à elles, « Détective de la cour »)
+// ni celles des événements (hors album)
+const SC = () => S.specs.filter(x=>!x.secret && !FAMILIES[x.family]?.event);
+// Le Tir (mini-golf) : ses trous sont ici parce que les succès les comptent
+// Un seul trou par jour, le même pour tout le monde, pris dans ce grand parcours (walls/sand/water : [x,y,l,h], bumpers : [x,y,r]).
+// Les 6 premiers sont l'ancien parcours : leur place dans la liste garde les records déjà faits (S.best est rangé par numéro de trou).
+const LEVELS = [
+  {name:"Première ligne", par:2, start:[130,260], hole:[770,260], walls:[[430,190,40,140]], bumpers:[], sand:[]},
+  {name:"Le coude", par:3, start:[110,430], hole:[775,105], walls:[[20,20,620,320]], bumpers:[], sand:[[700,270,160,60]]},
+  {name:"Les champignons", par:3, start:[110,260], hole:[800,260], walls:[], bumpers:[[320,160,28],[320,360,28],[470,260,34],[620,150,26],[620,370,26]], sand:[[420,36,150,80],[420,404,150,80]]},
+  {name:"Le zigzag", par:4, start:[110,90], hole:[800,440], walls:[[240,20,30,350],[450,150,30,350],[660,20,30,350]], bumpers:[], sand:[]},
+  {name:"Le bunker", par:3, start:[110,260], hole:[760,260], walls:[[650,150,230,24],[650,346,230,24]], bumpers:[[400,140,24],[400,380,24]], sand:[[520,130,110,260]]},
+  {name:"La spirale", par:4, start:[100,80], hole:[800,420], walls:[[20,140,660,26],[220,300,660,26]], bumpers:[[450,233,14]], sand:[]},
+  {name:"Le couloir", par:2, start:[110,260], hole:[790,260], walls:[[180,20,700,140],[180,360,700,140]], bumpers:[[480,260,22]], sand:[]},
+  {name:"La chicane", par:3, start:[100,420], hole:[800,100], walls:[[300,200,30,300],[570,20,30,300]], bumpers:[], sand:[]},
+  {name:"Le lac", par:3, start:[110,260], hole:[790,260], walls:[], bumpers:[], sand:[], water:[[320,130,260,260]]},
+  {name:"Le pont", par:2, start:[110,260], hole:[790,260], walls:[], bumpers:[], sand:[], water:[[390,20,130,195],[390,305,130,195]]},
+  {name:"Les dunes", par:3, start:[100,100], hole:[800,420], walls:[], bumpers:[], sand:[[240,20,130,320],[530,180,130,320]]},
+  {name:"La fourche", par:3, start:[110,260], hole:[835,260], walls:[[300,230,500,60]], bumpers:[], sand:[[430,20,200,80]], water:[[430,400,200,100]]},
+  {name:"Le flipper", par:3, start:[100,260], hole:[820,110], walls:[], bumpers:[[260,140,26],[260,380,26],[410,260,30],[560,140,26],[560,380,26],[710,260,30]], sand:[]},
+  {name:"L'escalier", par:4, start:[90,450], hole:[820,80], walls:[[200,200,30,300],[420,20,30,330],[640,170,30,330]], bumpers:[], sand:[]},
+  {name:"L'île", par:3, start:[110,260], hole:[700,260], walls:[], bumpers:[], sand:[], water:[[540,140,280,40],[540,340,280,40],[540,180,40,40],[540,300,40,40],[780,180,40,160]]},
+  {name:"Le slalom", par:3, start:[90,260], hole:[810,260], walls:[], bumpers:[[250,225,24],[370,295,24],[490,225,24],[610,295,24],[730,225,24]], sand:[]},
+  {name:"Le U", par:3, start:[110,110], hole:[110,410], walls:[[20,230,640,60]], bumpers:[], sand:[[700,200,120,120]]},
+  {name:"Le bac à sable", par:3, start:[110,260], hole:[790,260], walls:[], bumpers:[], sand:[[260,70,380,380]]},
+  {name:"Les portes", par:3, start:[110,260], hole:[790,400], walls:[[300,20,30,180],[300,320,30,180],[600,20,30,110],[600,230,30,270]], bumpers:[], sand:[]},
+  {name:"La mare aux canards", par:3, start:[100,100], hole:[800,420], walls:[], bumpers:[], sand:[], water:[[250,200,150,300],[500,20,150,300]]},
+  {name:"Le goulot", par:3, start:[100,260], hole:[800,260], walls:[[420,20,60,200],[420,300,60,200]], bumpers:[[250,260,24]], sand:[]},
+  {name:"La boîte", par:4, start:[110,260], hole:[680,260], walls:[[560,170,200,24],[560,326,200,24],[560,194,24,132]], bumpers:[], sand:[]},
+  {name:"Le serpent", par:5, start:[100,75], hole:[800,445], walls:[[20,130,700,24],[180,250,700,24],[20,370,700,24]], bumpers:[], sand:[]},
+  {name:"Les deux bosses", par:3, start:[100,260], hole:[800,260], walls:[], bumpers:[[330,260,60],[600,260,60]], sand:[[440,40,60,110],[440,370,60,110]]},
+  {name:"La croix", par:3, start:[100,100], hole:[800,420], walls:[[430,90,40,340],[280,240,340,40]], bumpers:[], sand:[]},
+  {name:"Le trou perdu", par:4, start:[800,420], hole:[100,80], walls:[[20,170,330,24],[190,20,24,90]], bumpers:[[600,260,26]], sand:[]},
+  {name:"La plage", par:3, start:[100,240], hole:[800,300], walls:[], bumpers:[[450,250,26]], sand:[[20,390,860,110]], water:[[300,20,300,110]]},
+  {name:"Le labyrinthe", par:5, start:[90,450], hole:[800,90], walls:[[180,20,24,340],[340,160,24,340],[500,20,24,340],[660,160,24,340]], bumpers:[], sand:[]},
+  {name:"Le rond-point", par:3, start:[100,260], hole:[800,260], walls:[], bumpers:[[450,260,70],[450,70,22],[450,450,22]], sand:[]},
+  {name:"Les marais", par:4, start:[90,260], hole:[830,260], walls:[], bumpers:[], sand:[], water:[[220,60,120,140],[220,320,120,140],[470,180,120,160],[700,60,100,120],[700,340,100,120]]},
+  {name:"Le grand final", par:4, start:[100,420], hole:[800,440], walls:[[300,20,30,300],[600,200,30,300]], bumpers:[[450,400,26],[760,380,26]], sand:[[380,40,170,110],[680,40,150,100]]},
+];
+LEVELS.forEach(L=>{ L.water = L.water||[] });
+// Chaque succès mesure une seule chose ; quand il y en a plusieurs sur un même sujet, ce sont des paliers (1, puis 3, puis 10…).
+// Les identifiants déjà utilisés ne changent pas : le serveur s'en sert pour ne payer qu'une fois.
+const bestStreak = () => Math.max(S.daily?.best||0, S.daily?.streak||0);
 const CHALLENGES = [
-  ...TK.map((t,i)=>({id:"fmt-"+t, icon:"layers", title:FMT_GOAL[i]>=FAMILIES.length?`Tous les décors en ${TYPES[t].label}`:`${FMT_GOAL[i]} décors en ${TYPES[t].label}`,
-    desc:FMT_GOAL[i]>=FAMILIES.length?`Trouve les ${FAMILIES.length} décors au format ${TYPES[t].label}.`:`Trouve ${FMT_GOAL[i]} décors différents (sur ${FAMILIES.length}) au format ${TYPES[t].label}.`, goal:Math.min(FMT_GOAL[i],FAMILIES.length),
-    prog:()=>FAMILIES.filter((_,f)=>SC().some(s=>s.type===t&&s.family===f)).length,
+  // --- premiers pas : des objectifs simples pour bien démarrer
+  {id:"first-chinoise", cat:"debut", icon:"layers", title:"Bille chinoise", desc:"Trouve ta première Bille chinoise.", goal:1, prog:()=>SC().filter(s=>s.type==="chinoise").length, rew:{j:100}},
+  {id:"first-calot", cat:"debut", icon:"layers", title:"Mon premier Calot", desc:"Trouve ton premier Calot.", goal:1, prog:()=>SC().filter(s=>s.type==="calot").length, rew:{j:200}},
+  {id:"first-boulet", cat:"debut", icon:"layers", title:"Mon premier Boulet", desc:"Trouve ton premier Boulet.", goal:1, prog:()=>SC().filter(s=>s.type==="boulet").length, rew:{j:300, bag:"classique"}},
+  {id:"first-mammouth", cat:"debut", icon:"trophy", title:"Mon premier Mammouth", desc:"Trouve ton premier Mammouth, la plus grosse des billes.", goal:1, prog:()=>SC().filter(s=>s.type==="mammouth").length, rew:{j:500, bag:"premium"}},
+  {id:"first-vitrine", cat:"debut", icon:"layers", title:"Jolie vitrine", desc:"Mets une bille dans ta vitrine.", goal:1, prog:()=>S.vitrine.filter(Boolean).length, rew:{j:100}},
+  {id:"first-hole", cat:"debut", icon:"target", title:"Premier trou", desc:"Réussis un trou au Tir.", goal:1, prog:()=>S.holes||0, rew:{j:100}},
+  {id:"first-craft", cat:"debut", icon:"flask", title:"Première fusion", desc:"Fusionne des billes à la Confiserie.", goal:1, prog:()=>S.crafts||0, rew:{j:150}},
+  // --- l'album : combien de billes différentes
+  ...[[25,200],[50,300],[100,500,"premium"],[250,800,"premium"],[500,1200,"collector"],[1000,2000,"collector","Collectionneur fou"],[2000,3500,"collector"],[3000,5000,"collector","Encyclopédie vivante"],[4000,8000,"collector","Grand collectionneur"]]
+    .map(([n,j,bag,title])=>({id:"found-"+n, cat:"album", icon:"book", title:`${fmt(n)} billes`, desc:`Trouve ${fmt(n)} billes différentes (taille, décor et coloris).`, goal:n, prog:()=>albumFound(SC()).size, rew:{j, bag, title}})),
+  {id:"half", cat:"album", icon:"book", title:"Mi-parcours", desc:"Commence la moitié des cases de l'album (une taille et un décor).", goal:Math.ceil(TOTAL_SLOTS/2), prog:()=>slotsOwned(SC()).size, rew:{j:600, bag:"premium"}},
+  {id:"full", cat:"album", icon:"trophy", title:"Album bien rempli", desc:`Commence 170 des ${TOTAL_SLOTS} cases de l'album (une taille et un décor).`, goal:170, prog:()=>slotsOwned(SC()).size, rew:{j:3000, bag:"collector"}},
+  {id:"t-caid", cat:"album", icon:"layers", title:"Caïd des billes", desc:"Possède 100 billes en même temps.", goal:100, prog:()=>SC().length, rew:{j:700, title:"Caïd des billes"}},
+  // --- les coloris
+  {id:"pal10", cat:"coloris", icon:"book", title:"Nuancier", desc:"Un même décor dans 10 coloris différents.", goal:10, prog:()=>Math.max(0,...FAMILIES.map((_,f)=>new Set(SC().filter(s=>s.family===f&&s.pal<BASE_PALS).map(s=>s.pal)).size)), rew:{j:400}},
+  {id:"pal24", cat:"coloris", icon:"book", title:"Grand nuancier", desc:"Un même décor dans 24 coloris différents.", goal:24, prog:()=>Math.max(0,...FAMILIES.map((_,f)=>new Set(SC().filter(s=>s.family===f&&s.pal<BASE_PALS).map(s=>s.pal)).size)), rew:{j:900}},
+  {id:"allpals", cat:"coloris", icon:"book", title:"Boîte de peinture", desc:`Trouve les ${BASE_PALS} coloris, tous décors et tailles confondus.`, goal:BASE_PALS, prog:()=>new Set(SC().filter(s=>s.pal<BASE_PALS).map(s=>s.pal)).size, rew:{j:500, title:"Peintre en billes"}},
+  {id:"case1", cat:"coloris", icon:"star", title:"Case complète", desc:`Une case dans les ${BASE_PALS} coloris.`, goal:1, prog:()=>[...slotsOwned(SC()).values()].filter(l=>casePals(l)===BASE_PALS).length, rew:{j:1500, bag:"collector", title:"Nuancier vivant"}},
+  {id:"case5", cat:"coloris", icon:"star", title:"Cinq cases complètes", desc:`Cinq cases dans les ${BASE_PALS} coloris.`, goal:5, prog:()=>[...slotsOwned(SC()).values()].filter(l=>casePals(l)===BASE_PALS).length, rew:{j:4000, bag:"collector"}},
+  // --- les tailles : des décors différents dans chaque format, et les grosses billes
+  ...TK.map((t,i)=>({id:"fmt-"+t, cat:"tailles", icon:"layers", title:FMT_GOAL[i]>=N_DECORS?`Tous les décors en ${TYPES[t].label}`:`${FMT_GOAL[i]} décors en ${TYPES[t].label}`,
+    desc:FMT_GOAL[i]>=N_DECORS?`Trouve les ${N_DECORS} décors au format ${TYPES[t].label}.`:`Trouve ${FMT_GOAL[i]} décors différents (sur ${N_DECORS}) au format ${TYPES[t].label}.`, goal:Math.min(FMT_GOAL[i],N_DECORS),
+    prog:()=>DECOR_IDS.filter(f=>SC().some(s=>s.type===t&&s.family===f)).length,
     rew:{j:[400,500,700,900,1200,2500][i], bag:i>=3?"collector":"premium", title:t==="mammouth"?"Maître du Mammouth":null}})),
-  ...FAMILIES.map((F,f)=>{ const n = FAM_SIZES[F.rar];
-    return {id:"fam-"+f, icon:"star", title:n>=TK.length?`${F.name} dans tous les formats`:`${F.name} en ${n} tailles`,
+  {id:"big5", cat:"tailles", icon:"trophy", title:"La cour des grands", desc:"Possède 5 Boulets ou Mammouths.", goal:5, prog:()=>SC().filter(s=>tierOf(s)>=BIG).length, rew:{j:400, bag:"premium"}},
+  {id:"mam3", cat:"tailles", icon:"trophy", title:"Chasseur de mammouths", desc:"Possède 3 Mammouths.", goal:3, prog:()=>SC().filter(s=>s.type==="mammouth").length, rew:{j:800, title:"Chasseur de mammouths"}},
+  // --- les décors : chaque décor dans plusieurs tailles
+  ...DECOR_IDS.map(f=>{ const F = FAMILIES[f], n = FAM_SIZES[F.rar];
+    return {id:"fam-"+f, cat:"decors", icon:"star", title:n>=TK.length?`${F.name} dans tous les formats`:`${F.name} en ${n} tailles`,
     desc:n>=TK.length?`Un décor ${F.name} dans les ${TK.length} tailles, de la Mini bille au Mammouth.`:`Un décor ${F.name} dans ${n} tailles, de la Mini bille jusqu'${upTo(n)}.`, goal:n,
     prog:()=>TK.slice(0,n).filter(t=>SC().some(s=>s.type===t&&s.family===f)).length,
     rew:{j:FAM_REW[F.rar], bag:FAM_REW[F.rar]>=700?"premium":"classique"}} }),
-  {id:"pal10", icon:"book", title:"Nuancier", desc:"Un même décor dans 10 coloris différents.", goal:10,
-    prog:()=>Math.max(0,...FAMILIES.map((_,f)=>new Set(SC().filter(s=>s.family===f&&!isSeason(s)).map(s=>s.pal)).size)), rew:{j:400}},
-  {id:"shiny1", icon:"star", title:"Premier éclat", desc:"Trouve ta première bille shiny dans un sac ou une fusion.", goal:1, prog:()=>SC().filter(s=>s.shiny&&!isSeason(s)).length, rew:{j:1000}},
-  {id:"shiny3", icon:"star", title:"Double éclat", desc:"Possède 2 billes shiny trouvées dans les sacs ou les fusions.", goal:2, prog:()=>SC().filter(s=>s.shiny&&!isSeason(s)).length, rew:{j:3000, title:"Chasseur d'éclats"}},
-  {id:"big5", icon:"trophy", title:"La cour des grands", desc:"Possède 5 Boulets ou Mammouths.", goal:5, prog:()=>SC().filter(s=>tierOf(s)>=BIG).length, rew:{j:400, bag:"premium"}},
-  {id:"mam3", icon:"trophy", title:"Chasseur de mammouths", desc:"Possède 3 Mammouths.", goal:3, prog:()=>SC().filter(s=>s.type==="mammouth").length, rew:{j:800, title:"Chasseur de mammouths"}},
-  {id:"t-pot", icon:"pot", title:"Champion du pot", desc:"Mets 25 billes dans le pot.", goal:25, prog:()=>S.stats.pot, rew:{j:500, title:"Champion du pot"}},
-  {id:"t-castle", icon:"castle", title:"Démolisseur de châteaux", desc:"Fais sortir 60 billes du cercle au Château.", goal:60, prog:()=>S.stats.castle, rew:{j:500, title:"Démolisseur"}},
-  {id:"t-tic", icon:"tic", title:"Terreur du préau", desc:"Gagne 10 parties de Tic avec une mise.", goal:10, prog:()=>S.stats.tic, rew:{j:600, title:"Terreur du préau"}},
-  {id:"t-roi", icon:"trophy", title:"Roi de la cour", desc:"Fais 3 étoiles au Pot et au Château, et gagne une partie de Tic.", goal:3, prog:()=>["pot","chateau","tic"].filter(k=>S.stats.best3[k]).length, rew:{j:800, title:"Roi de la cour"}},
-  {id:"t-race", icon:"flag", title:"Maillot jaune", desc:"Gagne 5 courses sur la plage avec une mise.", goal:5, prog:()=>S.stats.race, rew:{j:600, title:"Maillot jaune"}},
-  {id:"t-chouchou", icon:"quest", title:"Chouchou de la maîtresse", desc:"Récupère 5 fois le bonus des quêtes du jour.", goal:5, prog:()=>S.stats.bonus, rew:{j:500, title:"Chouchou de la maîtresse"}},
-  {id:"t-caid", icon:"layers", title:"Caïd des billes", desc:"Possède 100 billes en même temps.", goal:100, prog:()=>SC().length, rew:{j:700, title:"Caïd des billes"}},
-  {id:"half", icon:"layers", title:"Mi-parcours", desc:"Commence la moitié des cases de l'album (une taille et un décor).", goal:Math.ceil(TOTAL_SLOTS/2), prog:()=>slotsOwned(SC()).size, rew:{j:600, bag:"premium"}},
-  {id:"full", icon:"trophy", title:"Album bien rempli", desc:`Commence 170 des ${TOTAL_SLOTS} cases de l'album (une taille et un décor).`, goal:170, prog:()=>slotsOwned(SC()).size, rew:{j:3000, bag:"collector"}},
-  // paliers de billes trouvées (taille × décor × coloris)
-  ...[[25,200],[50,300],[100,500,"premium"],[250,800,"premium"],[500,1200,"collector"],[1000,2000,"collector","Collectionneur fou"],[2000,3500,"collector"],[3000,5000,"collector","Encyclopédie vivante"],[4000,8000,"collector","Grand collectionneur"]]
-    .map(([n,j,bag,title])=>({id:"found-"+(n===ALBUM_TOTAL?"all":n), cat:"album", icon:n===ALBUM_TOTAL?"trophy":"book", title:n===ALBUM_TOTAL?"L'album entier":`${fmt(n)} billes`, desc:n===ALBUM_TOTAL?`Trouve les ${fmt(ALBUM_TOTAL)} billes différentes de l'album.`:`Trouve ${fmt(n)} billes différentes (taille, décor et coloris).`, goal:n, prog:()=>albumFound(SC()).size, rew:{j, bag, title}})),
-  {id:"case1", cat:"coloris", icon:"star", title:"Case complète", desc:`Une case dans les ${BASE_PALS} coloris.`, goal:1, prog:()=>[...slotsOwned(SC()).values()].filter(l=>casePals(l)===BASE_PALS).length, rew:{j:1500, bag:"collector", title:"Nuancier vivant"}},
-  {id:"case5", cat:"coloris", icon:"star", title:"Cinq cases complètes", desc:`Cinq cases dans les ${BASE_PALS} coloris.`, goal:5, prog:()=>[...slotsOwned(SC()).values()].filter(l=>casePals(l)===BASE_PALS).length, rew:{j:4000, bag:"collector"}},
-  {id:"pal24", cat:"coloris", icon:"book", title:"Grand nuancier", desc:"Un même décor dans 24 coloris différents.", goal:24, prog:()=>Math.max(0,...FAMILIES.map((_,f)=>new Set(SC().filter(s=>s.family===f&&s.pal<BASE_PALS).map(s=>s.pal)).size)), rew:{j:900}},
-  {id:"allpals", cat:"coloris", icon:"book", title:"Boîte de peinture", desc:`Trouve les ${BASE_PALS} coloris, tous décors et tailles confondus.`, goal:BASE_PALS, prog:()=>new Set(SC().filter(s=>s.pal<BASE_PALS).map(s=>s.pal)).size, rew:{j:500, title:"Peintre en billes"}},
+  // --- les grandes trouvailles : décors rares et shiny (une échelle chacun)
+  {id:"epic1", cat:"rare", icon:"star", title:"Trésor épique", desc:"Trouve une bille au décor épique (Acier, Nacrée, Lave…).", goal:1, prog:()=>SC().filter(s=>FAMILIES[s.family].rar===3).length, rew:{j:300}},
   {id:"leg1", cat:"rare", icon:"star", title:"Légende de poche", desc:"Trouve une bille au décor légendaire (Galaxie ou Aurore).", goal:1, prog:()=>SC().filter(s=>FAMILIES[s.family].rar===4).length, rew:{j:500}},
-  {id:"legmam", cat:"rare", icon:"trophy", title:"Légende de la cour", desc:"Un Mammouth au décor épique ou légendaire.", goal:1, prog:()=>SC().filter(s=>s.type==="mammouth"&&FAMILIES[s.family].rar>=3).length, rew:{j:5000, title:"Légende de la cour"}},
-  {id:"bigepic", cat:"rare", icon:"star", title:"Géant précieux", desc:"Un Boulet ou un Mammouth au décor épique ou légendaire.", goal:1, prog:()=>SC().filter(s=>tierOf(s)>=BIG&&FAMILIES[s.family].rar>=3).length, rew:{j:1000}},
+  {id:"legmam", cat:"rare", icon:"trophy", title:"Légende de la cour", desc:"Un Mammouth au décor légendaire : la bille la plus rare de la cour.", goal:1, prog:()=>SC().filter(s=>s.type==="mammouth"&&FAMILIES[s.family].rar===4).length, rew:{j:5000, title:"Légende de la cour"}},
+  {id:"shiny1", cat:"rare", icon:"star", title:"Premier éclat", desc:"Trouve ta première bille shiny dans un sac ou une fusion.", goal:1, prog:()=>SC().filter(s=>s.shiny&&!isSeason(s)).length, rew:{j:1000}},
+  {id:"shiny3", cat:"rare", icon:"star", title:"Double éclat", desc:"Possède 2 billes shiny trouvées dans les sacs ou les fusions.", goal:2, prog:()=>SC().filter(s=>s.shiny&&!isSeason(s)).length, rew:{j:3000, title:"Chasseur d'éclats"}},
   {id:"secrets", cat:"rare", icon:"lock", title:"Détective de la cour", desc:"Trouve toutes les billes secrètes.", goal:Object.keys(SECRETS).length, prog:()=>S.specs.filter(s=>s.secret).length, rew:{j:3000, title:"Détective"}},
+  // --- jeux de la cour
+  {id:"t-golf", cat:"jeux", icon:"target", title:"Golfeur du dimanche", desc:"Réussis 20 trous au Tir.", goal:20, prog:()=>S.holes||0, rew:{j:400}},
+  {id:"t-parcours", cat:"jeux", icon:"target", title:"Le grand parcours", desc:`Réussis les ${LEVELS.length} trous différents du Tir (un nouveau chaque jour).`, goal:LEVELS.length, prog:()=>Object.keys(S.best).filter(k=>LEVELS[k]).length, rew:{j:2000, bag:"collector", title:"Pro du Tir"}},
+  {id:"t-pot", icon:"pot", cat:"jeux", title:"Champion du pot", desc:"Mets 25 billes dans le pot.", goal:25, prog:()=>S.stats.pot, rew:{j:500, title:"Champion du pot"}},
+  {id:"t-castle", icon:"castle", cat:"jeux", title:"Démolisseur de châteaux", desc:"Fais sortir 60 billes du cercle au Château.", goal:60, prog:()=>S.stats.castle, rew:{j:500, title:"Démolisseur"}},
+  {id:"t-tic", icon:"tic", cat:"jeux", title:"Terreur du préau", desc:"Gagne 10 parties de Tic avec une mise.", goal:10, prog:()=>S.stats.tic, rew:{j:600, title:"Terreur du préau"}},
+  {id:"t-race", icon:"flag", cat:"jeux", title:"Maillot jaune", desc:"Gagne 5 courses sur la plage avec une mise.", goal:5, prog:()=>S.stats.race, rew:{j:600, title:"Maillot jaune"}},
+  {id:"t-roi", icon:"trophy", cat:"jeux", title:"Roi de la cour", desc:"Fais 3 étoiles au Pot et au Château, et gagne une partie de Tic.", goal:3, prog:()=>["pot","chateau","tic"].filter(k=>S.stats.best3[k]).length, rew:{j:800, title:"Roi de la cour"}},
+  // --- les habitudes
+  {id:"streak7", cat:"habitudes", icon:"clock", title:"Fidèle au poste", desc:"Récupère le bonbec du jour 7 jours d'affilée.", goal:7, prog:()=>bestStreak(), rew:{j:500}},
+  {id:"streak28", cat:"habitudes", icon:"clock", title:"Un mois sans rater", desc:"Récupère le bonbec du jour 28 jours d'affilée.", goal:28, prog:()=>bestStreak(), rew:{j:2000, bag:"collector", title:"Toujours là"}},
   {id:"bags50", cat:"habitudes", icon:"bag", title:"Habitué du préau", desc:"Ouvre 50 sacs.", goal:50, prog:()=>S.bags||0, rew:{j:500, bag:"premium"}},
   {id:"bags250", cat:"habitudes", icon:"bag", title:"Sac sans fond", desc:"Ouvre 250 sacs.", goal:250, prog:()=>S.bags||0, rew:{j:1500, bag:"collector", title:"Sac sans fond"}},
   {id:"craft10", cat:"habitudes", icon:"flask", title:"Apprenti confiseur", desc:"Réussis 10 fusions à la Confiserie.", goal:10, prog:()=>S.crafts||0, rew:{j:800, title:"Apprenti confiseur"}},
+  {id:"t-chouchou", cat:"habitudes", icon:"quest", title:"Chouchou de la maîtresse", desc:"Récupère 5 fois le bonus des quêtes du jour.", goal:5, prog:()=>S.stats.bonus, rew:{j:500, title:"Chouchou de la maîtresse"}},
 ];
 // Séries : de petits albums à thème, chacun avec sa récompense (une case = un décor et/ou un coloris, n'importe quelle taille)
 const FAM_ID = n => FAMILIES.findIndex(F=>F.name===n), PAL_ID = n => PALETTES.findIndex(P=>P[0]===n);
@@ -3517,8 +3620,7 @@ const wishSpec = k => { const [type,f,p]=k.split("|"); return {seed:hash("wish"+
 const wishFound = k => S.specs.some(x=>colorKey(x)===k);
 
 // catégorie de chaque succès (pour la page Succès)
-const CHAL_CATS = [["album","L'album","book"],["coloris","Les coloris","star"],["tailles","Les tailles","layers"],["decors","Les décors","star"],["rare","Les grandes trouvailles","trophy"],["jeux","Jeux de la cour","target"],["habitudes","Les habitudes","clock"]];
-CHALLENGES.forEach(c=>{ c.cat = c.cat || (c.id.startsWith("fmt-")?"tailles": c.id.startsWith("fam-")?"decors": c.id==="pal10"?"coloris": ["half","full"].includes(c.id)?"album": ["shiny1","shiny3","big5","mam3"].includes(c.id)?"rare": ["t-chouchou","t-caid"].includes(c.id)?"habitudes":"jeux") });
+const CHAL_CATS = [["debut","Premiers pas","play"],["album","L'album","book"],["coloris","Les coloris","star"],["tailles","Les tailles","layers"],["decors","Les décors","star"],["rare","Les grandes trouvailles","trophy"],["jeux","Jeux de la cour","target"],["habitudes","Les habitudes","clock"]];
 const CHAL_BY = Object.fromEntries(CHALLENGES.map(c=>[c.id,c]));
 const chalProg = c => Math.min(c.goal, c.prog());
 const chalClaimable = () => CHALLENGES.filter(c=>!S.chal.includes(c.id) && chalProg(c)>=c.goal).length;
@@ -3530,7 +3632,7 @@ let feed = [];
 function fakeFind(at=Date.now()){
   const r = Math.random;
   const t = r()<.12 ? "mammouth" : r()<.3 ? "boulet" : TK[Math.floor(r()*3)];
-  const fams = FAMILIES.map((_,i)=>i).filter(i=>FAMILIES[i].rar>=2);
+  const fams = DECOR_IDS.filter(i=>FAMILIES[i].rar>=2);
   const s = {seed:randU32(), type:t, family:fams[Math.floor(r()*fams.length)], pal:Math.floor(r()*BASE_PALS), shiny:r()<.12?rollShiny():0, at};
   return {who:FEED_NAMES[Math.floor(r()*FEED_NAMES.length)], s, at};
 }
@@ -3636,12 +3738,13 @@ function passReward(track,t,se=seasonNow()){
     if(t%5===0) return {k:"bag", bag:"classique"};
     return {k:"jetons", n:PASS_J.free[stage]};
   }
+  // le gratuit a les petites tailles (Mini, Bille, Chinoise, Calot), le premium les grosses : jamais la même bille des deux côtés
   if(t===30) return M("mammouth",3);
   if(t===25) return {k:"bag", bag:"collector"};
-  if(t===20) return M("boulet");
+  if(t===20) return M("boulet",1);
   if(t===15) return {k:"title", name:"As de la saison"};
-  if(t===10) return M("calot",1);
-  if(t===5)  return M("chinoise");
+  if(t===10) return M("mammouth");
+  if(t===5)  return M("boulet");
   if(t===1)  return {k:"title", name:"Collectionneur"};
   if(t%5===3) return {k:"bag", bag:stage===0?"classique":"premium"};
   return {k:"jetons", n:PASS_J.prem[stage]};
@@ -3798,7 +3901,7 @@ function claimDaily(){
   if(!dailyReady()) return null;
   const streak = dailyStreak(), idx = dailyDay(streak), r = dailyRew(idx);
   S.jetons += r.j; if(r.bag) S.bagInv[r.bag] = (S.bagInv[r.bag]||0)+1;
-  S.daily = {last:dayKey(), streak};
+  S.daily = {last:dayKey(), streak, best:Math.max(streak, S.daily?.best||0)};
   if(srvOn()) srv(()=>Cloud.eco.daily()).then(x=>applyEco(x.eco), srvFail);
   return {...r, idx, streak};
 }
@@ -4180,13 +4283,13 @@ function oddsList(b){
 // Chaque bille est tirée en 4 fois : taille (selon le sac), décor, coloris, shiny
 function drawExplainer(){
   const fw = FAM_W.reduce((a,b)=>a+b,0);
-  const rows = DECOR_RAR.map((R,k)=>({R,k,fams:FAMILIES.map((F,i)=>i).filter(i=>FAMILIES[i].rar===k)})).filter(g=>g.fams.length).reverse();
+  const rows = DECOR_RAR.map((R,k)=>({R,k,fams:DECOR_IDS.filter(i=>FAMILIES[i].rar===k)})).filter(g=>g.fams.length).reverse();
   const gal = FAMILIES.findIndex(F=>F.name==="Galaxie"), ex = FREE_BAG.odds.mammouth/100 * FAM_W[gal]/fw;
   return `<section class="panel draw">
     <p>Chaque bille du sac est tirée en 4 fois, indépendamment. Le sac que tu choisis change surtout la <b>taille</b> : les chances de <b>décor</b> et de <b>coloris</b> sont les mêmes dans tous les sacs.</p>
     <div class="draw-steps">
       <div class="draw-step"><span class="n">1</span><b>La taille</b><small>La rareté principale. Les chances sont sur chaque sac, plus haut.</small></div>
-      <div class="draw-step"><span class="n">2</span><b>Le décor</b><small>${FAMILIES.length} décors rangés en ${rows.length} paniers, du plus courant au plus rare (ci-dessous).</small></div>
+      <div class="draw-step"><span class="n">2</span><b>Le décor</b><small>${N_DECORS} décors rangés en ${rows.length} paniers, du plus courant au plus rare (ci-dessous).</small></div>
       <div class="draw-step"><span class="n">3</span><b>Le coloris</b><small>${BASE_PALS} coloris, tous aussi fréquents : 1 chance sur ${BASE_PALS} chacun.</small></div>
       <div class="draw-step"><span class="n">4</span><b>Shiny ou pas</b><small>${oneIn(SHINY_RATE)} billes, 2 fois plus dans le Sac Premium, 5 fois plus dans le Collector.</small></div>
     </div>
@@ -4421,7 +4524,7 @@ function viewCollection(){
   let body;
   if(ui.tab==="album"){
     body = types.map(t=>{
-      const have = FAMILIES.filter((_,f)=>slots.has(t+"|"+f)).length;
+      const have = DECOR_IDS.filter(f=>slots.has(t+"|"+f)).length;
       const cards = FAM_ORDER.map(f=>{
         const F = FAMILIES[f], list = slots.get(t+"|"+f);
         if(showFn && !(list||[]).some(showFn)) return "";
@@ -4436,7 +4539,7 @@ function viewCollection(){
       }).join("");
       return `<section class="type-block">
         <div class="type-head">${typePill(t,true)}<h2>${TYPES[t].label}</h2><span class="mm">${TYPES[t].mm} mm</span>
-          <span class="prog">${have} / ${FAMILIES.length} cases<span class="bar"><i class="${have===FAMILIES.length?"done":""}" style="width:${have/FAMILIES.length*100}%"></i></span></span>
+          <span class="prog">${have} / ${N_DECORS} cases<span class="bar"><i class="${have===N_DECORS?"done":""}" style="width:${have/N_DECORS*100}%"></i></span></span>
           <p class="desc">${TYPES[t].desc}</p></div>
         ${cards.trim()?`<div class="card-grid">${cards}</div>`:`<p class="empty">${show==="all"?`Aucune ${TYPES[t].label.toLowerCase()} pour l'instant.`:"Rien avec ce filtre dans cette taille."}</p>`}
       </section>`;
@@ -4458,9 +4561,9 @@ function viewCollection(){
     body = (show==="dups"||show==="all" ? dupsBar() : "") + (list.length ? `<div class="card-grid">${list.map(ballCard).join("")}</div>` : `<p class="empty">${EMPTY[show]||EMPTY.all}</p>`);
   }
 
-  const sizeBtn = (t,i) => { const h = FAMILIES.filter((_,f)=>slots.has(t+"|"+f)).length, own = S.specs.filter(s=>s.type===t).sort(tierSort)[0];
+  const sizeBtn = (t,i) => { const h = DECOR_IDS.filter(f=>slots.has(t+"|"+f)).length, own = S.specs.filter(s=>s.type===t).sort(tierSort)[0];
     return `<button class="bx-size" style="${tstyle(t)}" data-action="ftype" data-type="${ui.type===t?"all":t}" aria-pressed="${ui.type===t}">
-      <span class="ball">${mImg(own||SHOWCASE[i],120,Math.round(40*scaleOf(t)+10),"")}</span><b>${TYPES[t].label.replace("Mini bille","Mini").replace("Bille chinoise","Chinoise")}</b><small>${h} / ${FAMILIES.length}</small></button>` };
+      <span class="ball">${mImg(own||SHOWCASE[i],120,Math.round(40*scaleOf(t)+10),"")}</span><b>${TYPES[t].label.replace("Mini bille","Mini").replace("Bille chinoise","Chinoise")}</b><small>${h} / ${N_DECORS}</small></button>` };
   const nSeries = SERIES.filter(se=>(S.seriesDone||[]).includes(se.id)).length;
   return `<div class="page-head">
     <div><h1>Ma boîte à billes</h1><p>Tout ce que tu as trouvé, et tout ce qui reste à trouver. Chaque bille est unique : son motif et son numéro de série sont tirés au moment où tu l'ouvres.</p></div>
@@ -4790,16 +4893,21 @@ function viewPedia(){
       <div class="foot"><span class="${got===TK.length?"done":""}">${got} / ${TK.length} tailles</span><span class="bar"><i style="width:${got/TK.length*100}%"></i></span><span>${cols} / ${BASE_PALS} coloris</span></div>
     </section>`;
   };
-  const famGroups = DECOR_RAR.map((R,k)=>({R,k,fams:FAMILIES.map((_,i)=>i).filter(i=>FAMILIES[i].rar===k)})).reverse().filter(g=>g.fams.length)
+  const famGroups = DECOR_RAR.map((R,k)=>({R,k,fams:DECOR_IDS.filter(i=>FAMILIES[i].rar===k)})).reverse().filter(g=>g.fams.length)
     .map(({R,fams})=>`<div class="rar-group" style="--dc:${R.c}"><h3><i></i>${R.name}<small>${fams.length} décor${fams.length>1?"s":""} · ${oneIn(R.w/fw)} billes chacun</small></h3>
       <div class="pedia-grid">${fams.map(famCard).join("")}</div></div>`).join("");
   const fmts = TK.map((t,j)=>{ const s={seed:hash("pedia-fmt"+t), type:t, family:[0,1,4,6,5,11][j], pal:[0,2,12,3,9,13][j], shiny:0}, i=pv(s);
     return `<button class="sh-tile" data-action="preview" data-k="${i}" style="${tstyle(t)}">${mImg(s,200,Math.round(92*scaleOf(t)+10))}${typePill(t,true)}<small>${TYPES[t].mm} mm</small><small>${pct(FREE_BAG.odds[t])} du sac gratuit</small></button>` }).join("");
   const pals = PALETTES.slice(0,BASE_PALS).map(P=>`<div class="pal"><span>${[P[1],P[2],P[3]].map(c=>`<i style="background:${c}"></i>`).join("")}</span>${P[0]}</div>`).join("");
-  const combos = TK.length*FAMILIES.length*BASE_PALS;
-  return `<div class="page-head"><div><h1>Billepedia</h1><p>Tout ce qui existe dans Billy. Chaque bille ouverte est unique : son motif est tiré au hasard au moment de l'ouverture, il n'y en aura jamais deux pareilles. ${TK.length} formats × ${FAMILIES.length} décors × ${BASE_PALS} coloris = ${fmt(combos)} combinaisons, ×4 avec les shiny.</p></div></div>
+  const combos = TK.length*N_DECORS*BASE_PALS;
+  const events = EVENT_FAMS.map(f=>{ const F=FAMILIES[f], E=EVENTS[F.event];
+    const tiles = E.palIdx.map((pal,j)=>{ const x={seed:hash("event"+f+j), type:TK[Math.min(5,j+1)], family:f, pal, shiny:0}, i=pv({...x, cour:`Décor d'événement · ${E.name}. Pas encore disponible.`});
+      return `<button class="sh-tile" data-action="preview" data-k="${i}" style="${tstyle(x.type)}">${mImg(x,240,Math.round(92*scaleOf(x.type)+10))}<b>${esc(PALETTES[pal][0])}</b>${typePill(x.type)}</button>` }).join("");
+    return `<div class="rar-group" style="--dc:${E.color}"><h3><i></i>${F.name}<small>Événement « ${esc(E.name)} » · ${E.pals.length} coloris exclusifs</small></h3><p class="meta" style="margin:-4px 0 12px">${F.desc} ${esc(E.desc)}</p><div class="shiny-show">${tiles}</div></div>` }).join("");
+  return `<div class="page-head"><div><h1>Billepedia</h1><p>Tout ce qui existe dans Billy. Chaque bille ouverte est unique : son motif est tiré au hasard au moment de l'ouverture, il n'y en aura jamais deux pareilles. ${TK.length} formats × ${N_DECORS} décors × ${BASE_PALS} coloris = ${fmt(combos)} combinaisons, ×4 avec les shiny.</p></div></div>
   <section class="pedia-sec"><h2>Les shiny</h2><p>Un effet spécial qui peut tomber sur n'importe quelle bille, quel que soit son format. Sous chaque shiny : ses chances pour chaque bille, selon le sac d'où elle sort. Touche une bille pour la voir tourner.</p><div class="shiny-show">${shinyTiles}</div></section>
   <section class="pedia-sec"><h2>Les décors</h2><p>Chaque décor existe dans les ${TK.length} tailles, de la Mini au Mammouth : la rangée sous chaque décor te montre celles que tu as déjà (en couleur) et celles qui te manquent (grisées). Certains décors tombent souvent, d'autres une bille sur plusieurs centaines. Un Mammouth avec un décor légendaire, en shiny, c'est le graal.</p>${famGroups}</section>
+  ${events?`<section class="pedia-sec"><h2>Bientôt : les décors d'événement</h2><p>Des décors à part, avec leurs propres coloris. On ne les trouve que pendant leur événement : ils ne tombent jamais dans les sacs habituels et ne comptent pas dans l'album.</p>${events}</section>`:""}
   <section class="pedia-sec"><h2>Les tailles</h2><p>Du plus petit au plus gros : plus une bille est grosse, plus elle est rare. Chaque taille a sa couleur, partout sur le site.</p><div class="fmt-grid">${fmts}</div></section>
   <section class="pedia-sec"><h2>Les coloris</h2><p>${BASE_PALS} coloris, tous aussi fréquents les uns que les autres.</p><div class="pal-grid">${pals}</div><p class="meta" style="margin-top:10px">Et chaque mois, un coloris exclusif qu'on ne trouve que dans le passe de saison.</p></section>`;
 }
@@ -4836,9 +4944,9 @@ function openModal(id, pv){
       <p class="desc">${F.desc}${s.shiny?` ${SHINIES[s.shiny].desc}`:""}</p>
       <dl class="facts">
         <dt>Format</dt><dd>${T.label} · ${T.mm} mm</dd>
-        <dt>Décor</dt><dd>${F.name} · <b style="color:${DECOR_RAR[F.rar].c}">${DECOR_RAR[F.rar].name}</b></dd>
+        <dt>Décor</dt><dd>${F.name} · ${F.event?`<b style="color:${EVENTS[F.event].color}">Événement</b>`:`<b style="color:${DECOR_RAR[F.rar].c}">${DECOR_RAR[F.rar].name}</b>`}</dd>
         <dt>Coloris</dt><dd>${PALETTES[s.pal][0]}</dd>
-        <dt>Chance</dt><dd>${s.secret?"Bille secrète : une seule par joueur":isSeason(s)?"Exclusive au passe de saison":`${oneIn(chanceOf(s))} <small class="meta">par bille du sac gratuit</small>`}</dd>
+        <dt>Chance</dt><dd>${s.secret?"Bille secrète : une seule par joueur":eventOf(s)?`Exclusive à l'événement « ${eventOf(s).name} »`:isSeason(s)?"Exclusive au passe de saison":`${oneIn(chanceOf(s))} <small class="meta">par bille du sac gratuit</small>`}</dd>
         ${pv||!editionOf(s)?"":`<dt>Édition</dt><dd>${editionOf(s)===1?`<span class="first-pill">Première mondiale</span>`:`n° ${fmt(editionOf(s))} <small class="meta">de ce modèle trouvée dans le monde${s.edn?"":" (estimation)"}</small>`}</dd>`}
         ${pv||!s.no?"":`<dt>N° de série</dt><dd><code>#${String(s.no).padStart(7,"0")}</code> <small class="meta">unique, dans l'ordre d'apparition</small></dd>`}
         ${pv||!SRC_LABEL[s.src]?"":`<dt>Trouvée</dt><dd>${SRC_LABEL[s.src]}${s.via&&s.found?` <small class="meta">le ${dateFr(s.found)}</small>`:""}</dd>`}
@@ -5329,42 +5437,6 @@ function showBagSummary({bag, results}){
    ===================================================================== */
 const W=900, H=520, HOLE_R=15, MAXV=21;
 let BR=12;   // rayon de la bille au Tir : il suit sa taille (réglé au lancement de la partie)
-// Un seul trou par jour, le même pour tout le monde, pris dans ce grand parcours (walls/sand/water : [x,y,l,h], bumpers : [x,y,r]).
-// Les 6 premiers sont l'ancien parcours : leur place dans la liste garde les records déjà faits (S.best est rangé par numéro de trou).
-const LEVELS = [
-  {name:"Première ligne", par:2, start:[130,260], hole:[770,260], walls:[[430,190,40,140]], bumpers:[], sand:[]},
-  {name:"Le coude", par:3, start:[110,430], hole:[775,105], walls:[[20,20,620,320]], bumpers:[], sand:[[700,270,160,60]]},
-  {name:"Les champignons", par:3, start:[110,260], hole:[800,260], walls:[], bumpers:[[320,160,28],[320,360,28],[470,260,34],[620,150,26],[620,370,26]], sand:[[420,36,150,80],[420,404,150,80]]},
-  {name:"Le zigzag", par:4, start:[110,90], hole:[800,440], walls:[[240,20,30,350],[450,150,30,350],[660,20,30,350]], bumpers:[], sand:[]},
-  {name:"Le bunker", par:3, start:[110,260], hole:[760,260], walls:[[650,150,230,24],[650,346,230,24]], bumpers:[[400,140,24],[400,380,24]], sand:[[520,130,110,260]]},
-  {name:"La spirale", par:4, start:[100,80], hole:[800,420], walls:[[20,140,660,26],[220,300,660,26]], bumpers:[[450,233,14]], sand:[]},
-  {name:"Le couloir", par:2, start:[110,260], hole:[790,260], walls:[[180,20,700,140],[180,360,700,140]], bumpers:[[480,260,22]], sand:[]},
-  {name:"La chicane", par:3, start:[100,420], hole:[800,100], walls:[[300,200,30,300],[570,20,30,300]], bumpers:[], sand:[]},
-  {name:"Le lac", par:3, start:[110,260], hole:[790,260], walls:[], bumpers:[], sand:[], water:[[320,130,260,260]]},
-  {name:"Le pont", par:2, start:[110,260], hole:[790,260], walls:[], bumpers:[], sand:[], water:[[390,20,130,195],[390,305,130,195]]},
-  {name:"Les dunes", par:3, start:[100,100], hole:[800,420], walls:[], bumpers:[], sand:[[240,20,130,320],[530,180,130,320]]},
-  {name:"La fourche", par:3, start:[110,260], hole:[835,260], walls:[[300,230,500,60]], bumpers:[], sand:[[430,20,200,80]], water:[[430,400,200,100]]},
-  {name:"Le flipper", par:3, start:[100,260], hole:[820,110], walls:[], bumpers:[[260,140,26],[260,380,26],[410,260,30],[560,140,26],[560,380,26],[710,260,30]], sand:[]},
-  {name:"L'escalier", par:4, start:[90,450], hole:[820,80], walls:[[200,200,30,300],[420,20,30,330],[640,170,30,330]], bumpers:[], sand:[]},
-  {name:"L'île", par:3, start:[110,260], hole:[700,260], walls:[], bumpers:[], sand:[], water:[[540,140,280,40],[540,340,280,40],[540,180,40,40],[540,300,40,40],[780,180,40,160]]},
-  {name:"Le slalom", par:3, start:[90,260], hole:[810,260], walls:[], bumpers:[[250,225,24],[370,295,24],[490,225,24],[610,295,24],[730,225,24]], sand:[]},
-  {name:"Le U", par:3, start:[110,110], hole:[110,410], walls:[[20,230,640,60]], bumpers:[], sand:[[700,200,120,120]]},
-  {name:"Le bac à sable", par:3, start:[110,260], hole:[790,260], walls:[], bumpers:[], sand:[[260,70,380,380]]},
-  {name:"Les portes", par:3, start:[110,260], hole:[790,400], walls:[[300,20,30,180],[300,320,30,180],[600,20,30,110],[600,230,30,270]], bumpers:[], sand:[]},
-  {name:"La mare aux canards", par:3, start:[100,100], hole:[800,420], walls:[], bumpers:[], sand:[], water:[[250,200,150,300],[500,20,150,300]]},
-  {name:"Le goulot", par:3, start:[100,260], hole:[800,260], walls:[[420,20,60,200],[420,300,60,200]], bumpers:[[250,260,24]], sand:[]},
-  {name:"La boîte", par:4, start:[110,260], hole:[680,260], walls:[[560,170,200,24],[560,326,200,24],[560,194,24,132]], bumpers:[], sand:[]},
-  {name:"Le serpent", par:5, start:[100,75], hole:[800,445], walls:[[20,130,700,24],[180,250,700,24],[20,370,700,24]], bumpers:[], sand:[]},
-  {name:"Les deux bosses", par:3, start:[100,260], hole:[800,260], walls:[], bumpers:[[330,260,60],[600,260,60]], sand:[[440,40,60,110],[440,370,60,110]]},
-  {name:"La croix", par:3, start:[100,100], hole:[800,420], walls:[[430,90,40,340],[280,240,340,40]], bumpers:[], sand:[]},
-  {name:"Le trou perdu", par:4, start:[800,420], hole:[100,80], walls:[[20,170,330,24],[190,20,24,90]], bumpers:[[600,260,26]], sand:[]},
-  {name:"La plage", par:3, start:[100,240], hole:[800,300], walls:[], bumpers:[[450,250,26]], sand:[[20,390,860,110]], water:[[300,20,300,110]]},
-  {name:"Le labyrinthe", par:5, start:[90,450], hole:[800,90], walls:[[180,20,24,340],[340,160,24,340],[500,20,24,340],[660,160,24,340]], bumpers:[], sand:[]},
-  {name:"Le rond-point", par:3, start:[100,260], hole:[800,260], walls:[], bumpers:[[450,260,70],[450,70,22],[450,450,22]], sand:[]},
-  {name:"Les marais", par:4, start:[90,260], hole:[830,260], walls:[], bumpers:[], sand:[], water:[[220,60,120,140],[220,320,120,140],[470,180,120,160],[700,60,100,120],[700,340,100,120]]},
-  {name:"Le grand final", par:4, start:[100,420], hole:[800,440], walls:[[300,20,30,300],[600,200,30,300]], bumpers:[[450,400,26],[760,380,26]], sand:[[380,40,170,110],[680,40,150,100]]},
-];
-LEVELS.forEach(L=>{ L.water = L.water||[] });
 // le trou du jour : chaque trou revient une fois par tour du parcours, dans un ordre mélangé (le même pour tous)
 const TIR_ORDER = (()=>{ const r=rng(20260930), o=LEVELS.map((_,i)=>i); for(let i=o.length-1;i>0;i--){ const j=Math.floor(r()*(i+1)); [o[i],o[j]]=[o[j],o[i]] } return o })();
 const dayNum = (d=new Date()) => Math.round(Date.UTC(d.getFullYear(),d.getMonth(),d.getDate())/864e5);
@@ -6752,8 +6824,8 @@ function scoreGoals(){
   const g = [];
   parDecor.forEach((tailles, f)=>{ if(tailles.size>=3 && tailles.size<TK.length) g.push({titre:`Le décor ${FAMILIES[f].name} dans les 6 tailles`, n:tailles.size, of:TK.length,
     pts:Math.round(SCORE.serieDecor*SCORE.decor[FAMILIES[f].rar]), manque:`Il te manque : ${TK.filter(t=>!tailles.has(t)).map(t=>TYPES[t].pl).join(", ")}`}) });
-  parTaille.forEach((decors, t)=>{ if(decors.size>=FAMILIES.length/2 && decors.size<FAMILIES.length) g.push({titre:`Tous les décors en ${TYPES[t].pl}`, n:decors.size, of:FAMILIES.length,
-    pts:SCORE.serie*SCORE.taille[TIDX[t]], manque:`Encore ${FAMILIES.length-decors.size} décor${FAMILIES.length-decors.size>1?"s":""} à trouver`}) });
+  parTaille.forEach((decors, t)=>{ if(decors.size>=N_DECORS/2 && decors.size<N_DECORS) g.push({titre:`Tous les décors en ${TYPES[t].pl}`, n:decors.size, of:FAMILIES.length,
+    pts:SCORE.serie*SCORE.taille[TIDX[t]], manque:`Encore ${N_DECORS-decors.size} décor${N_DECORS-decors.size>1?"s":""} à trouver`}) });
   SERIES.forEach(se=>{ const n = seriesFill(se).filter(Boolean).length; if(n>=se.items.length/2 && n<se.items.length)
     g.push({titre:`La série « ${se.name} »`, n, of:se.items.length, pts:seriePts(se), manque:`Il te manque : ${se.items.filter((it,i)=>!seriesFill(se)[i]).map(seriesLabel).join(", ")}`}) });
   g.sort((a,b)=>(a.of-a.n)-(b.of-b.n) || b.pts-a.pts);
@@ -8051,7 +8123,7 @@ function authPitch(){
     <h1>Ta cour de récré,<br> <em>en billes.</em></h1>
     <p class="auth-hand">Ouvre des sacs, complète ton album, joue avec les copains.</p>
     <ul class="auth-feats">
-      <li><span class="af-ic">${mImg(AUTH_SPECS.album,96,34,"")}</span><span><b>${fmt(ALBUM_TOTAL)} billes à collectionner</b>${FAMILIES.length} décors, ${BASE_PALS} coloris, et chaque bille a son propre numéro.</span></li>
+      <li><span class="af-ic">${mImg(AUTH_SPECS.album,96,34,"")}</span><span><b>${fmt(ALBUM_TOTAL)} billes à collectionner</b>${N_DECORS} décors, ${BASE_PALS} coloris, et chaque bille a son propre numéro.</span></li>
       <li><span class="af-ic">${mImg(AUTH_SPECS.shiny,96,34,"")}</span><span><b>Des shiny ultra-rares</b>${SHINIES.slice(1).map(x=>x.name).join(", ")} : sauras-tu les trouver ?</span></li>
       <li><span class="af-ic">${ic("trophy",22)}</span><span><b>Des mini-jeux pour gagner des ${CUR.many}</b>Le pot, le château, la course… et bientôt les échanges.</span></li>
     </ul>

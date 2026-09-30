@@ -407,7 +407,7 @@ begin
     when 'passe' then     -- cle : « 2026-9|free|10 »
       if not interne.saison_valide(split_part(cle, '|', 1)) then raise exception 'montant_invalide'; end if;
       select x.t, x.sh into t, sh from (values ('free|1','mini',0), ('free|10','bille',0), ('free|20','chinoise',0), ('free|30','calot',0),
-        ('prem|5','chinoise',0), ('prem|10','calot',1), ('prem|20','boulet',0), ('prem|30','mammouth',3)) x(k, t, sh)
+        ('prem|5','boulet',0), ('prem|10','mammouth',0), ('prem|20','boulet',1), ('prem|30','mammouth',3)) x(k, t, sh)
         where x.k = split_part(cle,'|',2) || '|' || split_part(cle,'|',3);
       if t is null then raise exception 'montant_invalide'; end if;
       begin insert into gains (joueur, source, cle) values (qui, 'bille-passe', cle);

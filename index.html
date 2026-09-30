@@ -1890,6 +1890,8 @@ button.vit-slot:hover{background:var(--panel-2);color:var(--ink)}
 .auth-form input:hover{border-color:rgba(255,255,255,.28)}
 .auth-form input:focus{outline:none;border-color:var(--yellow);background:rgba(0,0,0,.4);box-shadow:0 0 0 4px rgba(255,201,63,.2)}
 .auth-form small{display:block;margin-top:6px;color:var(--muted);font-size:12px}
+.auth-captcha{margin-top:14px}
+.auth-captcha:empty{display:none}
 .auth-card .btn{width:100%;height:52px;margin-top:22px;font-size:16px}
 .auth-card .btn + .btn{margin-top:10px}
 .auth-card .btn-yellow{box-shadow:0 4px 0 var(--yellow-2),0 14px 34px -10px rgba(255,201,63,.7)}
@@ -7663,8 +7665,34 @@ const AUTH_ERR = {
   over_email_send_rate_limit:"Trop d'e-mails envoyés d'un coup. Réessaie dans quelques minutes.",
   over_request_rate_limit:"Trop d'essais d'un coup. Réessaie dans quelques minutes.",
   same_password:"C'est déjà ton mot de passe actuel.",
+  captcha_failed:"La vérification anti-robot n'a pas marché. Coche la case si elle apparaît, puis réessaie.",
 };
 const authErr = e => AUTH_ERR[e?.code] || (e?.message==="hors-ligne" || /fetch|network/i.test(e?.message||"") ? "Connexion impossible. Vérifie ton accès à Internet." : "Oups, ça n'a pas marché. Réessaie dans un instant.");
+// anti-robots (Cloudflare Turnstile) : presque toujours invisible, une case à cocher seulement en cas de doute
+const Captcha = (()=>{
+  // la clé n'est valable que sur le vrai site : sur l'ordinateur (localhost), pas de vérification
+  const key = /^(localhost|127\.)/.test(location.hostname) ? "" : (window.Cloud?.captchaKey || ""); let loading = null, wid = null, tok = null, waiters = [];
+  const load = () => loading ||= new Promise((res, rej)=>{ const sc = document.createElement("script");
+    sc.src = "https://challenges.cloudflare.com/turnstile/v0/api.js?render=explicit"; sc.async = true; sc.onload = res; sc.onerror = ()=>{ loading = null; rej(new Error("captcha")) };
+    document.head.appendChild(sc) });
+  return {
+    on: !!key,
+    // une zone de vérification dans le formulaire affiché (à refaire à chaque affichage)
+    async mount(el){ if(!key || !el) return; tok = null;
+      try{ await load() }catch(e){ return }
+      if(!el.isConnected || !window.turnstile) return;
+      if(wid!=null) try{ turnstile.remove(wid) }catch(e){}
+      wid = turnstile.render(el, {sitekey:key, appearance:"interaction-only", theme:"dark", language:"fr", size:"flexible",
+        callback:t=>{ tok = t; waiters.splice(0).forEach(w=>w.ok(t)) }, "expired-callback":()=>{ tok = null }, "error-callback":()=>{ tok = null } });
+    },
+    // le jeton à envoyer avec la demande (on attend la vérification si elle n'est pas finie)
+    token(){ if(!key) return Promise.resolve(undefined); if(tok) return Promise.resolve(tok);
+      return new Promise((ok, no)=>{ const w = {ok}; waiters.push(w);
+        setTimeout(()=>{ if(waiters.includes(w)){ waiters.splice(waiters.indexOf(w),1); no(Object.assign(new Error("captcha"), {code:"captcha_failed"})) } }, 25000) }) },
+    // un jeton ne sert qu'une fois
+    reset(){ tok = null; if(wid!=null && window.turnstile) try{ turnstile.reset(wid) }catch(e){} },
+  };
+})();
 const field = (id, label, type, extra="") => `<label for="${id}">${label}</label><input id="${id}" name="${id}" type="${type}" ${extra}>`;
 
 function authShow(screen, opts){
@@ -7673,6 +7701,7 @@ function authShow(screen, opts){
   const head = `<img class="auth-big" src="${marbleURL(AUTH_SPECS.big,192)}" alt="">`;
   const close = auth.closable ? `<button class="close-x" data-action="auth-close" aria-label="Fermer">×</button>` : "";
   const err = `<div class="auth-err" role="alert">${esc(auth.err)}</div>`;
+  const cap = Captcha.on ? `<div class="auth-captcha"></div>` : "";
   let body = "";
   const signup = auth.tab==="signup";
   if(screen==="welcome") body = `<p class="auth-kicker">${signup ? "C'est gratuit !" : "Te revoilà !"}</p><h2>${signup ? "Rejoins la cour" : "Connecte-toi"}</h2>
@@ -7684,23 +7713,23 @@ function authShow(screen, opts){
       ${field("a-pseudo","Pseudo","text",`maxlength="20" autocomplete="nickname" spellcheck="false" required`)}<small>3 à 20 caractères. C'est le nom que les autres joueurs verront.</small>
       ${field("a-email","E-mail","email",`autocomplete="email" value="${esc(auth.email)}" required`)}
       ${field("a-pass","Mot de passe","password",`minlength="8" autocomplete="new-password" required`)}<small>8 caractères minimum.</small>
-      ${err}<button class="btn btn-yellow" type="submit">Créer mon compte</button>
+      ${cap}${err}<button class="btn btn-yellow" type="submit">Créer mon compte</button>
     </form>` : `<form class="auth-form" id="auth-login" novalidate>
       ${field("a-email","E-mail","email",`autocomplete="email" value="${esc(auth.email)}" required`)}
       ${field("a-pass","Mot de passe","password",`autocomplete="current-password" required`)}
-      ${err}<button class="btn btn-yellow" type="submit">Me connecter</button>
+      ${cap}${err}<button class="btn btn-yellow" type="submit">Me connecter</button>
     </form>
     <div class="auth-links"><button class="auth-link" data-action="auth-go" data-screen="forgot">Mot de passe oublié ?</button></div>`}
     ${auth.closable ? "" : `<div class="auth-links"><button class="auth-link" data-action="auth-guest">Jouer sans compte</button></div>
     <p class="auth-note">Sans compte, ta collection reste sur cet appareil. Tu pourras créer un compte plus tard pour la garder.</p>`}`;
   else if(screen==="check-mail") body = `${head}<h2>Vérifie ta boîte mail</h2>
     <p>On t'a envoyé un lien à <span class="auth-mail">${esc(auth.email)}</span>. Clique dessus pour activer ton compte : tu reviendras ici tout seul.</p>
-    <p class="auth-note">Rien reçu ? Regarde dans les spams, ou renvoie l'e-mail.</p>${err}
+    <p class="auth-note">Rien reçu ? Regarde dans les spams, ou renvoie l'e-mail.</p>${cap}${err}
     <button class="btn btn-ghost" data-action="auth-resend">Renvoyer l'e-mail</button>
     <div class="auth-links"><button class="auth-link" data-action="auth-go" data-screen="welcome" data-tab="login">J'ai activé mon compte, me connecter</button></div>`;
   else if(screen==="forgot") body = `${head}<h2>Mot de passe oublié</h2><p>Donne ton e-mail : on t'envoie un lien pour en choisir un nouveau.</p>
     <form class="auth-form" id="auth-forgot" novalidate>${field("a-email","E-mail","email",`autocomplete="email" value="${esc(auth.email)}" required`)}
-      ${err}<button class="btn btn-yellow" type="submit">Envoyer le lien</button></form>
+      ${cap}${err}<button class="btn btn-yellow" type="submit">Envoyer le lien</button></form>
     <div class="auth-links"><button class="auth-link" data-action="auth-go" data-screen="welcome" data-tab="login">Retour</button></div>`;
   else if(screen==="forgot-sent") body = `${head}<h2>E-mail envoyé</h2>
     <p>Si un compte existe avec <span class="auth-mail">${esc(auth.email)}</span>, tu vas recevoir un lien pour choisir un nouveau mot de passe.</p>
@@ -7725,6 +7754,7 @@ function authShow(screen, opts){
   auth.prevTab = auth.tab;
   box.hidden = false;
   AuthFx.start(box.querySelector("#auth-fx"));
+  Captcha.mount(slot.querySelector(".auth-captcha"));
   auth.err = "";
   if(!matchMedia("(pointer:coarse)").matches) [...slot.querySelectorAll("input")].find(i=>!i.value)?.focus();
 }
@@ -7762,7 +7792,7 @@ document.addEventListener("click", async e=>{
     case "auth-guest": lsSet(GUEST_FLAG, "1"); authHide(); break;
     case "auth-import": auth.opts.begin(t.dataset.keep==="1"); break;
     case "auth-retry": { const u = await Cloud.currentUser().catch(()=>null); if(u){ sync.uid = null; cloudStart(u) } else authShow("welcome"); break }
-    case "auth-resend": try{ await Cloud.resendConfirm(auth.email); toast("E-mail renvoyé !") }catch(err){ authFail(err) } break;
+    case "auth-resend": try{ await Cloud.resendConfirm(auth.email, await Captcha.token()); Captcha.reset(); toast("E-mail renvoyé !") }catch(err){ Captcha.reset(); authFail(err) } break;
     case "acct-login": authOpen("login"); break;
     case "acct-signup": authOpen("signup"); break;
     case "acct-logout": ask({title:"Te déconnecter ?", text:"Ta partie reste sauvegardée sur ton compte.", ok:"Me déconnecter"}).then(ok=>ok&&logout()); break;
@@ -7781,15 +7811,15 @@ document.addEventListener("submit", async e=>{
       if(!/^[\p{L}\p{N}_\- ]{3,20}$/u.test(pseudo)) return authFail("Ton pseudo doit faire 3 à 20 caractères : lettres, chiffres, espaces, - et _.");
       if(pass.length<8) return authFail("Ton mot de passe doit faire au moins 8 caractères.");
       btn.disabled = true;
-      const r = await Cloud.signUp(email, pass, pseudo);
+      const r = await Cloud.signUp(email, pass, pseudo, await Captcha.token());
       if(r.needsConfirm) authShow("check-mail");   // sinon, la connexion lance cloudStart toute seule
     }
     else if(f.id==="auth-login"){
       if(!pass) return authFail("Entre ton mot de passe.");
       btn.disabled = true;
-      await Cloud.signIn(email, pass);
+      await Cloud.signIn(email, pass, await Captcha.token());
     }
-    else if(f.id==="auth-forgot"){ btn.disabled = true; await Cloud.resetPassword(email); authShow("forgot-sent") }
+    else if(f.id==="auth-forgot"){ btn.disabled = true; await Cloud.resetPassword(email, await Captcha.token()); authShow("forgot-sent") }
     else if(f.id==="auth-newpass"){
       if(pass.length<8) return authFail("Ton mot de passe doit faire au moins 8 caractères.");
       btn.disabled = true;
@@ -7798,7 +7828,7 @@ document.addEventListener("submit", async e=>{
       auth.screen = null;
       const u = await Cloud.currentUser(); if(u){ sync.uid = null; cloudStart(u) } else authShow("welcome");
     }
-  }catch(err){ authFail(err) }
+  }catch(err){ Captcha.reset(); authFail(err) }
 });
 
 // au démarrage : session en cours, lien reçu par e-mail, ou écran de bienvenue

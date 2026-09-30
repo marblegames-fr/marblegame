@@ -8,6 +8,10 @@
   // clé publique « anon » : faite pour être dans le code du site (la sécurité vient des règles de la base)
   const KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImdmbG5qcXh0eHF4b3liYWFhc3pwIiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTA1OTQyOTUsImV4cCI6MjEwNjE3MDI5NX0.NAzRYHfPRXak5aShzxuMpRKS11s2o95ORtTyHCQ3_p4";
   const AUTH_KEY = "sb-gflnjqxtxqxoybaaaszp-auth-token";   // là où Supabase garde la session dans le navigateur
+  // anti-robots (Cloudflare Turnstile) : la clé publique du site. Vide = pas de vérification.
+  // À activer dans cet ordre : 1) mettre la clé ici et mettre le site en ligne, 2) activer le captcha dans Supabase
+  // (sinon plus personne ne peut se connecter). Supabase la demande à l'inscription, à la connexion et pour le mot de passe oublié.
+  const CAPTCHA_KEY = "0x4AAAAAAFKB73jX7PPwNGR6";
 
   const db = window.supabase ? window.supabase.createClient(URL, KEY) : null;
   const need = () => { if(!db) throw new Error("hors-ligne"); };
@@ -29,6 +33,7 @@
 
   window.Cloud = {
     available: !!db,
+    captchaKey: CAPTCHA_KEY,
 
     // identifiant du joueur connecté, lu tout de suite (sans réseau) pour démarrer vite
     cachedUserId(){ try{ return JSON.parse(localStorage.getItem(AUTH_KEY))?.user?.id || null }catch(e){ return null } },
@@ -37,18 +42,18 @@
     onAuth(cb){ if(db) db.auth.onAuthStateChange((ev, session)=>setTimeout(()=>cb(ev, session?.user||null))); },
     async currentUser(){ need(); return ok(await db.auth.getSession()).session?.user || null; },
 
-    async signUp(email, password, pseudo){
+    async signUp(email, password, pseudo, captchaToken){
       need();
-      const d = ok(await db.auth.signUp({email, password, options:{data:{pseudo}, emailRedirectTo:back()}}));
+      const d = ok(await db.auth.signUp({email, password, options:{data:{pseudo}, emailRedirectTo:back(), captchaToken}}));
       // e-mail déjà utilisé : Supabase répond sans erreur mais sans identité
       if(d.user && Array.isArray(d.user.identities) && !d.user.identities.length) throw Object.assign(new Error("deja"), {code:"user_already_exists"});
       return {needsConfirm: !d.session};
     },
-    async signIn(email, password){ need(); return ok(await db.auth.signInWithPassword({email, password})).user; },
+    async signIn(email, password, captchaToken){ need(); return ok(await db.auth.signInWithPassword({email, password, options:{captchaToken}})).user; },
     async signOut(){ if(db) await db.auth.signOut({scope:"local"}); },
-    async resetPassword(email){ need(); ok(await db.auth.resetPasswordForEmail(email, {redirectTo:back()})); },
+    async resetPassword(email, captchaToken){ need(); ok(await db.auth.resetPasswordForEmail(email, {redirectTo:back(), captchaToken})); },
     async updatePassword(password){ need(); ok(await db.auth.updateUser({password})); },
-    async resendConfirm(email){ need(); ok(await db.auth.resend({type:"signup", email, options:{emailRedirectTo:back()}})); },
+    async resendConfirm(email, captchaToken){ need(); ok(await db.auth.resend({type:"signup", email, options:{emailRedirectTo:back(), captchaToken}})); },
 
     // tout ce qu'il faut pour reprendre la partie
     async pull(uid){

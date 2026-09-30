@@ -126,18 +126,18 @@ create or replace function interne.revente() returns int[] language sql immutabl
 create or replace function interne.prime_shiny() returns int[] language sql immutable as $$ select array[2000,5000,15000] $$;
 create or replace function interne.fusion_n() returns int[] language sql immutable as $$ select array[3,5,5,6,8] $$;
 
--- les sacs : prix, nombre de billes, taille garantie (rang), chances de shiny, et chances de chaque taille
--- par emplacement : « cotes » pour les premières billes, « vedette » pour la dernière (qui porte la garantie)
+-- les sacs : prix, nombre de billes, taille garantie (rang), chances de shiny, et chances de chaque taille position par position
+-- (une ligne par bille, dans l'ordre d'ouverture ; la dernière est la vedette). Mêmes valeurs que BAGS dans index.html.
 drop function if exists interne.sac(text);
-create or replace function interne.sac(nom text, out prix int, out n int, out garantie int, out shiny numeric, out cotes numeric[], out vedette numeric[])
+create or replace function interne.sac(nom text, out prix int, out n int, out garantie int, out shiny numeric, out cotes numeric[])
 language sql immutable as $$
-  select v.prix, v.n, v.garantie, v.shiny, v.cotes, v.vedette from (values
-    ('gratuit',     0, 3, null::int, 0.0001, array[54.55,32,10,3,0.4,0.05]::numeric[],  array[30,33,20,12,4,1]::numeric[]),
-    ('classique', 300, 5, null,      0.0001, array[44.9,33,15,6,1,0.1]::numeric[],  array[15,30,25,18,9,3]::numeric[]),
-    ('premium',   600, 5, 3,         0.0002, array[34.8,33,20,10,2,0.2]::numeric[], array[0,0,0,64,30,6]::numeric[]),
-    ('collector',1500, 5, 4,         0.0005, array[24.5,30,25,15,5,0.5]::numeric[], array[0,0,0,0,85,15]::numeric[]),
-    ('pirate',    800, 3, null,      0.0002, array[50,30,12,6,1.8,0.2]::numeric[], array[20,30,25,16,7,2]::numeric[])
-  ) v(nom, prix, n, garantie, shiny, cotes, vedette) where v.nom = sac.nom
+  select v.prix, v.n, v.garantie, v.shiny, v.cotes from (values
+    ('gratuit',     0, 3, null::int, 0.0001, array[[75,25,0,0,0,0],[55,35,10,0,0,0],[30,33,20,12,4,1]]::numeric[]),
+    ('classique', 300, 5, null,      0.0001, array[[70,30,0,0,0,0],[50,38,12,0,0,0],[35,40,20,5,0,0],[20,35,30,13,2,0],[10,25,30,20,12,3]]::numeric[]),
+    ('premium',   600, 5, 3,         0.0002, array[[0,80,20,0,0,0],[0,60,35,5,0,0],[0,40,45,15,0,0],[0,0,55,38,7,0],[0,0,0,60,34,6]]::numeric[]),
+    ('collector',1500, 5, 4,         0.0005, array[[0,0,85,15,0,0],[0,0,65,35,0,0],[0,0,40,50,10,0],[0,0,0,60,38,2],[0,0,0,0,87,13]]::numeric[]),
+    ('pirate',    800, 3, null,      0.0002, array[[60,32,8,0,0,0],[40,35,18,6,1,0],[20,28,24,17,8,3]]::numeric[])
+  ) v(nom, prix, n, garantie, shiny, cotes) where v.nom = sac.nom
 $$;
 
 -- Événements : leurs dates (heure de Paris), le décor et les coloris de leurs billes (mêmes valeurs que EVENTS dans index.html)
@@ -288,21 +288,22 @@ begin
   end if;
   -- les tailles
   for i in 1..r.n loop
-    t := interne.tirer(case when i = r.n then r.vedette else r.cotes end) - 1;   -- la dernière bille : la vedette du sac
+    t := interne.tirer(array(select unnest(r.cotes[i:i][1:6]))) - 1;   -- les chances de la position i
     tirees := tirees || t;
     shinies := shinies || interne.tirer_shiny(r.shiny);
   end loop;
   -- garantie de la cour : un Boulet au plus tard tous les 10 sacs
   if p.pity + 1 >= 10 and not exists (select 1 from unnest(tirees) x where x >= 4) then
-    tirees[r.n] := case when random() * (r.vedette[5] + r.vedette[6]) < r.vedette[6] then 5 else 4 end;
+    tirees[r.n] := case when random() * (r.cotes[r.n][5] + r.cotes[r.n][6]) < r.cotes[r.n][6] then 5 else 4 end;
     force := true;
   end if;
   update portefeuilles set sacs_ouverts = sacs_ouverts + 1, maj_le = now(),
     pity = case when exists (select 1 from unnest(tirees) x where x >= 4) then 0 else pity + 1 end
     where joueur = qui;
   for i in 1..r.n loop
-    -- sac d'événement : chaque bille a une chance d'être du décor de l'événement (25 %, 50 % pour la dernière), sinon c'est une bille normale
-    evb := ev.decor is not null and random() < case when i = r.n then 0.5 else 0.25 end;
+    -- sac d'événement : chaque bille a une chance d'être du décor de l'événement (12 %, 30 % pour la dernière,
+    -- garantie pour la dernière d'un sac offert), sinon c'est une bille normale
+    evb := ev.decor is not null and (case when i = r.n and offert then true else random() < case when i = r.n then 0.3 else 0.12 end end);
     billes := billes || interne.nouvelle_bille(qui, (interne.tailles())[tirees[i]+1], shiny => shinies[i], src => nom,
       decor => case when evb then ev.decor end,
       coloris => case when evb then ev.coloris[1 + floor(random()*array_length(ev.coloris,1))::int] end);

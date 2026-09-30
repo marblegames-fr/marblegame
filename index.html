@@ -441,7 +441,26 @@ main{padding:22px 24px 40px;min-width:0}
 .bag-visual .tag{position:absolute;top:10px;left:10px;font-size:11px;font-weight:900;letter-spacing:.05em;text-transform:uppercase;padding:3px 10px;border-radius:999px;background:var(--ink);color:var(--on-ink)}
 .bag-card h3{font-size:19px;font-weight:900}
 .bag-card > p{color:var(--ink-2);font-weight:600;font-size:13.5px;min-height:2.9em}
-.bg-slot{margin-top:10px}
+.bg-ladder{margin-top:12px;display:grid;gap:5px}
+.slot-pos{position:absolute;top:-6px;left:6px;z-index:3;font-size:11px;font-weight:900;color:rgba(255,255,255,.75);background:rgba(0,0,0,.35);border-radius:999px;padding:1px 7px}
+.slot-pos.star{color:#3A2A00;background:#FFD27A}
+.bl-h{font-size:11px;font-weight:800;color:var(--muted);margin-bottom:2px}
+.bl-row{display:grid;grid-template-columns:26px minmax(0,1fr) auto;align-items:center;gap:8px}
+.bl-n{font-size:12px;font-weight:900;color:var(--muted)}
+.bl-row .bg-bar{height:18px}
+.bl-row .bg-bar i{display:grid;place-items:center;min-width:3px}
+.bl-row .bg-bar em{font-style:normal;font-size:10px;font-weight:900;color:#fff;text-shadow:0 1px 2px rgba(0,0,0,.45)}
+.bl-row.star .bl-n{color:var(--ink)}
+.bl-tag{display:inline-flex;align-items:center;gap:3px;font-size:10.5px;font-weight:900;color:#C07A0C;background:var(--gold-bg);border-radius:999px;padding:1px 7px}
+.bl-more{justify-self:start;margin-top:4px;font-size:12px;font-weight:800;color:var(--ink-2);text-decoration:underline;text-underline-offset:3px}
+.odds-tbl{width:100%;border-collapse:collapse;font-variant-numeric:tabular-nums;font-size:13px;margin-top:10px}
+.odds-tbl th,.odds-tbl td{padding:7px 6px;text-align:center;border-bottom:1px solid var(--line)}
+.odds-tbl th{font-size:11px;font-weight:900;color:var(--muted)}
+.odds-tbl th i{display:inline-block;width:9px;height:9px;border-radius:50%;background:var(--rc);margin-right:4px}
+.odds-tbl td:first-child{font-weight:900;text-align:left}
+.odds-tbl td.z{color:var(--muted)}
+.odds-tbl tr.star td{background:var(--gold-bg)}
+.odds-tbl tfoot td{font-weight:900;border-bottom:0}
 .bg-pick{position:relative}
 .ev-album{border-top:4px solid var(--ec)}
 .ev-head{display:flex;align-items:center;gap:14px;flex-wrap:wrap;margin-bottom:12px}
@@ -2362,30 +2381,31 @@ const QUESTS = {
 };
 const QUEST_BONUS = 150;
 
-// Chances de taille par emplacement : les premières billes du sac (fill) sont surtout des petites,
-// la dernière (star, « la vedette ») a ses propres chances, bien meilleures ; c'est elle qui porte la garantie du sac.
+// Chances de taille position par position (#1, #2… dans l'ordre d'ouverture) : elles montent au fil du sac, la dernière bille est
+// la vedette. Plus le sac est cher, plus le plancher est haut (pas de Mini dans le Premium, rien sous la Chinoise dans le Collector).
 // Mêmes valeurs dans supabase/serveur.sql (interne.sac).
 const sizeOdds = a => Object.fromEntries(TK.map((k,i)=>[k,a[i]]));
 const FREE_BAG = {id:"gratuit", name:"Sac gratuit", desc:"3 billes offertes. Un nouveau sac toutes les 10 minutes, jusqu'à 5 en stock.", price:0, n:3, color:"#C98E4E", tint:"#F6E3C8", shiny:SHINY_RATE,
-  fill:sizeOdds([54.55,32,10,3,0.4,0.05]), star:sizeOdds([30,33,20,12,4,1])};
+  slots:[sizeOdds([75,25,0,0,0,0]),sizeOdds([55,35,10,0,0,0]),sizeOdds([30,33,20,12,4,1])]};
 const BAGS = [FREE_BAG,
   {id:"classique", name:"Sac Classique", desc:"5 billes, avec de meilleures chances que le sac gratuit.", price:300, n:5, color:"#2A8A74", tint:"#D5EFE7", shiny:SHINY_RATE,
-   fill:sizeOdds([44.9,33,15,6,1,0.1]), star:sizeOdds([15,30,25,18,9,3])},
+   slots:[sizeOdds([70,30,0,0,0,0]),sizeOdds([50,38,12,0,0,0]),sizeOdds([35,40,20,5,0,0]),sizeOdds([20,35,30,13,2,0]),sizeOdds([10,25,30,20,12,3])]},
   {id:"premium", name:"Sac Premium", desc:"5 billes, dont au moins un Calot ou mieux. 2 fois plus de chances de shiny.", price:600, n:5, guarantee:"calot", color:"#34469C", tint:"#DCE0F6", shiny:SHINY_RATE*2,
-   fill:sizeOdds([34.8,33,20,10,2,0.2]), star:sizeOdds([0,0,0,64,30,6])},
+   slots:[sizeOdds([0,80,20,0,0,0]),sizeOdds([0,60,35,5,0,0]),sizeOdds([0,40,45,15,0,0]),sizeOdds([0,0,55,38,7,0]),sizeOdds([0,0,0,60,34,6])]},
   {id:"collector", name:"Sac Collector", desc:"5 billes, dont au moins un Boulet ou plus gros. 5 fois plus de chances de shiny.", price:1500, n:5, guarantee:"boulet", color:"#D9A020", tint:"#FBEBC0", shiny:SHINY_RATE*5,
-   fill:sizeOdds([24.5,30,25,15,5,0.5]), star:sizeOdds([0,0,0,0,85,15])},
+   slots:[sizeOdds([0,0,85,15,0,0]),sizeOdds([0,0,65,35,0,0]),sizeOdds([0,0,40,50,10,0]),sizeOdds([0,0,0,60,38,2]),sizeOdds([0,0,0,0,87,13])]},
 ];
 // sacs d'événement : en vente seulement pendant l'événement ; toutes leurs billes ont le décor de l'événement et un de ses coloris
-BAGS.push({id:"pirate", event:"pirates", name:"Sac Pirate", desc:"3 billes, avec la chance d'y trouver des billes Pirate (une en moyenne par sac), chacune dans un des 5 coloris pirates. Seulement pendant l'événement « À l'abordage ! ». 2 fois plus de chances de shiny.",
-  evFill:.25, evStar:.5,   // chances qu'une bille soit Pirate : 25 %, et 50 % pour la dernière (même chose dans serveur.sql)
+BAGS.push({id:"pirate", event:"pirates", name:"Sac Pirate", desc:"3 billes, avec la chance d'y trouver des billes Pirate, chacune dans un des 5 coloris pirates. Seulement pendant l'événement « À l'abordage ! ». 2 fois plus de chances de shiny.",
+  evFill:.12, evStar:.3,   // chances qu'une bille soit Pirate : 12 %, et 30 % pour la dernière ; le sac offert garantit la dernière (même chose dans serveur.sql)
   price:800, n:3, color:"#2E2B36", tint:"#EADFC4", shiny:SHINY_RATE*2,
   fam:FAMILIES.findIndex(F=>F.event==="pirates"), pals:EVENTS.pirates.palIdx,
-  fill:sizeOdds([50,30,12,6,1.8,0.2]), star:sizeOdds([20,30,25,16,7,2])});
+  slots:[sizeOdds([60,32,8,0,0,0]),sizeOdds([40,35,18,6,1,0]),sizeOdds([20,28,24,17,8,3])]});
 // par bille en moyenne (pour les chances d'une bille précise), et « au moins une » de chaque taille dans un sac
 BAGS.forEach(b=>{
-  b.odds = Object.fromEntries(TK.map(k=>[k, +(((b.n-1)*b.fill[k]+b.star[k])/b.n).toFixed(2)]));
-  b.perBag = Object.fromEntries(TK.map(k=>[k, 100*(1-Math.pow(1-b.fill[k]/100, b.n-1)*(1-b.star[k]/100))]));
+  b.star = b.slots[b.n-1];
+  b.odds = Object.fromEntries(TK.map(k=>[k, +(b.slots.reduce((a,o)=>a+o[k],0)/b.n).toFixed(2)]));
+  b.perBag = Object.fromEntries(TK.map(k=>[k, 100*(1-b.slots.reduce((a,o)=>a*(1-o[k]/100),1))]));
 });
 const BAG_BY = Object.fromEntries(BAGS.map(b=>[b.id,b]));
 // l'étagère des sacs : les sacs d'événement n'y sont que pendant l'événement (ou si on en a un offert)
@@ -4299,7 +4319,7 @@ function heroSlides(){
       <div class="hm-txt">
         <span class="hm-k">${ic("flag",15)} Événement · jusqu'au ${dayMonth(E.end)}</span>
         <h1>${esc(E.name)} Les billes Pirate débarquent !</h1>
-        <p>Un décor inédit et ${E.pals.length} coloris qu'on ne trouve que dans le ${b.name} (une bille Pirate par sac en moyenne), pendant encore <b>${eventLeft(E)}</b>.</p>
+        <p>Un décor inédit et ${E.pals.length} coloris qu'on ne trouve que dans le ${b.name}, pendant encore <b>${eventLeft(E)}</b>.${n?" Ton sac offert contient au moins une bille Pirate !":""}</p>
         ${n ? `<button class="btn btn-yellow btn-xl" data-action="open-gift" data-bag="${b.id}">${ic("gift",22)} Ouvrir mon ${b.name} offert</button>`
             : `<button class="btn btn-yellow btn-xl" data-action="ev-bag" data-bag="${b.id}">${bagSVG(b)} Voir le ${b.name}</button>`}
       </div>`}) });
@@ -4479,13 +4499,15 @@ function viewBags(){
     <div class="bg-show" style="--bag-tint:${b.tint};--bc:${b.color}">${bagSVG(b,{loose:true})}</div>
     <div class="bg-info">
       <div><span class="sample-tag">${b.n} billes${b.guarantee?` · au moins un ${TYPES[b.guarantee].label}`:""}${free?" · toutes les 10 min":""}${b.event&&eventLive(EVENTS[b.event])?` · encore ${eventLeft(EVENTS[b.event])}`:""}</span><h2>${b.name}</h2><p>${b.desc}</p>
-        ${b.event?`<p class="ev-rate">${ic("flag",14)} Bille Pirate : ${Math.round(b.evFill*100)} % par bille, ${Math.round(b.evStar*100)} % pour la dernière · au moins une dans ${Math.round(100*(1-Math.pow(1-b.evFill,b.n-1)*(1-b.evStar)))} % des sacs</p><div class="ev-pals">${b.pals.map(pl=>`<span title="${esc(PALETTES[pl][0])}">${mImg({seed:hash("evp"+pl),type:"calot",family:b.fam,pal:pl,shiny:0},80,34,"")}</span>`).join("")}</div>`:""}</div>
+        ${b.event?`<p class="ev-rate">${ic("flag",14)} Bille Pirate : ${Math.round(b.evFill*100)} % par bille, ${Math.round(b.evStar*100)} % pour la vedette · au moins une dans ${Math.round(100*(1-Math.pow(1-b.evFill,b.n-1)*(1-b.evStar)))} % des sacs${S.bagInv[b.id]?` (ton sac offert en garantit une)`:""}</p><div class="ev-pals">${b.pals.map(pl=>`<span title="${esc(PALETTES[pl][0])}">${mImg({seed:hash("evp"+pl),type:"calot",family:b.fam,pal:pl,shiny:0},80,34,"")}</span>`).join("")}</div>`:""}</div>
       <div class="bg-cta">${cta}</div>
       ${free?`<div class="free-stock">${stackPips()}<span>${st} / ${FREE_MAX} en stock · ${freeFull()?"stock plein":`prochain dans <span class="timer" data-free-timer>${freeLeft()}</span>`}</span></div>`:""}
       <div class="panel bg-odds">
         <div class="bg-odds-h"><b>Dans un sac, au moins une…</b><span class="meta">shiny : ${pct(+(b.shiny*100).toFixed(2))} par bille</span></div>
         <div class="bg-legend">${TK.map(k=>`<span style="--rc:${TYPES[k].rc}"><i></i>${TYPES[k].label.replace("Bille chinoise","Chinoise").replace("Mini bille","Mini")}<em>${pctBag(b.perBag[k])}</em></span>`).join("")}</div>
-        ${[["fill",`Les ${b.n-1} premières billes`],["star","La dernière, la vedette du sac"]].map(([k,l])=>`<div class="bg-slot"><small>${l}</small><div class="bg-bar">${TK.map(t=>b[k][t]?`<i style="flex:${b[k][t]};background:${TYPES[t].rc}" title="${TYPES[t].label} : ${pct(b[k][t])}"></i>`:"").join("")}</div></div>`).join("")}
+        <div class="bg-ladder"><small class="bl-h">Bille par bille, dans l'ordre d'ouverture</small>
+        ${b.slots.map((o,i)=>`<div class="bl-row${i===b.n-1?" star":""}"><span class="bl-n">#${i+1}</span><div class="bg-bar">${TK.map(t=>o[t]?`<i style="flex:${o[t]};background:${TYPES[t].rc}" title="${TYPES[t].label} : ${pct(o[t])}">${o[t]>=12?`<em>${o[t]}</em>`:""}</i>`:"").join("")}</div>${i===b.n-1?`<span class="bl-tag">${ic("star",11,2.6)} Vedette</span>`:""}</div>`).join("")}
+        <button class="bl-more" data-action="odds-detail" data-bag="${b.id}">Voir le détail en %</button></div>
       </div>
     </div>
   </div>
@@ -5258,12 +5280,12 @@ function rollType(odds,min){
   for(const k of keys){ x-=odds[k]; if(odds[k] && x<=0) return k }
   return keys[keys.length-1];
 }
-function pullBag(bag){
+function pullBag(bag, gift){
   const res = [];
   for(let i=0;i<bag.n;i++){
-    const t = rollType(i===bag.n-1 ? bag.star : bag.fill);   // la dernière bille est la vedette du sac
+    const t = rollType(bag.slots[i]);   // chaque position a ses chances ; la dernière est la vedette du sac
     const shinyX = Math.random()<bag.shiny ? rollShiny() : 0;
-    const ev = bag.fam!=null && Math.random() < (i===bag.n-1 ? bag.evStar : bag.evFill);
+    const ev = bag.fam!=null && (i===bag.n-1 ? (gift || Math.random()<bag.evStar) : Math.random()<bag.evFill);
     res.push(makeSpec(t,{shiny:shinyX, src:bag.id, ...(ev ? eventSpec(bag) : {})}));
   }
   if((S.pity||0)+1>=PITY && !res.some(s=>tierOf(s)>=BIG)){
@@ -5271,7 +5293,7 @@ function pullBag(bag){
     res[res.length-1] = makeSpec(Math.random()*(bag.star.boulet+bag.star.mammouth)<bag.star.mammouth ? "mammouth" : "boulet", {shiny:last.shiny, src:bag.id, family:last.family, pal:last.pal});
     res.forced = true;
   }
-  return res.sort((a,b)=>TIDX[a.type]-TIDX[b.type] || (a.shiny?1:0)-(b.shiny?1:0));
+  return res;   // dans l'ordre des positions : #1 d'abord, la vedette à la fin
 }
 async function openBag(bagId, gift){
   const bag = BAG_BY[bagId];
@@ -5291,7 +5313,7 @@ async function openBag(bagId, gift){
     if(eco.busy) return; eco.busy = true;
     try{
       const r = await srv(()=>Cloud.eco.openBag(bagId, !!gift));
-      pulls = srvAdopt(r.billes).sort((a,b)=>TIDX[a.type]-TIDX[b.type] || (a.shiny?1:0)-(b.shiny?1:0));
+      pulls = srvAdopt(r.billes);   // dans l'ordre des positions
       pulls.forced = r.force; applyEco(r.eco);
     }catch(e){ srvFail(e); return }
     finally{ eco.busy = false }
@@ -5299,7 +5321,7 @@ async function openBag(bagId, gift){
     if(gift) S.bagInv[bagId]--;
     else if(bag.price===0) useFree();
     else S.jetons -= bag.price;
-    pulls = pullBag(bag);
+    pulls = pullBag(bag, gift);
     S.pity = pulls.some(s=>tierOf(s)>=BIG) ? 0 : (S.pity||0)+1;
   }
   S.bags = (S.bags||0)+1;
@@ -5496,7 +5518,7 @@ function showReveal(){
       ${results.map(({s,isNew,newColor,wish},i)=>{
         const k = pullScore(s), big = k>=BIG;
         return `<button class="slot${wish?" wished":""} ${big?"big":""} ${s.shiny?"shiny":""}" style="--d:${i*130}ms;--tc:${shade(ovState.bag.color,.2)};${tstyle(s.type)}" data-tc="${scoreCol(k)}" data-action="reveal" data-i="${i}" aria-label="Découvrir la bille ${i+1}">
-        ${wish?`<span class="slot-banner">Ta liste !</span>`:s.secret?`<span class="slot-banner">Secrète !</span>`:BANNER[k]?`<span class="slot-banner${k<2?" low":""}">${BANNER[k]}</span>`:""}
+        ${ovState.bag&&i<ovState.bag.n?`<span class="slot-pos${i===ovState.bag.n-1?" star":""}">#${i+1}</span>`:""}${wish?`<span class="slot-banner">Ta liste !</span>`:s.secret?`<span class="slot-banner">Secrète !</span>`:BANNER[k]?`<span class="slot-banner${k<2?" low":""}">${BANNER[k]}</span>`:""}
         <div class="slot-ball"><span class="rays"></span><span class="ball-shadow"></span><span class="orb"><span class="orb-spin"><i>?</i></span></span>${mImg(s,300,Math.round(150*scaleOf(s.type)),"")}</div>
         <div class="slot-info"><b>${esc(specName(s))}</b><span style="display:flex;gap:4px;flex-wrap:wrap;justify-content:center">${wish||s.secret?typePill(s.type,true):""}${shinyPill(s)}${edPill(s)}</span>${tierTag(s)}${k>=BIG&&editionOf(s)?`<span class="ed-no">${edLabel(editionOf(s))}</span>`:""}${isNew?`<span class="new">Nouvelle case !</span>`:newColor?`<span class="new">Nouveau coloris</span>`:`<span class="dup">Déjà dans ta boîte</span>`}<span class="zoom-hint">${ic("search",14)} Agrandir</span></div>
       </button>`}).join("")}
@@ -7435,6 +7457,14 @@ document.addEventListener("click", e=>{
     }
     case "ami-voir": openProfil(t.dataset.id); break;
     case "ev-bag": ui.bag = t.dataset.bag; go("sacs"); break;
+    case "odds-detail": { const b = BAG_BY[t.dataset.bag], el = document.getElementById("modal"), sh = s => s.replace("Mini bille","Mini").replace("Bille chinoise","Chinoise");
+      el.innerHTML = `<div class="modal bag-sum" role="dialog" aria-modal="true" aria-label="Chances du ${esc(b.name)}"><button class="close-x" data-action="close-modal" aria-label="Fermer">×</button>
+        <h2>${esc(b.name)} : les chances</h2><p class="meta">Chaque bille a ses propres chances, dans l'ordre où tu les ouvres : elles montent au fil du sac, et la dernière est la vedette.${b.guarantee?` Garantie : au moins un ${TYPES[b.guarantee].label}.`:""}</p>
+        <div style="overflow-x:auto"><table class="odds-tbl"><thead><tr><th></th>${TK.map(t=>`<th style="${tstyle(t)}"><i></i>${sh(TYPES[t].label)}</th>`).join("")}</tr></thead>
+        <tbody>${b.slots.map((o,i)=>`<tr class="${i===b.n-1?"star":""}"><td>#${i+1}${i===b.n-1?" ★":""}</td>${TK.map(t=>`<td class="${o[t]?"":"z"}">${o[t]?pct(o[t]):"–"}</td>`).join("")}</tr>`).join("")}</tbody>
+        <tfoot><tr><td>Par sac</td>${TK.map(t=>`<td>${pctBag(b.perBag[t])}</td>`).join("")}</tr></tfoot></table></div>
+        <p class="meta" style="margin-top:10px">« Par sac » : les chances d'avoir au moins une bille de cette taille dans le sac. Shiny : ${pct(+(b.shiny*100).toFixed(2))} sur chaque bille.${b.event?` Bille ${FAMILIES[b.fam].name} : ${Math.round(b.evFill*100)} % par bille, ${Math.round(b.evStar*100)} % pour la vedette.`:""}</p></div>`;
+      el.hidden = false; el.querySelector(".close-x").focus(); break }
     case "ami-ajouter-pseudo": { const v = t.dataset.pseudo; t.disabled = true;
       Cloud.cour.ajouter(v).then(r=>{ toast(r==="ami" ? `${v} t'avait déjà demandé : vous êtes copains !` : `Demande envoyée à ${v}.`); courRefresh("moi","fil"); closeModal() }, e=>{ t.disabled = false; courFail(e) }); break }
     case "ami-retirer": {

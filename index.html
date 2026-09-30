@@ -5159,7 +5159,7 @@ const PEDIA_PAL = PALETTES.findIndex(P=>P[0]==="Azur");   // le coloris des exem
 function viewPedia(){
   pedia = [];
   const fw = FAM_W.reduce((a,b)=>a+b,0), sw = SHINIES.slice(1).reduce((a,x)=>a+x.w,0);
-  const base = {seed:hash("pedia-shiny"), type:"calot", family:1, pal:5};
+  const base = {seed:hash("pedia-shiny"), type:"calot", family:0, pal:PEDIA_PAL};   // même bille que « Les tailles » : seul l'effet change
   const shinyTiles = [0,1,2,3].map(k=>{
     const s = {...base, shiny:k}, i = pv(s);
     const pIn = b => b.shiny*SHINIES[k].w/sw;

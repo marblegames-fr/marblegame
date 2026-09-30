@@ -58,12 +58,29 @@ update public.annonces set expire_le = le + interval '3 days' where expire_le is
 alter table public.annonces alter column expire_le set default now() + interval '3 days';
 alter table public.annonces alter column expire_le set not null;
 create index if not exists annonces_actives on public.annonces (le desc) where vendue_le is null and retiree_le is null;
+-- ---------- Enchères : une annonce « enchère » part au plus offrant quand le temps est écoulé ----------
+-- prix = mise à prix (puis le prix final une fois vendue). Les bonbecs de la meilleure offre sont mis de côté
+-- (retirés du portefeuille) ; celui qui se fait dépasser est remboursé tout de suite.
+alter table public.annonces add column if not exists enchere      boolean not null default false;
+alter table public.annonces add column if not exists offre        int;
+alter table public.annonces add column if not exists encherisseur uuid references auth.users(id);
+alter table public.annonces add column if not exists nb_offres    int not null default 0;
+create table if not exists public.offres (
+  id      bigint generated always as identity primary key,
+  annonce bigint not null references public.annonces(id) on delete cascade,
+  joueur  uuid not null references auth.users(id) on delete cascade,
+  montant int  not null,
+  le      timestamptz not null default now()
+);
+create index if not exists offres_annonce on public.offres (annonce, le);
+create index if not exists offres_joueur on public.offres (joueur);
 
 alter table public.amis          enable row level security;
 alter table public.demandes_amis enable row level security;
 alter table public.trocs         enable row level security;
 alter table public.annonces      enable row level security;
-revoke all on public.amis, public.demandes_amis, public.trocs, public.annonces from anon, authenticated;
+alter table public.offres        enable row level security;
+revoke all on public.amis, public.demandes_amis, public.trocs, public.annonces, public.offres from anon, authenticated;
 
 -- =====================================================================
 --  OUTILS INTERNES
@@ -75,16 +92,36 @@ $$ select exists (select 1 from public.amis where joueur = a and ami = b) $$;
 create or replace function interne.bille_json(b public.billes) returns jsonb language sql stable as
 $$ select b.donnees || jsonb_build_object('id', b.id, 'no', b.numero, 'srv', b.origine = 'serveur') $$;
 
--- les annonces arrivées à leur fin sont retirées (appelé avant de lire ou de modifier le marché)
-create or replace function interne.expirer_annonces() returns void language sql as $$
-  update public.annonces set retiree_le = expire_le where vendue_le is null and retiree_le is null and expire_le <= now()
+-- les annonces arrivées à leur fin (appelé avant de lire ou de modifier le marché) :
+-- une enchère avec une offre part au plus offrant ; tout le reste est retiré et la bille reste chez son propriétaire
+create or replace function interne.expirer_annonces() returns void language plpgsql as $$
+declare a record;
+begin
+  for a in select * from public.annonces where enchere and encherisseur is not null and vendue_le is null and retiree_le is null
+             and expire_le <= now() order by id for update skip locked loop
+    begin
+      perform public.transferer_bille(a.bille, a.vendeur, a.encherisseur, 'vente');
+      perform interne.crediter(a.vendeur, a.offre);
+      update public.annonces set vendue_le = now(), acheteur = a.encherisseur, prix = a.offre where id = a.id;
+      update public.trocs x set statut = 'impossible', fini_le = now() where x.statut = 'attente' and (a.bille = any(x.donne) or a.bille = any(x.demande));
+    exception when others then   -- la bille n'est plus là (ne devrait pas arriver) : on rembourse et on retire
+      perform interne.crediter(a.encherisseur, a.offre);
+      update public.annonces set retiree_le = now() where id = a.id;
+    end;
+  end loop;
+  update public.annonces set retiree_le = expire_le where vendue_le is null and retiree_le is null and expire_le <= now();
+end $$;
+-- une annonce qui bloque sa bille : en cours, ou enchère terminée qui attend de partir chez le gagnant
+create or replace function interne.en_vente(bid uuid) returns boolean language sql stable as $$
+  select exists (select 1 from public.annonces a where a.bille = bid and a.vendue_le is null and a.retiree_le is null
+                   and (a.expire_le > now() or a.encherisseur is not null))
 $$;
 
 -- une bille qui peut circuler : à ce joueur, pas détruite, tirée par le serveur, pas secrète, pas en vente
 create or replace function interne.bille_libre(bid uuid, qui uuid) returns boolean language sql stable as $$
   select exists (select 1 from public.billes b where b.id = bid and b.proprietaire = qui and b.detruite_le is null
                    and b.origine = 'serveur' and b.secrete is null)
-     and not exists (select 1 from public.annonces a where a.bille = bid and a.vendue_le is null and a.retiree_le is null and a.expire_le > now())
+     and not interne.en_vente(bid)
 $$;
 
 create or replace function interne.pseudo(qui uuid) returns text language sql stable as
@@ -183,7 +220,7 @@ begin
   return coalesce((select jsonb_agg(x.j) from (
     select interne.bille_json(b) j from billes b
     where b.proprietaire = qui and b.detruite_le is null and b.origine = 'serveur' and b.secrete is null
-      and not exists (select 1 from annonces a where a.bille = b.id and a.vendue_le is null and a.retiree_le is null and a.expire_le > now())
+      and not interne.en_vente(b.id)
     order by interne.rang(b.taille) desc, b.shiny desc, b.numero desc limit 500) x), '[]');
 end $$;
 
@@ -297,6 +334,22 @@ end $$;
 -- =====================================================================
 --  MARCHÉ
 -- =====================================================================
+-- la plus petite offre acceptée : la mise à prix, puis au moins 5 % de plus que la meilleure offre (1 bonbec minimum)
+create or replace function interne.offre_min(prix int, offre int) returns int language sql immutable as
+$$ select case when offre is null then prix else offre + greatest(1, ceil(offre * 0.05))::int end $$;
+-- une annonce telle que le marché l'affiche (avec le prix moyen payé pour ce modèle ces 30 derniers jours)
+create or replace function interne.annonce_json(a public.annonces, b public.billes, moi uuid) returns jsonb language sql stable as $$
+  select jsonb_build_object('id', a.id, 'prix', a.prix, 'le', floor(extract(epoch from a.le)*1000)::bigint,
+    'fin', floor(extract(epoch from a.expire_le)*1000)::bigint,
+    'vendeur', interne.pseudo(a.vendeur), 'moi', a.vendeur = moi, 'bille', interne.bille_json(b),
+    'enchere', a.enchere, 'offre', a.offre, 'nb_offres', a.nb_offres, 'min', interne.offre_min(a.prix, a.offre),
+    'meilleur', interne.pseudo(a.encherisseur), 'en_tete', coalesce(a.encherisseur = moi, false),
+    'vendue', a.vendue_le is not null, 'acheteur', interne.pseudo(a.acheteur),
+    'moyen', (select round(avg(a2.prix))::int from public.annonces a2 join public.billes b2 on b2.id = a2.bille
+              where a2.vendue_le > now() - interval '30 days' and b2.taille = b.taille and b2.decor = b.decor
+                and b2.coloris = b.coloris and (b2.shiny > 0) = (b.shiny > 0)))
+$$;
+
 drop function if exists public.vendre(uuid, int);
 create or replace function public.vendre(bille uuid, prix int, jours int default 3) returns bigint language plpgsql security definer set search_path = public as $$
 declare moi uuid := interne.moi(); aid bigint;
@@ -310,8 +363,47 @@ begin
   return aid;
 end $$;
 
+-- une enchère : mise à prix, et durée en heures (1 h, 6 h, 1 jour ou 3 jours)
+create or replace function public.mettre_aux_encheres(bille uuid, prix int, heures int default 24) returns bigint language plpgsql security definer set search_path = public as $$
+declare moi uuid := interne.moi(); aid bigint;
+begin
+  perform interne.expirer_annonces();
+  if prix < 1 or prix > 1000000 then raise exception 'prix_invalide'; end if;
+  if heures not in (1, 6, 24, 72) then raise exception 'duree_invalide'; end if;
+  if not interne.bille_libre(bille, moi) then raise exception 'bille_indisponible'; end if;
+  if (select count(*) from annonces a where a.vendeur = moi and a.vendue_le is null and a.retiree_le is null) >= 30 then raise exception 'trop_annonces'; end if;
+  insert into annonces (vendeur, bille, prix, expire_le, enchere)
+    values (moi, mettre_aux_encheres.bille, mettre_aux_encheres.prix, now() + make_interval(hours => heures), true) returning id into aid;
+  return aid;
+end $$;
+
+-- enchérir : les bonbecs sont mis de côté tout de suite, l'ancien meilleur enchérisseur est remboursé.
+-- Une offre dans la dernière minute repousse la fin à une minute : personne ne gagne en dernière seconde.
+create or replace function public.encherir(annonce bigint, montant int) returns jsonb language plpgsql security definer set search_path = public as $$
+declare moi uuid := interne.moi(); a annonces; b billes;
+begin
+  perform interne.expirer_annonces();
+  select * into a from annonces where id = annonce and enchere and vendue_le is null and retiree_le is null and expire_le > now() for update;
+  if a.id is null then raise exception 'enchere_finie'; end if;
+  if a.vendeur = moi then raise exception 'ta_bille'; end if;
+  if a.encherisseur = moi then raise exception 'deja_en_tete'; end if;
+  if montant is null or montant < interne.offre_min(a.prix, a.offre) or montant > 1000000 then raise exception 'offre_trop_basse'; end if;
+  perform 1 from portefeuilles where joueur in (moi, coalesce(a.encherisseur, moi)) order by joueur for update;
+  update portefeuilles set bonbecs = bonbecs - montant, maj_le = now() where joueur = moi and bonbecs >= montant;
+  if not found then raise exception 'pas_assez'; end if;
+  if a.encherisseur is not null then perform interne.crediter(a.encherisseur, a.offre); end if;
+  insert into offres (annonce, joueur, montant) values (a.id, moi, montant);
+  update annonces set offre = montant, encherisseur = moi, nb_offres = nb_offres + 1,
+    expire_le = greatest(expire_le, now() + interval '1 minute') where id = a.id returning * into a;
+  select * into b from billes where id = a.bille;
+  return jsonb_build_object('eco', interne.etat(moi), 'annonce', interne.annonce_json(a, b, moi));
+end $$;
+
+-- retirer une annonce : possible tant que personne n'a enchéri
 create or replace function public.retirer_annonce(annonce bigint) returns void language plpgsql security definer set search_path = public as $$
 begin
+  if exists (select 1 from annonces where id = annonce and vendeur = auth.uid() and encherisseur is not null and vendue_le is null and retiree_le is null)
+    then raise exception 'deja_des_offres'; end if;
   update annonces set retiree_le = now() where id = annonce and vendeur = auth.uid() and vendue_le is null and retiree_le is null;
   if not found then raise exception 'plus_en_vente'; end if;
 end $$;
@@ -319,7 +411,7 @@ end $$;
 create or replace function public.acheter(annonce bigint) returns jsonb language plpgsql security definer set search_path = public as $$
 declare moi uuid := interne.moi(); a annonces; b billes;
 begin
-  select * into a from annonces where id = annonce and vendue_le is null and retiree_le is null and expire_le > now() for update;
+  select * into a from annonces where id = annonce and not enchere and vendue_le is null and retiree_le is null and expire_le > now() for update;
   if a.id is null then raise exception 'plus_en_vente'; end if;
   if a.vendeur = moi then raise exception 'ta_bille'; end if;
   -- on verrouille les deux portefeuilles dans le même ordre pour ne jamais se bloquer
@@ -334,30 +426,40 @@ begin
   return jsonb_build_object('eco', interne.etat(moi), 'bille', interne.bille_json(b));
 end $$;
 
--- les annonces, avec des filtres ; pour chaque bille, le prix moyen payé pour ce modèle ces 30 derniers jours
+-- les annonces, avec des filtres ; genre : 'fixe' (achat immédiat) ou 'enchere'
+drop function if exists public.marche(text, int, int, boolean, text, int);
 create or replace function public.marche(taille text default null, decor int default null, coloris int default null,
-  shiny boolean default null, tri text default 'recent', page int default 0)
+  shiny boolean default null, tri text default 'recent', page int default 0, genre text default null)
 returns jsonb language plpgsql security definer set search_path = public as $$
 declare moi uuid := auth.uid();
 begin
   if moi is null then raise exception 'connexion_requise'; end if;
   perform interne.expirer_annonces();
   return coalesce((select jsonb_agg(x.j) from (
-    select jsonb_build_object('id', a.id, 'prix', a.prix, 'le', floor(extract(epoch from a.le)*1000)::bigint,
-      'fin', floor(extract(epoch from a.expire_le)*1000)::bigint,
-      'vendeur', interne.pseudo(a.vendeur), 'moi', a.vendeur = moi, 'bille', interne.bille_json(b),
-      'moyen', (select round(avg(a2.prix))::int from annonces a2 join billes b2 on b2.id = a2.bille
-                where a2.vendue_le > now() - interval '30 days' and b2.taille = b.taille and b2.decor = b.decor
-                  and b2.coloris = b.coloris and (b2.shiny > 0) = (b.shiny > 0))) j
+    select interne.annonce_json(a, b, moi) j
     from annonces a join billes b on b.id = a.bille
     where a.vendue_le is null and a.retiree_le is null
       and (marche.taille is null or b.taille = marche.taille)
       and (marche.decor is null or b.decor = marche.decor)
       and (marche.coloris is null or b.coloris = marche.coloris)
       and (marche.shiny is null or (b.shiny > 0) = marche.shiny)
-    order by case when tri = 'prix' then a.prix end asc, case when tri = 'rare' then interne.rang(b.taille) end desc,
-             case when tri = 'rare' then b.shiny end desc, a.le desc
+      and (marche.genre is null or a.enchere = (marche.genre = 'enchere'))
+    order by case when tri = 'prix' then coalesce(a.offre, a.prix) end asc, case when tri = 'rare' then interne.rang(b.taille) end desc,
+             case when tri = 'rare' then b.shiny end desc, case when tri = 'fin' then a.expire_le end asc, a.le desc
     limit 60 offset greatest(page,0) * 60) x), '[]');
+end $$;
+
+-- les enchères où j'ai fait une offre et qui ne sont pas finies (en tête, ou dépassé)
+create or replace function public.mes_encheres() returns jsonb language plpgsql security definer set search_path = public as $$
+declare moi uuid := auth.uid();
+begin
+  if moi is null then raise exception 'connexion_requise'; end if;
+  perform interne.expirer_annonces();
+  return coalesce((select jsonb_agg(x.j order by x.fin) from (
+    select interne.annonce_json(a, b, moi) j, a.expire_le fin
+    from annonces a join billes b on b.id = a.bille
+    where a.enchere and a.vendue_le is null and a.retiree_le is null
+      and exists (select 1 from offres o where o.annonce = a.id and o.joueur = moi)) x), '[]');
 end $$;
 
 create or replace function public.mes_annonces() returns jsonb language plpgsql security definer set search_path = public as $$
@@ -366,23 +468,24 @@ begin
   if moi is null then raise exception 'connexion_requise'; end if;
   perform interne.expirer_annonces();
   return coalesce((select jsonb_agg(x.j) from (
-    select jsonb_build_object('id', a.id, 'prix', a.prix, 'le', floor(extract(epoch from a.le)*1000)::bigint,
-      'fin', floor(extract(epoch from a.expire_le)*1000)::bigint,
-      'vendue', a.vendue_le is not null, 'acheteur', interne.pseudo(a.acheteur), 'bille', interne.bille_json(b)) j
+    select interne.annonce_json(a, b, moi) j
     from annonces a join billes b on b.id = a.bille
     where a.vendeur = moi and a.retiree_le is null and (a.vendue_le is null or a.vendue_le > now() - interval '7 days')
     order by a.vendue_le is not null, a.le desc) x), '[]');
 end $$;
 
 -- une bille en vente qui part à la Confiserie ou en fusion : son annonce est retirée
+-- (sauf une enchère où quelqu'un a déjà fait une offre : la bille est promise, on ne peut plus la détruire)
 create or replace function interne.retirer_si_detruite() returns trigger language plpgsql as $$
 begin
+  if exists (select 1 from public.annonces where bille = new.id and vendue_le is null and retiree_le is null and encherisseur is not null)
+    then raise exception 'en_enchere'; end if;
   update public.annonces set retiree_le = now() where bille = new.id and vendue_le is null and retiree_le is null;
   return new;
 end $$;
 drop trigger if exists pas_en_vente on public.billes;
 drop trigger if exists retirer_si_detruite on public.billes;
-create trigger retirer_si_detruite after update of detruite_le on public.billes for each row
+create trigger retirer_si_detruite before update of detruite_le on public.billes for each row
   when (new.detruite_le is not null and old.detruite_le is null) execute function interne.retirer_si_detruite();
 
 -- =====================================================================
@@ -406,20 +509,109 @@ begin
       from trocs t where (t.de = moi or t.vers = moi) and (t.statut <> 'attente' or t.vers = moi)
       union all
       -- mes ventes : mise en vente, vendue, retirée ou arrivée au bout
-      select a.le, jsonb_build_object('k', 'annonce', 'prix', a.prix, 'bille', interne.bille_json(b)) from annonces a join billes b on b.id = a.bille where a.vendeur = moi
+      select a.le, jsonb_build_object('k', 'annonce', 'prix', a.prix, 'enchere', a.enchere, 'bille', interne.bille_json(b)) from annonces a join billes b on b.id = a.bille where a.vendeur = moi
       union all
-      select a.vendue_le, jsonb_build_object('k', 'vendue', 'prix', a.prix, 'autre', interne.pseudo(a.acheteur), 'bille', interne.bille_json(b))
+      select a.vendue_le, jsonb_build_object('k', 'vendue', 'prix', a.prix, 'enchere', a.enchere, 'autre', interne.pseudo(a.acheteur), 'bille', interne.bille_json(b))
         from annonces a join billes b on b.id = a.bille where a.vendeur = moi and a.vendue_le is not null
       union all
-      select a.retiree_le, jsonb_build_object('k', case when a.retiree_le = a.expire_le then 'expiree' else 'retiree' end, 'prix', a.prix, 'bille', interne.bille_json(b))
+      select a.retiree_le, jsonb_build_object('k', case when a.retiree_le = a.expire_le then 'expiree' else 'retiree' end, 'prix', a.prix, 'enchere', a.enchere, 'bille', interne.bille_json(b))
         from annonces a join billes b on b.id = a.bille where a.vendeur = moi and a.retiree_le is not null
       union all
-      -- mes achats
-      select a.vendue_le, jsonb_build_object('k', 'achat', 'prix', a.prix, 'autre', interne.pseudo(a.vendeur), 'bille', interne.bille_json(b))
+      -- mes achats (et les enchères gagnées)
+      select a.vendue_le, jsonb_build_object('k', case when a.enchere then 'gagnee' else 'achat' end, 'prix', a.prix, 'autre', interne.pseudo(a.vendeur), 'bille', interne.bille_json(b))
         from annonces a join billes b on b.id = a.bille where a.acheteur = moi
+      union all
+      -- enchères : les offres sur mes billes, les miennes, et quand quelqu'un me dépasse
+      select o.le, jsonb_build_object('k', case when a.vendeur = moi then 'offre' when o.joueur = moi then 'mon_offre' else 'depasse' end,
+          'prix', o.montant, 'autre', interne.pseudo(case when o.joueur = moi then a.vendeur else o.joueur end), 'bille', interne.bille_json(b))
+        from (select o.*, lag(o.joueur) over (partition by o.annonce order by o.le, o.id) avant from offres o
+              where o.annonce in (select a2.id from annonces a2 where a2.vendeur = moi union select o2.annonce from offres o2 where o2.joueur = moi)) o
+        join annonces a on a.id = o.annonce join billes b on b.id = a.bille
+        where a.vendeur = moi or o.joueur = moi or (o.avant = moi and o.joueur <> moi)
     ) u where u.le > apres
     order by u.le desc limit least(greatest(coalesce(limite, 80), 1), 200)
   ) e), '[]');
+end $$;
+
+-- =====================================================================
+--  CLASSEMENT : des points pour la collection (les doubles ne comptent pas)
+--  Seules les billes tirées par le serveur comptent (pas les billes de départ, ni les secrètes, ni les billes de test).
+--  Barème (mêmes valeurs dans index.html : SCORE) :
+--    - chaque case (une taille + un décor) : points de la taille × multiplicateur de rareté du décor
+--    - chaque coloris en plus dans une case : un cinquième des points de la taille
+--    - chaque shiny différente : 150 (Irisée), 300 (Dorée), 600 (Lumineuse)
+--    - un décor dans les 6 tailles : 200 × multiplicateur du décor
+--    - une taille dans tous les décors : 20 × les points de la taille
+--    - une case avec les 48 coloris de base : 20 × les points de la taille
+--    - chaque série à thème terminée (onglet Séries) : un quart de sa récompense en bonbecs (voir interne.series)
+-- =====================================================================
+create or replace function interne.pts_taille() returns int[] language sql immutable as $$ select array[10,15,20,30,60,120] $$;
+create or replace function interne.mult_decor() returns numeric[] language sql immutable as $$ select array[1,1.5,2,3,5]::numeric[] $$;
+create or replace function interne.pts_shiny() returns int[] language sql immutable as $$ select array[150,300,600] $$;
+
+-- les séries à thème, case par case (mêmes séries que SERIES dans index.html : décor et/ou coloris, n'importe quelle taille).
+-- « Les grands formats » (un décor dans les 6 tailles) est compté à part.
+create or replace function interne.series() returns table (serie text, pts int, decor int, coloris int) language sql immutable as $$
+  select * from (values
+    ('trousse', 75, 21, null::int), ('trousse', 75, 22, null), ('trousse', 75, 25, null), ('trousse', 75, 24, null),
+    ('bonbons', 100, 7, null), ('bonbons', 100, 14, null), ('bonbons', 100, 20, null), ('bonbons', 100, 23, null), ('bonbons', 100, null, 24), ('bonbons', 100, null, 37),
+    ('nature', 100, 28, null), ('nature', 100, 29, null), ('nature', 100, 19, null), ('nature', 100, 0, null), ('nature', 100, null, 14), ('nature', 100, null, 47),
+    ('arcenciel', 100, null, 12), ('arcenciel', 100, null, 3), ('arcenciel', 100, null, 17), ('arcenciel', 100, null, 2), ('arcenciel', 100, null, 0), ('arcenciel', 100, null, 20), ('arcenciel', 100, null, 10),
+    ('noiretblanc', 75, null, 30), ('noiretblanc', 75, null, 18), ('noiretblanc', 75, null, 40), ('noiretblanc', 75, null, 23), ('noiretblanc', 75, null, 43),
+    ('pierres', 1500, 3, 19), ('pierres', 1500, 18, 20), ('pierres', 1500, 11, 2), ('pierres', 1500, 10, 21),
+    ('feuglace', 100, 17, null), ('feuglace', 100, 15, null), ('feuglace', 100, null, 6), ('feuglace', 100, null, 13),
+    ('cosmos', 500, 26, null), ('cosmos', 500, 27, null), ('cosmos', 500, 2, null), ('cosmos', 500, 30, null),
+    ('grenier', 100, 8, null), ('grenier', 100, 6, null), ('grenier', 100, 4, null), ('grenier', 100, 1, null),
+    ('foire', 100, 12, null), ('foire', 100, 13, null), ('foire', 100, 5, null), ('foire', 100, null, 31), ('foire', 100, null, 44),
+    ('atelier', 300, 9, null), ('atelier', 300, 16, null), ('atelier', 300, 31, null), ('atelier', 300, null, 22), ('atelier', 300, null, 35)
+  ) v (serie, pts, decor, coloris)
+$$;
+create or replace function interne.pts_grands() returns int language sql immutable as $$ select 300 $$;   -- la série « Les grands formats »
+
+create or replace function interne.scores() returns table (joueur uuid, total int, cases int, pts_cases int, pts_coloris int, pts_shiny int,
+  pts_series int, nb_series int) language sql stable as $$
+  with b as (
+    select proprietaire j, interne.rang(taille) t, decor d, coloris c, shiny sh from public.billes
+    where detruite_le is null and origine = 'serveur' and secrete is null and coalesce(donnees->>'src', '') <> 'test'),
+  k as (   -- les cases
+    select j, t, d, count(distinct c)::int nc, count(distinct c) filter (where c < interne.coloris_base())::int nb,
+      (interne.pts_taille())[t+1] pt, (interne.mult_decor())[(interne.decor_rarete())[d+1]+1] m
+    from b group by j, t, d),
+  sh as (select j, sum((interne.pts_shiny())[sh])::int p from (select distinct j, t, d, c, sh from b where sh > 0) x group by j),
+  sd as (select j, sum(round(200 * m))::int p, count(*)::int n from (select j, d, max(m) m from k group by j, d having count(*) = 6) x group by j),
+  st as (select j, sum(20 * pt)::int p, count(*)::int n from (select j, t, max(pt) pt from k group by j, t
+           having count(*) = array_length(interne.decor_rarete(), 1)) x group by j),
+  sc as (select j, sum(20 * pt)::int p, count(*)::int n from k where nb >= interne.coloris_base() group by j),
+  -- séries à thème : toutes les cases de la série trouvées ; « Les grands formats » dès qu'un décor est dans les 6 tailles
+  se as (select p.j, sum(d.pts)::int p, count(*)::int n from (select distinct j from b) p
+           cross join (select distinct serie, pts from interne.series()) d
+           where not exists (select 1 from interne.series() i where i.serie = d.serie
+                   and not exists (select 1 from b where b.j = p.j and (i.decor is null or b.d = i.decor) and (i.coloris is null or b.c = i.coloris)))
+           group by p.j),
+  tot as (select j, count(*)::int cases, sum(round(pt * m))::int pc, sum((pt / 5) * (nc - 1))::int pk from k group by j),
+  x as (select tot.*, coalesce(sh.p,0) psh,
+          coalesce(sd.p,0) + coalesce(st.p,0) + coalesce(sc.p,0) + coalesce(se.p,0) + case when sd.n > 0 then interne.pts_grands() else 0 end pse,
+          coalesce(sd.n,0) + coalesce(st.n,0) + coalesce(sc.n,0) + coalesce(se.n,0) + case when sd.n > 0 then 1 else 0 end nse
+        from tot left join sh on sh.j = tot.j left join sd on sd.j = tot.j left join st on st.j = tot.j left join sc on sc.j = tot.j left join se on se.j = tot.j)
+  select j, (pc + pk + psh + pse)::int, cases, pc, pk, psh, pse::int, nse::int from x
+$$;
+
+-- le classement : tout le monde, ou moi et mes copains. Les 50 premiers, et ma place à moi.
+create or replace function public.classement(portee text default 'tous') returns jsonb language plpgsql security definer set search_path = public as $$
+declare moi uuid := auth.uid();
+begin
+  if moi is null then raise exception 'connexion_requise'; end if;
+  return (with r as (
+      select p.joueur, coalesce(s.total, 0) total, coalesce(s.cases, 0) cases, s.pts_cases, s.pts_coloris, s.pts_shiny, s.pts_series, s.nb_series,
+        rank() over (order by coalesce(s.total, 0) desc) rang
+      from portefeuilles p left join interne.scores() s on s.joueur = p.joueur
+      where portee <> 'copains' or p.joueur = moi or p.joueur in (select ami from amis where joueur = moi))
+    select jsonb_build_object('nb', (select count(*) from r),
+      'liste', coalesce((select jsonb_agg(interne.carte(r.joueur) || jsonb_build_object('rang', r.rang, 'total', r.total, 'cases', r.cases,
+                 'moi', r.joueur = moi) order by r.rang, r.cases desc) from (select * from r order by rang, cases desc limit 50) r), '[]'),
+      'moi', (select jsonb_build_object('rang', r.rang, 'total', r.total, 'cases', r.cases, 'pts_cases', coalesce(r.pts_cases,0),
+                 'pts_coloris', coalesce(r.pts_coloris,0), 'pts_shiny', coalesce(r.pts_shiny,0), 'pts_series', coalesce(r.pts_series,0),
+                 'nb_series', coalesce(r.nb_series,0)) from r where r.joueur = moi)));
 end $$;
 
 -- une seule fois : les billes déjà échangées ou vendues retrouvent leur provenance (voir transferer_bille dans schema.sql)
@@ -438,7 +630,8 @@ end $$;
 do $$ declare f text; begin
   foreach f in array array['cour_moi()','ami_demander(text)','ami_repondre(uuid,boolean)','ami_retirer(uuid)','profil_joueur(uuid)',
     'billes_echangeables(uuid)','fil_amis()','troc_proposer(uuid,uuid[],uuid[],text,bigint,int,int)','troc_repondre(bigint,boolean)','troc_annuler(bigint)',
-    'mes_trocs()','vendre(uuid,int,int)','retirer_annonce(bigint)','acheter(bigint)','marche(text,int,int,boolean,text,int)','mes_annonces()','cour_journal(bigint,int)'] loop
+    'mes_trocs()','vendre(uuid,int,int)','retirer_annonce(bigint)','acheter(bigint)','marche(text,int,int,boolean,text,int,text)','mes_annonces()','cour_journal(bigint,int)',
+    'mettre_aux_encheres(uuid,int,int)','encherir(bigint,int)','mes_encheres()','classement(text)'] loop
     execute format('revoke all on function public.%s from public, anon', f);
     execute format('grant execute on function public.%s to authenticated', f);
   end loop;

@@ -111,7 +111,12 @@
       vendre: (bille, prix, jours) => rpc("vendre", {bille, prix, jours:jours||3}),
       retirerAnnonce: annonce => rpc("retirer_annonce", {annonce}),
       acheter: annonce => rpc("acheter", {annonce}),
-      marche: f => rpc("marche", {taille:f.taille||null, decor:f.decor??null, coloris:f.coloris??null, shiny:f.shiny===""||f.shiny==null?null:f.shiny==="1", tri:f.tri||"recent", page:f.page||0}),
+      // « genre » (achat immédiat ou enchère) n'est envoyé que s'il est choisi : le marché marche aussi avec l'ancien serveur
+      marche: f => rpc("marche", Object.assign({taille:f.taille||null, decor:f.decor??null, coloris:f.coloris??null, shiny:f.shiny===""||f.shiny==null?null:f.shiny==="1", tri:f.tri||"recent", page:f.page||0}, f.genre ? {genre:f.genre} : {})),
+      encheres: () => rpc("mes_encheres"),
+      mettreAuxEncheres: (bille, prix, heures) => rpc("mettre_aux_encheres", {bille, prix, heures}),
+      encherir: (annonce, montant) => rpc("encherir", {annonce, montant}),
+      classement: portee => rpc("classement", {portee:portee||"tous"}),
       annonces: () => rpc("mes_annonces"),
       journal: (depuis, limite) => rpc("cour_journal", {depuis:depuis||0, limite:limite||80}),
     },

@@ -384,8 +384,7 @@ begin
       if nq >= 3 then raise exception 'deja'; end if;
       k := today || '|' || cle;
     when 'quetes-bonus' then   -- les 3 quêtes : un Sac Classique offert
-      -- (150 bonbecs : l'ancienne récompense, tant que l'ancienne version du site est en ligne)
-      if not ((montant = 0 and sac = 'classique') or (montant = 150 and sac is null)) then raise exception 'montant_invalide'; end if;
+      if montant <> 0 or sac is distinct from 'classique' then raise exception 'montant_invalide'; end if;
       k := today;
     when 'jeu' then     -- une récompense par jour et par jeu (au Tir : par trou)
       maxi := case when cle ~ '^tir\|[0-5]$' then 100 when cle = 'pot' then 100 when cle = 'chateau' then 120 when cle = 'casse' then 100 end;

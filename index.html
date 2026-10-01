@@ -606,6 +606,10 @@ main{padding:22px 24px 40px;min-width:0}
 .pedia-sec > h2{font-size:21px;font-weight:900;margin-bottom:4px}
 .pedia-sec > p{color:var(--ink-2);font-weight:600;margin-bottom:14px;max-width:70ch}
 .shiny-show{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:12px}
+.pal-row{display:grid;grid-template-columns:repeat(var(--n),minmax(0,1fr));gap:10px}
+.pal-row .sh-tile small{font-size:11.5px;font-weight:800;color:var(--muted)}
+.pal-row .sh-tile.now{border-color:#E0A417;box-shadow:0 0 0 1px #E0A417}
+@media (max-width:820px){ .pal-row{grid-template-columns:repeat(3,minmax(0,1fr))} }
 .sh-tile{display:flex;flex-direction:column;align-items:center;gap:6px;padding:16px 8px 14px;border-radius:var(--r-md);background:var(--panel);border:1px solid var(--line);text-align:center;transition:transform .15s,box-shadow .15s}
 .sh-tile:hover{transform:translateY(-3px);box-shadow:var(--shadow)}
 .sh-tile img{width:min(120px,100%);height:auto;filter:drop-shadow(0 8px 6px rgba(40,30,20,.28))}
@@ -825,7 +829,17 @@ button.rw:hover{transform:translateY(-2px)}
 .series-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(330px,1fr));gap:14px}
 .serie{display:flex;flex-direction:column;gap:12px}
 .serie.ready{border:2px solid #E0A417;background:linear-gradient(180deg,var(--gold-bg),var(--panel) 50%)}
-.serie.claimed{opacity:.8}
+.serie.claimed{border-color:color-mix(in srgb,#4CC27A 45%,var(--line));background:linear-gradient(180deg,color-mix(in srgb,#4CC27A 9%,var(--panel)),var(--panel) 55%)}
+.serie-done{display:inline-flex;align-items:center;gap:5px;font-size:12.5px;font-weight:900;color:#fff;background:#3FAE6C;padding:4px 10px;border-radius:999px;white-space:nowrap}
+.serie-min{align-self:flex-start;display:inline-flex;align-items:center;gap:5px;margin-top:-4px;font-size:11.5px;font-weight:800;color:var(--ink-2);padding:2px 9px;border-radius:999px;background:var(--panel-2);border:1px solid var(--line)}
+.serie-bar{height:6px;border-radius:99px;background:var(--line);overflow:hidden}
+.serie-bar i{display:block;height:100%;border-radius:inherit;background:linear-gradient(90deg,#E0A417,#F2C14E)}
+.serie.claimed .serie-bar i{background:#3FAE6C}
+.s-item{position:relative}
+.s-item.miss img{filter:grayscale(.9) opacity(.35)}
+.s-item.miss.pal img{filter:saturate(.75) opacity(.5)}
+.s-item.kept img{opacity:.55}
+.kept-ic{position:absolute;top:5px;right:6px;display:grid;place-items:center;width:16px;height:16px;border-radius:50%;background:#3FAE6C;color:#fff}
 .serie-head{display:flex;justify-content:space-between;gap:10px;align-items:flex-start}
 .serie-head h3{font-size:17px;font-weight:900}
 .serie-head p{font-size:12.5px;font-weight:600;color:var(--ink-2);margin-top:2px}
@@ -833,7 +847,7 @@ button.rw:hover{transform:translateY(-2px)}
 .serie-items{display:grid;grid-template-columns:repeat(auto-fill,minmax(70px,1fr));gap:6px}
 .s-item{display:flex;flex-direction:column;align-items:center;gap:4px;padding:8px 2px 6px;border-radius:12px;background:var(--panel-2);border:1px dashed var(--line-2);text-align:center}
 .s-item.got{border:1px solid var(--line)}
-.s-item img{width:40px;height:auto;filter:drop-shadow(0 4px 3px rgba(0,0,0,.25))}
+.s-item img{width:42px;height:auto;filter:drop-shadow(0 4px 3px rgba(0,0,0,.25))}
 .s-item small{font-size:10.5px;font-weight:800;color:var(--ink-2);line-height:1.15}
 .serie-foot{display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap;margin-top:auto}
 @media (max-width:1000px){ .goal-grid{grid-template-columns:minmax(0,1fr)} .wish-row{grid-template-columns:repeat(3,minmax(0,1fr))} }
@@ -1341,6 +1355,9 @@ button.vit-slot:hover{background:var(--panel-2);color:var(--ink)}
 @keyframes shimmer{50%{filter:drop-shadow(0 14px 12px rgba(0,0,0,.5)) drop-shadow(0 0 24px #FFD27A) brightness(1.12)}}
 .slot-info{display:flex;flex-direction:column;align-items:center;gap:6px;opacity:0;transform:translateY(8px)}
 .slot-info b{font-size:16px;font-weight:900;line-height:1.2}
+.dec-stamp{display:inline-flex;align-items:center;gap:5px;font-size:11px;font-weight:900;text-transform:uppercase;letter-spacing:.05em;color:#fff;background:var(--dc);padding:3px 10px;border-radius:999px;box-shadow:0 0 16px -3px var(--dc)}
+.dec-stamp.leg{animation:decglow 1.6s ease-in-out infinite}
+@keyframes decglow{50%{box-shadow:0 0 28px 3px var(--dc)}}
 .slot-info .new{font-family:var(--hand);font-size:20px;color:#FFD98A;line-height:1}
 .slot-info .dup{font-family:var(--hand);font-size:20px;color:#C9B8A6;line-height:1}
 .slot.is-open .orb{opacity:0;transform:scale(1.4)}
@@ -2660,6 +2677,10 @@ const Sound = (()=>{
       env(noise(t,up,[{type:"bandpass",f:3000,f2:6000,Q:2}]),t,.05,.05,up);
       const b=t+up; thud(b,.55,90); env(noise(b,.5,[{type:"lowpass",f:1600,f2:300}]),b,.35,.004,.45);
       for(let i=0;i<14;i++){ const c=b+.12+Math.random()*.9; env(noise(c,.02,[{type:"highpass",f:3500}]),c,.12*Math.random()+.04,.001,.015) } },
+    // décor épique : trois notes qui montent ; légendaire : un arpège plus long et une pluie de paillettes
+    decor(r){ if(!init()) return; const t=now(), notes = r>=4 ? [0,4,7,12,16,19,24] : [0,4,7];
+      notes.forEach((n,i)=>chime(t+i*.07, 660*Math.pow(2,n/12), r>=4 ? .09 : .07, 1.2));
+      if(r>=4) for(let i=0;i<12;i++) glock(t+.45+i*.04, 2400+Math.random()*2800, .025, .35) },
     ding(){ if(!ctx||!on||ctx.state!=="running") return; const t=now(); chime(t,880,.12); chime(t+.12,1318.5,.1) },
     pop(){ if(!init()) return; clack(now(),.5,1.1) },
     // tout petit clic quand on prend une bille pour la regarder de près
@@ -4104,6 +4125,12 @@ const SERIES = [
   {id:"grenier", name:"Le grenier de papi", desc:"Les billes d'autrefois, retrouvées dans une vieille boîte en fer. Que des Calots ou plus gros.", items:[{fam:"Terre",min:"calot"},{fam:"Oignon",min:"calot"},{fam:"Opaline",min:"calot"},{fam:"Tourbillon",min:"calot"},{fam:"Marbre",min:"calot"}], rew:{j:1000, bag:"premium"}},
   {id:"foire", name:"La fête foraine", desc:"Paillettes, rubans et barbe à papa.", items:[{fam:"Arlequin",min:"chinoise"},{fam:"Ruban",min:"chinoise"},{fam:"Pailletée",min:"chinoise"},{pal:"Pop"},{pal:"Sucre d'orge"},{pal:"Néon"},{pal:"Tropical"}], rew:{j:300, bag:"classique"}},
   {id:"atelier", name:"L'atelier du bricoleur", desc:"Des billes solides comme des outils.", items:[{fam:"Acier"},{fam:"Fumée",min:"calot"},{fam:"Craquelée",min:"calot"},{pal:"Cuivre",min:"calot"},{pal:"Pétrole",min:"calot"}], rew:{j:1200, bag:"premium", title:"Bricoleur"}},
+  {id:"zoo", name:"Le zoo", desc:"Des fauves, des écailles et des plumes de toutes les couleurs.", items:[{fam:"Tigrée",min:"chinoise"},{fam:"Écailles",min:"chinoise"},{fam:"Nid d'abeille",min:"chinoise"},{pal:"Toucan"},{pal:"Paon"},{pal:"Kaki"}], rew:{j:600, bag:"classique"}},
+  {id:"pastels", name:"Les pastels", desc:"Des couleurs toutes douces, en Bille chinoise ou plus.", items:["Lilas","Opale","Menthe","Or rose","Sorbet","Barbe à papa"].map(pal=>({pal, min:"chinoise"})), rew:{j:500, bag:"classique"}},
+  {id:"piquenique", name:"Le pique-nique", desc:"La nappe à carreaux, le panier et tout ce qu'il y a dedans.", items:[{fam:"Écossais",min:"calot"},{fam:"Damier",min:"calot"},{fam:"À pois",min:"calot"},{pal:"Cerise"},{pal:"Kiwi"},{pal:"Citron"}], rew:{j:500, bag:"classique"}},
+  {id:"mer", name:"Au bord de la mer", desc:"Le sable, les vagues et les coquillages, en Calot ou plus.", items:[{fam:"Nacrée"},{fam:"Écailles",min:"calot"},{pal:"Lagon",min:"calot"},{pal:"Corail",min:"calot"},{pal:"Sable",min:"calot"},{pal:"Tropical",min:"calot"}], rew:{j:1000, bag:"premium"}},
+  {id:"cathedrale", name:"La cathédrale", desc:"Des vitraux couleur de joyaux et des fleurs de verre.", items:[{fam:"Vitrail",pal:"Rubis"},{fam:"Vitrail",pal:"Saphir"},{fam:"Millefiori",min:"calot"},{pal:"Opale",min:"calot"}], rew:{j:4000, bag:"collector", title:"Maître verrier"}},
+  {id:"univers", name:"Au bout de l'univers", desc:"Les trois décors légendaires, et une nuit sans fin.", items:[{fam:"Trou noir"},{fam:"Galaxie",min:"calot"},{fam:"Aurore",min:"calot"},{pal:"Nuit",min:"boulet"}], rew:{j:3000, bag:"collector", title:"Explorateur"}},
   {id:"grands", name:"Les grands formats", desc:"De la plus petite à la plus grosse, dans un même décor.", items:TK.map(type=>({type})), same:"family", rew:{j:600, bag:"premium", title:"Toutes tailles"}},
 ];
 const seriesMatch = (it,x) => (!it.fam || x.family===FAM_ID(it.fam)) && (!it.pal || x.pal===PAL_ID(it.pal)) && (!it.type || x.type===it.type) && (!it.min || TIDX[x.type]>=TIDX[it.min]);
@@ -4443,6 +4470,7 @@ function claimChal(c){
 function claimSeries(se){
   S.seriesDone = S.seriesDone||[];
   if(!se || S.seriesDone.includes(se.id) || seriesProg(se)<se.items.length) return false;
+  (S.seriesSnap ||= {})[se.id] = seriesFill(se).map(x=>x && {seed:x.seed, type:x.type, family:x.family, pal:x.pal, shiny:x.shiny||0});
   S.seriesDone.push(se.id); claimRew(se.rew, "serie", se.id); return true;
 }
 // ce qu'on a avant de récupérer, pour montrer ensuite exactement ce qui vient d'arriver
@@ -4940,17 +4968,27 @@ function chalRow(c){
   </div>`;
 }
 function seriesView(){
-  const done = S.seriesDone||[];
-  return `<p class="conf-intro">De petites collections à thème : remplis toutes les cases d'une série (n'importe quelle taille, sauf si une taille minimum est indiquée) pour gagner sa récompense. ${done.length} / ${SERIES.length} séries terminées.</p>
-  <div class="series-grid">${SERIES.map(se=>{
-    const fill = seriesFill(se), n = fill.filter(Boolean).length, full = n>=se.items.length, got = done.includes(se.id);
-    return `<section class="panel serie${full&&!got?" ready":""}${got?" claimed":""}">
-      <div class="serie-head"><div><h3>${se.name}</h3><p>${se.desc}</p></div><span class="serie-n">${n} / ${se.items.length}</span></div>
-      <div class="serie-items">${se.items.map((it,i)=>{ const x=fill[i];
-        return x ? `<button class="s-item got" data-action="spec" data-id="${x.id}" aria-label="${esc(specName(x))}">${mImg(x,100,40,"")}<small>${seriesLabel(it)||esc(specName(x))}</small></button>`
-                 : `<div class="s-item"><span class="sil"${it.pal?` style="--c1:${PALETTES[PAL_ID(it.pal)][1]};--c2:${PALETTES[PAL_ID(it.pal)][2]}"`:""}></span><small>${seriesLabel(it)}</small></div>` }).join("")}</div>
+  const done = S.seriesDone||[], snap = S.seriesSnap||{};
+  // une case vide montre ce qu'il faut trouver (en fantôme) ; une case d'une série terminée dont la bille est partie garde son souvenir
+  const ghostOf = (se,it,i) => ({seed:hash("serie"+se.id+i), type:it.type||it.min||"bille", family:it.fam?FAM_ID(it.fam):4, pal:it.pal?PAL_ID(it.pal):23, shiny:0});
+  const list = SERIES.map(se=>{ const fill = seriesFill(se), n = fill.filter(Boolean).length, got = done.includes(se.id);
+    return {se, fill, n, got, ready: n>=se.items.length && !got} });
+  list.sort((a,b)=>(b.ready-a.ready) || (a.got-b.got) || b.n/b.se.items.length - a.n/a.se.items.length);
+  return `<p class="conf-intro">De petites collections à thème : remplis toutes les cases d'une série pour gagner sa récompense. <b>${done.length} / ${SERIES.length}</b> séries terminées.</p>
+  <div class="series-grid">${list.map(({se,fill,n,got,ready})=>{
+    const mins = [...new Set(se.items.map(it=>it.min||""))], common = mins.length===1 && mins[0] ? mins[0] : "";
+    const lbl = it => seriesLabel(common ? {...it, min:undefined} : it);
+    return `<section class="panel serie${ready?" ready":""}${got?" claimed":""}">
+      <div class="serie-head"><div><h3>${se.name}</h3><p>${se.desc}</p></div>${got?`<span class="serie-done">${ic("check",14,3)} Terminée</span>`:`<span class="serie-n">${n} / ${se.items.length}</span>`}</div>
+      ${common?`<span class="serie-min">${ic("layers",13)} ${MIN_LBL[common]}</span>`:""}
+      <div class="serie-bar"><i style="width:${(got?1:n/se.items.length)*100}%"></i></div>
+      <div class="serie-items">${se.items.map((it,i)=>{ const x = fill[i];
+        if(x) return `<button class="s-item got" data-action="spec" data-id="${x.id}" aria-label="${esc(specName(x))}">${mImg(x,100,42,"")}<small>${lbl(it)||esc(specName(x))}</small></button>`;
+        if(got){ const m = snap[se.id]?.[i] || ghostOf(se,it,i);
+          return `<div class="s-item kept" title="Elle n'est plus dans ta boîte, mais elle a rempli cette case : la série reste terminée.">${mImg(m,100,42,"")}<span class="kept-ic">${ic("check",10,3.4)}</span><small>${lbl(it)}</small></div>` }
+        return `<div class="s-item miss${it.pal&&!it.fam?" pal":""}">${mImg(ghostOf(se,it,i),100,42,"")}<small>${lbl(it)}</small></div>` }).join("")}</div>
       <div class="serie-foot"><div class="rews">${rewChips(se.rew)}</div>
-        ${got?`<span class="q-state">${ic("check",16,2.5)} Récupéré</span>`:full?`<button class="btn btn-yellow" data-action="series-claim" data-id="${se.id}">${ic("gift",16)} Récupérer</button>`:""}</div>
+        ${got?"":ready?`<button class="btn btn-yellow" data-action="series-claim" data-id="${se.id}">${ic("gift",16)} Récupérer</button>`:""}</div>
     </section>` }).join("")}</div>`;
 }
 function viewSucces(){
@@ -5514,12 +5552,17 @@ function viewPedia(){
   const pals = PALETTES.slice(0,BASE_PALS).map(P=>`<div class="pal"><span>${[P[1],P[2],P[3]].map(c=>`<i style="background:${c}"></i>`).join("")}</span>${P[0]}</div>`).join("");
   const combos = TK.length*N_DECORS*BASE_PALS;
   const events = EVENT_FAMS.map(f=>{ const F=FAMILIES[f], E=EVENTS[F.event];
-    const tiles = E.palIdx.map((pal,j)=>{ const x={seed:hash("event"+f+j), type:TK[Math.min(5,j+1)], family:f, pal, shiny:0}, i=pv({...x, cour:`Décor d'événement · ${E.name}. ${eventLive(E)?`Dans le ${BAG_BY[E.bag].name} jusqu'au ${dayMonth(E.end)}.`:Date.now()<E.start?`À partir du ${dayMonth(E.start)}.`:"L'événement est terminé."}`});
-      return `<button class="sh-tile" data-action="preview" data-k="${i}" style="${tstyle(x.type)}">${mImg(x,240,Math.round(92*scaleOf(x.type)+10))}<b>${esc(PALETTES[pal][0])}</b>${typePill(x.type)}</button>` }).join("");
-    return `<div class="rar-group" style="--dc:${E.color}"><h3><i></i>${F.name}<small>Événement « ${esc(E.name)} » · ${E.pals.length} coloris exclusifs${eventLive(E)?` · jusqu'au ${dayMonth(E.end)}`:""}</small></h3><p class="meta" style="margin:-4px 0 12px">${F.desc} ${esc(E.desc)}</p><div class="shiny-show">${tiles}</div></div>` }).join("");
+    const tiles = E.palIdx.map((pal,j)=>{ const x={seed:hash("event"+f+j), type:"calot", family:f, pal, shiny:0}, i=pv({...x, cour:`Décor d'événement · ${E.name}. ${eventLive(E)?`Dans le ${BAG_BY[E.bag].name} jusqu'au ${dayMonth(E.end)}.`:Date.now()<E.start?`À partir du ${dayMonth(E.start)}.`:"L'événement est terminé."}`});
+      return `<button class="sh-tile" data-action="preview" data-k="${i}" style="${tstyle(x.type)}">${mImg(x,200,70)}<b>${esc(PALETTES[pal][0])}</b></button>` }).join("");
+    return `<div class="rar-group" style="--dc:${E.color}"><h3><i></i>${F.name}<small>Événement « ${esc(E.name)} » · ${E.pals.length} coloris exclusifs${eventLive(E)?` · jusqu'au ${dayMonth(E.end)}`:""}</small></h3><p class="meta" style="margin:-4px 0 12px">${F.desc} ${esc(E.desc)}</p><div class="pal-row" style="--n:${E.pals.length}">${tiles}</div></div>` }).join("");
+  // les décors de saison : un par mois, dans le passe de saison
+  const MOIS = ["Janvier","Février","Mars","Avril","Mai","Juin","Juillet","Août","Septembre","Octobre","Novembre","Décembre"];
+  const seasons = SEASON_FAMS.map(f=>{ const F=FAMILIES[f], x={seed:hash("season"+f), type:"calot", family:f, pal:BASE_PALS+F.season, shiny:0}, i=pv({...x, cour:`Décor de saison · ${MOIS[F.season]}. Seulement dans le passe de saison de ce mois-là.`});
+    return `<button class="sh-tile${seasonNow().m===F.season?" now":""}" data-action="preview" data-k="${i}">${mImg(x,200,70)}<b>${F.name}</b><small>${MOIS[F.season]}</small></button>` }).join("");
   return `<div class="page-head"><div><h1>Billepedia</h1><p>Tout ce qui existe dans Billy. Chaque bille ouverte est unique : son motif est tiré au hasard au moment de l'ouverture, il n'y en aura jamais deux pareilles. ${TK.length} formats × ${N_DECORS} décors × ${BASE_PALS} coloris = ${fmt(combos)} combinaisons, ×4 avec les shiny.</p></div></div>
   <section class="pedia-sec"><h2>Les shiny</h2><p>Un effet spécial qui peut tomber sur n'importe quelle bille, quel que soit son format. Sous chaque shiny : ses chances pour chaque bille, selon le sac d'où elle sort. Touche une bille pour la voir tourner.</p><div class="shiny-show">${shinyTiles}</div></section>
   <section class="pedia-sec"><h2>Les décors</h2><p>Chaque décor existe dans les ${TK.length} tailles, de la Mini au Mammouth : la rangée sous chaque décor te montre celles que tu as déjà (en couleur) et celles qui te manquent (grisées). Certains décors tombent souvent, d'autres une bille sur plusieurs centaines. Un Mammouth avec un décor légendaire, en shiny, c'est le graal.</p>${famGroups}</section>
+  <section class="pedia-sec"><h2>Les décors de saison</h2><p>Un décor en édition limitée chaque mois, qu'on ne gagne que dans le passe de saison. Ils ne tombent jamais dans les sacs et ne comptent pas dans l'album.</p><div class="pal-row" style="--n:6">${seasons}</div></section>
   ${events?`<section class="pedia-sec"><h2>Les décors d'événement</h2><p>Des décors à part, avec leurs propres coloris. On ne les trouve que pendant leur événement, dans son sac spécial : ils ne tombent jamais dans les sacs habituels et ne comptent pas dans l'album.</p>${events}</section>`:""}
   <section class="pedia-sec"><h2>Les tailles</h2><p>Du plus petit au plus gros : plus une bille est grosse, plus elle est rare. Chaque taille a sa couleur, partout sur le site.</p><div class="fmt-grid">${fmts}</div></section>
   <section class="pedia-sec"><h2>Les coloris</h2><p>${BASE_PALS} coloris, tous aussi fréquents les uns que les autres.</p><div class="pal-grid">${pals}</div><p class="meta" style="margin-top:10px">Et chaque mois, un décor en édition limitée (Citrouille en octobre, Boule à neige en décembre…) qu'on ne trouve que dans le passe de saison.</p></section>`;
@@ -5743,6 +5786,11 @@ async function openBag(bagId, gift){
 }
 // Taille la plus grosse d'un tirage : 0 (Mini) à 4 (Mammouth), et 6 pour une shiny
 const pullScore = s => s.shiny || s.secret ? 6 : tierOf(s);
+// rareté du décor (0 Commun … 4 Légendaire ; -1 pour les décors d'événement et de saison)
+const decorRar = s => extraFam(s.family) ? -1 : FAMILIES[s.family].rar;
+// le suspense tient compte des deux : un décor épique compte une taille de plus, un légendaire deux (un Calot Galaxie tremble comme un Mammouth)
+const dramaOf = s => Math.max(pullScore(s), Math.min(5, tierOf(s) + (decorRar(s)===4 ? 2 : decorRar(s)===3 ? 1 : 0)));
+const decStamp = s => { const r = decorRar(s); return r>=3 ? `<span class="dec-stamp${r===4?" leg":""}" style="--dc:${DECOR_RAR[r].c}">${ic("star",12,2.6)} Décor ${DECOR_RAR[r].name.toLowerCase()}</span>` : "" };
 const scoreCol = k => k>=6 ? "#FFD27A" : RARITY[k].c;
 const scoreCols = k => k>=6 ? SHINY_COLS : [RARITY[k].c, shade(RARITY[k].c,.45), "#FFF3D6"];
 const BANNER = ["Mini","Bille","Chinoise !","Calot !","Boulet !","Mammouth !","Shiny !"];   // les petites tailles ont une étiquette plus discrète
@@ -5910,7 +5958,7 @@ function showReveal(){
         return `<button class="slot${wish?" wished":""} ${big?"big":""} ${s.shiny?"shiny":""}" style="--d:${i*130}ms;--tc:${shade(ovState.bag.color,.2)};${tstyle(s.type)}" data-tc="${scoreCol(k)}" data-action="reveal" data-i="${i}" aria-label="Découvrir la bille ${i+1}">
         ${wish?`<span class="slot-banner">Ta liste !</span>`:s.secret?`<span class="slot-banner">Secrète !</span>`:BANNER[k]?`<span class="slot-banner${k<2?" low":""}">${BANNER[k]}</span>`:""}
         <div class="slot-ball"><span class="rays"></span><span class="ball-shadow"></span><span class="orb"><span class="orb-spin"><i>?</i></span></span>${mImg(s,300,Math.round(150*scaleOf(s.type)),"")}</div>
-        <div class="slot-info"><b>${esc(specName(s))}</b><span style="display:flex;gap:4px;flex-wrap:wrap;justify-content:center">${wish||s.secret?typePill(s.type,true):""}${shinyPill(s)}${edPill(s)}</span>${tierTag(s)}${k>=BIG&&editionOf(s)?`<span class="ed-no">${edLabel(editionOf(s))}</span>`:""}${eventOf(s)?`<span class="new">${evNew?`Nouvelle bille ${esc(FAMILIES[s.family].name)} !`:`${esc(FAMILIES[s.family].name)} · déjà dans ta boîte`}</span>`:isNew?`<span class="new">Nouvelle case !</span>`:newColor?`<span class="new">Nouveau coloris</span>`:`<span class="dup">Déjà dans ta boîte</span>`}</div>
+        <div class="slot-info"><b>${esc(specName(s))}</b>${decStamp(s)}<span style="display:flex;gap:4px;flex-wrap:wrap;justify-content:center">${wish||s.secret?typePill(s.type,true):""}${shinyPill(s)}${edPill(s)}</span>${tierTag(s)}${k>=BIG&&editionOf(s)?`<span class="ed-no">${edLabel(editionOf(s))}</span>`:""}${eventOf(s)?`<span class="new">${evNew?`Nouvelle bille ${esc(FAMILIES[s.family].name)} !`:`${esc(FAMILIES[s.family].name)} · déjà dans ta boîte`}</span>`:isNew?`<span class="new">Nouvelle case !</span>`:newColor?`<span class="new">Nouveau coloris</span>`:`<span class="dup">Déjà dans ta boîte</span>`}</div>
       </button>`}).join("")}
     </div>
     <div class="ov-actions" id="ov-actions">
@@ -5988,6 +6036,10 @@ function reveal(i){
   else if(k===FMT_TIER.mammouth){ FX.burst(x,y, scoreCols(k), 120, 1.6); setTimeout(()=>FX.ring(x,y, "#FFE3B0"), 180) }
   if(k>=BIG){ const b=document.getElementById("ov-body"); b.classList.remove("quake"); void b.offsetWidth; b.classList.add("quake") }
   Sound.reveal(TIDX[rs.type], !!rs.shiny);
+  // un décor épique ou légendaire : une deuxième gerbe à sa couleur, et son petit air à lui
+  const dr = decorRar(rs);
+  if(dr>=3) setTimeout(()=>{ if(!ovState) return; const c = DECOR_RAR[dr].c;
+    FX.burst(x,y, [c, shade(c,.45), "#FFF3D6"], dr===4 ? 90 : 45, dr===4 ? 1.3 : .9); if(dr===4) FX.ring(x,y, c); Sound.decor(dr) }, 520);
   if(ovState.results[i].wish){ Sound.reveal(5,false); setTimeout(()=>toast(`Sur ta liste de souhaits : ${specName(rs)} ! Elle rejoint ta boîte à billes.`),500) }
   releaseNotes(x=>x.at===i);
   if(ovState.opened.size === ovState.results.length) finishReveal();
@@ -5997,7 +6049,7 @@ function reveal(i){
 const suspenseFor = k => k>=6 ? 4200 : k===FMT_TIER.mammouth ? 3400 : k===FMT_TIER.boulet ? 1500 : 0;
 function revealDrama(i, then){
   const st = ovState; if(!st || st.opened.has(i)) return;
-  const k = pullScore(st.results[i].s), el = document.querySelector(`.slot[data-i="${i}"]`), wait = suspenseFor(k);
+  const k = dramaOf(st.results[i].s), el = document.querySelector(`.slot[data-i="${i}"]`), wait = suspenseFor(k);
   if(!wait || !el || FX.reduce()){ reveal(i); then?.(k); return }
   if(el.classList.contains("suspense")) return;
   const ov = document.getElementById("ov"), mega = k>=FMT_TIER.mammouth;
@@ -6024,9 +6076,9 @@ function finishReveal(){
   if(S.pendingBag){ delete S.pendingBag; save() }
   const best = results[results.length-1].s;
   const shiny = results.find(r=>r.s.shiny);
-  const top = [...results].sort((a,b)=>pullScore(b.s)-pullScore(a.s))[0].s, tk = pullScore(top);
+  const top = [...results].sort((a,b)=>pullScore(b.s)-pullScore(a.s))[0].s, tk = pullScore(top), leg = results.find(r=>decorRar(r.s)===4);
   document.querySelector(".ov-sub").textContent = shiny ? `Incroyable : une bille shiny ${SHINIES[shiny.s.shiny].name} !`
-    : tk>=BIG ? `Quelle chance : un ${TYPES[top.type].label} ${specName(top)} !` : "Elles sont rangées dans ta boîte à billes.";
+    : tk>=BIG ? `Quelle chance : un ${TYPES[top.type].label} ${specName(top)} !` : leg ? `Un décor légendaire : ${specName(leg.s)} !` : "Elles sont rangées dans ta boîte à billes.";
   document.querySelector(".ov-sub").textContent += " Touche une bille pour l'agrandir.";
   let again = "";
   if(ovState.gift){

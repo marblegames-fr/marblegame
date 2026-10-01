@@ -2663,9 +2663,11 @@ const Sound = (()=>{
     ding(){ if(!ctx||!on||ctx.state!=="running") return; const t=now(); chime(t,880,.12); chime(t+.12,1318.5,.1) },
     pop(){ if(!init()) return; clack(now(),.5,1.1) },
     // tout petit clic quand on prend une bille pour la regarder de près
-    click(size){ if(!init()) return; const t=now(), p = size==null ? 1 : 1.35-size*.15;   // size : 0 (Mini) à 5 (Mammouth)
-      if(hits) hitAt(t, HIT_STRONG+Math.floor(Math.random()*(HIT_SLICES.length-HIT_STRONG)), (1.4+Math.random()*.15)*p, .32, 7000, 0, .06);
-      else clack(t,.26,1.3*p) },
+    // le « clac » quand on prend une bille : petit et aigu pour une Mini, gros et grave comme deux Mammouths qui se cognent
+    click(size){ if(!init()) return; const t=now(), z = size==null ? 1 : size, p = 1.35-z*.15;   // z : 0 (Mini) à 5 (Mammouth)
+      if(hits) hitAt(t, HIT_STRONG+Math.floor(Math.random()*(HIT_SLICES.length-HIT_STRONG)), (1.4+Math.random()*.15)*p, .38+z*.13, 7000-z*500, 0, .06+z*.035);
+      else clack(t,.3+z*.12,1.3*p);
+      if(z>=3) thud(t, (z-2)*.18, 230-z*22) },
     shot(pw){ if(!init()) return; const t=now(); clack(t,.4+pw*.6,.85); thud(t,.3+pw*.4,220) },
     wall(a){ if(!init()) return; const t=now(); a=Math.min(1,a); thud(t,a,140); clack(t,a*.35,.7) },
     splash(){ if(!init()) return; const t=now(); env(noise(t,.55,[{type:"lowpass",f:1800,f2:260}]),t,.55,.01,.5); osc(t,"sine",460,.22,.005,.2,null,130); osc(t+.08,"sine",300,.12,.005,.16,null,120) },

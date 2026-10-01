@@ -691,12 +691,25 @@ do $$ begin
   end if;
 end $$;
 
+-- Mes statistiques de la cour : trocs réussis, billes vendues et achetées, enchères gagnées, copains
+create or replace function public.cour_stats() returns jsonb language plpgsql security definer set search_path = public as $$
+declare moi uuid := auth.uid();
+begin
+  if moi is null then raise exception 'connexion_requise'; end if;
+  return jsonb_build_object(
+    'trocs',    (select count(*) from trocs t where (t.de = moi or t.vers = moi) and t.statut = 'accepte'),
+    'vendues',  (select count(*) from annonces a where a.vendeur = moi and a.vendue_le is not null),
+    'achetees', (select count(*) from annonces a where a.acheteur = moi and not a.enchere),
+    'encheres', (select count(*) from annonces a where a.acheteur = moi and a.enchere),
+    'copains',  (select count(*) from amis where joueur = moi));
+end $$;
+
 -- droits : le site ne peut appeler que ces fonctions-là
 do $$ declare f text; begin
   foreach f in array array['cour_moi()','ami_demander(text)','ami_repondre(uuid,boolean)','ami_retirer(uuid)','profil_joueur(uuid)',
     'billes_echangeables(uuid)','fil_amis()','troc_proposer(uuid,uuid[],uuid[],text,bigint,int,int)','troc_repondre(bigint,boolean)','troc_annuler(bigint)',
     'mes_trocs()','vendre(uuid,int,int)','retirer_annonce(bigint)','acheter(bigint)','marche(text,int,int,boolean,text,int,text)','mes_annonces()','cour_journal(bigint,int)',
-    'mettre_aux_encheres(uuid,int,int)','encherir(bigint,int)','mes_encheres()','classement(text)'] loop
+    'mettre_aux_encheres(uuid,int,int)','encherir(bigint,int)','mes_encheres()','classement(text)','cour_stats()'] loop
     execute format('revoke all on function public.%s from public, anon', f);
     execute format('grant execute on function public.%s to authenticated', f);
   end loop;

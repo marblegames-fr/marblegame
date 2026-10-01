@@ -128,7 +128,7 @@ button.profile-mini:hover,button.profile-mini[aria-expanded="true"]{background:v
 .pp-stats b i{font-style:normal;font-size:12px;color:var(--muted);font-weight:800}
 .pp-stats .bar{display:block;height:6px;margin-top:6px}
 .pp-claim{display:flex;align-items:center;justify-content:center;gap:8px;height:40px;border-radius:12px;background:var(--gold-bg);border:2px solid #E0A417;font-weight:900;font-size:13.5px}
-.pp-links{display:grid;grid-template-columns:repeat(3,1fr);gap:6px}
+.pp-links{display:grid;grid-template-columns:repeat(2,1fr);gap:6px}
 .pp-links button{display:flex;flex-direction:column;align-items:center;gap:4px;padding:9px 4px;border-radius:12px;font-size:12px;font-weight:800;color:var(--ink-2);background:var(--panel-2)}
 .pp-links button:hover{color:var(--ink)}
 .pp-links.pp-acct{grid-template-columns:minmax(0,1fr)}
@@ -156,6 +156,8 @@ button.wallet:hover{background:var(--panel-2)}
 .nav-btn .ready{margin-left:auto;width:9px;height:9px;border-radius:50%;background:#E5484D}
 .nav-sep{height:1px;background:var(--line);margin:14px 8px}
 .pick-modal{width:min(760px,calc(100vw - 32px))}
+.st-group + .st-group{margin-top:16px}
+.st-group h3{display:flex;align-items:center;gap:7px;font-size:13px;font-weight:900;text-transform:uppercase;letter-spacing:.06em;color:var(--muted);margin-bottom:8px}
 .pick-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(110px,1fr));gap:8px;max-height:min(60vh,520px);overflow:auto;margin-top:12px;padding:2px}
 .pick-grid .m-card.on{border-color:var(--ink);background:var(--panel-2)}
 .side-act{margin-top:auto;display:grid;justify-items:center;gap:6px;padding:14px 10px;border-radius:16px;background:radial-gradient(circle at 50% 30%,color-mix(in srgb,var(--rc) 22%,var(--panel)),var(--panel) 75%);border:1px solid var(--line);text-align:center}
@@ -3842,6 +3844,7 @@ const ICON = {
   book:'<path d="M12 6.5C10 5 7 4.5 3.5 5v14c3.5-.5 6.5 0 8.5 1.5 2-1.5 5-2 8.5-1.5V5C17 4.5 14 5 12 6.5z"/><path d="M12 6.5v14"/>',
   cal:'<rect x="3.5" y="5" width="17" height="15.5" rx="2"/><path d="M3.5 10h17M8 3v4M16 3v4"/><path d="M8 14h.01M12 14h.01M16 14h.01M8 17h.01M12 17h.01"/>',
   locker:'<rect x="5" y="3" width="14" height="18" rx="2"/><path d="M9 7h2M9 10h2M15 12v2.5M5 17h14"/>',
+  chart:'<path d="M3 20.5h18"/><path d="M6.5 17V11M11.5 17V6M16.5 17v-4"/>',
   trophy:'<path d="M8 4h8v5a4 4 0 0 1-8 0z"/><path d="M8 6H5a3 3 0 0 0 3.2 4M16 6h3a3 3 0 0 1-3.2 4"/><path d="M12 13v3.5M8.5 20.5h7M10 16.5h4v4h-4z"/>',
   gear:'<circle cx="12" cy="12" r="3"/><path d="M12 2.5v2.5M12 19v2.5M4.6 4.6l1.8 1.8M17.6 17.6l1.8 1.8M2.5 12H5M19 12h2.5M4.6 19.4l1.8-1.8M17.6 6.4l1.8-1.8"/>',
   target:'<circle cx="12" cy="12" r="8.5"/><circle cx="12" cy="12" r="4.5"/><circle cx="12" cy="12" r="1" fill="currentColor"/>',
@@ -4533,26 +4536,20 @@ function renderTop(){
 }
 // Petit tableau de bord du joueur, sous son profil en haut à droite
 function renderProfPop(){
-  const a = ownActive(), found = albumFound().size, slots = slotsOwned();
-  const full = [...slots.values()].filter(l=>casePals(l)===BASE_PALS).length;
-  const tier = passTier(), streak = S.daily ? (dailyReady() ? (S.daily.last===dayKey(new Date(Date.now()-864e5)) ? S.daily.streak : 0) : S.daily.streak) : 0;
+  const a = ownActive(), found = albumFound().size;
   const nChal = CHALLENGES.filter(c=>S.chal.includes(c.id)).length, claim = chalClaimable()+seriesClaimable()+questsClaimable();
   document.getElementById("prof-pop").innerHTML = `
     <div class="pp-head"><span class="av-ring big" style="--p:${Math.max(1.5,found/ALBUM_TOTAL*100)}"><span class="avatar">${a?mImg(a,160,56,""):""}</span></span>
       <div><b>${esc(S.name)}</b><small>${esc(S.title)}</small>${a?`<small class="pp-ball">Joue avec : ${esc(specName(a))}</small>`:""}</div></div>
     <div class="pp-stats">
       <div class="wide"><small>Billes trouvées</small><b>${fmt(found)} <i>/ ${fmt(ALBUM_TOTAL)}</i></b><span class="bar"><i style="width:${Math.max(.8,found/ALBUM_TOTAL*100)}%"></i></span></div>
-      <div><small>Cases complètes</small><b>${full}</b></div>
-      <div><small>Succès</small><b>${nChal} <i>/ ${CHALLENGES.length}</i></b></div>
-      <div><small>Série de jours</small><b>${streak} ${ic("candy",14)}</b></div>
-      <div><small>Passe de saison</small><b>Palier ${tier} <i>/ ${PASS_TIERS}</i></b></div>
-      <div><small>Shiny</small><b>${S.specs.filter(x=>x.shiny).length}</b></div>
-      <div><small>Sacs ouverts</small><b>${fmt(S.bags||0)}</b></div>
+      <div class="wide"><small>Succès</small><b>${nChal} <i>/ ${CHALLENGES.length}</i></b></div>
     </div>
     ${claim?`<button class="pp-claim" data-action="nav" data-view="${chalClaimable()?"succes":seriesClaimable()?"collection":"quetes"}">${ic("gift",16)} ${claim} récompense${claim>1?"s":""} à récupérer</button>`:""}
     <div class="pp-links">
       <button data-action="nav" data-view="profil">${ic("user",16)} Mon profil</button>
       <button data-action="nav" data-view="succes">${ic("trophy",16)} Succès</button>
+      <button data-action="stats">${ic("chart",16)} Mes statistiques</button>
       <button data-action="nav" data-view="parametres">${ic("gear",16)} Paramètres</button>
     </div>
     <div class="pp-toggles"><button id="theme-btn" data-action="theme"></button><button id="sound-btn" data-action="sound"></button></div>
@@ -5423,17 +5420,24 @@ function viewProfile(){
       ? `<div class="vit-slot filled" style="${tstyle(s.type)}"><button class="vit-ball" data-action="spec" data-id="${s.id}">${mImg(s,240,Math.round(70*scaleOf(s.type)+34))}</button><b>${esc(specName(s))}</b><span class="pills">${typePill(s.type,true)}${shinyPill(s)}</span>${tierTag(s)}<button class="vit-x" data-action="vit-rm" data-id="${s.id}" aria-label="Retirer ${esc(specName(s))} de la vitrine">×</button></div>`
       : `<button class="vit-slot" data-action="vit-pick" data-i="${i}">${ic("plus",26)}<span>Exposer une bille</span></button>`).join("")}</div>
   </section>
-  <section class="panel">
-    <div class="panel-head"><h2>Mes chiffres</h2></div>
-    <div class="prof-stats">
-      <div><small>Billes</small><b>${S.specs.length}</b></div>
-      <div><small>Album</small><b>${fmt(albumFound().size)} / ${fmt(ALBUM_TOTAL)}</b></div>
-      <div><small>Shiny</small><b>${S.specs.filter(s=>s.shiny).length}</b></div>
-      <div><small>Sacs ouverts</small><b>${fmt(S.bags||0)}</b></div>
-      <div><small>Fusions</small><b>${fmt(S.crafts||0)}</b></div>
-      <div><small>Succès</small><b>${S.chal.filter(id=>CHAL_BY[id]).length} / ${CHALLENGES.length}</b></div>
-      <div><small>Plus grosse bille</small><b>${S.specs.length?TYPES[TK[Math.max(...S.specs.map(tierOf))]].label:"–"}</b></div>
-    </div>
+  ${statsPanel()}`;
+}
+// Mes statistiques : tout ce qu'on ne voit nulle part ailleurs, rangé par thème
+let courStats = null;
+function statsPanel(){
+  if(srvOn() && !courStats){ courStats = {}; Cloud.cour.stats().then(r=>{ courStats = r||{}; if(ui.view==="profil") renderView() }, ()=>{}) }
+  const ST = S.stats, n = v => fmt(v||0);
+  const cell = (lbl, v) => `<div><small>${lbl}</small><b>${v}</b></div>`;
+  const group = (title, icon, cells) => `<div class="st-group"><h3>${ic(icon,16)} ${title}</h3><div class="prof-stats">${cells.join("")}</div></div>`;
+  const C = courStats || {};
+  return `<section class="panel" id="stats">
+    <div class="panel-head"><h2>Mes statistiques</h2></div>
+    ${group("Sacs", "bag", [cell("Sacs ouverts", n(S.bags)), cell("Billes tirées", n(ST.pulled ?? S.specs.length)), cell("Shiny trouvées", n(ST.shinyFound ?? S.specs.filter(x=>x.shiny).length)), cell("Boulets et Mammouths", n(ST.bigFound ?? S.specs.filter(x=>tierOf(x)>=BIG).length))])}
+    ${group("Confiserie", "candy", [cell("Fusions réussies", n(S.crafts)), cell("Billes dans ta boîte", n(S.specs.length))])}
+    ${group("Jeux de la cour", "pad", [cell("Trous réussis au Tir", n(S.holes)), cell("Billes dans le Pot", n(ST.pot)), cell("Sorties du Château", n(ST.castle)),
+      cell("Record au Casse-briques", ST.casse ? `${n(ST.casseScore)} pts` : "–"), cell("Courses gagnées", n(ST.race)), cell("Parties de Tic gagnées", n(ST.tic))])}
+    ${group("Habitudes", "clock", [cell("Plus longue série de jours", `${bestStreak()} j`), cell("Bonus des 3 quêtes", n(ST.bonus))])}
+    ${srvOn() ? group("La cour de récré", "cour", [cell("Trocs réussis", n(C.trocs)), cell("Billes vendues", n(C.vendues)), cell("Billes achetées", n(C.achetees)), cell("Enchères gagnées", n(C.encheres)), cell("Copains", n(C.copains))]) : ""}
   </section>`;
 }
 function openPicker(i){
@@ -5683,6 +5687,9 @@ async function openBag(bagId, gift){
     S.pity = pulls.some(s=>tierOf(s)>=BIG) ? 0 : (S.pity||0)+1;
   }
   S.bags = (S.bags||0)+1;
+  const ST = S.stats;   // au premier passage, on part de ce qu'il y a dans la boîte
+  ST.pulled ??= S.specs.length; ST.shinyFound ??= S.specs.filter(x=>x.shiny).length; ST.bigFound ??= S.specs.filter(x=>tierOf(x)>=BIG).length;
+  ST.pulled += pulls.length; ST.shinyFound += pulls.filter(x=>x.shiny).length; ST.bigFound += pulls.filter(x=>tierOf(x)>=BIG).length;
   pulls.forEach(s=>{ if(tierOf(s)>=BIG || s.shiny) logFind(s) });
   const before = slotsOwned(), evBefore = new Set(S.specs.filter(x=>eventOf(x)).map(colorKey));
   const results = pulls.map(s=>{
@@ -7935,6 +7942,7 @@ document.addEventListener("click", e=>{
       break;
     }
     case "missing": toast(`${TYPES[t.dataset.type].label} ${FAMILIES[+t.dataset.fam].name} : pas encore trouvée. Elle se cache peut-être dans ton prochain sac !`); break;
+    case "stats": toggleProfPop(false); courStats = null; go("profil"); setTimeout(()=>document.getElementById("stats")?.scrollIntoView({behavior:"smooth", block:"start"}), 60); break;
     case "pick-active": { const el = document.getElementById("modal"), list = [...S.specs].sort(tierSort);
       el.innerHTML = `<div class="modal bag-sum pick-modal" role="dialog" aria-modal="true" aria-label="Choisir ta bille"><button class="close-x" data-action="close-modal" aria-label="Fermer">×</button>
         <h2>Avec quelle bille tu joues ?</h2><p class="meta">Elle roule au Tir et dans tous les jeux de la cour. Plus elle est grosse, plus elle frappe fort.</p>

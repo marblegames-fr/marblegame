@@ -1091,6 +1091,14 @@ button.vit-slot:hover{background:var(--panel-2);color:var(--ink)}
 .hero-art img.hero-main[data-lum]{animation:bob 5s ease-in-out infinite,lumpulse 2.6s ease-in-out infinite both}
 .ph-final img[data-lum]{animation:bobf 5s ease-in-out infinite,lumpulse 2.6s ease-in-out infinite both}
 .slot.shiny.is-open .slot-ball img[data-lum]{animation:lumpulse 2.6s ease-in-out infinite both}
+/* Dorée : un tout petit halo d'or, qui respire doucement (bien plus discret que la Lumineuse) */
+[data-gold]{animation:goldpulse 3.2s ease-in-out infinite both}
+@keyframes goldpulse{
+  0%,100%{filter:drop-shadow(0 0 2px rgba(255,214,110,.8)) drop-shadow(0 0 7px rgba(232,172,40,.4))}
+  50%{filter:drop-shadow(0 0 3px rgba(255,226,140,.95)) drop-shadow(0 0 11px rgba(232,172,40,.55))}}
+.hero-art img.hero-main[data-gold]{animation:bob 5s ease-in-out infinite,goldpulse 3.2s ease-in-out infinite both}
+.ph-final img[data-gold]{animation:bobf 5s ease-in-out infinite,goldpulse 3.2s ease-in-out infinite both}
+.slot.shiny.is-open .slot-ball img[data-gold]{animation:goldpulse 3.2s ease-in-out infinite both}
 .modal-visual{position:relative;overflow:hidden}
 .modal-visual > *{position:relative}
 .modal-visual.lum::before{content:"";position:absolute;left:50%;top:45%;width:560px;height:560px;margin:-280px;pointer-events:none;
@@ -3650,11 +3658,11 @@ function marbleURL(s,size=160){
   urlCache.set(k,u); return u;
 }
 // les Lumineuses rayonnent : lueur CSS qui suit la forme ronde de la bille
-const lumAttr = s => s.shiny===3 ? ` data-lum style="--lc:${PALETTES[s.pal][2]}"` : "";
+const lumAttr = s => s.shiny===3 ? ` data-lum style="--lc:${PALETTES[s.pal][2]}"` : s.shiny===2 ? " data-gold" : "";
 function mImg(s,size=160,px,alt){
   const w = Math.round(px ?? size/2), lum = s.shiny===3;
   // hauteur automatique : si la case est plus étroite que prévu, la bille rétrécit sans devenir ovale
-  return `<img src="${marbleURL(s,size)}" alt="${alt===undefined?esc(specName(s)):alt}" width="${w}" height="${w}"${lum?" data-lum":""} style="width:${w}px;height:auto;aspect-ratio:1${lum?`;--lc:${PALETTES[s.pal][2]}`:""}">`;
+  return `<img src="${marbleURL(s,size)}" alt="${alt===undefined?esc(specName(s)):alt}" width="${w}" height="${w}"${lum?" data-lum":s.shiny===2?" data-gold":""} style="width:${w}px;height:auto;aspect-ratio:1${lum?`;--lc:${PALETTES[s.pal][2]}`:""}">`;
 }
 // bille "fantôme" pour les emplacements vides
 const ghost = (type,family) => ({seed:hash(type+family), type, family, pal:23, shiny:0});
@@ -5626,7 +5634,7 @@ function openModal(id, pv){
   const slot = document.getElementById("live-slot");
   if(liveGL){
     slot.appendChild(liveCanvas);
-    liveCanvas.toggleAttribute("data-lum", s.shiny===3);
+    liveCanvas.toggleAttribute("data-lum", s.shiny===3); liveCanvas.toggleAttribute("data-gold", s.shiny===2);
     liveCanvas.style.setProperty("--lc", PALETTES[s.pal][2]);
     // la taille à l'écran suit le diamètre : de 120 px pour une Mini (10 mm) à 420 px pour un Mammouth (40 mm)
     const px = Math.round(120+300*(T.mm-10)/30);

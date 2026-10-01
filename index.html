@@ -2663,9 +2663,9 @@ const Sound = (()=>{
     ding(){ if(!ctx||!on||ctx.state!=="running") return; const t=now(); chime(t,880,.12); chime(t+.12,1318.5,.1) },
     pop(){ if(!init()) return; clack(now(),.5,1.1) },
     // tout petit clic quand on prend une bille pour la regarder de près
-    click(){ if(!init()) return; const t=now();
-      if(hits) hitAt(t, HIT_STRONG+Math.floor(Math.random()*(HIT_SLICES.length-HIT_STRONG)), 1.4+Math.random()*.15, .32, 7000, 0, .06);
-      else clack(t,.26,1.3) },
+    click(size){ if(!init()) return; const t=now(), p = size==null ? 1 : 1.35-size*.15;   // size : 0 (Mini) à 5 (Mammouth)
+      if(hits) hitAt(t, HIT_STRONG+Math.floor(Math.random()*(HIT_SLICES.length-HIT_STRONG)), (1.4+Math.random()*.15)*p, .32, 7000, 0, .06);
+      else clack(t,.26,1.3*p) },
     shot(pw){ if(!init()) return; const t=now(); clack(t,.4+pw*.6,.85); thud(t,.3+pw*.4,220) },
     wall(a){ if(!init()) return; const t=now(); a=Math.min(1,a); thud(t,a,140); clack(t,a*.35,.7) },
     splash(){ if(!init()) return; const t=now(); env(noise(t,.55,[{type:"lowpass",f:1800,f2:260}]),t,.55,.01,.5); osc(t,"sine",460,.22,.005,.2,null,130); osc(t+.08,"sine",300,.12,.005,.16,null,120) },
@@ -5087,7 +5087,7 @@ function viewCollection(){
 
   const sizeBtn = (t,i) => { const h = DECOR_IDS.filter(f=>slots.has(t+"|"+f)).length, own = S.specs.filter(s=>s.type===t).sort(tierSort)[0];
     return `<button class="bx-size" style="${tstyle(t)}" data-action="ftype" data-type="${ui.type===t?"all":t}" aria-pressed="${ui.type===t}">
-      <span class="ball">${mImg({seed:hash("pedia-fmt"+t), type:t, family:0, pal:PEDIA_PAL, shiny:0},120,Math.round(40*scaleOf(t)+10),"")}</span><b>${TYPES[t].label.replace("Mini bille","Mini").replace("Bille chinoise","Chinoise")}</b><small>${h} / ${N_DECORS}</small></button>` };
+      <span class="ball">${mImg({seed:hash("pedia-fmt"+t), type:t, family:0, pal:PEDIA_PAL, shiny:0},120,Math.round(40*scaleOf(t)+10),"")}</span><b>${TYPES[t].label.replace("Mini bille","Mini").replace("Bille chinoise","Chinoise")}</b><small>${ui.tab==="billes" ? `${fmt(S.specs.filter(s=>s.type===t).length)} bille${S.specs.filter(s=>s.type===t).length>1?"s":""}` : `${h} / ${N_DECORS}`}</small></button>` };
   const nSeries = SERIES.filter(se=>(S.seriesDone||[]).includes(se.id)).length;
   return `<div class="page-head">
     <div><h1>Ma boîte à billes</h1><p>Tout ce que tu as trouvé, et tout ce qui reste à trouver. Chaque bille est unique : son motif et son numéro de série sont tirés au moment où tu l'ouvres.</p></div>
@@ -5104,7 +5104,7 @@ function viewCollection(){
   </div>
   ${ui.tab==="pedia" ? viewPedia().replace(/^<div class="page-head">[\s\S]*?(?=<section class="pedia-sec">)/, "") : ui.tab==="events" ? eventsView() : `
   ${ui.tab==="album"||ui.tab==="billes" ? `<div class="bx-sizes" role="group" aria-label="Filtrer par taille">
-    <button class="bx-size all" data-action="ftype" data-type="all" aria-pressed="${ui.type==="all"}"><b>Toutes</b><small>${nFull} complète${nFull>1?"s":""} · ${shinyCount} shiny</small></button>
+    <button class="bx-size all" data-action="ftype" data-type="all" aria-pressed="${ui.type==="all"}"><b>Toutes</b><small>${ui.tab==="billes" ? `${fmt(S.specs.length)} bille${S.specs.length>1?"s":""}` : `${nFull} complète${nFull>1?"s":""} · ${shinyCount} shiny`}</small></button>
     ${TK.map(sizeBtn).join("")}</div>` : ""}
   ${filters}
   ${body}`}`;
@@ -5535,7 +5535,7 @@ function openModal(id, pv){
   // on n'enregistre (et n'envoie en ligne) que si la bille était encore marquée « Nouveau »
   if(!pv && S.unseen.includes(id)){ S.unseen = S.unseen.filter(x=>x!==id); save(); }
   liveSpec = s;
-  Sound.click();
+  Sound.click(TIDX[s.type]);
   const caseList = pv ? [] : S.specs.filter(x=>slotKey(x)===slotKey(s));
   const sib = caseList.filter(x=>colorKey(x)===colorKey(s)).sort(tierSort);   // exemplaires de cette même bille
   const fromSheet = ui.fromSheet && ui.sheet && ui.sheet.t===s.type && ui.sheet.f===s.family; ui.fromSheet = false;

@@ -1087,9 +1087,10 @@ button.vit-slot:hover{background:var(--panel-2);color:var(--ink)}
 
 /* ---------- Lumineuse : la plus belle des shiny ---------- */
 [data-lum]{animation:lumpulse 3.6s ease-in-out infinite both}
+/* la lueur reste tout autour de la bille (jamais par-dessus) : un liseré clair, une couronne de sa couleur et une grande aura qui respire */
 @keyframes lumpulse{
-  0%,100%{filter:drop-shadow(0 0 4px color-mix(in srgb,var(--lc) 75%,#fff)) drop-shadow(0 0 14px var(--lc)) drop-shadow(0 0 30px color-mix(in srgb,var(--lc) 55%,transparent))}
-  50%{filter:drop-shadow(0 0 5px color-mix(in srgb,var(--lc) 55%,#fff)) drop-shadow(0 0 18px var(--lc)) drop-shadow(0 0 38px color-mix(in srgb,var(--lc) 75%,transparent))}}
+  0%,100%{filter:drop-shadow(0 0 2px color-mix(in srgb,var(--lc) 60%,#fff)) drop-shadow(0 0 10px var(--lc)) drop-shadow(0 0 24px var(--lc)) drop-shadow(0 0 48px color-mix(in srgb,var(--lc) 60%,transparent))}
+  50%{filter:drop-shadow(0 0 3px color-mix(in srgb,var(--lc) 40%,#fff)) drop-shadow(0 0 14px var(--lc)) drop-shadow(0 0 34px var(--lc)) drop-shadow(0 0 70px color-mix(in srgb,var(--lc) 80%,transparent))}}
 .hero-art img.hero-main[data-lum]{animation:bob 5s ease-in-out infinite,lumpulse 3.6s ease-in-out infinite both}
 .ph-final img[data-lum]{animation:bobf 5s ease-in-out infinite,lumpulse 3.6s ease-in-out infinite both}
 .slot.shiny.is-open .slot-ball img[data-lum]{animation:lumpulse 3.6s ease-in-out infinite both}
@@ -2341,7 +2342,7 @@ const FAMILIES = [
   {name:"Confettis",     rar:4, season:1,  desc:"Des confettis et des serpentins qui flottent dans le verre : c'est le carnaval !"},
   {name:"Cerisier",      rar:4, season:2,  desc:"Une petite branche de cerisier en fleurs prise dans le verre, et ses pétales qui volent."},
   {name:"Aquarium",      rar:4, season:3,  desc:"De petits poissons qui tournent en rond dans l'eau, et des bulles qui montent. Poisson d'avril !"},
-  {name:"Muguet",        rar:4, season:4,  desc:"Un brin de muguet debout dans le verre, avec ses feuilles et ses clochettes : porte-bonheur !"},
+  {name:"Papillons",     rar:4, season:4,  desc:"Des papillons aux ailes colorées qui volent dans le verre, comme dans un jardin au mois de mai."},
   {name:"Soleil",        rar:4, season:5,  desc:"Une boule de feu au cœur du verre, et ses rayons qui partent tout droit."},
   {name:"Plage",         rar:4, season:6,  desc:"Le sable, la mer, un parasol et le soleil, enfermés dans le verre : les grandes vacances en poche."},
   {name:"Étoiles filantes", rar:4, season:7, desc:"Des traînées de lumière qui filent dans un ciel de nuit d'été. Fais un vœu !"},
@@ -2402,7 +2403,7 @@ const SEASONS = [
   {name:"Carnaval",         fam:36, pal:["Carnaval","#B8266E","#FFC93F","#3BC4B8","#FFE8F3"]},
   {name:"Printemps",        fam:37, pal:["Printemps","#2F7D3B","#FF9EC4","#FFF2A8","#EAF8E6"]},
   {name:"Poisson d'avril",  fam:38, pal:["Poisson","#1770B0","#FF7A59","#FFE066","#E3F4FF"]},
-  {name:"Muguet",           fam:39, pal:["Muguet","#2E6B45","#F4F7EE","#B9E3A8","#EEF8EA"]},
+  {name:"Papillons",        fam:39, pal:["Papillon","#4B3A9E","#FF9F43","#62C8F0","#F3EEFF"]},
   {name:"Plein soleil",     fam:40, pal:["Soleil","#C2410C","#FFC93F","#FFF3BF","#FFF4DC"]},
   {name:"Grandes vacances", fam:41, pal:["Plage","#0B7285","#F2D39B","#FFFFFF","#E0F7F7"]},
   {name:"Étoiles filantes", fam:42, pal:["Nuit d'été","#1B1F4B","#7B6CF6","#FFE08A","#DCDDF7"]},
@@ -3268,24 +3269,39 @@ vec4 fam(vec3 q, out vec3 e){
     return vec4(col,dens+bub*25.0);
   }
 #elif MODE==39
-  { // muguet : un brin de muguet debout dans le verre, ses deux grandes feuilles et ses clochettes blanches
-    vec3 col=mix(uC3,vec3(1.0),0.55); float dens=0.18;
-    // les deux feuilles : de longues lames vertes, un peu courbées
-    for(int i=0;i<2;i++){ float fi=float(i), sg=fi*2.0-1.0;
-      vec3 p=q-vec3(sg*0.13,-0.18,-0.12); p.x-=0.12*sg*(p.y+0.6)*(p.y+0.6);
-      float lf=length(vec3(p.x/0.15,p.y/0.6,p.z/0.07))-1.0;
-      if(lf<0.0) return vec4(mix(uC1,uC3,0.25+0.25*fi)*(0.85+0.25*smoothstep(0.0,0.1,abs(p.x))),260.0);
+  { // papillons : des papillons aux ailes colorées qui volent dans un verre clair de printemps
+    vec3 col=mix(uC3,vec3(1.0),0.7); float dens=0.14;
+    for(int i=0;i<5;i++){ float fi=float(i);
+      vec3 c=(vec3(h31(vec3(fi,1.0,so.x)),h31(vec3(fi,2.0,so.y)),h31(vec3(fi,3.0,so.z)))-0.5)*vec3(1.0,1.1,0.8);
+      if(length(c)>0.55) c*=0.55/length(c);
+      float sz=0.2+0.07*h31(vec3(fi,4.0,1.0));
+      // chaque papillon regarde à peu près vers nous, un peu penché, les ailes un peu repliées
+      float a=(h31(vec3(fi,5.0,2.0))-0.5)*1.4, fold=0.12+0.18*h31(vec3(fi,6.0,3.0));
+      vec3 d=(q-c)/sz;
+      d.xy=mat2(cos(a),-sin(a),sin(a),cos(a))*d.xy;
+      float side=sign(d.x); vec2 w=vec2(abs(d.x),d.y);
+      float zz=d.z-w.x*fold;   // les deux ailes se relèvent un peu, en V
+      if(abs(zz)>0.3) continue;
+      // le corps
+      if(length(vec2(d.x*3.2,d.y*0.8))<0.38 && abs(d.z)<0.3) return vec4(vec3(0.12,0.1,0.14),300.0);
+      // l'aile du haut (grande) et celle du bas (petite)
+      float up=length((w-vec2(0.48,0.32))/vec2(0.52,0.42))-1.0;
+      float lo=length((w-vec2(0.36,-0.32))/vec2(0.36,0.3))-1.0;
+      float wing=min(up,lo);
+      if(wing<0.0){
+        float hk=h31(vec3(fi,7.0,4.0));
+        vec3 wc=hk<0.34?uC2:(hk<0.67?uC3:mix(uC1,vec3(1.0),0.25));
+        wc=mix(wc,wc*1.15+0.1,smoothstep(-0.6,0.0,-length(w-vec2(0.15,0.0))));
+        float spot=length(w-(up<lo?vec2(0.62,0.42):vec2(0.42,-0.36)))-0.11;
+        wc=mix(wc,vec3(0.98),smoothstep(0.02,-0.02,spot));
+        wc=mix(wc,vec3(0.1,0.08,0.12),smoothstep(-0.1,-0.02,wing));   // le bord sombre des ailes
+        return vec4(wc,300.0);
+      }
     }
-    // la tige qui monte puis se courbe, et les clochettes pendues dessous
-    vec3 S0=vec3(0.0,-0.78,0.1), S1=vec3(0.02,0.3,0.1), S2=vec3(0.42,0.36,0.1);
-    if(min(sdCap(q,S0,S1,0.018),sdCap(q,S1,S2,0.016))<0.0) return vec4(mix(uC1,uC3,0.5),300.0);
-    for(int j=0;j<5;j++){ float fj=float(j), x=0.07+fj*0.08, top=0.3+(x-0.02)/0.4*0.06;
-      vec3 bc=vec3(x,top-0.12,0.1); vec3 d=q-bc;
-      if(sdCap(q,vec3(x,top,0.1),bc+vec3(0.0,0.05,0.0),0.012)<0.0) return vec4(mix(uC1,uC3,0.5),300.0);
-      float bl=max(length(d*vec3(1.0,1.1,1.0))-0.065,-(d.y+0.045));
-      if(bl<0.0) return vec4(vec3(0.98,0.99,0.96)*(0.92+0.1*noise(q*40.0)),300.0);
-    }
-    return vec4(col,dens);
+    // quelques grains de pollen qui brillent
+    vec3 g=q*10.0+so; vec3 fc=fract(g)-0.5; float sp=step(0.95,h31(floor(g)))*smoothstep(0.12,0.05,length(fc));
+    e=vec3(1.0,0.95,0.7)*sp*0.8;
+    return vec4(col,dens+sp*30.0);
   }
 #elif MODE==40
   { // soleil : une boule de feu au cœur du verre, et ses rayons qui partent tout droit
@@ -3583,7 +3599,7 @@ void main(){
     // lumineuse : points phosphorescents pris dans la surface
     float st=pow(max(0.0,noise(qo*13.0+uSeed.xyz*40.0)-0.5)*2.0,4.0);
     col+=mix(uC2,vec3(1.0),0.55)*st*2.6;
-    col+=mix(uC2,vec3(1.0),0.35)*pow(1.0-n.z,2.2)*0.75;   // le bord rayonne
+    col+=mix(uC2,vec3(1.0),0.35)*pow(1.0-n.z,3.0)*0.5;   // le bord rayonne (le grand halo est fait autour, en CSS : le décor reste lisible)
   }
   col*=mix(0.8,1.0,smoothstep(0.0,0.35,n.z));
   // les blancs s'arrondissent au lieu d'être coupés net (sinon un anneau dur autour des reflets)

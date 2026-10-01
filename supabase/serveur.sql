@@ -418,7 +418,7 @@ drop function if exists public.bille_gagnee(text, text, bigint);
 create or replace function public.bille_gagnee(source text, cle text, graine bigint default null, bid uuid default null)
 returns jsonb language plpgsql security definer set search_path = public as $$
 declare qui uuid := interne.moi(); b jsonb; m int; c int; t text; sh int;
-        noms text[] := array['Givre','Carnaval','Printemps','Poisson d''avril','Muguet','Plein soleil','Grandes vacances',
+        noms text[] := array['Givre','Carnaval','Printemps','Poisson d''avril','Papillons','Plein soleil','Grandes vacances',
                              'Étoiles filantes','Rentrée','Citrouille','Feuilles mortes','Flocon'];
         fams int[] := array[35,36,37,38,39,40,41,42,43,44,45,46];   -- un décor de saison par mois (édition limitée)
 begin

@@ -116,7 +116,7 @@ $$ select array_position(interne.tailles(), t) - 1 $$;   -- 0 (Mini) à 5 (Mammo
 
 -- rareté de chaque décor (dans l'ordre de FAMILIES) et poids de chaque rareté
 create or replace function interne.decor_rarete() returns int[] language sql immutable as
-$$ select array[0,0,4,2,0,1,0,1,2,3,3,0,2,1,3,0,1,3,2,2,0,0,1,1,0,1,3,3,1,2,4,2, 5, 3,4] $$;   -- 32 : Pirate (événement, 5 = jamais dans les sacs) ; 33 Vitrail ; 34 Trou noir
+$$ select array[0,0,4,2,0,1,0,1,2,3,3,0,2,1,3,0,1,3,2,2,0,0,1,1,0,1,3,3,1,2,4,2, 5, 3,4, 5,5,5,5,5,5,5,5,5,5,5,5] $$;   -- 32 : Pirate (événement, 5 = jamais dans les sacs) ; 33 Vitrail ; 34 Trou noir ; 35 à 46 : décors de saison (passe seulement)
 create or replace function interne.poids_rarete() returns numeric[] language sql immutable as
 $$ select array[10,5,2.5,0.8,0.2,0]::numeric[] $$;   -- la 6e : décors d'événement, jamais tirés
 
@@ -421,7 +421,7 @@ returns jsonb language plpgsql security definer set search_path = public as $$
 declare qui uuid := interne.moi(); b jsonb; m int; c int; t text; sh int;
         noms text[] := array['Givre','Carnaval','Printemps','Poisson d''avril','Muguet','Plein soleil','Grandes vacances',
                              'Étoiles filantes','Rentrée','Citrouille','Feuilles mortes','Flocon'];
-        fams int[] := array[11,12,0,13,10,1,4,2,7,5,3,15];
+        fams int[] := array[35,36,37,38,39,40,41,42,43,44,45,46];   -- un décor de saison par mois (édition limitée)
 begin
   case source
     when 'chateau' then   -- 3 étoiles au Château : une Bille, une fois par jour

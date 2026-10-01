@@ -2342,7 +2342,7 @@ const FAMILIES = [
   {name:"Confettis",     rar:4, season:1,  desc:"Des confettis et des serpentins qui flottent dans le verre : c'est le carnaval !"},
   {name:"Cerisier",      rar:4, season:2,  desc:"Une petite branche de cerisier en fleurs prise dans le verre, et ses pétales qui volent."},
   {name:"Aquarium",      rar:4, season:3,  desc:"De petits poissons qui tournent en rond dans l'eau, et des bulles qui montent. Poisson d'avril !"},
-  {name:"Muguet",        rar:4, season:4,  desc:"Un brin de muguet debout dans le verre, avec ses feuilles et ses clochettes : porte-bonheur !"},
+  {name:"Papillons",     rar:4, season:4,  desc:"Des papillons aux ailes colorées qui volent dans le verre, comme dans un jardin au mois de mai."},
   {name:"Soleil",        rar:4, season:5,  desc:"Une boule de feu au cœur du verre, et ses rayons qui partent tout droit."},
   {name:"Plage",         rar:4, season:6,  desc:"Le sable, la mer, un parasol et le soleil, enfermés dans le verre : les grandes vacances en poche."},
   {name:"Étoiles filantes", rar:4, season:7, desc:"Des traînées de lumière qui filent dans un ciel de nuit d'été. Fais un vœu !"},
@@ -2403,7 +2403,7 @@ const SEASONS = [
   {name:"Carnaval",         fam:36, pal:["Carnaval","#B8266E","#FFC93F","#3BC4B8","#FFE8F3"]},
   {name:"Printemps",        fam:37, pal:["Printemps","#2F7D3B","#FF9EC4","#FFF2A8","#EAF8E6"]},
   {name:"Poisson d'avril",  fam:38, pal:["Poisson","#1770B0","#FF7A59","#FFE066","#E3F4FF"]},
-  {name:"Muguet",           fam:39, pal:["Muguet","#2E6B45","#F4F7EE","#B9E3A8","#EEF8EA"]},
+  {name:"Papillons",        fam:39, pal:["Papillon","#4B3A9E","#FF9F43","#62C8F0","#F3EEFF"]},
   {name:"Plein soleil",     fam:40, pal:["Soleil","#C2410C","#FFC93F","#FFF3BF","#FFF4DC"]},
   {name:"Grandes vacances", fam:41, pal:["Plage","#0B7285","#F2D39B","#FFFFFF","#E0F7F7"]},
   {name:"Étoiles filantes", fam:42, pal:["Nuit d'été","#1B1F4B","#7B6CF6","#FFE08A","#DCDDF7"]},
@@ -3269,28 +3269,39 @@ vec4 fam(vec3 q, out vec3 e){
     return vec4(col,dens+bub*25.0);
   }
 #elif MODE==39
-  { // muguet : deux fines feuilles vertes, une tige qui se courbe et ses clochettes blanches bien rondes
-    vec3 col=mix(uC3,vec3(1.0),0.6); float dens=0.16;
-    // la tige : elle monte puis se penche vers la droite
-    vec3 S0=vec3(-0.05,-0.8,0.12), S1=vec3(-0.08,0.15,0.12), S2=vec3(0.12,0.5,0.12), S3=vec3(0.45,0.42,0.12);
-    if(min(min(sdCap(q,S0,S1,0.04),sdCap(q,S1,S2,0.035)),sdCap(q,S2,S3,0.03))<0.0) return vec4(mix(uC1,uC3,0.45),300.0);
-    // les clochettes, pendues sous la tige, de plus en plus petites vers le bout
-    for(int j=0;j<5;j++){ float fj=float(j), t=0.15+fj*0.2;
-      vec3 a=mix(mix(S1,S2,t),mix(S2,S3,t),t);
-      float rad=0.085-fj*0.009; vec3 bc=a+vec3(0.0,-0.07-rad,0.0);
-      if(sdCap(q,a,bc+vec3(0.0,rad*0.6,0.0),0.016)<0.0) return vec4(mix(uC1,uC3,0.45),300.0);
-      vec3 d=q-bc;
-      float bell=max(length(d*vec3(1.0,1.05,1.0))-rad,-(d.y+rad*0.55));
-      float lip=length(vec2(length(d.xz)-rad*0.95,d.y+rad*0.55))-rad*0.18;   // le petit bord retourné
-      if(min(bell,lip)<0.0) return vec4(vec3(0.99,0.99,0.96)*(0.88+0.14*smoothstep(-rad,rad,d.y)),300.0);
+  { // papillons : des papillons aux ailes colorées qui volent dans un verre clair de printemps
+    vec3 col=mix(uC3,vec3(1.0),0.7); float dens=0.14;
+    for(int i=0;i<5;i++){ float fi=float(i);
+      vec3 c=(vec3(h31(vec3(fi,1.0,so.x)),h31(vec3(fi,2.0,so.y)),h31(vec3(fi,3.0,so.z)))-0.5)*vec3(1.0,1.1,0.8);
+      if(length(c)>0.55) c*=0.55/length(c);
+      float sz=0.2+0.07*h31(vec3(fi,4.0,1.0));
+      // chaque papillon regarde à peu près vers nous, un peu penché, les ailes un peu repliées
+      float a=(h31(vec3(fi,5.0,2.0))-0.5)*1.4, fold=0.12+0.18*h31(vec3(fi,6.0,3.0));
+      vec3 d=(q-c)/sz;
+      d.xy=mat2(cos(a),-sin(a),sin(a),cos(a))*d.xy;
+      float side=sign(d.x); vec2 w=vec2(abs(d.x),d.y);
+      float zz=d.z-w.x*fold;   // les deux ailes se relèvent un peu, en V
+      if(abs(zz)>0.3) continue;
+      // le corps
+      if(length(vec2(d.x*3.2,d.y*0.8))<0.38 && abs(d.z)<0.3) return vec4(vec3(0.12,0.1,0.14),300.0);
+      // l'aile du haut (grande) et celle du bas (petite)
+      float up=length((w-vec2(0.48,0.32))/vec2(0.52,0.42))-1.0;
+      float lo=length((w-vec2(0.36,-0.32))/vec2(0.36,0.3))-1.0;
+      float wing=min(up,lo);
+      if(wing<0.0){
+        float hk=h31(vec3(fi,7.0,4.0));
+        vec3 wc=hk<0.34?uC2:(hk<0.67?uC3:mix(uC1,vec3(1.0),0.25));
+        wc=mix(wc,wc*1.15+0.1,smoothstep(-0.6,0.0,-length(w-vec2(0.15,0.0))));
+        float spot=length(w-(up<lo?vec2(0.62,0.42):vec2(0.42,-0.36)))-0.11;
+        wc=mix(wc,vec3(0.98),smoothstep(0.02,-0.02,spot));
+        wc=mix(wc,vec3(0.1,0.08,0.12),smoothstep(-0.1,-0.02,wing));   // le bord sombre des ailes
+        return vec4(wc,300.0);
+      }
     }
-    // deux feuilles longues et fines, de part et d'autre, derrière la tige
-    for(int i=0;i<2;i++){ float fi=float(i), sg=fi*2.0-1.0;
-      vec3 p=q-vec3(sg*0.2,-0.2,-0.08); p.x-=0.1*sg*(p.y+0.6)*(p.y+0.6);
-      float lf=length(vec3(p.x/0.11,p.y/0.6,p.z/0.11))-1.0;
-      if(lf<0.0) return vec4(mix(uC1,uC3,0.2+0.25*fi)*(0.8+0.3*smoothstep(0.0,0.07,abs(p.x))),260.0);
-    }
-    return vec4(col,dens);
+    // quelques grains de pollen qui brillent
+    vec3 g=q*10.0+so; vec3 fc=fract(g)-0.5; float sp=step(0.95,h31(floor(g)))*smoothstep(0.12,0.05,length(fc));
+    e=vec3(1.0,0.95,0.7)*sp*0.8;
+    return vec4(col,dens+sp*30.0);
   }
 #elif MODE==40
   { // soleil : une boule de feu au cœur du verre, et ses rayons qui partent tout droit

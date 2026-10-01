@@ -116,7 +116,7 @@ $$ select array_position(interne.tailles(), t) - 1 $$;   -- 0 (Mini) à 5 (Mammo
 
 -- rareté de chaque décor (dans l'ordre de FAMILIES) et poids de chaque rareté
 create or replace function interne.decor_rarete() returns int[] language sql immutable as
-$$ select array[0,0,4,2,0,1,0,1,2,3,3,0,2,1,3,0,1,3,2,2,0,0,1,1,0,1,3,3,1,2,4,2, 5, 3,4] $$;   -- 32 : Pirate (événement, 5 = jamais dans les sacs) ; 33 Vitrail ; 34 Trou noir
+$$ select array[0,0,4,2,0,1,0,1,2,3,3,0,2,1,3,0,1,3,2,2,0,0,1,1,0,1,3,3,1,2,4,2, 5, 3,4, 5,5,5,5,5,5,5,5,5,5,5,5] $$;   -- 32 : Pirate (événement, 5 = jamais dans les sacs) ; 33 Vitrail ; 34 Trou noir ; 35 à 46 : décors de saison (passe seulement)
 create or replace function interne.poids_rarete() returns numeric[] language sql immutable as
 $$ select array[10,5,2.5,0.8,0.2,0]::numeric[] $$;   -- la 6e : décors d'événement, jamais tirés
 
@@ -136,7 +136,7 @@ language sql immutable as $$
     ('classique', 300, 5, null,      0.0001, array[[70,30,0,0,0,0],[50,38,12,0,0,0],[35,40,20,5,0,0],[20,35,30,13,2,0],[10,25,30,20,12,3]]::numeric[]),
     ('premium',   600, 5, 3,         0.0002, array[[0,80,20,0,0,0],[0,60,35,5,0,0],[0,40,45,15,0,0],[0,0,55,38,7,0],[0,0,0,60,34,6]]::numeric[]),
     ('collector',1500, 5, 4,         0.0005, array[[0,0,85,15,0,0],[0,0,65,35,0,0],[0,0,40,50,10,0],[0,0,0,60,38,2],[0,0,0,0,87,13]]::numeric[]),
-    ('pirate',    800, 3, null,      0.0002, array[[60,32,8,0,0,0],[40,35,18,6,1,0],[20,28,24,17,8,3]]::numeric[])
+    ('pirate',    600, 3, null,      0.0002, array[[60,32,8,0,0,0],[40,35,18,6,1,0],[20,28,24,17,8,3]]::numeric[])
   ) v(nom, prix, n, garantie, shiny, cotes) where v.nom = sac.nom
 $$;
 
@@ -278,9 +278,9 @@ begin
     if coalesce((p.sacs->>nom)::int,0) < 1 then raise exception 'plus_de_sac'; end if;
     update portefeuilles set sacs = jsonb_set(sacs, array[nom], to_jsonb((sacs->>nom)::int - 1)) where joueur = qui;
   elsif r.prix = 0 then
-    stock := least(5, floor(extract(epoch from now() - p.gratuit_t0) / 600)::int);
+    stock := least(10, floor(extract(epoch from now() - p.gratuit_t0) / 600)::int);   -- jusqu'à 10 d'avance (FREE_MAX)
     if stock < 1 then raise exception 'pas_encore'; end if;
-    update portefeuilles set gratuit_t0 = case when stock >= 5 then now() - interval '40 minutes' else gratuit_t0 + interval '10 minutes' end
+    update portefeuilles set gratuit_t0 = case when stock >= 10 then now() - interval '90 minutes' else gratuit_t0 + interval '10 minutes' end
       where joueur = qui;
   else
     if p.bonbecs < r.prix then raise exception 'pas_assez'; end if;
@@ -383,8 +383,9 @@ begin
       select count(*) into nq from gains g where g.joueur = qui and g.source = 'quete' and g.cle like today || '|%';
       if nq >= 3 then raise exception 'deja'; end if;
       k := today || '|' || cle;
-    when 'quetes-bonus' then
-      if montant <> 150 or sac is not null then raise exception 'montant_invalide'; end if;
+    when 'quetes-bonus' then   -- les 3 quêtes : un Sac Classique offert
+      -- (150 bonbecs : l'ancienne récompense, tant que l'ancienne version du site est en ligne)
+      if not ((montant = 0 and sac = 'classique') or (montant = 150 and sac is null)) then raise exception 'montant_invalide'; end if;
       k := today;
     when 'jeu' then     -- une récompense par jour et par jeu (au Tir : par trou)
       maxi := case when cle ~ '^tir\|[0-5]$' then 100 when cle = 'pot' then 100 when cle = 'chateau' then 120 when cle = 'casse' then 100 end;
@@ -420,7 +421,7 @@ returns jsonb language plpgsql security definer set search_path = public as $$
 declare qui uuid := interne.moi(); b jsonb; m int; c int; t text; sh int;
         noms text[] := array['Givre','Carnaval','Printemps','Poisson d''avril','Muguet','Plein soleil','Grandes vacances',
                              'Étoiles filantes','Rentrée','Citrouille','Feuilles mortes','Flocon'];
-        fams int[] := array[11,12,0,13,10,1,4,2,7,5,3,15];
+        fams int[] := array[35,36,37,38,39,40,41,42,43,44,45,46];   -- un décor de saison par mois (édition limitée)
 begin
   case source
     when 'chateau' then   -- 3 étoiles au Château : une Bille, une fois par jour
@@ -486,7 +487,7 @@ begin
   if not exists (select 1 from testeurs where joueur = qui) then raise exception 'reserve_aux_testeurs'; end if;
   case action
     when 'bonbecs' then perform interne.crediter(qui, 1000);
-    when 'gratuit' then update portefeuilles set gratuit_t0 = now() - interval '50 minutes' where joueur = qui;
+    when 'gratuit' then update portefeuilles set gratuit_t0 = now() - interval '100 minutes' where joueur = qui;
     when 'shiny' then b := interne.nouvelle_bille(qui, (interne.tailles())[3 + floor(random()*4)::int], shiny => 1 + floor(random()*3)::int, src => 'test');
     else raise exception 'action_inconnue';
   end case;

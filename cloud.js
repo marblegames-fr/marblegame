@@ -124,6 +124,7 @@
       classement: portee => rpc("classement", {portee:portee||"tous"}),
       annonces: () => rpc("mes_annonces"),
       journal: (depuis, limite) => rpc("cour_journal", {depuis:depuis||0, limite:limite||80}),
+      stats: () => rpc("cour_stats"),
     },
     async setPseudo(uid, pseudo){
       need();

@@ -278,9 +278,9 @@ begin
     if coalesce((p.sacs->>nom)::int,0) < 1 then raise exception 'plus_de_sac'; end if;
     update portefeuilles set sacs = jsonb_set(sacs, array[nom], to_jsonb((sacs->>nom)::int - 1)) where joueur = qui;
   elsif r.prix = 0 then
-    stock := least(5, floor(extract(epoch from now() - p.gratuit_t0) / 600)::int);
+    stock := least(10, floor(extract(epoch from now() - p.gratuit_t0) / 600)::int);   -- jusqu'à 10 d'avance (FREE_MAX)
     if stock < 1 then raise exception 'pas_encore'; end if;
-    update portefeuilles set gratuit_t0 = case when stock >= 5 then now() - interval '40 minutes' else gratuit_t0 + interval '10 minutes' end
+    update portefeuilles set gratuit_t0 = case when stock >= 10 then now() - interval '90 minutes' else gratuit_t0 + interval '10 minutes' end
       where joueur = qui;
   else
     if p.bonbecs < r.prix then raise exception 'pas_assez'; end if;
@@ -383,8 +383,9 @@ begin
       select count(*) into nq from gains g where g.joueur = qui and g.source = 'quete' and g.cle like today || '|%';
       if nq >= 3 then raise exception 'deja'; end if;
       k := today || '|' || cle;
-    when 'quetes-bonus' then
-      if montant <> 150 or sac is not null then raise exception 'montant_invalide'; end if;
+    when 'quetes-bonus' then   -- les 3 quêtes : un Sac Classique offert
+      -- (150 bonbecs : l'ancienne récompense, tant que l'ancienne version du site est en ligne)
+      if not ((montant = 0 and sac = 'classique') or (montant = 150 and sac is null)) then raise exception 'montant_invalide'; end if;
       k := today;
     when 'jeu' then     -- une récompense par jour et par jeu (au Tir : par trou)
       maxi := case when cle ~ '^tir\|[0-5]$' then 100 when cle = 'pot' then 100 when cle = 'chateau' then 120 when cle = 'casse' then 100 end;
@@ -486,7 +487,7 @@ begin
   if not exists (select 1 from testeurs where joueur = qui) then raise exception 'reserve_aux_testeurs'; end if;
   case action
     when 'bonbecs' then perform interne.crediter(qui, 1000);
-    when 'gratuit' then update portefeuilles set gratuit_t0 = now() - interval '50 minutes' where joueur = qui;
+    when 'gratuit' then update portefeuilles set gratuit_t0 = now() - interval '100 minutes' where joueur = qui;
     when 'shiny' then b := interne.nouvelle_bille(qui, (interne.tailles())[3 + floor(random()*4)::int], shiny => 1 + floor(random()*3)::int, src => 'test');
     else raise exception 'action_inconnue';
   end case;

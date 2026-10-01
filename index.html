@@ -156,6 +156,7 @@ button.wallet:hover{background:var(--panel-2)}
 .nav-btn .ready{margin-left:auto;width:9px;height:9px;border-radius:50%;background:#E5484D}
 .nav-sep{height:1px;background:var(--line);margin:14px 8px}
 .pick-modal{width:min(760px,calc(100vw - 32px))}
+.ask-chk{margin:12px 0 2px}
 .st-group + .st-group{margin-top:16px}
 .st-group h3{display:flex;align-items:center;gap:7px;font-size:13px;font-weight:900;text-transform:uppercase;letter-spacing:.06em;color:var(--muted);margin-bottom:8px}
 .pick-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(110px,1fr));gap:8px;max-height:min(60vh,520px);overflow:auto;margin-top:12px;padding:2px}
@@ -1636,7 +1637,7 @@ button.vit-slot:hover{background:var(--panel-2);color:var(--ink)}
 /* ---------- BOÎTE À BILLES ---------- */
 .tabs .tab small{font-size:11.5px;font-weight:800;opacity:.65;margin-left:3px}
 @media (max-width:560px){ .tabs .tab small{display:none} }
-.bx-sizes{display:grid;grid-template-columns:1.2fr repeat(6,minmax(0,1fr));gap:8px;margin:14px 0 4px}
+.bx-sizes{display:grid;grid-template-columns:1.2fr repeat(6,minmax(0,1fr));gap:8px;margin:14px 0 18px}
 .bx-size{display:grid;justify-items:center;align-content:end;gap:3px;padding:10px 4px 9px;border-radius:14px;border:2px solid var(--line);background:var(--panel);text-align:center}
 .bx-size:hover{border-color:var(--line-2)}
 .bx-size .ball{height:52px;display:grid;place-items:end center}
@@ -3794,7 +3795,7 @@ function ask({title, text="", extra="", balls=[], ok="Confirmer", no="Annuler", 
       <h2 id="ask-t">${esc(title)}</h2>${text?`<p>${text}</p>`:""}${extra}
       <div class="ask-btns"><button class="btn btn-ghost" data-ask="0">${esc(no)}</button><button class="btn ${danger?"btn-danger":"btn-yellow"}" data-ask="1">${esc(ok)}</button></div></div>`;
     el.hidden = false;
-    const done = v => { ask.val = el.querySelector("#ask-val")?.value; el.hidden = true; el.innerHTML = ""; el.onclick = null; document.removeEventListener("keydown", key, true); res(v) };
+    const done = v => { ask.val = el.querySelector("#ask-val")?.value; ask.chk = !!el.querySelector("#ask-chk")?.checked; el.hidden = true; el.innerHTML = ""; el.onclick = null; document.removeEventListener("keydown", key, true); res(v) };
     const key = e => { if(e.key==="Escape"){ e.stopPropagation(); done(false) } else if(e.key==="Enter" && e.target.id==="ask-val"){ e.preventDefault(); done(true) } };
     el.onclick = e => { e.stopPropagation(); const b = e.target.closest("[data-ask]"); if(b) done(b.dataset.ask==="1"); else if(e.target===el) done(false) };
     document.addEventListener("keydown", key, true);
@@ -5239,6 +5240,13 @@ function craftAuto(t, keep=[]){
   for(const s of rest){ if(sel.length>=craftN(t)) break; const k=colorKey(s); if(cnt[k]>1){ sel.push(s.id); cnt[k]-- } }
   return sel;
 }
+// remplissage au hasard avec des billes qu'on n'a qu'en un exemplaire (elles quitteront l'album)
+function craftSingles(t, keep=[]){
+  const cnt = slotCounts(), pool = craftPool(t), sel = keep.filter(id=>pool.some(s=>s.id===id)).slice(0, craftN(t));
+  const singles = pool.filter(s=>!sel.includes(s.id) && cnt[colorKey(s)]===1);
+  for(let i=singles.length-1;i>0;i--){ const j=Math.floor(Math.random()*(i+1)); [singles[i],singles[j]]=[singles[j],singles[i]] }
+  return sel.concat(singles.slice(0, craftN(t)-sel.length).map(s=>s.id));
+}
 function viewCraft(){
   const C = ui.craft || (ui.craft = {t:0, sel:[]});
   const pool = craftPool(C.t), cnt = slotCounts();
@@ -5267,6 +5275,7 @@ function viewCraft(){
       <div class="fz-actions">
         <button class="btn btn-yellow btn-xl" data-action="craft-go" ${full?"":"disabled"}>${ic("flask",20)} Fusionner</button>
         <button class="btn btn-ghost" data-action="craft-auto" ${full || craftAuto(C.t, C.sel).length===C.sel.length?"disabled":""}>Remplir avec mes doubles</button>
+        <button class="btn btn-ghost" data-action="craft-singles" ${full || craftSingles(C.t, C.sel).length===C.sel.length?"disabled":""}>Remplir au hasard (billes uniques)</button>
         <button class="btn btn-ghost" data-action="craft-clear" ${C.sel.length?"":"disabled"}>Vider</button>
       </div>
     </div>
@@ -5433,7 +5442,7 @@ function statsPanel(){
   const C = courStats || {};
   return `<section class="panel" id="stats">
     <div class="panel-head"><h2>Mes statistiques</h2></div>
-    ${group("Sacs", "bag", [cell("Sacs ouverts", n(S.bags)), cell("Billes tirées", n(ST.pulled ?? S.specs.length)), cell("Shiny trouvées", n(ST.shinyFound ?? S.specs.filter(x=>x.shiny).length)), cell("Boulets et Mammouths", n(ST.bigFound ?? S.specs.filter(x=>tierOf(x)>=BIG).length))])}
+    ${group("Sacs", "bag", [cell("Sacs ouverts", n(S.bags)), cell("Billes tirées", n(ST.pulled ?? S.specs.length)), cell("Shiny trouvées", n(ST.shinyFound ?? S.specs.filter(x=>x.shiny).length)), cell("Boulets trouvés", n(ST.bouletFound ?? S.specs.filter(x=>x.type==="boulet").length)), cell("Mammouths trouvés", n(ST.mammFound ?? S.specs.filter(x=>x.type==="mammouth").length))])}
     ${group("Confiserie", "candy", [cell("Fusions réussies", n(S.crafts)), cell("Billes dans ta boîte", n(S.specs.length))])}
     ${group("Jeux de la cour", "pad", [cell("Trous réussis au Tir", n(S.holes)), cell("Billes dans le Pot", n(ST.pot)), cell("Sorties du Château", n(ST.castle)),
       cell("Record au Casse-briques", ST.casse ? `${n(ST.casseScore)} pts` : "–"), cell("Courses gagnées", n(ST.race)), cell("Parties de Tic gagnées", n(ST.tic))])}
@@ -5689,8 +5698,10 @@ async function openBag(bagId, gift){
   }
   S.bags = (S.bags||0)+1;
   const ST = S.stats;   // au premier passage, on part de ce qu'il y a dans la boîte
-  ST.pulled ??= S.specs.length; ST.shinyFound ??= S.specs.filter(x=>x.shiny).length; ST.bigFound ??= S.specs.filter(x=>tierOf(x)>=BIG).length;
-  ST.pulled += pulls.length; ST.shinyFound += pulls.filter(x=>x.shiny).length; ST.bigFound += pulls.filter(x=>tierOf(x)>=BIG).length;
+  ST.pulled ??= S.specs.length; ST.shinyFound ??= S.specs.filter(x=>x.shiny).length;
+  ST.bouletFound ??= S.specs.filter(x=>x.type==="boulet").length; ST.mammFound ??= S.specs.filter(x=>x.type==="mammouth").length;
+  ST.pulled += pulls.length; ST.shinyFound += pulls.filter(x=>x.shiny).length;
+  ST.bouletFound += pulls.filter(x=>x.type==="boulet").length; ST.mammFound += pulls.filter(x=>x.type==="mammouth").length;
   pulls.forEach(s=>{ if(tierOf(s)>=BIG || s.shiny) logFind(s) });
   const before = slotsOwned(), evBefore = new Set(S.specs.filter(x=>eventOf(x)).map(colorKey));
   const results = pulls.map(s=>{
@@ -8018,6 +8029,16 @@ document.addEventListener("click", e=>{
     case "craft-auto": { const C = ui.craft, n0 = C.sel.length; C.sel = craftAuto(C.t, C.sel); renderView();
       if(C.sel.length<craftN(C.t)) toast(C.sel.length>n0 ? `${C.sel.length-n0} double${C.sel.length-n0>1?"s":""} ajouté${C.sel.length-n0>1?"s":""} : il n'y en a pas d'autre, complète à la main.` : "Tu n'as pas d'autre double de cette taille.");
       break }
+    case "craft-singles": {
+      const C = ui.craft, fill = () => { const n0 = C.sel.length; C.sel = craftSingles(C.t, C.sel); renderView();
+        if(C.sel.length<craftN(C.t)) toast(`${C.sel.length-n0} bille${C.sel.length-n0>1?"s":""} ajoutée${C.sel.length-n0>1?"s":""} : il n'y en a pas d'autre, complète à la main.`) };
+      if(S.singlesOk===dayKey()){ fill(); break }
+      ask({title:"Fusionner des billes uniques ?", ok:"Oui, remplir",
+           text:`Tu vas mettre dans le chaudron des billes que tu n'as <b>qu'en un seul exemplaire</b>. Après la fusion, elles quitteront ta boîte à billes et ton album.`,
+           extra:`<label class="check ask-chk"><input type="checkbox" id="ask-chk"> Ne plus me demander aujourd'hui</label>`})
+        .then(yes=>{ if(!yes) return; if(ask.chk){ S.singlesOk = dayKey(); save() } fill() });
+      break;
+    }
     case "craft-clear": ui.craft.sel = []; renderView(); break;
     case "craft-add": { const C = ui.craft; if(C.sel.length>=craftN(C.t)){ toast("Le chaudron est plein."); break }
       const x = craftPool(C.t).find(y=>colorKey(y)===t.dataset.k && !C.sel.includes(y.id)); if(x){ C.sel.push(x.id); Sound.click() } renderView(); break }

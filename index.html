@@ -1087,9 +1087,10 @@ button.vit-slot:hover{background:var(--panel-2);color:var(--ink)}
 
 /* ---------- Lumineuse : la plus belle des shiny ---------- */
 [data-lum]{animation:lumpulse 3.6s ease-in-out infinite both}
+/* la lueur reste tout autour de la bille (jamais par-dessus) : un liseré clair, une couronne de sa couleur et une grande aura qui respire */
 @keyframes lumpulse{
-  0%,100%{filter:drop-shadow(0 0 4px color-mix(in srgb,var(--lc) 75%,#fff)) drop-shadow(0 0 14px var(--lc)) drop-shadow(0 0 30px color-mix(in srgb,var(--lc) 55%,transparent))}
-  50%{filter:drop-shadow(0 0 5px color-mix(in srgb,var(--lc) 55%,#fff)) drop-shadow(0 0 18px var(--lc)) drop-shadow(0 0 38px color-mix(in srgb,var(--lc) 75%,transparent))}}
+  0%,100%{filter:drop-shadow(0 0 2px color-mix(in srgb,var(--lc) 60%,#fff)) drop-shadow(0 0 10px var(--lc)) drop-shadow(0 0 24px var(--lc)) drop-shadow(0 0 48px color-mix(in srgb,var(--lc) 60%,transparent))}
+  50%{filter:drop-shadow(0 0 3px color-mix(in srgb,var(--lc) 40%,#fff)) drop-shadow(0 0 14px var(--lc)) drop-shadow(0 0 34px var(--lc)) drop-shadow(0 0 70px color-mix(in srgb,var(--lc) 80%,transparent))}}
 .hero-art img.hero-main[data-lum]{animation:bob 5s ease-in-out infinite,lumpulse 3.6s ease-in-out infinite both}
 .ph-final img[data-lum]{animation:bobf 5s ease-in-out infinite,lumpulse 3.6s ease-in-out infinite both}
 .slot.shiny.is-open .slot-ball img[data-lum]{animation:lumpulse 3.6s ease-in-out infinite both}
@@ -3587,7 +3588,7 @@ void main(){
     // lumineuse : points phosphorescents pris dans la surface
     float st=pow(max(0.0,noise(qo*13.0+uSeed.xyz*40.0)-0.5)*2.0,4.0);
     col+=mix(uC2,vec3(1.0),0.55)*st*2.6;
-    col+=mix(uC2,vec3(1.0),0.35)*pow(1.0-n.z,2.2)*0.75;   // le bord rayonne
+    col+=mix(uC2,vec3(1.0),0.35)*pow(1.0-n.z,3.0)*0.5;   // le bord rayonne (le grand halo est fait autour, en CSS : le décor reste lisible)
   }
   col*=mix(0.8,1.0,smoothstep(0.0,0.35,n.z));
   // les blancs s'arrondissent au lieu d'être coupés net (sinon un anneau dur autour des reflets)

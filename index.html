@@ -155,6 +155,12 @@ button.wallet:hover{background:var(--panel-2)}
 .nav-btn .soon{margin-left:auto;font-size:10px;font-weight:800;letter-spacing:.06em;text-transform:uppercase;color:var(--muted)}
 .nav-btn .ready{margin-left:auto;width:9px;height:9px;border-radius:50%;background:#E5484D}
 .nav-sep{height:1px;background:var(--line);margin:14px 8px}
+.side-act{margin-top:auto;display:grid;justify-items:center;gap:6px;padding:14px 10px;border-radius:16px;background:radial-gradient(circle at 50% 30%,color-mix(in srgb,var(--rc) 22%,var(--panel)),var(--panel) 75%);border:1px solid var(--line);text-align:center}
+.side-act > small{font-size:10.5px;font-weight:900;letter-spacing:.07em;text-transform:uppercase;color:var(--muted)}
+.side-act b{font-size:13px;font-weight:900;line-height:1.2}
+.sa-row{display:flex;align-items:center;gap:6px}
+.sa-ball{display:grid;place-items:center;width:76px;height:76px}
+.side-act .btn{margin-top:2px}
 .side-quote{margin-top:auto;padding:18px 10px 4px;font-family:var(--hand);font-size:19px;line-height:1.15;color:var(--ink-2);transform:rotate(-6deg)}
 .side-quote svg{display:block;margin:6px 0 0 40px}
 .nav-btn .cnt{margin-left:auto;min-width:22px;text-align:center;font-size:11px;font-weight:900;padding:1px 7px;border-radius:999px;background:var(--green-soft);color:var(--green)}
@@ -886,16 +892,14 @@ button.vit-slot:hover{background:var(--panel-2);color:var(--ink)}
 .rew .coin{width:16px;height:16px}
 .tab-dot{display:inline-grid;place-items:center;min-width:18px;height:18px;padding:0 5px;margin-left:4px;border-radius:999px;background:#E5484D;color:#fff;font-size:11px}
 .chal-cta{color:#C07A0C}
-/* la garantie Boulet : une petite carte à droite des sacs */
-.bg-top{display:grid;grid-template-columns:minmax(0,680px) minmax(220px,300px);gap:16px;align-items:start}
-.pity{display:grid;grid-template-columns:auto minmax(0,1fr);gap:6px 12px;align-items:center;padding:14px 16px}
-.pity .q-ic{width:38px;height:38px}
-.pity > b{font-weight:900}
-.pity p{grid-column:1/-1;font-size:13px;font-weight:600;color:var(--ink-2)}
-.pity p b{color:var(--ink)}
-.pity .q-prog{grid-column:1/-1;margin-top:0}
-.pity .q-prog .bar{flex:1}
-@media (max-width:820px){ .bg-top{grid-template-columns:minmax(0,1fr)} }
+/* la garantie Boulet : une petite ligne discrète sous le bouton d'ouverture, dorée quand le Boulet approche */
+.pity-line{display:inline-flex;align-items:center;gap:7px;justify-self:end;font-size:12px;font-weight:800;color:var(--muted);padding:2px 0}
+.pity-line:hover span{text-decoration:underline}
+.pl-bar{display:block;width:54px;height:5px;border-radius:99px;background:var(--line);overflow:hidden}
+.pl-bar i{display:block;height:100%;background:var(--muted)}
+.pity-line.hot{color:#E0A417}
+.pity-line.hot .pl-bar i{background:#E0A417}
+@media (max-width:820px){ .pity-line{justify-self:start} }
 
 .odds .odds-h{display:block;grid-template-columns:none;font-size:10.5px;font-weight:900;letter-spacing:.06em;text-transform:uppercase;color:var(--muted);margin-bottom:1px}
 /* comment une bille est tirée */
@@ -1502,6 +1506,7 @@ button.vit-slot:hover{background:var(--panel-2);color:var(--ink)}
 .hm-grid{display:grid;grid-template-columns:minmax(0,1.35fr) minmax(0,1fr);gap:18px;align-items:start}
 .hm-grid .goals .goal-grid{grid-template-columns:minmax(0,1fr)}
 .hm-col{display:grid;gap:18px}
+@media (min-width:821px){ .hm-active{display:none} .hm-grid:not(:has(.hm-treasure)){grid-template-columns:minmax(0,1fr)} }
 .hm-act{display:grid;grid-template-columns:auto minmax(0,1fr);gap:16px;align-items:center}
 .hm-act-ball{display:grid;place-items:center;width:112px;height:112px;border-radius:50%;background:radial-gradient(circle at 50% 45%,color-mix(in srgb,var(--rc) 28%,var(--panel)),var(--panel) 70%)}
 .hm-act b,.hm-treasure b{display:block;font-size:17px;font-weight:900;line-height:1.2;margin-bottom:5px}
@@ -1580,7 +1585,7 @@ button.vit-slot:hover{background:var(--panel-2);color:var(--ink)}
 .bg-show svg{width:min(280px,80%);height:auto;aspect-ratio:280/290;filter:drop-shadow(0 18px 20px rgba(0,0,0,.35))}
 .bg-odds{grid-area:odds}
 .bg-info{grid-area:info;display:grid;grid-template-columns:minmax(0,1fr) auto;gap:10px 22px;align-items:center}
-.bg-info > div:first-child{grid-row:span 2}
+.bg-info > div:first-child{grid-row:span 3}
 .bg-info .bg-cta{justify-content:flex-end}
 .bg-info .free-stock{justify-content:flex-end}
 .bg-row-h{display:flex;align-items:center;gap:7px;font-size:15px;font-weight:900;margin:18px 0 10px;color:#E0524F}
@@ -2455,7 +2460,7 @@ const BAGS = [FREE_BAG,
 // sacs d'événement : en vente seulement pendant l'événement ; toutes leurs billes ont le décor de l'événement et un de ses coloris
 BAGS.push({id:"pirate", event:"pirates", name:"Sac Pirate", desc:"3 billes, avec la chance d'y trouver des billes Pirate, chacune dans un des 5 coloris pirates. Seulement pendant l'événement « À l'abordage ! ». 2 fois plus de chances de shiny.",
   evFill:.12, evStar:.3,   // chances qu'une bille soit Pirate : 12 %, et 30 % pour la dernière ; le sac offert garantit la dernière (même chose dans serveur.sql)
-  price:800, n:3, color:"#2E2B36", tint:"#EADFC4", shiny:SHINY_RATE*2,
+  price:600, n:3, color:"#2E2B36", tint:"#EADFC4", shiny:SHINY_RATE*2,
   fam:FAMILIES.findIndex(F=>F.event==="pirates"), pals:EVENTS.pirates.palIdx,
   slots:[sizeOdds([60,32,8,0,0,0]),sizeOdds([40,35,18,6,1,0]),sizeOdds([20,28,24,17,8,3])]});
 // par bille en moyenne (pour les chances d'une bille précise), et « au moins une » de chaque taille dans un sac
@@ -4282,6 +4287,16 @@ function gamesReady(){
   if(!playedToday().tir[0]) out.unshift("Le Tir");
   return out;
 }
+// la bille active, en bas de la colonne de gauche : on la voit partout, on la change sans quitter la page
+function sideActive(){
+  const act = activeSpec(); if(!act) return "";
+  return `<div class="side-act" style="${tstyle(act.type)}"><small>Ta bille active</small>
+    <div class="sa-row"><button class="nav-arrow" data-action="active-step" data-dir="-1" aria-label="Bille précédente">${ic("chevl",14,2.5)}</button>
+      <button class="sa-ball" data-action="spec" data-id="${act.id}" aria-label="Voir ${esc(specName(act))}">${mImg(act,160,64,"")}</button>
+      <button class="nav-arrow" data-action="active-step" data-dir="1" aria-label="Bille suivante">${ic("chev",14,2.5)}</button></div>
+    <b>${esc(specName(act))}</b>${typePill(act.type)}
+    <button class="btn btn-blue btn-sm" data-action="nav" data-view="jeux">${ic("play",14)} Jouer</button></div>`;
+}
 function renderNav(){
   const cur = NAV_PARENT[ui.view] || ui.view, bags = freeStock()+giftCount(), games = gamesReady().length;
   document.getElementById("nav").innerHTML = NAV.map(n=>
@@ -4291,8 +4306,7 @@ function renderNav(){
       n[0]==="cour"&&courCount()?`<span class="cnt" aria-label="${courCount()} nouveauté${courCount()>1?"s":""} dans la cour">${courCount()}</span>`:""}</button>`
   ).join("") + (()=>{ const pc = passClaimable();
     return `<button class="nav-btn nav-apart" data-action="nav" data-view="passe" ${cur==="passe"?'aria-current="page"':""}>${ic("ticket")}<span>Passe de saison</span>${pc?`<span class="cnt gold" aria-label="${pc} récompense${pc>1?"s":""} à prendre">${pc}</span>`:""}</button>` })()
-    + `<p class="side-quote">Les plus grandes aventures commencent toujours par une petite bille.
-    <svg width="40" height="36" viewBox="0 0 40 36" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"><path d="M6 2c-4 12 2 24 26 28"/><path d="M26 24l6 6-8 3"/></svg></p>`;
+    + sideActive();
   const tab = (v,l,i,dot) => `<button class="tb" data-action="nav" data-view="${v}" ${cur===v?'aria-current="page"':""}>${ic(i,24)}${l}${dot?'<span class="dot"></span>':""}</button>`;
   document.getElementById("tabbar").innerHTML = tab("accueil","Accueil","home") + tab("collection","Boîte","layers")
     + `<button class="tab-bag" data-action="nav" data-view="sacs" ${cur==="sacs"?'aria-current="page"':""}><span class="bb">${bagSVG(FREE_BAG)}${bags?`<span class="n">${bags}</span>`:""}</span>Sacs</button>`
@@ -4739,12 +4753,6 @@ function viewHome(){
     </div>
   </div>
 
-  <section class="panel">
-    <div class="panel-head"><h2>Tes dernières trouvailles</h2><button class="see-all" data-action="to-collection">Toute ma boîte ${ic("chev",14)}</button></div>
-    <div class="hm-finds">${recent.map(s=>`<button class="m-card hm-f" data-action="spec" data-id="${s.id}"${unseen.has(s.id)?` data-unseen="${s.id}"`:""}>${unseen.has(s.id)?'<span class="new">Nouveau</span>':""}<span class="ball">${mImg(s,160,Math.round(58*scaleOf(s.type)+8))}</span><b>${esc(specName(s))}</b>${typePill(s.type)}</button>`).join("")}</div>
-  </section>
-
-  ${homeCour()}
 </div>`;
 }
 // l'accueil : ce qui t'attend dans la cour de récré (trocs, copains, enchères, classement)
@@ -4826,22 +4834,16 @@ function viewBags(){
     <div><h1>Ouvrir des sacs</h1><button class="btn btn-ghost btn-sm bg-how-btn" data-action="draw-how">${ic("book",16)} Comment chaque bille est tirée ?</button></div>
     <span class="hand-note">Ce sera laquelle, cette fois ?</span>
   </div>
-  <div class="bg-top"><div class="bg-shelves">
   <div class="bg-shelf" role="group" aria-label="Choisir un sac">${shelf.filter(x=>!x.event).map(pick).join("")}</div>
   ${evBags.length?`<h2 class="bg-row-h">${ic("flag",16)} Sacs d'événements</h2>
   <div class="bg-shelf ev" role="group" aria-label="Choisir un sac d'événement">${evBags.map(pick).join("")}</div>`:""}
-  </div>
-  <section class="panel pity" title="Si tu ouvres ${PITY} sacs d'affilée sans Boulet ni Mammouth, le ${PITY}ᵉ te donne au minimum un Boulet. Tous les sacs comptent.">
-    <span class="q-ic">${ic("shield",22)}</span>
-    <b>Garantie Boulet</b>
-    <p>${PITY-(S.pity||0)<=1?"Ton prochain sac contient forcément un Boulet ou un Mammouth !":`Un Boulet au plus tard dans <b>${PITY-(S.pity||0)} sac${PITY-(S.pity||0)>1?"s":""}</b>.`}</p>
-    <div class="q-prog"><div class="bar"><i style="width:${(S.pity||0)/PITY*100}%"></i></div><small>${S.pity||0} / ${PITY}</small></div>
-  </section></div>
   <div class="bg-stage">
     <div class="bg-info">
       <div><span class="sample-tag">${b.n} billes${b.guarantee?` · au moins un ${TYPES[b.guarantee].label}`:""}${free?" · toutes les 10 min":""}${b.event&&eventLive(EVENTS[b.event])?` · encore ${eventLeft(EVENTS[b.event])}`:""}</span><h2>${b.name}</h2><p>${b.desc}</p>
         ${b.event?`<p class="ev-rate">${ic("flag",14)} Bille Pirate : ${Math.round(b.evFill*100)} % par bille, ${Math.round(b.evStar*100)} % pour la vedette · au moins une dans ${Math.round(100*(1-Math.pow(1-b.evFill,b.n-1)*(1-b.evStar)))} % des sacs${S.bagInv[b.id]?` (ton sac offert en garantit une)`:""}</p><div class="ev-pals">${b.pals.map(pl=>`<span title="${esc(PALETTES[pl][0])}">${mImg({seed:hash("evp"+pl),type:"calot",family:b.fam,pal:pl,shiny:0},80,34,"")}</span>`).join("")}</div>`:""}</div>
       <div class="bg-cta">${cta}</div>
+      ${(()=>{ const left = PITY-(S.pity||0);
+        return `<button class="pity-line${left<=3?" hot":""}" data-action="draw-how" title="Si tu ouvres ${PITY} sacs d'affilée sans Boulet ni Mammouth, le ${PITY}ᵉ te donne au minimum un Boulet.">${ic("shield",14)}<span>${left<=1?"Boulet garanti dans ce sac !":`Boulet garanti dans ${left} sacs au plus`}</span><i class="pl-bar"><i style="width:${(S.pity||0)/PITY*100}%"></i></i></button>` })()}
       ${free?`<div class="free-stock">${stackPips()}<span>${st} / ${FREE_MAX} en stock · ${freeFull()?"stock plein":`prochain dans <span class="timer" data-free-timer>${freeLeft()}</span>`}</span></div>`:""}
     </div>
     <div class="bg-show" style="--bag-tint:${b.tint};--bc:${b.color}">${bagSVG(b,{loose:true})}</div>
@@ -4996,7 +4998,7 @@ function viewCollection(){
     ["new","Nouveautés","star",x=>unseenIds.has(x.id)],
     ["dups","Doublons","layers",x=>dupKeys.has(colorKey(x))],
     ["shiny","Shiny",null,x=>x.shiny],
-    ["season","Saison","ticket",isSeason],
+    ["season","Passe de saison","ticket",isSeason],
     ["event","Événement","flag",x=>!!eventOf(x)],
     ["secret","Secrètes","lock",x=>x.secret],
   ];
@@ -7933,11 +7935,11 @@ document.addEventListener("click", e=>{
       break;
     }
     case "missing": toast(`${TYPES[t.dataset.type].label} ${FAMILIES[+t.dataset.fam].name} : pas encore trouvée. Elle se cache peut-être dans ton prochain sac !`); break;
-    case "set-active": S.active=t.dataset.id; save(); renderTop(); closeModal(); renderView(); toast(`${specName(activeSpec())} jouera au Tir.`); break;
+    case "set-active": S.active=t.dataset.id; save(); renderTop(); renderNav(); closeModal(); renderView(); toast(`${specName(activeSpec())} jouera au Tir.`); break;
     case "close-modal": closeModal(); break;
     case "active-step": {
       const list=[...S.specs].sort(tierSort); const i=list.findIndex(s=>s.id===S.active);
-      S.active=list[(i+ +t.dataset.dir+list.length)%list.length].id; save(); renderTop(); renderView(); break;
+      S.active=list[(i+ +t.dataset.dir+list.length)%list.length].id; save(); renderTop(); renderNav(); renderView(); break;
     }
     case "open-free": openDay(false); openBag("gratuit"); break;
     case "bag-pick": ui.bag = t.dataset.bag; renderView(); break;

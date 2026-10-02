@@ -6298,7 +6298,8 @@ function mvBg(s){
   if(extraFam(s.family)) return {k:3, c:PALETTES[s.pal][2]};
   return {k:F.rar, c:DECOR_RAR[F.rar].c};
 }
-function openModal(id, pv){
+// reveal : ouverte depuis l'ouverture d'un sachet (ou une fusion) : on regarde la bille, le seul bouton est « Coloris de la case »
+function openModal(id, pv, reveal=false){
   const s = pv || specById(id); if(!s) return;
   // on n'enregistre (et n'envoie en ligne) que si la bille était encore marquée « Nouveau »
   if(!pv && S.unseen.includes(id)){ S.unseen = S.unseen.filter(x=>x!==id); save(); }
@@ -6346,6 +6347,9 @@ function openModal(id, pv){
       ${S.active!==s.id && s.shiny?`<p class="warn-note">Attention, c'est une shiny !</p>`:""}`}
     </div>
   </div>`;
+  if(reveal){
+    el.querySelectorAll(".modal-actions button:not([data-action='sheet']), .siblings, .modal-visual .hint, .warn-note, .modal-body > .meta").forEach(x=>x.remove());
+  }
   el.hidden = false;
   liveStart(el, document.getElementById("live-slot"), s);
   el.querySelector(".close-x").focus();
@@ -6756,7 +6760,7 @@ function rollOut(){
 function reveal(i){
   if(!ovState) return;
   // déjà découverte : on l'ouvre en grand, par-dessus l'ouverture
-  if(ovState.opened.has(i)){ const s=ovState.results[i].s; if(specById(s.id)) openModal(s.id); return }
+  if(ovState.opened.has(i)){ const s=ovState.results[i].s; if(specById(s.id)) openModal(s.id, null, true); return }
   ovState.opened.add(i);
   const el = document.querySelector(`.slot[data-i="${i}"]`);
   el._roll?.forEach(a=>{ try{ a.finish() }catch(e){} }); el._roll = null;
@@ -10531,7 +10535,7 @@ document.addEventListener("click", e=>{
     case "lab-open": labOpen(); break;
     case "lab-pick": labOpen(+t.dataset.c, t.dataset.v ?? null); break;
     case "bille-odds": billeOdds(t.dataset.from); break;
-    case "zoom": if(specById(t.dataset.id)) openModal(t.dataset.id); break;
+    case "zoom": if(specById(t.dataset.id)) openModal(t.dataset.id, null, true); break;
     case "a-restart": initArena(ui.view); break;
     case "c-restart": initCasse(); break;
     case "gc-pickopen": gcPickOpen(); break;

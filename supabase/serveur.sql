@@ -141,7 +141,7 @@ language sql immutable as $$
     ('classique', 300, 5, null,      0.0010, array[[70,30,0,0,0,0],[50,38,12,0,0,0],[35,40,20,5,0,0],[20,35,30,13,2,0],[10,25,30,20,12,3]]::numeric[]),
     ('premium',   600, 5, 3,         0.0020, array[[0,80,20,0,0,0],[0,60,35,5,0,0],[0,40,45,15,0,0],[0,0,55,38,7,0],[0,0,0,60,34,6]]::numeric[]),
     ('collector',1500, 5, 4,         0.0050, array[[0,0,85,15,0,0],[0,0,65,35,0,0],[0,0,40,50,10,0],[0,0,0,60,38,2],[0,0,0,0,87,13]]::numeric[]),
-    -- Sac Pirate (2 octobre 2026) : 5 billes, toutes Pirate (voir ouvrir_sac), tailles un peu plus grosses
+    -- Sac Pirate (2 octobre 2026) : 5 billes, 60 % Pirate et la dernière toujours Pirate (voir ouvrir_sac), tailles un peu plus grosses
     ('pirate',    400, 5, null,      0.0020, array[[40,35,18,7,0,0],[30,32,22,12,4,0],[20,28,26,16,8,2],[10,22,26,22,15,5],[0,5,20,30,30,15]]::numeric[]),
     -- Sac Pirate Premium (2 octobre 2026) : tailles du Classique, 15 % de Pirate par bille et 35 % pour la dernière (voir ouvrir_sac)
     ('pirate-premium', 1000, 5, null, 0.0020, array[[70,30,0,0,0,0],[50,38,12,0,0,0],[35,40,20,5,0,0],[20,35,30,13,2,0],[10,25,30,20,12,3]]::numeric[])

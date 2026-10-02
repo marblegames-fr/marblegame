@@ -688,15 +688,15 @@ create or replace function interne.scores() returns table (joueur uuid, total in
     where detruite_le is null and origine = 'serveur' and secrete is null and coalesce(donnees->>'src', '') <> 'test'
       and coalesce((interne.decor_rarete())[decor+1], 5) < 5),   -- les décors d'événement ne comptent pas
   k as (   -- les cases
-    select j, t, d, count(distinct c)::int nc, count(distinct c) filter (where c < interne.coloris_base())::int nb,
+    select j, t, d, count(distinct c)::int nc, count(distinct c) filter (where interne.coloris_normal(c))::int nb,
       (interne.pts_taille())[t+1] pt, (interne.mult_decor())[(interne.decor_rarete())[d+1]+1] m
     from b group by j, t, d),
   -- les shiny du passe de saison (coloris de saison) ne comptent pas
-  sh as (select j, sum((interne.pts_shiny())[sh])::int p from (select distinct j, t, d, c, sh from b where sh > 0 and c < interne.coloris_base()) x group by j),
+  sh as (select j, sum((interne.pts_shiny())[sh])::int p from (select distinct j, t, d, c, sh from b where sh > 0 and interne.coloris_normal(c)) x group by j),
   sd as (select j, sum(round(200 * m))::int p, count(*)::int n from (select j, d, max(m) m from k group by j, d having count(*) = 6) x group by j),
   st as (select j, sum(20 * pt)::int p, count(*)::int n from (select j, t, max(pt) pt from k group by j, t
            having count(*) = (select count(*) from unnest(interne.decor_rarete()) x where x < 5)) x group by j),
-  sc as (select j, sum(20 * pt)::int p, count(*)::int n from k where nb >= interne.coloris_base() group by j),
+  sc as (select j, sum(20 * pt)::int p, count(*)::int n from k where nb >= interne.nb_coloris() group by j),
   -- séries à thème : toutes les cases de la série trouvées ; « Les grands formats » dès qu'un décor est dans les 6 tailles
   se as (select p.j, sum(d.pts)::int p, count(*)::int n from (select distinct j from b) p
            cross join (select distinct serie, pts from interne.series()) d

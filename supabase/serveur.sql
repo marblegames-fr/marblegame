@@ -116,11 +116,15 @@ $$ select array_position(interne.tailles(), t) - 1 $$;   -- 0 (Mini) à 5 (Mammo
 
 -- rareté de chaque décor (dans l'ordre de FAMILIES) et poids de chaque rareté
 create or replace function interne.decor_rarete() returns int[] language sql immutable as
-$$ select array[0,0,4,2,0,1,0,1,2,3,3,0,2,1,3,0,1,3,2,2,0,0,1,1,0,1,3,3,1,2,4,2, 5, 3,4, 5,5,5,5,5,5,5,5,5,5,5,5] $$;   -- 32 : Pirate (événement, 5 = jamais dans les sacs) ; 33 Vitrail ; 34 Trou noir ; 35 à 46 : décors de saison (passe seulement)
+$$ select array[0,0,4,2,0,1,0,1,2,3,3,0,2,1,3,0,1,3,2,2,0,0,1,1,0,1,3,3,1,2,4,2, 5, 3,4, 5,5,5,5,5,5,5,5,5,5,5,5, 5] $$;   -- 32 : Pirate (événement, 5 = jamais dans les sacs) ; 33 Vitrail ; 34 Trou noir ; 35 à 46 : décors de saison (passe seulement) ; 47 : Bêta
 create or replace function interne.poids_rarete() returns numeric[] language sql immutable as
 $$ select array[10,5,2.5,0.8,0.2,0]::numeric[] $$;   -- la 6e : décors d'événement, jamais tirés
 
 create or replace function interne.coloris_base() returns int language sql immutable as $$ select 48 $$;
+-- La bêta : tant qu'elle dure, chaque joueur peut réclamer une bille Bêta de chaque taille (décor 47, coloris 70 : BETA dans index.html).
+-- Elles sont rangées avec les billes secrètes (secrete = 'beta') : ni troc, ni marché, ni recyclage, ni classement.
+-- supabase/reset.sql les garde. Au lancement : remplacer true par false (et BETA.open:false dans index.html).
+create or replace function interne.beta_ouverte() returns boolean language sql immutable as $$ select true $$;
 create or replace function interne.taux_shiny() returns numeric language sql immutable as $$ select 0.0001::numeric $$;
 create or replace function interne.revente() returns int[] language sql immutable as $$ select array[5,8,20,50,150,600] $$;
 create or replace function interne.prime_shiny() returns int[] language sql immutable as $$ select array[2000,5000,15000] $$;
@@ -387,7 +391,8 @@ begin
       if montant <> 0 or sac is distinct from 'classique' then raise exception 'montant_invalide'; end if;
       k := today;
     when 'jeu' then     -- une récompense par jour et par jeu (au Tir : par trou)
-      maxi := case when cle ~ '^tir\|[0-5]$' then 100 when cle = 'pot' then 100 when cle = 'chateau' then 120 when cle = 'casse' then 100 end;
+      maxi := case when cle ~ '^tir\|[0-5]$' then 100 when cle = 'pot' then 100 when cle = 'chateau' then 120 when cle = 'casse' then 100
+                   when cle in ('course','tic') then 100 end;   -- Course et Tic : une partie par jour, sans mise (DAY_GAMES dans index.html)
       if maxi is null or montant > maxi or sac is not null then raise exception 'montant_invalide'; end if;
       k := today || '|' || cle;
     when 'succes' then
@@ -446,12 +451,20 @@ begin
       -- une seule à la fois : si elle a été retirée (outil de test), on peut la retrouver
       if exists (select 1 from billes where proprietaire = qui and secrete = cle and detruite_le is null) then raise exception 'deja'; end if;
       b := interne.nouvelle_bille(qui, t, m, c, sh, cle, graine, bid => bid, src => 'secrete');
+    when 'beta' then      -- cle : la taille ; une de chaque par joueur, seulement pendant la bêta
+      if not interne.beta_ouverte() then raise exception 'beta_finie'; end if;
+      if cle is null or not cle = any(interne.tailles()) then raise exception 'montant_invalide'; end if;
+      perform 1 from portefeuilles where joueur = qui for update;
+      if exists (select 1 from billes where proprietaire = qui and secrete = 'beta' and taille = cle and origine = 'serveur' and detruite_le is null)
+        then raise exception 'deja'; end if;
+      b := interne.nouvelle_bille(qui, cle, 47, 70, 0, 'beta', graine, jsonb_build_object('ed', 'Bêta 2026'), bid, 'beta');
     else raise exception 'source_inconnue';
   end case;
   return jsonb_build_object('eco', interne.etat(qui), 'bille', b);
 end $$;
 
 -- Jeux à plusieurs : la mise part tout de suite, le gain est plafonné (et limité à +2 000 par jour)
+-- (plus utilisé par le jeu depuis octobre 2026 : Course et Tic passent par gagner('jeu'). Gardé pour les anciennes pages encore ouvertes.)
 create or replace function public.miser(jeu text, montant int)
 returns jsonb language plpgsql security definer set search_path = public as $$
 declare qui uuid := interne.moi(); mid bigint;

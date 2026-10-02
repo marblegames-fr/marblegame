@@ -5,7 +5,7 @@
 --  de TOUS les joueurs sont effacés.
 --
 --  Par défaut, les comptes (e-mail, mot de passe, pseudo) sont GARDÉS : chacun se reconnecte
---  et repart de zéro, avec les billes de départ.
+--  et repart de zéro, avec les billes de départ… et ses billes Bêta, qui restent (promis aux testeurs).
 --  Pour supprimer aussi les comptes, enlève les deux tirets devant la dernière ligne.
 -- =====================================================================
 
@@ -15,8 +15,10 @@ begin;
 truncate table public.offres, public.annonces, public.trocs, public.demandes_amis, public.amis restart identity cascade;
 -- l'économie
 truncate table public.gains, public.mises, public.portefeuilles restart identity;
--- les billes (et leur historique) : les numéros de série repartent de 1
-truncate table public.billes_historique, public.billes restart identity cascade;
+-- les billes (et leur historique), SAUF les billes Bêta données par le serveur pendant la bêta
+delete from public.billes_historique h using public.billes b
+  where h.bille = b.id and not (b.secrete = 'beta' and b.origine = 'serveur' and b.detruite_le is null);
+delete from public.billes where not (secrete = 'beta' and origine = 'serveur' and detruite_le is null);
 -- les parties sauvegardées (titres, succès, passe, quêtes…)
 truncate table public.sauvegardes;
 
@@ -25,5 +27,5 @@ commit;
 -- les testeurs gardent leurs outils ; pour les retirer aussi :
 -- truncate table public.testeurs;
 
--- supprimer aussi tous les comptes (les joueurs devront se réinscrire) :
+-- supprimer aussi tous les comptes (les joueurs devront se réinscrire, ET ILS PERDRONT LEURS BILLES BÊTA) :
 -- delete from auth.users;

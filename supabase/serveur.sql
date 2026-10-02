@@ -38,7 +38,7 @@ alter table public.billes add column if not exists edition int;
 -- security definer : le compte doit voir toutes les billes du monde, pas seulement celles du joueur
 create or replace function interne.numeroter_edition() returns trigger language plpgsql security definer set search_path = public as $$
 begin
-  if new.coloris < 48 then   -- les billes de saison et secrètes n'ont pas d'édition
+  if interne.coloris_normal(new.coloris) then   -- les billes de saison et secrètes n'ont pas d'édition
     perform pg_advisory_xact_lock(hashtext('edition|' || new.taille || '|' || new.decor || '|' || new.coloris));
     select count(*) + 1 into new.edition from public.billes b
       where b.taille = new.taille and b.decor = new.decor and b.coloris = new.coloris;
@@ -120,7 +120,12 @@ $$ select array[0,0,4,2,0,1,0,1,2,3,3,0,2,1,3,0,1,3,2,2,0,0,1,1,0,1,3,3,1,2,4,2,
 create or replace function interne.poids_rarete() returns numeric[] language sql immutable as
 $$ select array[10,5,2.5,0.8,0.2,0]::numeric[] $$;   -- la 6e : décors d'événement, jamais tirés
 
-create or replace function interne.coloris_base() returns int language sql immutable as $$ select 48 $$;
+create or replace function interne.coloris_base() returns int language sql immutable as $$ select 48 $$;   -- les coloris de saison commencent à 48
+-- Les coloris qu'on tire dans les sachets : les 48 d'origine, puis ceux inventés par les joueurs (2 octobre 2026 : 76 Zède, 77 uwu).
+-- Mêmes numéros que PLAYER_PALS dans index.html. Un coloris « normal » compte dans l'album, les cases, l'édition, le recyclage et la fusion.
+create or replace function interne.coloris_tirables() returns int[] language sql immutable as $$ select array(select generate_series(0, 47)) || array[76, 77] $$;
+create or replace function interne.coloris_normal(c int) returns boolean language sql immutable as $$ select c < 48 or c = any(array[76, 77]) $$;
+create or replace function interne.nb_coloris() returns int language sql immutable as $$ select 50 $$;
 -- La bêta : tant qu'elle dure, chaque joueur peut réclamer une bille Bêta de chaque taille (décor 47, coloris 70 + rang de la taille :
 -- Rubis, Émeraude, Saphir, Améthyste, Onyx, Diamant ; BETA dans index.html).
 -- Elles sont rangées avec les billes secrètes (secrete = 'beta') : ni troc, ni marché, ni recyclage, ni classement.
@@ -209,7 +214,7 @@ create or replace function interne.nouvelle_bille(qui uuid, taille text, decor i
   shiny int default 0, secrete text default null, graine bigint default null, extra jsonb default '{}', bid uuid default null, src text default null)
 returns jsonb language plpgsql volatile as $$
 declare d int := coalesce(decor, interne.tirer_decor());
-        c int := coalesce(coloris, floor(random()*interne.coloris_base())::int);
+        c int := coalesce(coloris, (interne.coloris_tirables())[1 + floor(random()*array_length(interne.coloris_tirables(), 1))::int]);
         s bigint := coalesce(graine, floor(random()*4294967296)::bigint);
         don jsonb; r record;
 begin
@@ -331,7 +336,7 @@ begin
   perform 1 from portefeuilles where joueur = qui for update;
   for b in select * from billes where id = any(ids) and proprietaire = qui and detruite_le is null and secrete is null for update loop
     if b.origine = 'serveur' then
-      total := total + case when b.shiny > 0 and b.coloris < interne.coloris_base()
+      total := total + case when b.shiny > 0 and interne.coloris_normal(b.coloris)
         then (interne.revente())[interne.rang(b.taille)+1] * 10 + (interne.prime_shiny())[b.shiny]
         else (interne.revente())[interne.rang(b.taille)+1] end;
     end if;
@@ -350,7 +355,7 @@ declare qui uuid := interne.moi(); tailles text[]; rg int; nb int; b record;
 begin
   select array_agg(distinct taille), count(*) into tailles, nb from billes
     where id = any(ids) and proprietaire = qui and detruite_le is null and secrete is null
-      and shiny = 0 and coloris < interne.coloris_base() and origine = 'serveur';
+      and shiny = 0 and interne.coloris_normal(coloris) and origine = 'serveur';
   if tailles is null or array_length(tailles,1) <> 1 then raise exception 'fusion_invalide'; end if;
   rg := interne.rang(tailles[1]);
   if rg >= 5 or nb <> (interne.fusion_n())[rg+1] or nb <> array_length(ids,1) then raise exception 'fusion_invalide'; end if;

@@ -2815,7 +2815,7 @@ const PALETTES = [
   ["Sucre d'orge","#E63946","#FFFFFF","#F4A3A8","#FFE8EA"],["Lilas","#B39DDB","#FFF176","#7E57C2","#F3EEFB"],
   ["Toucan","#1A1A1A","#FF7F11","#FFD23F","#FFF1DC"],["Sauge","#7D8F69","#B5C4A1","#E8E2D0","#EEF2E8"],
 ];
-const BASE_PALS = PALETTES.length;   // coloris qu'on peut tirer dans les sachets
+const SEASON_PAL0 = PALETTES.length;   // 48 : les coloris de saison commencent ici (puis secrètes, événements, bêta)
 // Une saison par mois (0 = janvier) : un décor en édition limitée et son coloris, seulement dans le passe (fam : un décor de saison)
 const SEASONS = [
   {name:"Givre",            fam:35, pal:["Givre","#3F6FB8","#DCEBFF","#FFFFFF","#EEF5FF"]},
@@ -2832,7 +2832,7 @@ const SEASONS = [
   {name:"Flocon",           fam:46, pal:["Flocon","#9E1030","#FFFFFF","#2F8F45","#FBEAEA"]},
 ];
 SEASONS.forEach(s=>PALETTES.push(s.pal));
-const isSeason = s => s.pal>=BASE_PALS && s.pal<BASE_PALS+SEASONS.length;
+const isSeason = s => s.pal>=SEASON_PAL0 && s.pal<SEASON_PAL0+SEASONS.length;
 // Billes secrètes : une seule par joueur, cachées un peu partout dans Billy
 const SECRETS = {
   folle:   {name:"La Folle", type:"calot", family:1, shiny:1, pal:["Folle","#FF2E88","#2EE6FF","#FFE600","#FFE3F2"],
@@ -2873,6 +2873,17 @@ const BETA = {fam:47, open:true, ed:"Bêta 2026", pals:[
   ["Diamant","#A9D2F0","#F7FCFF","#FFC94A","#FFFFFF"],
 ].map(P=>PALETTES.push(P)-1)};
 BETA.palOf = t => BETA.pals[TK.indexOf(t)];
+// Les coloris inventés par les joueurs (2 octobre 2026) : Zède et uwu. Ce sont des coloris normaux (sachets, album, cases),
+// mais leurs numéros viennent après tous les autres (76, 77…) : un numéro de coloris ne change jamais, il est enregistré dans chaque bille.
+// Même liste dans supabase/serveur.sql (interne.coloris_tirables).
+const PLAYER_PALS = [
+  ["Zède","#156115","#1DD10D","#000000","#DFF8D8"],
+  ["uwu","#C10BA9","#FFFFFF","#F99AEC","#FFFFFF"],
+].map(P=>PALETTES.push(P)-1);
+// les coloris qu'on peut tirer : les 48 d'origine et ceux des joueurs
+const BASE_PAL_IDS = [...Array(SEASON_PAL0).keys(), ...PLAYER_PALS], BASE_PALS = BASE_PAL_IDS.length, BASE_SET = new Set(BASE_PAL_IDS);
+const isBasePal = p => BASE_SET.has(p);
+const randPal = r => BASE_PAL_IDS[Math.floor(r*BASE_PALS)];
 const isBeta = s => s?.secret==="beta";
 const eventOf = s => FAMILIES[s.family]?.event ? EVENTS[FAMILIES[s.family].event] : null;
 const eventLive = E => !!E && Date.now()>=E.start && Date.now()<=E.end;
@@ -3213,7 +3224,7 @@ function makeSpec(type, o={}){
   const r = rng(seed);
   return {id: newId(), seed, type,
     family: o.family ?? pickW(r(), FAM_W),
-    pal: o.pal ?? Math.floor(r()*BASE_PALS),
+    pal: o.pal ?? randPal(r()),
     shiny: o.shiny ?? 0, at: o.at ?? Date.now(), ...(o.src ? {src:o.src} : {})};
 }
 const specName = s => s.loan ? "Bille prêtée" : s.secret && SECRETS[s.secret] ? SECRETS[s.secret].name : FAMILIES[s.family].season!=null ? FAMILIES[s.family].name : `${FAMILIES[s.family].name} ${PALETTES[s.pal][0]}`;   // un décor de saison n'existe qu'en un coloris : son nom suffit
@@ -4232,8 +4243,8 @@ const TOTAL_SLOTS = TK.length*N_DECORS;              // cases de l'album : une p
 // Chaque case se remplit coloris par coloris : l'album compte toutes les billes différentes (taille × décor × coloris)
 const colorKey = s => s.type+"|"+s.family+"|"+s.pal;
 const ALBUM_TOTAL = TOTAL_SLOTS*BASE_PALS;
-function albumFound(list=S.specs){ const set=new Set(); list.forEach(s=>{ if(s.pal<BASE_PALS) set.add(colorKey(s)) }); return set }
-const casePals = list => new Set(list.filter(x=>x.pal<BASE_PALS).map(x=>x.pal)).size;
+function albumFound(list=S.specs){ const set=new Set(); list.forEach(s=>{ if(isBasePal(s.pal)) set.add(colorKey(s)) }); return set }
+const casePals = list => new Set(list.filter(x=>isBasePal(x.pal)).map(x=>x.pal)).size;
 // bille affichée sur la case : celle que tu as choisie, sinon ta shiny, sinon la dernière trouvée
 function coverOf(list){ const pin=(S.cover||{})[slotKey(list[0])]; return list.find(x=>x.id===pin) || [...list].sort(tierSort)[0] }
 // Sachets gratuits en stock : un nouveau toutes les 10 minutes, jusqu'à FREE_MAX d'avance
@@ -4359,7 +4370,7 @@ const trocSummary = (get, give, getB, giveB) => { const side = (lbl, l, n) => `<
 function partWarn(s){
   const w = [];
   if(s.shiny) w.push("Attention, c'est une shiny !");
-  if(s.pal<BASE_PALS && S.specs.filter(x=>colorKey(x)===colorKey(s)).length<=1) w.push("C'est ton seul exemplaire : elle quittera ton album.");
+  if(isBasePal(s.pal) && S.specs.filter(x=>colorKey(x)===colorKey(s)).length<=1) w.push("C'est ton seul exemplaire : elle quittera ton album.");
   return w.map(x=>`<span class="warn-note">${x}</span>`).join("");
 }
 
@@ -4371,7 +4382,7 @@ const SPARK = `<svg viewBox="0 0 12 12" aria-hidden="true"><path d="M6 0c.4 3 1.
 const rarTag = f => { const R=DECOR_RAR[FAMILIES[f].rar]; return `<span class="rar" style="--rar:${R.c}"><i></i>${R.name}</span>` };
 // probabilité d'obtenir exactement ce format + décor + coloris (+ shiny) sur une bille d'un sachet
 function chanceOf(s, bag=FREE_BAG){
-  if(s.pal>=BASE_PALS) return 0;   // saison ou secrète : ne se tire pas dans les sachets
+  if(!isBasePal(s.pal)) return 0;   // saison ou secrète : ne se tire pas dans les sachets
   const tt = TK.reduce((a,k)=>a+bag.odds[k],0), fw = FAM_W.reduce((a,b)=>a+b,0), sw = SHINIES.slice(1).reduce((a,x)=>a+x.w,0);
   const p = bag.odds[s.type]/tt * FAM_W[s.family]/fw / BASE_PALS;
   return p * (s.shiny ? bag.shiny*SHINIES[s.shiny].w/sw : 1-bag.shiny);
@@ -4513,7 +4524,7 @@ const PITY = 10;   // un Boulet au minimum (parfois un Mammouth) au plus tard to
 // En démo on le simule à partir de sa rareté et d'un rythme mondial de sachets ouverts (un vrai registre demandera un serveur).
 const WORLD_START = Date.UTC(2026,8,1), WORLD_BAGS_H = 1500;
 function editionOf(s){
-  if(s.pal>=BASE_PALS) return 0;
+  if(!isBasePal(s.pal)) return 0;
   if(s.edn) return s.edn;             // la vraie : la combientième de ce modèle trouvée dans le monde (donnée par la base)
   if(sync.on) return 0;               // avec un compte, pas d'estimation : on attend le vrai numéro
   const bags = Math.max(0,(s.at-WORLD_START)/3600000)*WORLD_BAGS_H;
@@ -4595,9 +4606,9 @@ const CHALLENGES = [
   {id:"full", cat:"album", icon:"trophy", title:"Album bien rempli", desc:`Commence 170 des ${TOTAL_SLOTS} cases de l'album (une taille et un décor).`, goal:170, prog:()=>slotsOwned(SC()).size, rew:{j:3000, bag:"collector"}},
   {id:"t-caid", cat:"album", icon:"layers", title:"Caïd des billes", desc:"Possède 100 billes en même temps.", goal:100, prog:()=>SC().length, rew:{j:700, title:"Caïd des billes"}},
   // --- les coloris
-  {id:"pal10", cat:"coloris", icon:"book", title:"Nuancier", desc:"Un même décor dans 10 coloris différents.", goal:10, prog:()=>Math.max(0,...FAMILIES.map((_,f)=>new Set(SC().filter(s=>s.family===f&&s.pal<BASE_PALS).map(s=>s.pal)).size)), rew:{j:400}},
-  {id:"pal24", cat:"coloris", icon:"book", title:"Grand nuancier", desc:"Un même décor dans 24 coloris différents.", goal:24, prog:()=>Math.max(0,...FAMILIES.map((_,f)=>new Set(SC().filter(s=>s.family===f&&s.pal<BASE_PALS).map(s=>s.pal)).size)), rew:{j:900}},
-  {id:"allpals", cat:"coloris", icon:"book", title:"Boîte de peinture", desc:`Trouve les ${BASE_PALS} coloris, tous décors et tailles confondus.`, goal:BASE_PALS, prog:()=>new Set(SC().filter(s=>s.pal<BASE_PALS).map(s=>s.pal)).size, rew:{j:500, title:"Peintre en billes"}},
+  {id:"pal10", cat:"coloris", icon:"book", title:"Nuancier", desc:"Un même décor dans 10 coloris différents.", goal:10, prog:()=>Math.max(0,...FAMILIES.map((_,f)=>new Set(SC().filter(s=>s.family===f&&isBasePal(s.pal)).map(s=>s.pal)).size)), rew:{j:400}},
+  {id:"pal24", cat:"coloris", icon:"book", title:"Grand nuancier", desc:"Un même décor dans 24 coloris différents.", goal:24, prog:()=>Math.max(0,...FAMILIES.map((_,f)=>new Set(SC().filter(s=>s.family===f&&isBasePal(s.pal)).map(s=>s.pal)).size)), rew:{j:900}},
+  {id:"allpals", cat:"coloris", icon:"book", title:"Boîte de peinture", desc:`Trouve les ${BASE_PALS} coloris, tous décors et tailles confondus.`, goal:BASE_PALS, prog:()=>new Set(SC().filter(s=>isBasePal(s.pal)).map(s=>s.pal)).size, rew:{j:500, title:"Peintre en billes"}},
   {id:"case1", cat:"coloris", icon:"star", title:"Case complète", desc:`Une case dans les ${BASE_PALS} coloris.`, goal:1, prog:()=>[...slotsOwned(SC()).values()].filter(l=>casePals(l)===BASE_PALS).length, rew:{j:1500, bag:"collector", title:"Nuancier vivant"}},
   {id:"case5", cat:"coloris", icon:"star", title:"Cinq cases complètes", desc:`Cinq cases dans les ${BASE_PALS} coloris.`, goal:5, prog:()=>[...slotsOwned(SC()).values()].filter(l=>casePals(l)===BASE_PALS).length, rew:{j:4000, bag:"collector"}},
   // --- les tailles : des décors différents dans chaque format, et les grosses billes
@@ -4699,7 +4710,7 @@ function fakeFind(at=Date.now()){
   const r = Math.random;
   const t = r()<.12 ? "mammouth" : r()<.3 ? "boulet" : TK[Math.floor(r()*3)];
   const fams = DECOR_IDS.filter(i=>FAMILIES[i].rar>=2);
-  const s = {seed:randU32(), type:t, family:fams[Math.floor(r()*fams.length)], pal:Math.floor(r()*BASE_PALS), shiny:r()<.12?rollShiny():0, at};
+  const s = {seed:randU32(), type:t, family:fams[Math.floor(r()*fams.length)], pal:randPal(r()), shiny:r()<.12?rollShiny():0, at};
   return {who:FEED_NAMES[Math.floor(r()*FEED_NAMES.length)], s, at};
 }
 function logFind(s){ S.log.unshift({who:S.name, me:true, s:{seed:s.seed,type:s.type,family:s.family,pal:s.pal,shiny:s.shiny,at:s.at}, at:s.at}); S.log = S.log.slice(0,12) }
@@ -4770,7 +4781,7 @@ function seasonSeen(m){
 }
 function seasonNow(d=new Date()){
   const m = d.getMonth(), y = d.getFullYear(), def = SEASONS[m];
-  return {id:`${y}-${m+1}`, m, y, def, pal:BASE_PALS+m, end:new Date(y,m+1,1).getTime(), label:`${def.name} ${y}`,
+  return {id:`${y}-${m+1}`, m, y, def, pal:SEASON_PAL0+m, end:new Date(y,m+1,1).getTime(), label:`${def.name} ${y}`,
     month:d.toLocaleDateString("fr-FR",{month:"long",year:"numeric"})};
 }
 // la saison d'un passe à partir de son identifiant (« 2026-9 »)
@@ -5882,7 +5893,7 @@ const craftShiny = t => SHINY_RATE*craftN(t);   // les chances de shiny des bill
 const RAR_F  = TK.map(t=>TYPES[t].label);
 const RAR_PL = TK.map(t=>TYPES[t].pl);
 // billes qu'on peut fusionner : jamais les shiny, la bille active, la vitrine ni les billes de saison
-const craftPool = t => S.specs.filter(s=>tierOf(s)===t && !s.shiny && !s.secret && s.id!==S.active && !S.vitrine.includes(s.id) && s.pal<BASE_PALS && (!srvOn() || s.srv));
+const craftPool = t => S.specs.filter(s=>tierOf(s)===t && !s.shiny && !s.secret && s.id!==S.active && !S.vitrine.includes(s.id) && isBasePal(s.pal) && (!srvOn() || s.srv));
 const slotCounts = () => { const c={}; S.specs.forEach(s=>{ const k=colorKey(s); c[k]=(c[k]||0)+1 }); return c };   // exemplaires de chaque bille (doubles stricts)
 // la taille au-dessus ; le décor et le coloris sont tirés au hasard avec leurs chances habituelles
 function craftResult(T){
@@ -6249,7 +6260,7 @@ function viewPedia(){
       const g = {seed:hash("pedia"+f+t), type:t, family:f, pal:PEDIA_PAL, shiny:0};
       return `<button class="missing" data-action="preview" data-k="${pv(g)}" aria-label="${TYPES[t].label} : pas encore trouvé">${mImg(g,120,px,"")}<small>${SHORT[t]}</small></button>`;
     }).join("");
-    const cols = new Set(mine.filter(x=>x.pal<BASE_PALS).map(x=>x.pal)).size;
+    const cols = new Set(mine.filter(x=>isBasePal(x.pal)).map(x=>x.pal)).size;
     return `<section class="panel fam-card" style="--dc:${dc}">
       <div class="fam-top">${hero}<div><h3>${F.name}</h3><span class="dec-pill">${DECOR_RAR[F.rar].name}</span><span class="fam-odds">${oneIn(FAM_W[f]/fw)} billes</span></div></div>
       <p>${F.desc}</p>
@@ -6263,7 +6274,7 @@ function viewPedia(){
   // les 6 tailles dans le même décor et le même coloris (Azur) : seule la taille change
   const fmts = TK.map((t,j)=>{ const s={seed:hash("pedia-fmt"+t), type:t, family:0, pal:PEDIA_PAL, shiny:0}, i=pv(s);
     return `<button class="sh-tile" data-action="preview" data-k="${i}" style="${tstyle(t)}">${mImg(s,200,Math.round(92*scaleOf(t)+10))}${typePill(t,true)}<small>${TYPES[t].mm} mm</small></button>` }).join("");
-  const pals = PALETTES.slice(0,BASE_PALS).map(P=>`<div class="pal"><span>${[P[1],P[2],P[3]].map(c=>`<i style="background:${c}"></i>`).join("")}</span>${P[0]}</div>`).join("");
+  const pals = BASE_PAL_IDS.map(p=>PALETTES[p]).map(P=>`<div class="pal"><span>${[P[1],P[2],P[3]].map(c=>`<i style="background:${c}"></i>`).join("")}</span>${P[0]}</div>`).join("");
   const combos = TK.length*N_DECORS*BASE_PALS;
   const events = EVENT_FAMS.map(f=>{ const F=FAMILIES[f], E=EVENTS[F.event];
     const tiles = E.palIdx.map((pal,j)=>{ const x={seed:hash("event"+f+j), type:"calot", family:f, pal, shiny:0}, i=pv({...x, cour:`Décor d'événement · ${E.name}. ${eventLive(E)?`Dans le ${BAG_BY[E.bag].name} jusqu'au ${dayMonth(E.end)}.`:Date.now()<E.start?`À partir du ${dayMonth(E.start)}.`:"L'événement est terminé."}`});
@@ -6273,7 +6284,7 @@ function viewPedia(){
   const MOIS = ["Janvier","Février","Mars","Avril","Mai","Juin","Juillet","Août","Septembre","Octobre","Novembre","Décembre"];
   const seasons = SEASON_FAMS.map(f=>{ const F=FAMILIES[f];
     if(!seasonSeen(F.season)) return `<div class="sh-tile secret"><span class="sec-ball">?</span><b>Surprise</b><small>${MOIS[F.season]}</small></div>`;
-    const x={seed:hash("season"+f), type:"calot", family:f, pal:BASE_PALS+F.season, shiny:0}, i=pv({...x, cour:`Décor de saison · ${MOIS[F.season]}. Seulement dans le passe de saison de ce mois-là.`});
+    const x={seed:hash("season"+f), type:"calot", family:f, pal:SEASON_PAL0+F.season, shiny:0}, i=pv({...x, cour:`Décor de saison · ${MOIS[F.season]}. Seulement dans le passe de saison de ce mois-là.`});
     return `<button class="sh-tile${seasonNow().m===F.season?" now":""}" data-action="preview" data-k="${i}">${mImg(x,200,70)}<b>${F.name}</b><small>${MOIS[F.season]}</small></button>` }).join("");
   return `<div class="page-head"><div><h1>Billepedia</h1><p>Tout ce qui existe dans Billy. Chaque bille ouverte est unique : son motif est tiré au hasard au moment de l'ouverture, il n'y en aura jamais deux pareilles. ${TK.length} formats × ${N_DECORS} décors × ${BASE_PALS} coloris = ${fmt(combos)} combinaisons, ×4 avec les shiny.</p></div></div>
   <section class="pedia-sec"><h2>Les shiny</h2><p>Un effet spécial qui peut tomber sur n'importe quelle bille, quel que soit son format. Sous chaque shiny : ses chances pour chaque bille, selon le sachet d'où elle sort. Touche une bille pour la voir tourner.</p><div class="shiny-show">${shinyTiles}</div></section>
@@ -6343,7 +6354,7 @@ function openModal(id, pv){
         ${fromSheet?"":`<button class="btn btn-ghost" data-action="sheet" data-type="${s.type}" data-fam="${s.family}">${ic("layers",16)} Coloris de la case · ${casePals(caseList)} / ${BASE_PALS}</button>`}
       </div>
       ${sib.length>1 && keepOf(sib).id===s.id?`<p class="meta">C'est l'exemplaire que tu gardes : les autres sont proposés comme doubles à la Confiserie.</p>`:""}
-      ${S.active!==s.id && sib.length===1 && s.pal<BASE_PALS?`<p class="warn-note">C'est ton seul exemplaire de cette bille : l'échanger la retirera de ton album.</p>`:""}
+      ${S.active!==s.id && sib.length===1 && isBasePal(s.pal)?`<p class="warn-note">C'est ton seul exemplaire de cette bille : l'échanger la retirera de ton album.</p>`:""}
       ${S.active!==s.id && s.shiny?`<p class="warn-note">Attention, c'est une shiny !</p>`:""}`}
     </div>
   </div>`;
@@ -6391,7 +6402,7 @@ function openZoom(id){
   if(S.unseen.includes(id)){ S.unseen = S.unseen.filter(x=>x!==id); save() }
   Sound.click(TIDX[s.type]);
   const F = FAMILIES[s.family], T = TYPES[s.type], E = eventOf(s);
-  const pals = E ? E.palIdx : (s.pal<BASE_PALS ? Array.from({length:BASE_PALS},(_,p)=>p) : [s.pal]);
+  const pals = E ? E.palIdx : (isBasePal(s.pal) ? BASE_PAL_IDS : [s.pal]);
   const mine = S.specs.filter(x=>x.type===s.type && x.family===s.family), got = pals.filter(p=>mine.some(x=>x.pal===p)).length;
   const cell = p => { const P = PALETTES[p], l = mine.filter(x=>x.pal===p).sort(tierSort), b = p===s.pal ? s : l[0];
     return b ? `<div class="zm-cell owned${p===s.pal?" now":""}">${mImg(b,120,46,"")}<small>${esc(P[0])}</small>${p===s.pal?`<i>${l.length>1?"Encore une !":"Nouvelle !"}</i>`:""}</div>`
@@ -6421,7 +6432,7 @@ function openSheet(t,f){
       return `<div class="sh-wrap"><button class="sh-cell owned${isCov?" cover":""}" data-action="spec" data-id="${b.id}" data-from-sheet="1" aria-label="${esc(specName(b))}">${mImg(b,120,54,"")}<small>${P[0]}</small>${l.length>1?`<i class="x">×${l.length}</i>`:""}${S.unseen.some(id=>l.some(x=>x.id===id))?`<i class="nw"></i>`:""}</button>${list.length>1?`<button class="sh-pin${isCov?" on":""}" data-action="cover" data-id="${b.id}" data-in-sheet="1" aria-pressed="${!!isCov}" title="${isCov?"C'est ce coloris qui s'affiche dans l'album":"Afficher ce coloris dans l'album"}" aria-label="${isCov?"Coloris affiché dans l'album":`Afficher ${esc(P[0])} dans l'album`}">${ic("star",12,2.6)}</button>`:""}</div>` }
     const wk = k+"|"+p, wished = (S.wish||[]).includes(wk);
     return `<button class="sh-cell missing${wished?" wished":""}" data-action="wish-toggle" data-k="${wk}" title="${P[0]} : pas encore trouvée. Touche pour ${wished?"la retirer de":"l'ajouter à"} ta liste de souhaits"><span class="sil" style="--c1:${P[1]};--c2:${P[2]}"></span><small>${P[0]}</small>${wished?`<i class="wstar">${ic("star",12,2.6)}</i>`:""}</button>` };
-  const extra = Object.keys(by).map(Number).filter(p=>p>=BASE_PALS);
+  const extra = Object.keys(by).map(Number).filter(p=>!isBasePal(p));
   ui.sheet = {t,f};
   const el = document.getElementById("modal");
   el.innerHTML = `<div class="modal sheet drawer" role="dialog" aria-modal="true" aria-label="${F.name} ${T.label}" style="${tstyle(t)}">
@@ -6432,7 +6443,7 @@ function openSheet(t,f){
       <div class="sheet-prog"><span class="bar"><i class="${full?"done":""}" style="width:${got/BASE_PALS*100}%"></i></span><b>${got} / ${BASE_PALS} coloris</b></div>
       <p class="meta">${got?`Touche une bille pour l'ouvrir, ou un coloris manquant pour l'ajouter à ta liste de souhaits (★). ${cov&&list.length>1?`Dans l'album, c'est ${esc(PALETTES[cov.pal][0])} qui s'affiche : touche l'étoile d'un autre coloris pour le mettre à sa place.`:""}`:`Tu n'as pas encore de ${T.label.toLowerCase()} ${F.name}. Elle se cache peut-être dans ton prochain sachet !`}</p>
     </div>
-    <div class="sheet-grid">${Array.from({length:BASE_PALS},(_,p)=>cell(p)).join("")}</div>
+    <div class="sheet-grid">${BASE_PAL_IDS.map(cell).join("")}</div>
     ${extra.length?`<h3 class="sub-h">Éditions spéciales</h3><div class="sheet-grid">${extra.map(cell).join("")}</div>`:""}
   </div>`;
   el.hidden = false;
@@ -7476,10 +7487,8 @@ function pachiSparks(x, y, n, cols, big){
    Des coloris inventés par les joueurs, essayés sur de vraies billes avant de les ajouter au jeu. Rien n'est enregistré :
    les coloris sont ajoutés en mémoire, seulement le temps de les regarder. Un coloris = 3 couleurs : la base, la vedette, les détails.
    Les 3 versions répartissent les couleurs différemment (A : dans l'ordre donné). */
-const COLORIS_MAQUETTES = [
-  {nom:"Zède", cols:["#1DD10D","#000000","#156115"]},
-  {nom:"uwu",  cols:["#FFFFFF","#F99AEC","#C10BA9"]},
-];
+// (Zède et uwu ont été validés le 2 octobre 2026 : ils sont maintenant de vrais coloris, voir PLAYER_PALS.)
+const COLORIS_MAQUETTES = [];
 const LAB_VERS = {A:[0,1,2], B:[2,0,1], C:[1,0,2]};
 const labIdx = new Map();
 function labPal(c, v){
@@ -7717,7 +7726,7 @@ function rollFric(sp, fric){ const k = 1-fric, damp = sp>4 ? k*.6 : k*(.2+.4*sp/
 function rollDist(v, fric){ let d=0; for(let i=0;i<2000 && v>=.03;i++){ d+=v; v*=rollFric(v,fric) } return d }
 function speedFor(d, fric){ let lo=0, hi=AMAXV*2; for(let i=0;i<24;i++){ const m=(lo+hi)/2; if(rollDist(m,fric)<d) lo=m; else hi=m } return hi }
 function mkBall(x,y,spec,o={}){ const r=radOf(spec.type); return Object.assign({x,y,vx:0,vy:0,r,m:r*r*r,spec,img:ballImg(spec),alive:true,sink:0,R:I3.slice(),rc:0,dirty:true},o) }
-const randSpec = type => ({seed:randU32(), type, family:pickW(Math.random(),FAM_W), pal:Math.floor(Math.random()*BASE_PALS), shiny:0});
+const randSpec = type => ({seed:randU32(), type, family:pickW(Math.random(),FAM_W), pal:randPal(Math.random()), shiny:0});
 function placePebbles(n, avoid){
   const out = [];
   for(let k=0;k<200 && out.length<n;k++){
@@ -9027,7 +9036,7 @@ function gcPaint(T, r0){
 // ---------- la mise en scène : l'ordre d'arrivée est connu, on invente une course qui y mène ----------
 const GC_DT = 1/30, GC_WIN = 40, GC_DUR = 60;   // le gagnant passe la ligne vers 40 s ; une course dure environ une minute
 const gcSpec = x => x.bille && x.bille.type ? {seed:x.bille.seed, type:x.bille.type, family:x.bille.family, pal:x.bille.pal, shiny:x.bille.shiny||0}
-  : (()=>{ const r = rng(x.graine || hash(x.pseudo||x.nom||"?")); return {seed:Math.floor(r()*4e9), type:TK[pickW(r(),[30,30,15,12,8,5])], family:pickW(r(),FAM_W), pal:Math.floor(r()*BASE_PALS), shiny:0} })();
+  : (()=>{ const r = rng(x.graine || hash(x.pseudo||x.nom||"?")); return {seed:Math.floor(r()*4e9), type:TK[pickW(r(),[30,30,15,12,8,5])], family:pickW(r(),FAM_W), pal:randPal(r()), shiny:0} })();
 function gcPlan(T, list, seed){
   const r = rng(seed), base = T.L/(GC_WIN-2), sm = (a,b,v) => { const k = Math.max(0,Math.min(1,(v-a)/(b-a))); return k*k*(3-2*k) };
   const lanes = list.map((_,i)=>-.75+1.5*(i+.5)/list.length).sort(()=>r()-.5);
@@ -9781,7 +9790,7 @@ function viewSoon(){
           <button class="btn btn-ghost" data-action="bell-test">Écouter la sonnerie de récré</button>
           <button class="btn btn-ghost" data-action="daily-reset">Revoir le bonbec du jour</button>
           <button class="btn btn-ghost" data-action="pity-max">Garantie Boulet au prochain sachet</button>
-          <button class="btn btn-ghost" data-action="lab-open">${ic("star",16)} Maquettes de coloris</button>
+          ${COLORIS_MAQUETTES.length ? `<button class="btn btn-ghost" data-action="lab-open">${ic("star",16)} Maquettes de coloris</button>` : ""}
         </div>
       </section>
       <section class="panel"><div class="panel-head"><h3>Recommencer</h3></div>
@@ -11073,7 +11082,7 @@ const AuthFx = (()=>{
   function makeBalls(){
     const n = W<700 ? 11 : PLAN.length, k = W<700 ? .78 : 1;
     balls = PLAN.slice(0,n).map((t,i)=>{
-      const spec = {seed:hash("cour"+i), type:t, family:FAMS[i%FAMS.length], pal:(i*7+3)%BASE_PALS, shiny: i===4?1 : i===8?2 : i===1?3 : 0};
+      const spec = {seed:hash("cour"+i), type:t, family:FAMS[i%FAMS.length], pal:BASE_PAL_IDS[(i*7+3)%BASE_PALS], shiny: i===4?1 : i===8?2 : i===1?3 : 0};
       const img = new Image(); img.onload = ()=>{ if(!running && cv) draw() }; img.src = marbleURL(spec,128);
       const r = 34*scaleOf(t)*k;
       return {spec, img, r, m:r*r, x:0, y:0, vx:0, vy:0, trail:[], inside:true, R:rotAxis(rand(-1,1),rand(-1,1),rand(-1,1),rand(0,TAU)), rc:0, dirty:true, cv:null,

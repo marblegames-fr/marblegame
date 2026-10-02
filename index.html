@@ -5087,6 +5087,7 @@ document.addEventListener("click", e=>{ if(!e.target.closest(".prof-wrap")) togg
 document.addEventListener("keydown", e=>{ if(e.key==="Escape") toggleProfPop(false) });
 function go(view){ toggleProfPop(false); if(view==="atelier"){ view="confiserie"; ui.confTab="fusion" } if(view==="billepedia"){ view="collection"; ui.tab="pedia" } ui.view=view; renderNav(); renderView(); window.scrollTo({top:0}); }
 function renderView(){
+  if(ui.view==="course") ui.view = "jeux";   // la Course sur la plage a été retirée (2 octobre 2026) : un vieux lien ramène aux jeux
   const v = document.getElementById("view");
   const map = {cour:viewCour, succes:viewSucces, accueil:viewHome, sacs:viewBags, collection:viewCollection, jeux:viewGames, tir:viewGame, pot:viewArena, chateau:viewArena, casse:viewCasse, tic:viewArena, pachinko:viewPachinko, course:viewArena, grandecourse:viewGrandeCourse, quetes:viewQuests, billepedia:viewPedia, passe:viewPass, profil:viewProfile, atelier:viewCraft, confiserie:viewConfiserie};
   v.innerHTML = (map[ui.view] || viewSoon)();

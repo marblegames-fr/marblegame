@@ -834,18 +834,6 @@ button.rw:hover{transform:translateY(-2px)}
 .odds-pop h2{font-family:var(--display);font-weight:400;font-size:28px;margin:8px 0 4px}
 .odds-pop h3{font-size:14px;font-weight:900;margin:16px 0 6px}
 .odds-pop .rewards-list b{white-space:nowrap}
-.modal.zoom-view{display:block;width:min(720px,100%);max-height:calc(100dvh - 32px);overflow:auto;padding:22px 20px 20px}
-.zm-top{display:grid;grid-template-columns:auto minmax(0,1fr);gap:18px;align-items:center}
-.zm-live{display:grid;place-items:center;min-width:120px}
-.zm-live canvas{max-width:100%;height:auto;touch-action:none;cursor:grab}
-.zm-txt{display:grid;gap:6px}.zm-txt h2{font-family:var(--display);font-weight:400;font-size:28px;line-height:1.05;margin:0}
-.zm-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(78px,1fr));gap:8px;margin-top:8px}
-.zm-cell{position:relative;display:grid;justify-items:center;gap:3px;padding:8px 4px 6px;border-radius:12px;background:var(--panel-2);border:1px solid var(--line)}
-.zm-cell small{font-size:11px;font-weight:800;color:var(--ink-2);text-align:center;line-height:1.1}
-.zm-cell.missing{opacity:.7}.zm-cell .sil{width:46px;height:46px;border-radius:50%;background:radial-gradient(circle at 35% 30%,color-mix(in srgb,var(--c2) 35%,transparent),color-mix(in srgb,var(--c1) 30%,transparent) 70%);border:1.5px dashed var(--line-2)}
-.zm-cell.now{border-color:var(--yellow,#FFC93F);box-shadow:0 0 0 2px rgba(255,201,63,.45)}
-.zm-cell i{position:absolute;top:-8px;left:50%;translate:-50% 0;font-style:normal;font-size:10px;font-weight:900;background:#FFC93F;color:#24253D;border-radius:999px;padding:1px 7px;white-space:nowrap}
-@media (max-width:560px){ .zm-top{grid-template-columns:1fr;justify-items:center;text-align:center} .zm-txt .pills{justify-content:center} }
 .sheet-back{align-self:flex-start;display:inline-flex;align-items:center;gap:4px;font-size:12.5px;font-weight:800;color:var(--ink-2);padding:6px 10px;border-radius:999px;background:var(--panel)}
 .sheet-back svg{transform:rotate(180deg)}
 .chal-sec{margin-top:18px}
@@ -6310,7 +6298,8 @@ function mvBg(s){
   if(extraFam(s.family)) return {k:3, c:PALETTES[s.pal][2]};
   return {k:F.rar, c:DECOR_RAR[F.rar].c};
 }
-function openModal(id, pv){
+// reveal : ouverte depuis l'ouverture d'un sachet (ou une fusion) : on regarde la bille, le seul bouton est « Coloris de la case »
+function openModal(id, pv, reveal=false){
   const s = pv || specById(id); if(!s) return;
   // on n'enregistre (et n'envoie en ligne) que si la bille était encore marquée « Nouveau »
   if(!pv && S.unseen.includes(id)){ S.unseen = S.unseen.filter(x=>x!==id); save(); }
@@ -6358,6 +6347,9 @@ function openModal(id, pv){
       ${S.active!==s.id && s.shiny?`<p class="warn-note">Attention, c'est une shiny !</p>`:""}`}
     </div>
   </div>`;
+  if(reveal){
+    el.querySelectorAll(".modal-actions button:not([data-action='sheet']), .siblings, .modal-visual .hint, .warn-note, .modal-body > .meta").forEach(x=>x.remove());
+  }
   el.hidden = false;
   liveStart(el, document.getElementById("live-slot"), s);
   el.querySelector(".close-x").focus();
@@ -6394,31 +6386,6 @@ function liveStart(el, slot, s, maxPx){
     };
     tick();
   } else slot.innerHTML = mImg(s,840,Math.min(maxPx||999, Math.round(120+300*(T.mm-10)/30)));
-}
-// Aperçu d'une bille qu'on vient d'ouvrir (sachet, fusion) : la bille en grand, et l'album de sa case (taille + décor) avec
-// tous ses coloris, ceux qu'on a en couleur et les autres en silhouette. Rien à cliquer : on regarde, puis on ferme.
-function openZoom(id){
-  const s = specById(id); if(!s) return;
-  if(S.unseen.includes(id)){ S.unseen = S.unseen.filter(x=>x!==id); save() }
-  Sound.click(TIDX[s.type]);
-  const F = FAMILIES[s.family], T = TYPES[s.type], E = eventOf(s);
-  const pals = E ? E.palIdx : (isBasePal(s.pal) ? BASE_PAL_IDS : [s.pal]);
-  const mine = S.specs.filter(x=>x.type===s.type && x.family===s.family), got = pals.filter(p=>mine.some(x=>x.pal===p)).length;
-  const cell = p => { const P = PALETTES[p], l = mine.filter(x=>x.pal===p).sort(tierSort), b = p===s.pal ? s : l[0];
-    return b ? `<div class="zm-cell owned${p===s.pal?" now":""}">${mImg(b,120,46,"")}<small>${esc(P[0])}</small>${p===s.pal?`<i>${l.length>1?"Encore une !":"Nouvelle !"}</i>`:""}</div>`
-             : `<div class="zm-cell missing"><span class="sil" style="--c1:${P[1]};--c2:${P[2]}"></span><small>${esc(P[0])}</small></div>` };
-  const el = document.getElementById("modal");
-  el.innerHTML = `<div class="modal zoom-view" role="dialog" aria-modal="true" aria-label="${esc(specName(s))}" style="${tstyle(s.type)}">
-    <button class="close-x" data-action="close-modal" aria-label="Fermer">×</button>
-    <div class="zm-top"><div class="zm-live" id="live-slot"></div>
-      <div class="zm-txt"><div class="pills">${typePill(s.type,true)}${shinyPill(s)}${tierTag(s)}</div><h2>${esc(specName(s))}</h2>
-        <p class="meta">${F.name} · ${T.label} · ${esc(PALETTES[s.pal][0])}</p>
-        ${pals.length>1?`<div class="sheet-prog"><span class="bar"><i class="${got===pals.length?"done":""}" style="width:${got/pals.length*100}%"></i></span><b>${got} / ${pals.length} coloris</b></div>`:""}</div></div>
-    ${pals.length>1?`<h3 class="sub-h">${F.name} en ${T.label} : tous les coloris</h3><div class="zm-grid">${pals.map(cell).join("")}</div>`:""}
-  </div>`;
-  el.hidden = false;
-  liveStart(el, document.getElementById("live-slot"), s, 260);
-  el.querySelector(".close-x").focus();
 }
 // Planche d'une case : les coloris, dans le même ordre partout ; ceux qui manquent en silhouette
 function openSheet(t,f){
@@ -6793,7 +6760,7 @@ function rollOut(){
 function reveal(i){
   if(!ovState) return;
   // déjà découverte : on l'ouvre en grand, par-dessus l'ouverture
-  if(ovState.opened.has(i)){ const s=ovState.results[i].s; if(specById(s.id)) openZoom(s.id); return }
+  if(ovState.opened.has(i)){ const s=ovState.results[i].s; if(specById(s.id)) openModal(s.id, null, true); return }
   ovState.opened.add(i);
   const el = document.querySelector(`.slot[data-i="${i}"]`);
   el._roll?.forEach(a=>{ try{ a.finish() }catch(e){} }); el._roll = null;
@@ -7302,22 +7269,22 @@ function artCourse(){ return `<svg viewBox="0 0 240 130" preserveAspectRatio="xM
 // Cases de gauche à droite : mêmes valeurs que interne.pachinko_cases() dans serveur.sql. Le serveur tire la case, le jeu anime la chute.
 // Plus un lot vaut cher, plus il est rare (sachets comptés à leur prix : Classique 300, Premium 600, Collector 1 500) :
 // 50 > 200 > Classique > 400 > Premium > 1000 > Collector > Bille. Les lots les plus rares sont au bord, comme sur un vrai plateau.
-// La bille coûte 100 (2 octobre 2026, le soir) avec les chances d'avant : on retrouve au moins sa mise dans 41 % des cas,
-// et en moyenne une bille rend ~173 bonbecs (sans compter le Mammouth) : le Pachinko payant rapporte plus qu'il ne coûte.
-// Case Mammouth (2 octobre 2026, tard) : 0,05 %, un Mammouth garanti dont la roulette tire le décor (mêmes chances que dans un sachet),
-// coloris au hasard, shiny comme dans le Sachet Collector. Les 0,45 % libérés vont aux lots juste en dessous.
+// La bille coûte 100. Réglé « comme un vrai casino » (2 octobre 2026, le soir) : en moyenne une bille rend ~94,5 de sa mise,
+// sachets comptés à leur prix (Classique 300, Premium 600, Collector 1 500) ; en bonbecs seuls, ~62. On retrouve au moins sa mise 1 fois sur 5.
+// Case Mammouth : 0,05 %, un Mammouth garanti dont la roulette tire le décor (mêmes chances que dans un sachet),
+// coloris au hasard, shiny comme dans le Sachet Collector.
 const PACHI = [
   {w:.05,  roue:true,       lbl:"Mammouth",  c:"#E5484D"},
-  {w:3.1,  j:1000,          lbl:"1000",      c:"#E8743B"},
-  {w:6.6,  j:400,           lbl:"400",       c:"#7B6CF6"},
-  {w:9,    j:200,           lbl:"200",       c:"#C98E4E"},
-  {w:16,   j:50,            lbl:"50",        c:"#8E8898"},
-  {w:27,   j:0,             lbl:"0",         c:"#4A3F5C"},
-  {w:16,   j:50,            lbl:"50",        c:"#8E8898"},
-  {w:9,    j:200,           lbl:"200",       c:"#C98E4E"},
-  {w:8,    sac:"classique", lbl:"Classique", c:"#2A8A74"},
-  {w:4.1,  sac:"premium",   lbl:"Premium",   c:"#34469C"},
-  {w:1.15, sac:"collector", lbl:"Collector", c:"#D9A020"},
+  {w:1.15, j:1000,          lbl:"1000",      c:"#E8743B"},
+  {w:3,    j:400,           lbl:"400",       c:"#7B6CF6"},
+  {w:4.6,  j:200,           lbl:"200",       c:"#C98E4E"},
+  {w:20.5, j:50,            lbl:"50",        c:"#8E8898"},
+  {w:39,   j:0,             lbl:"0",         c:"#4A3F5C"},
+  {w:20.5, j:50,            lbl:"50",        c:"#8E8898"},
+  {w:4.6,  j:200,           lbl:"200",       c:"#C98E4E"},
+  {w:4,    sac:"classique", lbl:"Classique", c:"#2A8A74"},
+  {w:2.1,  sac:"premium",   lbl:"Premium",   c:"#34469C"},
+  {w:.5,   sac:"collector", lbl:"Collector", c:"#D9A020"},
 ];
 // le Mammouth gagné (Pachinko, Château rasé en un tir) : shiny avec les chances du Sachet Collector
 const MAMM_SHINY = SHINY_RATE*10;
@@ -7344,7 +7311,7 @@ function viewPachinko(){
         <ul class="rewards-list">${kinds.map(c=>({c, p:PACHI.filter(x=>x.lbl===c.lbl).reduce((a,x)=>a+x.w,0)/tot})).sort((a,b)=>a.p-b.p).map(({c,p})=>{
           return `<li><span><i class="pachi-dot" style="background:${c.c}"></i>${c.roue?`Un Mammouth : la roulette choisit son décor ${oddsBtn("pachinko")}`:c.sac?BAG_BY[c.sac].name+" offert":c.j?`${fmt(c.j)} ${CUR.many}`:"Rien du tout"}</span><b>${pct(+(p*100).toFixed(p<.1?1:0))}</b></li>` }).join("")}</ul>
         <p class="meta" style="margin-top:8px">Le Mammouth : la roulette tire la rareté de son décor avec les mêmes chances que dans un sachet, le coloris est au hasard, et il peut être shiny comme dans un Sachet Collector.</p>
-        <p class="meta" style="margin-top:8px">Tu retrouves au moins ta mise ${pct(41)} du temps. La bille du jour, elle, est gratuite et compte dans tes jeux du jour.</p></section>
+        <p class="meta" style="margin-top:8px">Tu retrouves au moins ta mise ${pct(20)} du temps ; en moyenne, une bille rend un peu moins que ses ${PACHI_PRICE} ${CUR.many}, comme au casino. La bille du jour, elle, est gratuite et compte dans tes jeux du jour.</p></section>
       <section class="panel"><div class="panel-head"><h3>Ta bille</h3><button class="see-all" data-action="pick-active">Changer ${ic("chev",14)}</button></div>
         ${act?`<div class="my-ball">${mImg(act,120,48,"")}<div><b>${esc(specName(act))}</b><small>${TYPES[act.type].label} · ${TYPES[act.type].mm} mm</small></div></div>`:""}</section>
     </aside>
@@ -7595,23 +7562,31 @@ async function pachiGo(pay){
   if(!pay && !pachiFree()) return;
   if(pay && S.jetons<PACHI_PRICE){ toast(`Il te manque ${fmt(PACHI_PRICE-S.jetons)} ${CUR.many}.`); return }
   pachi.busy = true;
-  let slot, bille = null;
+  // Pas de spoiler : pendant la chute, le solde ne montre que la mise payée ; le gain (bonbecs, sachet, Mammouth)
+  // n'apparaît qu'une fois la bille dans sa case (gain() est appelé à l'arrivée).
+  let slot, bille = null, gain;
   try{
-    if(srvOn()){ const r = await srv(()=>Cloud.eco.pachinko(!!pay)); slot = r.case; applyEco(r.eco); if(r.bille) bille = srvAdopt([r.bille])[0] }
-    else { slot = pickW(Math.random(), PACHI.map(c=>c.w)); const cs = PACHI[slot];
-      if(pay) S.jetons -= PACHI_PRICE; if(cs.j) S.jetons += cs.j; if(cs.sac) S.bagInv[cs.sac] = (S.bagInv[cs.sac]||0)+1;
-      if(cs.roue) bille = makeSpec("mammouth", {shiny:Math.random()<MAMM_SHINY ? rollShiny() : 0, src:"pachinko"}) }
+    if(srvOn()){ const r = await srv(()=>Cloud.eco.pachinko(!!pay)); slot = r.case; if(r.bille) bille = srvAdopt([r.bille])[0];
+      gain = () => applyEco(r.eco) }
+    else { slot = pickW(Math.random(), PACHI.map(c=>c.w)); const c0 = PACHI[slot];
+      if(c0.roue) bille = makeSpec("mammouth", {shiny:Math.random()<MAMM_SHINY ? rollShiny() : 0, src:"pachinko"});
+      gain = () => { if(c0.j) S.jetons += c0.j; if(c0.sac) S.bagInv[c0.sac] = (S.bagInv[c0.sac]||0)+1; save() } }
   }catch(e){ pachi.busy = false; srvFail(e); return }
+  if(pay){ S.jetons -= PACHI_PRICE; renderTop() }   // la mise part tout de suite (le serveur l'a déjà prise)
+  let given = false;
+  const give = () => { if(given) return; given = true; gain(); if(bille){ S.specs.push(bille); S.unseen.push(bille.id); logFind(bille); save() } };
+  // si on quitte le plateau pendant la chute, le gain arrive quand même, à l'heure où la bille serait tombée
+  setTimeout(give, (PACHI_ROWS+1)*PACHI_HOP*1000 + 600);
   const cs = PACHI[slot];
   if(!pay) playedToday().pachinko = {done:1, rew:cs.j||0};
   S.stats.pachi = (S.stats.pachi||0)+1;
-  if(bille){ S.specs.push(bille); S.unseen.push(bille.id); logFind(bille) }
   save();
   document.querySelectorAll('[data-action="pachi-go"]').forEach(b=>b.disabled = true);
   const w0 = document.getElementById("p-win"); if(w0) w0.hidden = true;
   pachi.land = null;
   pachi.ball = {spec:activeSpec(), path:pachiPath(slot), t0:performance.now()+150, seg:-1, onEnd:()=>{
     pachi.land = slot; pachi.landT = performance.now(); pachi.busy = false;
+    give();
     pachiSparks(pachiSlotX(slot), PH-100, cs.j===0 ? 10 : 50, cs.j===0 ? ["#8E8898"] : ["#FFE14D","#FF4FD8","#39E6FF","#7CE59A", cs.c], cs.j!==0);
     const big = cs.roue || cs.sac==="collector" || cs.sac==="premium" || cs.j>=400;
     const w = document.getElementById("p-win");
@@ -10560,7 +10535,7 @@ document.addEventListener("click", e=>{
     case "lab-open": labOpen(); break;
     case "lab-pick": labOpen(+t.dataset.c, t.dataset.v ?? null); break;
     case "bille-odds": billeOdds(t.dataset.from); break;
-    case "zoom": if(specById(t.dataset.id)) openZoom(t.dataset.id); break;
+    case "zoom": if(specById(t.dataset.id)) openModal(t.dataset.id, null, true); break;
     case "a-restart": initArena(ui.view); break;
     case "c-restart": initCasse(); break;
     case "gc-pickopen": gcPickOpen(); break;

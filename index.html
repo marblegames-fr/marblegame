@@ -1,4 +1,5 @@
 <meta charset="utf-8">
+<script type="importmap">{"imports":{"three":"https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.js","three/addons/":"https://cdn.jsdelivr.net/npm/three@0.160.0/examples/jsm/","cannon-es":"https://cdn.jsdelivr.net/npm/cannon-es@0.20.0/dist/cannon-es.js"}}</script>
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Billy</title>
 <link rel="icon" id="favicon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Cdefs%3E%3CradialGradient id='g' cx='38%25' cy='34%25' r='70%25'%3E%3Cstop offset='0' stop-color='%23BFE3FF'/%3E%3Cstop offset='.5' stop-color='%232E6BE6'/%3E%3Cstop offset='1' stop-color='%23142A6B'/%3E%3C/radialGradient%3E%3C/defs%3E%3Ccircle cx='32' cy='32' r='29' fill='url(%23g)'/%3E%3Cpath d='M14 38c8-14 22-18 36-10' stroke='%23FFC93F' stroke-width='5' fill='none' stroke-linecap='round'/%3E%3Cellipse cx='23' cy='20' rx='8' ry='5' fill='%23fff' opacity='.7'/%3E%3C/svg%3E">
@@ -2485,6 +2486,12 @@ button.gh-cell:hover{transform:translateY(-2px)}
 .gc-pop .btns{display:flex;justify-content:center;margin-top:14px}
 body.gc-open{overflow:hidden}
 .gc-ov{position:fixed;inset:0;z-index:80;background:#141220;color:#fff;overflow:hidden}
+.g3-stage{position:absolute;inset:0}
+.g3-stage canvas{display:block;width:100%;height:100%;touch-action:none}
+.g3-labels{position:absolute;inset:0;pointer-events:none;overflow:hidden}
+.g3-lbl{position:absolute;left:0;top:0;padding:2px 8px;border-radius:999px;background:rgba(20,18,32,.75);font-size:12px;font-weight:900;white-space:nowrap;transition:opacity .2s}
+.g3-lbl.me{background:#FFC93F;color:#24253D}
+.g3-load{position:absolute;inset:0;display:grid;place-content:center;justify-items:center;gap:6px;color:rgba(255,255,255,.8);font-weight:800}
 .gc-ov[hidden]{display:none}
 #gc-cv{position:absolute;inset:0;width:100%;height:100%;display:block}
 .gc-top{position:absolute;left:14px;right:14px;top:14px;display:flex;gap:10px;align-items:flex-start;z-index:2}
@@ -8646,7 +8653,182 @@ function gcState(o, t){   // où en est la bille o au temps t : progression, chu
 
 // ---------- l'écran de la course : vue 3D, comme une course à la télé ----------
 const GCV = {raf:0};
+/* ---------- la Grande Course en 3D : vraie physique, et l'ordre d'arrivée tiré par le serveur ----------
+   La course est d'abord simulée en entier avec des billes anonymes (même graine pour tout le monde) ; ensuite, la bille arrivée
+   1re prend le nom du 1er du tirage, la 2e celui du 2e, etc. La physique est vraie, et le résultat reste celui du serveur.
+   Toutes les billes ont la même taille dans la simulation : chaque bille garde exactement la même chance.
+   Moteurs chargés à la demande (three.js, cannon-es : importmap en haut du fichier). En cas de souci, la course 2D prend le relais. */
+const G3 = {RAMPS:5, LEN:30, WID:6, STEP:8, ANG:12*Math.PI/180, R:.42, DT:1/60, MAXT:150};
+let G3LIB = null;
+async function g3Load(){
+  if(G3LIB) return G3LIB;
+  const [THREE, CANNON, OC] = await Promise.all([import("three"), import("cannon-es"), import("three/addons/controls/OrbitControls.js")]);
+  return G3LIB = {THREE, CANNON, OrbitControls:OC.OrbitControls};
+}
+function g3World(CANNON, seed, n){
+  const {RAMPS, LEN, WID, STEP, ANG, R} = G3, r = rng(seed);
+  const world = new CANNON.World({gravity: new CANNON.Vec3(0,-9.81,0)});
+  world.allowSleep = false; world.broadphase = new CANNON.SAPBroadphase(world); world.solver.iterations = 14;
+  const mat = new CANNON.Material("piste"), bmat = new CANNON.Material("bille");
+  world.addContactMaterial(new CANNON.ContactMaterial(mat, bmat, {friction:.04, restitution:.35}));
+  world.addContactMaterial(new CANNON.ContactMaterial(bmat, bmat, {friction:.02, restitution:.75}));
+  const statics = [];
+  const add = (b, d) => { b.aabbNeedsUpdate = true; world.addBody(b); statics.push(d) };   // (sinon la zone de choc reste à l'origine)
+  const box = (sx,sy,sz, x,y,z, rotZ=0, kind="ramp") => { const b = new CANNON.Body({mass:0, material:mat, shape:new CANNON.Box(new CANNON.Vec3(sx/2,sy/2,sz/2))});
+    b.position.set(x,y,z); b.quaternion.setFromEuler(0,0,rotZ); add(b, {kind, size:[sx,sy,sz], pos:[x,y,z], rotZ}) };
+  const peg = (x,y,z,h=1.4) => { const b = new CANNON.Body({mass:0, material:mat, shape:new CANNON.Cylinder(.22,.22,h,12)}); b.position.set(x,y,z); add(b, {kind:"peg", size:[.22,h], pos:[x,y,z]}) };
+  for(let i=0;i<RAMPS;i++){
+    const dir = i%2 ? -1 : 1, y = i*-STEP, rot = -dir*ANG, ext = 2.6, cx = -dir*ext/2;
+    const sY = x => y - Math.tan(ANG)*dir*(x-cx);
+    box(LEN+ext, .4, WID, cx, y, 0, rot);
+    box(LEN+ext, 3, .3, cx, y+1.4, WID/2+.15, rot, "wall"); box(LEN+ext, 3, .3, cx, y+1.4, -WID/2-.15, rot, "wall");
+    if(i<RAMPS-1){ const xe = dir*(LEN/2+1.4); box(.4, STEP+1.6, WID+.6, xe, y-STEP/2+.6, 0, 0, "end") }
+    for(let k=0;k<5;k++){ const x = -dir*(LEN/2-6) + dir*k*(LEN-12)/4, zs = k%2 ? [-.95,.95] : [-1.75,0,1.75];
+      zs.forEach(z=>peg(x, sY(x)+.7, z + (r()-.5)*.3)) }
+  }
+  const yl = (RAMPS-1)*-STEP, dirL = (RAMPS-1)%2 ? -1 : 1, xf = dirL*(LEN/2+6), yt = yl-STEP;
+  box(14, .4, WID+4, xf, yt+.4, 0, 0, "tray");
+  box(.4, 3, WID+4, xf+dirL*7, yt+1.8, 0, 0, "end"); box(.4, 3, WID+4, xf-dirL*7, yt+1.8, 0, 0, "end");
+  box(14, 3, .4, xf, yt+1.8, WID/2+2, 0, "wall"); box(14, 3, .4, xf, yt+1.8, -WID/2-2, 0, "wall");
+  const balls = [], rows = Math.ceil(n/4);
+  for(let i=0;i<n;i++){
+    const b = new CANNON.Body({mass:1, material:bmat, shape:new CANNON.Sphere(R), linearDamping:.02, angularDamping:.05});
+    const row = Math.floor(i/4), col = i%4, x = -LEN/2 + .8 + row*1.05 + (r()-.5)*.05;
+    b.position.set(x, -Math.tan(ANG)*(x+1.3) + .2 + R + .03, (col-1.5)*1.2 + (r()-.5)*.05);
+    world.addBody(b); balls.push(b);
+  }
+  const gx = -LEN/2 + .8 + rows*1.05 + .6, gate = new CANNON.Body({mass:0, material:mat, shape:new CANNON.Box(new CANNON.Vec3(.15,1,WID/2))});
+  gate.position.set(gx, -Math.tan(ANG)*(gx+1.3)+1.2, 0); gate.aabbNeedsUpdate = true; world.addBody(gate);
+  return {world, balls, statics, gate, finishY:yt+1.2};
+}
+function g3Simulate(CANNON, seed, n){
+  const {DT, MAXT, STEP} = G3, W = g3World(CANNON, seed, n), frames = [], fin = new Array(n).fill(null);
+  let t = 0;
+  for(let f=0; f<MAXT/DT; f++){
+    if(t>=3 && W.gate.world) W.world.removeBody(W.gate);   // 3 s de feux, puis la barrière tombe
+    W.world.step(DT); t += DT;
+    // une bille calée plus de 2 s reçoit une petite pichenette vers le bas de la pente
+    W.balls.forEach((b,i)=>{ if(fin[i]!=null || t<4) return; b.still = b.velocity.length()<.08 ? (b.still||0)+DT : 0;
+      if(b.still>2){ b.still = 0; const d = Math.max(0,Math.round(-b.position.y/STEP))%2 ? -1 : 1; b.applyImpulse(new CANNON.Vec3(d*1.2, .6, (b.position.z>0?-1:1)*.4)) } });
+    const fr = new Float32Array(n*7); W.balls.forEach((b,i)=>fr.set([b.position.x,b.position.y,b.position.z,b.quaternion.x,b.quaternion.y,b.quaternion.z,b.quaternion.w], i*7)); frames.push(fr);
+    W.balls.forEach((b,i)=>{ if(fin[i]==null && b.position.y < W.finishY) fin[i] = t });
+    if(fin.every(x=>x!=null) && t>Math.max(...fin)+2) break;
+  }
+  fin.forEach((x,i)=>{ if(x==null) fin[i] = 900+i });
+  return {W, frames, fin};
+}
+// la texture d'une bille : les couleurs de son coloris, en filets dans le verre (dessinée une fois)
+function g3Texture(THREE, spec, k){
+  const P = PALETTES[spec.pal] || PALETTES[0], c = document.createElement("canvas"); c.width = 256; c.height = 128; const x = c.getContext("2d");
+  x.fillStyle = P[2]; x.fillRect(0,0,256,128);
+  const r = rng(spec.seed||k);
+  for(let i=0;i<8;i++){ x.strokeStyle = [P[1],P[3],P[4]||"#fff"][i%3]; x.globalAlpha = .85; x.lineWidth = 4+r()*12; x.beginPath();
+    const y0 = r()*128, a = 10+r()*20, f = 25+r()*30; x.moveTo(0,y0); for(let s=0;s<=256;s+=8) x.lineTo(s, y0+Math.sin(s/f+i)*a); x.stroke() }
+  const tx = new THREE.CanvasTexture(c); tx.colorSpace = THREE.SRGBColorSpace; return tx;
+}
+const g3progress = (x, y) => { const lvl = Math.max(0, Math.min(G3.RAMPS, Math.round(-y/G3.STEP))), dir = lvl%2 ? -1 : 1; return lvl*1000 + (lvl<G3.RAMPS ? dir*x + G3.LEN/2 : 0) };
+
+async function gcWatch3D(race){
+  const ov = document.getElementById("gc-ov");
+  ov.innerHTML = `<div class="g3-load"><div class="auth-spin"></div><p>Les billes se mettent en place…</p></div>`;
+  ov.hidden = false; document.body.classList.add("gc-open");
+  const L = await g3Load();
+  const {THREE, CANNON, OrbitControls} = L;
+  const list = race.resultats, n = list.length;
+  await new Promise(r=>setTimeout(r, 30));   // laisse le message s'afficher avant le calcul
+  const sim = g3Simulate(CANNON, (race.graine>>>0) || 1, n);
+  // la bille arrivée k-ième dans la simulation prend le k-ième du tirage du serveur
+  const order = sim.fin.map((x,i)=>i).sort((a,b)=>sim.fin[a]-sim.fin[b]);
+  const R = list.map((x,i)=>({...x, i, spec:gcSpec(x), me:!!x.joueur && x.joueur===(sync.uid||GC_ME)}));
+  const who = []; order.forEach((ball, place)=>{ who[ball] = R[place]; R[place].fin = sim.fin[ball]; R[place].ball = ball });
+  ov.innerHTML = `<div class="g3-stage" id="g3-stage"></div><div class="gc-vig"></div><div class="g3-labels" id="g3-labels"></div>
+    <div class="gc-top"><div class="chip"><small>${new Date(race.depart).toLocaleDateString("fr-FR",{weekday:"long", day:"numeric"})}${race.test?" · course d'essai":""}</small><b>Le circuit des lacets</b></div>
+      <div class="chip" id="gc-chrono"><small>Temps</small><b>—</b></div><span class="sp"></span>
+      <button class="btn btn-ghost gc-skip" data-action="g3-cam" id="g3-cam">Caméra libre</button>
+      <button class="btn btn-ghost gc-skip" data-action="g3-skip">Passer à l'arrivée</button>
+      <button class="gc-x" data-action="gc-close" aria-label="Quitter la course">×</button></div>
+    <div class="gc-board" id="gc-board"></div><div class="gc-big" id="gc-big"></div><div class="gc-end" id="gc-end" hidden></div>
+    <div class="gc-hint" id="gc-hint">${ic("target",14)} Caméra libre : fais glisser pour tourner, molette ou deux doigts pour zoomer. Clique sur un nom pour suivre une bille.</div>`;
+  setTimeout(()=>document.getElementById("gc-hint")?.classList.add("bye"), 7000);
+  const stage = document.getElementById("g3-stage");
+  const renderer = new THREE.WebGLRenderer({antialias:true});
+  renderer.setPixelRatio(Math.min(2, devicePixelRatio)); renderer.setSize(stage.clientWidth, stage.clientHeight);
+  renderer.shadowMap.enabled = true; renderer.shadowMap.type = THREE.PCFSoftShadowMap; renderer.toneMapping = THREE.ACESFilmicToneMapping;
+  stage.appendChild(renderer.domElement);
+  const scene = new THREE.Scene(); scene.background = new THREE.Color("#1B1428"); scene.fog = new THREE.Fog("#1B1428", 40, 120);
+  const camera = new THREE.PerspectiveCamera(50, stage.clientWidth/stage.clientHeight, .1, 300);
+  scene.add(new THREE.HemisphereLight("#FFE9C9", "#2A1E3A", 1.1));
+  const sun = new THREE.DirectionalLight("#FFF4DE", 2.2); sun.position.set(-20,40,25); sun.castShadow = true;
+  sun.shadow.mapSize.set(2048,2048); Object.assign(sun.shadow.camera, {left:-40, right:40, top:40, bottom:-45, near:1, far:130}); scene.add(sun);
+  const MAT = {ramp:new THREE.MeshStandardMaterial({color:"#C9955C", roughness:.65}), tray:new THREE.MeshStandardMaterial({color:"#2E8CFF", roughness:.5}),
+    wall:new THREE.MeshPhysicalMaterial({color:"#BFE6FF", roughness:.1, transparent:true, opacity:.28}), end:new THREE.MeshPhysicalMaterial({color:"#BFE6FF", roughness:.1, transparent:true, opacity:.4}),
+    peg:new THREE.MeshStandardMaterial({color:"#F4E3C2", roughness:.35, metalness:.2})};
+  sim.W.statics.forEach(s=>{ const m = s.kind==="peg" ? new THREE.Mesh(new THREE.CylinderGeometry(s.size[0], s.size[0], s.size[1], 16), MAT.peg) : new THREE.Mesh(new THREE.BoxGeometry(...s.size), MAT[s.kind]);
+    if(s.rotZ) m.rotation.z = s.rotZ; m.position.set(...s.pos); m.castShadow = s.kind==="ramp"||s.kind==="peg"; m.receiveShadow = true; scene.add(m) });
+  const floor = new THREE.Mesh(new THREE.PlaneGeometry(300,300), new THREE.MeshStandardMaterial({color:"#2A2036", roughness:1}));
+  floor.rotation.x = -Math.PI/2; floor.position.y = -G3.RAMPS*G3.STEP-4; floor.receiveShadow = true; scene.add(floor);
+  // l'arche d'arrivée au-dessus du bac
+  const meshes = who.map((o,i)=>{ const m = new THREE.Mesh(new THREE.SphereGeometry(G3.R, 32, 24), new THREE.MeshPhysicalMaterial({map:g3Texture(THREE, o.spec, i), roughness:.08, clearcoat:1, clearcoatRoughness:.05,
+      emissive:o.spec.shiny ? new THREE.Color(PALETTES[o.spec.pal][2]) : new THREE.Color(0), emissiveIntensity:o.spec.shiny ? .35 : 0}));
+    m.castShadow = true; scene.add(m); return m });
+  const labels = document.getElementById("g3-labels");
+  labels.innerHTML = who.map((o,i)=>`<span class="g3-lbl${o.me?" me":""}" id="g3l${i}">${esc(o.me ? "Toi" : o.bot ? o.nom : o.pseudo)}</span>`).join("");
+  const controls = new OrbitControls(camera, renderer.domElement); controls.enabled = false; controls.enableDamping = true; controls.maxDistance = 90; controls.minDistance = 3;
+  const onResize = () => { renderer.setSize(stage.clientWidth, stage.clientHeight); camera.aspect = stage.clientWidth/stage.clientHeight; camera.updateProjectionMatrix() };
+  addEventListener("resize", onResize);
+  document.getElementById("gc-board").addEventListener("pointerdown", e=>{ const r = e.target.closest(".gcr"); if(r){ G3V.follow = +r.dataset.b; G3V.free = false; controls.enabled = false; document.getElementById("g3-cam").textContent = "Caméra libre" } });
+  const since = (Date.now()-race.depart)/1000, live = !race.test && !race.replay && since>0 && since<90;
+  const camPos = new THREE.Vector3(-30,10,22), camLook = new THREE.Vector3();
+  cancelAnimationFrame(GCV.raf);
+  Object.keys(GCV).forEach(k=>{ if(k!=="raf") delete GCV[k] });
+  Object.assign(GCV, {race, R, T:{th:{name:"Le circuit des lacets"}}, done:false, g3:true});
+  const G3V = {t0:performance.now() - (live ? since*1000 : 0), follow:null, free:false, said:{}, renderer, controls, onResize};
+  GCV.g3v = G3V;
+  const big = t => { const b = document.getElementById("gc-big"); if(!b) return; b.innerHTML = `<span>${t}</span>`; setTimeout(()=>{ if(b.textContent===t) b.innerHTML = "" }, 1000) };
+  const v = new THREE.Vector3();
+  const loop = now => {
+    if(!document.getElementById("g3-stage")){ removeEventListener("resize", onResize); renderer.dispose(); return }
+    GCV.raf = requestAnimationFrame(loop);
+    const t = (now-G3V.t0)/1000 + (G3V.skip||0), f = Math.max(0, Math.min(sim.frames.length-1, Math.floor(t/G3.DT))), F = sim.frames[f];
+    const cd = t<1 ? "3" : t<2 ? "2" : t<3 ? "1" : "go";
+    if(cd!==G3V.cd){ G3V.cd = cd; big(cd==="go" ? "Partez !" : cd); if(cd==="go") Sound.ding(); else Sound.tap?.(0,.5) }
+    for(let i=0;i<n;i++){ meshes[i].position.set(F[i*7],F[i*7+1],F[i*7+2]); meshes[i].quaternion.set(F[i*7+3],F[i*7+4],F[i*7+5],F[i*7+6]) }
+    const tt = f*G3.DT, rank = who.map((o,i)=>({o, i, done:sim.fin[i]<=tt, pr:g3progress(F[i*7],F[i*7+1])}))
+      .sort((a,b)=> (a.done&&b.done) ? sim.fin[a.i]-sim.fin[b.i] : a.done ? -1 : b.done ? 1 : b.pr-a.pr);
+    const ch = document.getElementById("gc-chrono"); if(ch) ch.lastChild.textContent = t<3 ? "—" : `${Math.floor(Math.max(0,t-3)/60)}:${String(Math.floor(Math.max(0,t-3))%60).padStart(2,"0")}`;
+    const bd = document.getElementById("gc-board");
+    if(bd && (!G3V.lb || now-G3V.lb>200)){ G3V.lb = now; bd.innerHTML = `<h3>Classement</h3>` + rank.map((q,k)=>`<div class="gcr${q.o.me?" me":""}${q.done?" fin":""}" data-b="${q.i}"><span class="pos">${k+1}</span><img src="${marbleURL(q.o.spec,48)}" alt=""><span class="nm">${esc(q.o.me?"Toi":q.o.bot?q.o.nom:q.o.pseudo)}</span><span class="st">${q.done?"✓":""}</span></div>`).join("") }
+    if(rank[0].done && !G3V.said.win){ G3V.said.win = 1; big(`${rank[0].o.me ? "TU GAGNES" : esc(rank[0].o.me?"Toi":rank[0].o.bot?rank[0].o.nom:rank[0].o.pseudo)+" gagne"} !`); Sound.ding() }
+    // la caméra : à côté de la piste, sur la tête de course (ou la bille suivie) ; ou libre
+    if(!G3V.free){
+      const fi = G3V.follow!=null ? G3V.follow : (rank.find(q=>!q.done)?.i ?? rank[0].i), x = F[fi*7], y = F[fi*7+1], z = F[fi*7+2];
+      const side = Math.round(-y/G3.STEP)%2 ? -1 : 1;
+      camPos.lerp(v.set(x - 4*side, y+3, z+14), .05); camLook.lerp(v.set(x, y, z), .08);
+      camera.position.copy(camPos); camera.lookAt(camLook);
+    } else controls.update();
+    renderer.render(scene, camera);
+    // les noms au-dessus des billes
+    const W = stage.clientWidth, H = stage.clientHeight;
+    for(let i=0;i<n;i++){ const el = document.getElementById("g3l"+i); if(!el) continue; v.set(F[i*7], F[i*7+1]+.8, F[i*7+2]).project(camera);
+      const vis = v.z<1 && Math.abs(v.x)<1.1 && Math.abs(v.y)<1.1 && camera.position.distanceTo(meshes[i].position)<40;
+      el.style.opacity = vis ? 1 : 0; el.style.transform = `translate(${(v.x*.5+.5)*W}px,${(-v.y*.5+.5)*H}px) translate(-50%,-100%)` }
+    const lastFin = Math.max(...sim.fin.filter(x=>x<900));
+    if(!GCV.done && tt > Math.min(lastFin+1.5, sim.fin[order[0]]+15)){ GCV.done = true; gcPodium() }
+  };
+  GCV.raf = requestAnimationFrame(loop);
+}
+// la caméra libre, et passer à l'arrivée
+function g3Cam(){ const G = GCV.g3v; if(!G) return; G.free = !G.free; G.follow = null; G.controls.enabled = G.free;
+  if(G.free){ G.controls.target.set(0,-G3.RAMPS*G3.STEP/2,0); }
+  const b = document.getElementById("g3-cam"); if(b) b.textContent = G.free ? "Suivre la course" : "Caméra libre" }
+function g3Skip(){ const G = GCV.g3v; if(!G) return; const now = (performance.now()-G.t0)/1000; const last = Math.max(...GCV.R.map(o=>o.fin).filter(x=>x<900)); G.skip = Math.max(G.skip||0, last-1-now) }
+
+// la course : en 3D si possible, sinon la vue 2D d'avant
 function gcWatch(race){
+  if(!window.WebGLRenderingContext || lsGet("billy-gc-2d")==="1") return gcWatch2D(race);
+  gcWatch3D(race).catch(e=>{ console.warn("Course 3D indisponible :", e); gcWatch2D(race) });
+}
+function gcWatch2D(race){
   const T = gcTrack(race.jour), R = gcPlan(T, race.resultats, race.graine);
   const ov = document.getElementById("gc-ov");
   ov.innerHTML = `<canvas id="gc-cv"></canvas><div class="gc-vig"></div>
@@ -9909,6 +10091,8 @@ document.addEventListener("click", e=>{
     case "gc-watch": if(gc.etat?.derniere){ closeModal(); gcWatch(gc.etat.derniere) } break;
     case "gc-test": closeModal(); gcTest(); break;
     case "gc-replay": gcWatch({...GCV.race, replay:true}); break;
+    case "g3-cam": g3Cam(); break;
+    case "g3-skip": g3Skip(); break;
     case "gc-close": gcClose(); break;
     case "gc-vue": GCV.vue = GCV.vue==='tv' ? 'ciel' : 'tv'; lsSet("billy-gc-vue", GCV.vue); V_vueBtn(); break;
     case "gc-auto": GCV.free = false; GCV.follow = null; break;

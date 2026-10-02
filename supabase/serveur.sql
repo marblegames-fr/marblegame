@@ -391,10 +391,16 @@ begin
       if montant <> 0 or sac is distinct from 'classique' then raise exception 'montant_invalide'; end if;
       k := today;
     when 'jeu' then     -- une récompense par jour et par jeu (au Tir : par trou)
-      maxi := case when cle ~ '^tir\|[0-5]$' then 100 when cle = 'pot' then 100 when cle = 'chateau' then 120 when cle = 'casse' then 100
-                   when cle in ('course','tic') then 100 end;   -- Course et Tic : une partie par jour, sans mise (DAY_GAMES dans index.html)
+      maxi := case when cle ~ '^tir\|[0-5]$' then 100 when cle = 'pot' then 200 when cle = 'chateau' then 240 when cle = 'casse' then 200
+                   when cle in ('course','tic') then 200 end;   -- une partie par jour et par jeu (DAY_GAMES dans index.html)
       if maxi is null or montant > maxi or sac is not null then raise exception 'montant_invalide'; end if;
       k := today || '|' || cle;
+    when 'jeux-bonus' then   -- les 6 jeux du jour joués (le Tir et les 5 autres) : un Sac Premium
+      if montant <> 0 or sac is distinct from 'premium' then raise exception 'montant_invalide'; end if;
+      if (select count(*) from gains g where g.joueur = qui and g.source = 'jeu'
+            and g.cle in (today||'|tir|0', today||'|pot', today||'|chateau', today||'|casse', today||'|course', today||'|tic')) < 6
+        then raise exception 'pas_encore'; end if;
+      k := today;
     when 'succes' then
       if montant > 10000 then raise exception 'montant_invalide'; end if;
       k := cle;

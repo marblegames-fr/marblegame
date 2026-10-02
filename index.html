@@ -74,7 +74,8 @@ try{ document.documentElement.dataset.theme = localStorage.getItem("billy-theme"
 .pill,.type-box,.modal-visual,.active-visual{--rbg:var(--rb)}
 *{box-sizing:border-box}
 [hidden]{display:none!important}
-html,body{height:100%}
+html{height:100%}
+body{min-height:100%}   /* pas height:100% : sinon le ruban et la barre du haut ne restent pas collés en haut */
 /* très grands écrans (4K…) : toute l'interface est agrandie d'un coup, sinon tout paraît minuscule.
    Les unités d'écran (vw, vh) sont divisées par --vz pour garder la même taille réelle. */
 :root{--vz:1}
@@ -90,7 +91,7 @@ h1,h2,h3{margin:0;text-wrap:balance}
 p{margin:0}
 
 /* ---------- top bar ---------- */
-.topbar{position:sticky;top:env(safe-area-inset-top,0px);z-index:30;display:flex;align-items:center;gap:16px;height:68px;padding-inline:24px;background:var(--topbar);backdrop-filter:blur(8px);border-bottom:1px solid var(--line)}
+.topbar{position:sticky;top:calc(var(--rib,0px) + env(safe-area-inset-top,0px));z-index:30;display:flex;align-items:center;gap:16px;height:68px;padding-inline:24px;background:var(--topbar);backdrop-filter:blur(8px);border-bottom:1px solid var(--line)}
 .logo{display:flex;align-items:center;gap:4px;font-family:var(--display);font-size:38px;line-height:1;color:var(--yellow);text-shadow:0 3px 0 var(--navy);letter-spacing:.5px}
 /* le titre : une police ronde et gourmande, jaune avec une tranche caramel et un petit relief */
 .logo span{font-family:"Titan One",var(--display);font-size:.92em;letter-spacing:.8px;color:#FFC93F;
@@ -142,15 +143,16 @@ button.profile-mini:hover,button.profile-mini[aria-expanded="true"]{background:v
 .profile-mini small{color:var(--muted);font-size:12px;font-weight:600}
 .wallet{display:flex;align-items:center;gap:8px;height:38px;padding:0 14px 0 7px;border-radius:999px;background:var(--panel);border:1px solid var(--line);font-weight:800;font-variant-numeric:tabular-nums}
 .wallet small{font-weight:700;color:var(--ink-2);font-size:12px}
-@media (max-width:420px){ .wallet .w-plus{display:none} #daily-btn{width:34px} }
+@media (max-width:420px){ #daily-btn,#gc-btn{width:34px} }
 @media (max-width:400px){ #daily-btn{display:none} }
+@media (max-width:360px){ #gc-btn{display:none} }
 .coin{width:24px;height:24px;flex:none}
 button.wallet:hover{background:var(--panel-2)}
 
 /* ---------- layout ---------- */
 .layout{display:grid;grid-template-columns:216px minmax(0,1fr);min-height:calc(100% - 68px)}
 @media (min-width:1340px){ .layout{grid-template-columns:216px minmax(0,1fr) 360px} }
-.side{position:sticky;top:calc(68px + env(safe-area-inset-top,0px));align-self:start;height:calc(calc(100vh / var(--vz,1)) - 68px);display:flex;flex-direction:column;gap:4px;padding:22px 10px;border-right:1px solid var(--line);overflow-y:auto}
+.side{position:sticky;top:calc(68px + var(--rib,0px) + env(safe-area-inset-top,0px));align-self:start;height:calc(calc(100vh / var(--vz,1)) - 68px - var(--rib,0px));display:flex;flex-direction:column;gap:4px;padding:22px 10px;border-right:1px solid var(--line);overflow-y:auto}
 .nav-btn{display:flex;align-items:center;gap:12px;width:100%;padding:12px 10px 12px 12px;border-radius:12px;font-weight:700;font-size:14.5px;color:var(--ink);text-align:left}
 .nav-btn svg{flex:none;width:22px;height:22px}
 .nav-btn span{white-space:nowrap}
@@ -187,7 +189,7 @@ button.wallet:hover{background:var(--panel-2)}
 .mj-btn:not(.has) svg{color:var(--muted)}
 .mj-btn.has svg{color:#D9468F;animation:giftwiggle 2.4s ease-in-out infinite}
 @media (max-width:1339px){ .mj-btn{display:flex} }
-.mj-rail{display:none;position:sticky;top:calc(68px + env(safe-area-inset-top,0px));align-self:start;height:calc(calc(100vh / var(--vz,1)) - 68px);overflow-y:auto;flex-direction:column;gap:12px;padding:22px 16px 30px;border-left:1px solid var(--line)}
+.mj-rail{display:none;position:sticky;top:calc(68px + var(--rib,0px) + env(safe-area-inset-top,0px));align-self:start;height:calc(calc(100vh / var(--vz,1)) - 68px - var(--rib,0px));overflow-y:auto;flex-direction:column;gap:12px;padding:22px 16px 30px;border-left:1px solid var(--line)}
 @media (min-width:1340px){ .mj-rail{display:flex} }
 .mj-rail > *,.mj-panel > *{flex-shrink:0}
 .mj-head{display:flex;align-items:center;gap:10px}
@@ -1204,6 +1206,8 @@ button.vit-slot:hover{background:var(--panel-2);color:var(--ink)}
 .gh-txt h2{font-family:var(--display);font-weight:400;font-size:28px;line-height:1.05;margin:8px 0 4px}
 .gh-txt p{color:var(--ink-2);font-weight:600}
 .gh-side{display:grid;justify-items:end;gap:8px}
+.gh-bonus{display:inline-flex;align-items:center;gap:7px;margin-top:10px;padding:6px 12px;border-radius:999px;font-weight:900;font-size:13px;color:#fff;background:var(--bc,#2E6BE6);box-shadow:0 3px 0 rgba(0,0,0,.2)}
+.gh-bonus.got{background:var(--green)}
 .gh-side small{display:inline-flex;align-items:center;gap:5px;font-weight:800;color:var(--muted);font-size:12px}
 .gh-side small b{color:var(--ink)}
 .gh-dots{display:flex;gap:8px;flex-wrap:wrap}
@@ -1277,7 +1281,13 @@ button.vit-slot:hover{background:var(--panel-2);color:var(--ink)}
 .day.wk-end.has-bag{box-shadow:inset 0 0 0 1px color-mix(in srgb,var(--bc) 40%,transparent)}
 .day-ok{position:absolute;top:4px;right:4px;width:18px;height:18px;border-radius:50%;background:var(--green);color:#fff;display:grid;place-items:center}
 .day-bonus{font-size:10px;font-weight:900;color:var(--green)}
-#daily-btn{color:var(--ink-2)}
+#daily-btn,#gc-btn{color:var(--ink-2)}
+#gc-btn .dot{display:none}
+#gc-btn.ready{color:#E5484D}
+#gc-btn.ready .dot{display:block}
+#gc-btn.ok{color:var(--green)}
+#gc-btn .tip{position:absolute;top:calc(100% + 6px);left:50%;transform:translateX(-50%);white-space:nowrap;background:var(--ink);color:var(--bg);font-size:12px;font-weight:800;padding:5px 10px;border-radius:8px;opacity:0;pointer-events:none;transition:opacity .15s}
+#gc-btn:hover .tip{opacity:1}
 #daily-btn .dot{display:none}
 #daily-btn.ready{color:#D9468F}
 #daily-btn.ready .dot{display:block}
@@ -2288,8 +2298,103 @@ button.vit-slot:hover{background:var(--panel-2);color:var(--ink)}
 @media (pointer:coarse){ #auth-fx{pointer-events:none} }
 @media (prefers-reduced-motion:reduce){ .auth *{animation:none!important} }
 .pp-links button.pp-out{color:var(--warn)}
+/* la Grande Course de 20 h */
+.gc-banner{display:flex;align-items:center;gap:14px;width:100%;margin-bottom:18px;padding:14px 18px;text-align:left;cursor:pointer;color:#fff;background:linear-gradient(110deg,#C81E32,#7A1FA2);border:0;box-shadow:0 14px 30px -18px rgba(120,20,60,.8)}
+.gc-banner:hover{filter:brightness(1.06)}
+.gcb-flag{width:48px;height:48px;border-radius:14px;display:grid;place-items:center;background:rgba(255,255,255,.18)}
+.gcb-txt{flex:1;display:grid;gap:2px}.gcb-txt b{font-family:var(--display);font-weight:400;font-size:22px}.gcb-txt small{display:inline-flex;align-items:center;gap:4px;font-weight:800;opacity:.9}
+.gc-hero{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1.1fr);gap:22px;margin-bottom:18px}
+@media (max-width:900px){ .gc-hero{grid-template-columns:1fr} }
+.gc-main{display:grid;gap:12px;align-content:start}
+.gc-main .gh-kick{justify-self:start}
+.gc-clock small{display:block;font-size:12px;font-weight:900;text-transform:uppercase;letter-spacing:.06em;color:var(--muted)}
+.gc-clock b{font-family:var(--display);font-weight:400;font-size:44px;line-height:1}
+.gc-reg{display:flex;align-items:center;gap:12px;padding:12px 14px;border-radius:16px;font-weight:800}
+.gc-reg.on{background:var(--green-soft);color:var(--green);border:1px solid var(--green-line)}
+.gc-reg.on b{display:block;font-size:16px}.gc-reg.on small{display:block;color:var(--ink-2);font-weight:700}
+.gc-reg.off{background:var(--panel-2);color:var(--ink-2)}
+.gc-pickrow{display:flex;align-items:center;gap:12px}
+.gc-pickrow small{display:block;font-size:12px;font-weight:800;color:var(--muted)}.gc-pickrow b{font-size:16px}
+.gc-ball{display:grid;justify-items:center;gap:2px;background:var(--panel-2);border:1px dashed var(--line-2);border-radius:16px;padding:6px 10px;cursor:pointer;color:var(--ink-2);font-size:11px;font-weight:800}
+.gc-prizes{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
+.gc-prizes div{background:var(--panel-2);border-radius:14px;padding:9px;text-align:center;font-weight:800;font-size:12.5px;display:grid;justify-items:center;gap:2px}
+.gc-prizes b{font-family:var(--display);font-weight:400;font-size:22px;color:#D99A00}
+.gc-prizes .coin{width:15px;height:15px;vertical-align:-3px}
+.gc-side{display:grid;gap:10px;align-content:start}
+.gc-side .btn{justify-self:start}
+.gc-prev{position:relative;border-radius:18px;overflow:hidden;background:#000}
+.gc-prev canvas{display:block;width:100%;height:auto}
+.gc-prev span{position:absolute;left:12px;top:12px;background:rgba(0,0,0,.6);color:#fff;border-radius:999px;padding:5px 12px;font-weight:900;font-size:13px}
+.gc-last .panel-head h2{display:flex;align-items:center;gap:8px}
+.gc-livedot{width:10px;height:10px;border-radius:50%;background:#E5484D;animation:brPulse 1s infinite}
+.gc-res{list-style:none;padding:0;margin:8px 0;display:flex;gap:18px;flex-wrap:wrap;font-weight:800}
+.gc-mine{font-weight:800}
+.modal.gc-pop{display:block;width:min(480px,100%);padding:28px 24px 22px;text-align:center}
+.gc-pop h2{font-family:var(--display);font-weight:400;font-size:30px;margin:10px 0 6px}
+.gc-pop .btns{display:flex;justify-content:center;margin-top:14px}
+body.gc-open{overflow:hidden}
+.gc-ov{position:fixed;inset:0;z-index:80;background:#141220;color:#fff;overflow:hidden}
+.gc-ov[hidden]{display:none}
+#gc-cv{position:absolute;inset:0;width:100%;height:100%;display:block}
+.gc-top{position:absolute;left:14px;right:14px;top:14px;display:flex;gap:10px;align-items:flex-start;z-index:2}
+.gc-top .sp{flex:1}
+.gc-ov .chip{background:rgba(20,18,32,.82);backdrop-filter:blur(8px);border:1px solid rgba(255,255,255,.12);border-radius:16px;padding:8px 14px}
+.gc-ov .chip small{display:block;font-size:11px;font-weight:800;color:rgba(255,255,255,.6);text-transform:uppercase;letter-spacing:.06em}
+.gc-ov .chip b{font-family:var(--display);font-weight:400;font-size:20px}
+.gc-x{width:44px;height:44px;border-radius:50%;border:0;background:rgba(255,255,255,.14);color:#fff;font-size:26px;line-height:1;cursor:pointer}
+.gc-board{position:absolute;right:14px;top:72px;width:240px;z-index:2;background:rgba(20,18,32,.82);backdrop-filter:blur(8px);border:1px solid rgba(255,255,255,.12);border-radius:18px;padding:10px;display:grid;gap:3px}
+.gc-board h3{margin:2px 6px 6px;font-size:11.5px;text-transform:uppercase;letter-spacing:.08em;color:rgba(255,255,255,.6)}
+.gcr{display:flex;align-items:center;gap:8px;padding:4px 8px;border-radius:12px}
+.gcr.me{background:rgba(255,201,63,.16);box-shadow:inset 0 0 0 1px rgba(255,201,63,.45)}
+.gcr .pos{width:20px;font-family:var(--display);font-size:17px;text-align:center}
+.gcr img{width:24px;height:24px}
+.gcr .nm{flex:1;font-weight:800;font-size:13px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.gcr .st{font-size:11px;font-weight:800;color:rgba(255,255,255,.55)}
+.gcr.fin .st{color:#FFC93F}
+.gc-mini{position:absolute;left:14px;bottom:14px;z-index:2;border-radius:14px;background:rgba(20,18,32,.82);border:1px solid rgba(255,255,255,.12)}
+.gc-ticker{position:absolute;left:50%;bottom:18px;transform:translateX(-50%);z-index:2;display:grid;gap:6px;justify-items:center;pointer-events:none;width:max-content;max-width:calc(100% - 300px)}
+.gc-ticker div{background:rgba(20,18,32,.9);border:1px solid rgba(255,255,255,.14);border-radius:999px;padding:7px 16px;font-weight:800;font-size:14px;animation:cardIn .3s both}
+.gc-big{position:absolute;inset:0;display:grid;place-items:center;pointer-events:none;z-index:3}
+.gc-big span{font-family:var(--display);font-size:min(20vw,170px);color:#FFC93F;-webkit-text-stroke:6px #3A1E00;paint-order:stroke;animation:gcBig .95s cubic-bezier(.2,1.6,.4,1) both}
+@keyframes gcBig{0%{opacity:0;transform:scale(2.2)}30%{opacity:1;transform:scale(1)}80%{opacity:1}100%{opacity:0;transform:scale(.9)}}
+.gc-end{position:absolute;inset:0;z-index:4;display:flex;overflow:auto;background:radial-gradient(120% 80% at 50% 0%,rgba(229,72,77,.3),rgba(14,12,24,.92) 60%);animation:cardIn .4s both}
+.gc-end[hidden]{display:none}
+.gc-pod{margin:auto;text-align:center;padding:24px}
+.gc-pod h2{font-family:var(--display);font-weight:400;font-size:50px;margin:10px 0 0}
+.gcs-row{display:flex;align-items:flex-end;justify-content:center;gap:12px;margin:24px 0 16px}
+.gcs{display:grid;justify-items:center;gap:6px;width:140px}
+.gcs img{width:80px;height:80px;filter:drop-shadow(0 10px 10px rgba(0,0,0,.4));animation:gcHop 1s ease-in-out infinite alternate}
+.gcs .blk{width:100%;border-radius:14px 14px 0 0;display:grid;place-items:start center;padding-top:6px;font-family:var(--display);font-size:38px;color:rgba(0,0,0,.35)}
+.gcs:nth-child(1) .blk{height:100px;background:linear-gradient(#C9D2E0,#93A0B6)}
+.gcs:nth-child(2) .blk{height:150px;background:linear-gradient(#FFE07A,#E8A91A)}
+.gcs:nth-child(3) .blk{height:74px;background:linear-gradient(#F2B98A,#C77A43)}
+@keyframes gcHop{to{transform:translateY(-8px)}}
+.gc-vig{position:absolute;inset:0;pointer-events:none;background:radial-gradient(130% 100% at 50% 60%,transparent 55%,rgba(0,0,0,.35))}
+.gc-skip{background:rgba(20,18,32,.82)!important;color:#fff!important;border:1px solid rgba(255,255,255,.18)!important;height:44px}
+.gc-lights{position:absolute;left:50%;top:84px;transform:translateX(-50%);z-index:3;display:flex;gap:10px;padding:10px 14px;border-radius:18px;background:#15121F;box-shadow:0 10px 30px rgba(0,0,0,.5)}
+.gc-lights[hidden]{display:none}
+.gc-lights i{width:30px;height:30px;border-radius:50%;background:#3A2A2E;box-shadow:inset 0 -4px 6px rgba(0,0,0,.5)}
+.gc-lights i.on{background:radial-gradient(circle at 40% 35%,#FF8A8A,#E5161F);box-shadow:0 0 18px #FF2A2A}
+.gc-lights i.go{background:radial-gradient(circle at 40% 35%,#9CFFB0,#14B83C);box-shadow:0 0 18px #2BFF6A}
+.gcs-lot{font-size:12px;font-weight:900;color:#FFC93F}
+.gc-rest{list-style:none;margin:0 auto 14px;padding:0;max-width:420px;display:grid;gap:4px;max-height:160px;overflow:auto}
+.gc-rest li{display:flex;gap:10px;align-items:center;padding:5px 12px;border-radius:12px;background:rgba(255,255,255,.07);font-size:13px}
+.gc-rest li.me{background:rgba(255,201,63,.18)}
+.gc-rest span{width:30px;font-weight:900;opacity:.7}.gc-rest b{flex:1;text-align:left}.gc-rest em{font-style:normal;font-weight:800;color:#FFC93F;font-size:12px}
+.gc-sizes{margin:10px 0 4px;flex-wrap:wrap}
+.c-time.low b{color:#E5484D;animation:brPulse 1s infinite}
+.beta-b .sil{display:block;border-radius:50%;background:radial-gradient(circle at 35% 30%,color-mix(in srgb,var(--c2) 35%,transparent),color-mix(in srgb,var(--c1) 30%,transparent) 70%)}
+.gcr{cursor:pointer}.gcr:hover{background:rgba(255,255,255,.08)}.gcr.on{box-shadow:inset 0 0 0 2px #5AB8FF}
+.gc-auto[hidden]{display:none}
+.gc-hint{position:absolute;left:50%;top:150px;transform:translateX(-50%);z-index:2;background:rgba(20,18,32,.85);border:1px solid rgba(255,255,255,.15);border-radius:999px;padding:7px 14px;font-size:12.5px;font-weight:800;display:inline-flex;gap:6px;align-items:center;max-width:calc(100% - 28px);text-align:center;transition:opacity .6s;pointer-events:none}
+.gc-hint.bye{opacity:0}
+#gc-cv{cursor:grab;touch-action:none}#gc-cv:active{cursor:grabbing}
+.gc-pod .gc-mine{display:inline-block;background:rgba(255,255,255,.1);border-radius:16px;padding:10px 16px;margin-bottom:14px}
+.gc-pod .btns{display:flex;gap:10px;justify-content:center}
+.gc-pod .meta{color:rgba(255,255,255,.55);margin-top:12px}
+@media (max-width:760px){ .gc-top .chip small,#gc-chrono{display:none} .gc-top .chip b{font-size:15px} .gc-top .chip{padding:6px 10px;max-width:52vw} .gc-skip{height:36px!important;font-size:12px;padding:0 10px} .gc-x{width:36px;height:36px;font-size:22px} .gc-lights{top:62px} .gc-lights i{width:22px;height:22px} .gc-board{display:none} .gc-mini{width:160px;height:90px} .gc-ticker{max-width:calc(100% - 28px);bottom:116px} .gc-pod h2{font-size:36px} .gcs{width:100px} }
 /* le ruban de la bêta, tout en haut */
-.beta-rib{position:relative;z-index:31;display:flex;align-items:center;justify-content:center;gap:12px;min-height:36px;padding:5px 16px;background:repeating-linear-gradient(135deg,#C81E32 0 16px,#B9182B 16px 32px);color:#fff;font-size:13px;line-height:1.3;box-shadow:inset 0 -2px 0 rgba(0,0,0,.18)}
+.beta-rib{position:sticky;top:env(safe-area-inset-top,0px);z-index:31;display:flex;align-items:center;justify-content:center;gap:12px;min-height:36px;padding:5px 16px;background:repeating-linear-gradient(135deg,#C81E32 0 16px,#B9182B 16px 32px);color:#fff;font-size:13px;line-height:1.3;box-shadow:inset 0 -2px 0 rgba(0,0,0,.18)}
 .beta-rib[hidden]{display:none}
 .br-tag{flex:none;font-family:var(--display);letter-spacing:.08em;text-transform:uppercase;font-size:12.5px;background:#fff;color:#B9182B;padding:2px 9px;border-radius:7px;transform:rotate(-4deg);box-shadow:0 2px 0 rgba(0,0,0,.22)}
 .br-txt b{font-weight:800}
@@ -2318,8 +2423,9 @@ button.vit-slot:hover{background:var(--panel-2);color:var(--ink)}
   <div class="tagline">Ouvre. Collectionne. Joue.</div>
   <div class="top-spacer"></div>
   <button class="mj-btn" id="mj-btn" data-action="mj-open" aria-label="Ma journée"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3.5" y="8" width="17" height="4" rx="1"/><path d="M5 12v8h14v-8M12 8v12M12 8C10.5 4 7 4 7 6s3 2 5 2c2 0 5 0 5-2s-3.5-2-5 2"/></svg><span class="lbl">Ma journée</span><span class="n" id="mj-n" hidden></span></button>
+  <button class="icon-btn" id="gc-btn" data-action="nav" data-view="grandecourse" aria-label="La Grande Course de 20 h"><span class="dot"></span></button>
   <button class="icon-btn" id="daily-btn" data-action="daily-open" aria-label="Le bonbec du jour"><span class="dot"></span></button>
-  <button class="wallet" data-action="nav" data-view="sacs" aria-label="Mes bonbecs, ouvrir des sacs"><span id="coin-slot"></span><span id="jetons">0</span><small>bonbecs</small><span class="w-plus" aria-hidden="true"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg></span></button>
+  <div class="wallet" aria-label="Mes bonbecs"><span id="coin-slot"></span><span id="jetons">0</span><small>bonbecs</small></div>
   <div class="prof-wrap">
     <button class="profile-mini" data-action="prof-pop" aria-label="Mon profil" aria-expanded="false" aria-haspopup="true">
       <span class="av-ring" id="top-ring"><span class="avatar" id="top-avatar"></span></span>
@@ -2339,6 +2445,7 @@ button.vit-slot:hover{background:var(--panel-2);color:var(--ink)}
 <div class="mj-scrim" id="mj-sheet" hidden></div>
 
 <div class="scrim" id="modal" hidden></div>
+<div class="gc-ov" id="gc-ov" hidden></div>
 <div class="scrim ask-scrim" id="ask" hidden></div>
 <div class="ov" id="ov" hidden>
   <div class="ov-bg" aria-hidden="true"></div>
@@ -3041,7 +3148,9 @@ vec4 fam(vec3 q, out vec3 e){
     float d=length(fc-off*0.35);
     float sh=step(0.5,hb)*smoothstep(0.06,0.0,abs(d-rb))*smoothstep(0.92,0.75,r);
     e=vec3(1.0)*sh*1.5;
-    return vec4(mix(uC2,vec3(1.0),0.6), 0.25+sh*22.0);
+    // le verre prend vraiment la couleur du coloris : sombre au cœur, plus clair vers la paroi
+    vec3 col=mix(uC1,mix(uC2,vec3(1.0),0.2),smoothstep(0.1,0.9,r));
+    return vec4(col, 0.42+sh*22.0);
   }
 #elif MODE==12
   { // arlequin
@@ -3688,13 +3797,15 @@ void main(){
   }
 #endif
   if(uShiny>0.5 && uShiny<1.5){
-    // irisée : film d'huile en volutes, dessiné sur la bille (et qui glisse un peu avec l'angle, comme un vrai reflet)
-    float th=fbm(qo*1.7+uSeed.xyz*20.0)*2.4+qo.y*0.5+uSeed.w;
-    vec3 iri=0.5+0.5*cos(6.2831*(vec3(0.0,0.33,0.67)+th+(1.0-n.z)*0.5));
-    // le film couvre toute la bille (plus épais par endroits) : on voit l'arc-en-ciel partout, le décor reste lisible dessous
-    float film=0.2+0.4*smoothstep(0.28,0.78,fbm(qo*2.6-uSeed.zxy*12.0));
-    col=mix(col,col*0.55+iri*0.6,film);
-    col+=iri*(F*1.7+0.07);
+    // irisée : un vernis arc-en-ciel en dégradé lisse, comme une bulle de savon. Les couleurs suivent une diagonale de la bille
+    // (qui tourne avec elle) et glissent avec l'angle de vue : le bord change de couleur quand la bille bouge.
+    vec3 ax=normalize(vec3(0.55,0.8,0.25)+(uSeed.xyz-0.5)*0.7);
+    float hue=dot(qo,ax)*0.45+(1.0-n.z)*0.55+uSeed.w+0.04*sin(dot(qo,ax.zxy)*3.0);
+    vec3 rb=0.5+0.5*cos(6.2831*(vec3(0.0,0.33,0.67)+hue));
+    rb=mix(rb,vec3(1.0),0.18);                      // des tons pastel, lumineux
+    col=mix(col,col*0.55+rb*0.55,0.4);
+    col+=rb*(F*1.5+0.06);
+    col+=rb*pow(max(dot(reflect(d0,n),L),0.0),6.0)*0.25;   // un reflet coloré autour du point de lumière
   }
   if(uShiny>1.5 && uShiny<2.5){
     // dorée : de petites paillettes d'or posées sur la surface, chacune inclinée un peu différemment ;
@@ -4369,6 +4480,10 @@ const PASS_MAX_XP = XP_AT[PASS_TIERS];
 const tierProg = (xp, tier) => tier>=PASS_TIERS ? [1,1] : [xp-XP_AT[tier], TIER_COST(tier+1)];
 // Rythme visé : un joueur régulier finit le passe en ~3 semaines, un joueur qui passe juste faire ses quêtes vers la fin du mois
 const BAG_XP = {gratuit:20, classique:60, premium:120, collector:300, pirate:150};
+// l'XP des sacs est plafonnée à 600 par jour : ouvrir des sacs sans fin ne fait plus filer le passe
+const BAG_XP_DAY = 600;
+function bagXP(n){ const P = ensurePass(); if(P.bagDay!==dayKey()){ P.bagDay = dayKey(); P.bagXP = 0 }
+  const k = Math.max(0, Math.min(n, BAG_XP_DAY-P.bagXP)); P.bagXP += k; return k }
 const PASS_XP = {quest:150, bonus:200, star:15, recycle:2, craft:40, daily:100};
 // le premier passe de saison (septembre 2026) : un décor de saison n'est montré qu'une fois son mois arrivé
 const SEASON_LAUNCH = new Date(2026, 8, 1);
@@ -4486,7 +4601,7 @@ const giftCount = () => Object.values(S.bagInv).reduce((a,b)=>a+b,0);
    ===================================================================== */
 const NAV = [["accueil","Accueil","home"],["sacs","Ouvrir des sacs","bag"],["collection","Boîte à billes","layers"],["jeux","Jeux de la cour","pad"],["confiserie","La Confiserie","candy"],["cour","La cour de récré","cour"]];
 // les pages qui ne sont pas dans le menu allument leur « parent »
-const NAV_PARENT = {billepedia:"collection", tir:"jeux", pot:"jeux", chateau:"jeux", casse:"jeux", tic:"jeux", course:"jeux", atelier:"confiserie"};
+const NAV_PARENT = {billepedia:"collection", tir:"jeux", pot:"jeux", chateau:"jeux", casse:"jeux", tic:"jeux", course:"jeux", grandecourse:"jeux", atelier:"confiserie"};
 const SOLO_GAMES = [["pot","Le Pot"],["chateau","Le Château"],["casse","Le Casse-briques"],["course","La Course"],["tic","La Tic"]];
 function gamesReady(){
   const out = SOLO_GAMES.filter(g=>soloReady(g[0])).map(g=>g[1]);
@@ -4509,6 +4624,7 @@ function renderNav(){
     + `<button class="tab-bag" data-action="nav" data-view="sacs" ${cur==="sacs"?'aria-current="page"':""}><span class="bb">${bagSVG(FREE_BAG)}${bags?`<span class="n">${bags}</span>`:""}</span>Sacs</button>`
     + tab("jeux","Jeux","pad",games) + tab("confiserie","Confiserie","candy") + tab("cour","Cour","cour",courCount());
   renderDay();
+  renderGcBtn();
 }
 
 /* ---------- Ma journée : bonbec, sacs gratuits, quêtes, jeux, passe… une seule liste ---------- */
@@ -4712,9 +4828,11 @@ function openDaily(){
 // Le ruban de la bêta et ses billes
 const betaOwned = () => TK.filter(t=>S.specs.some(x=>isBeta(x) && x.type===t));
 function renderBeta(){
-  const el = document.getElementById("beta-rib"); el.hidden = !BETA.open; if(!BETA.open) return;
+  const el = document.getElementById("beta-rib"); el.hidden = !BETA.open;
+  requestAnimationFrame(()=>document.documentElement.style.setProperty("--rib", BETA.open ? el.offsetHeight+"px" : "0px"));
+  if(!BETA.open) return;
   const done = betaOwned().length===TK.length;
-  el.innerHTML = `<span class="br-tag">Bêta</span><span class="br-txt"><b>Billy est en version de test.</b> <span class="br-long">À la sortie, toutes les parties repartiront à zéro… sauf les billes Bêta des testeurs !</span></span>
+  el.innerHTML = `<span class="br-tag">Bêta</span><span class="br-txt"><b>Billy est en version de test.</b> <span class="br-long">À la sortie, tous les comptes repartiront à zéro… sauf les billes Bêta des testeurs !</span></span>
     ${done ? `<button class="br-btn done" data-action="beta-see">${ic("check",14,3)} Mes billes Bêta</button>` : `<button class="br-btn" data-action="beta-claim">${ic("gift",15)} Claim</button>`}`;
 }
 function claimBeta(){
@@ -4744,8 +4862,16 @@ function showBeta(fresh){
     <button class="btn btn-yellow" data-action="close-modal">Trop bien !</button></div>`;
   el.hidden = false; el.querySelector(".btn-yellow").focus();
 }
+// la Grande Course dans la barre du haut : un point rouge tant qu'on n'est pas inscrit pour la prochaine course
+function renderGcBtn(){
+  const b = document.getElementById("gc-btn"); if(!b) return;
+  const reg = !!gc.etat?.inscrit, N = gcNext();
+  b.innerHTML = `${ic("flag",21)}<span class="dot"></span><span class="tip">${reg ? `Inscrit pour la course de ${N.jour===isoDay()?"ce soir":"demain"} 20 h` : `Grande Course de 20 h : inscris-toi !`}</span>`;
+  b.classList.toggle("ready", !reg); b.classList.toggle("ok", reg);
+  b.setAttribute("aria-label", reg ? "La Grande Course de 20 h : tu es inscrit" : "La Grande Course de 20 h : pas encore inscrit");
+}
 function renderTop(){
-  renderBeta();
+  renderBeta(); renderGcBtn();
   document.getElementById("jetons").textContent = fmt(S.jetons);
   const db = document.getElementById("daily-btn");
   if(!db.querySelector("svg")) db.insertAdjacentHTML("afterbegin", ic("gift",21));
@@ -4792,9 +4918,10 @@ document.addEventListener("keydown", e=>{ if(e.key==="Escape") toggleProfPop(fal
 function go(view){ toggleProfPop(false); if(view==="atelier"){ view="confiserie"; ui.confTab="fusion" } if(view==="billepedia"){ view="collection"; ui.tab="pedia" } ui.view=view; renderNav(); renderView(); window.scrollTo({top:0}); }
 function renderView(){
   const v = document.getElementById("view");
-  const map = {cour:viewCour, succes:viewSucces, accueil:viewHome, sacs:viewBags, collection:viewCollection, jeux:viewGames, tir:viewGame, pot:viewArena, chateau:viewArena, casse:viewCasse, tic:viewArena, course:viewArena, quetes:viewQuests, billepedia:viewPedia, passe:viewPass, profil:viewProfile, atelier:viewCraft, confiserie:viewConfiserie};
+  const map = {cour:viewCour, succes:viewSucces, accueil:viewHome, sacs:viewBags, collection:viewCollection, jeux:viewGames, tir:viewGame, pot:viewArena, chateau:viewArena, casse:viewCasse, tic:viewArena, course:viewArena, grandecourse:viewGrandeCourse, quetes:viewQuests, billepedia:viewPedia, passe:viewPass, profil:viewProfile, atelier:viewCraft, confiserie:viewConfiserie};
   v.innerHTML = (map[ui.view] || viewSoon)();
   if(ui.view==="passe") focusTrack();
+  if(ui.view==="grandecourse") gcAfterRender();
   document.querySelector(".layout")?.classList.toggle("on-home", ui.view==="accueil");   // avant hcInit : la largeur de l'accueil en dépend
   if(ui.view==="accueil") hcInit();
   if(ui.view==="tir") initGame();
@@ -5326,11 +5453,12 @@ function viewCollection(){
       <button class="tab" role="tab" data-action="tab" data-tab="album" aria-selected="${ui.tab==="album"}">Album <small>${slots.size} / ${TOTAL_SLOTS} cases</small></button>
       <button class="tab" role="tab" data-action="tab" data-tab="billes" aria-selected="${ui.tab==="billes"}">Mes billes <small>${S.specs.length}</small></button>
       <button class="tab" role="tab" data-action="tab" data-tab="series" aria-selected="${ui.tab==="series"}">Séries <small>${nSeries} / ${SERIES.length}</small>${seriesClaimable()?` <span class="tab-dot">${seriesClaimable()}</span>`:""}</button>
+      ${BETA.open || betaOwned().length ? `<button class="tab" role="tab" data-action="tab" data-tab="beta" aria-selected="${ui.tab==="beta"}">Bêta <small>${betaOwned().length} / ${TK.length}</small></button>` : ""}
       ${EVENT_FAMS.length ? `<button class="tab" role="tab" data-action="tab" data-tab="events" aria-selected="${ui.tab==="events"}">Événements <small>${S.specs.filter(x=>eventOf(x)).length}</small></button>` : ""}
       <button class="tab" role="tab" data-action="tab" data-tab="pedia" aria-selected="${ui.tab==="pedia"}">Billepedia</button>
     </div>
   </div>
-  ${ui.tab==="pedia" ? viewPedia().replace(/^<div class="page-head">[\s\S]*?(?=<section class="pedia-sec">)/, "") : ui.tab==="events" ? eventsView() : `
+  ${ui.tab==="pedia" ? viewPedia().replace(/^<div class="page-head">[\s\S]*?(?=<section class="pedia-sec">)/, "") : ui.tab==="events" ? eventsView() : ui.tab==="beta" ? betaView() : `
   ${ui.tab==="album"||ui.tab==="billes" ? `<div class="bx-sizes" role="group" aria-label="Filtrer par taille">
     <button class="bx-size all" data-action="ftype" data-type="all" aria-pressed="${ui.type==="all"}"><b>Toutes</b><small>${ui.tab==="billes" ? `${fmt(S.specs.length)} bille${S.specs.length>1?"s":""}` : `${nFull} complète${nFull>1?"s":""} · ${shinyCount} shiny`}</small></button>
     ${TK.map(sizeBtn).join("")}</div>` : ""}
@@ -5339,6 +5467,17 @@ function viewCollection(){
 }
 
 // Les billes d'événement : un petit album par événement (ses coloris × les 6 tailles), à part de l'album principal
+function betaView(){
+  const got = betaOwned();
+  return `<p class="conf-intro">Les billes Bêta sont réservées à ceux qui testent Billy avant sa sortie : une de chaque taille. Elles ne s'échangent pas, ne comptent pas dans l'album, et resteront dans ta boîte quand tous les comptes repartiront à zéro.</p>
+  <section class="panel ev-album" style="--ec:#D7263D">
+    <div class="ev-head"><div><h3>Bêta <small>· ${esc(BETA.ed)}</small></h3><p class="meta">${BETA.open ? "À récupérer pendant toute la bêta." : "La bêta est terminée."}</p></div>
+      <span class="serie-n">${got.length} / ${TK.length}</span>${BETA.open && got.length<TK.length ? `<button class="btn btn-yellow" data-action="beta-claim">${ic("gift",18)} Claim</button>` : ""}</div>
+    <div class="beta-row">${TK.map(t=>{ const s = S.specs.find(x=>isBeta(x) && x.type===t);
+      return s ? `<button class="beta-b" data-action="spec" data-id="${s.id}" style="${tstyle(t)}">${mImg(s,200,Math.round(36+60*scaleOf(t)),"")}<small>${TYPES[t].label}</small></button>`
+        : `<span class="beta-b" style="${tstyle(t)};opacity:.45"><span class="sil" style="--c1:#7A0E1F;--c2:#D7263D;width:${Math.round(36+60*scaleOf(t))}px;height:${Math.round(36+60*scaleOf(t))}px"></span><small>${TYPES[t].label}</small></span>` }).join("")}</div>
+  </section>`;
+}
 function eventsView(){
   return `<p class="conf-intro">Les décors d'événement ne tombent que pendant leur événement, et ne comptent ni dans l'album ni dans les succès : c'est ta collection d'événements, rien que pour le plaisir (et pour frimer dans la cour).</p>
   ${EVENT_FAMS.map(f=>{ const F = FAMILIES[f], E = EVENTS[F.event], live = eventLive(E), mine = S.specs.filter(x=>x.family===f);
@@ -5413,7 +5552,7 @@ function viewPass(){
     <section class="panel">
       <div class="panel-head"><h2>Gagner de l'XP de saison</h2></div>
       <ul class="xp-list">
-        <li>${ic("bag",20)}<span>Ouvrir un sac</span><b>+${BAG_XP.gratuit} à +${BAG_XP.collector}</b></li>
+        <li>${ic("bag",20)}<span>Ouvrir un sac <small>(jusqu'à ${BAG_XP_DAY} XP par jour${ensurePass().bagDay===dayKey()?` · ${ensurePass().bagXP} aujourd'hui`:""})</small></span><b>+${BAG_XP.gratuit} à +${BAG_XP.collector}</b></li>
         <li>${ic("gift",20)}<span>Récupérer le bonbec du jour</span><b>+${PASS_XP.daily}</b></li>
         <li>${ic("quest",20)}<span>Récupérer une quête du jour</span><b>+${PASS_XP.quest}</b></li>
         <li>${ic("trophy",20)}<span>Bonus des 3 quêtes</span><b>+${PASS_XP.bonus}</b></li>
@@ -5987,7 +6126,7 @@ async function openBag(bagId, gift){
     if(i===iSlot) questEvent("new_slot", 1, i);
     if(r.isNew||r.newColor) questEvent("new_color", 1, i);
   });
-  ovState = {bag, results, opened:new Set(), gift, forced:!!pulls.forced, pxp:passXP(BAG_XP[bag.id])};
+  ovState = {bag, results, opened:new Set(), gift, forced:!!pulls.forced, pxp:passXP(bagXP(BAG_XP[bag.id]))};
   showBagStage();
 }
 // Taille la plus grosse d'un tirage : 0 (Mini) à 4 (Mammouth), et 6 pour une shiny
@@ -6296,7 +6435,7 @@ function finishReveal(){
   } else {
     again = freeReady() ? `<button class="btn btn-yellow" data-action="open-next-free">Ouvrir le suivant (${freeStock()} en stock)</button>` : `<button class="btn btn-yellow" data-action="to-bags">Voir les sacs payants</button>`;
   }
-  document.getElementById("ov-actions").innerHTML = `<span class="ov-xp" style="flex-basis:100%;justify-content:center">${ic("ticket",18)} +${ovState.pxp} XP de saison</span>${again}<button class="btn btn-ghost" data-action="to-collection">Voir ma boîte à billes</button>`;
+  document.getElementById("ov-actions").innerHTML = `<span class="ov-xp" style="flex-basis:100%;justify-content:center">${ic("ticket",18)} ${ovState.pxp ? `+${ovState.pxp} XP de saison` : `XP des sacs au maximum pour aujourd'hui (${BAG_XP_DAY})`}</span>${again}<button class="btn btn-ghost" data-action="to-collection">Voir ma boîte à billes</button>`;
 }
 function closeOv(quiet){
   // fermé avant d'avoir tout découvert : les billes sont déjà rangées, on montre quand même ce qu'il y avait
@@ -6523,7 +6662,7 @@ function finishHole(success){
     const rec = !S.best[game.lvl] || game.strokes<S.best[game.lvl];
     if(rec) S.best[game.lvl] = game.strokes;
     const P = playedToday(), paid = !P.tir[0];
-    if(paid){ P.tir[0] = 1; earn("jeu", "tir|0", rew) }   // une récompense par jour (le serveur compte « tir|0 »)
+    if(paid){ P.tir[0] = 1; earn("jeu", "tir|0", rew); gamesBonus() }   // une récompense par jour (le serveur compte « tir|0 »)
     S.holes++; save(); renderTop(); updHud(); renderHoles();
     const pxp = paid ? passXP(PASS_XP.star*st) : 0;
     questEvent("hole");
@@ -6630,16 +6769,16 @@ const AW=900, AH=520, AB=22, AMAXV=21;
 const ARENA = {
   pot:{title:"Le Pot", icon:"pot",
     lead:"Le grand classique : envoie tes billes dans le trou creusé dans la terre. Tes billes restent sur le terrain, alors sers-t'en pour pousser les autres dans le pot !",
-    rules:["5 lancers depuis la ligne de craie.","Chaque bille dans le pot rapporte 10 bonbecs.","Les billes déjà lancées restent en jeu : pousse-les dans le pot !","1 bille dans le pot : 1 étoile, 3 billes : 2 étoiles, 5 billes : 3 étoiles.","Une partie par jour : elle compte dès que tu cliques sur « C'est parti ! »."]},
+    rules:["5 lancers depuis la ligne de craie.","Chaque bille dans le pot rapporte 20 bonbecs.","Les billes déjà lancées restent en jeu : pousse-les dans le pot !","1 bille dans le pot : 1 étoile, 3 billes : 2 étoiles, 5 billes : 3 étoiles.","Une partie par jour : elle compte dès que tu cliques sur « C'est parti ! »."]},
   chateau:{title:"Le Château", icon:"castle",
     lead:"Dix billes rangées en triangle au milieu d'un cercle de craie. Tu as 3 tirs pour en faire sortir un maximum du cercle.",
-    rules:["3 tirs depuis la ligne de craie, d'un endroit différent à chaque fois.","Chaque bille sortie du cercle rapporte 6 bonbecs.","3 billes sorties : 1 étoile, 6 : 2 étoiles, les 10 : 3 étoiles et une vraie bille gagnée pour ta boîte à billes !","Plus ta bille active est grosse, plus elle tape fort.","Une partie par jour : elle compte dès que tu cliques sur « C'est parti ! »."]},
+    rules:["3 tirs depuis la ligne de craie, d'un endroit différent à chaque fois.","Chaque bille sortie du cercle rapporte 12 bonbecs.","3 billes sorties : 1 étoile, 6 : 2 étoiles, les 10 : 3 étoiles et une vraie bille gagnée pour ta boîte à billes !","Plus ta bille active est grosse, plus elle tape fort.","Une partie par jour : elle compte dès que tu cliques sur « C'est parti ! »."]},
   course:{title:"La Course sur la plage", icon:"flag",
     lead:"Le Tour de France des billes des vacances : une piste creusée dans le sable, trois adversaires, et chacun sa pichenette à son tour. Le premier qui passe la ligne a gagné !",
-    rules:["Chacun joue une pichenette à son tour : toi, puis tes trois adversaires.","Si ta bille sort de la piste, elle revient là où elle était. Pas de raccourci !","Tu peux bousculer les autres billes : c'est de bonne guerre.","1re place : 100 bonbecs, 2e : 60, 3e : 35, 4e : 15. 30 pichenettes au maximum.","Une partie par jour : elle compte dès que tu cliques sur « C'est parti ! »."]},
+    rules:["Chacun joue une pichenette à son tour : toi, puis tes trois adversaires.","Si ta bille sort de la piste, elle revient là où elle était. Pas de raccourci !","Tu peux bousculer les autres billes : c'est de bonne guerre.","1re place : 200 bonbecs, 2e : 120, 3e : 70, 4e : 30. 30 pichenettes au maximum.","Une partie par jour : elle compte dès que tu cliques sur « C'est parti ! »."]},
   tic:{title:"La Tic", icon:"tic",
     lead:"Chacun son tour, on essaie de toucher la bille de l'autre. Le premier qui fait « tic » a gagné !",
-    rules:["Tu tires en premier, puis ton adversaire.","Touche sa bille pour gagner la partie.","Les billes restent là où elles s'arrêtent : attention à ne pas finir à sa portée.","5 tirs chacun au maximum. Victoire : 100 bonbecs, match nul : 40, défaite : 20.","Une partie par jour : elle compte dès que tu cliques sur « C'est parti ! »."]},
+    rules:["Tu tires en premier, puis ton adversaire.","Touche sa bille pour gagner la partie.","Les billes restent là où elles s'arrêtent : attention à ne pas finir à sa portée.","5 tirs chacun au maximum. Victoire : 200 bonbecs, match nul : 80, défaite : 40.","Une partie par jour : elle compte dès que tu cliques sur « C'est parti ! »."]},
 };
 function artPot(){ return `<svg viewBox="0 0 240 130" preserveAspectRatio="xMidYMid slice" aria-hidden="true"><rect width="240" height="130" fill="#B8895A"/><circle cx="60" cy="30" r="1.5" fill="#8C6440"/><circle cx="200" cy="100" r="2" fill="#8C6440"/><circle cx="120" cy="110" r="1.5" fill="#D9B48A"/>
   <path d="M40 10v110" stroke="#fff" stroke-width="3" stroke-dasharray="7 6" opacity=".8"/><ellipse cx="165" cy="68" rx="20" ry="13" fill="#3A2614"/><ellipse cx="165" cy="66" rx="20" ry="12" fill="#1E130A"/>
@@ -6658,6 +6797,7 @@ function artCourse(){ return `<svg viewBox="0 0 240 130" preserveAspectRatio="xM
   <path d="M205 20v42" stroke="#5A3A20" stroke-width="2.5"/><path d="M205 20h24v14h-24z" fill="#fff"/><path d="M205 20h6v7h-6zM217 20h6v7h-6zM211 27h6v7h-6zM223 27h6v7h-6z" fill="#24253D"/></svg>` }
 const GAME_ICON = {tir:"target", pot:"pot", chateau:"castle", casse:"layers", course:"flag", tic:"tic"};
 function viewGames(){
+  gcLoad();
   const P = playedToday(), tirDone = !!P.tir[0], tirL = LEVELS[tirOfDay()];
   const keys = ["tir", ...Object.keys(DAY_GAMES)], isDone = k => k==="tir" ? tirDone : !soloReady(k);
   const doneN = keys.filter(isDone).length, left = keys.length-doneN;
@@ -6689,12 +6829,16 @@ function viewGames(){
   <section class="panel games-hero${left?"":" all-done"}">
     <div class="gh-txt"><span class="gh-kick">${ic("gift",14)} Tes parties du jour</span>
       <h2>${left ? `${left} partie${left>1?"s":""} à jouer aujourd'hui` : "Tout est joué : bravo !"}</h2>
-      <p>${won ? `Déjà <b>${fmt(won)} ${CUR.many}</b> gagnés aux jeux aujourd'hui.` : `Jusqu'à <b>${fmt(maxAll)} ${CUR.many}</b> à gagner chaque jour.`} ${left ? "Prends ton temps : chaque jeu ne se joue qu'une fois." : "Reviens demain pour de nouvelles parties !"}</p></div>
+      <p>${won ? `Déjà <b>${fmt(won)} ${CUR.many}</b> gagnés aux jeux aujourd'hui.` : `Jusqu'à <b>${fmt(maxAll)} ${CUR.many}</b> à gagner chaque jour.`} ${left ? "Prends ton temps : chaque jeu ne se joue qu'une fois." : "Reviens demain pour de nouvelles parties !"}</p>
+      <span class="gh-bonus${P.bonus?" got":""}" style="--bc:${BAG_BY[GAMES_BONUS].color}">${ic("bag",16)} ${P.bonus ? `${BAG_BY[GAMES_BONUS].name} gagné aujourd'hui !` : `Les 6 jeux faits : un ${BAG_BY[GAMES_BONUS].name} offert`}</span></div>
     <div class="gh-side">
       <div class="gh-dots">${keys.map(k=>`<button class="gh-dot${isDone(k)?" done":""}" data-action="nav" data-view="${k}" title="${k==="tir"?"Le Tir":DAY_GAMES[k].title}${isDone(k)?" : joué":""}">${ic(GAME_ICON[k],20)}${isDone(k)?`<span class="ok">${ic("check",10,3.4)}</span>`:""}</button>`).join("")}</div>
       <small>${ic("clock",13)} Nouvelles parties dans <b data-quest-timer>${untilMidnight()}</b></small>
     </div>
   </section>
+  <button class="panel gc-banner" data-action="nav" data-view="grandecourse"><span class="gcb-flag">${ic("flag",26)}</span>
+    <span class="gcb-txt"><b>La Grande Course de 20 h</b><small>${gc.etat?.inscrit ? `${ic("check",12,3)} Tu es inscrit` : "Inscris-toi, c'est gratuit"} · départ dans <span data-gc-timer>${gcLeft(gcNext().depart-Date.now())}</span></small></span>
+    <span class="btn btn-yellow">${gc.etat?.inscrit ? "Voir" : "S'inscrire"}</span></button>
   ${act?`<div class="panel gm-playing" style="${tstyle(act.type)}">
     <button class="gm-ball" data-action="spec" data-id="${act.id}" aria-label="Voir ta bille active">${mImg(act,120,48,"")}</button>
     <div><small>Tu joues avec</small><b>${esc(specName(act))}</b> ${typePill(act.type)}</div>
@@ -6746,6 +6890,35 @@ function placePebbles(n, avoid){
   }
   return out;
 }
+// Reprise après un rechargement de la page : la partie du jour garde le terrain tel qu'il était au dernier tir,
+// et ce tir est rejoué à l'identique (recharger ne permet pas de refaire un tir raté).
+const ballOut = b => ({x:b.x, y:b.y, alive:b.alive, sink:b.sink, mine:b.mine, label:b.label, won:b.won, castle:b.castle,
+  spec:{seed:b.spec.seed, type:b.spec.type, family:b.spec.family, pal:b.spec.pal, shiny:b.spec.shiny||0}});
+const SNAP = {
+  pot:     {out:A=>({shots:A.shots, potted:A.potted, pot:A.pot, start:A.start}), in:(A,o)=>Object.assign(A,o)},
+  chateau: {out:A=>({shots:A.shots, out:A.out}), in:(A,o)=>{ Object.assign(A,o); A.castle = A.balls.filter(b=>b.castle) }},
+  tic:     {out:A=>({lvl:A.lvl, turn:A.turn, tries:A.tries, foe:{name:A.foe.name, spec:A.foe.spec}, me:A.balls.indexOf(A.me), fb:A.balls.indexOf(A.foeBall)}),
+            in:(A,o)=>{ Object.assign(A,{lvl:o.lvl, turn:o.turn, tries:o.tries, foe:o.foe}); A.me = A.balls[o.me]; A.foeBall = A.balls[o.fb] }},
+  course:  {out:A=>({flicks:A.flicks, turnIdx:A.turnIdx, turn:A.turn, rank:A.rank.map(r=>A.racers.indexOf(r)),
+              racers:A.racers.map(r=>({name:r.name, mine:r.mine, skill:r.skill, ball:A.balls.indexOf(r.ball), safe:r.safe, s:r.s, done:r.done}))}),
+            in:(A,o)=>{ Object.assign(A,{flicks:o.flicks, turnIdx:o.turnIdx, turn:o.turn});
+              A.racers = o.racers.map(r=>({...r, ball:A.balls[r.ball], spec:A.balls[r.ball].spec})); A.rank = o.rank.map(i=>A.racers[i]) }},
+};
+function snapSave(pend){
+  const A = arena, g = dayGame(A.mode); if(!g || g.done || !SNAP[A.mode] || A.done) return;
+  g.snap = {balls:A.balls.map(ballOut), shooter:A.balls.indexOf(A.shooter), pebbles:A.pebbles, x:SNAP[A.mode].out(A), pend:pend||null};
+  save();
+}
+function snapLoad(){
+  const A = arena, o = dayGame(A.mode)?.snap; if(!o) return false;
+  A.balls = o.balls.map(q=>{ const b = mkBall(q.x, q.y, q.spec, {mine:q.mine, label:q.label, won:q.won, castle:q.castle}); b.alive = q.alive; b.sink = q.sink||0; return b });
+  A.shooter = A.balls[o.shooter]; A.pebbles = o.pebbles||[];
+  SNAP[A.mode].in(A, o.x);
+  A.done = false;
+  if(o.pend){ const p = o.pend; setTimeout(()=>{ if(arena===A && !A.done) fire(A.balls[p.i], p.vx, p.vy, p.p) }, 500) }
+  else if(A.turn==="opp") setTimeout(A.mode==="tic" ? aiShot : aiCourse, 900);
+  return true;
+}
 function initArena(mode){
   cancelAnimationFrame(arena.raf);
   const cv = document.getElementById("a-canvas");
@@ -6761,9 +6934,11 @@ function initArena(mode){
   cv.onpointerdown = aDown; cv.onpointermove = aMove; cv.onpointerup = aUp; cv.onpointercancel = ()=>{ arena.aim=null };
   document.getElementById("a-result").hidden = true;
   SETUP[mode]();
+  const resumed = gameLive(mode) && snapLoad();
   arena.scatter = makeScatter(mode);
   updArenaHud();
-  arena.done = true; dayCard(mode, document.getElementById("a-result"));   // « C'est parti ! », ou « à demain » si la partie du jour est jouée
+  if(resumed) toast("Ta partie du jour reprend là où tu l'avais laissée.");
+  else { arena.done = true; dayCard(mode, document.getElementById("a-result")) }   // « C'est parti ! », ou « à demain » si la partie du jour est jouée
   arena.raf = requestAnimationFrame(aLoop);
 }
 function updArenaHud(){
@@ -6785,6 +6960,10 @@ function aUp(){
 function wobble(spec,vx,vy){ if(!spec || spec.type!=="chinoise") return [vx,vy]; const a=(Math.random()*2-1)*.09, c=Math.cos(a), s=Math.sin(a); return [vx*c-vy*s, vx*s+vy*c] }
 function launch(b,vx,vy,p){
   [vx,vy] = wobble(b.spec,vx,vy);
+  snapSave({i:arena.balls.indexOf(b), vx, vy, p});   // le terrain avant le tir, et le tir lui-même : rejoué à l'identique si on recharge
+  fire(b,vx,vy,p);
+}
+function fire(b,vx,vy,p){
   b.vx = vx; b.vy = vy; arena.moving = true;
   Sound.rollStart(); Sound.shot(p);
   arena.onShot && arena.onShot();
@@ -7015,18 +7194,26 @@ function fxDraw(c){
 // Elle compte dès « C'est parti ! » : quitter en route ou recharger la page ne permet pas de la recommencer.
 // Gains maximum (mêmes plafonds dans supabase/serveur.sql, public.gagner, source 'jeu').
 const DAY_GAMES = {
-  pot:     {title:"Le Pot", max:100},
-  chateau: {title:"Le Château", max:120},
-  casse:   {title:"Le Casse-briques", max:100},
-  course:  {title:"La Course sur la plage", max:100},
-  tic:     {title:"La Tic", max:100},
+  pot:     {title:"Le Pot", max:200},
+  chateau: {title:"Le Château", max:240},
+  casse:   {title:"Le Casse-briques", max:200},
+  course:  {title:"La Course sur la plage", max:200},
+  tic:     {title:"La Tic", max:200},
 };
+// les 6 jeux du jour joués (Tir compris) : un Sac Premium offert (le serveur vérifie les 6 parties : source 'jeux-bonus')
+const GAMES_BONUS = "premium";
+const allGamesDone = () => !!playedToday().tir[0] && Object.keys(DAY_GAMES).every(k=>dayGame(k)?.done);
+function gamesBonus(){
+  const P = playedToday(); if(P.bonus || !allGamesDone()) return;
+  P.bonus = 1; earn("jeux-bonus", dayKey(), 0, GAMES_BONUS); save(); renderTop(); renderNav();
+  setTimeout(()=>{ toast(`Les 6 jeux du jour sont faits : un ${BAG_BY[GAMES_BONUS].name} t'est offert !`); Sound.ding() }, 1400);
+}
 const DAY_INFO = {
-  pot:     {goal:"Envoie un maximum de billes dans le pot en 5 lancers. Tes billes restent sur le terrain : sers-t'en pour pousser les autres !", rew:[["Chaque bille dans le pot","10"],["1, 3 ou 5 billes : 1, 2 ou 3 étoiles","+10 · +25 · +50"]]},
-  chateau: {goal:"Fais sortir les 10 billes du cercle de craie en 3 tirs.", rew:[["Chaque bille sortie du cercle","6"],["3, 6 ou 10 billes : 1, 2 ou 3 étoiles","+10 · +25 · +60"],["Les 10 sorties","une vraie bille !"]]},
-  casse:   {goal:"Casse les murs de briques niveau après niveau, sans laisser tomber ta bille. 3 vies.", rew:[["Chaque niveau réussi","10"],["1, 3 ou 5 niveaux : 1, 2 ou 3 étoiles","+10 · +25 · +50"]]},
-  course:  {goal:"Une course contre 3 joueurs de la cour, une pichenette chacun son tour. Le premier qui passe la ligne a gagné !", rew:[["1re place","100"],["2e place","60"],["3e place","35"],["4e place","15"]]},
-  tic:     {goal:"Touche la bille de ton adversaire avant qu'il touche la tienne. 5 tirs chacun.", rew:[["Victoire","100"],["Match nul","40"],["Défaite","20"]]},
+  pot:     {goal:"Envoie un maximum de billes dans le pot en 5 lancers. Tes billes restent sur le terrain : sers-t'en pour pousser les autres !", rew:[["Chaque bille dans le pot","20"],["1, 3 ou 5 billes : 1, 2 ou 3 étoiles","+20 · +50 · +100"]]},
+  chateau: {goal:"Fais sortir les 10 billes du cercle de craie en 3 tirs.", rew:[["Chaque bille sortie du cercle","12"],["3, 6 ou 10 billes : 1, 2 ou 3 étoiles","+20 · +50 · +120"],["Les 10 sorties","une vraie bille !"]]},
+  casse:   {goal:"Casse les murs de briques niveau après niveau, sans laisser tomber ta bille. 3 vies.", rew:[["Chaque niveau réussi","20"],["1, 3 ou 5 niveaux : 1, 2 ou 3 étoiles","+20 · +50 · +100"]]},
+  course:  {goal:"Une course contre 3 joueurs de la cour, une pichenette chacun son tour. Le premier qui passe la ligne a gagné !", rew:[["1re place","200"],["2e place","120"],["3e place","70"],["4e place","30"]]},
+  tic:     {goal:"Touche la bille de ton adversaire avant qu'il touche la tienne. 5 tirs chacun.", rew:[["Victoire","200"],["Match nul","80"],["Défaite","40"]]},
 };
 function playedToday(){ if(!S.played || S.played.day!==dayKey()) S.played = {day:dayKey(), tir:{}}; return S.played }
 const soloReady = key => !playedToday()[key];
@@ -7076,7 +7263,7 @@ function dayFinish(key, st, rew, title, text, resId="a-result"){
     const step = t => { const k = Math.min(1,(t-t0)/900); c.textContent = "+"+Math.round(end*(1-Math.pow(1-k,3))); if(k<1 && document.body.contains(c)) requestAnimationFrame(step) };
     setTimeout(()=>requestAnimationFrame(step), 450) }
   if(st===3) Sound.ding();
-  renderNav();
+  renderNav(); gamesBonus();
   return paid;
 }
 // src : le jeu qui paie sa partie du jour (le serveur compte une récompense par jour et par jeu)
@@ -7109,10 +7296,10 @@ const SETUP = {
       chalk(c); c.lineWidth=2.5; c.globalAlpha=.55; c.setLineDash([3,7]); c.beginPath(); c.arc(p.x,p.y,p.r+30,0,TAU); c.stroke(); c.setLineDash([]); c.globalAlpha=1;
     };
     A.onShot = ()=>{ A.shots-- };
-    A.onSink = ()=>{ A.potted++; Sound.hole(); updArenaHud(); fxBurst(A.pot.x, A.pot.y, "#7A5230", 14, 2.4); fxText(A.pot.x, A.pot.y-34, "+10") };
+    A.onSink = ()=>{ A.potted++; Sound.hole(); updArenaHud(); fxBurst(A.pot.x, A.pot.y, "#7A5230", 14, 2.4); fxText(A.pot.x, A.pot.y-34, "+20") };
     A.onRest = ()=>{
       if(A.shots>0){ let y=A.start.y; for(let k=0;k<12 && A.balls.some(b=>b.alive && Math.hypot(b.x-A.start.x,b.y-y)<34);k++) y = 80+((y+70)%360); spawnMine(A.start.x,y); updArenaHud(); return }
-      const n=A.potted, st = n>=5?3:n>=3?2:n>=1?1:0, rew = n*10+[0,10,25,50][st];
+      const n=A.potted, st = n>=5?3:n>=3?2:n>=1?1:0, rew = n*20+[0,20,50,100][st];
       S.stats.pot += n;
       dayFinish("pot", st, rew, n>=5?"Le grand chelem !":n?"Dans le pot !":"Raté !", `${n} bille${n>1?"s":""} dans le pot sur 5 lancers.`);
     };
@@ -7124,17 +7311,17 @@ const SETUP = {
     Object.assign(A,{fric:.975, shots:3, out:0, circle:{x:630,y:260,r:125}});
     const d = 2*radOf("bille")+1, cx = A.circle.x-38, cy = A.circle.y;
     A.castle = [];
-    for(let i=0;i<4;i++) for(let j=0;j<=i;j++){ const b=mkBall(cx+i*d*.866, cy+(j-i/2)*d, randSpec("bille")); A.castle.push(b); A.balls.push(b) }
+    for(let i=0;i<4;i++) for(let j=0;j<=i;j++){ const b=mkBall(cx+i*d*.866, cy+(j-i/2)*d, randSpec("bille"), {castle:true}); A.castle.push(b); A.balls.push(b) }
     A.decor = c=>{ chalk(c); c.setLineDash([14,12]); c.beginPath(); c.moveTo(152,AB+10); c.lineTo(152,AH-AB-10); c.stroke(); c.setLineDash([]);
       c.beginPath(); c.arc(A.circle.x,A.circle.y,A.circle.r,0,TAU); c.stroke() };
-    const next = ()=>{ A.balls = A.balls.filter(b=>b!==A.shooter); spawnMine(120, 110+Math.random()*300) };
+    const next = ()=>{ A.balls = A.balls.filter(b=>b!==A.shooter); spawnMine(120, 110+hash(dayKey()+"|"+A.shots)%300) };   // même place si on recharge
     A.onShot = ()=>{ A.shots-- };
     A.onRest = ()=>{
       A.castle.forEach(b=>{ const w = Math.hypot(b.x-A.circle.x,b.y-A.circle.y)>A.circle.r;
-        if(w && !b.won){ fxText(b.x, b.y-b.r-14, "+6"); fxBurst(b.x, b.y, "#BFF5C4", 10, 2) } b.won = w });
+        if(w && !b.won){ fxText(b.x, b.y-b.r-14, "+12"); fxBurst(b.x, b.y, "#BFF5C4", 10, 2) } b.won = w });
       A.out = A.castle.filter(b=>b.won).length;
       if(A.shots>0){ next(); updArenaHud(); return }
-      const n=A.out, st = n>=10?3:n>=6?2:n>=3?1:0, rew = n*6+[0,10,25,60][st];
+      const n=A.out, st = n>=10?3:n>=6?2:n>=3?1:0, rew = n*12+[0,20,50,120][st];
       S.stats.castle += n;
       let prize = "";
       if(st===3 && gameLive("chateau")){
@@ -7258,7 +7445,7 @@ function aiCourse(){
 }
 function endCourse(){
   const A = arena, me = A.racers[0];
-  const pos = me.done ? A.rank.indexOf(me)+1 : 4, st = [3,2,1,0][pos-1], rew = [100,60,35,15][pos-1];
+  const pos = me.done ? A.rank.indexOf(me)+1 : 4, st = [3,2,1,0][pos-1], rew = [200,120,70,30][pos-1];
   if(pos===1) S.stats.race++;
   dayFinish("course", st, rew, pos===1?"Maillot jaune !":pos===2?"Deuxième !":pos===3?"Sur le podium !":me.done?"Quatrième":"Pas fini…",
     me.done ? `Tu passes la ligne en ${pos}${pos===1?"re":"e"} position, en ${A.flicks} pichenette${A.flicks>1?"s":""}.` : "Les autres sont arrivés avant toi : retente ta chance demain !");
@@ -7274,9 +7461,9 @@ function aiShot(){
 }
 function endTic(res){
   const A = arena, foe = esc(A.foe.name);
-  if(res==="win"){ S.stats.tic++; dayFinish("tic", 3, 100, "Tic !", `Tu as touché la bille de ${foe} en premier : bien visé !`) }
-  else if(res==="lose") dayFinish("tic", 0, 20, "Tic… pour lui !", `${foe} a touché ta bille en premier. Tu gardes ta bille, et quelques bonbecs pour la peine.`);
-  else dayFinish("tic", 1, 40, "Match nul", "Personne n'a fait tic en 5 tirs.");
+  if(res==="win"){ S.stats.tic++; dayFinish("tic", 3, 200, "Tic !", `Tu as touché la bille de ${foe} en premier : bien visé !`) }
+  else if(res==="lose") dayFinish("tic", 0, 40, "Tic… pour lui !", `${foe} a touché ta bille en premier. Tu gardes ta bille, et quelques bonbecs pour la peine.`);
+  else dayFinish("tic", 1, 80, "Match nul", "Personne n'a fait tic en 5 tirs.");
 }
 
 /* =====================================================================
@@ -7295,7 +7482,7 @@ const CB_MAPS = [
 ];
 const CB_INFO = {title:"Le Casse-briques",
   lead:"Le mur du préau est couvert de briques de couleur. Ta bille les casse une à une, et toi tu la renvoies avec ta règle. Ne la laisse pas tomber !",
-  rules:["3 vies. Une bille qui tombe sous la règle, c'est une vie perdue.","Là où la bille touche la règle, elle repart plus ou moins en biais.","Les briques à bord foncé tiennent 2 coups, les dorées 3. L'acier ne casse jamais.","Attrape les bonus qui tombent : règle géante, trois billes, bille ralentie, vie en plus.","Chaque niveau réussi rapporte 10 bonbecs. 1 niveau : 1 étoile, 3 niveaux : 2 étoiles, 5 niveaux : 3 étoiles.","Un Boulet ou un Mammouth casse 2 épaisseurs d'un coup.","Une partie par jour : elle compte dès que tu cliques sur « C'est parti ! »."]};
+  rules:["3 vies. Une bille qui tombe sous la règle, c'est une vie perdue.","Là où la bille touche la règle, elle repart plus ou moins en biais.","Les briques à bord foncé tiennent 2 coups, les dorées 3. L'acier ne casse jamais.","Attrape les bonus qui tombent : règle géante, trois billes, bille ralentie, vie en plus.","Chaque niveau a un chrono de 2 minutes : s'il tombe à zéro, la partie est finie. Il s'arrête quand tu perds ta bille et repart quand tu la relances. Un niveau réussi relance le chrono.","5 niveaux dessinés, puis des niveaux surprise à l'infini. Chaque niveau réussi rapporte 20 bonbecs. 1 niveau : 1 étoile, 3 niveaux : 2 étoiles, 5 niveaux : 3 étoiles.","Un Boulet ou un Mammouth casse 2 épaisseurs d'un coup.","Une partie par jour : elle compte dès que tu cliques sur « C'est parti ! »."]};
 const cb = {raf:0, keys:{}};
 const cbClamp = (v,a,b) => Math.max(a, Math.min(b, v));
 
@@ -7311,7 +7498,7 @@ function viewCasse(){
   return `<div class="page-head"><div><button class="back-link" data-action="nav" data-view="jeux">${ic("chevl",14)} Tous les jeux</button><h1>${G.title}</h1><p>${G.lead}</p>${dayChip("casse")}</div></div>
   <div class="game-wrap">
     <section class="panel">
-      <div class="hud"><div class="hole-name">${G.title}</div><div class="hud-stat"><small>Niveau</small><b id="c-lvl">1</b></div><div class="hud-stat"><small>Score</small><b id="c-score">0</b></div><div class="hud-stat"><small>Vies</small><b id="c-lives">3</b></div></div>
+      <div class="hud"><div class="hole-name">${G.title}</div><div class="hud-stat"><small>Niveau</small><b id="c-lvl">1</b></div><div class="hud-stat"><small>Score</small><b id="c-score">0</b></div><div class="hud-stat"><small>Vies</small><b id="c-lives">3</b></div><div class="hud-stat c-time"><small>Temps</small><b id="c-time">1:00</b></div></div>
       <div class="game-stage"><canvas id="c-canvas" class="bricks" aria-label="${G.title} : bouge la règle avec la souris ou les flèches, clique pour lancer ta bille."></canvas><div class="g-result" id="c-result" hidden></div></div>
       <div class="g-help"><span>${ic("target",16)} Souris, doigt ou flèches pour bouger la règle.</span><span>Clic ou Espace pour lancer · P pour la pause.</span></div>
     </section>
@@ -7330,12 +7517,21 @@ function initCasse(){
   cv.width = CW*dpr; cv.height = CH*dpr;
   Object.assign(cb, {cv, ctx:cv.getContext("2d"), dpr, spec, R: spec ? cbClamp(radOf(spec.type)*.7, 7, 15) : 9, power: spec && TYPES[spec.type].mm>=35 ? 2 : 1,
     paddle:{x:CW/2, y:CH-42, w:120, tw:120, h:14}, score:0, lives:3, level:1, cleared:0, shake:0, parts:[], drops:[], slowT:0, largeT:0,
-    done:false, state:"serve", last:performance.now(), lastWall:0});
+    done:false, live:false, state:"serve", last:performance.now(), lastWall:0});
   cb.ctx.setTransform(dpr,0,0,dpr,0,0);
   cv.onpointermove = e=>{ cb.paddle.x = cbX(e) };
   cv.onpointerdown = e=>{ cb.paddle.x = cbX(e); cbLaunch() };
-  cbLoad(1);
-  cb.done = true; dayCard("casse", document.getElementById("c-result"));
+  const o = gameLive("casse") && dayGame("casse").snap;
+  if(o){
+    cbLoad(o.level);
+    if(o.bricks) cb.bricks.forEach((b,i)=>{ const h = o.bricks[i]; if(h!=null && h>=0) b.hp = h });
+    Object.assign(cb, {score:o.score, lives:o.lives, cleared:o.cleared, live:true, done:false, time:o.time ?? cbTime(o.level)});
+    if(o.rally){ cb.lives--; cbHud();
+      if(cb.lives<=0) cbFinish();
+      else { cbSnap(false); toast("Partie reprise : la bille était en jeu quand tu as quitté, tu perds une vie.") } }
+    else toast("Ta partie du jour reprend là où tu l'avais laissée.");
+    cbHud();
+  } else { cbLoad(1); cb.done = true; dayCard("casse", document.getElementById("c-result")) }
   cb.raf = requestAnimationFrame(cbLoop);
 }
 function cbX(e){ const r = cb.cv.getBoundingClientRect(); return (e.clientX-r.left)/r.width*CW }
@@ -7348,8 +7544,10 @@ function cbRandomMap(n){
   }
   return out.some(r=>/[123]/.test(r)) ? out : cbRandomMap(n);
 }
+// le chrono de chaque niveau : 2 minutes
+const cbTime = n => 120;
 function cbLoad(n){
-  cb.level = n;
+  cb.level = n; cb.time = cbTime(n);
   const map = CB_MAPS[n-1] || cbRandomMap(n);
   cb.bricks = [];
   map.forEach((row,r)=>[...row].forEach((ch,c)=>{
@@ -7364,14 +7562,24 @@ function cbServe(){
   cb.paddle.tw = 120;
   cb.balls = [cbNewBall(cb.paddle.x, cb.paddle.y-cb.R)];
   cb.combo = 0; cb.state = "serve";
+  if(cb.live) cbSnap(false);
 }
+// Reprise après un rechargement : on repart du dernier service (niveau, briques, score, vies).
+// Recharger pendant que la bille est en jeu coûte une vie, comme si elle était tombée.
+function cbSnap(rally){
+  const g = dayGame("casse"); if(!g || g.done) return;
+  g.snap = rally && g.snap ? {...g.snap, rally:true}
+    : {level:cb.level, score:cb.score, lives:cb.lives, cleared:cb.cleared, bricks:cb.bricks.map(b=>b.steel?-1:b.hp), rally:false, time:cb.time};
+  save();
+}
+function cbTimeHud(){ const el = document.getElementById("c-time"); if(!el) return; const s = Math.ceil(cb.time); el.textContent = `${Math.floor(s/60)}:${String(s%60).padStart(2,"0")}`; el.parentElement.classList.toggle("low", s<=10) }
 function cbHud(){
   const set = (id,v) => { const el = document.getElementById(id); if(el) el.textContent = v };
-  set("c-lvl", cb.level); set("c-score", fmt(cb.score)); set("c-lives", Math.max(cb.lives,0));
+  set("c-lvl", cb.level); set("c-score", fmt(cb.score)); set("c-lives", Math.max(cb.lives,0)); cbTimeHud();
 }
 function cbLaunch(){
   if(cb.done) return;
-  if(cb.state==="serve"){ const a = (Math.random()-.5)*.6; cb.balls.forEach(b=>cbDir(b,a)); cb.state = "play"; Sound.tap(0,.6) }
+  if(cb.state==="serve"){ const a = (Math.random()-.5)*.6; cb.balls.forEach(b=>cbDir(b,a)); cb.state = "play"; Sound.tap(0,.6); if(cb.live) cbSnap(true) }
   else if(cb.state==="pause") cb.state = "play";
 }
 addEventListener("keydown", e=>{
@@ -7460,6 +7668,13 @@ function cbUpdate(dt){
   for(const q of cb.parts){ q.x += q.vx*dt; q.y += q.vy*dt; q.vy += 600*dt; q.life -= dt*1.4 }
   cb.parts = cb.parts.filter(q=>q.life>0);
   cb.shake = Math.max(0, cb.shake-dt*30);
+  // le chrono tourne pendant la partie (pas en pause, ni entre deux niveaux)
+  if(cb.live && !cb.done && cb.state==="play"){   // arrêté tant que la bille n'est pas lancée
+    const before = Math.ceil(cb.time); cb.time = Math.max(0, cb.time-dt); const now = Math.ceil(cb.time);
+    if(now!==before){ cbTimeHud(); if(now<=5 && now>0) Sound.tap(0,.35) }
+    cb.saveT = (cb.saveT||0)+dt; if(cb.saveT>5){ cb.saveT = 0; const g = dayGame("casse"); if(g?.snap){ g.snap.time = cb.time; save() } }
+    if(cb.time<=0){ cbFinish("time"); return }
+  }
 
   if(cb.state==="serve"){ const b = cb.balls[0]; b.x = p.x; b.y = p.y-cb.R; return }
   if(cb.state==="clear"){ cb.msgT -= dt; if(cb.msgT<=0) cbLoad(cb.level+1); return }
@@ -7483,14 +7698,15 @@ function cbUpdate(dt){
   }
   if(!cb.bricks.some(b=>b.hp>0 && !b.steel)){
     cb.cleared++; cb.state = "clear"; cb.msgT = 1.8; cb.score += 200*cb.level; cbHud(); Sound.ding();
+    const g = dayGame("casse"); if(cb.live && g && !g.done){ g.snap = {level:cb.level+1, score:cb.score, lives:cb.lives, cleared:cb.cleared, bricks:null, rally:false, time:cbTime(cb.level+1)}; save() }
   }
 }
-function cbFinish(){
+function cbFinish(why){
   cb.state = "over"; cb.done = true;
-  const n = cb.cleared, st = n>=5?3:n>=3?2:n>=1?1:0, rew = Math.min(n,5)*10+[0,10,25,50][st];
+  const n = cb.cleared, st = n>=5?3:n>=3?2:n>=1?1:0, rew = Math.min(n,5)*20+[0,20,50,100][st];
   S.stats.casse = Math.max(S.stats.casse||0, n);
   S.stats.casseScore = Math.max(S.stats.casseScore||0, cb.score);
-  dayFinish("casse", st, rew, n>=5?"Le mur est tombé !":n?"Bien joué !":"Raté !", `${n} niveau${n>1?"x":""} réussi${n>1?"s":""} et ${fmt(cb.score)} points.`, "c-result");
+  dayFinish("casse", st, rew, why==="time" ? "Temps écoulé !" : n>=5?"Le mur est tombé !":n?"Bien joué !":"Raté !", `${why==="time"?"Le chrono est tombé à zéro. ":""}${n} niveau${n>1?"x":""} réussi${n>1?"s":""} et ${fmt(cb.score)} points.`, "c-result");
 }
 
 function cbShade(hex, amt){ const n = parseInt(hex.slice(1),16), f = v => cbClamp(v+amt,0,255); return `rgb(${f(n>>16)},${f((n>>8)&255)},${f(n&255)})` }
@@ -7568,6 +7784,706 @@ function cbLoop(t){
   const dt = Math.min((t-cb.last)/1000, 1/30); cb.last = t;
   cbUpdate(dt); cbDraw();
   cb.raf = requestAnimationFrame(cbLoop);
+}
+
+/* =====================================================================
+   LA GRANDE COURSE DE 20 H (supabase/course.sql)
+   On s'inscrit quand on veut dans la journée (jusqu'à 19 h 59, sinon c'est pour le lendemain), avec la bille de son choix.
+   À 20 h, le serveur tire l'ordre d'arrivée au hasard : chaque bille a exactement la même chance, le choix de la bille ne change rien.
+   Ici on ne fait que mettre la course en scène à partir de la graine et de l'ordre d'arrivée : tout le monde voit la même course.
+   ===================================================================== */
+const COURSE_PRIX = [{j:500, sac:"premium"}, {j:300}, {j:200}], COURSE_PART = 50;   // mêmes valeurs que interne.course_prix
+const gc = {etat:null, busy:false, pick:null, live:null};
+function gcLoad(force){
+  if(!srvOn() || gc.busy || (gc.etat && !force)) return;
+  gc.busy = true;
+  Cloud.course.etat().then(e=>{ gc.etat = e; if(ui.view==="grandecourse") renderView(); renderNav() }, ()=>{}).finally(()=>{ gc.busy = false });
+}
+const isoDay = (d=new Date()) => `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,"0")}-${String(d.getDate()).padStart(2,"0")}`;
+// sans compte (ou avant la réponse du serveur) : la prochaine course, calculée ici
+function gcNext(){
+  if(gc.etat) return {jour:gc.etat.jour, depart:gc.etat.depart};
+  const d = new Date(); if(d.getHours()*60+d.getMinutes() >= 19*60+59) d.setDate(d.getDate()+1);
+  d.setHours(20,0,0,0); return {jour:isoDay(d), depart:d.getTime()};
+}
+function gcLeft(ms){ ms = Math.max(0,ms); const h = Math.floor(ms/36e5), m = Math.floor(ms/6e4)%60, s = Math.floor(ms/1e3)%60; return h ? `${h} h ${String(m).padStart(2,"0")}` : `${m} min ${String(s).padStart(2,"0")} s` }
+const gcMine = () => { const E = gc.etat; return E?.inscrit ? (E.bille && specById(E.bille)) || null : null };
+const gcPickable = () => S.specs.filter(s=>sync.known?.has(s.id)).sort(tierSort);
+const gcMeIn = R => (R||[]).findIndex(x=>x.joueur && x.joueur===sync.uid);
+
+// ---------- la page ----------
+function viewGrandeCourse(){
+  gcLoad();
+  const E = gc.etat, N = gcNext(), tonight = N.jour===isoDay(), when = tonight ? "ce soir" : "demain soir";
+  const pick = (gc.pick && specById(gc.pick)) || gcMine() || activeSpec();
+  const D = E?.derniere, me = D ? gcMeIn(D.resultats) : -1;
+  const T = gcTrack(N.jour);
+  const prize = (k,l) => `<div><b>${l}</b>${COIN} ${COURSE_PRIX[k].j}${COURSE_PRIX[k].sac?` + ${BAG_BY[COURSE_PRIX[k].sac].name}`:""}</div>`;
+  let reg;
+  if(!srvOn()) reg = `<div class="gc-reg off">${ic("user",18)} Crée ton compte (c'est gratuit) pour t'inscrire à la Grande Course.</div>
+    ${window.Cloud?.available && !sync.on ? `<button class="btn btn-yellow" data-action="acct-signup">Créer mon compte</button>` : ""}`;
+  else if(E?.inscrit) reg = `<div class="gc-reg on">${pick?mImg(pick,96,44,""):""}<div><b>Tu es inscrit pour ${when} !</b><small>Tu cours avec ${pick?esc(specName(pick)):"ta bille"}. Rendez-vous à 20 h.</small></div></div>
+    <div class="btns"><button class="btn btn-ghost" data-action="gc-pickopen">Changer de bille</button><button class="btn btn-ghost" data-action="gc-unreg">Me désinscrire</button></div>`;
+  else reg = `<div class="gc-pickrow"><button class="gc-ball" data-action="gc-pickopen" aria-label="Choisir ma bille">${pick?mImg(pick,120,56,""):""}<span>Changer</span></button>
+      <div><small>Ta bille pour la course</small><b>${pick?esc(specName(pick)):"—"}</b></div></div>
+    <button class="btn btn-yellow btn-xl" data-action="gc-reg">${ic("flag",18)} M'inscrire pour ${when}</button>`;
+  const live = D && Date.now() < D.depart + GC_DUR*1000;
+  return `<div class="page-head"><div><button class="back-link" data-action="nav" data-view="jeux">${ic("chevl",14)} Tous les jeux</button><h1>La Grande Course de 20 h</h1>
+    <p>Tous les soirs à 20 h, les billes inscrites dévalent le circuit du jour. Chaque bille a exactement la même chance de gagner : c'est la surprise du soir !</p></div></div>
+  <section class="panel gc-hero">
+    <div class="gc-main">
+      <span class="gh-kick">${ic("flag",14)} Course du ${new Date(N.depart).toLocaleDateString("fr-FR",{weekday:"long", day:"numeric", month:"long"})}</span>
+      <div class="gc-clock"><small>Départ dans</small><b data-gc-timer>${gcLeft(N.depart-Date.now())}</b></div>
+      ${reg}
+      <div class="gc-prizes">${prize(0,"1er")}${prize(1,"2e")}${prize(2,"3e")}</div>
+      <p class="meta">Tous les autres inscrits gagnent ${COURSE_PART} ${CUR.many}. ${E ? `${E.inscrits} inscrit${E.inscrits>1?"s":""} pour l'instant.` : ""} Inscriptions jusqu'à 19 h 59 : après, c'est pour la course du lendemain. Le choix de ta bille ne change rien à tes chances, c'est juste pour le style !</p>
+    </div>
+    <div class="gc-side"><div class="gc-prev"><canvas id="gc-prev" width="680" height="380"></canvas><span>${esc(T.th.name)}</span></div>
+      <p class="meta">Un circuit différent chaque jour : la cour, la plage, la forêt, la banquise, le jardin, la fête foraine et le désert.</p>
+      <button class="btn btn-ghost" data-action="gc-test">${ic("play",16)} Voir une course d'essai</button></div>
+  </section>
+  ${D ? `<section class="panel gc-last"><div class="panel-head"><h2>${live?`<span class="gc-livedot"></span> En direct`:"Dernière course"} · ${new Date(D.depart).toLocaleDateString("fr-FR",{weekday:"long", day:"numeric", month:"long"})}</h2>
+      <button class="btn btn-yellow" data-action="gc-watch">${ic("play",16)} ${live?"Regarder en direct":"Revoir la course"}</button></div>
+    ${live || S.gcSeen!==D.jour ? `<p class="meta">${live ? "La course est en cours : regarde-la pour découvrir le podium !" : `Regarde la course pour découvrir le podium${me>=0?" et récupérer tes lots":""} !`}</p>` : `<ol class="gc-res">${D.resultats.slice(0,3).map((x,i)=>`<li>${["🥇","🥈","🥉"][i]} <b>${esc(gcName(x))}</b></li>`).join("")}</ol>
+    ${me>=0 ? `<p class="gc-mine">Tu as fini <b>${me+1}${me?"e":"er"}</b> sur ${D.resultats.length} · ${gcLotTxt(D.resultats[me],me)}${D.lots?"":` <button class="btn btn-yellow" data-action="gc-watch">Récupérer mes lots</button>`}</p>` : ""}`}
+  </section>` : ""}`;
+}
+const gcName = x => x.bot ? `${x.nom} (bille de la cour)` : x.pseudo;
+function gcAfterRender(){
+  const c = document.getElementById("gc-prev"); if(c){ const T = gcTrack(gcNext().jour); c.getContext("2d").drawImage(T.world, 0, 0, c.width, c.height) }
+}
+function gcPickOpen(){
+  const el = document.getElementById("modal"), all = gcPickable(), list = all.filter(x=>!gc.pickT || x.type===gc.pickT).slice(0,200), cur = gc.pick || gc.etat?.bille || S.active;
+  const chips = `<div class="chips gc-sizes"><button class="chip" data-action="gc-pickt" data-t="" aria-pressed="${!gc.pickT}">Toutes <span class="n">${all.length}</span></button>${TK.map(t=>{ const n = all.filter(x=>x.type===t).length;
+    return n ? `<button class="chip" data-action="gc-pickt" data-t="${t}" aria-pressed="${gc.pickT===t}" style="${tstyle(t)}">${TYPES[t].label.replace("Mini bille","Mini").replace("Bille chinoise","Chinoise")} <span class="n">${n}</span></button>` : "" }).join("")}</div>`;
+  el.innerHTML = `<div class="modal bag-sum pick-modal" role="dialog" aria-modal="true" aria-label="Choisir ta bille"><button class="close-x" data-action="close-modal" aria-label="Fermer">×</button>
+    <h2>Avec quelle bille tu cours ?</h2><p class="meta">Toutes les billes ont la même chance de gagner : choisis celle que tu veux montrer à tout le monde !</p>
+    ${chips}<div class="pick-grid">${list.map(x=>`<button class="m-card${x.id===cur?" on":""}" data-action="gc-pick" data-id="${x.id}" style="${tstyle(x.type)}"><span class="ball">${mImg(x,120,Math.round(40*scaleOf(x.type)+14),"")}</span><b>${esc(specName(x))}</b>${typePill(x.type)}</button>`).join("")}</div></div>`;
+  el.hidden = false; el.querySelector(".close-x").focus();
+}
+function gcRegister(){
+  const s = (gc.pick && specById(gc.pick)) || activeSpec(), bid = s && sync.known?.has(s.id) ? s.id : null;
+  const was = gc.etat?.inscrit;
+  srv(()=>Cloud.course.inscrire(bid)).then(e=>{ gc.etat = e; gc.pick = null; renderView(); renderNav(); toast(was ? `C'est noté : tu cours avec ${s ? specName(s) : "ta bille"}.` : `Inscrit ! Rendez-vous ${e.jour===isoDay()?"ce soir":"demain soir"} à 20 h.`); Sound.ding() }, srvFail);
+}
+// toutes les secondes : le compte à rebours ; à 20 h, la course commence pour les inscrits qui sont sur le site
+setInterval(()=>{
+  const N = gcNext();
+  document.querySelectorAll("[data-gc-timer]").forEach(el=>el.textContent = gcLeft(N.depart-Date.now()));
+  const E = gc.etat;
+  if(E && E.inscrit && Date.now()>=E.depart && Date.now()<E.depart+40000 && gc.live!==E.jour && srvOn()){
+    gc.live = E.jour; const jour = E.jour;
+    setTimeout(()=>Cloud.course.etat().then(e=>{ gc.etat = e; renderNav(); if(ui.view==="grandecourse") renderView();
+      if(e.derniere?.jour===jour && document.getElementById("gc-ov").hidden){
+        if(popupsFree() && !inGame()) gcLivePopup(); else toast("La Grande Course de 20 h commence ! Va la regarder dans les jeux de la cour.") } }, ()=>{}), 2500);
+  }
+}, 1000);
+function gcLivePopup(){
+  const el = document.getElementById("modal");
+  el.innerHTML = `<div class="modal gc-pop" role="dialog" aria-modal="true" aria-label="La Grande Course"><button class="close-x" data-action="close-modal" aria-label="Fermer">×</button>
+    <span class="gh-kick">${ic("flag",14)} 20 h 00</span><h2>C'est l'heure de la Grande Course !</h2><p>Les billes sont sur la ligne de départ. Qui va gagner ce soir ?</p>
+    <div class="btns"><button class="btn btn-yellow btn-xl" data-action="gc-watch">${ic("play",18)} Regarder en direct</button></div></div>`;
+  el.hidden = false;
+}
+// à l'arrivée : les résultats d'une course où on était inscrit et qu'on n'a pas encore vue
+const gcDue = () => { const D = gc.etat?.derniere; return !!D && gcMeIn(D.resultats)>=0 && !D.lots && S.gcSeen!==D.jour && S.gcPop!==D.jour && Date.now()>D.depart+GC_DUR*1000 };
+function gcResultPopup(){   // sans rien dévoiler : on découvre le résultat (et ses lots) en regardant la course
+  const D = gc.etat.derniere; S.gcPop = D.jour; save();
+  const el = document.getElementById("modal");
+  el.innerHTML = `<div class="modal gc-pop" role="dialog" aria-modal="true" aria-label="La Grande Course"><button class="close-x" data-action="close-modal" aria-label="Fermer">×</button>
+    <span class="gh-kick">${ic("flag",14)} La Grande Course</span><h2>La course de ${new Date(D.depart).toLocaleDateString("fr-FR",{weekday:"long"})} soir est finie !</h2>
+    <p>Qui a gagné ? Regarde la course pour découvrir le podium et récupérer tes lots.</p>
+    <div class="btns"><button class="btn btn-yellow btn-xl" data-action="gc-watch">${ic("play",18)} Regarder la course</button></div></div>`;
+  el.hidden = false;
+}
+
+// ---------- le circuit du jour (le même pour tout le monde : tiré de la date) ----------
+const GW = 3400, GH = 1900;
+const GC_THEMES = [
+  {name:"Grand Prix de la cour", ground:"#7E8691", dots:"rgba(255,255,255,.08)", track:"#5B6270", edge:"#FFFFFF", curb:["#E5484D","#FFFFFF"], deco:"cour"},
+  {name:"La Plage des pirates", ground:"#EBD3A0", dots:"rgba(150,110,60,.18)", track:"#D7B676", edge:"#F7E7C4", deco:"plage", water:true},
+  {name:"Le Sentier des écureuils", ground:"#4E7A2E", dots:"rgba(20,40,10,.25)", track:"#9A6B3E", edge:"#6B4524", deco:"foret"},
+  {name:"La Banquise glissante", ground:"#EEF5FF", dots:"rgba(120,160,210,.2)", track:"#BFDDF5", edge:"#FFFFFF", curb:["#5AB8FF","#FFFFFF"], deco:"glace", water:true},
+  {name:"Le Jardin des champignons", ground:"#6FA347", dots:"rgba(30,60,10,.2)", track:"#A9D07A", edge:"#E9F5D4", deco:"jardin"},
+  {name:"La Nuit de la fête foraine", ground:"#17132A", dots:"rgba(255,255,255,.05)", track:"#2C2550", edge:"#FF4FD8", curb:["#FF4FD8","#39E6FF"], deco:"foire", neon:true},
+  {name:"Le Canyon du désert", ground:"#D9894A", dots:"rgba(120,50,10,.18)", track:"#EDB57A", edge:"#B8612E", deco:"desert"},
+];
+const GC_COLS = ["#FFC93F","#5AB8FF","#FF6FB5","#7CE59A","#B07BFF","#FF9F43","#FFFFFF","#4DD4C6"];
+const gcTracks = new Map();
+function gcTrack(jour){
+  if(gcTracks.has(jour)) return gcTracks.get(jour);
+  const [y,m,d] = jour.split("-").map(Number), date = new Date(y,m-1,d), r = rng(hash("course20h|"+jour)), th = GC_THEMES[date.getDay()];
+  const ctrl = [], n = 11;
+  for(let i=0;i<n;i++){ const x = 220+i*(GW-440)/(n-1);
+    ctrl.push([x, i===0 ? GH*.5 : Math.max(220, Math.min(GH-220, ctrl[i-1][1] + (ctrl[i-1][1]>GH*.5?-1:1)*(r()<.25?-1:1)*(300+r()*520)))]) }
+  const P = [];
+  for(let i=0;i<n-1;i++){ const p0 = ctrl[Math.max(0,i-1)], p1 = ctrl[i], p2 = ctrl[i+1], p3 = ctrl[Math.min(n-1,i+2)], steps = Math.ceil(Math.hypot(p2[0]-p1[0],p2[1]-p1[1])/6);
+    for(let k=0;k<steps;k++){ const t = k/steps, t2 = t*t, t3 = t2*t, f = (a,b,c,e) => .5*((2*b)+(-a+c)*t+(2*a-5*b+4*c-e)*t2+(-a+3*b-3*c+e)*t3);
+      P.push({x:f(p0[0],p1[0],p2[0],p3[0]), y:f(p0[1],p1[1],p2[1],p3[1])}) } }
+  P.push({x:ctrl[n-1][0], y:ctrl[n-1][1]});
+  let s = 0; P.forEach((p,i)=>{ if(i) s += Math.hypot(p.x-P[i-1].x, p.y-P[i-1].y); p.s = s });
+  const L = s, narrows = [.3+r()*.15, .62+r()*.15].map(f=>f*L);
+  P.forEach((p,i)=>{ const a = P[Math.max(0,i-1)], b = P[Math.min(P.length-1,i+1)], l = Math.hypot(b.x-a.x,b.y-a.y)||1;
+    p.tx = (b.x-a.x)/l; p.ty = (b.y-a.y)/l; p.nx = -p.ty; p.ny = p.tx;
+    let w = p.s<260 ? 120 : 92+16*Math.sin(p.s/260);
+    narrows.forEach(c=>{ const dd = Math.abs(p.s-c); if(dd<120) w = Math.min(w, 56+dd*.33) }); p.w = w });
+  const T = {jour, date, th, P, L, narrows, boosts:[], bumps:[]};
+  for(let i=0;i<5;i++){ const ss = 500+(L-1000)*(i+.5)/5+(r()-.5)*120, p = gcAt(T,ss), o = (r()-.5)*p.w*.5; T.boosts.push({s:ss, x:p.x+p.nx*o, y:p.y+p.ny*o, a:Math.atan2(p.ty,p.tx)}) }
+  for(let i=0;i<6;i++){ const ss = 400+(L-800)*(i+.5)/6+(r()-.5)*120, p = gcAt(T,ss), sd = r()<.5?-1:1; T.bumps.push({s:ss, x:p.x+p.nx*(p.w-16)*sd, y:p.y+p.ny*(p.w-16)*sd, r:12+r()*5}) }
+  gcPaint(T, r);
+  gcTracks.set(jour, T); return T;
+}
+function gcAt(T, s){
+  const P = T.P; s = Math.max(0, Math.min(T.L, s));
+  let lo = 0, hi = P.length-1; while(hi-lo>1){ const m = (lo+hi)>>1; if(P[m].s<=s) lo = m; else hi = m }
+  const a = P[lo], b = P[hi], t = (s-a.s)/((b.s-a.s)||1);
+  return {x:a.x+(b.x-a.x)*t, y:a.y+(b.y-a.y)*t, nx:a.nx, ny:a.ny, tx:a.tx, ty:a.ty, w:a.w+(b.w-a.w)*t};
+}
+function gcNearD(T, x, y){ let best = 1e9, w = 90; for(let i=0;i<T.P.length;i+=3){ const p = T.P[i], d = Math.hypot(x-p.x, y-p.y); if(d<best){ best = d; w = p.w } } return best-w }
+// le décor vu du ciel, peint une fois par circuit, en haute définition (GK pixels par unité)
+const GK = 1.3;
+function gcPaint(T, r0){
+  let r = r0;
+  const c = document.createElement("canvas"); c.width = Math.round(GW*GK); c.height = Math.round(GH*GK);
+  let x = c.getContext("2d"); const th = T.th, P = T.P, dc = th.deco; x.scale(GK, GK);
+  const pick = a => a[Math.floor(r()*a.length)];
+  // les décors, vus de dessus avec leur ombre
+  const sh = (px,py,rx,ry) => { x.fillStyle = "rgba(0,0,0,.28)"; x.beginPath(); x.ellipse(px+rx*.35, py+ry*.5, rx, ry, .5, 0, TAU); x.fill() };
+  const ball = (px,py,rad,a,b) => { const g = x.createRadialGradient(px-rad*.35,py-rad*.4,rad*.1,px,py,rad); g.addColorStop(0,a); g.addColorStop(1,b); x.fillStyle = g; x.beginPath(); x.arc(px,py,rad,0,TAU); x.fill() };
+  const D = {
+    tree:(px,py,s)=>{ sh(px,py,s*1.1,s*.9); [[0,0,1],[-.5,.3,.7],[.5,.25,.72],[.1,-.45,.66]].forEach(([a,b,k])=>ball(px+a*s,py+b*s,s*k,"#86CC52","#2E6A1E")) },
+    pine:(px,py,s,snow)=>{ sh(px,py,s,s*.8); for(let k=3;k>=1;k--){ x.fillStyle = k%2 ? "#2F6B3A" : "#3D8049"; x.beginPath(); for(let i=0;i<16;i++){ const a = i*TAU/16, rr = s*k/3*(i%2?.62:1); x.lineTo(px+Math.cos(a)*rr, py+Math.sin(a)*rr) } x.fill() }
+      if(snow){ x.fillStyle = "rgba(255,255,255,.9)"; x.beginPath(); x.arc(px-s*.15,py-s*.15,s*.45,0,TAU); x.fill() } },
+    palm:(px,py,s)=>{ sh(px,py,s,s*.8); for(let i=0;i<8;i++){ const a = i*TAU/8+.2; x.strokeStyle = i%2 ? "#3E9A3A" : "#2C7A2C"; x.lineWidth = s*.28; x.lineCap = "round"; x.beginPath(); x.moveTo(px,py); x.quadraticCurveTo(px+Math.cos(a+.3)*s*.6, py+Math.sin(a+.3)*s*.6, px+Math.cos(a)*s*1.15, py+Math.sin(a)*s*1.15); x.stroke() } ball(px,py,s*.22,"#A06A3A","#5A3A1E") },
+    parasol:(px,py,s)=>{ x.fillStyle = pick(["#5AB8FF","#FF6FB5","#FFC93F"]); x.save(); x.translate(px+s*.9,py+s*.4); x.rotate(r()*3); x.fillRect(-s*.45,-s*.8,s*.9,s*1.6); x.restore(); sh(px,py,s,s*.8);
+      const col = pick(["#E5484D","#2E8CFF","#FFC93F","#2FA35A"]); for(let i=0;i<10;i++){ x.fillStyle = i%2 ? "#fff" : col; x.beginPath(); x.moveTo(px,py); x.arc(px,py,s,i*TAU/10,(i+1)*TAU/10); x.fill() } ball(px,py,s*.12,"#fff","#bbb") },
+    rock:(px,py,s)=>{ sh(px,py,s,s*.7); ball(px,py,s,"#C8C2B8","#6D675E") },
+    cone:(px,py,s)=>{ sh(px,py,s*.6,s*.5); x.fillStyle = "#E25E00"; x.fillRect(px-s*.6,py-s*.6,s*1.2,s*1.2); ball(px,py,s*.45,"#FFB070","#FF6A00"); x.fillStyle = "#fff"; x.beginPath(); x.arc(px,py,s*.28,0,TAU); x.fill(); ball(px,py,s*.14,"#FF9A40","#E25E00") },
+    cactus:(px,py,s)=>{ sh(px,py,s,s*.6); x.fillStyle = "#3E8A3E"; x.beginPath(); x.roundRect(px-s*.9,py-s*.22,s*1.8,s*.44,s*.22); x.fill(); ball(px,py,s*.42,"#78C46A","#2F7A35"); x.fillStyle = "#FFE0F0"; x.beginPath(); x.arc(px,py-s*.1,s*.12,0,TAU); x.fill() },
+    mushroom:(px,py,s)=>{ sh(px,py,s,s*.8); ball(px,py,s,"#FF7676","#B5121F"); x.fillStyle = "#fff"; for(let i=0;i<6;i++){ const a = i*1.1+r(); x.beginPath(); x.arc(px+Math.cos(a)*s*.55,py+Math.sin(a)*s*.55,s*.16,0,TAU); x.fill() } },
+    flowers:(px,py,s)=>{ for(let i=0;i<14;i++){ const a = r()*TAU, d = r()*s*1.4, fx = px+Math.cos(a)*d, fy = py+Math.sin(a)*d, col = pick(["#FF6FB5","#FFFFFF","#FFC93F","#B07BFF","#FF7A59"]);
+      for(let p=0;p<5;p++){ x.fillStyle = col; x.beginPath(); x.arc(fx+Math.cos(p*1.256)*3,fy+Math.sin(p*1.256)*3,2.6,0,TAU); x.fill() } x.fillStyle = "#FFB000"; x.beginPath(); x.arc(fx,fy,1.8,0,TAU); x.fill() } },
+    snowman:(px,py,s)=>{ sh(px,py,s*.8,s*.6); ball(px,py,s*.7,"#FFFFFF","#C9DDF0"); ball(px-s*.1,py-s*.15,s*.45,"#FFFFFF","#D5E4F4"); x.fillStyle = "#222"; x.beginPath(); x.arc(px-s*.15,py-s*.22,s*.25,0,TAU); x.fill(); x.fillStyle = "#E5484D"; x.fillRect(px-s*.4,py-s*.02,s*.6,s*.12) },
+    tent:(px,py,s)=>{ sh(px,py,s*1.1,s*.9); for(let i=0;i<12;i++){ x.fillStyle = i%2 ? "#FFFFFF" : pick(["#E5484D","#2E6BE6"]); x.beginPath(); x.moveTo(px,py); x.arc(px,py,s,i*TAU/12,(i+1)*TAU/12); x.fill() }
+      x.fillStyle = "rgba(0,0,0,.12)"; x.beginPath(); x.arc(px+s*.2,py+s*.2,s*.8,0,TAU); x.fill(); ball(px,py,s*.14,"#FFE07A","#E0A417") },
+    lamp:(px,py,s)=>{ const g = x.createRadialGradient(px,py,1,px,py,s*2.2); g.addColorStop(0,"rgba(255,230,150,.9)"); g.addColorStop(.3,"rgba(255,190,80,.35)"); g.addColorStop(1,"rgba(255,170,60,0)"); x.fillStyle = g; x.beginPath(); x.arc(px,py,s*2.2,0,TAU); x.fill(); ball(px,py,s*.3,"#FFFBE6","#FFC93F") },
+    balloon:(px,py,s)=>{ x.fillStyle = "rgba(0,0,0,.22)"; x.beginPath(); x.ellipse(px+s*1.6,py+s*1.8,s*.8,s*.6,0,0,TAU); x.fill(); x.strokeStyle = "rgba(255,255,255,.5)"; x.lineWidth = 1; x.beginPath(); x.moveTo(px,py); x.lineTo(px+s*.6,py+s*1.5); x.stroke(); ball(px,py,s*.75,pick(["#FF9AD0","#9AD8FF","#FFE07A"]),pick(["#C2187A","#1F6FB8","#D99A00"])) },
+    bench:(px,py,s)=>{ x.save(); x.translate(px,py); x.rotate(r()*3); x.fillStyle = "rgba(0,0,0,.25)"; x.fillRect(-s+4,-s*.3+6,s*2,s*.6); x.fillStyle = "#8A5A30"; x.fillRect(-s,-s*.3,s*2,s*.25); x.fillRect(-s,s*.02,s*2,s*.25); x.restore() },
+  };
+  const SZ = {tree:26, pine:24, snowpine:24, palm:30, parasol:18, rock:10, cone:7, cactus:14, mushroom:16, flowers:14, snowman:14, tent:24, lamp:8, balloon:10, bench:14};
+  // --- le sol : une grande tuile (texture et décors) répétée partout, même bien au-delà du circuit : plus de vide quand on dézoome ---
+  const TS = 1024, mk = () => { const t = document.createElement("canvas"); t.width = t.height = Math.round(TS*GK); const k = t.getContext("2d"); k.scale(GK,GK); return [t,k] };
+  const worldX = x, [tex, texX] = mk(); x = texX;
+  x.fillStyle = th.ground; x.fillRect(0,0,TS,TS);
+  const big = (n, cols, rmin, rmax, a) => { for(let i=0;i<n;i++){ x.fillStyle = pick(cols); x.globalAlpha = a; x.beginPath(); x.ellipse(r()*TS, r()*TS, rmin+r()*(rmax-rmin), (rmin+r()*(rmax-rmin))*.7, r()*3, 0, TAU); x.fill() } x.globalAlpha = 1 };
+  if(dc==="foret"||dc==="jardin"){ big(45, dc==="foret"?["#5C8A36","#426E25","#3A6420"]:["#7DB653","#62993E","#86C25C"], 40, 160, .35);
+    for(let i=0;i<4400;i++){ const px = r()*TS, py = r()*TS, l = 3+r()*5; x.strokeStyle = pick(dc==="foret"?["#6E9E42","#355E1E","#4F7F2C"]:["#8CCB62","#5E9A3A","#A5D97A"]); x.lineWidth = 1; x.beginPath(); x.moveTo(px,py); x.lineTo(px+(r()-.5)*2, py-l); x.stroke() } }
+  else if(dc==="plage"||dc==="desert"){ big(34, dc==="plage"?["#F2DDB0","#E2C38C"]:["#E59A5A","#C97A3E"], 60, 220, .4);
+    x.strokeStyle = dc==="plage" ? "rgba(170,130,70,.18)" : "rgba(120,50,10,.16)"; x.lineWidth = 2;
+    for(let i=0;i<150;i++){ const px = r()*TS, py = r()*TS, l = 30+r()*60; x.beginPath(); x.moveTo(px,py); x.quadraticCurveTo(px+l/2, py-6, px+l, py); x.stroke() } }
+  else if(dc==="glace"){ big(40, ["#FFFFFF","#DCEAF8","#E8F1FB"], 50, 200, .6); for(let i=0;i<270;i++){ x.fillStyle = "rgba(255,255,255,.9)"; x.fillRect(r()*TS, r()*TS, 2, 2) } }
+  else if(dc==="foire"){ big(40, ["#1E1838","#120E24","#241C44"], 50, 200, .25); for(let i=0;i<850;i++){ x.fillStyle = "rgba(255,255,255,.05)"; x.fillRect(r()*TS, r()*TS, 2, 2) } }
+  else { for(let i=0;i<3400;i++){ x.fillStyle = r()<.5 ? "rgba(255,255,255,.06)" : "rgba(0,0,0,.08)"; x.fillRect(r()*TS, r()*TS, 2, 2) }
+    // une marelle et des lignes de terrain peintes au sol
+    x.strokeStyle = "rgba(255,255,255,.55)"; x.lineWidth = 4;
+    for(let i=0;i<2;i++){ const px = 200+r()*(TS-400), py = 200+r()*(TS-400); x.save(); x.translate(px,py); x.rotate(r()*TAU);
+      if(r()<.5){ for(let k=0;k<6;k++) x.strokeRect(k%3===1?-30:-15, -k*30, k%3===1?60:30, 30) } else { x.beginPath(); x.arc(0,0,60,0,TAU); x.stroke(); x.strokeRect(-140,-90,280,180) } x.restore() } }
+  const [full, fullX] = mk(); fullX.drawImage(tex, 0, 0, TS, TS); x = fullX;
+  const set0 = GC_LOOK[dc].set, w0 = set0.map(e=>e[1]);
+  const objs = []; for(let i=0;i<52;i++){ const k = set0[pickW(r(), w0)][0]; objs.push({px:r()*TS, py:r()*TS, k, sz:SZ[k]*(.75+r()*.6), sd:Math.floor(r()*1e9)}) }
+  const put = (o, X, Y) => { r = rng(o.sd); if(o.k==="snowpine") D.pine(X,Y,o.sz,true); else D[o.k](X,Y,o.sz) };
+  objs.forEach(o=>{ for(const ox of [-TS,0,TS]) for(const oy of [-TS,0,TS]){ const X = o.px+ox, Y = o.py+oy; if(X<-90||X>TS+90||Y<-90||Y>TS+90) continue; put(o, X, Y) } });
+  x = worldX; T.tile = full;
+  // dans le circuit : la même texture, et les mêmes décors aux mêmes places, sauf ceux qui toucheraient la piste ou l'eau
+  const patTex = x.createPattern(tex, "repeat"); patTex.setTransform(new DOMMatrix().scale(1/GK));
+  x.fillStyle = patTex; x.fillRect(0,0,GW,GH);
+  for(let gx=0; gx*TS<GW+90; gx++) for(let gy=0; gy*TS<GH+90; gy++) objs.forEach(o=>{ const X = o.px+gx*TS, Y = o.py+gy*TS;
+    if(X>GW+90 || Y>GH+90 || gcNearD(T,X,Y)<o.sz+30 || (th.water && Y<190) || T.narrows.some(s0=>{ const q = gcAt(T,s0); return Math.hypot(X-q.x,Y-q.y)<380 })) return; put(o, X, Y) });
+  r = r0;
+  // --- l'eau : la mer ou la banquise en haut, et une rivière sous chaque pont ---
+  const water = T.waterC = dc==="glace" ? ["#2B5D8A","#6FA8D8"] : dc==="foire" ? ["#1B2C6E","#3A55B0"] : dc==="desert" ? ["#2A8FA0","#5CC6CF"] : ["#1F7FB8","#5EC3E0"];
+  if(th.water){ const g = x.createLinearGradient(0,0,0,170); g.addColorStop(0,water[0]); g.addColorStop(1,water[1]); x.fillStyle = g;
+    x.beginPath(); x.moveTo(0,0); for(let i=0;i<=GW;i+=30) x.lineTo(i, 130+26*Math.sin(i/130)); x.lineTo(GW,0); x.fill();
+    x.fillStyle = dc==="plage" ? "rgba(255,248,230,.85)" : "rgba(255,255,255,.9)"; x.beginPath(); for(let i=0;i<=GW;i+=30) x.lineTo(i, 130+26*Math.sin(i/130)); for(let i=GW;i>=0;i-=30) x.lineTo(i, 142+26*Math.sin(i/130)); x.fill() }
+  T.rivers = T.narrows.map(s0=>{ const p = gcAt(T,s0); return {x:p.x, y:p.y, a:Math.atan2(p.ty,p.tx)} });
+  T.rivers.forEach(rv=>{ x.save(); x.translate(rv.x,rv.y); x.rotate(rv.a);
+    const g = x.createLinearGradient(-80,0,80,0); g.addColorStop(0,water[1]); g.addColorStop(.5,water[0]); g.addColorStop(1,water[1]);
+    x.fillStyle = shade(th.ground,-.25); x.beginPath(); x.roundRect(-96,-330,192,660,96); x.fill(); x.fillStyle = g; x.beginPath(); x.roundRect(-82,-316,164,632,82); x.fill();
+    x.strokeStyle = "rgba(255,255,255,.35)"; x.lineWidth = 2; for(let k=0;k<12;k++){ const yy = -260+k*45, xx = (r()-.5)*100; x.beginPath(); x.moveTo(xx,yy); x.lineTo(xx+(r()-.5)*8,yy+18); x.stroke() }
+    x.restore() });
+  // --- la piste ---
+  const soft = (extra, col, alpha, ox=0, oy=0) => { const k = 8, sc = document.createElement("canvas"); sc.width = GW/k; sc.height = GH/k; const y = sc.getContext("2d");
+    y.scale(1/k,1/k); y.translate(ox,oy); y.lineCap = "round"; y.strokeStyle = col;
+    for(let i=0;i<P.length-1;i+=2){ const p = P[i], q = P[Math.min(P.length-1,i+2)]; y.lineWidth = 2*(p.w+extra); y.beginPath(); y.moveTo(p.x,p.y); y.lineTo(q.x,q.y); y.stroke() }
+    x.save(); x.globalAlpha = alpha; x.drawImage(sc, 0, 0, GW, GH); x.restore() };
+  const band = (extra, style, dash) => { x.strokeStyle = style; x.lineCap = dash ? "butt" : "round"; if(dash) x.setLineDash(dash);
+    for(let i=0;i<P.length-1;i++){ const p = P[i], q = P[i+1]; x.lineWidth = Math.max(1, 2*(p.w+extra)); if(dash) x.lineDashOffset = -p.s; x.beginPath(); x.moveTo(p.x,p.y); x.lineTo(q.x,q.y); x.stroke() }
+    x.setLineDash([]) };
+  soft(30, "#000", .45, 10, 16);
+  if(th.neon) soft(26, th.edge, .4);
+  band(16, shade(th.curb ? th.curb[1] : th.edge, -.25));
+  band(14, th.curb ? th.curb[1] : th.edge);
+  if(th.curb) band(14, th.curb[0], [28,28]);
+  band(2, shade(th.track,-.25));
+  // la piste un peu bombée : plus claire au milieu
+  for(let k=0;k<5;k++) band(-k*k*3.2, shade(th.track, k*.035));
+  // traces de billes et grain
+  x.globalAlpha = .07; x.strokeStyle = "#000"; x.lineWidth = 3;
+  for(let k=0;k<7;k++){ const o = (r()-.5)*1.4; x.beginPath(); P.forEach((p,i)=>{ if(i%3) return; const X = p.x+p.nx*p.w*o, Y = p.y+p.ny*p.w*o; i?x.lineTo(X,Y):x.moveTo(X,Y) }); x.stroke() }
+  x.globalAlpha = 1;
+  for(let i=0;i<9000;i++){ const p = P[Math.floor(r()*P.length)], o = (r()*2-1)*p.w; x.fillStyle = r()<.5 ? "rgba(0,0,0,.08)" : "rgba(255,255,255,.1)"; x.fillRect(p.x+p.nx*o, p.y+p.ny*o, 1.6, 1.6) }
+  x.setLineDash([22,26]); x.strokeStyle = "rgba(255,255,255,.4)"; x.lineWidth = 3; x.beginPath(); P.forEach((p,i)=>i?x.lineTo(p.x,p.y):x.moveTo(p.x,p.y)); x.stroke(); x.setLineDash([]);
+  // les ponts : des planches, deux rambardes et leur ombre sur l'eau
+  T.narrows.forEach(s0=>{ for(let s=s0-130;s<=s0+130;s+=11){ const p = gcAt(T,s); x.save(); x.translate(p.x,p.y); x.rotate(Math.atan2(p.ty,p.tx));
+      x.fillStyle = "rgba(0,0,0,.25)"; x.fillRect(-4,-p.w-8+10,10,2*p.w+16); x.fillStyle = (s/11|0)%2 ? "#A0703F" : "#8A5C30"; x.fillRect(-5,-p.w-8,10,2*p.w+16);
+      x.fillStyle = "rgba(255,255,255,.12)"; x.fillRect(-5,-p.w-8,2,2*p.w+16); x.restore() }
+    [1,-1].forEach(sd=>{ x.strokeStyle = "#5A3A1E"; x.lineWidth = 6; x.beginPath(); for(let s=s0-130;s<=s0+130;s+=10){ const p = gcAt(T,s), X = p.x+p.nx*(p.w+10)*sd, Y = p.y+p.ny*(p.w+10)*sd; s===s0-130?x.moveTo(X,Y):x.lineTo(X,Y) } x.stroke() }) });
+  // départ et arrivée
+  const line = (s, q, rows) => { const p = gcAt(T,s); x.save(); x.translate(p.x,p.y); x.rotate(Math.atan2(p.ty,p.tx));
+    for(let i=-Math.ceil(p.w/q);i<Math.ceil(p.w/q);i++) for(let j=0;j<rows;j++){ x.fillStyle = (i+j)%2 ? "#111" : "#fff"; x.fillRect(j*q-q, i*q, q, q) } x.restore() };
+  line(60, 10, 2); line(T.L-40, 14, 3);
+  const word = (s, txt) => { const p = gcAt(T,s); x.save(); x.translate(p.x,p.y); x.rotate(Math.atan2(p.ty,p.tx)+Math.PI/2); x.font = "64px 'Lilita One', sans-serif"; x.textAlign = "center"; x.fillStyle = "rgba(255,255,255,.5)"; x.fillText(txt, 0, 22); x.restore() };
+  word(T.L-140, "ARRIVÉE"); word(150, "DÉPART");
+  const set = GC_LOOK[dc].set, wsum = set.map(e=>e[1]);
+  for(let i=0;i<620;i++){
+    const s0 = r()*T.L, p = gcAt(T, s0), sd = r()<.5 ? -1 : 1, d = p.w+40+Math.pow(r(),1.5)*700, px = p.x+p.nx*d*sd, py = p.y+p.ny*d*sd;
+    if(px<20||py<20||px>GW-20||py>GH-20 || gcNearD(T,px,py)<30 || (th.water && py<170) || T.rivers.some(rv=>Math.hypot(px-rv.x,py-rv.y)<360 && Math.abs((px-rv.x)*Math.cos(rv.a)+(py-rv.y)*Math.sin(rv.a))<110)) continue;
+    const k = set[pickW(r(), wsum)][0], sz = SZ[k]*(.75+r()*.6);
+    if(k==="snowpine") D.pine(px,py,sz,true); else D[k](px,py,sz);
+  }
+  // les gradins près de l'arrivée (le public est dessiné à chaque image : il bouge)
+  T.crowd = []; T.stands = [];
+  const f0 = gcAt(T, T.L-150);
+  [1,-1].forEach(sd=>{ const cx = f0.x+f0.nx*(f0.w+80)*sd, cy = f0.y+f0.ny*(f0.w+80)*sd, a = Math.atan2(f0.ty,f0.tx);
+    x.save(); x.translate(cx,cy); x.rotate(a); x.fillStyle = "rgba(0,0,0,.3)"; x.fillRect(-170,-40+8,340,80); x.fillStyle = "#6B4A2E"; x.fillRect(-170,-40,340,80);
+    for(let k=0;k<4;k++){ x.fillStyle = k%2 ? "#7E5A3A" : "#5E3E24"; x.fillRect(-170,-40+k*20,340,20) } x.fillStyle = "#E5484D"; x.fillRect(-176,(sd>0?34:-46),352,12); x.restore();
+    for(let k=0;k<4;k++) for(let j=0;j<20;j++){ const lx = -160+j*16.5+(k%2)*8, ly = -30+k*20; T.crowd.push({x:cx+Math.cos(a)*lx-Math.sin(a)*ly, y:cy+Math.sin(a)*lx+Math.cos(a)*ly, c:GC_COLS[(j*3+k)%GC_COLS.length], ph:r()*TAU}) } });
+  // des fanions le long de la piste (dessinés à chaque image : ils flottent)
+  T.flags = []; for(let s=220;s<T.L-100;s+=150){ const p = gcAt(T,s); [1,-1].forEach((sd,j)=>T.flags.push({x:p.x+p.nx*(p.w+24)*sd, y:p.y+p.ny*(p.w+24)*sd, a:Math.atan2(p.ty,p.tx), c:GC_COLS[((s/150|0)+j)%GC_COLS.length]})) }
+  T.world = c;
+}
+
+// ---------- la mise en scène : l'ordre d'arrivée est connu, on invente une course qui y mène ----------
+const GC_DT = 1/30, GC_WIN = 40, GC_DUR = 60;   // le gagnant passe la ligne vers 40 s ; une course dure environ une minute
+const gcSpec = x => x.bille && x.bille.type ? {seed:x.bille.seed, type:x.bille.type, family:x.bille.family, pal:x.bille.pal, shiny:x.bille.shiny||0}
+  : (()=>{ const r = rng(x.graine || hash(x.pseudo||x.nom||"?")); return {seed:Math.floor(r()*4e9), type:TK[pickW(r(),[30,30,15,12,8,5])], family:pickW(r(),FAM_W), pal:Math.floor(r()*BASE_PALS), shiny:0} })();
+function gcPlan(T, list, seed){
+  const r = rng(seed), base = T.L/(GC_WIN-2), sm = (a,b,v) => { const k = Math.max(0,Math.min(1,(v-a)/(b-a))); return k*k*(3-2*k) };
+  const lanes = list.map((_,i)=>-.75+1.5*(i+.5)/list.length).sort(()=>r()-.5);
+  const R = list.map((x,i)=>{
+    const ph = [r()*6.3, r()*6.3, r()*6.3], fr = [.18+r()*.1, .45+r()*.2, 1+r()*.4];
+    // des scénarios : le gagnant revient de loin, un autre mène longtemps puis craque
+    const early = i===0 ? -.1 : (i===1 || r()<.25) ? .13 : (r()-.5)*.12, late = i===0 ? .2 : i===1 ? .04 : -early*.6;
+    const fall = (i>2 && r()<.35) || (i>0 && r()<.08) ? .2+r()*.6 : null, trip = r()<.45 ? .1+r()*.8 : null;
+    const xs = [0], ev = []; let s = 0, t = 0, pause = 0, slow = 0, boost = 0, fell = false, tripped = false, bi = 0;
+    while(s<T.L && t<200){
+      const pr = s/T.L;
+      if(fall!=null && !fell && pr>=fall){ fell = true; pause = 2.4; ev.push({k:"fall", t, s}) }
+      if(trip!=null && !tripped && pr>=trip){ tripped = true; slow = .9; ev.push({k:"trip", t, s}) }
+      while(bi<T.boosts.length && T.boosts[bi].s < s) bi++;
+      if(bi<T.boosts.length && Math.abs(T.boosts[bi].s-s)<base*GC_DT && Math.abs(lanes[i])<.4 && r()<.5){ boost = .7; ev.push({k:"boost", t, s}) }
+      let v = 1 + .14*Math.sin(t*fr[0]+ph[0]) + .08*Math.sin(t*fr[1]+ph[1]) + .04*Math.sin(t*fr[2]+ph[2]) + early*(1-sm(.3,.6,pr)) + late*sm(.6,.92,pr);
+      if(t<1.4) v *= .1+.9*t/1.4;
+      if(pause>0){ pause -= GC_DT; v = 0 } if(slow>0){ slow -= GC_DT; v *= .35 } if(boost>0){ boost -= GC_DT; v *= 1.7 }
+      s = Math.min(T.L, s+v*base*GC_DT); t += GC_DT; xs.push(s);
+    }
+    return {...x, i, spec:gcSpec(x), me:!!x.joueur && x.joueur===(sync.uid||GC_ME), raw:xs, rawT:t, ev, lane:lanes[i], ph:r()*6.3, col:GC_COLS[i%GC_COLS.length], rot:I3.slice(), dirty:true, ls:0};
+  });
+  // les temps d'arrivée, dans l'ordre tiré par le serveur (parfois un photo-finish)
+  let f = GC_WIN-1+r()*2;
+  R.forEach((o,i)=>{ if(i) f += i===1 ? (r()<.45 ? .1+r()*.15 : .5+r()*.9) : .3+r()*1.2; o.fin = f; o.k = o.rawT/f; o.r = radOf(o.spec.type)*.85 });
+  return R;
+}
+function gcState(o, t){   // où en est la bille o au temps t : progression, chute en cours
+  if(t<=0) return {s:0, fall:null};
+  const rt = t*o.k, idx = rt/GC_DT, i = Math.floor(idx), a = o.raw[Math.min(i,o.raw.length-1)], b = o.raw[Math.min(i+1,o.raw.length-1)];
+  const s = a+(b-a)*(idx-i), fe = o.ev.find(e=>e.k==="fall" && rt>=e.t && rt<e.t+2.4);
+  return {s, fall: fe ? (rt-fe.t)/2.4 : null};
+}
+
+// ---------- l'écran de la course : vue 3D, comme une course à la télé ----------
+const GCV = {raf:0};
+function gcWatch(race){
+  const T = gcTrack(race.jour), R = gcPlan(T, race.resultats, race.graine);
+  const ov = document.getElementById("gc-ov");
+  ov.innerHTML = `<canvas id="gc-cv"></canvas><div class="gc-vig"></div>
+    <div class="gc-top"><div class="chip"><small>${new Date(race.depart).toLocaleDateString("fr-FR",{weekday:"long", day:"numeric"})}${race.test?" · course d'essai":""}</small><b>${esc(T.th.name)}</b></div>
+      <div class="chip" id="gc-chrono"><small>Temps</small><b>—</b></div><span class="sp"></span>
+      <button class="btn btn-yellow gc-skip gc-auto" data-action="gc-auto" id="gc-auto" hidden>${ic("flag",14)} Suivre la course</button><button class="btn btn-ghost gc-skip" data-action="gc-vue" id="gc-vue"></button><button class="btn btn-ghost gc-skip" data-action="gc-skip">Passer à l'arrivée</button>
+      <button class="gc-x" data-action="gc-close" aria-label="Quitter la course">×</button></div>
+    <div class="gc-lights" id="gc-lights">${"<i></i>".repeat(5)}</div>
+    <div class="gc-board" id="gc-board"></div><canvas class="gc-mini" id="gc-mini" width="240" height="134"></canvas>
+    <div class="gc-ticker" id="gc-ticker"></div><div class="gc-big" id="gc-big"></div><div class="gc-end" id="gc-end" hidden></div>
+    <div class="gc-hint" id="gc-hint">${ic("target",14)} Fais glisser pour déplacer la caméra, molette ou deux doigts pour zoomer, clique sur un nom pour suivre une bille</div>`;
+  ov.hidden = false; document.body.classList.add("gc-open");
+  setTimeout(()=>document.getElementById("gc-hint")?.classList.add("bye"), 6000);
+  gcControls(document.getElementById("gc-cv"));
+  // le classement est redessiné à chaque image : on suit une bille dès qu'on appuie sur son nom
+  document.getElementById("gc-board").addEventListener("pointerdown", e=>{ const r = e.target.closest(".gcr"); if(r){ GCV.follow = +r.dataset.i; GCV.free = false } });
+  // en direct : on reprend là où en est la course ; sinon depuis la ligne de départ (5 s de feux)
+  const since = (Date.now()-race.depart)/1000, live = !race.test && !race.replay && since>0 && since<GC_DUR;
+  const p0 = gcAt(T, 40);
+  Object.assign(GCV, {race, T, R, t: live ? since-5 : -5, last:performance.now(), fx:[], said:{}, lead:null, leadT:0, done:false, live,
+    cam:{s:-10, ang:Math.atan2(p0.ty,p0.tx), back:680, h:150}, scen:gcScenery(T), sky:null, patT:null, free:false, follow:null, vue:lsGet("billy-gc-vue")==='tv' ? 'tv' : 'ciel'});
+  V_vueBtn();
+  R.forEach(o=>{ o.trail = [] });
+  if(live && since>5) gcSay("En direct : la course a déjà commencé !");
+  cancelAnimationFrame(GCV.raf); GCV.raf = requestAnimationFrame(gcLoop);
+}
+// la caméra à la main : glisser pour se déplacer, molette ou pincer pour zoomer (vue du ciel)
+function gcControls(cv){
+  const pts = new Map(); let pinch = 0;
+  const free = () => { if(GCV.vue==='tv') return false; if(!GCV.sky) return false; GCV.free = true; GCV.follow = null; return true };
+  cv.addEventListener("pointerdown", e=>{ pts.set(e.pointerId, {x:e.clientX, y:e.clientY}); cv.setPointerCapture(e.pointerId); if(pts.size===2){ const [a,b] = [...pts.values()]; pinch = Math.hypot(a.x-b.x, a.y-b.y) } });
+  cv.addEventListener("pointermove", e=>{ const p0 = pts.get(e.pointerId); if(!p0) return; const C = GCV.sky;
+    if(pts.size===1){ const dx = e.clientX-p0.x, dy = e.clientY-p0.y; if(Math.abs(dx)+Math.abs(dy)<1 || !free()) return;
+      const cr = Math.cos(C.rot), sr = Math.sin(C.rot); C.x -= (dx*cr+dy*sr)/C.z; C.y -= (-dx*sr+dy*cr)/C.z }
+    p0.x = e.clientX; p0.y = e.clientY;
+    if(pts.size===2 && free()){ const [a,b] = [...pts.values()], d = Math.hypot(a.x-b.x, a.y-b.y); if(pinch) C.z = Math.max(.35, Math.min(1.8, C.z*d/pinch)); pinch = d } });
+  const up = e=>{ pts.delete(e.pointerId); if(pts.size<2) pinch = 0 };
+  cv.addEventListener("pointerup", up); cv.addEventListener("pointercancel", up);
+  cv.addEventListener("wheel", e=>{ e.preventDefault(); if(!free()) return; GCV.sky.z = Math.max(.35, Math.min(1.8, GCV.sky.z*Math.exp(-e.deltaY*.0015))) }, {passive:false});
+}
+function V_vueBtn(){ const b = document.getElementById("gc-vue"); if(b) b.textContent = GCV.vue==='tv' ? "Vue du ciel" : "Vue télé" }
+function gcClose(){
+  cancelAnimationFrame(GCV.raf); const ov = document.getElementById("gc-ov"); ov.hidden = true; ov.innerHTML = ""; document.body.classList.remove("gc-open");
+  if(GCV.race && !GCV.race.test){ S.gcSeen = GCV.race.jour; save(); renderView() }
+}
+function gcSay(t, big){ const k = document.getElementById("gc-ticker"); if(!k) return; const el = document.createElement("div"); el.textContent = t; k.appendChild(el); while(k.children.length>3) k.firstChild.remove(); setTimeout(()=>el.remove(), big?5200:3400) }
+function gcBig(t){ const b = document.getElementById("gc-big"); if(!b) return; b.innerHTML = `<span>${t}</span>`; setTimeout(()=>{ if(b.textContent===t) b.innerHTML = "" }, 950) }
+const angLerp = (a, b, k) => { let d = b-a; while(d>Math.PI) d -= TAU; while(d<-Math.PI) d += TAU; return a+d*k };
+function gcLoop(now){
+  const V = GCV, cv = document.getElementById("gc-cv"); if(!cv) return;
+  let dt = Math.min(.1, (now-V.last)/1000); V.last = now;
+  const R0 = V.R, photo = R0[1] && R0[1].fin-R0[0].fin<.3; if(photo && V.t>R0[0].fin-1.3 && V.t<R0[1].fin+.4) dt *= .3;   // ralenti sur un photo-finish
+  const t0 = V.t; V.t += dt; const t = V.t, T = V.T;
+  // les feux de départ : un rouge par seconde, puis tout passe au vert
+  const lights = document.getElementById("gc-lights");
+  if(lights){ const n = Math.max(0, Math.min(5, Math.floor(t+5)+1)); [...lights.children].forEach((el,i)=>{ el.className = t>=0 ? "go" : i<n ? "on" : "" }); lights.hidden = t>1.2 }
+  if(t0<0 && t>=0){ gcBig("Partez !"); Sound.ding() }
+  if(t0<-4.9 && t>=-4.9) gcSay(`Circuit du jour : ${T.th.name} !`, true);
+  // positions : sur la grille au départ (deux rangées), puis le long de la piste
+  const pos = V.R.map(o=>{ const st = gcState(o, t), done = t>=o.fin, grid = (o.i%2 ? -30 : 0)*Math.max(0, 1-Math.max(0,t)/2.5);
+    const s = done ? T.L-40+Math.min(1,(t-o.fin)*.9)*90 : st.s+grid, p = gcAt(T, s);
+    let off = (o.lane + .12*Math.sin(Math.max(0,t)*.35+o.ph))*p.w*.8, z = o.r;
+    if(st.fall!=null){ const k = Math.min(1, st.fall*2.2); off = (o.lane<0?-1:1)*(Math.abs(off) + k*(p.w+40)); z = o.r - Math.max(0, st.fall-.3)*60 }
+    return {o, s:done ? T.L+(t-o.fin) : st.s, x:p.x+p.nx*off, y:p.y+p.ny*off, z, fall:st.fall, done, hide:st.fall!=null && st.fall>.6, tx:p.tx, ty:p.ty} });
+  pos.forEach(q=>{ const o = q.o, ds = q.s-o.ls;
+    if(ds>.01 && ds<200){ const C = V.cam;
+      if(V.vue!=='tv'){ const r0 = V.sky ? V.sky.rot : 0, mx = q.tx*Math.cos(r0)-q.ty*Math.sin(r0), my = q.tx*Math.sin(r0)+q.ty*Math.cos(r0); o.rot = mul3(rotAxis(my, mx, 0, ds/o.r), o.rot); o.dirty = true }
+      else if(C.dx!=null){ const vx = q.tx*C.rx+q.ty*C.ry, vz = -(q.tx*C.dx+q.ty*C.dy); o.rot = mul3(rotAxis(vz,0,-vx, ds/o.r), o.rot); o.dirty = true }
+      if(t>0 && !q.done && Math.random()<.35) V.fx.push({x:q.x-q.tx*o.r, y:q.y-q.ty*o.r, z:2, vx:(Math.random()-.5)*.6, vy:(Math.random()-.5)*.6, vz:.5+Math.random(), life:.8, col:T.th.dust||"#E9D9BC", sz:4}) }
+    o.ls = q.s;
+    if(q.fall!=null && !o.splash && q.fall>.35){ o.splash = 1; gcFx(q.x, q.y, T.th.water ? "#BFEFFF" : "#E8D2B0", 30, 3.5) } if(q.fall==null) o.splash = 0 });
+  // les commentaires
+  const order = [...pos].sort((a,b)=> (a.done&&b.done) ? a.o.fin-b.o.fin : b.s-a.s);
+  if(t>3){ const L0 = order[0].o; if(L0!==V.lead){ if(V.lead && t-V.leadT>1.2 && !order[0].done) gcSay(`${L0.me?"Tu passes":gcName(L0)+" passe"} en tête !`); V.lead = L0; V.leadT = t } }
+  V.R.forEach(o=>o.ev.forEach(e=>{ const at = e.t/o.k, key = o.i+e.k+e.t; if(t0<at && t>=at && !V.said[key]){ V.said[key] = 1; const rk = order.findIndex(q=>q.o===o);
+    if(e.k==="fall" && (rk<5 || o.me)) gcSay(T.th.water ? `Plouf ! ${o.me?"Ta bille tombe":gcName(o)+" tombe"} à l'eau !` : `Oh non ! ${o.me?"Ta bille sort":gcName(o)+" sort"} de la piste !`);
+    else if(e.k==="trip" && (rk<4 || o.me)) gcSay(`${o.me?"Ta bille trébuche":gcName(o)+" trébuche"} sur un caillou !`);
+    else if(e.k==="boost" && (rk<4 || o.me)){ gcSay(`Accélérateur pour ${o.me?"toi":gcName(o)} !`); const q = pos.find(q=>q.o===o); gcFx(q.x,q.y,"#FFE14D",18,3) } } }));
+  if(!V.said.last && order[0].s>T.L*.86){ V.said.last = 1; gcSay("Dernière ligne droite !", true) }
+  V.R.forEach((o,i)=>{ if(t0<o.fin && t>=o.fin){ const q = pos.find(q=>q.o===o); gcFx(q.x,q.y,o.col,50,5);
+    if(i===0) gcSay(`${o.me?"TU GAGNES":gcName(o)+" gagne"} la Grande Course !`, true);
+    else if(i===1 && o.fin-V.R[0].fin<.3) gcSay("Photo-finish ! C'était serré !", true);
+    else if(o.me) gcSay(`Tu passes la ligne : ${i+1}e !`, true) } });
+  // la caméra : fixe sur la ligne de départ, puis derrière la tête de course ; à la fin, devant l'arrivée
+  const C = V.cam;
+  if(t>0){
+    const front = order.filter(q=>!q.done && !q.hide).slice(0,4), me = pos.find(q=>q.o.me && !q.done && !q.hide);
+    if(me && front.length && Math.abs(me.s-front[0].s)<350 && !front.includes(me)) front.push(me);
+    let target, spread = 0;
+    const fq = V.follow!=null ? pos.find(q=>q.o.i===V.follow && !q.done) : null;
+    if(fq){ target = fq.s+40 }
+    else if(!front.length || order[0].done){ target = T.L-330 } else { const ss = front.map(q=>q.s); target = (Math.max(...ss)+Math.min(...ss))/2+40; spread = Math.max(...ss)-Math.min(...ss) }
+    C.s += (target-C.s)*Math.min(1, dt*2.2);
+    C.back += ((430+Math.min(spread,500)*.55)-C.back)*Math.min(1, dt*1.5);
+  }
+  const p = gcAt(T, C.s), look = gcAt(T, C.s+220);
+  C.ang = angLerp(C.ang, Math.atan2(look.y-p.y, look.x-p.x), Math.min(1, dt*(t>0?1.6:10)));
+  if(V.vue==='tv') gcDraw3D(cv, pos, t, p); else { gcSkyCam(pos, order, t, dt); gcDrawSky(cv, pos, t) }
+  gcHud(order, t);
+  const lastFin = V.R[V.R.length-1].fin;
+  if(!V.done && t>Math.min(lastFin+1.5, V.R[0].fin+12)){ V.done = true; gcPodium() }
+  GCV.raf = requestAnimationFrame(gcLoop);
+}
+function gcFx(x,y,col,n,sp){ for(let i=0;i<n;i++){ const a = Math.random()*TAU, v = sp*(.3+Math.random()); GCV.fx.push({x,y,z:4,vx:Math.cos(a)*v,vy:Math.sin(a)*v,vz:1+Math.random()*3,life:1,col,sz:5}) } }
+const gcGL = (()=>{ try{ return new MarbleGL(document.createElement("canvas")) }catch(e){ return null } })();
+function gcSprite(o, px){
+  if(!gcGL) return null; if(!o.cv) o.cv = document.createElement("canvas");
+  if(o.dirty || o.cv.width!==px){ gcGL.draw(o.spec, px, o.rot); o.cv.width = o.cv.height = px; o.cv.getContext("2d").drawImage(gcGL.cv,0,0); o.dirty = false }
+  return o.cv;
+}
+
+// ---- le décor en 3D : ciel, collines, objets debout le long de la piste ----
+const GC_LOOK = {
+  cour:   {sky:["#7FC3F2","#E6F4FF"], hill:["#A9BCCB","#8DA2B4"], fog:"#DCEBF7", ground:"#8A929C", dust:"#D8DCE2", set:[["tree",.5],["cone",.3],["bench",.2]]},
+  plage:  {sky:["#2E9BE6","#BDEBFF"], hill:["#79B9A6","#5E9E8A"], fog:"#CDEFFF", ground:"#EBD3A0", dust:"#F4E2B8", set:[["palm",.45],["parasol",.35],["rock",.2]], sun:true},
+  foret:  {sky:["#7CC2E8","#E4F4E2"], hill:["#4E7F43","#355E2E"], fog:"#D7EBD6", ground:"#4E7A2E", dust:"#C9A47A", set:[["tree",.45],["pine",.4],["rock",.15]]},
+  glace:  {sky:["#9DC3E8","#F2F8FF"], hill:["#E3EEF9","#C9DCEF"], fog:"#EEF5FC", ground:"#EEF5FF", dust:"#FFFFFF", set:[["snowpine",.6],["snowman",.2],["rock",.2]]},
+  jardin: {sky:["#6CBFF0","#EAF8DF"], hill:["#6FA04F","#548C3B"], fog:"#DDF1D6", ground:"#6FA347", dust:"#DCEFC4", set:[["tree",.3],["mushroom",.35],["flowers",.35]]},
+  foire:  {sky:["#07051A","#2E1E5E"], hill:["#1A1236","#120C28"], fog:"#2A1C55", ground:"#17132A", dust:"#9C8CFF", set:[["lamp",.35],["tent",.35],["balloon",.3]], night:true},
+  desert: {sky:["#F28A4A","#FFE0A8"], hill:["#C66E3A","#A8582C"], fog:"#FFD9A6", ground:"#D9894A", dust:"#F3C08A", set:[["cactus",.55],["rock",.45]], sun:true},
+};
+const GCSP = {};
+function gcSp(k){
+  if(GCSP[k]) return GCSP[k];
+  const c = document.createElement("canvas"); let W = 128, H = 160, wh = 100;
+  const big = {ferris:[256,280,330], stands:[320,140,80], tent:[160,150,90]}[k]; if(big){ [W,H,wh] = big }
+  c.width = W; c.height = H; const x = c.getContext("2d"), cx = W/2, rg = (x0,y0,r,a,b) => { const g = x.createRadialGradient(x0-r*.35,y0-r*.4,r*.1,x0,y0,r); g.addColorStop(0,a); g.addColorStop(1,b); return g };
+  const shadow = () => { x.fillStyle = "rgba(0,0,0,.22)"; x.beginPath(); x.ellipse(cx, H-6, W*.32, 6, 0, 0, TAU); x.fill() };
+  switch(k){
+    case "tree": wh = 120; shadow(); x.fillStyle = "#6B4524"; x.fillRect(cx-7, H-62, 14, 58);
+      [[cx,H-92,40],[cx-26,H-76,28],[cx+26,H-78,28],[cx,H-118,30]].forEach(([a,b,r])=>{ x.fillStyle = rg(a,b,r,"#7CC24A","#2F6B1F"); x.beginPath(); x.arc(a,b,r,0,TAU); x.fill() }); break;
+    case "pine": case "snowpine": wh = 140; shadow(); x.fillStyle = "#5A3A1E"; x.fillRect(cx-6, H-30, 12, 26);
+      for(let i=0;i<4;i++){ const y = H-28-i*30, w2 = 48-i*9; x.fillStyle = i%2 ? "#2E6B3A" : "#3A7F47"; x.beginPath(); x.moveTo(cx-w2,y); x.lineTo(cx,y-46); x.lineTo(cx+w2,y); x.fill();
+        x.fillStyle = "rgba(255,255,255,.12)"; x.beginPath(); x.moveTo(cx-w2,y); x.lineTo(cx,y-46); x.lineTo(cx-w2*.3,y); x.fill();
+        if(k==="snowpine"){ x.fillStyle = "#FFFFFF"; x.beginPath(); x.moveTo(cx-w2*.45,y-26); x.lineTo(cx,y-46); x.lineTo(cx+w2*.45,y-26); x.quadraticCurveTo(cx,y-20,cx-w2*.45,y-26); x.fill() } } break;
+    case "palm": wh = 160; shadow(); x.strokeStyle = "#8A5A30"; x.lineWidth = 11; x.lineCap = "round"; x.beginPath(); x.moveTo(cx+4,H-6); x.quadraticCurveTo(cx-18,H-80,cx+6,H-128); x.stroke();
+      x.strokeStyle = "rgba(0,0,0,.25)"; x.lineWidth = 2; for(let i=1;i<9;i++){ const y = H-6-i*14; x.beginPath(); x.moveTo(cx-10+i*.5,y); x.lineTo(cx+6,y-3); x.stroke() }
+      for(let i=0;i<7;i++){ const a = -Math.PI+i*Math.PI/6+.1; x.strokeStyle = i%2 ? "#3E9A3A" : "#2F7F2E"; x.lineWidth = 9; x.beginPath(); x.moveTo(cx+6,H-128); x.quadraticCurveTo(cx+6+Math.cos(a)*40, H-128+Math.sin(a)*30-10, cx+6+Math.cos(a)*60, H-128+Math.sin(a)*40+18); x.stroke() }
+      x.fillStyle = "#6B4524"; [[-6,-122],[6,-120],[0,-114]].forEach(([a,b])=>{ x.beginPath(); x.arc(cx+6+a,H+b,5,0,TAU); x.fill() }); break;
+    case "parasol": wh = 80; shadow(); x.fillStyle = "#EEE"; x.fillRect(cx-2, H-70, 4, 66);
+      for(let i=0;i<8;i++){ x.fillStyle = i%2 ? "#FFFFFF" : ["#E5484D","#2E8CFF","#FFC93F"][Math.floor(hash(k)%3)]; x.beginPath(); x.moveTo(cx,H-104); x.lineTo(cx-56+i*14,H-68); x.lineTo(cx-56+(i+1)*14,H-68); x.fill() }
+      x.fillStyle = "rgba(0,0,0,.12)"; x.fillRect(cx-56,H-70,112,3); break;
+    case "rock": wh = 34; shadow(); x.fillStyle = rg(cx,H-30,40,"#B9B4AA","#6D675E"); x.beginPath(); x.ellipse(cx,H-26,42,26,0,Math.PI,0); x.lineTo(cx+42,H-12); x.lineTo(cx-42,H-12); x.fill(); break;
+    case "cone": wh = 30; shadow(); x.fillStyle = "#FF7A1A"; x.beginPath(); x.moveTo(cx-24,H-10); x.lineTo(cx,H-90); x.lineTo(cx+24,H-10); x.fill(); x.fillStyle = "#fff"; x.fillRect(cx-15,H-52,30,10); x.fillStyle = "#E25E00"; x.fillRect(cx-32,H-14,64,8); break;
+    case "bench": wh = 34; shadow(); x.fillStyle = "#8A5A30"; x.fillRect(cx-50,H-56,100,10); x.fillRect(cx-50,H-36,100,10); x.fillStyle = "#444"; x.fillRect(cx-44,H-26,6,20); x.fillRect(cx+38,H-26,6,20); break;
+    case "cactus": wh = 90; shadow(); const gc2 = x.createLinearGradient(cx-14,0,cx+14,0); gc2.addColorStop(0,"#5FB35A"); gc2.addColorStop(1,"#2F7A35"); x.fillStyle = gc2;
+      const pill = (a,b,w2,h2) => { x.beginPath(); x.roundRect(a,b,w2,h2,w2/2); x.fill() };
+      pill(cx-14,H-130,28,126); pill(cx-46,H-96,20,46); pill(cx-46,H-62,40,18); pill(cx+26,H-110,20,50); pill(cx+8,H-74,38,18); break;
+    case "mushroom": wh = 70; shadow(); x.fillStyle = "#F4EBDD"; x.beginPath(); x.roundRect(cx-14,H-70,28,66,10); x.fill();
+      x.fillStyle = rg(cx,H-80,56,"#FF6A6A","#B5121F"); x.beginPath(); x.ellipse(cx,H-72,56,40,0,Math.PI,0); x.fill();
+      x.fillStyle = "#fff"; [[-30,-86,8],[0,-100,9],[28,-84,7],[-10,-78,5],[14,-76,5]].forEach(([a,b,r])=>{ x.beginPath(); x.arc(cx+a,H+b,r,0,TAU); x.fill() }); break;
+    case "flowers": wh = 26; for(let i=0;i<9;i++){ const a = cx-40+i*10, b = H-20-((i*37)%22); x.strokeStyle = "#3E8A2E"; x.lineWidth = 3; x.beginPath(); x.moveTo(a,H-4); x.lineTo(a,b); x.stroke();
+      x.fillStyle = ["#FF6FB5","#FFFFFF","#FFC93F","#B07BFF"][i%4]; for(let p=0;p<5;p++){ x.beginPath(); x.arc(a+Math.cos(p*1.256)*5,b+Math.sin(p*1.256)*5,4,0,TAU); x.fill() } x.fillStyle = "#FFB000"; x.beginPath(); x.arc(a,b,3,0,TAU); x.fill() } break;
+    case "snowman": wh = 76; shadow(); [[cx,H-30,30],[cx,H-78,22],[cx,H-114,16]].forEach(([a,b,r])=>{ x.fillStyle = rg(a,b,r,"#FFFFFF","#C9DDF0"); x.beginPath(); x.arc(a,b,r,0,TAU); x.fill() });
+      x.fillStyle = "#FF8A1A"; x.beginPath(); x.moveTo(cx,H-114); x.lineTo(cx+20,H-110); x.lineTo(cx,H-108); x.fill(); x.fillStyle = "#222"; x.fillRect(cx-14,H-140,28,10); x.fillRect(cx-9,H-158,18,20); x.fillStyle = "#E5484D"; x.fillRect(cx-20,H-98,40,7); break;
+    case "lamp": wh = 120; x.fillStyle = "#2B2440"; x.fillRect(cx-4,H-130,8,126); x.fillRect(cx-14,H-10,28,8);
+      const gl = x.createRadialGradient(cx,H-138,2,cx,H-138,40); gl.addColorStop(0,"rgba(255,240,180,1)"); gl.addColorStop(.25,"rgba(255,200,90,.7)"); gl.addColorStop(1,"rgba(255,160,60,0)"); x.fillStyle = gl; x.beginPath(); x.arc(cx,H-138,40,0,TAU); x.fill(); break;
+    case "tent": shadow(); for(let i=0;i<8;i++){ x.fillStyle = i%2 ? "#FFFFFF" : "#E5484D"; x.beginPath(); x.moveTo(cx,H-140); x.lineTo(cx-70+i*17.5,H-20); x.lineTo(cx-70+(i+1)*17.5,H-20); x.fill() }
+      x.fillStyle = "#3A1E10"; x.beginPath(); x.moveTo(cx-14,H-20); x.lineTo(cx,H-56); x.lineTo(cx+14,H-20); x.fill(); x.strokeStyle = "#FFC93F"; x.lineWidth = 3; x.beginPath(); x.moveTo(cx,H-140); x.lineTo(cx,H-150); x.stroke(); x.fillStyle = "#FFC93F"; x.beginPath(); x.moveTo(cx,H-150); x.lineTo(cx+18,H-145); x.lineTo(cx,H-140); x.fill(); break;
+    case "balloon": wh = 70; x.strokeStyle = "rgba(255,255,255,.6)"; x.lineWidth = 1.5; x.beginPath(); x.moveTo(cx,H-4); x.quadraticCurveTo(cx+8,H-50,cx,H-90); x.stroke();
+      x.fillStyle = rg(cx,H-118,30,"#FF9AD0","#C2187A"); x.beginPath(); x.ellipse(cx,H-118,26,32,0,0,TAU); x.fill(); break;
+    case "ferris": x.strokeStyle = "#5A4A8A"; x.lineWidth = 8; x.beginPath(); x.moveTo(cx-70,H-4); x.lineTo(cx,H-150); x.lineTo(cx+70,H-4); x.stroke();
+      x.strokeStyle = "#FF4FD8"; x.lineWidth = 5; x.beginPath(); x.arc(cx,H-150,110,0,TAU); x.stroke(); x.lineWidth = 2; x.strokeStyle = "rgba(57,230,255,.8)";
+      for(let i=0;i<12;i++){ const a = i*TAU/12; x.beginPath(); x.moveTo(cx,H-150); x.lineTo(cx+Math.cos(a)*110,H-150+Math.sin(a)*110); x.stroke(); x.fillStyle = GC_COLS[i%GC_COLS.length]; x.beginPath(); x.roundRect(cx+Math.cos(a)*110-10,H-150+Math.sin(a)*110-6,20,16,4); x.fill() } break;
+    case "stands": x.fillStyle = "#5A3A22"; x.fillRect(10,40,W-20,H-44); x.fillStyle = "#E5484D"; x.fillRect(0,22,W,20); for(let i=0;i<16;i++){ x.fillStyle = i%2?"#fff":"#E5484D"; x.beginPath(); x.moveTo(i*20,42); x.lineTo(i*20+20,42); x.lineTo(i*20+10,54); x.fill() }
+      for(let r=0;r<4;r++) for(let i=0;i<18;i++){ x.fillStyle = GC_COLS[(i*3+r)%GC_COLS.length]; x.beginPath(); x.arc(24+i*16.2+(r%2)*8, 70+r*18, 7, 0, TAU); x.fill() } break;
+    default: if(k.startsWith("flag")){ wh = 64; const col = GC_COLS[+k.slice(4)%GC_COLS.length]; x.fillStyle = "#EEE"; x.fillRect(cx-2,H-130,4,126); x.fillStyle = col; x.beginPath(); x.moveTo(cx+2,H-128); x.lineTo(cx+46,H-112); x.lineTo(cx+2,H-96); x.fill() }
+  }
+  c.wh = wh; GCSP[k] = c; return c;
+}
+// les objets du décor : tirés au sort une fois par circuit (le même pour tout le monde)
+function gcScenery(T){
+  if(T.scen) return T.scen;
+  const r = rng(hash("decor|"+T.jour)), L = GC_LOOK[T.th.deco], out = [];
+  for(let i=0;i<230;i++){ const s = r()*T.L, p = gcAt(T, s), sd = r()<.5 ? -1 : 1, d = p.w+70+Math.pow(r(),1.4)*800;
+    const x = p.x+p.nx*d*sd, y = p.y+p.ny*d*sd; if(gcNearD(T,x,y)<34) continue;
+    out.push({x, y, k:L.set[pickW(r(), L.set.map(e=>e[1]))][0], sc:.8+r()*.5}) }
+  for(let s=200;s<T.L-100;s+=170){ const p = gcAt(T,s); [1,-1].forEach((sd,j)=>out.push({x:p.x+p.nx*(p.w+26)*sd, y:p.y+p.ny*(p.w+26)*sd, k:"flag"+((s/170+j)|0)%8, sc:1})) }
+  const f = gcAt(T, T.L-140); [1,-1].forEach(sd=>out.push({x:f.x+f.nx*(f.w+110)*sd, y:f.y+f.ny*(f.w+110)*sd, k:"stands", sc:1.2}));
+  if(T.th.deco==="foire") [.35,.7].forEach((k,i)=>{ const p = gcAt(T,T.L*k), sd = i ? 1 : -1; out.push({x:p.x+p.nx*(p.w+380)*sd, y:p.y+p.ny*(p.w+380)*sd, k:"ferris", sc:1.4}) });
+  return T.scen = out;
+}
+// ---- la vue du ciel : un drone qui suit la course et tourne avec la piste ----
+function gcSkyCam(pos, order, t, dt){
+  const V = GCV, T = V.T, C = V.sky || (V.sky = (()=>{ const p = gcAt(T,40); return {x:p.x, y:p.y, z:1.2, rot:-Math.atan2(p.ty,p.tx)-Math.PI/2} })());
+  let tx, ty, z, h;
+  if(V.free){ C.x = Math.max(0, Math.min(GW, C.x)); C.y = Math.max(0, Math.min(GH, C.y)); return C }   // le joueur dirige la caméra
+  const fq = V.follow!=null ? pos.find(q=>q.o.i===V.follow && !q.hide) : null;
+  if(fq){ const a = gcAt(T, Math.min(fq.s, T.L-60)), b = gcAt(T, Math.min(fq.s, T.L-60)+180); tx = fq.x; ty = fq.y; z = .95; h = Math.atan2(b.y-a.y, b.x-a.x) }
+  else if(t<=0){ const p = gcAt(T,30); tx = p.x; ty = p.y; z = 1; h = Math.atan2(p.ty,p.tx) }
+  else if(order[0].done && t>V.R[0].fin+.6){ const p = gcAt(T,T.L-70); tx = p.x; ty = p.y; z = .9; h = Math.atan2(p.ty,p.tx) }
+  else {
+    const g = order.filter(q=>!q.done && !q.hide).slice(0,4), me = pos.find(q=>q.o.me && !q.done && !q.hide);
+    if(me && g.length && Math.abs(me.s-g[0].s)<420 && !g.includes(me)) g.push(me);
+    const L = g.length ? g : order.slice(0,2);
+    let x0=1e9,y0=1e9,x1=-1e9,y1=-1e9; L.forEach(q=>{ x0=Math.min(x0,q.x); y0=Math.min(y0,q.y); x1=Math.max(x1,q.x); y1=Math.max(y1,q.y) });
+    tx = (x0+x1)/2; ty = (y0+y1)/2;
+    const span = Math.hypot(x1-x0, y1-y0), view = Math.min(innerWidth, innerHeight);
+    z = Math.max(.5, Math.min(1, view/(span+520)));
+    const ms = L.reduce((a,q)=>a+q.s,0)/L.length, a = gcAt(T, ms), b = gcAt(T, ms+180); h = Math.atan2(b.y-a.y, b.x-a.x);
+  }
+  const k = Math.min(1, dt*(t<=0 ? 8 : 2.4));
+  C.x += (tx-C.x)*k; C.y += (ty-C.y)*k; C.z += (z-C.z)*Math.min(1,dt*1.6); C.rot = angLerp(C.rot, -h-Math.PI/2, Math.min(1, dt*(t<=0?8:1.1)));
+  return C;
+}
+function gcDrawSky(cv, pos, t){
+  const dpr = Math.min(2, devicePixelRatio||1), W = Math.round(cv.clientWidth*dpr), H = Math.round(cv.clientHeight*dpr);
+  if(cv.width!==W || cv.height!==H){ cv.width = W; cv.height = H }
+  const c = cv.getContext("2d"), V = GCV, T = V.T, C = V.sky, th = T.th, now = performance.now()/1000, zz = C.z*dpr, oy = H*.58;
+  const cr = Math.cos(C.rot), sr = Math.sin(C.rot);
+  const S = (x, y, z=0) => { const dx = x-C.x, dy = y-C.y; return {x:W/2+(dx*cr-dy*sr)*zz, y:oy+(dx*sr+dy*cr)*zz - z*zz} };
+  const sx = 5/C.z, sy = 8/C.z, wx = sx*cr+sy*sr, wy = -sx*sr+sy*cr;
+  c.setTransform(1,0,0,1,0,0); c.fillStyle = th.ground; c.fillRect(0,0,W,H);
+  c.setTransform(zz*cr, zz*sr, -zz*sr, zz*cr, W/2-(C.x*cr-C.y*sr)*zz, oy-(C.x*sr+C.y*cr)*zz);
+  // autour du circuit, le même sol à l'infini (et la mer tout en haut sur la plage et la banquise)
+  if(V.patT!==T){ V.pat = c.createPattern(T.tile, "repeat"); V.pat.setTransform(new DOMMatrix().scale(1/GK)); V.patT = T }
+  c.fillStyle = V.pat; c.fillRect(C.x-9000, C.y-9000, 18000, 18000);
+  if(th.water){ c.fillStyle = T.waterC[0]; c.fillRect(C.x-9000, C.y-9000, 18000, Math.max(0, 9000-C.y)) }
+  c.drawImage(T.world, 0, 0, GW, GH);
+  // l'eau qui bouge
+  c.save(); c.globalAlpha = .55; c.strokeStyle = "#FFFFFF"; c.lineWidth = 2;
+  T.rivers.forEach((rv,i)=>{ c.save(); c.translate(rv.x,rv.y); c.rotate(rv.a); for(let k=0;k<6;k++){ const yy = ((k*95+now*40*(i%2?1:-1))%540+540)%540-270, xx = Math.sin(k*2.3)*45;
+    c.beginPath(); c.moveTo(xx,yy); c.quadraticCurveTo(xx+6,yy+10,xx,yy+20); c.stroke() } c.restore() });
+  if(th.water){ c.beginPath(); for(let i=0;i<=GW;i+=30) c.lineTo(i, 112+26*Math.sin(i/130)+5*Math.sin(now*1.5+i/60)); c.stroke() }
+  c.restore();
+  // accélérateurs, champignons qui rebondissent
+  T.boosts.forEach(b=>{ c.save(); c.translate(b.x,b.y); c.rotate(b.a); for(let k=0;k<3;k++){ const ph = (now*2.2+k/3)%1; c.globalAlpha = .3+.7*(1-Math.abs(ph-.5)*2);
+    c.fillStyle = th.neon ? "#39E6FF" : "#FFE14D"; const ox = -20+k*15; c.beginPath(); c.moveTo(ox,-16); c.lineTo(ox+13,0); c.lineTo(ox,16); c.lineTo(ox+5,0); c.closePath(); c.fill() } c.restore() });
+  c.globalAlpha = 1;
+  T.bumps.forEach(b=>{ const k = 1+.06*Math.sin(now*4+b.s), rr = b.r*k; c.fillStyle = "rgba(0,0,0,.3)"; c.beginPath(); c.ellipse(b.x+wx, b.y+wy, rr, rr*.8, 0, 0, TAU); c.fill();
+    const g = c.createRadialGradient(b.x-rr*.3,b.y-rr*.4,1,b.x,b.y,rr); g.addColorStop(0,"#FF8FB8"); g.addColorStop(1,"#C21E5C"); c.fillStyle = g; c.beginPath(); c.arc(b.x,b.y,rr,0,TAU); c.fill();
+    c.fillStyle = "rgba(255,255,255,.9)"; for(let k2=0;k2<5;k2++){ c.beginPath(); c.arc(b.x+Math.cos(k2*1.3)*rr*.55, b.y+Math.sin(k2*1.3)*rr*.55, rr*.15, 0, TAU); c.fill() } });
+  // fanions qui flottent au vent
+  T.flags.forEach((f,i)=>{ const dx = Math.cos(f.a), dy = Math.sin(f.a), nx = -dy, ny = dx, w = Math.sin(now*6+i)*4;
+    c.fillStyle = "rgba(0,0,0,.25)"; c.beginPath(); c.arc(f.x+wx*.6, f.y+wy*.6, 3, 0, TAU); c.fill();
+    c.fillStyle = f.c; c.beginPath(); c.moveTo(f.x,f.y); c.lineTo(f.x-dx*20+nx*(w), f.y-dy*20+ny*(w)); c.lineTo(f.x+nx*7, f.y+ny*7); c.closePath(); c.fill();
+    c.fillStyle = "#EEE"; c.beginPath(); c.arc(f.x,f.y,2.5,0,TAU); c.fill() });
+  // le public qui saute (et encore plus quand les billes arrivent)
+  const hype = V.R.some(o=>t>o.fin-1.5 && t<o.fin+2.5) ? 2.2 : 1;
+  T.crowd.forEach(p=>{ const j = Math.max(0, Math.sin(now*7*hype+p.ph))*2.5*hype; c.fillStyle = "rgba(0,0,0,.25)"; c.beginPath(); c.arc(p.x+2,p.y+3,6,0,TAU); c.fill();
+    c.fillStyle = p.c; c.beginPath(); c.arc(p.x-j*.4,p.y-j,6+j*.15,0,TAU); c.fill(); c.fillStyle = "rgba(255,255,255,.35)"; c.beginPath(); c.arc(p.x-j*.4-2,p.y-j-2,2,0,TAU); c.fill() });
+  // traînées et ombres des billes
+  pos.forEach(q=>{ const o = q.o; if(q.hide) return; o.trail = o.trail || []; if(t>0 && !q.done){ o.trail.push([q.x,q.y]); if(o.trail.length>18) o.trail.shift() } else if(q.done && o.trail.length) o.trail.shift();
+    if(o.trail.length>2){ c.lineCap = "round"; for(let i=1;i<o.trail.length;i++){ const a = o.trail[i-1], b = o.trail[i], k = i/o.trail.length; c.strokeStyle = rgba(o.col, .32*k); c.lineWidth = o.r*1.4*k; c.beginPath(); c.moveTo(a[0],a[1]); c.lineTo(b[0],b[1]); c.stroke() } }
+    const sc = q.fall!=null ? Math.max(.3, 1-q.fall*1.4) : 1; c.fillStyle = "rgba(0,0,0,.32)"; c.beginPath(); c.ellipse(q.x+wx*.8, q.y+wy*.8, o.r*1.15*sc, o.r*.95*sc, 0, 0, TAU); c.fill() });
+  // la banderole d'arrivée, tendue au-dessus de la piste
+  const fa = gcAt(T, T.L-40); c.save(); c.translate(fa.x+wx*2.5, fa.y+wy*2.5); c.rotate(Math.atan2(fa.ty,fa.tx)); c.fillStyle = "rgba(0,0,0,.25)"; c.fillRect(-9,-fa.w-22,18,2*fa.w+44); c.restore();
+  // --- au-dessus : les billes, leur nom, les étincelles (dessinées droites, quelle que soit la rotation) ---
+  c.setTransform(1,0,0,1,0,0);
+  const labels = [];
+  [...pos].sort((a,b)=>(a.o.me?1:0)-(b.o.me?1:0)).forEach(q=>{ if(q.hide) return; const o = q.o, p = S(q.x,q.y), sc = q.fall!=null ? Math.max(.3, 1-q.fall*1.4) : 1, D = o.r*2/.9*zz*1.15*sc;
+    const spr = gcSprite(o, Math.max(16, Math.min(200, Math.ceil(D)))); if(spr) c.drawImage(spr, p.x-D/2, p.y-D/2, D, D); else { c.fillStyle = o.col; c.beginPath(); c.arc(p.x,p.y,D/2.2,0,TAU); c.fill() }
+    if(o.me){ const k = .5+.5*Math.sin(now*5); c.strokeStyle = `rgba(255,225,77,${.55+.4*k})`; c.lineWidth = 3*dpr; c.beginPath(); c.arc(p.x,p.y,D*.6+k*3*dpr,0,TAU); c.stroke() }
+    if(q.fall!=null) return;
+    const nm = o.me ? "Toi" : o.bot ? o.nom : o.pseudo; c.font = `900 ${Math.round(12.5*dpr)}px Nunito, sans-serif`; const lw = c.measureText(nm).width+12*dpr, lh = 19*dpr, lx = p.x-lw/2, ly = p.y-D*.6-lh-3*dpr;
+    if(!o.me && labels.some(b=>lx<b.x+b.w && b.x<lx+lw && ly<b.y+b.h && b.y<ly+lh)) return; labels.push({x:lx, y:ly, w:lw, h:lh});
+    c.fillStyle = o.me ? "rgba(255,201,63,.95)" : "rgba(20,16,32,.72)"; c.beginPath(); c.roundRect(lx, ly, lw, lh, lh/2); c.fill();
+    c.fillStyle = o.me ? "#3A2600" : "#fff"; c.textAlign = "center"; c.textBaseline = "middle"; c.fillText(nm, p.x, ly+lh/2+1*dpr) });
+  c.textBaseline = "alphabetic";
+  for(let i=V.fx.length-1;i>=0;i--){ const q = V.fx[i]; q.life -= .022; if(q.life<=0){ V.fx.splice(i,1); continue }
+    q.x += q.vx; q.y += q.vy; q.z = Math.max(0, q.z+q.vz); q.vz -= .12; q.vx *= .96; q.vy *= .96;
+    const p = S(q.x,q.y,q.z); c.fillStyle = rgba(q.col, .85*q.life); c.beginPath(); c.arc(p.x,p.y,Math.max(1,q.sz*zz*.5*(.4+.6*q.life)),0,TAU); c.fill() }
+}
+function gcDraw3D(cv, pos, t, focus){
+  const dpr = Math.min(2, devicePixelRatio||1), W = Math.round(cv.clientWidth*dpr), H = Math.round(cv.clientHeight*dpr);
+  if(cv.width!==W || cv.height!==H){ cv.width = W; cv.height = H }
+  const c = cv.getContext("2d"), V = GCV, T = V.T, C = V.cam, LK = GC_LOOK[T.th.deco], now = performance.now()/1000;
+  // la caméra : derrière le point suivi, un peu en hauteur, regard vers l'avant
+  C.dx = Math.cos(C.ang); C.dy = Math.sin(C.ang); C.rx = -C.dy; C.ry = C.dx;
+  C.h = C.back*.36; C.ex = focus.x-C.dx*C.back; C.ey = focus.y-C.dy*C.back;
+  const f = Math.min(H*1.25, W*1.1), yh = H*.3, near = 40, far = 3200;   // en portrait : un champ plus large
+  const P = (x, y, z=0) => { const dx = x-C.ex, dy = y-C.ey, fw = dx*C.dx+dy*C.dy; if(fw<near) return null; const k = f/fw; return {x:W/2+(dx*C.rx+dy*C.ry)*k, y:yh+(C.h-z)*k, k, fw} };
+  // ciel, soleil ou lune, collines qui défilent quand la caméra tourne
+  const sky = c.createLinearGradient(0,0,0,yh); sky.addColorStop(0,LK.sky[0]); sky.addColorStop(1,LK.sky[1]); c.fillStyle = sky; c.fillRect(0,0,W,yh+2);
+  if(LK.night){ const rr = rng(7); for(let i=0;i<140;i++){ const a = rr()*TAU, sx = ((a-C.ang)/1.2*f+W*10)%(W*1.6)-W*.3, sy = rr()*yh*.95; c.fillStyle = `rgba(255,255,255,${.4+.6*Math.abs(Math.sin(now*1.5+i))})`; c.fillRect(sx, sy, 2*dpr, 2*dpr) }
+    c.fillStyle = "#FFF5D6"; c.beginPath(); c.arc(W*.78, yh*.3, 22*dpr, 0, TAU); c.fill() }
+  else if(LK.sun){ const g = c.createRadialGradient(W*.75,yh*.45,4,W*.75,yh*.45,90*dpr); g.addColorStop(0,"rgba(255,250,220,1)"); g.addColorStop(.2,"rgba(255,240,180,.9)"); g.addColorStop(1,"rgba(255,220,150,0)"); c.fillStyle = g; c.fillRect(0,0,W,yh) }
+  else { const rr = rng(3); c.fillStyle = "rgba(255,255,255,.85)"; for(let i=0;i<7;i++){ const a = rr()*TAU, sx = (((a-C.ang)*f*.5+now*6*dpr)%(W*1.8)+W*1.8)%(W*1.8)-W*.4, sy = yh*(.15+rr()*.5), w = (60+rr()*80)*dpr;
+    [[0,0,1],[w*.3,-w*.12,.7],[-w*.3,-w*.05,.6]].forEach(([a2,b2,s2])=>{ c.beginPath(); c.ellipse(sx+a2, sy+b2, w*.4*s2, w*.18*s2, 0, 0, TAU); c.fill() }) } }
+  [[LK.hill[0],.55,60],[LK.hill[1],1,34]].forEach(([col,par,amp])=>{ c.fillStyle = col; c.beginPath(); c.moveTo(0,yh+2);
+    for(let sx=0;sx<=W;sx+=8*dpr){ const a = C.ang*par + Math.atan((sx-W/2)/f)*par; const h = amp*dpr*(.6+.4*Math.sin(a*3.1)+.3*Math.sin(a*7.3+1)+.15*Math.sin(a*13+2)); c.lineTo(sx, yh-h) }
+    c.lineTo(W,yh+2); c.fill() });
+  // le sol, plus pâle au loin
+  const gr = c.createLinearGradient(0,yh,0,H); gr.addColorStop(0,LK.fog); gr.addColorStop(.12,LK.ground); gr.addColorStop(1,shade(LK.ground,-.15)); c.fillStyle = gr; c.fillRect(0,yh,W,H-yh);
+  // la piste : des tranches de route projetées, du plus loin au plus près
+  const segs = [], PT = T.P;
+  for(let i=0;i<PT.length-2;i+=2){ const a = PT[i], b = PT[i+2], fa = (a.x-C.ex)*C.dx+(a.y-C.ey)*C.dy, fb = (b.x-C.ex)*C.dx+(b.y-C.ey)*C.dy;
+    if((fa<near && fb<near) || (fa>far && fb>far)) continue; if(fa<near || fb<near) continue; segs.push({a, b, fw:(fa+fb)/2, i}) }
+  segs.sort((u,v)=>v.fw-u.fw);
+  const quad = (a, b, wa, wb, oa, ob, col) => { const p1 = P(a.x+a.nx*(oa-wa), a.y+a.ny*(oa-wa)), p2 = P(a.x+a.nx*(oa+wa), a.y+a.ny*(oa+wa)), p3 = P(b.x+b.nx*(ob+wb), b.y+b.ny*(ob+wb)), p4 = P(b.x+b.nx*(ob-wb), b.y+b.ny*(ob-wb));
+    if(!p1||!p2||!p3||!p4) return; c.fillStyle = col; c.strokeStyle = col; c.lineWidth = 1; c.beginPath(); c.moveTo(p1.x,p1.y); c.lineTo(p2.x,p2.y); c.lineTo(p3.x,p3.y); c.lineTo(p4.x,p4.y); c.closePath(); c.fill(); c.stroke() };
+  const th = T.th, stripe = th.curb || [th.edge, shade(th.edge,-.2)], dark = shade(th.track,-.06);
+  segs.forEach(g=>{ const {a,b} = g, band = (g.i>>3)%2;
+    quad(a,b,a.w+16,b.w+16,0,0, stripe[band]);                            // vibreurs
+    quad(a,b,a.w,b.w,0,0, band ? th.track : dark);                         // la route, en bandes pour sentir la vitesse
+    if((g.i>>2)%2) quad(a,b,2.5,2.5,0,0,"rgba(255,255,255,.45)");          // ligne du milieu
+    if(T.narrows.some(s0=>Math.abs(a.s-s0)<110)) quad(a,b,a.w+18,b.w+18,0,0,(g.i>>1)%2?"#9A6838":"#7E5228");   // planches du pont
+  });
+  if(th.neon){ c.save(); c.globalCompositeOperation = "lighter"; segs.forEach(g=>{ const {a,b} = g; [1,-1].forEach(sd=>quad(a,b,3,3,sd*(a.w+16),sd*(b.w+16), (g.i>>3)%2 ? "rgba(255,79,216,.55)" : "rgba(57,230,255,.55)")) }); c.restore() }
+  // marques au sol : damiers de départ et d'arrivée, accélérateurs
+  [[60,"start"],[T.L-40,"fin"]].forEach(([s0])=>{ for(let j=0;j<2;j++){ const a = gcAt(T,s0+j*9), b = gcAt(T,s0+j*9+9); for(let k=-7;k<7;k++){ const o1 = a.w*k/7, o2 = a.w*(k+1)/7;
+    const p1 = P(a.x+a.nx*o1,a.y+a.ny*o1), p2 = P(a.x+a.nx*o2,a.y+a.ny*o2), p3 = P(b.x+b.nx*o2,b.y+b.ny*o2), p4 = P(b.x+b.nx*o1,b.y+b.ny*o1); if(!p1||!p2||!p3||!p4) continue;
+    c.fillStyle = (k+j)%2 ? "#111" : "#fff"; c.beginPath(); c.moveTo(p1.x,p1.y); c.lineTo(p2.x,p2.y); c.lineTo(p3.x,p3.y); c.lineTo(p4.x,p4.y); c.fill() } } });
+  T.boosts.forEach(bo=>{ for(let k=0;k<3;k++){ const ph = (now*2.2+k/3)%1, s0 = bo.s-18+k*14, a = gcAt(T,s0), m = gcAt(T,s0+12);
+    const p1 = P(a.x+a.nx*16,a.y+a.ny*16), p2 = P(m.x,m.y), p3 = P(a.x-a.nx*16,a.y-a.ny*16); if(!p1||!p2||!p3) continue;
+    c.fillStyle = `rgba(${th.neon?"57,230,255":"255,225,77"},${.35+.65*(1-Math.abs(ph-.5)*2)})`; c.beginPath(); c.moveTo(p1.x,p1.y); c.lineTo(p2.x,p2.y); c.lineTo(p3.x,p3.y); c.fill() } });
+  // ombres des billes sur la piste
+  pos.forEach(q=>{ if(q.hide) return; const p = P(q.x,q.y,0); if(!p) return; const r = q.o.r*p.k*1.3*Math.max(.2, q.z/q.o.r);
+    c.fillStyle = "rgba(0,0,0,.28)"; c.beginPath(); c.ellipse(p.x+r*.25, p.y, r*1.05, r*.32, 0, 0, TAU); c.fill() });
+  // tout ce qui est debout (décor, arches, billes), du plus loin au plus près
+  const items = [];
+  V.scen.forEach(o=>{ const p = P(o.x,o.y); if(!p || p.fw>far || p.fw<260 || p.x<-400*dpr || p.x>W+400*dpr) return; items.push({fw:p.fw, draw:()=>{ const sp = gcSp(o.k), h = sp.wh*o.sc*p.k, w = h*sp.width/sp.height;
+    if(h<2) return; c.drawImage(sp, p.x-w/2, p.y-h*(1-6/sp.height), w, h) }}) });
+  T.bumps.forEach(bm=>{ const p = P(bm.x,bm.y); if(!p) return; items.push({fw:p.fw, draw:()=>{ const sp = gcSp("mushroom"), h = 34*p.k, w = h*sp.width/sp.height; c.drawImage(sp, p.x-w/2, p.y-h, w, h) }}) });
+  [[60,"DÉPART","#2E6BE6"],[T.L-40,"ARRIVÉE","#E5484D"]].forEach(([s0,txt,col])=>{ const a = gcAt(T,s0), L1 = [a.x+a.nx*(a.w+20), a.y+a.ny*(a.w+20)], R1 = [a.x-a.nx*(a.w+20), a.y-a.ny*(a.w+20)];
+    const pl = P(L1[0],L1[1]), pr = P(R1[0],R1[1]); if(!pl || !pr) return;
+    items.push({fw:(pl.fw+pr.fw)/2, draw:()=>{ const top = 110, ban = 34, tl = P(L1[0],L1[1],top), tr = P(R1[0],R1[1],top), bl = P(L1[0],L1[1],top-ban), br = P(R1[0],R1[1],top-ban);
+      c.strokeStyle = "#E9E9EF"; c.lineCap = "round"; [[pl,tl],[pr,tr]].forEach(([u,v])=>{ c.lineWidth = Math.max(2, 6*u.k); c.beginPath(); c.moveTo(u.x,u.y); c.lineTo(v.x,v.y); c.stroke() });
+      c.fillStyle = col; c.beginPath(); c.moveTo(tl.x,tl.y); c.lineTo(tr.x,tr.y); c.lineTo(br.x,br.y); c.lineTo(bl.x,bl.y); c.fill();
+      const fs = Math.max(8, (bl.y-tl.y)*.62); c.save(); c.translate((tl.x+tr.x+bl.x+br.x)/4, (tl.y+tr.y+bl.y+br.y)/4); let ra = Math.atan2(tr.y-tl.y, tr.x-tl.x); if(Math.abs(ra)>Math.PI/2) ra += Math.PI; c.rotate(ra);
+      c.font = `${fs}px "Lilita One", sans-serif`; c.textAlign = "center"; c.textBaseline = "middle"; c.fillStyle = "#fff"; c.fillText(txt, 0, 1); c.restore() }}) });
+  pos.forEach(q=>{ if(q.hide) return; const p = P(q.x,q.y,q.z); if(!p) return; items.push({fw:p.fw-1, draw:()=>{ const o = q.o, D = o.r*2*p.k*1.3/.9;
+    const spr = gcSprite(o, Math.max(16, Math.min(220, Math.ceil(D)))); if(spr) c.drawImage(spr, p.x-D/2, p.y-D/2, D, D); else { c.fillStyle = o.col; c.beginPath(); c.arc(p.x,p.y,D/2.2,0,TAU); c.fill() }
+    if(o.me){ const k = .5+.5*Math.sin(now*5); c.strokeStyle = `rgba(255,225,77,${.55+.4*k})`; c.lineWidth = 3*dpr; c.beginPath(); c.arc(p.x,p.y,D*.55+k*3*dpr,0,TAU); c.stroke() }
+    if(D>14*dpr || o.me){ const nm = o.me ? "Toi" : o.bot ? o.nom : o.pseudo; c.font = `900 ${Math.round(Math.min(15, 9+D/10/dpr)*dpr)}px Nunito, sans-serif`; c.textAlign = "center";
+      const lw = c.measureText(nm).width, lr = {x:p.x-lw/2, y:p.y-D*.62-14*dpr, w:lw, h:16*dpr};   // pas deux noms l'un sur l'autre
+      if(!o.me && labels.some(b=>lr.x<b.x+b.w && b.x<lr.x+lr.w && lr.y<b.y+b.h && b.y<lr.y+lr.h)) return; labels.push(lr);
+      c.lineWidth = 4*dpr; c.strokeStyle = "rgba(20,15,30,.85)"; c.strokeText(nm, p.x, p.y-D*.62); c.fillStyle = o.me ? "#FFE14D" : "#fff"; c.fillText(nm, p.x, p.y-D*.62) } }}) });
+  const labels = []; pos.forEach(q=>{ if(q.o.me && !q.hide){ const p = P(q.x,q.y,q.z); if(p){ const D = q.o.r*2*p.k*1.3/.9; labels.push({x:p.x-30*dpr, y:p.y-D*.62-14*dpr, w:60*dpr, h:16*dpr}) } } });
+  items.sort((u,v)=>v.fw-u.fw).forEach(it=>it.draw());
+  // poussière, éclaboussures, confettis
+  for(let i=V.fx.length-1;i>=0;i--){ const q = V.fx[i]; q.life -= .022; if(q.life<=0){ V.fx.splice(i,1); continue }
+    q.x += q.vx; q.y += q.vy; q.z = Math.max(0, q.z+q.vz); q.vz -= .12; q.vx *= .96; q.vy *= .96;
+    const p = P(q.x,q.y,q.z); if(!p) continue; c.fillStyle = rgba(q.col, .8*q.life); c.beginPath(); c.arc(p.x,p.y,Math.max(1,q.sz*p.k*.5*(.4+.6*q.life)),0,TAU); c.fill() }
+  // la brume au loin
+  const fg = c.createLinearGradient(0,yh,0,yh+70*dpr); fg.addColorStop(0,rgba(LK.fog,.95)); fg.addColorStop(1,rgba(LK.fog,0)); c.fillStyle = fg; c.fillRect(0,yh-2,W,70*dpr);
+}
+function gcHud(order, t){
+  const V = GCV, ch = document.querySelector("#gc-chrono b"); if(ch) ch.textContent = t<0 ? "—" : `${Math.min(t, V.R[0].fin).toFixed(1).replace(".",",")} s`;
+  const auto = document.getElementById("gc-auto"); if(auto) auto.hidden = !(V.free || V.follow!=null);
+  const meI = order.findIndex(q=>q.o.me), rows = order.slice(0,8);
+  if(meI>=8) rows.push(order[meI]);
+  const b = document.getElementById("gc-board");
+  if(b) b.innerHTML = `<h3>Classement en direct</h3>` + rows.map(q=>{ const i = order.indexOf(q), o = q.o;
+    return `<div class="gcr${o.me?" me":""}${q.done?" fin":""}${V.follow===o.i?" on":""}" data-i="${o.i}" role="button" title="Suivre cette bille"><span class="pos">${i+1}</span>${mImg(o.spec,52,24,"")}<span class="nm">${esc(o.me?"Toi":o.bot?o.nom:o.pseudo)}</span><span class="st">${q.done?"Arrivé":q.hide||q.fall!=null?"Plouf !":`${Math.round((V.T.L-q.s)/10)} cm`}</span></div>` }).join("");
+  const m = document.getElementById("gc-mini"); if(!m) return; const x = m.getContext("2d"), sx = m.width/GW, sy = m.height/GH;
+  x.clearRect(0,0,m.width,m.height); x.lineCap = x.lineJoin = "round"; x.strokeStyle = "rgba(255,255,255,.3)"; x.lineWidth = 6; x.beginPath(); V.T.P.forEach((p,i)=>i?x.lineTo(p.x*sx,p.y*sy):x.moveTo(p.x*sx,p.y*sy)); x.stroke();
+  x.strokeStyle = V.T.th.track; x.lineWidth = 3; x.stroke();
+  order.forEach(q=>{ x.fillStyle = q.o.me ? "#FFE14D" : q.o.col; x.beginPath(); x.arc(q.x*sx, q.y*sy, q.o.me?4.5:3, 0, TAU); x.fill() });
+}
+const gcLot = i => i<3 ? COURSE_PRIX[i] : {j:COURSE_PART};
+const gcLotTxt = (o,i) => o.bot ? "pas de lot" : GCV.race?.test ? "pour de faux" : `+${gcLot(i).j} ${CUR.many}${gcLot(i).sac?` + ${BAG_BY[gcLot(i).sac].name}`:""}`;
+function gcPodium(){
+  const V = GCV, R = V.R, me = R.findIndex(o=>o.me), el = document.getElementById("gc-end"); if(!el) return;
+  const nm = o => esc(o.me ? "Toi !" : o.bot ? o.nom : o.pseudo);
+  const step = i => R[i] ? `<div class="gcs"><img src="${marbleURL(R[i].spec,168)}" alt=""><b>${nm(R[i])}</b><span class="gcs-lot">${gcLotTxt(R[i],i)}</span><div class="blk">${i+1}</div></div>` : "";
+  const rest = R.slice(3).map((o,j)=>`<li class="${o.me?"me":""}"><span>${j+4}e</span><b>${nm(o)}</b><em>${o.bot?"bille de la cour":gcLotTxt(o,j+3)}</em></li>`).join("");
+  el.innerHTML = `<div class="gc-pod"><span class="gh-kick">${ic("flag",14)} Résultats · ${esc(V.T.th.name)}</span><h2>${me===0?"Champion du soir !":me>0&&me<3?"Sur le podium !":"Et le gagnant est…"}</h2>
+    <div class="gcs-row">${step(1)}${step(0)}${step(2)}</div>
+    ${rest ? `<ol class="gc-rest">${rest}</ol>` : ""}
+    <div id="gc-mylot">${me<0 ? "" : V.race.test ? `<div class="gc-mine">Course d'essai : tu finis <b>${me+1}${me?"e":"er"}</b>, rien à gagner. Pour de vrai, inscris-toi à la course de 20 h !</div>`
+      : `<div class="gc-mine">Tu finis <b>${me+1}${me?"e":"er"}</b> sur ${R.length} · tes lots : <b>${gcLotTxt(R[me],me)}</b> <span id="gc-lotst">…</span></div>`}</div>
+    <div class="btns"><button class="btn btn-yellow" data-action="gc-replay">${ic("play",16)} Revoir</button><button class="btn btn-ghost" data-action="gc-close">Fermer</button></div>
+    <p class="meta">Chaque bille avait exactement la même chance : l'ordre d'arrivée est tiré au sort à 20 h.</p></div>`;
+  el.hidden = false;
+  if(me>=0 && me<3) Sound.ding();
+  // les lots sont remis maintenant, à la fin de la course
+  if(me>=0 && !V.race.test && srvOn()){
+    const st = document.getElementById("gc-lotst"), jour = V.race.jour;
+    srv(()=>Cloud.course.lots(jour)).then(e=>{ applyEco(e); if(st) st.textContent = "· récupérés !"; Sound.coin(); if(gc.etat?.derniere?.jour===jour) gc.etat.derniere.lots = true },
+      e=>{ if(st) st.textContent = e?.code==="deja" ? "· déjà récupérés" : "· pas pu être récupérés, réessaie plus tard"; if(e?.code!=="deja") srvFail(e) });
+  }
+}
+// une course d'essai : toi et 7 billes de la cour, rien à gagner
+let GC_ME = null;   // sans compte : l'identifiant du joueur dans la course d'essai
+function gcTest(){
+  const names = [...FEED_NAMES].sort(()=>Math.random()-.5).slice(0,7);
+  GC_ME = sync.uid ? null : "__moi";
+  const list = [{joueur:sync.uid||GC_ME, pseudo:S.name, bille:(gc.pick && specById(gc.pick)) || gcMine() || activeSpec(), prix:0}, ...names.map(n=>({bot:true, nom:n, graine:randU32()}))].sort(()=>Math.random()-.5);
+  gcWatch({jour:isoDay(), graine:randU32(), depart:Date.now(), resultats:list, test:true});
 }
 
 /* =====================================================================
@@ -8364,11 +9280,24 @@ document.addEventListener("click", e=>{
     case "zoom": if(specById(t.dataset.id)) openModal(t.dataset.id); break;
     case "a-restart": initArena(ui.view); break;
     case "c-restart": initCasse(); break;
+    case "gc-pickopen": gcPickOpen(); break;
+    case "gc-pickt": gc.pickT = t.dataset.t || null; gcPickOpen(); break;
+    case "gc-pick": gc.pick = t.dataset.id; closeModal(); if(gc.etat?.inscrit) gcRegister(); else renderView(); break;
+    case "gc-reg": gcRegister(); break;
+    case "gc-unreg": srv(()=>Cloud.course.desinscrire()).then(e=>{ gc.etat = e; renderView(); renderNav(); toast("Tu n'es plus inscrit à la Grande Course.") }, srvFail); break;
+    case "gc-watch": if(gc.etat?.derniere){ closeModal(); gcWatch(gc.etat.derniere) } break;
+    case "gc-test": closeModal(); gcTest(); break;
+    case "gc-replay": gcWatch({...GCV.race, replay:true}); break;
+    case "gc-close": gcClose(); break;
+    case "gc-vue": GCV.vue = GCV.vue==='tv' ? 'ciel' : 'tv'; lsSet("billy-gc-vue", GCV.vue); V_vueBtn(); break;
+    case "gc-auto": GCV.free = false; GCV.follow = null; break;
+    case "gc-follow": GCV.follow = +t.dataset.i; GCV.free = false; break;
+    case "gc-skip": if(GCV.R && !GCV.done){ GCV.t = Math.max(GCV.t, GCV.R[0].fin+.5) } break;
     case "game-go": {
       const k = t.dataset.g;
       if(!gameBegin(k)){ renderView(); break }
-      if(k==="casse"){ document.getElementById("c-result").hidden = true; cb.done = false }
-      else { document.getElementById("a-result").hidden = true; arena.done = false; updArenaHud() }
+      if(k==="casse"){ document.getElementById("c-result").hidden = true; cb.done = false; cb.live = true; cbSnap(false) }
+      else { document.getElementById("a-result").hidden = true; arena.done = false; updArenaHud(); snapSave(null) }
       Sound.tap(0,.6);
       break;
     }
@@ -8678,7 +9607,7 @@ function eventGifts(){
 }
 function ecoRefresh(){ if(srvOn()) srv(()=>Cloud.eco.state()).then(applyEco, ()=>{}) }
 // une fois connecté au serveur : les nouvelles de la cour (demandes, trocs) et les billes reçues entre-temps
-function courStart(){ if(!srvOn()) return; courLoad("moi", true); syncMarbles(true); courNews(true) }
+function courStart(){ if(!srvOn()) return; courLoad("moi", true); syncMarbles(true); courNews(true); gcLoad(true) }
 const DEVICE = (()=>{ try{ let d = localStorage.getItem("billy-device"); if(!d){ d = newId(); localStorage.setItem("billy-device", d) } return d }catch(e){ return newId() } })();
 const GUEST_FLAG = "billy-guest";   // le joueur a choisi de jouer sans compte sur cet appareil
 const lsGet = k => { try{ return localStorage.getItem(k) }catch(e){ return null } };
@@ -9292,7 +10221,7 @@ document.addEventListener("pointerout", e=>{
 // à l'arrivée (et une fois la partie du compte chargée) : le résumé d'un sac pas fini d'ouvrir, sinon le bonbec du jour (une fois par jour)
 // le calendrier passe toujours en premier : les nouvelles de la cour attendent qu'il soit fermé
 const dailyDue = () => dailyReady() && S.dailySeen!==dayKey();
-const popupsFree = () => ["auth","modal","ov","ask"].every(id=>document.getElementById(id)?.hidden!==false);
+const popupsFree = () => ["auth","modal","ov","ask","gc-ov"].every(id=>document.getElementById(id)?.hidden!==false);
 const inGame = () => ["tir","pot","chateau","casse","tic","course"].includes(ui.view) && !document.querySelector(".g-result:not([hidden])");
 let heldNews = null;
 function showHeldNews(){ if(!heldNews || !popupsFree()) return; const n = heldNews; heldNews = null; openNews(n) }
@@ -9304,11 +10233,12 @@ function bootPopups(){
     if(results.length && BAG_BY[P.bag]){ showBagSummary({bag:BAG_BY[P.bag], results, left:true}); return }
   }
   if(dailyDue()){ S.dailySeen = dayKey(); save(); openDaily(); return }
-  showHeldNews();
+  if(heldNews){ showHeldNews(); return }
+  if(gcDue()) gcResultPopup();
 }
 setTimeout(bootPopups, 800);
 // une fenêtre déjà ouverte (ou un sac en cours) : on repasse dès qu'elle se ferme ; au retour sur l'onglet après minuit aussi
-setInterval(()=>{ if(document.visibilityState==="visible" && (dailyDue() || heldNews) && popupsFree() && !inGame()) bootPopups() }, 2000);
+setInterval(()=>{ if(document.visibilityState==="visible" && (dailyDue() || heldNews || gcDue()) && popupsFree() && !inGame()) bootPopups() }, 2000);
 // petits secrets
 document.getElementById("logo-marble").addEventListener("click", ()=>{
   S.logo = (S.logo||0)+1; save();

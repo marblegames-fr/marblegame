@@ -126,7 +126,7 @@ create or replace function interne.coloris_base() returns int language sql immut
 -- Elles sont rangées avec les billes secrètes (secrete = 'beta') : ni troc, ni marché, ni recyclage, ni classement.
 -- supabase/reset.sql les garde. Au lancement : remplacer true par false (et BETA.open:false dans index.html).
 create or replace function interne.beta_ouverte() returns boolean language sql immutable as $$ select true $$;
-create or replace function interne.taux_shiny() returns numeric language sql immutable as $$ select 0.0005::numeric $$;   -- 1 sur 2 000 (relevé le 2 octobre 2026 : 1 sur 10 000, c'était presque jamais)
+create or replace function interne.taux_shiny() returns numeric language sql immutable as $$ select 0.0005::numeric $$;   -- sac gratuit et fusions ; Classique ×2, Premium et Pirate ×4, Collector ×10 (interne.sac) ; 1 sur 2 000 (relevé le 2 octobre 2026 : 1 sur 10 000, c'était presque jamais)
 create or replace function interne.revente() returns int[] language sql immutable as $$ select array[5,8,20,50,150,600] $$;
 create or replace function interne.prime_shiny() returns int[] language sql immutable as $$ select array[2000,5000,15000] $$;
 create or replace function interne.fusion_n() returns int[] language sql immutable as $$ select array[3,5,5,6,8] $$;
@@ -138,12 +138,12 @@ create or replace function interne.sac(nom text, out prix int, out n int, out ga
 language sql immutable as $$
   select v.prix, v.n, v.garantie, v.shiny, v.cotes from (values
     ('gratuit',     0, 3, null::int, 0.0005, array[[75,25,0,0,0,0],[55,35,10,0,0,0],[30,33,20,12,4,1]]::numeric[]),
-    ('classique', 300, 5, null,      0.0005, array[[70,30,0,0,0,0],[50,38,12,0,0,0],[35,40,20,5,0,0],[20,35,30,13,2,0],[10,25,30,20,12,3]]::numeric[]),
-    ('premium',   600, 5, 3,         0.0010, array[[0,80,20,0,0,0],[0,60,35,5,0,0],[0,40,45,15,0,0],[0,0,55,38,7,0],[0,0,0,60,34,6]]::numeric[]),
-    ('collector',1500, 5, 4,         0.0025, array[[0,0,85,15,0,0],[0,0,65,35,0,0],[0,0,40,50,10,0],[0,0,0,60,38,2],[0,0,0,0,87,13]]::numeric[]),
-    ('pirate',    600, 3, null,      0.0010, array[[60,32,8,0,0,0],[40,35,18,6,1,0],[20,28,24,17,8,3]]::numeric[]),
+    ('classique', 300, 5, null,      0.0010, array[[70,30,0,0,0,0],[50,38,12,0,0,0],[35,40,20,5,0,0],[20,35,30,13,2,0],[10,25,30,20,12,3]]::numeric[]),
+    ('premium',   600, 5, 3,         0.0020, array[[0,80,20,0,0,0],[0,60,35,5,0,0],[0,40,45,15,0,0],[0,0,55,38,7,0],[0,0,0,60,34,6]]::numeric[]),
+    ('collector',1500, 5, 4,         0.0050, array[[0,0,85,15,0,0],[0,0,65,35,0,0],[0,0,40,50,10,0],[0,0,0,60,38,2],[0,0,0,0,87,13]]::numeric[]),
+    ('pirate',    600, 3, null,      0.0020, array[[60,32,8,0,0,0],[40,35,18,6,1,0],[20,28,24,17,8,3]]::numeric[]),
     -- Sac Pirate Premium (2 octobre 2026) : tailles du Classique, 15 % de Pirate par bille et 35 % pour la dernière (voir ouvrir_sac)
-    ('pirate-premium', 1000, 5, null, 0.0010, array[[70,30,0,0,0,0],[50,38,12,0,0,0],[35,40,20,5,0,0],[20,35,30,13,2,0],[10,25,30,20,12,3]]::numeric[])
+    ('pirate-premium', 1000, 5, null, 0.0020, array[[70,30,0,0,0,0],[50,38,12,0,0,0],[35,40,20,5,0,0],[20,35,30,13,2,0],[10,25,30,20,12,3]]::numeric[])
   ) v(nom, prix, n, garantie, shiny, cotes) where v.nom = sac.nom
 $$;
 
@@ -359,6 +359,33 @@ begin
     'bille', interne.nouvelle_bille(qui, (interne.tailles())[rg+2], shiny => interne.tirer_shiny(interne.taux_shiny() * nb), src => 'fusion'));
 end $$;
 
+-- Fusion d'événement (2 octobre 2026) : des billes d'événement (décor 32 Pirate…) d'une même taille, d'un même décor et d'un même coloris
+-- donnent une bille de la taille au-dessus, dans ce décor et ce coloris. 3 billes jusqu'à la Chinoise, puis 2 (FUSION_EV dans index.html).
+-- Pas de shiny en entrée ; la shiny peut sortir comme pour une fusion normale. Les billes en vente ou dans un troc ne peuvent pas fusionner.
+create or replace function interne.fusion_ev_n() returns int[] language sql immutable as $$ select array[3,3,2,2,2] $$;
+create or replace function interne.decor_evenement(d int) returns boolean language sql immutable as $$
+  select exists (select 1 from unnest(array['pirates']) e(nom), interne.evenement(e.nom) v where v.decor = d)
+$$;
+create or replace function public.fusion_evenement(ids uuid[])
+returns jsonb language plpgsql security definer set search_path = public as $$
+declare qui uuid := interne.moi(); g record; rg int; b record;
+begin
+  select count(*) nb, count(distinct taille) nt, count(distinct decor) nd, count(distinct coloris) nc, min(taille) taille, min(decor) decor, min(coloris) coloris
+    into g from billes
+    where id = any(ids) and proprietaire = qui and detruite_le is null and secrete is null and shiny = 0 and origine = 'serveur';
+  if g.nb = 0 or g.nt <> 1 or g.nd <> 1 or g.nc <> 1 or g.nb <> array_length(ids,1) or not interne.decor_evenement(g.decor) then raise exception 'fusion_invalide'; end if;
+  rg := interne.rang(g.taille);
+  if rg >= 5 or g.nb <> (interne.fusion_ev_n())[rg+1] then raise exception 'fusion_invalide'; end if;
+  for b in select id from billes where id = any(ids) for update loop
+    if not interne.bille_libre(b.id, qui) then raise exception 'bille_indisponible'; end if;
+    update billes set detruite_le = now(), detruite_raison = 'fusionnee' where id = b.id;
+    insert into billes_historique (bille, de, vers, motif) values (b.id, qui, null, 'detruite');
+  end loop;
+  return jsonb_build_object('eco', interne.etat(qui),
+    'bille', interne.nouvelle_bille(qui, (interne.tailles())[rg+2], decor => g.decor, coloris => g.coloris,
+                                    shiny => interne.tirer_shiny(interne.taux_shiny() * g.nb), src => 'fusion'));
+end $$;
+
 -- Le bonbec du jour : calendrier de 4 semaines, calculé par le serveur
 create or replace function public.bonbec_du_jour()
 returns jsonb language plpgsql security definer set search_path = public as $$
@@ -511,7 +538,8 @@ begin
   case action
     when 'bonbecs' then perform interne.crediter(qui, 1000);
     when 'gratuit' then update portefeuilles set gratuit_t0 = now() - interval '100 minutes' where joueur = qui;
-    when 'shiny' then b := interne.nouvelle_bille(qui, (interne.tailles())[1 + floor(random()*6)::int],   -- toutes les tailles shiny => 1 + floor(random()*3)::int, src => 'test');
+    -- une shiny de test, dans n'importe quelle taille
+    when 'shiny' then b := interne.nouvelle_bille(qui, (interne.tailles())[1 + floor(random()*6)::int], shiny => 1 + floor(random()*3)::int, src => 'test');
     else raise exception 'action_inconnue';
   end case;
   return jsonb_build_object('eco', interne.etat(qui), 'bille', b);
@@ -520,7 +548,7 @@ end $$;
 -- droits : le site ne peut appeler que ces fonctions-là
 do $$ declare f text; begin
   foreach f in array array['eco_demarrer(int,jsonb,int)','eco_etat()','ouvrir_sac(text,boolean)','echanger_billes(uuid[])',
-    'fusionner(uuid[])','bonbec_du_jour()','gagner(text,text,int,text)','bille_gagnee(text,text,bigint,uuid)',
+    'fusionner(uuid[])','fusion_evenement(uuid[])','bonbec_du_jour()','gagner(text,text,int,text)','bille_gagnee(text,text,bigint,uuid)',
     'miser(text,int)','regler_mise(bigint,int)','outil_test(text)'] loop
     execute format('revoke all on function public.%s from public, anon', f);
     execute format('grant execute on function public.%s to authenticated', f);

@@ -93,6 +93,7 @@
       openBag: (nom, offert) => rpc("ouvrir_sac", {nom, offert:!!offert}),
       recycle: ids => rpc("echanger_billes", {ids}),
       fuse: ids => rpc("fusionner", {ids}),
+      fuseEv: ids => rpc("fusion_evenement", {ids}),
       daily: () => rpc("bonbec_du_jour"),
       gain: (source, cle, montant, sac) => rpc("gagner", {source, cle, montant, sac:sac||null}),
       marble: (source, cle, graine, bid) => rpc("bille_gagnee", {source, cle, graine:graine??null, bid:bid||null}),

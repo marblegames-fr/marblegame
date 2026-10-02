@@ -763,7 +763,7 @@ end $$;
 do $$ declare f text; begin
   foreach f in array array['cour_moi()','ami_demander(text)','ami_repondre(uuid,boolean)','ami_retirer(uuid)','profil_joueur(uuid)',
     'billes_echangeables(uuid)','fil_amis()','troc_proposer(uuid,uuid[],uuid[],text,bigint,int,int)','troc_repondre(bigint,boolean)','troc_annuler(bigint)',
-    'mes_trocs()','vendre(uuid,int,int)','retirer_annonce(bigint)','acheter(bigint)','marche(text,int,int,boolean,text,int,text)','mes_annonces()','cour_journal(bigint,int)',
+    'mes_trocs()','vendre(uuid,int,int,int)','retirer_annonce(bigint)','acheter(bigint)','marche(text,int,int,boolean,text,int,text)','mes_annonces()','cour_journal(bigint,int)',
     'mettre_aux_encheres(uuid,int,int)','encherir(bigint,int)','mes_encheres()','classement(text)','cour_stats()'] loop
     execute format('revoke all on function public.%s from public, anon', f);
     execute format('grant execute on function public.%s to authenticated', f);

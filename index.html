@@ -143,7 +143,8 @@ button.profile-mini:hover,button.profile-mini[aria-expanded="true"]{background:v
 .profile-mini small{color:var(--muted);font-size:12px;font-weight:600}
 .wallet{display:flex;align-items:center;gap:8px;height:38px;padding:0 14px 0 7px;border-radius:999px;background:var(--panel);border:1px solid var(--line);font-weight:800;font-variant-numeric:tabular-nums}
 .wallet small{font-weight:700;color:var(--ink-2);font-size:12px}
-@media (max-width:420px){ #daily-btn,#gc-btn{width:34px} }
+@media (max-width:560px){ #gc-btn .gc-cd{display:none} #gc-btn{padding:0;min-width:34px} }
+@media (max-width:420px){ #daily-btn{width:34px} }
 @media (max-width:400px){ #daily-btn{display:none} }
 @media (max-width:360px){ #gc-btn{display:none} }
 .coin{width:24px;height:24px;flex:none}
@@ -1282,7 +1283,9 @@ button.vit-slot:hover{background:var(--panel-2);color:var(--ink)}
 .day-ok{position:absolute;top:4px;right:4px;width:18px;height:18px;border-radius:50%;background:var(--green);color:#fff;display:grid;place-items:center}
 .day-bonus{font-size:10px;font-weight:900;color:var(--green)}
 #daily-btn,#gc-btn{color:var(--ink-2)}
-#gc-btn .dot{display:none}
+#gc-btn{width:auto;min-width:40px;display:flex;gap:5px;padding:0 9px}
+#gc-btn .gc-cd{font-size:12.5px;font-weight:900;font-variant-numeric:tabular-nums;white-space:nowrap}
+#gc-btn .dot{display:none;right:auto;left:22px}
 #gc-btn.ready{color:#E5484D}
 #gc-btn.ready .dot{display:block}
 #gc-btn.ok{color:var(--green)}
@@ -4863,10 +4866,13 @@ function showBeta(fresh){
   el.hidden = false; el.querySelector(".btn-yellow").focus();
 }
 // la Grande Course dans la barre du haut : un point rouge tant qu'on n'est pas inscrit pour la prochaine course
+// le décompte court à côté du drapeau : « 6 h 12 », puis « 12 min », puis « 0:45 »
+function gcShort(ms){ ms = Math.max(0,ms); const h = Math.floor(ms/36e5), m = Math.floor(ms/6e4)%60, s = Math.floor(ms/1e3)%60;
+  return h ? `${h} h ${String(m).padStart(2,"0")}` : m>=10 ? `${m} min` : `${m}:${String(s).padStart(2,"0")}` }
 function renderGcBtn(){
   const b = document.getElementById("gc-btn"); if(!b) return;
   const reg = !!gc.etat?.inscrit, N = gcNext();
-  b.innerHTML = `${ic("flag",21)}<span class="dot"></span><span class="tip">${reg ? `Inscrit pour la course de ${N.jour===isoDay()?"ce soir":"demain"} 20 h` : `Grande Course de 20 h : inscris-toi !`}</span>`;
+  b.innerHTML = `${ic("flag",21)}<span class="gc-cd" data-gc-short>${gcShort(N.depart-Date.now())}</span><span class="dot"></span><span class="tip">${reg ? `Inscrit pour la course de ${N.jour===isoDay()?"ce soir":"demain"} 20 h` : `Grande Course de 20 h : inscris-toi !`}</span>`;
   b.classList.toggle("ready", !reg); b.classList.toggle("ok", reg);
   b.setAttribute("aria-label", reg ? "La Grande Course de 20 h : tu es inscrit" : "La Grande Course de 20 h : pas encore inscrit");
 }
@@ -7870,6 +7876,8 @@ function gcRegister(){
 setInterval(()=>{
   const N = gcNext();
   document.querySelectorAll("[data-gc-timer]").forEach(el=>el.textContent = gcLeft(N.depart-Date.now()));
+  document.querySelectorAll("[data-gc-short]").forEach(el=>el.textContent = gcShort(N.depart-Date.now()));
+  if(N.depart-Date.now()<=0 && !gc.etat) renderGcBtn();
   const E = gc.etat;
   if(E && E.inscrit && Date.now()>=E.depart && Date.now()<E.depart+40000 && gc.live!==E.jour && srvOn()){
     gc.live = E.jour; const jour = E.jour;

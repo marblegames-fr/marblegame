@@ -105,6 +105,11 @@ begin
     'jour', j, 'depart', floor(extract(epoch from interne.course_depart(j))*1000)::bigint,
     'inscrits', (select count(*) from course_inscrits where jour = j),
     'inscrit', i.joueur is not null, 'bille', i.bille,
+    -- les inscrits de la prochaine course (pseudo et bille choisie), dans l'ordre d'inscription
+    'participants', (select coalesce(jsonb_agg(jsonb_build_object('pseudo', pr.pseudo, 'moi', ci.joueur = qui, 'bille', b.donnees) order by ci.inscrit_le), '[]'::jsonb)
+      from course_inscrits ci join profils pr on pr.id = ci.joueur
+      left join billes b on b.id = ci.bille and b.proprietaire = ci.joueur and b.detruite_le is null
+      where ci.jour = j),
     'derniere', case when c.jour is null then null else jsonb_build_object('jour', c.jour, 'graine', c.graine,
       'lots', exists (select 1 from course_inscrits x where x.jour = c.jour and x.joueur = qui and x.lots_le is not null),
       'depart', floor(extract(epoch from interne.course_depart(c.jour))*1000)::bigint, 'resultats', c.resultats) end);

@@ -4714,7 +4714,7 @@ const betaOwned = () => TK.filter(t=>S.specs.some(x=>isBeta(x) && x.type===t));
 function renderBeta(){
   const el = document.getElementById("beta-rib"); el.hidden = !BETA.open; if(!BETA.open) return;
   const done = betaOwned().length===TK.length;
-  el.innerHTML = `<span class="br-tag">Bêta</span><span class="br-txt"><b>Billy est en version de test.</b> <span class="br-long">À la sortie, toutes les parties repartiront à zéro… sauf les billes Bêta des testeurs !</span></span>
+  el.innerHTML = `<span class="br-tag">Bêta</span><span class="br-txt"><b>Billy est en version de test.</b> <span class="br-long">À la sortie, tous les comptes repartiront à zéro… sauf les billes Bêta des testeurs !</span></span>
     ${done ? `<button class="br-btn done" data-action="beta-see">${ic("check",14,3)} Mes billes Bêta</button>` : `<button class="br-btn" data-action="beta-claim">${ic("gift",15)} Claim</button>`}`;
 }
 function claimBeta(){
@@ -6746,6 +6746,35 @@ function placePebbles(n, avoid){
   }
   return out;
 }
+// Reprise après un rechargement de la page : la partie du jour garde le terrain tel qu'il était au dernier tir,
+// et ce tir est rejoué à l'identique (recharger ne permet pas de refaire un tir raté).
+const ballOut = b => ({x:b.x, y:b.y, alive:b.alive, sink:b.sink, mine:b.mine, label:b.label, won:b.won, castle:b.castle,
+  spec:{seed:b.spec.seed, type:b.spec.type, family:b.spec.family, pal:b.spec.pal, shiny:b.spec.shiny||0}});
+const SNAP = {
+  pot:     {out:A=>({shots:A.shots, potted:A.potted, pot:A.pot, start:A.start}), in:(A,o)=>Object.assign(A,o)},
+  chateau: {out:A=>({shots:A.shots, out:A.out}), in:(A,o)=>{ Object.assign(A,o); A.castle = A.balls.filter(b=>b.castle) }},
+  tic:     {out:A=>({lvl:A.lvl, turn:A.turn, tries:A.tries, foe:{name:A.foe.name, spec:A.foe.spec}, me:A.balls.indexOf(A.me), fb:A.balls.indexOf(A.foeBall)}),
+            in:(A,o)=>{ Object.assign(A,{lvl:o.lvl, turn:o.turn, tries:o.tries, foe:o.foe}); A.me = A.balls[o.me]; A.foeBall = A.balls[o.fb] }},
+  course:  {out:A=>({flicks:A.flicks, turnIdx:A.turnIdx, turn:A.turn, rank:A.rank.map(r=>A.racers.indexOf(r)),
+              racers:A.racers.map(r=>({name:r.name, mine:r.mine, skill:r.skill, ball:A.balls.indexOf(r.ball), safe:r.safe, s:r.s, done:r.done}))}),
+            in:(A,o)=>{ Object.assign(A,{flicks:o.flicks, turnIdx:o.turnIdx, turn:o.turn});
+              A.racers = o.racers.map(r=>({...r, ball:A.balls[r.ball], spec:A.balls[r.ball].spec})); A.rank = o.rank.map(i=>A.racers[i]) }},
+};
+function snapSave(pend){
+  const A = arena, g = dayGame(A.mode); if(!g || g.done || !SNAP[A.mode] || A.done) return;
+  g.snap = {balls:A.balls.map(ballOut), shooter:A.balls.indexOf(A.shooter), pebbles:A.pebbles, x:SNAP[A.mode].out(A), pend:pend||null};
+  save();
+}
+function snapLoad(){
+  const A = arena, o = dayGame(A.mode)?.snap; if(!o) return false;
+  A.balls = o.balls.map(q=>{ const b = mkBall(q.x, q.y, q.spec, {mine:q.mine, label:q.label, won:q.won, castle:q.castle}); b.alive = q.alive; b.sink = q.sink||0; return b });
+  A.shooter = A.balls[o.shooter]; A.pebbles = o.pebbles||[];
+  SNAP[A.mode].in(A, o.x);
+  A.done = false;
+  if(o.pend){ const p = o.pend; setTimeout(()=>{ if(arena===A && !A.done) fire(A.balls[p.i], p.vx, p.vy, p.p) }, 500) }
+  else if(A.turn==="opp") setTimeout(A.mode==="tic" ? aiShot : aiCourse, 900);
+  return true;
+}
 function initArena(mode){
   cancelAnimationFrame(arena.raf);
   const cv = document.getElementById("a-canvas");
@@ -6761,9 +6790,11 @@ function initArena(mode){
   cv.onpointerdown = aDown; cv.onpointermove = aMove; cv.onpointerup = aUp; cv.onpointercancel = ()=>{ arena.aim=null };
   document.getElementById("a-result").hidden = true;
   SETUP[mode]();
+  const resumed = gameLive(mode) && snapLoad();
   arena.scatter = makeScatter(mode);
   updArenaHud();
-  arena.done = true; dayCard(mode, document.getElementById("a-result"));   // « C'est parti ! », ou « à demain » si la partie du jour est jouée
+  if(resumed) toast("Ta partie du jour reprend là où tu l'avais laissée.");
+  else { arena.done = true; dayCard(mode, document.getElementById("a-result")) }   // « C'est parti ! », ou « à demain » si la partie du jour est jouée
   arena.raf = requestAnimationFrame(aLoop);
 }
 function updArenaHud(){
@@ -6785,6 +6816,10 @@ function aUp(){
 function wobble(spec,vx,vy){ if(!spec || spec.type!=="chinoise") return [vx,vy]; const a=(Math.random()*2-1)*.09, c=Math.cos(a), s=Math.sin(a); return [vx*c-vy*s, vx*s+vy*c] }
 function launch(b,vx,vy,p){
   [vx,vy] = wobble(b.spec,vx,vy);
+  snapSave({i:arena.balls.indexOf(b), vx, vy, p});   // le terrain avant le tir, et le tir lui-même : rejoué à l'identique si on recharge
+  fire(b,vx,vy,p);
+}
+function fire(b,vx,vy,p){
   b.vx = vx; b.vy = vy; arena.moving = true;
   Sound.rollStart(); Sound.shot(p);
   arena.onShot && arena.onShot();
@@ -7124,10 +7159,10 @@ const SETUP = {
     Object.assign(A,{fric:.975, shots:3, out:0, circle:{x:630,y:260,r:125}});
     const d = 2*radOf("bille")+1, cx = A.circle.x-38, cy = A.circle.y;
     A.castle = [];
-    for(let i=0;i<4;i++) for(let j=0;j<=i;j++){ const b=mkBall(cx+i*d*.866, cy+(j-i/2)*d, randSpec("bille")); A.castle.push(b); A.balls.push(b) }
+    for(let i=0;i<4;i++) for(let j=0;j<=i;j++){ const b=mkBall(cx+i*d*.866, cy+(j-i/2)*d, randSpec("bille"), {castle:true}); A.castle.push(b); A.balls.push(b) }
     A.decor = c=>{ chalk(c); c.setLineDash([14,12]); c.beginPath(); c.moveTo(152,AB+10); c.lineTo(152,AH-AB-10); c.stroke(); c.setLineDash([]);
       c.beginPath(); c.arc(A.circle.x,A.circle.y,A.circle.r,0,TAU); c.stroke() };
-    const next = ()=>{ A.balls = A.balls.filter(b=>b!==A.shooter); spawnMine(120, 110+Math.random()*300) };
+    const next = ()=>{ A.balls = A.balls.filter(b=>b!==A.shooter); spawnMine(120, 110+hash(dayKey()+"|"+A.shots)%300) };   // même place si on recharge
     A.onShot = ()=>{ A.shots-- };
     A.onRest = ()=>{
       A.castle.forEach(b=>{ const w = Math.hypot(b.x-A.circle.x,b.y-A.circle.y)>A.circle.r;
@@ -7330,12 +7365,21 @@ function initCasse(){
   cv.width = CW*dpr; cv.height = CH*dpr;
   Object.assign(cb, {cv, ctx:cv.getContext("2d"), dpr, spec, R: spec ? cbClamp(radOf(spec.type)*.7, 7, 15) : 9, power: spec && TYPES[spec.type].mm>=35 ? 2 : 1,
     paddle:{x:CW/2, y:CH-42, w:120, tw:120, h:14}, score:0, lives:3, level:1, cleared:0, shake:0, parts:[], drops:[], slowT:0, largeT:0,
-    done:false, state:"serve", last:performance.now(), lastWall:0});
+    done:false, live:false, state:"serve", last:performance.now(), lastWall:0});
   cb.ctx.setTransform(dpr,0,0,dpr,0,0);
   cv.onpointermove = e=>{ cb.paddle.x = cbX(e) };
   cv.onpointerdown = e=>{ cb.paddle.x = cbX(e); cbLaunch() };
-  cbLoad(1);
-  cb.done = true; dayCard("casse", document.getElementById("c-result"));
+  const o = gameLive("casse") && dayGame("casse").snap;
+  if(o){
+    cbLoad(o.level);
+    if(o.bricks) cb.bricks.forEach((b,i)=>{ const h = o.bricks[i]; if(h!=null && h>=0) b.hp = h });
+    Object.assign(cb, {score:o.score, lives:o.lives, cleared:o.cleared, live:true, done:false});
+    if(o.rally){ cb.lives--; cbHud();
+      if(cb.lives<=0) cbFinish();
+      else { cbSnap(false); toast("Partie reprise : la bille était en jeu quand tu as quitté, tu perds une vie.") } }
+    else toast("Ta partie du jour reprend là où tu l'avais laissée.");
+    cbHud();
+  } else { cbLoad(1); cb.done = true; dayCard("casse", document.getElementById("c-result")) }
   cb.raf = requestAnimationFrame(cbLoop);
 }
 function cbX(e){ const r = cb.cv.getBoundingClientRect(); return (e.clientX-r.left)/r.width*CW }
@@ -7364,6 +7408,15 @@ function cbServe(){
   cb.paddle.tw = 120;
   cb.balls = [cbNewBall(cb.paddle.x, cb.paddle.y-cb.R)];
   cb.combo = 0; cb.state = "serve";
+  if(cb.live) cbSnap(false);
+}
+// Reprise après un rechargement : on repart du dernier service (niveau, briques, score, vies).
+// Recharger pendant que la bille est en jeu coûte une vie, comme si elle était tombée.
+function cbSnap(rally){
+  const g = dayGame("casse"); if(!g || g.done) return;
+  g.snap = rally && g.snap ? {...g.snap, rally:true}
+    : {level:cb.level, score:cb.score, lives:cb.lives, cleared:cb.cleared, bricks:cb.bricks.map(b=>b.steel?-1:b.hp), rally:false};
+  save();
 }
 function cbHud(){
   const set = (id,v) => { const el = document.getElementById(id); if(el) el.textContent = v };
@@ -7371,7 +7424,7 @@ function cbHud(){
 }
 function cbLaunch(){
   if(cb.done) return;
-  if(cb.state==="serve"){ const a = (Math.random()-.5)*.6; cb.balls.forEach(b=>cbDir(b,a)); cb.state = "play"; Sound.tap(0,.6) }
+  if(cb.state==="serve"){ const a = (Math.random()-.5)*.6; cb.balls.forEach(b=>cbDir(b,a)); cb.state = "play"; Sound.tap(0,.6); if(cb.live) cbSnap(true) }
   else if(cb.state==="pause") cb.state = "play";
 }
 addEventListener("keydown", e=>{
@@ -7483,6 +7536,7 @@ function cbUpdate(dt){
   }
   if(!cb.bricks.some(b=>b.hp>0 && !b.steel)){
     cb.cleared++; cb.state = "clear"; cb.msgT = 1.8; cb.score += 200*cb.level; cbHud(); Sound.ding();
+    const g = dayGame("casse"); if(cb.live && g && !g.done){ g.snap = {level:cb.level+1, score:cb.score, lives:cb.lives, cleared:cb.cleared, bricks:null, rally:false}; save() }
   }
 }
 function cbFinish(){
@@ -8367,8 +8421,8 @@ document.addEventListener("click", e=>{
     case "game-go": {
       const k = t.dataset.g;
       if(!gameBegin(k)){ renderView(); break }
-      if(k==="casse"){ document.getElementById("c-result").hidden = true; cb.done = false }
-      else { document.getElementById("a-result").hidden = true; arena.done = false; updArenaHud() }
+      if(k==="casse"){ document.getElementById("c-result").hidden = true; cb.done = false; cb.live = true; cbSnap(false) }
+      else { document.getElementById("a-result").hidden = true; arena.done = false; updArenaHud(); snapSave(null) }
       Sound.tap(0,.6);
       break;
     }

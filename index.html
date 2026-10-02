@@ -2425,7 +2425,7 @@ body.gc-open{overflow:hidden}
   <button class="mj-btn" id="mj-btn" data-action="mj-open" aria-label="Ma journée"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3.5" y="8" width="17" height="4" rx="1"/><path d="M5 12v8h14v-8M12 8v12M12 8C10.5 4 7 4 7 6s3 2 5 2c2 0 5 0 5-2s-3.5-2-5 2"/></svg><span class="lbl">Ma journée</span><span class="n" id="mj-n" hidden></span></button>
   <button class="icon-btn" id="gc-btn" data-action="nav" data-view="grandecourse" aria-label="La Grande Course de 20 h"><span class="dot"></span></button>
   <button class="icon-btn" id="daily-btn" data-action="daily-open" aria-label="Le bonbec du jour"><span class="dot"></span></button>
-  <button class="wallet" data-action="nav" data-view="sacs" aria-label="Mes bonbecs, ouvrir des sacs"><span id="coin-slot"></span><span id="jetons">0</span><small>bonbecs</small></button>
+  <div class="wallet" aria-label="Mes bonbecs"><span id="coin-slot"></span><span id="jetons">0</span><small>bonbecs</small></div>
   <div class="prof-wrap">
     <button class="profile-mini" data-action="prof-pop" aria-label="Mon profil" aria-expanded="false" aria-haspopup="true">
       <span class="av-ring" id="top-ring"><span class="avatar" id="top-avatar"></span></span>
@@ -7482,7 +7482,7 @@ const CB_MAPS = [
 ];
 const CB_INFO = {title:"Le Casse-briques",
   lead:"Le mur du préau est couvert de briques de couleur. Ta bille les casse une à une, et toi tu la renvoies avec ta règle. Ne la laisse pas tomber !",
-  rules:["3 vies. Une bille qui tombe sous la règle, c'est une vie perdue.","Là où la bille touche la règle, elle repart plus ou moins en biais.","Les briques à bord foncé tiennent 2 coups, les dorées 3. L'acier ne casse jamais.","Attrape les bonus qui tombent : règle géante, trois billes, bille ralentie, vie en plus.","Chaque niveau a son chrono (60 s au premier, un peu plus ensuite) : s'il tombe à zéro, la partie est finie. Un niveau réussi relance le chrono.","5 niveaux dessinés, puis des niveaux surprise à l'infini. Chaque niveau réussi rapporte 20 bonbecs. 1 niveau : 1 étoile, 3 niveaux : 2 étoiles, 5 niveaux : 3 étoiles.","Un Boulet ou un Mammouth casse 2 épaisseurs d'un coup.","Une partie par jour : elle compte dès que tu cliques sur « C'est parti ! »."]};
+  rules:["3 vies. Une bille qui tombe sous la règle, c'est une vie perdue.","Là où la bille touche la règle, elle repart plus ou moins en biais.","Les briques à bord foncé tiennent 2 coups, les dorées 3. L'acier ne casse jamais.","Attrape les bonus qui tombent : règle géante, trois billes, bille ralentie, vie en plus.","Chaque niveau a un chrono de 2 minutes : s'il tombe à zéro, la partie est finie. Il s'arrête quand tu perds ta bille et repart quand tu la relances. Un niveau réussi relance le chrono.","5 niveaux dessinés, puis des niveaux surprise à l'infini. Chaque niveau réussi rapporte 20 bonbecs. 1 niveau : 1 étoile, 3 niveaux : 2 étoiles, 5 niveaux : 3 étoiles.","Un Boulet ou un Mammouth casse 2 épaisseurs d'un coup.","Une partie par jour : elle compte dès que tu cliques sur « C'est parti ! »."]};
 const cb = {raf:0, keys:{}};
 const cbClamp = (v,a,b) => Math.max(a, Math.min(b, v));
 
@@ -7544,8 +7544,8 @@ function cbRandomMap(n){
   }
   return out.some(r=>/[123]/.test(r)) ? out : cbRandomMap(n);
 }
-// le chrono de chaque niveau : 60 s au premier, 5 s de plus par niveau (90 s au maximum)
-const cbTime = n => Math.min(90, 55+n*5);
+// le chrono de chaque niveau : 2 minutes
+const cbTime = n => 120;
 function cbLoad(n){
   cb.level = n; cb.time = cbTime(n);
   const map = CB_MAPS[n-1] || cbRandomMap(n);
@@ -7669,7 +7669,7 @@ function cbUpdate(dt){
   cb.parts = cb.parts.filter(q=>q.life>0);
   cb.shake = Math.max(0, cb.shake-dt*30);
   // le chrono tourne pendant la partie (pas en pause, ni entre deux niveaux)
-  if(cb.live && !cb.done && (cb.state==="play" || cb.state==="serve")){
+  if(cb.live && !cb.done && cb.state==="play"){   // arrêté tant que la bille n'est pas lancée
     const before = Math.ceil(cb.time); cb.time = Math.max(0, cb.time-dt); const now = Math.ceil(cb.time);
     if(now!==before){ cbTimeHud(); if(now<=5 && now>0) Sound.tap(0,.35) }
     cb.saveT = (cb.saveT||0)+dt; if(cb.saveT>5){ cb.saveT = 0; const g = dayGame("casse"); if(g?.snap){ g.snap.time = cb.time; save() } }

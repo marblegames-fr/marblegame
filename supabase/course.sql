@@ -7,7 +7,8 @@
 --  - À 20 h, l'ordre d'arrivée est tiré au sort par le serveur : chaque bille a exactement la même chance.
 --    Le tirage se fait au premier appel après 20 h (n'importe quel joueur), une seule fois.
 --  - Le jeu ne fait qu'animer la course à partir de la graine et de l'ordre d'arrivée : tout le monde voit la même.
---  - Les prix sont versés au moment du tirage. Mêmes valeurs que COURSE_PRIX dans index.html.
+--  - Les lots sont remis à la fin de la course, quand le joueur la regarde (ou la passe) : course_lots().
+--    Mêmes valeurs que COURSE_PRIX dans index.html.
 -- =====================================================================
 
 create table if not exists public.course_inscrits (
@@ -23,6 +24,7 @@ create table if not exists public.courses (
   tiree_le  timestamptz not null default now(),
   resultats jsonb not null   -- dans l'ordre d'arrivée : [{joueur, pseudo, bille, prix, sac} | {bot, nom, graine}]
 );
+alter table public.course_inscrits add column if not exists lots_le timestamptz;   -- lots récupérés
 alter table public.course_inscrits enable row level security;
 alter table public.courses enable row level security;
 revoke all on public.course_inscrits, public.courses from anon, authenticated;
@@ -67,7 +69,6 @@ begin
     else
       select * into p from interne.course_prix(k);
       res := res || jsonb_build_array(jsonb_build_object('joueur', r.joueur, 'pseudo', r.pseudo, 'bille', r.bille, 'prix', p.j, 'sac', p.sac));
-      perform interne.crediter(r.joueur, p.j, p.sac);
     end if;
   end loop;
   insert into courses (jour, graine, resultats) values (j, g, res);
@@ -105,11 +106,24 @@ begin
     'inscrits', (select count(*) from course_inscrits where jour = j),
     'inscrit', i.joueur is not null, 'bille', i.bille,
     'derniere', case when c.jour is null then null else jsonb_build_object('jour', c.jour, 'graine', c.graine,
+      'lots', exists (select 1 from course_inscrits x where x.jour = c.jour and x.joueur = qui and x.lots_le is not null),
       'depart', floor(extract(epoch from interne.course_depart(c.jour))*1000)::bigint, 'resultats', c.resultats) end);
 end $$;
 
+-- les lots, remis à la fin de la course (une seule fois)
+create or replace function public.course_lots(j date) returns jsonb language plpgsql security definer set search_path = public as $$
+declare qui uuid := interne.moi(); x jsonb;
+begin
+  select e into x from courses c, jsonb_array_elements(c.resultats) e where c.jour = j and e->>'joueur' = qui::text;
+  if x is null then raise exception 'pas_inscrit'; end if;
+  update course_inscrits set lots_le = now() where jour = j and joueur = qui and lots_le is null;
+  if not found then raise exception 'deja'; end if;
+  perform interne.crediter(qui, (x->>'prix')::int, x->>'sac');
+  return interne.etat(qui);
+end $$;
+
 do $$ declare f text; begin
-  foreach f in array array['course_inscrire(uuid)','course_desinscrire()','course_etat()'] loop
+  foreach f in array array['course_inscrire(uuid)','course_desinscrire()','course_etat()','course_lots(date)'] loop
     execute format('revoke all on function public.%s from public, anon', f);
     execute format('grant execute on function public.%s to authenticated', f);
   end loop;

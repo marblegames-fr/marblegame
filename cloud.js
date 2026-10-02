@@ -105,6 +105,7 @@
       etat: () => rpc("course_etat"),
       inscrire: bid => rpc("course_inscrire", {bid:bid||null}),
       desinscrire: () => rpc("course_desinscrire"),
+      lots: jour => rpc("course_lots", {j:jour}),
     },
     // ---------- la cour de récré : copains, troc, marché (supabase/cour.sql) ----------
     cour: {

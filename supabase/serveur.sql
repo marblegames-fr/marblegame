@@ -389,15 +389,15 @@ begin
                                     shiny => interne.tirer_shiny(interne.taux_shiny() * g.nb), src => 'fusion'));
 end $$;
 
--- Le Pachinko (2 octobre 2026) : une bille gratuite par jour (elle compte dans les 6 jeux du jour), puis 200 bonbecs la bille.
+-- Le Pachinko (2 octobre 2026) : une bille gratuite par jour (elle compte dans les 6 jeux du jour), puis 100 bonbecs la bille (200 jusqu'au 2 octobre au soir).
 -- Le serveur tire la case ; le jeu fait tomber la bille jusqu'à elle. Cases de gauche à droite : mêmes valeurs que PACHI dans index.html.
--- Plus un lot vaut cher, plus il est rare : 100 > 200 > Classique (300) > 400 > Premium (600) > 1000 > Collector (1 500) > Bille.
--- On retrouve au moins sa mise dans 41 % des cas ; en moyenne une bille rend ~187 bonbecs (sacs comptés à leur prix, sans la case Bille).
+-- Plus un lot vaut cher, plus il est rare : 50 > 200 > Classique (300) > 400 > Premium (600) > 1000 > Collector (1 500) > Bille.
+-- On retrouve au moins sa mise dans 20 % des cas ; en moyenne une bille rend ~94 bonbecs (sacs comptés à leur prix, sans la case Bille).
 -- La case « Bille » fait tourner une roue : la taille (mêmes chances que PACHI_ROUE), puis décor, coloris et shiny comme d'habitude.
 create or replace function interne.pachinko_cases() returns table(k int, poids numeric, bonbecs int, sac text, taille text) language sql immutable as $$
-  select * from (values (0, 0.5, 0, null::text, 'roue'::text), (1, 3, 1000, null, null), (2, 6.5, 400, null, null),
-    (3, 9, 200, null, null), (4, 16, 100, null, null), (5, 27, 0, null, null), (6, 16, 100, null, null),
-    (7, 9, 200, null, null), (8, 8, 0, 'classique', null), (9, 4, 0, 'premium', null), (10, 1, 0, 'collector', null)) v(k, poids, bonbecs, sac, taille)
+  select * from (values (0, 0.3, 0, null::text, 'roue'::text), (1, 1.2, 1000, null, null), (2, 3, 400, null, null),
+    (3, 4.5, 200, null, null), (4, 20, 50, null, null), (5, 40, 0, null, null), (6, 20, 50, null, null),
+    (7, 4.5, 200, null, null), (8, 4, 0, 'classique', null), (9, 2, 0, 'premium', null), (10, 0.5, 0, 'collector', null)) v(k, poids, bonbecs, sac, taille)
 $$;
 create or replace function interne.pachinko_roue() returns numeric[] language sql immutable as $$ select array[10,15,20,25,20,10]::numeric[] $$;   -- Mini → Mammouth
 create or replace function public.pachinko(payer boolean default false)
@@ -409,7 +409,7 @@ begin
     begin insert into gains (joueur, source, cle, montant) values (qui, 'jeu', today || '|pachinko', 0);
     exception when unique_violation then raise exception 'deja'; end;
   else
-    update portefeuilles set bonbecs = bonbecs - 200, maj_le = now() where joueur = qui and bonbecs >= 200;
+    update portefeuilles set bonbecs = bonbecs - 100, maj_le = now() where joueur = qui and bonbecs >= 100;
     if not found then raise exception 'pas_assez'; end if;
   end if;
   x := random() * (select sum(poids) from interne.pachinko_cases());

@@ -169,6 +169,12 @@ button.wallet:hover{background:var(--panel-2)}
 .pick-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(110px,1fr));gap:8px;max-height:min(60vh,520px);overflow:auto;margin-top:12px;padding:2px}
 .pick-grid .m-card.on{border-color:var(--ink);background:var(--panel-2)}
 .pick-filter{display:grid;gap:8px;margin-top:12px}
+.col-search{position:relative;margin:14px 0 4px;max-width:520px}
+.col-search input{width:100%;height:44px;padding:0 40px 0 42px;border-radius:14px;border:1.5px solid var(--line-2);background:var(--panel);color:var(--ink);font:inherit;font-weight:700}
+.col-search input:focus{outline:none;border-color:var(--ink)}
+.col-search input::-webkit-search-cancel-button{display:none}
+.col-search .cs-ic{position:absolute;left:14px;top:50%;translate:0 -50%;color:var(--muted);display:grid}
+.col-search .cs-x{position:absolute;right:8px;top:50%;translate:0 -50%;width:28px;height:28px;border-radius:50%;font-size:18px;font-weight:900;color:var(--ink-2);background:var(--panel-2)}
 .pick-filter .pick-q{width:100%;height:40px;padding:0 14px;border-radius:12px;border:1.5px solid var(--line-2);background:var(--panel);color:var(--ink);font:inherit;font-weight:700}
 .pick-filter .pick-q:focus{outline:none;border-color:var(--ink)}
 .pick-filter .chips{gap:6px}
@@ -980,6 +986,14 @@ button.vit-slot:hover{background:var(--panel-2);color:var(--ink)}
 @media (max-width:560px){ .prof-card{grid-template-columns:minmax(0,1fr)} .vitrine,.prof-stats{grid-template-columns:repeat(2,minmax(0,1fr))} }
 
 /* ---------- la confiserie : échanger ou fusionner ---------- */
+.evf{margin-top:18px;border-top:4px solid #C8322F}
+.evf-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(190px,1fr));gap:10px;margin-top:12px}
+.evf-card{display:grid;justify-items:center;gap:6px;padding:12px 10px;border-radius:16px;border:1.5px dashed var(--line-2);background:var(--panel-2);text-align:center}
+.evf-card.ok{border-style:solid;border-color:var(--yellow);background:color-mix(in srgb,var(--yellow) 10%,var(--panel))}
+.evf-card b{font-size:13.5px;font-weight:900}
+.evf-card small{font-size:12px;font-weight:800;color:var(--ink-2)}
+.evf-balls{display:flex;align-items:center;gap:6px;color:var(--muted);min-height:64px}
+.evf-balls em{font-style:normal;font-weight:900;font-size:12px;color:var(--ink-2);margin-left:-8px;align-self:flex-end}
 .conf-choices{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px;margin-bottom:18px}
 /* devanture de la Confiserie : un store rayé comme chez le confiseur */
 .cf-shop{margin-bottom:20px}
@@ -1125,11 +1139,14 @@ button.vit-slot:hover{background:var(--panel-2);color:var(--ink)}
 .mv-bg::before,.mv-bg::after{content:"";position:absolute;pointer-events:none}
 .mv-bg.r1::before{inset:0;opacity:.5;background:radial-gradient(circle,rgba(255,255,255,.16) 1.6px,transparent 2.2px) 0 0/22px 22px;
   -webkit-mask:radial-gradient(ellipse 70% 60% at 50% 42%,#000,transparent 85%);mask:radial-gradient(ellipse 70% 60% at 50% 42%,#000,transparent 85%)}
-.mv-bg.r2::before,.mv-bg.r3::before,.mv-bg.r4::before{left:50%;top:42%;width:900px;height:900px;margin:-450px;
-  background:repeating-conic-gradient(from 0deg,rgba(255,255,255,.1) 0 7deg,transparent 7deg 22.5deg);
-  -webkit-mask:radial-gradient(circle,#000 8%,transparent 55%);mask:radial-gradient(circle,#000 8%,transparent 55%);animation:spin 60s linear infinite}
-.mv-bg.r3::before{background:repeating-conic-gradient(from 0deg,color-mix(in srgb,var(--dr) 40%,rgba(255,255,255,.28)) 0 5deg,transparent 5deg 15deg);animation-duration:40s}
-.mv-bg.r4::before{background:repeating-conic-gradient(from 0deg,rgba(255,214,120,.42) 0 4deg,transparent 4deg 10deg,rgba(255,240,190,.22) 10deg 12deg,transparent 12deg 20deg);animation-duration:30s}
+/* pas de rayons ici : les faisceaux tournants restent la marque de la Lumineuse. Rare et plus : un halo de lumière qui respire */
+.mv-bg.r2::before,.mv-bg.r3::before{left:50%;top:42%;width:520px;height:520px;margin:-260px;border-radius:50%;
+  background:radial-gradient(circle,rgba(255,255,255,.2) 0,rgba(255,255,255,.07) 35%,transparent 65%);animation:mvbreath 4s ease-in-out infinite}
+.mv-bg.r3::before{background:radial-gradient(circle,color-mix(in srgb,var(--dr) 45%,rgba(255,255,255,.35)) 0,color-mix(in srgb,var(--dr) 25%,transparent) 35%,transparent 65%)}
+.mv-bg.r4::before{inset:0;opacity:.55;background:radial-gradient(circle,rgba(255,220,140,.5) 1.2px,transparent 2px) 0 0/26px 26px;
+  -webkit-mask:radial-gradient(ellipse 65% 55% at 50% 42%,#000,transparent 85%);mask:radial-gradient(ellipse 65% 55% at 50% 42%,#000,transparent 85%);animation:mvdrift 12s linear infinite}
+@keyframes mvbreath{50%{transform:scale(1.12);opacity:.75}}
+@keyframes mvdrift{to{background-position:0 -26px}}
 /* étincelles : deux nuées de points qui s'allument chacune à son tour */
 .mv-bg.r3::after,.mv-bg.r4::after{inset:0;
   background:
@@ -1250,7 +1267,33 @@ button.vit-slot:hover{background:var(--panel-2);color:var(--ink)}
 .gh-bonus.got{background:var(--green)}
 .gh-side small{display:inline-flex;align-items:center;gap:5px;font-weight:800;color:var(--muted);font-size:12px}
 .gh-side small b{color:var(--ink)}
-.gh-dots{display:flex;gap:8px;flex-wrap:wrap}
+/* le tableau des jeux du jour : 6 cases (ce que chacune rapporte), puis le Sac Premium offert quand les 6 sont finies */
+.games-hero .gh-txt{flex:1 1 320px}
+.gh-time{display:inline-flex;align-items:center;gap:5px;font-weight:800;color:var(--muted);font-size:12px;align-self:flex-start}
+.gh-time b{color:var(--ink)}
+.gh-board{flex:1 1 100%;display:grid;grid-template-columns:repeat(6,minmax(0,1fr)) auto minmax(0,1.25fr);gap:8px;align-items:stretch}
+.gh-cell{position:relative;display:grid;justify-items:center;align-content:center;gap:3px;padding:10px 6px;border-radius:14px;text-align:center;
+  border:2px dashed color-mix(in srgb,var(--ink) 22%,transparent);background:var(--panel);color:var(--ink-2);cursor:pointer;transition:transform .15s}
+button.gh-cell:hover{transform:translateY(-2px)}
+.gh-cell b{font-size:12.5px;font-weight:900;color:var(--ink);line-height:1.15}
+.gh-cell small{display:inline-flex;align-items:center;gap:2px;font-size:11.5px;font-weight:900;color:var(--ink-2);white-space:nowrap}
+.gh-cell small .coin{width:15px;height:15px}
+.gh-cell .gc-ic{color:var(--ink-2)}
+.gh-cell.done{border:2px solid var(--green);background:var(--green-soft)}
+.gh-cell.done .gc-ic,.gh-cell.done small{color:var(--green)}
+.gh-cell.live{border-style:solid;border-color:var(--yellow)}
+.gh-cell .ok{position:absolute;right:-6px;top:-6px;width:20px;height:20px;border-radius:50%;background:var(--green);color:#fff;display:grid;place-items:center;box-shadow:0 0 0 2px var(--panel)}
+.gh-plus{display:grid;place-items:center;color:var(--muted)}
+.gh-cell.prize{cursor:default;border:2px solid color-mix(in srgb,var(--bc) 55%,transparent);background:color-mix(in srgb,var(--bc) 12%,var(--panel))}
+.gh-cell.prize .gp-bag svg{width:46px;height:46px;filter:grayscale(.55) opacity(.75);transition:filter .3s}
+.gh-cell.prize.ready .gp-bag svg,.gh-cell.prize.got .gp-bag svg{filter:none}
+.gh-cell.prize.got{border-color:var(--green);background:var(--green-soft)}
+.gh-cell.prize.got small{color:var(--green)}
+.gp-bar{display:block;width:80%;height:5px;border-radius:9px;background:color-mix(in srgb,var(--ink) 12%,transparent);overflow:hidden;margin-top:2px}
+.gp-bar > i{display:block;height:100%;background:var(--bc);border-radius:9px}
+.gh-cell.prize.got .gp-bar{display:none}
+@media (max-width:760px){ .gh-board{grid-template-columns:repeat(3,minmax(0,1fr))} .gh-plus{display:none} .gh-cell.prize{grid-column:1 / -1;grid-template-columns:auto 1fr;justify-items:start;text-align:left;column-gap:12px}
+  .gh-cell.prize .gp-bag{grid-row:span 3} }
 .gh-dot{position:relative;width:46px;height:46px;border-radius:14px;display:grid;place-items:center;border:2px dashed color-mix(in srgb,var(--ink) 25%,transparent);background:var(--panel);color:var(--ink-2);cursor:pointer;transition:transform .15s}
 .gh-dot:hover{transform:translateY(-2px)}
 .gh-dot.done{border:2px solid var(--green);background:var(--green-soft);color:var(--green)}
@@ -1948,7 +1991,10 @@ button.vit-slot:hover{background:var(--panel-2);color:var(--ink)}
 .ask-balls{display:flex;flex-wrap:wrap;justify-content:center;gap:6px}
 .ask .troc-sides{width:100%;text-align:left}
 .ask-btns{display:flex;gap:10px;flex-wrap:wrap;justify-content:center;margin-top:6px}
-.ask-btns .btn{min-width:130px}
+.ask-btns .btn{min-width:150px;height:46px;padding:0 20px;display:inline-flex;align-items:center;justify-content:center;gap:6px;font-size:15px}
+/* le bonbec dans une phrase : à la taille du texte, posé sur la ligne */
+.ask p .coin,.ask p b .coin{width:1.25em;height:1.25em;vertical-align:-.3em;margin-inline:1px 2px}
+.ask p b{white-space:nowrap}
 .bb-chip{display:inline-flex;align-items:center;gap:3px;font-weight:900;font-size:13px;padding:2px 9px 2px 4px;border-radius:999px;background:var(--panel);border:1px solid var(--line);white-space:nowrap}
 .bb-chip .coin{width:18px;height:18px}
 .bb-in{display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin-top:14px;padding-top:14px;border-top:1px dashed var(--line-2);font-weight:800;font-size:14px}
@@ -2020,6 +2066,9 @@ button.vit-slot:hover{background:var(--panel-2);color:var(--ink)}
 .btn-orange{background:#FF8A3D;color:#2B1606;box-shadow:0 3px 0 #D2641E}
 .btn-orange:hover{background:#FF9A55}
 .mk.ench{border-color:color-mix(in srgb,#FF8A3D 45%,var(--line))}
+.mk-tag.fixe{background:var(--yellow);color:#2B1F06}
+.mk-sec-h{display:flex;align-items:center;gap:10px;margin:6px 2px -4px}
+.mk-sec-h h3{display:inline-flex;align-items:center;gap:7px;font-size:17px;font-weight:900;margin-right:auto}
 .mk-tag{position:absolute;top:100px;left:50%;transform:translateX(-50%);z-index:1;white-space:nowrap;box-shadow:0 4px 10px -4px rgba(0,0,0,.5);display:inline-flex;align-items:center;gap:4px;font-size:10.5px;font-weight:900;letter-spacing:.05em;text-transform:uppercase;padding:3px 9px;border-radius:999px;background:#FF8A3D;color:#2B1606}
 .mk-rib.lead{background:var(--green);color:#fff}
 .mk-rib.out{background:#E5484D;color:#fff}
@@ -2031,9 +2080,6 @@ button.vit-slot:hover{background:var(--panel-2);color:var(--ink)}
 .mes-ench .panel-head h3 svg{color:#FF8A3D}
 .ann-end{display:flex;align-items:center;gap:10px;flex-wrap:wrap;justify-content:flex-end;font-size:12px;font-weight:800;color:var(--ink-2)}
 .ann-st.hot{background:color-mix(in srgb,#FF8A3D 16%,var(--panel));border-color:color-mix(in srgb,#FF8A3D 40%,var(--line));color:#E0782F}
-.sell-mode{display:inline-flex;gap:6px;margin-top:12px}
-.sell-mode button{display:inline-flex;align-items:center;gap:6px;height:38px;padding:0 14px;border-radius:12px;border:1.5px solid var(--line-2);background:var(--panel-2);font-weight:900;font-size:13.5px;color:var(--ink-2)}
-.sell-mode button[aria-pressed="true"]{border-color:var(--ink);background:var(--ink);color:var(--on-ink)}
 .ask .ask-in{margin:4px auto 0}
 .jr.k-gagnee .jr-ic{--kc:#E0A417}
 .jr.k-offre .jr-ic,.jr.k-mon_offre .jr-ic,.jr.k-depasse .jr-ic{--kc:#FF8A3D}
@@ -2107,6 +2153,20 @@ button.vit-slot:hover{background:var(--panel-2);color:var(--ink)}
 .ann.sold > button{opacity:.7}
 /* vendre une bille */
 .sell-card{display:grid;grid-template-columns:170px minmax(0,1fr);gap:22px;align-items:center}
+.sell-top{display:flex;align-items:center;gap:12px}
+.sell-top h2{font-family:var(--display);font-weight:400;font-size:28px;margin-right:auto}
+.sell-step{display:flex;align-items:center;gap:10px;margin-bottom:12px}
+.sell-step h3{font-size:17px;font-weight:900}
+.sell-step .n{width:28px;height:28px;border-radius:50%;display:grid;place-items:center;font-weight:900;font-size:14px;background:var(--panel-2);border:1px solid var(--line);color:var(--ink-2)}
+.sell-step.on .n{background:var(--yellow);border-color:var(--yellow);color:#24253D}
+.sf-lbl{font-size:11.5px;font-weight:900;letter-spacing:.06em;text-transform:uppercase;color:var(--muted);margin-bottom:-6px}
+.sell-mode{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px;margin-top:12px;max-width:460px}
+.sell-mode button{display:flex;align-items:center;gap:10px;text-align:left;padding:10px 12px;border-radius:14px;border:2px solid var(--line);background:var(--panel-2);color:var(--ink-2)}
+.sell-mode button span{display:grid}
+.sell-mode button b{font-size:14px;color:var(--ink)}
+.sell-mode button small{font-size:11.5px;font-weight:700;color:var(--muted)}
+.sell-mode button[aria-pressed="true"]{border-color:var(--yellow);background:color-mix(in srgb,var(--yellow) 14%,var(--panel))}
+.sell-mode button[aria-pressed="true"] svg{color:var(--yellow)}
 .sell-vis{--rc:#8E8898;aspect-ratio:1;border-radius:18px;display:grid;place-items:center;background:radial-gradient(circle at 50% 55%,color-mix(in srgb,var(--rc) 45%,transparent),transparent 62%),linear-gradient(180deg,color-mix(in srgb,var(--rc) 16%,var(--panel-2)),var(--panel-2));border:1px solid var(--line)}
 .sell-vis img{filter:drop-shadow(0 12px 10px rgba(0,0,0,.4))}
 .sell-card h4{margin:0;font-size:19px;font-weight:900;line-height:1.2}
@@ -2318,6 +2378,12 @@ button.vit-slot:hover{background:var(--panel-2);color:var(--ink)}
 .auth-card .close-x{position:absolute;top:12px;right:12px;width:36px;height:36px;border-radius:50%;font-size:24px;line-height:1;color:var(--ink-2)}
 .auth-card .close-x:hover{background:rgba(255,255,255,.1);color:#fff}
 .auth-big{display:block;margin:0 auto 14px;width:88px;filter:drop-shadow(0 12px 16px rgba(0,0,0,.5));animation:auth-float 3s ease-in-out infinite}
+/* au démarrage avec un compte déjà chargé sur cet appareil : la page s'affiche tout de suite (copie locale) et un voile
+   transparent bloque les clics le temps de récupérer la partie en ligne (sinon on jouerait sur une copie peut-être ancienne) */
+.sync-veil{position:fixed;inset:0;z-index:95;cursor:progress;display:flex;justify-content:center;align-items:flex-start;padding-top:calc(80px + var(--rib,0px))}
+.sync-veil[hidden]{display:none}
+.sv-pill{display:inline-flex;align-items:center;gap:10px;height:40px;padding:0 16px;border-radius:999px;background:var(--panel);border:1px solid var(--line);box-shadow:var(--shadow);font-weight:800;font-size:13.5px;color:var(--ink-2)}
+.sv-spin{width:18px;height:18px;border-radius:50%;border:3px solid var(--line);border-top-color:var(--yellow);animation:auth-spin .8s linear infinite}
 .auth-spin{width:40px;height:40px;margin:6px auto 14px;border-radius:50%;border:4px solid rgba(255,255,255,.12);border-top-color:var(--yellow);animation:auth-spin .8s linear infinite}
 @keyframes auth-spin{to{transform:rotate(360deg)}}
 @keyframes auth-in{from{opacity:0;transform:translateY(18px)}}
@@ -2470,8 +2536,8 @@ body.gc-open{overflow:hidden}
   <div class="wallet" aria-label="Mes bonbecs"><span id="coin-slot"></span><span id="jetons">0</span><small>bonbecs</small></div>
   <div class="prof-wrap">
     <button class="profile-mini" data-action="prof-pop" aria-label="Mon profil" aria-expanded="false" aria-haspopup="true">
-      <span class="av-ring" id="top-ring"><span class="avatar" id="top-avatar"></span></span>
-      <span class="pm-txt"><b id="top-name">AlexBilleur</b><small id="top-level"></small></span>
+      <span class="avatar" id="top-avatar"></span>
+      <span class="pm-txt"><b id="top-name"></b></span>
       <span class="pm-chev" aria-hidden="true"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path d="M6 9l6 6 6-6"/></svg></span>
     </button>
     <div class="prof-pop" id="prof-pop" hidden></div>
@@ -2497,6 +2563,7 @@ body.gc-open{overflow:hidden}
 </div>
 <div class="toast" id="toast" role="status" aria-live="polite"></div>
 <div class="auth" id="auth" hidden></div>
+<div class="sync-veil" id="sync-veil" hidden><span class="sv-pill"><span class="sv-spin" aria-hidden="true"></span>Chargement de ta collection…</span></div>
 
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script src="cloud.js"></script>
@@ -2704,7 +2771,8 @@ const SHINIES = [null,
 // tirage pondéré : r dans [0,1[, w = poids
 function pickW(r,w){ const tot=w.reduce((a,b)=>a+b,0); let x=r*tot; for(let i=0;i<w.length;i++){ x-=w[i]; if(x<0) return i } return w.length-1 }
 const rollShiny = () => 1+pickW(Math.random(), SHINIES.slice(1).map(x=>x.w));
-// 1 sur 2 000 par bille (0,1 % dans le Sac Premium et le Sac Pirate, 0,25 % dans le Collector) : une shiny de temps en temps,
+// 1 sur 2 000 par bille dans le sac gratuit (et pour les fusions) ; 0,1 % dans le Classique, 0,2 % dans le Premium et les sacs Pirate,
+// 0,5 % dans le Collector : une shiny coûte ~60 000 bonbecs dans chaque sac payant (2 octobre 2026). Une shiny de temps en temps,
 // la Dorée reste rare et la Lumineuse le vrai graal. Mêmes valeurs dans serveur.sql (taux_shiny, interne.sac, tirer_shiny).
 const SHINY_RATE = .0005;
 
@@ -2744,19 +2812,27 @@ const sizeOdds = a => Object.fromEntries(TK.map((k,i)=>[k,a[i]]));
 const FREE_BAG = {id:"gratuit", name:"Sac gratuit", desc:"3 billes offertes. Un nouveau sac toutes les 10 minutes, jusqu'à 10 en stock.", price:0, n:3, color:"#C98E4E", tint:"#F6E3C8", shiny:SHINY_RATE,
   slots:[sizeOdds([75,25,0,0,0,0]),sizeOdds([55,35,10,0,0,0]),sizeOdds([30,33,20,12,4,1])]};
 const BAGS = [FREE_BAG,
-  {id:"classique", name:"Sac Classique", desc:"5 billes, avec de meilleures chances que le sac gratuit.", price:300, n:5, color:"#2A8A74", tint:"#D5EFE7", shiny:SHINY_RATE,
+  {id:"classique", name:"Sac Classique", desc:"5 billes, avec de meilleures chances que le sac gratuit. 2 fois plus de chances de shiny.", price:300, n:5, color:"#2A8A74", tint:"#D5EFE7", shiny:SHINY_RATE*2,
    slots:[sizeOdds([70,30,0,0,0,0]),sizeOdds([50,38,12,0,0,0]),sizeOdds([35,40,20,5,0,0]),sizeOdds([20,35,30,13,2,0]),sizeOdds([10,25,30,20,12,3])]},
-  {id:"premium", name:"Sac Premium", desc:"5 billes, dont au moins un Calot ou mieux. 2 fois plus de chances de shiny.", price:600, n:5, guarantee:"calot", color:"#34469C", tint:"#DCE0F6", shiny:SHINY_RATE*2,
+  {id:"premium", name:"Sac Premium", desc:"5 billes, dont au moins un Calot ou mieux. 4 fois plus de chances de shiny.", price:600, n:5, guarantee:"calot", color:"#34469C", tint:"#DCE0F6", shiny:SHINY_RATE*4,
    slots:[sizeOdds([0,80,20,0,0,0]),sizeOdds([0,60,35,5,0,0]),sizeOdds([0,40,45,15,0,0]),sizeOdds([0,0,55,38,7,0]),sizeOdds([0,0,0,60,34,6])]},
-  {id:"collector", name:"Sac Collector", desc:"5 billes, dont au moins un Boulet ou plus gros. 5 fois plus de chances de shiny.", price:1500, n:5, guarantee:"boulet", color:"#D9A020", tint:"#FBEBC0", shiny:SHINY_RATE*5,
+  {id:"collector", name:"Sac Collector", desc:"5 billes, dont au moins un Boulet ou plus gros. 10 fois plus de chances de shiny.", price:1500, n:5, guarantee:"boulet", color:"#D9A020", tint:"#FBEBC0", shiny:SHINY_RATE*10,
    slots:[sizeOdds([0,0,85,15,0,0]),sizeOdds([0,0,65,35,0,0]),sizeOdds([0,0,40,50,10,0]),sizeOdds([0,0,0,60,38,2]),sizeOdds([0,0,0,0,87,13])]},
 ];
 // sacs d'événement : en vente seulement pendant l'événement ; toutes leurs billes ont le décor de l'événement et un de ses coloris
-BAGS.push({id:"pirate", event:"pirates", name:"Sac Pirate", desc:"3 billes, avec la chance d'y trouver des billes Pirate, chacune dans un des 5 coloris pirates. Seulement pendant l'événement « À l'abordage ! ». 2 fois plus de chances de shiny.",
+BAGS.push({id:"pirate", event:"pirates", name:"Sac Pirate", desc:"3 billes, avec la chance d'y trouver des billes Pirate, chacune dans un des 5 coloris pirates. Seulement pendant l'événement « À l'abordage ! ». 4 fois plus de chances de shiny.",
   evFill:.12, evStar:.3,   // chances qu'une bille soit Pirate : 12 %, et 30 % pour la dernière ; le sac offert garantit la dernière (même chose dans serveur.sql)
-  price:600, n:3, color:"#2E2B36", tint:"#EADFC4", shiny:SHINY_RATE*2,
+  price:600, n:3, color:"#2E2B36", tint:"#EADFC4", shiny:SHINY_RATE*4,
   fam:FAMILIES.findIndex(F=>F.event==="pirates"), pals:EVENTS.pirates.palIdx,
   slots:[sizeOdds([60,32,8,0,0,0]),sizeOdds([40,35,18,6,1,0]),sizeOdds([20,28,24,17,8,3])]});
+// Sac Pirate Premium : 5 billes aux tailles du Sac Classique, plus de chances de Pirate (15 %, 35 % pour la dernière).
+// Prix calé pour qu'aucun sac ne soit plus avantageux : comme les sacs de base, ~3 fois la valeur des billes (300 pour 5 billes Classique),
+// et chaque bille Pirate attendue coûte ~740 bonbecs, comme dans le Sac Pirate (0,95 Pirate par sac en moyenne contre 0,54).
+BAGS.push({id:"pirate-premium", event:"pirates", name:"Sac Pirate Premium", desc:"5 billes, avec plus de chances d'y trouver des billes Pirate (environ une par sac en moyenne). Seulement pendant l'événement « À l'abordage ! ». 4 fois plus de chances de shiny.",
+  evFill:.15, evStar:.35,   // même chose dans serveur.sql (ouvrir_sac)
+  price:1000, n:5, color:"#6E1A22", tint:"#F0DCC8", shiny:SHINY_RATE*4,
+  fam:FAMILIES.findIndex(F=>F.event==="pirates"), pals:EVENTS.pirates.palIdx,
+  slots:[sizeOdds([70,30,0,0,0,0]),sizeOdds([50,38,12,0,0,0]),sizeOdds([35,40,20,5,0,0]),sizeOdds([20,35,30,13,2,0]),sizeOdds([10,25,30,20,12,3])]});
 // par bille en moyenne (pour les chances d'une bille précise), et « au moins une » de chaque taille dans un sac
 BAGS.forEach(b=>{
   b.star = b.slots[b.n-1];
@@ -3880,10 +3956,10 @@ void main(){
     col+=vec3(1.0,0.78,0.3)*F*0.45;
   }
   if(uShiny>2.5){
-    // lumineuse : points phosphorescents pris dans la surface
-    float st=pow(max(0.0,noise(qo*13.0+uSeed.xyz*40.0)-0.5)*2.0,4.0);
-    col+=mix(uC2,vec3(1.0),0.55)*st*2.6;
-    col+=mix(uC2,vec3(1.0),0.35)*pow(1.0-n.z,3.0)*0.5;   // le bord rayonne (le grand halo est fait autour, en CSS : le décor reste lisible)
+    // lumineuse : elle s'éclaire de l'intérieur, dans la couleur de son coloris (sans taches), et respire doucement
+    float pulse=0.85+0.15*sin(uTime*1.6);
+    col+=uC2*0.18*pulse;                                                     // une lueur intérieure, de sa couleur
+    col+=mix(uC2,vec3(1.0),0.25)*0.5*pow(1.0-n.z,2.2)*pulse;                 // le bord rayonne (le grand halo est fait autour, en CSS)   // le bord rayonne (le grand halo est fait autour, en CSS : le décor reste lisible)
   }
   col*=mix(0.8,1.0,smoothstep(0.0,0.35,n.z));
   // les blancs s'arrondissent au lieu d'être coupés net (sinon un anneau dur autour des reflets)
@@ -3973,7 +4049,11 @@ function mImg(s,size=160,px,alt){
   return `<img src="${marbleURL(s,size)}" alt="${alt===undefined?esc(specName(s)):alt}" width="${w}" height="${w}"${lum?" data-lum":s.shiny===2?" data-gold":""} style="width:${w}px;height:auto;aspect-ratio:1${lum?`;--lc:${PALETTES[s.pal][2]}`:""}">`;
 }
 // bille "fantôme" pour les emplacements vides
-const ghost = (type,family) => ({seed:hash(type+family), type, family, pal:23, shiny:0});
+// La bille d'exemple : partout où on illustre une bille qui n'est pas dans ta boîte, c'est un Œil-de-chat Azur
+// (et quand un décor précis est demandé, ce décor en Azur) : jamais de décor ni de coloris au hasard.
+const EX_PAL = PALETTES.findIndex(P=>P[0]==="Azur"), EX_FAM = 0;
+const exSpec = (type, family=EX_FAM, key="") => ({seed:hash("exemple"+type+family+key), type, family, pal:EX_PAL, shiny:0});
+const ghost = (type,family) => ({seed:hash(type+family), type, family, pal:EX_PAL, shiny:0});
 
 /* =====================================================================
    ÉTAT (sauvegardé dans le navigateur)
@@ -4022,14 +4102,14 @@ S.specs.forEach(s=>{ if(isBeta(s)) s.pal = BETA.palOf(s.type) });
 delete S.level; delete S.xp;
 S.stats = Object.assign({pot:0, tic:0, castle:0, bonus:0, race:0, casse:0, casseScore:0, best3:{}}, S.stats||{});
 }
-{ let raw = null; try { raw = JSON.parse(localStorage.getItem(STORE_KEY)) } catch(e){} adoptState(raw) }
+{ let raw = null; try { raw = JSON.parse(localStorage.getItem(STORE_KEY)) } catch(e){} adoptState(raw); if(CLOUD_UID && !raw) S.name = "" }
 function save(){ try{ localStorage.setItem(STORE_KEY, JSON.stringify(S)) }catch(e){} cloudQueue() }
 
 const ui = {view:"accueil", tab:"album", type:"all", hideMissing:true};
 
 const specById = id => S.specs.find(s=>s.id===id);
 // tant qu'on n'a aucune bille, les jeux se jouent avec une bille prêtée (elle n'est pas dans la boîte)
-const LOANER = {id:null, seed:hash("pretee"), type:"bille", family:0, pal:5, shiny:0, at:0, loan:true};
+const LOANER = {id:null, seed:hash("pretee"), type:"bille", family:EX_FAM, pal:EX_PAL, shiny:0, at:0, loan:true};
 const ownActive = () => specById(S.active) || [...S.specs].sort(tierSort)[0];
 const activeSpec = () => ownActive() || LOANER;
 // les cases de l'album (une taille × un décor) ; les billes d'événement n'en font pas partie (elles ont leur onglet Événements)
@@ -4243,6 +4323,7 @@ const BAG_LOOK = {
   premium:  {tex:"velours",cord:"#E8B53A", cordW:5,   bead:"#FFD86B", patch:"round",  paper:"#FFF6E2", ring:"#E8B53A"},
   collector:{tex:"satin",  cord:"#B8322A", cordW:5.5, bead:"#FFD86B", patch:"star",   paper:"#FFF3C4", tassel:true, sparks:true},
   pirate:   {tex:"velours",cord:"#C9A24A", cordW:5.5, bead:"#E8C25A", patch:"skull",  paper:"#F1E9D2", tassel:true},
+  "pirate-premium":{tex:"satin",cord:"#E8B53A", cordW:5.5, bead:"#FFD86B", patch:"skull", paper:"#F6E7C0", tassel:true, sparks:true, ring:"#E8B53A"},
 };
 // petite bille en verre dessinée en SVG (dans le goulot du sac, ou par terre à côté)
 function dotMarble(x,y,r,col,id,cls=""){
@@ -4324,6 +4405,7 @@ function editionOf(s){
   const r = rng((s.seed ^ 0x5EED)>>>0)();
   return 1 + Math.floor(chanceOf(s)*3*bags*(.6+.8*r));
 }
+// pendant l'ouverture, on n'affiche pas « Première mondiale » (la fiche de la bille le montre)
 const edLabel = n => n===1 ? "Première mondiale" : n ? `n° ${fmt(n)}` : "";
 // d'où vient une bille (affiché dans sa fiche)
 const SRC_LABEL = {gratuit:"Dans un Sac gratuit", classique:"Dans un Sac Classique", premium:"Dans un Sac Premium", collector:"Dans un Sac Collector",
@@ -4942,7 +5024,7 @@ function showBeta(fresh){
 // la Grande Course dans la barre du haut : un point rouge tant qu'on n'est pas inscrit pour la prochaine course
 // le décompte court à côté du drapeau : « 6 h 12 », puis « 12 min », puis « 0:45 »
 function gcShort(ms){ ms = Math.max(0,ms); const h = Math.floor(ms/36e5), m = Math.floor(ms/6e4)%60, s = Math.floor(ms/1e3)%60;
-  return h ? `${h} h ${String(m).padStart(2,"0")}` : m>=10 ? `${m} min` : `${m}:${String(s).padStart(2,"0")}` }
+  return h ? `${h} h ${String(m).padStart(2,"0")} min` : m>=10 ? `${m} min` : `${m}:${String(s).padStart(2,"0")}` }
 function renderGcBtn(){
   const b = document.getElementById("gc-btn"); if(!b) return;
   const reg = !!gc.etat?.inscrit, N = gcNext();
@@ -4957,10 +5039,8 @@ function renderTop(){
   if(!db.querySelector("svg")) db.insertAdjacentHTML("afterbegin", ic("gift",21));
   db.classList.toggle("ready", dailyReady());
   document.getElementById("top-name").textContent = S.name;
-  document.getElementById("top-level").textContent = S.title;
   const a = ownActive();
   document.getElementById("top-avatar").innerHTML = avatarHTML(a,120,40);
-  document.getElementById("top-ring").style.setProperty("--p", Math.max(1.5, albumFound().size/ALBUM_TOTAL*100));
   if(!document.getElementById("prof-pop").hidden){ renderProfPop(); renderThemeBtn(); renderSoundBtn() }
 }
 // Petit tableau de bord du joueur, sous son profil en haut à droite
@@ -5162,7 +5242,8 @@ function hcDots(){ document.querySelectorAll(".hc-dots button").forEach((b,k)=>b
 setInterval(()=>{ if(ui.view!=="accueil" || Date.now() < hc.pause || hc.hover || document.hidden || matchMedia("(prefers-reduced-motion:reduce)").matches) return;
   if(document.getElementById("hc-track")) hcGo(hc.i+1) }, HC_EVERY);
 
-const SHOWCASE = TK.map((t,i)=>({seed:hash("vitrine"+t), type:t, family:[1,0,7,2,6,0][i], pal:[4,0,12,5,1,13][i], shiny:0}));
+const SHOWCASE = TK.map(t=>exSpec(t));   // une bille d'exemple par taille (tarifs, fusion, chances…)
+const LOGO_SPEC = {seed:hash("vitrine"+TK[1]), type:TK[1], family:0, pal:0, shiny:0};   // la bille du logo et de l'onglet
 
 function viewHome(){
   return `<div class="hm">
@@ -5212,7 +5293,7 @@ function drawExplainer(){
       <div class="draw-step"><span class="n">1</span><b>La taille</b><small>La rareté principale. Les chances sont sur chaque sac, plus haut.</small></div>
       <div class="draw-step"><span class="n">2</span><b>Le décor</b><small>${N_DECORS} décors rangés en ${rows.length} paniers, du plus courant au plus rare (ci-dessous).</small></div>
       <div class="draw-step"><span class="n">3</span><b>Le coloris</b><small>${BASE_PALS} coloris, tous aussi fréquents : 1 chance sur ${BASE_PALS} chacun.</small></div>
-      <div class="draw-step"><span class="n">4</span><b>Shiny ou pas</b><small>${oneIn(SHINY_RATE)} billes, 2 fois plus dans le Sac Premium, 5 fois plus dans le Collector.</small></div>
+      <div class="draw-step"><span class="n">4</span><b>Shiny ou pas</b><small>${oneIn(SHINY_RATE)} billes dans le sac gratuit, 2 fois plus dans le Classique, 4 fois plus dans le Premium, 10 fois plus dans le Collector.</small></div>
     </div>
     <div class="dec-table">
       <div class="dec-head"><span>Panier de décors</span><span>Décors</span><span>Un décor précis</span><span>Tout le panier</span></div>
@@ -5318,7 +5399,7 @@ function nextGoals(){
   // une case presque complète
   const cases = [...slotsOwned()].map(([k,l])=>({k,l,got:casePals(l)})).filter(c=>c.got<BASE_PALS).sort((a,b)=>b.got-a.got);
   if(cases[0] && cases[0].got>=2){ const c=cases[0], x=coverOf(c.l);
-    goals.push({icon:"layers", img:x, title:`Complète ta case ${FAMILIES[x.family].name} · ${TYPES[x.type].label}`, text:`Plus que ${BASE_PALS-c.got} coloris pour la case complète.`, p:c.got, goal:BASE_PALS, act:`data-action="sheet" data-type="${x.type}" data-fam="${x.family}"`, cta:"Voir les coloris"}) }
+    goals.push({icon:"layers", img:exSpec(x.type, x.family, "objectif"), title:`Complète ta case ${FAMILIES[x.family].name} · ${TYPES[x.type].label}`, text:`Plus que ${BASE_PALS-c.got} coloris pour la case complète.`, p:c.got, goal:BASE_PALS, act:`data-action="sheet" data-type="${x.type}" data-fam="${x.family}"`, cta:"Voir les coloris"}) }
   // la série la plus avancée
   const se = SERIES.filter(x=>!(S.seriesDone||[]).includes(x.id)).map(x=>({x,p:seriesProg(x)})).sort((a,b)=>b.p/b.x.items.length-a.p/a.x.items.length)[0];
   if(se){ const left=se.x.items.length-se.p;
@@ -5365,7 +5446,7 @@ function chalRow(c){
 function seriesView(){
   const done = S.seriesDone||[], snap = S.seriesSnap||{};
   // une case vide montre ce qu'il faut trouver (en fantôme) ; une case d'une série terminée dont la bille est partie garde son souvenir
-  const ghostOf = (se,it,i) => ({seed:hash("serie"+se.id+i), type:it.type||it.min||"bille", family:it.fam?FAM_ID(it.fam):it.rar!=null?FAM_ORDER.find(f=>FAMILIES[f].rar===it.rar):4, pal:it.pal?PAL_ID(it.pal):23, shiny:0});
+  const ghostOf = (se,it,i) => ({seed:hash("serie"+se.id+i), type:it.type||it.min||"bille", family:it.fam?FAM_ID(it.fam):it.rar!=null?FAM_ORDER.find(f=>FAMILIES[f].rar===it.rar):EX_FAM, pal:it.pal?PAL_ID(it.pal):EX_PAL, shiny:0});
   const list = SERIES.map(se=>{ const fill = seriesFill(se), n = fill.filter(Boolean).length, got = done.includes(se.id);
     return {se, fill, n, got, ready: n>=se.items.length && !got} });
   list.sort((a,b)=>(b.ready-a.ready) || (a.got-b.got) || b.n/b.se.items.length - a.n/a.se.items.length);
@@ -5428,7 +5509,13 @@ function viewCollection(){
     ["secret","Secrètes","lock",x=>SECRETS[x.secret]],
   ];
   const showFn = (SHOW.find(o=>o[0]===show)||SHOW[0])[3];
-  const filters = ui.tab==="defis"||ui.tab==="series" ? "" : `<div class="col-filters">
+  // recherche d'un décor (et d'un coloris dans « Mes billes ») en texte, sans accents ni majuscules
+  const qw = fold(ui.q||"").trim().split(/\s+/).filter(Boolean);
+  const qOK = txt => !qw.length || qw.every(w=>fold(txt).includes(w));
+  const filters = ui.tab==="defis"||ui.tab==="series" ? "" : `<div class="col-search"><span class="cs-ic">${ic("search",17)}</span>
+    <input type="search" id="col-q" placeholder="${ui.tab==="billes"?"Chercher un décor ou un coloris : Galaxie, Azur…":"Chercher un décor : Galaxie, Opaline…"}" value="${esc(ui.q||"")}" aria-label="Chercher un décor" autocomplete="off" spellcheck="false">
+    ${ui.q?`<button class="cs-x" data-action="col-q-clear" aria-label="Effacer la recherche">×</button>`:""}</div>
+  <div class="col-filters">
     <div class="seg" role="group" aria-label="Afficher"><span class="f-lbl">Afficher</span>
       ${SHOW.map(([k,label,icon,f])=>`<button class="chip" data-action="show" data-show="${k}" aria-pressed="${show===k}">${k==="shiny"?SPARK:icon?ic(icon,14):""}${label}${f?` <span class="n">${k==="secret"?`${S.specs.filter(x=>SECRETS[x.secret]).length}/${Object.keys(SECRETS).length}`:count(f)}</span>`:""}</button>`).join("")}
     </div>
@@ -5453,6 +5540,7 @@ function viewCollection(){
   // une case pas encore trouvée n'apparaît qu'avec le filtre « Événement »
   const evCard = (t,f) => {
     const F = FAMILIES[f], E = EVENTS[F.event], list = S.specs.filter(x=>x.type===t && x.family===f);
+    if(!qOK(F.name)) return "";
     if(showFn && show!=="event" && !list.some(showFn)) return "";
     if(!list.length){ if(show!=="event") return "";
       return `<button class="m-card missing" data-action="tab" data-tab="events" aria-label="${TYPES[t].label} ${F.name} : pas encore trouvée"><span class="ball">${mImg(ghost(t,f),160,Math.round(84*scaleOf(t)+6),"")}</span><b>${F.name}</b><span class="rar" style="--rar:${E.color}"><i></i>Événement</span><small>${eventLive(E)?"À trouver":"Événement terminé"}</small></button>` }
@@ -5466,6 +5554,7 @@ function viewCollection(){
   // les décors de saison : une case par saison, à la fin de chaque taille ; celle du mois en cours s'affiche « à gagner » avec le filtre Saison
   const seCard = (t,f) => {
     const F = FAMILIES[f], se = SEASONS[F.season], col = se.pal[2], list = S.specs.filter(x=>x.type===t && x.family===f);
+    if(!qOK(F.name)) return "";
     if(showFn && show!=="season" && !list.some(showFn)) return "";
     if(!list.length){ if(show!=="season" || seasonNow().m!==F.season) return "";
       return `<button class="m-card missing" data-action="nav" data-view="passe" aria-label="${TYPES[t].label} ${F.name} : à gagner dans le passe"><span class="ball">${mImg(ghost(t,f),160,Math.round(84*scaleOf(t)+6),"")}</span><b>${F.name}</b><span class="rar" style="--rar:${col}"><i></i>Saison</span><small>Dans le passe</small></button>` }
@@ -5482,8 +5571,9 @@ function viewCollection(){
       const have = DECOR_IDS.filter(f=>slots.has(t+"|"+f)).length;
       const cards = FAM_ORDER.map(f=>{
         const F = FAMILIES[f], list = slots.get(t+"|"+f);
+        if(!qOK(F.name)) return "";
         if(showFn && !(list||[]).some(showFn)) return "";
-        if(!list){ if(ui.hideMissing) return ""; return `<button class="m-card missing" data-action="missing" data-type="${t}" data-fam="${f}" aria-label="${TYPES[t].label} ${F.name} : pas encore trouvée"><span class="ball">${mImg(ghost(t,f),160,Math.round(84*scaleOf(t)+6),"")}</span><b>${F.name}</b>${rarTag(f)}<small>À trouver</small></button>` }
+        if(!list){ if(ui.hideMissing && !qw.length) return ""; return `<button class="m-card missing" data-action="missing" data-type="${t}" data-fam="${f}" aria-label="${TYPES[t].label} ${F.name} : pas encore trouvée"><span class="ball">${mImg(ghost(t,f),160,Math.round(84*scaleOf(t)+6),"")}</span><b>${F.name}</b>${rarTag(f)}<small>À trouver</small></button>` }
         const best = coverOf(list), got = casePals(list), full = got===BASE_PALS;
         const isNew = list.some(s=>S.unseen.includes(s.id));
         return `<button class="m-card case${best.shiny?" is-shiny":""}${full?" full":""}" data-action="sheet" data-type="${t}" data-fam="${f}" aria-label="${TYPES[t].label} ${F.name} : ${got} coloris sur ${BASE_PALS}"${isNew?` data-unseen="${list.filter(s=>S.unseen.includes(s.id)).map(s=>s.id).join(",")}"`:""}>
@@ -5496,7 +5586,7 @@ function viewCollection(){
         <div class="type-head">${typePill(t,true)}<h2>${TYPES[t].label}</h2><span class="mm">${TYPES[t].mm} mm</span>
           <span class="prog">${have} / ${N_DECORS} cases<span class="bar"><i class="${have===N_DECORS?"done":""}" style="width:${have/N_DECORS*100}%"></i></span></span>
           <p class="desc">${TYPES[t].desc}</p></div>
-        ${cards.trim()?`<div class="card-grid">${cards}</div>`:`<p class="empty">${show==="all"?`Aucune ${TYPES[t].label.toLowerCase()} pour l'instant.`:"Rien avec ce filtre dans cette taille."}</p>`}
+        ${cards.trim()?`<div class="card-grid">${cards}</div>`:`<p class="empty">${qw.length?"Aucun décor ne correspond à ta recherche dans cette taille.":show==="all"?`Aucune ${TYPES[t].label.toLowerCase()} pour l'instant.`:"Rien avec ce filtre dans cette taille."}</p>`}
       </section>`;
     }).join("");
     if(show==="dups" && recyclableDups().length) body = dupsBar() + body;
@@ -5506,7 +5596,7 @@ function viewCollection(){
   } else if(ui.tab!=="defis" && show==="secret"){
     body = secretGrid();
   } else if(ui.tab==="billes"){
-    let list = S.specs.filter(x=>inType(x) && (!showFn || showFn(x)));
+    let list = S.specs.filter(x=>inType(x) && (!showFn || showFn(x)) && qOK(specName(x)+" "+FAMILIES[x.family].name));
     const srt = show==="dups" ? "slot" : ui.sort||"recent";
     const by = {recent:(a,b)=>b.at-a.at, size:(a,b)=>tierSort(a,b), decor:(a,b)=>FAMILIES[a.family].name.localeCompare(FAMILIES[b.family].name,"fr")||tierSort(a,b),
       rar:(a,b)=>FAMILIES[b.family].rar-FAMILIES[a.family].rar || FAMILIES[a.family].name.localeCompare(FAMILIES[b.family].name,"fr") || tierSort(a,b),
@@ -5517,7 +5607,7 @@ function viewCollection(){
     if(show!=="dups"){ const g = new Map(); list.forEach(x=>{ const k=colorKey(x); if(!g.has(k)) g.set(k,[]); g.get(k).push(x) });
       list = [...g.values()].map(l=>{ const b=[...l].sort(tierSort)[0]; grps.set(b.id,l); return b }) }
     list.sort(by[srt]);
-    body = (show==="dups" && recyclableDups().length ? dupsBar() : "") + (list.length ? `<div class="card-grid">${list.map(x=>ballCard(x, grps.get(x.id))).join("")}</div>` : `<p class="empty">${EMPTY[show]||EMPTY.all}</p>`);
+    body = (show==="dups" && recyclableDups().length ? dupsBar() : "") + (list.length ? `<div class="card-grid">${list.map(x=>ballCard(x, grps.get(x.id))).join("")}</div>` : `<p class="empty">${qw.length?"Aucune bille ne correspond à ta recherche.":EMPTY[show]||EMPTY.all}</p>`);
   }
 
   const sizeBtn = (t,i) => { const h = DECOR_IDS.filter(f=>slots.has(t+"|"+f)).length, own = S.specs.filter(s=>s.type===t).sort(tierSort)[0];
@@ -5735,7 +5825,49 @@ function viewCraft(){
         <div class="cf-step"><button data-action="craft-rm" data-k="${k}" ${inn?"":"disabled"} aria-label="En retirer une">−</button><b>${inn}</b><button data-action="craft-add" data-k="${k}" ${inn<l.length&&!full?"":"disabled"} aria-label="En ajouter une">+</button></div></div>` }).join("")}</div>`
       : `<p class="empty">Aucune bille de cette taille à fusionner pour l'instant.</p>`}
     <p class="meta" style="margin-top:12px">Les shiny, ta bille active, ta vitrine et les billes de saison ne peuvent pas être fusionnées.</p>
+  </section>
+  ${evFusionPanel()}`;
+}
+// Fusion d'événement : des billes d'événement d'une même taille et d'un même coloris donnent la taille au-dessus,
+// dans le même décor et le même coloris (le seul chemin réaliste vers un Mammouth Pirate). Même règle dans serveur.sql (fusion_evenement).
+const FUSION_EV = [3,3,2,2,2];
+const evPool = () => S.specs.filter(s=>eventOf(s) && !s.shiny && !s.secret && s.id!==S.active && !S.vitrine.includes(s.id) && (!srvOn() || s.srv));
+function evFusionPanel(){
+  const pool = evPool(); if(!pool.length && !liveEvents().length) return "";
+  const groups = new Map(); pool.forEach(s=>{ const k = `${s.type}|${s.family}|${s.pal}`; if(!groups.has(k)) groups.set(k,[]); groups.get(k).push(s) });
+  const list = [...groups.values()].filter(l=>TIDX[l[0].type]<TK.length-1).sort((a,b)=>TIDX[b[0].type]-TIDX[a[0].type] || b.length-a.length);
+  const card = l => { const x = l[0], t = TIDX[x.type], n = FUSION_EV[t], ok = l.length>=n, nx = {...x, type:TK[t+1], seed:hash("evf"+x.family+x.pal+t)};
+    return `<div class="evf-card${ok?" ok":""}" style="${tstyle(x.type)}">
+      <span class="evf-balls">${mImg(x,120,Math.round(26*scaleOf(x.type)+18),"")}<em>×${n}</em>${ic("arrow",14)}${mImg(nx,140,Math.round(26*scaleOf(nx.type)+22),"")}</span>
+      <b>${esc(specName(x))}</b><small>${l.length} / ${n} ${TYPES[x.type].pl} · donne 1 ${TYPES[nx.type].label}</small>
+      <button class="btn ${ok?"btn-yellow":"btn-ghost"} btn-sm" data-action="evf-go" data-k="${x.type}|${x.family}|${x.pal}" ${ok?"":"disabled"}>${ic("flask",15)} Fusionner</button></div>` };
+  return `<section class="panel evf">
+    <div class="panel-head"><h2>${ic("flag",18)} Fusion d'événement</h2><span class="sample-tag">Même décor, même coloris</span></div>
+    <p class="cour-lead">Des billes d'événement d'une même taille et d'un même coloris donnent la taille au-dessus, <b>dans ce coloris</b> : ${TK.slice(0,-1).map((t,i)=>`${FUSION_EV[i]} ${TYPES[t].pl}`).join(", ")}. C'est le chemin vers les Mammouths Pirate ! Pense aussi au troc et au marché pour réunir un même coloris.</p>
+    ${list.length ? `<div class="evf-grid">${list.map(card).join("")}</div>` : `<p class="empty">Pas encore de bille d'événement à fusionner. Elles se trouvent dans les sacs d'événement.</p>`}
   </section>`;
+}
+function evFuse(key){
+  const [type, f, pal] = key.split("|"), t = TIDX[type], n = FUSION_EV[t];
+  const ids = evPool().filter(s=>s.type===type && s.family===+f && s.pal===+pal).sort((a,b)=>a.at-b.at).slice(0,n).map(s=>s.id);
+  if(ids.length<n) return;
+  const x = specById(ids[0]);
+  ask({title:`Fusionner ${n} ${TYPES[type].pl} ${FAMILIES[+f].name} ?`, balls:ids.map(specById), ok:"Fusionner",
+       text:`Elles donnent 1 <b>${TYPES[TK[t+1]].label} ${esc(specName(x))}</b>, dans le même coloris. Les ${n} billes disparaissent.`}).then(ok=>{
+    if(!ok) return;
+    const inputs = ids.map(specById), gone = new Set(ids);
+    const done = out => { S.specs.push(out); S.unseen.push(out.id); if(tierOf(out)>=BIG || out.shiny) logFind(out);
+      S.crafts = (S.crafts||0)+1; save(); questEvent("craft"); showCraft(inputs, out, passXP(PASS_XP.craft)) };
+    S.specs = S.specs.filter(s=>!gone.has(s.id)); S.unseen = S.unseen.filter(id=>!gone.has(id));
+    if(srvOn()){
+      if(eco.busy) return; eco.busy = true; gone.forEach(id=>sync.known.delete(id));
+      srv(()=>Cloud.eco.fuseEv(ids)).then(r=>{ applyEco(r.eco); done(srvAdopt([r.bille])[0]) },
+        e=>{ inputs.forEach(y=>{ S.specs.push(y); sync.known.add(y.id) }); srvFail(e); renderView() }).finally(()=>{ eco.busy = false });
+      return;
+    }
+    gone.forEach(id=>sync.why[id]="fusionnee");
+    done(makeSpec(TK[t+1], {family:+f, pal:+pal, shiny:Math.random()<SHINY_RATE*n ? rollShiny() : 0, src:"fusion"}));
+  });
 }
 function showCraft(inputs, out, pxp){
   const ov = document.getElementById("ov"), k = pullScore(out);
@@ -5763,7 +5895,7 @@ function showCraft(inputs, out, pxp){
       <div class="reveal-row"><button class="slot is-open ${k>=BIG?"big":""} ${out.shiny?"shiny":""}" data-action="zoom" data-id="${out.id}" aria-label="Agrandir ${esc(specName(out))}" style="--tc:${scoreCol(k)};${tstyle(out.type)}">
         ${BANNER[k]?`<span class="slot-banner">${BANNER[k]}</span>`:""}
         <div class="slot-ball"><span class="rays"></span>${mImg(out,300,Math.round(150*scaleOf(out.type)),"")}</div>
-        <div class="slot-info"><b>${esc(specName(out))}</b><span style="display:flex;gap:4px;flex-wrap:wrap;justify-content:center">${typePill(out.type,true)}${shinyPill(out)}</span>${tierTag(out)}${k>=BIG&&ed?`<span class="ed-no">${edLabel(ed)}</span>`:""}</div>
+        <div class="slot-info"><b>${esc(specName(out))}</b><span style="display:flex;gap:4px;flex-wrap:wrap;justify-content:center">${typePill(out.type,true)}${shinyPill(out)}</span>${tierTag(out)}${k>=BIG&&ed>1?`<span class="ed-no">${edLabel(ed)}</span>`:""}</div>
       </button></div>
       <div class="ov-actions"><span class="ov-xp" style="flex-basis:100%;justify-content:center">${ic("ticket",18)} +${pxp} XP de saison</span>
         ${craftPool(ui.craft.t).length>=craftN(ui.craft.t)?`<button class="btn btn-yellow" data-action="craft-again">Préparer une autre fusion</button>`:""}
@@ -5940,13 +6072,21 @@ function applyPick(){
   box.querySelector(".pick-none")?.toggleAttribute("hidden", n>0);
 }
 document.addEventListener("input", e=>{ if(e.target.classList?.contains("pick-q")) applyPick() });
+let colQT = 0;
+document.addEventListener("input", e=>{
+  if(e.target.id!=="col-q") return;
+  clearTimeout(colQT); colQT = setTimeout(()=>{
+    ui.q = e.target.value; renderView();
+    const q = document.getElementById("col-q"); if(q){ q.focus(); q.setSelectionRange(q.value.length, q.value.length) }
+  }, 180);
+});
 
 /* =====================================================================
    BILLEPEDIA : tout ce qui existe (formats, décors, shiny, coloris)
    ===================================================================== */
 let pedia = [];   // billes d'exemple affichées, pour l'aperçu 3D
 function pv(s){ pedia.push(s); return pedia.length-1 }
-const PEDIA_PAL = PALETTES.findIndex(P=>P[0]==="Azur");   // le coloris des exemples de la Billepedia
+const PEDIA_PAL = EX_PAL;   // le coloris des exemples de la Billepedia
 function viewPedia(){
   pedia = [];
   const fw = FAM_W.reduce((a,b)=>a+b,0), sw = SHINIES.slice(1).reduce((a,x)=>a+x.w,0);
@@ -5955,7 +6095,7 @@ function viewPedia(){
     const s = {...base, shiny:k}, i = pv(s);
     const pIn = b => b.shiny*SHINIES[k].w/sw;
     return `<button class="sh-tile${k?" is-shiny":""}" data-action="preview" data-k="${i}">${k?shinyPill(s):`<span class="pill" style="${tstyle("calot")}">Normale</span>`}
-      ${mImg(s,240)}<b>${k?SHINIES[k].name:"Sans effet"}</b><small>${k?SHINIES[k].desc:"Le même décor, sans effet spécial."}</small>${k?`<span class="sh-odds"><span>Gratuit, Classique <b>${oneIn(pIn(FREE_BAG))}</b></span><span>Premium${BAGS.some(x=>x.event && x.shiny===BAG_BY.premium.shiny && eventLive(EVENTS[x.event])) ? ", "+BAGS.filter(x=>x.event && x.shiny===BAG_BY.premium.shiny && eventLive(EVENTS[x.event])).map(x=>x.name.replace("Sac ","")).join(", ") : ""} <b>${oneIn(pIn(BAG_BY.premium))}</b></span><span>Collector <b>${oneIn(pIn(BAG_BY.collector))}</b></span></span>`:`<small>Presque toutes les billes</small>`}</button>`}).join("");
+      ${mImg(s,240)}<b>${k?SHINIES[k].name:"Sans effet"}</b><small>${k?SHINIES[k].desc:"Le même décor, sans effet spécial."}</small>${k?`<span class="sh-odds">${[...new Set(BAGS.filter(x=>!x.event || eventLive(EVENTS[x.event])).map(x=>x.shiny))].sort((a,b)=>a-b).map(rate=>`<span>${BAGS.filter(x=>x.shiny===rate && (!x.event || eventLive(EVENTS[x.event]))).map(x=>x.price?x.name.replace("Sac ",""):"Gratuit").join(", ")} <b>${oneIn(rate*SHINIES[k].w/sw)}</b></span>`).join("")}</span>`:`<small>Presque toutes les billes</small>`}</button>`}).join("");
   // décors regroupés par rareté ; pour chacun, les 6 tailles dans l'ordre (trouvées en couleur, les autres grisées)
   const owned = slotsOwned();
   const SHORT = {mini:"Mini", bille:"Bille", chinoise:"Chinoise", calot:"Calot", boulet:"Boulet", mammouth:"Mammouth"};
@@ -6173,7 +6313,6 @@ async function openBag(bagId, gift){
     const ok = await ask({title:`Acheter le ${bag.name} ?`, text:`${bag.n} billes pour <b>${COIN}${fmt(bag.price)}</b>. Il te restera ${fmt(S.jetons-bag.price)} ${CUR.many}.`, ok:"Acheter et ouvrir"}).finally(()=>openBag.asking = false);
     if(!ok) return;
     if(S.jetons < bag.price){ toast(`Il te manque ${fmt(bag.price-S.jetons)} ${CUR.many} pour ce sac.`); return }
-    if(ovState) closeOv();   // « Rouvrir un sac » : on repart d'une ouverture neuve
   }
   let pulls;
   if(srvOn()){   // le serveur encaisse et tire les billes
@@ -6191,6 +6330,9 @@ async function openBag(bagId, gift){
     pulls = pullBag(bag, gift);
     S.pity = pulls.some(s=>tierOf(s)>=BIG) ? 0 : (S.pity||0)+1;
   }
+  // « Rouvrir un sac » : on ne ferme l'ouverture précédente qu'une fois les billes reçues du serveur,
+  // pour enchaîner directement sans repasser par l'étagère des sacs
+  if(ovState && !gift && bag.price>0) closeOv();
   S.bags = (S.bags||0)+1;
   const ST = S.stats;   // au premier passage, on part de ce qu'il y a dans la boîte
   ST.pulled ??= S.specs.length; ST.shinyFound ??= S.specs.filter(x=>x.shiny).length;
@@ -6408,7 +6550,7 @@ function showReveal(){
         return `<button class="slot${wish?" wished":""} ${big?"big":""} ${s.shiny?"shiny":""}" style="--d:${i*130}ms;--tc:${shade(ovState.bag.color,.2)};${tstyle(s.type)}" data-tc="${scoreCol(k)}" data-action="reveal" data-i="${i}" aria-label="Découvrir la bille ${i+1}">
         ${wish?`<span class="slot-banner">Ta liste !</span>`:s.secret?`<span class="slot-banner">Secrète !</span>`:BANNER[k]?`<span class="slot-banner${k<2?" low":""}">${BANNER[k]}</span>`:""}
         <div class="slot-ball"><span class="rays"></span><span class="ball-shadow"></span><span class="orb"><span class="orb-spin"><i>?</i></span></span>${mImg(s,300,Math.round(150*scaleOf(s.type)),"")}</div>
-        <div class="slot-info"><b>${esc(specName(s))}</b><span style="display:flex;gap:4px;flex-wrap:wrap;justify-content:center">${wish||s.secret?typePill(s.type,true):""}${shinyPill(s)}${edPill(s)}</span>${tierTag(s)}${k>=BIG&&editionOf(s)?`<span class="ed-no">${edLabel(editionOf(s))}</span>`:""}${eventOf(s)?`<span class="new">${evNew?`Nouvelle bille ${esc(FAMILIES[s.family].name)} !`:`${esc(FAMILIES[s.family].name)} · déjà dans ta boîte`}</span>`:isNew?`<span class="new">Nouvelle case !</span>`:newColor?`<span class="new">Nouveau coloris</span>`:`<span class="dup">Déjà dans ta boîte</span>`}${decStamp(s)}</div>
+        <div class="slot-info"><b>${esc(specName(s))}</b><span style="display:flex;gap:4px;flex-wrap:wrap;justify-content:center">${wish||s.secret?typePill(s.type,true):""}${shinyPill(s)}${edPill(s)}</span>${tierTag(s)}${k>=BIG&&editionOf(s)>1?`<span class="ed-no">${edLabel(editionOf(s))}</span>`:""}${eventOf(s)?`<span class="new">${evNew?`Nouvelle bille ${esc(FAMILIES[s.family].name)} !`:`${esc(FAMILIES[s.family].name)} · déjà dans ta boîte`}</span>`:isNew?`<span class="new">Nouvelle case !</span>`:newColor?`<span class="new">Nouveau coloris</span>`:`<span class="dup">Déjà dans ta boîte</span>`}${decStamp(s)}</div>
       </button>`}).join("")}
     </div>
     <div class="ov-actions" id="ov-actions">
@@ -6934,10 +7076,18 @@ function viewGames(){
     <div class="gh-txt"><span class="gh-kick">${ic("gift",14)} Tes parties du jour</span>
       <h2>${left ? `${left} partie${left>1?"s":""} à jouer aujourd'hui` : "Tout est joué : bravo !"}</h2>
       <p>${won ? `Déjà <b>${fmt(won)} ${CUR.many}</b> gagnés aux jeux aujourd'hui.` : `Jusqu'à <b>${fmt(maxAll)} ${CUR.many}</b> à gagner chaque jour.`} ${left ? "Prends ton temps : chaque jeu ne se joue qu'une fois." : "Reviens demain pour de nouvelles parties !"}</p>
-      <span class="gh-bonus${P.bonus?" got":""}" style="--bc:${BAG_BY[GAMES_BONUS].color}">${ic("bag",16)} ${P.bonus ? `${BAG_BY[GAMES_BONUS].name} gagné aujourd'hui !` : `Les 6 jeux faits : un ${BAG_BY[GAMES_BONUS].name} offert`}</span></div>
-    <div class="gh-side">
-      <div class="gh-dots">${keys.map(k=>`<button class="gh-dot${isDone(k)?" done":""}" data-action="nav" data-view="${k}" title="${k==="tir"?"Le Tir":DAY_GAMES[k].title}${isDone(k)?" : joué":""}">${ic(GAME_ICON[k],20)}${isDone(k)?`<span class="ok">${ic("check",10,3.4)}</span>`:""}</button>`).join("")}</div>
-      <small>${ic("clock",13)} Nouvelles parties dans <b data-quest-timer>${untilMidnight()}</b></small>
+</div>
+    <small class="gh-time">${ic("clock",13)} Nouvelles parties dans <b data-quest-timer>${untilMidnight()}</b></small>
+    <div class="gh-board" role="list">
+      ${keys.map(k=>{ const d = isDone(k), g = k==="tir" ? null : dayGame(k), live = g && !g.done, name = k==="tir" ? "Le Tir" : DAY_GAMES[k].title.replace(/^La Course sur la plage$/,"La Course");
+        const gain = k==="tir" ? (d ? "Réussi" : `${COIN}jusqu'à 100`) : d ? `${COIN}+${fmt(g.rew||0)}` : `${COIN}jusqu'à ${DAY_GAMES[k].max}`;
+        return `<button class="gh-cell${d?" done":live?" live":""}" role="listitem" data-action="nav" data-view="${k}" title="${name}">
+          ${d?`<span class="ok">${ic("check",11,3.4)}</span>`:""}<span class="gc-ic">${ic(GAME_ICON[k],22)}</span><b>${name}</b><small>${live?"À finir":gain}</small></button>` }).join("")}
+      <span class="gh-plus" aria-hidden="true">${ic("chev",18)}</span>
+      <div class="gh-cell prize${P.bonus?" got":doneN===keys.length?" ready":""}" role="listitem" style="--bc:${BAG_BY[GAMES_BONUS].color}">
+        <span class="gp-bag">${bagSVG(BAG_BY[GAMES_BONUS])}</span><b>${BAG_BY[GAMES_BONUS].name}</b>
+        <small>${P.bonus ? `${ic("check",11,3.4)} Gagné !` : `${doneN} / ${keys.length} jeux finis`}</small>
+        <i class="gp-bar"><i style="width:${doneN/keys.length*100}%"></i></i></div>
     </div>
   </section>
   <button class="panel gc-banner" data-action="nav" data-view="grandecourse"><span class="gcb-flag">${ic("flag",26)}</span>
@@ -7914,7 +8064,7 @@ function gcNext(){
   const d = new Date(); if(d.getHours()*60+d.getMinutes() >= 19*60+59) d.setDate(d.getDate()+1);
   d.setHours(20,0,0,0); return {jour:isoDay(d), depart:d.getTime()};
 }
-function gcLeft(ms){ ms = Math.max(0,ms); const h = Math.floor(ms/36e5), m = Math.floor(ms/6e4)%60, s = Math.floor(ms/1e3)%60; return h ? `${h} h ${String(m).padStart(2,"0")}` : `${m} min ${String(s).padStart(2,"0")} s` }
+function gcLeft(ms){ ms = Math.max(0,ms); const h = Math.floor(ms/36e5), m = Math.floor(ms/6e4)%60, s = Math.floor(ms/1e3)%60; return h ? `${h} h ${String(m).padStart(2,"0")} min` : `${m} min ${String(s).padStart(2,"0")} s` }
 const gcMine = () => { const E = gc.etat; return E?.inscrit ? (E.bille && specById(E.bille)) || null : null };
 const gcPickable = () => S.specs.filter(s=>sync.known?.has(s.id)).sort(tierSort);
 const gcMeIn = R => (R||[]).findIndex(x=>x.joueur && x.joueur===sync.uid);
@@ -8340,13 +8490,18 @@ function gcPhysStep(V, t){
     o.ve += (-k*o.e - 2.2*Math.sqrt(k)*o.ve)*dt; o.e += o.ve*dt*60; o.e = Math.max(-maxE, Math.min(maxE, o.e));
     if(t<0) o.e = Math.min(o.e, 0);
     // sur le côté : un petit vent qui la pousse vers sa ligne préférée, et un peu de hasard
-    const lane = o.lane*w*.55 + Math.sin(t*.4+o.ph)*w*.25;
-    o.vd += ((lane-o.d)*.6 + (r()-.5)*14)*dt; o.vd *= .985;
-    // le plan dit « choc » (anciennes chutes) : elle part en travers et tape le mur
-    if(S0.fall!=null && !o.crash){ o.crash = 1; o.vd = (o.d>=0?1:-1)*(9+r()*4) } if(S0.fall==null) o.crash = 0;
+    // sur le côté, une vraie bille : personne ne la dirige. Elle garde sa lancée et, dans un virage, file vers l'extérieur
+    // (la piste tourne sous elle) jusqu'au mur, où elle rebondit en perdant un peu de vitesse. Les petites bosses du sol la font à peine dévier.
+    const v = Math.max(0, S0.sp-(o.lastSp ?? S0.sp)), a1 = gcAt(T, S0.sp+o.e-12), a2 = gcAt(T, S0.sp+o.e+12);
+    const kn = ((a2.tx-a1.tx)*a1.nx + (a2.ty-a1.ty)*a1.ny)/24;   // courbure du virage, du côté de la normale
+    o.vd += -kn*v*v + .012*v*Math.sin(S0.sp*.031+o.ph)*Math.sin(S0.sp*.013+o.ph*2);   // le sol n'est pas tout à fait plat
+    o.vd *= .994;                                                 // le roulement freine doucement la dérive
+    // le plan dit « choc » (anciennes chutes) : une bosse l'envoie de travers contre le mur
+    if(S0.fall!=null && !o.crash){ o.crash = 1; o.vd = (o.d>=0?1:-1)*(5+r()*3) } if(S0.fall==null) o.crash = 0;
     o.d += o.vd*dt*60;
-    if(Math.abs(o.d)>lim){ const sp = Math.abs(o.vd); o.d = Math.sign(o.d)*lim; o.vd = -o.vd*.72;
-      if(sp>2.5 && t>0){ o.hit = Math.min(1, sp/8); o.wallFx = 1 } }
+    if(Math.abs(o.d)>lim){ const sp = Math.abs(o.vd); o.d = Math.sign(o.d)*lim; o.vd = -o.vd*.55;
+      o.ve -= Math.min(2, sp*.25);                                 // le choc la ralentit un peu (le ressort du plan la ramène ensuite)
+      if(sp>1.5 && t>0){ o.hit = Math.min(1, sp/6); o.wallFx = 1 } }
   });
   // les champignons
   R.forEach(o=>{ if(t>=o.fin) return; const s = gcPosS(o, st[o.i]); V.ph.bd.forEach(b=>{ const ds = s-b.s, dd = o.d-b.d, d = Math.hypot(ds,dd), m = o.r+b.r;
@@ -8734,7 +8889,7 @@ const COUR_ERR = {inconnu:"Personne ne s'appelle comme ça dans la cour.", soi_m
   deja_ami:"Vous êtes déjà copains.", trop_amis:"Tu as déjà 200 copains !", trop_demandes:"Tu as déjà beaucoup de demandes en attente.",
   plus_de_demande:"Cette demande n'existe plus.", pas_ami:"Vous n'êtes pas (ou plus) copains.", bille_indisponible:"Une de ces billes n'est plus disponible.",
   troc_invalide:"Ce troc n'est pas possible.", trop_trocs:"Tu as déjà 20 trocs en attente.", plus_de_troc:"Ce troc n'existe plus.",
-  prix_invalide:"Choisis un prix entre 1 et 1 000 000.", duree_invalide:"Choisis une durée : 1, 3 ou 7 jours.", trop_annonces:"Tu as déjà 30 billes en vente.", plus_en_vente:"Cette bille n'est plus en vente.",
+  prix_invalide:"Choisis un prix entre 1 et 1 000 000.", duree_invalide:"Choisis une durée dans la liste.", trop_annonces:"Tu as déjà 30 billes en vente.", plus_en_vente:"Cette bille n'est plus en vente.",
   ta_bille:"C'est ta propre bille !", pas_assez:`Il te manque des ${CUR.many}.`, reseau:"Pas de connexion : réessaie dans un instant.",
   enchere_finie:"Cette enchère est terminée.", deja_en_tete:"Tu as déjà la meilleure offre !", offre_trop_basse:"Quelqu'un a déjà proposé plus : regarde la nouvelle offre minimum.",
   deja_des_offres:"Des joueurs ont déjà enchéri : l'enchère doit aller jusqu'au bout.", en_enchere:"Cette bille est aux enchères avec des offres : elle est promise au gagnant."};
@@ -9164,6 +9319,7 @@ function courMarche(){
       <p class="cour-info" style="margin-top:12px">${ic("quest",16)}<span>Chacun fixe son prix, et le vendeur reçoit tous les ${CUR.many}. Le prix moyen montre ce que les joueurs ont payé ce modèle ces 30 derniers jours.${aucOK?` Aux enchères, la bille part au plus offrant quand le temps est écoulé.`:""}</span></p></section>
     ${ME.length ? `<section class="panel mes-ench"><div class="panel-head"><h3>${ic("gavel",18)} Mes enchères<span class="cnt-n">${ME.length}</span></h3><span class="sample-tag">${ME.filter(a=>a.en_tete).length} en tête</span></div>
       <div class="mk-grid">${ME.map(a=>mkCard(a, true)).join("")}</div></section>` : ""}
+    ${L && L.length ? `<div class="mk-sec-h"><h3>${ic("candy",18)} En vente</h3><span class="sample-tag">${L.length} bille${L.length>1?"s":""}${L.some(a=>a.enchere)?` · dont ${L.filter(a=>a.enchere).length} aux enchères`:""}</span></div>` : ""}
     ${!L ? courWait() : L.length ? `<div class="mk-grid">${L.map(a=>mkCard(a)).join("")}</div>` : `<p class="empty">Rien en vente avec ces filtres pour l'instant.${f.taille||f.decor!=null||f.shiny||f.genre ? `<br><button class="btn btn-ghost btn-sm" style="margin-top:12px" data-action="mk-reset">Effacer les filtres</button>` : ""}</p>`}
     ${mine.length ? `<section class="panel" id="mes-annonces"><div class="panel-head"><h3>Mes annonces<span class="cnt-n">${mine.length}</span></h3>${sold ? `<span class="sample-tag">${sold} vendue${sold>1?"s":""}</span>` : ""}</div>
       <div class="ann-list">${mine.map(ann).join("")}</div></section>` : ""}
@@ -9182,7 +9338,7 @@ function mkCard(a, mesEnch){
         : `<button class="btn btn-orange btn-sm" data-action="mk-encherir" data-id="${a.id}">${ic("gavel",15,2.4)} Enchérir · ${fmt(a.min)}</button>`)
     : S.jetons<a.prix ? `<button class="btn btn-yellow btn-sm" disabled>Il te manque ${fmt(a.prix-S.jetons)}</button>`
     : `<button class="btn btn-yellow btn-sm" data-action="mk-acheter" data-id="${a.id}" data-prix="${a.prix}">Acheter</button>`;
-  return `<div class="mk${a.moi?" mine":""}${E?" ench":""}" style="${tstyle(x.type)}">${rib}${E?`<span class="mk-tag">${ic("gavel",12,2.4)} Enchère</span>`:""}
+  return `<div class="mk${a.moi?" mine":""}${E?" ench":""}" style="${tstyle(x.type)}">${rib}${E?`<span class="mk-tag">${ic("gavel",12,2.4)} Enchère</span>`:`<span class="mk-tag fixe">${ic("candy",12,2.4)} Prix fixe</span>`}
     <span class="mk-vis" data-action="cour-see" data-k="${courSpec(x, a.moi?"Ta bille en vente.":E?`Aux enchères, par ${a.vendeur}.`:`En vente par ${a.vendeur}.`)}">${mImg(x,160,Math.round(44*scaleOf(x.type)+30),"")}</span>
     <div class="mk-info"><b>${esc(specName(x))}</b><span class="pills">${typePill(x.type)}${shinyPill(x)}</span>
     ${E ? `<small class="p-lbl">${a.offre ? "Meilleure offre" : "Mise à prix"}</small>` : ""}
@@ -9217,22 +9373,30 @@ function sellStart(pick){
 }
 function sellView(){
   const X = cour.sell, p = X.pick && (X.list||[]).find(x=>x.id===X.pick), E = X.mode==="enchere" && !cour.absent.encheres;
-  const mode = (m, l, icon) => `<button type="button" data-action="sell-mode" data-m="${m}" aria-pressed="${(X.mode||"fixe")===m}">${ic(icon,16,2.4)} ${l}</button>`;
-  const durees = E ? [[1,"1 heure"],[6,"6 heures"],[24,"1 jour"],[72,"3 jours"]] : [[1,"1 jour"],[3,"3 jours"],[7,"7 jours"]];
-  return `<div class="cour-grid">
-    <section class="panel"><div class="panel-head"><h3>Vendre une bille</h3><button class="see-all" data-action="mk-close">${ic("chevl",14)} Retour</button></div>
-      ${p ? `<div class="sell-card"><span class="sell-vis" style="${tstyle(p.type)}">${mImg(p,200,Math.round(50*scaleOf(p.type)+50),"")}</span>
+  const mode = (m, l, icon, sub) => `<button type="button" data-action="sell-mode" data-m="${m}" aria-pressed="${(X.mode||"fixe")===m}">${ic(icon,18,2.4)}<span><b>${l}</b><small>${sub}</small></span></button>`;
+  // en heures (le prix fixe accepte aussi 3 h et 12 h : supabase/cour.sql, public.vendre)
+  const durees = E ? [[1,"1 heure"],[6,"6 heures"],[24,"1 jour"],[72,"3 jours"]] : [[3,"3 heures"],[12,"12 heures"],[24,"1 jour"],[72,"3 jours"],[168,"7 jours"]];
+  const step = (n, t, on) => `<div class="sell-step${on?" on":""}"><span class="n">${n}</span><h3>${t}</h3></div>`;
+  // étape 1 : la bille (en premier tant qu'aucune n'est choisie) ; étape 2 : la façon de vendre, le prix et la durée
+  const pick = `<section class="panel">${step(1, p ? "Ta bille" : "Choisis la bille à vendre", !p)}
+      <p class="cour-lead" style="margin:0 0 10px">Ta bille active, les billes de départ et les billes secrètes ne peuvent pas être vendues.</p>
+      ${pickList(X.list, "sell", X.pick?[X.pick]:[], X.f)}</section>`;
+  const form = p ? `<section class="panel">${step(2, "Comment tu la vends ?", true)}
+      <div class="sell-card"><span class="sell-vis" style="${tstyle(p.type)}">${mImg(p,200,Math.round(50*scaleOf(p.type)+50),"")}</span>
         <div><h4>${esc(specName(p))}</h4><span class="pills">${typePill(p.type)}${shinyPill(p)}</span><p class="meta">À la Confiserie, elle vaut ${fmt(recycleValue(p))} ${CUR.many}.</p>
-        ${cour.absent.encheres ? "" : `<div class="sell-mode" role="group" aria-label="Façon de vendre">${mode("fixe","Prix fixe","candy")}${mode("enchere","Aux enchères","gavel")}</div>`}
-        <form class="sell-form" id="sell-form"><label class="price-in">${COIN}<input type="number" id="sell-prix" min="1" max="1000000" step="1" placeholder="${E?"Mise à prix":"Ton prix"}" value="${X.prix||""}" aria-label="${E?"Mise à prix":"Prix"} en ${CUR.many}" required><small>${CUR.many}</small></label>
-          <div class="seg" role="radiogroup" aria-label="Durée">${durees.map(([v,l],i)=>`<label><input type="radio" name="sell-duree" value="${v}"${i===(E?2:1)?" checked":""}><span>${l}</span></label>`).join("")}</div>
-          <button class="btn ${E?"btn-orange":"btn-yellow"}" type="submit">${E ? `${ic("gavel",18)} Mettre aux enchères` : `${ic("candy",18)} Mettre en vente`}</button></form></div></div>
-        <p class="cour-info" style="margin-top:16px">${ic("quest",16)}<span>${E
-          ? `Les joueurs font des offres à partir de ta mise à prix. À la fin, la bille part au plus offrant et tu reçois ses ${CUR.many}. Une offre dans la dernière minute rajoute une minute, pour que tout le monde puisse répondre. Si personne n'enchérit, elle reste dans ta boîte. Tu peux l'annuler tant que personne n'a fait d'offre.`
-          : `Si personne ne l'achète avant la fin, elle reste simplement dans ta boîte. Tu peux aussi la retirer quand tu veux. Pendant qu'elle est en vente, elle ne peut pas être troquée.`}</span></p>`
-        : `<p class="cour-lead">Choisis la bille à vendre. Ta bille active, les billes de départ et les billes secrètes ne peuvent pas être vendues.</p>`}
-    </section>
-    <section class="panel">${pickList(X.list, "sell", X.pick?[X.pick]:[], X.f)}</section>
+        ${cour.absent.encheres ? "" : `<div class="sell-mode" role="group" aria-label="Façon de vendre">${mode("fixe","Prix fixe","candy","Le premier qui paie l'emporte")}${mode("enchere","Aux enchères","gavel","Elle part au plus offrant")}</div>`}
+        <form class="sell-form" id="sell-form">
+          <span class="sf-lbl">${E ? "Mise à prix" : "Ton prix"}</span>
+          <label class="price-in">${COIN}<input type="number" id="sell-prix" min="1" max="1000000" step="1" placeholder="0" value="${X.prix||""}" aria-label="${E?"Mise à prix":"Prix"} en ${CUR.many}" required><small>${CUR.many}</small></label>
+          <span class="sf-lbl">Durée de la vente</span>
+          <div class="seg" role="radiogroup" aria-label="Durée">${durees.map(([v,l])=>`<label><input type="radio" name="sell-duree" value="${v}"${v===(E?24:72)?" checked":""}><span>${l}</span></label>`).join("")}</div>
+          <button class="btn btn-xl ${E?"btn-orange":"btn-yellow"}" type="submit">${E ? `${ic("gavel",18)} Mettre aux enchères` : `${ic("candy",18)} Mettre en vente`}</button></form></div></div>
+      <p class="cour-info" style="margin-top:16px">${ic("quest",16)}<span>${E
+        ? `Les joueurs font des offres à partir de ta mise à prix. À la fin, la bille part au plus offrant et tu reçois ses ${CUR.many}. Une offre dans la dernière minute rajoute une minute. Si personne n'enchérit, elle reste dans ta boîte. Tu peux l'annuler tant que personne n'a enchéri.`
+        : `Si personne ne l'achète avant la fin, elle reste dans ta boîte. Tu peux la retirer quand tu veux. Pendant qu'elle est en vente, elle ne peut pas être troquée.`}</span></p></section>` : "";
+  return `<div class="cour-grid">
+    <div class="sell-top"><h2>Vendre une bille</h2><button class="see-all" data-action="mk-close">${ic("chevl",14)} Retour au marché</button></div>
+    ${p ? form + pick : pick}
   </div>`;
 }
 
@@ -9280,6 +9444,7 @@ document.addEventListener("click", e=>{
   switch(t.dataset.action){
     case "nav": closeModal(); openDay(false); if(t.dataset.conftab) ui.confTab=t.dataset.conftab; go(t.dataset.view); break;
     case "conf-tab": ui.confTab=t.dataset.tab; renderView(); break;
+    case "evf-go": evFuse(t.dataset.k); break;
     case "conf-filter": ui.confF=t.dataset.f; renderView(); break;
     case "conf-size": ui.confSize=t.dataset.v; renderView(); break;
     case "conf-cat": ui.confCat=t.dataset.v; renderView(); break;
@@ -9392,6 +9557,7 @@ document.addEventListener("click", e=>{
       ui.tab=t.dataset.tab; closeModal(); if(ui.view!=="collection") go("collection"); else renderView(); break;
     case "ftype": ui.type=t.dataset.type; renderView(); break;
     case "show": ui.show=t.dataset.show; renderView(); break;
+    case "col-q-clear": ui.q = ""; renderView(); document.getElementById("col-q")?.focus(); break;
     case "album-type": ui.tab="album"; ui.type=t.dataset.type; go("collection"); break;
     case "spec": ui.fromSheet = !!t.dataset.fromSheet; openModal(t.dataset.id); break;
     case "sheet": openSheet(t.dataset.type, +t.dataset.fam); break;
@@ -9663,12 +9829,12 @@ document.addEventListener("submit", e=>{
           Cloud.cour.mettreAuxEncheres(X.pick, prix, heures).then(()=>{ toast(`Aux enchères à partir de ${fmt(prix)} ${CUR.many} !`); cour.sell = null; courRefresh("marche","annonces","journal") }, courFail) });
       return;
     }
-    const jours = duree || 3;
+    const heures = duree || 72, jours = heures%24 ? 0 : heures/24;
     const b = (X.list||[]).find(x=>x.id===X.pick), rv = b ? recycleValue(b) : 0;
     ask({title:`Mettre en vente pour ${fmt(prix)} ${CUR.many} ?`, balls:b?[b]:[], ok:"Mettre en vente",
-         text:`${b?esc(courName(b))+", ":""}pendant ${jours} jour${jours>1?"s":""}. Le premier qui l'achète l'emporte, sans te redemander ton avis.${b && prix<rv?`<span class="warn-note">C'est moins que ce qu'en donne la Confiserie (${fmt(rv)} ${CUR.many}).</span>`:""}${b?partWarn(b):""}`})
+         text:`${b?esc(courName(b))+", ":""}pendant ${jours ? `${jours} jour${jours>1?"s":""}` : `${heures} heures`}. Le premier qui l'achète l'emporte, sans te redemander ton avis.${b && prix<rv?`<span class="warn-note">C'est moins que ce qu'en donne la Confiserie (${fmt(rv)} ${CUR.many}).</span>`:""}${b?partWarn(b):""}`})
       .then(ok=>{ if(!ok || cour.sell!==X) return;
-        Cloud.cour.vendre(X.pick, prix, jours).then(()=>{ toast(`En vente pour ${fmt(prix)} ${CUR.many} !`); cour.sell = null; courRefresh("marche","annonces","journal") }, courFail) });
+        Cloud.cour.vendre(X.pick, prix, jours, jours ? 0 : heures).then(()=>{ toast(`En vente pour ${fmt(prix)} ${CUR.many} !`); cour.sell = null; courRefresh("marche","annonces","journal") }, courFail) });
     return;
   }
   if(id!=="name-form") return;
@@ -9859,7 +10025,7 @@ async function cloudStart0(user){
   let cached = null; try{ cached = JSON.parse(localStorage.getItem(STORE_KEY)) }catch(e){}
   const dirty = lsGet(dirtyKey()) === "1";
   let prevKnown = []; try{ prevKnown = JSON.parse(lsGet(knownKey())) || [] }catch(e){}
-  authShow("loading");
+  if(!veilOn()) authShow("loading");
   let P;
   try{ P = await Promise.race([Cloud.pull(user.id), new Promise((_,no)=>setTimeout(()=>no(new Error("délai")), 10000))]) }
   catch(e){
@@ -10216,6 +10382,7 @@ const Captcha = (()=>{
 const field = (id, label, type, extra="") => `<label for="${id}">${label}</label><input id="${id}" name="${id}" type="${type}" ${extra}>`;
 
 function authShow(screen, opts){
+  syncVeil(false);
   auth.screen = screen; if(opts) auth.opts = opts;
   const box = document.getElementById("auth");
   const head = `<img class="auth-big" src="${marbleURL(AUTH_SPECS.big,192)}" alt="">`;
@@ -10285,7 +10452,7 @@ const AUTH_SPECS = {
   shiny: {seed:hash("accueil-s"), type:"bille", family:0, pal:4, shiny:2},
 };
 function authPitch(){
-  return `<div class="logo" aria-label="Billy"><span>Billy</span><img src="${marbleURL(SHOWCASE[1],192)}" alt=""></div>
+  return `<div class="logo" aria-label="Billy"><span>Billy</span><img src="${marbleURL(LOGO_SPEC,192)}" alt=""></div>
     <h1>Ta cour de récré,<br> <em>en billes.</em></h1>
     <p class="auth-hand">Ouvre des sacs, complète ton album, joue avec les copains.</p>
     <ul class="auth-feats">
@@ -10298,7 +10465,9 @@ function authPitch(){
 function authBallsLabel(){
   return `<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" aria-hidden="true"><circle cx="12" cy="12" r="8.5"/><path d="M8.5 9.5a4 4 0 0 1 3-2.5" stroke-linecap="round"/>${AuthFx.off?"":`<path d="M4 20 20 4" stroke-linecap="round"/>`}</svg> ${AuthFx.off ? "Sortir les billes" : "Ranger les billes"}`;
 }
-function authHide(){ document.getElementById("auth").hidden = true; auth.screen = null; auth.closable = false; AuthFx.stop() }
+const syncVeil = on => { const v = document.getElementById("sync-veil"); if(v) v.hidden = !on };
+const veilOn = () => document.getElementById("sync-veil")?.hidden===false;
+function authHide(){ syncVeil(false); document.getElementById("auth").hidden = true; auth.screen = null; auth.closable = false; AuthFx.stop() }
 function authOpen(tab){ auth.tab = tab; auth.closable = true; toggleProfPop(false); authShow("welcome") }
 function authFail(e){ auth.err = typeof e==="string" ? e : authErr(e); authShow(auth.screen) }
 
@@ -10354,7 +10523,7 @@ document.addEventListener("submit", async e=>{
 // au démarrage : session en cours, lien reçu par e-mail, ou écran de bienvenue
 function accountBoot(){
   if(!window.Cloud?.available){ if(CLOUD_UID) toast("Pas de connexion : ta partie est gardée sur cet appareil."); return }
-  if(CLOUD_UID) authShow("loading");
+  if(CLOUD_UID){ if(lsGet(STORE_KEY)) syncVeil(true); else authShow("loading") }
   const h = new URLSearchParams(location.hash.slice(1));
   if(h.get("error")){   // lien d'e-mail périmé ou déjà utilisé
     history.replaceState(null, "", location.pathname + location.search);
@@ -10373,9 +10542,9 @@ function accountBoot(){
 /* =====================================================================
    DÉMARRAGE
    ===================================================================== */
-document.getElementById("logo-marble").src = marbleURL(SHOWCASE[1],96);
+document.getElementById("logo-marble").src = marbleURL(LOGO_SPEC,96);
 // l'icône de l'onglet : la même bille que le logo
-try{ const fav = document.getElementById("favicon"); fav.type = "image/png"; fav.href = marbleURL(SHOWCASE[1],64) }catch(e){}
+try{ const fav = document.getElementById("favicon"); fav.type = "image/png"; fav.href = marbleURL(LOGO_SPEC,64) }catch(e){}
 document.getElementById("coin-slot").outerHTML = COIN;
 renderThemeBtn(); renderSoundBtn(); renderTop(); renderNav(); renderView();
 accountBoot();
@@ -10398,7 +10567,7 @@ document.addEventListener("pointerout", e=>{
 // à l'arrivée (et une fois la partie du compte chargée) : le résumé d'un sac pas fini d'ouvrir, sinon le bonbec du jour (une fois par jour)
 // le calendrier passe toujours en premier : les nouvelles de la cour attendent qu'il soit fermé
 const dailyDue = () => dailyReady() && S.dailySeen!==dayKey();
-const popupsFree = () => ["auth","modal","ov","ask","gc-ov"].every(id=>document.getElementById(id)?.hidden!==false);
+const popupsFree = () => ["auth","sync-veil","modal","ov","ask","gc-ov"].every(id=>document.getElementById(id)?.hidden!==false);
 const inGame = () => ["tir","pot","chateau","casse","tic","course"].includes(ui.view) && !document.querySelector(".g-result:not([hidden])");
 let heldNews = null;
 function showHeldNews(){ if(!heldNews || !popupsFree()) return; const n = heldNews; heldNews = null; openNews(n) }

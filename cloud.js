@@ -93,6 +93,7 @@
       openBag: (nom, offert) => rpc("ouvrir_sac", {nom, offert:!!offert}),
       recycle: ids => rpc("echanger_billes", {ids}),
       fuse: ids => rpc("fusionner", {ids}),
+      fuseEv: ids => rpc("fusion_evenement", {ids}),
       daily: () => rpc("bonbec_du_jour"),
       gain: (source, cle, montant, sac) => rpc("gagner", {source, cle, montant, sac:sac||null}),
       marble: (source, cle, graine, bid) => rpc("bille_gagnee", {source, cle, graine:graine??null, bid:bid||null}),
@@ -120,7 +121,8 @@
       repondreTroc: (troc, oui) => rpc("troc_repondre", {troc, oui}),
       annuler: troc => rpc("troc_annuler", {troc}),
       trocs: () => rpc("mes_trocs"),
-      vendre: (bille, prix, jours) => rpc("vendre", {bille, prix, jours:jours||3}),
+      // en heures (3 h, 12 h) ou en jours (1, 3, 7)
+      vendre: (bille, prix, jours, heures) => rpc("vendre", heures ? {bille, prix, heures} : {bille, prix, jours:jours||3}),
       retirerAnnonce: annonce => rpc("retirer_annonce", {annonce}),
       acheter: annonce => rpc("acheter", {annonce}),
       // « genre » (achat immédiat ou enchère) n'est envoyé que s'il est choisi : le marché marche aussi avec l'ancien serveur

@@ -358,15 +358,20 @@ create or replace function interne.annonce_json(a public.annonces, b public.bill
 $$;
 
 drop function if exists public.vendre(uuid, int);
-create or replace function public.vendre(bille uuid, prix int, jours int default 3) returns bigint language plpgsql security definer set search_path = public as $$
+drop function if exists public.vendre(uuid, int, int);
+-- durée : en jours (1, 3, 7) ou, si heures est donné, 3 h ou 12 h (ajouté le 2 octobre 2026)
+create or replace function public.vendre(bille uuid, prix int, jours int default 3, heures int default null) returns bigint language plpgsql security definer set search_path = public as $$
 declare moi uuid := interne.moi(); aid bigint;
 begin
   perform interne.expirer_annonces();
   if prix < 1 or prix > 1000000 then raise exception 'prix_invalide'; end if;
-  if jours not in (1, 3, 7) then raise exception 'duree_invalide'; end if;
+  if heures is not null then
+    if heures not in (3, 12) then raise exception 'duree_invalide'; end if;
+  elsif jours not in (1, 3, 7) then raise exception 'duree_invalide'; end if;
   if not interne.bille_libre(bille, moi) then raise exception 'bille_indisponible'; end if;
   if (select count(*) from annonces a where a.vendeur = moi and a.vendue_le is null and a.retiree_le is null) >= 30 then raise exception 'trop_annonces'; end if;
-  insert into annonces (vendeur, bille, prix, expire_le) values (moi, vendre.bille, vendre.prix, now() + make_interval(days => jours)) returning id into aid;
+  insert into annonces (vendeur, bille, prix, expire_le)
+    values (moi, vendre.bille, vendre.prix, now() + case when heures is not null then make_interval(hours => heures) else make_interval(days => jours) end) returning id into aid;
   return aid;
 end $$;
 
@@ -718,7 +723,9 @@ begin
       select p.joueur, coalesce(s.total, 0) total, coalesce(s.cases, 0) cases, s.pts_cases, s.pts_coloris, s.pts_shiny, s.pts_series, s.nb_series,
         rank() over (order by coalesce(s.total, 0) desc) rang
       from portefeuilles p left join interne.scores() s on s.joueur = p.joueur
-      where portee <> 'copains' or p.joueur = moi or p.joueur in (select ami from amis where joueur = moi))
+      -- les comptes de test (table testeurs : le compte « admin ») ne sont pas classés
+      where p.joueur not in (select joueur from testeurs)
+        and (portee <> 'copains' or p.joueur = moi or p.joueur in (select ami from amis where joueur = moi)))
     select jsonb_build_object('nb', (select count(*) from r),
       'liste', coalesce((select jsonb_agg(interne.carte(r.joueur) || jsonb_build_object('rang', r.rang, 'total', r.total, 'cases', r.cases,
                  'moi', r.joueur = moi) order by r.rang, r.cases desc) from (select * from r order by rang, cases desc limit 50) r), '[]'),
@@ -756,7 +763,7 @@ end $$;
 do $$ declare f text; begin
   foreach f in array array['cour_moi()','ami_demander(text)','ami_repondre(uuid,boolean)','ami_retirer(uuid)','profil_joueur(uuid)',
     'billes_echangeables(uuid)','fil_amis()','troc_proposer(uuid,uuid[],uuid[],text,bigint,int,int)','troc_repondre(bigint,boolean)','troc_annuler(bigint)',
-    'mes_trocs()','vendre(uuid,int,int)','retirer_annonce(bigint)','acheter(bigint)','marche(text,int,int,boolean,text,int,text)','mes_annonces()','cour_journal(bigint,int)',
+    'mes_trocs()','vendre(uuid,int,int,int)','retirer_annonce(bigint)','acheter(bigint)','marche(text,int,int,boolean,text,int,text)','mes_annonces()','cour_journal(bigint,int)',
     'mettre_aux_encheres(uuid,int,int)','encherir(bigint,int)','mes_encheres()','classement(text)','cour_stats()'] loop
     execute format('revoke all on function public.%s from public, anon', f);
     execute format('grant execute on function public.%s to authenticated', f);

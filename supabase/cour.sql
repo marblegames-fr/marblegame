@@ -723,7 +723,9 @@ begin
       select p.joueur, coalesce(s.total, 0) total, coalesce(s.cases, 0) cases, s.pts_cases, s.pts_coloris, s.pts_shiny, s.pts_series, s.nb_series,
         rank() over (order by coalesce(s.total, 0) desc) rang
       from portefeuilles p left join interne.scores() s on s.joueur = p.joueur
-      where portee <> 'copains' or p.joueur = moi or p.joueur in (select ami from amis where joueur = moi))
+      -- les comptes de test (table testeurs : le compte « admin ») ne sont pas classés
+      where p.joueur not in (select joueur from testeurs)
+        and (portee <> 'copains' or p.joueur = moi or p.joueur in (select ami from amis where joueur = moi)))
     select jsonb_build_object('nb', (select count(*) from r),
       'liste', coalesce((select jsonb_agg(interne.carte(r.joueur) || jsonb_build_object('rang', r.rang, 'total', r.total, 'cases', r.cases,
                  'moi', r.joueur = moi) order by r.rang, r.cases desc) from (select * from r order by rang, cases desc limit 50) r), '[]'),

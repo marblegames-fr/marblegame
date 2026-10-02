@@ -169,6 +169,12 @@ button.wallet:hover{background:var(--panel-2)}
 .pick-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(110px,1fr));gap:8px;max-height:min(60vh,520px);overflow:auto;margin-top:12px;padding:2px}
 .pick-grid .m-card.on{border-color:var(--ink);background:var(--panel-2)}
 .pick-filter{display:grid;gap:8px;margin-top:12px}
+.col-search{position:relative;margin:14px 0 4px;max-width:520px}
+.col-search input{width:100%;height:44px;padding:0 40px 0 42px;border-radius:14px;border:1.5px solid var(--line-2);background:var(--panel);color:var(--ink);font:inherit;font-weight:700}
+.col-search input:focus{outline:none;border-color:var(--ink)}
+.col-search input::-webkit-search-cancel-button{display:none}
+.col-search .cs-ic{position:absolute;left:14px;top:50%;translate:0 -50%;color:var(--muted);display:grid}
+.col-search .cs-x{position:absolute;right:8px;top:50%;translate:0 -50%;width:28px;height:28px;border-radius:50%;font-size:18px;font-weight:900;color:var(--ink-2);background:var(--panel-2)}
 .pick-filter .pick-q{width:100%;height:40px;padding:0 14px;border-radius:12px;border:1.5px solid var(--line-2);background:var(--panel);color:var(--ink);font:inherit;font-weight:700}
 .pick-filter .pick-q:focus{outline:none;border-color:var(--ink)}
 .pick-filter .chips{gap:6px}
@@ -3941,10 +3947,10 @@ void main(){
     col+=vec3(1.0,0.78,0.3)*F*0.45;
   }
   if(uShiny>2.5){
-    // lumineuse : points phosphorescents pris dans la surface
-    float st=pow(max(0.0,noise(qo*13.0+uSeed.xyz*40.0)-0.5)*2.0,4.0);
-    col+=mix(uC2,vec3(1.0),0.55)*st*2.6;
-    col+=mix(uC2,vec3(1.0),0.35)*pow(1.0-n.z,3.0)*0.5;   // le bord rayonne (le grand halo est fait autour, en CSS : le décor reste lisible)
+    // lumineuse : elle s'éclaire de l'intérieur, dans la couleur de son coloris (sans taches), et respire doucement
+    float pulse=0.85+0.15*sin(uTime*1.6);
+    col+=uC2*0.18*pulse;                                                     // une lueur intérieure, de sa couleur
+    col+=mix(uC2,vec3(1.0),0.25)*0.5*pow(1.0-n.z,2.2)*pulse;                 // le bord rayonne (le grand halo est fait autour, en CSS)   // le bord rayonne (le grand halo est fait autour, en CSS : le décor reste lisible)
   }
   col*=mix(0.8,1.0,smoothstep(0.0,0.35,n.z));
   // les blancs s'arrondissent au lieu d'être coupés net (sinon un anneau dur autour des reflets)
@@ -5494,7 +5500,13 @@ function viewCollection(){
     ["secret","Secrètes","lock",x=>SECRETS[x.secret]],
   ];
   const showFn = (SHOW.find(o=>o[0]===show)||SHOW[0])[3];
-  const filters = ui.tab==="defis"||ui.tab==="series" ? "" : `<div class="col-filters">
+  // recherche d'un décor (et d'un coloris dans « Mes billes ») en texte, sans accents ni majuscules
+  const qw = fold(ui.q||"").trim().split(/\s+/).filter(Boolean);
+  const qOK = txt => !qw.length || qw.every(w=>fold(txt).includes(w));
+  const filters = ui.tab==="defis"||ui.tab==="series" ? "" : `<div class="col-search"><span class="cs-ic">${ic("search",17)}</span>
+    <input type="search" id="col-q" placeholder="${ui.tab==="billes"?"Chercher un décor ou un coloris : Galaxie, Azur…":"Chercher un décor : Galaxie, Opaline…"}" value="${esc(ui.q||"")}" aria-label="Chercher un décor" autocomplete="off" spellcheck="false">
+    ${ui.q?`<button class="cs-x" data-action="col-q-clear" aria-label="Effacer la recherche">×</button>`:""}</div>
+  <div class="col-filters">
     <div class="seg" role="group" aria-label="Afficher"><span class="f-lbl">Afficher</span>
       ${SHOW.map(([k,label,icon,f])=>`<button class="chip" data-action="show" data-show="${k}" aria-pressed="${show===k}">${k==="shiny"?SPARK:icon?ic(icon,14):""}${label}${f?` <span class="n">${k==="secret"?`${S.specs.filter(x=>SECRETS[x.secret]).length}/${Object.keys(SECRETS).length}`:count(f)}</span>`:""}</button>`).join("")}
     </div>
@@ -5519,6 +5531,7 @@ function viewCollection(){
   // une case pas encore trouvée n'apparaît qu'avec le filtre « Événement »
   const evCard = (t,f) => {
     const F = FAMILIES[f], E = EVENTS[F.event], list = S.specs.filter(x=>x.type===t && x.family===f);
+    if(!qOK(F.name)) return "";
     if(showFn && show!=="event" && !list.some(showFn)) return "";
     if(!list.length){ if(show!=="event") return "";
       return `<button class="m-card missing" data-action="tab" data-tab="events" aria-label="${TYPES[t].label} ${F.name} : pas encore trouvée"><span class="ball">${mImg(ghost(t,f),160,Math.round(84*scaleOf(t)+6),"")}</span><b>${F.name}</b><span class="rar" style="--rar:${E.color}"><i></i>Événement</span><small>${eventLive(E)?"À trouver":"Événement terminé"}</small></button>` }
@@ -5532,6 +5545,7 @@ function viewCollection(){
   // les décors de saison : une case par saison, à la fin de chaque taille ; celle du mois en cours s'affiche « à gagner » avec le filtre Saison
   const seCard = (t,f) => {
     const F = FAMILIES[f], se = SEASONS[F.season], col = se.pal[2], list = S.specs.filter(x=>x.type===t && x.family===f);
+    if(!qOK(F.name)) return "";
     if(showFn && show!=="season" && !list.some(showFn)) return "";
     if(!list.length){ if(show!=="season" || seasonNow().m!==F.season) return "";
       return `<button class="m-card missing" data-action="nav" data-view="passe" aria-label="${TYPES[t].label} ${F.name} : à gagner dans le passe"><span class="ball">${mImg(ghost(t,f),160,Math.round(84*scaleOf(t)+6),"")}</span><b>${F.name}</b><span class="rar" style="--rar:${col}"><i></i>Saison</span><small>Dans le passe</small></button>` }
@@ -5548,8 +5562,9 @@ function viewCollection(){
       const have = DECOR_IDS.filter(f=>slots.has(t+"|"+f)).length;
       const cards = FAM_ORDER.map(f=>{
         const F = FAMILIES[f], list = slots.get(t+"|"+f);
+        if(!qOK(F.name)) return "";
         if(showFn && !(list||[]).some(showFn)) return "";
-        if(!list){ if(ui.hideMissing) return ""; return `<button class="m-card missing" data-action="missing" data-type="${t}" data-fam="${f}" aria-label="${TYPES[t].label} ${F.name} : pas encore trouvée"><span class="ball">${mImg(ghost(t,f),160,Math.round(84*scaleOf(t)+6),"")}</span><b>${F.name}</b>${rarTag(f)}<small>À trouver</small></button>` }
+        if(!list){ if(ui.hideMissing && !qw.length) return ""; return `<button class="m-card missing" data-action="missing" data-type="${t}" data-fam="${f}" aria-label="${TYPES[t].label} ${F.name} : pas encore trouvée"><span class="ball">${mImg(ghost(t,f),160,Math.round(84*scaleOf(t)+6),"")}</span><b>${F.name}</b>${rarTag(f)}<small>À trouver</small></button>` }
         const best = coverOf(list), got = casePals(list), full = got===BASE_PALS;
         const isNew = list.some(s=>S.unseen.includes(s.id));
         return `<button class="m-card case${best.shiny?" is-shiny":""}${full?" full":""}" data-action="sheet" data-type="${t}" data-fam="${f}" aria-label="${TYPES[t].label} ${F.name} : ${got} coloris sur ${BASE_PALS}"${isNew?` data-unseen="${list.filter(s=>S.unseen.includes(s.id)).map(s=>s.id).join(",")}"`:""}>
@@ -5562,7 +5577,7 @@ function viewCollection(){
         <div class="type-head">${typePill(t,true)}<h2>${TYPES[t].label}</h2><span class="mm">${TYPES[t].mm} mm</span>
           <span class="prog">${have} / ${N_DECORS} cases<span class="bar"><i class="${have===N_DECORS?"done":""}" style="width:${have/N_DECORS*100}%"></i></span></span>
           <p class="desc">${TYPES[t].desc}</p></div>
-        ${cards.trim()?`<div class="card-grid">${cards}</div>`:`<p class="empty">${show==="all"?`Aucune ${TYPES[t].label.toLowerCase()} pour l'instant.`:"Rien avec ce filtre dans cette taille."}</p>`}
+        ${cards.trim()?`<div class="card-grid">${cards}</div>`:`<p class="empty">${qw.length?"Aucun décor ne correspond à ta recherche dans cette taille.":show==="all"?`Aucune ${TYPES[t].label.toLowerCase()} pour l'instant.`:"Rien avec ce filtre dans cette taille."}</p>`}
       </section>`;
     }).join("");
     if(show==="dups" && recyclableDups().length) body = dupsBar() + body;
@@ -5572,7 +5587,7 @@ function viewCollection(){
   } else if(ui.tab!=="defis" && show==="secret"){
     body = secretGrid();
   } else if(ui.tab==="billes"){
-    let list = S.specs.filter(x=>inType(x) && (!showFn || showFn(x)));
+    let list = S.specs.filter(x=>inType(x) && (!showFn || showFn(x)) && qOK(specName(x)+" "+FAMILIES[x.family].name));
     const srt = show==="dups" ? "slot" : ui.sort||"recent";
     const by = {recent:(a,b)=>b.at-a.at, size:(a,b)=>tierSort(a,b), decor:(a,b)=>FAMILIES[a.family].name.localeCompare(FAMILIES[b.family].name,"fr")||tierSort(a,b),
       rar:(a,b)=>FAMILIES[b.family].rar-FAMILIES[a.family].rar || FAMILIES[a.family].name.localeCompare(FAMILIES[b.family].name,"fr") || tierSort(a,b),
@@ -5583,7 +5598,7 @@ function viewCollection(){
     if(show!=="dups"){ const g = new Map(); list.forEach(x=>{ const k=colorKey(x); if(!g.has(k)) g.set(k,[]); g.get(k).push(x) });
       list = [...g.values()].map(l=>{ const b=[...l].sort(tierSort)[0]; grps.set(b.id,l); return b }) }
     list.sort(by[srt]);
-    body = (show==="dups" && recyclableDups().length ? dupsBar() : "") + (list.length ? `<div class="card-grid">${list.map(x=>ballCard(x, grps.get(x.id))).join("")}</div>` : `<p class="empty">${EMPTY[show]||EMPTY.all}</p>`);
+    body = (show==="dups" && recyclableDups().length ? dupsBar() : "") + (list.length ? `<div class="card-grid">${list.map(x=>ballCard(x, grps.get(x.id))).join("")}</div>` : `<p class="empty">${qw.length?"Aucune bille ne correspond à ta recherche.":EMPTY[show]||EMPTY.all}</p>`);
   }
 
   const sizeBtn = (t,i) => { const h = DECOR_IDS.filter(f=>slots.has(t+"|"+f)).length, own = S.specs.filter(s=>s.type===t).sort(tierSort)[0];
@@ -6006,6 +6021,14 @@ function applyPick(){
   box.querySelector(".pick-none")?.toggleAttribute("hidden", n>0);
 }
 document.addEventListener("input", e=>{ if(e.target.classList?.contains("pick-q")) applyPick() });
+let colQT = 0;
+document.addEventListener("input", e=>{
+  if(e.target.id!=="col-q") return;
+  clearTimeout(colQT); colQT = setTimeout(()=>{
+    ui.q = e.target.value; renderView();
+    const q = document.getElementById("col-q"); if(q){ q.focus(); q.setSelectionRange(q.value.length, q.value.length) }
+  }, 180);
+});
 
 /* =====================================================================
    BILLEPEDIA : tout ce qui existe (formats, décors, shiny, coloris)
@@ -8416,13 +8439,18 @@ function gcPhysStep(V, t){
     o.ve += (-k*o.e - 2.2*Math.sqrt(k)*o.ve)*dt; o.e += o.ve*dt*60; o.e = Math.max(-maxE, Math.min(maxE, o.e));
     if(t<0) o.e = Math.min(o.e, 0);
     // sur le côté : un petit vent qui la pousse vers sa ligne préférée, et un peu de hasard
-    const lane = o.lane*w*.55 + Math.sin(t*.4+o.ph)*w*.25;
-    o.vd += ((lane-o.d)*.6 + (r()-.5)*14)*dt; o.vd *= .985;
-    // le plan dit « choc » (anciennes chutes) : elle part en travers et tape le mur
-    if(S0.fall!=null && !o.crash){ o.crash = 1; o.vd = (o.d>=0?1:-1)*(9+r()*4) } if(S0.fall==null) o.crash = 0;
+    // sur le côté, une vraie bille : personne ne la dirige. Elle garde sa lancée et, dans un virage, file vers l'extérieur
+    // (la piste tourne sous elle) jusqu'au mur, où elle rebondit en perdant un peu de vitesse. Les petites bosses du sol la font à peine dévier.
+    const v = Math.max(0, S0.sp-(o.lastSp ?? S0.sp)), a1 = gcAt(T, S0.sp+o.e-12), a2 = gcAt(T, S0.sp+o.e+12);
+    const kn = ((a2.tx-a1.tx)*a1.nx + (a2.ty-a1.ty)*a1.ny)/24;   // courbure du virage, du côté de la normale
+    o.vd += -kn*v*v + .012*v*Math.sin(S0.sp*.031+o.ph)*Math.sin(S0.sp*.013+o.ph*2);   // le sol n'est pas tout à fait plat
+    o.vd *= .994;                                                 // le roulement freine doucement la dérive
+    // le plan dit « choc » (anciennes chutes) : une bosse l'envoie de travers contre le mur
+    if(S0.fall!=null && !o.crash){ o.crash = 1; o.vd = (o.d>=0?1:-1)*(5+r()*3) } if(S0.fall==null) o.crash = 0;
     o.d += o.vd*dt*60;
-    if(Math.abs(o.d)>lim){ const sp = Math.abs(o.vd); o.d = Math.sign(o.d)*lim; o.vd = -o.vd*.72;
-      if(sp>2.5 && t>0){ o.hit = Math.min(1, sp/8); o.wallFx = 1 } }
+    if(Math.abs(o.d)>lim){ const sp = Math.abs(o.vd); o.d = Math.sign(o.d)*lim; o.vd = -o.vd*.55;
+      o.ve -= Math.min(2, sp*.25);                                 // le choc la ralentit un peu (le ressort du plan la ramène ensuite)
+      if(sp>1.5 && t>0){ o.hit = Math.min(1, sp/6); o.wallFx = 1 } }
   });
   // les champignons
   R.forEach(o=>{ if(t>=o.fin) return; const s = gcPosS(o, st[o.i]); V.ph.bd.forEach(b=>{ const ds = s-b.s, dd = o.d-b.d, d = Math.hypot(ds,dd), m = o.r+b.r;
@@ -9477,6 +9505,7 @@ document.addEventListener("click", e=>{
       ui.tab=t.dataset.tab; closeModal(); if(ui.view!=="collection") go("collection"); else renderView(); break;
     case "ftype": ui.type=t.dataset.type; renderView(); break;
     case "show": ui.show=t.dataset.show; renderView(); break;
+    case "col-q-clear": ui.q = ""; renderView(); document.getElementById("col-q")?.focus(); break;
     case "album-type": ui.tab="album"; ui.type=t.dataset.type; go("collection"); break;
     case "spec": ui.fromSheet = !!t.dataset.fromSheet; openModal(t.dataset.id); break;
     case "sheet": openSheet(t.dataset.type, +t.dataset.fam); break;

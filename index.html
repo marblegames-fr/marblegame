@@ -8041,6 +8041,12 @@ function gcPaint(T, r0){
   x.globalAlpha = 1;
   for(let i=0;i<9000;i++){ const p = P[Math.floor(r()*P.length)], o = (r()*2-1)*p.w; x.fillStyle = r()<.5 ? "rgba(0,0,0,.08)" : "rgba(255,255,255,.1)"; x.fillRect(p.x+p.nx*o, p.y+p.ny*o, 1.6, 1.6) }
   x.setLineDash([22,26]); x.strokeStyle = "rgba(255,255,255,.4)"; x.lineWidth = 3; x.beginPath(); P.forEach((p,i)=>i?x.lineTo(p.x,p.y):x.moveTo(p.x,p.y)); x.stroke(); x.setLineDash([]);
+  // les murs de chaque côté : un rebord en relief, avec son ombre vers l'extérieur
+  [1,-1].forEach(sd=>{ const edge = k => { x.beginPath(); P.forEach((p,i)=>{ const X = p.x+p.nx*(p.w+k)*sd, Y = p.y+p.ny*(p.w+k)*sd; i?x.lineTo(X,Y):x.moveTo(X,Y) }) };
+    x.lineJoin = "round"; x.lineCap = "round";
+    edge(9); x.strokeStyle = "rgba(0,0,0,.35)"; x.lineWidth = 12; x.stroke();
+    edge(3); x.strokeStyle = th.wall||shade(th.curb ? th.curb[1] : th.edge, -.05); x.lineWidth = 10; x.stroke();
+    edge(1); x.strokeStyle = "rgba(255,255,255,.55)"; x.lineWidth = 3; x.stroke() });
   // les ponts : des planches, deux rambardes et leur ombre sur l'eau
   T.narrows.forEach(s0=>{ for(let s=s0-130;s<=s0+130;s+=11){ const p = gcAt(T,s); x.save(); x.translate(p.x,p.y); x.rotate(Math.atan2(p.ty,p.tx));
       x.fillStyle = "rgba(0,0,0,.25)"; x.fillRect(-4,-p.w-8+10,10,2*p.w+16); x.fillStyle = (s/11|0)%2 ? "#A0703F" : "#8A5C30"; x.fillRect(-5,-p.w-8,10,2*p.w+16);
@@ -8131,6 +8137,7 @@ function gcWatch(race){
   // en direct : on reprend là où en est la course ; sinon depuis la ligne de départ (5 s de feux)
   const since = (Date.now()-race.depart)/1000, live = !race.test && !race.replay && since>0 && since<GC_DUR;
   const p0 = gcAt(T, 40);
+  GCV.ph = null;
   Object.assign(GCV, {race, T, R, t: live ? since-5 : -5, last:performance.now(), fx:[], said:{}, lead:null, leadT:0, done:false, live,
     cam:{s:-10, ang:Math.atan2(p0.ty,p0.tx), back:680, h:150}, scen:gcScenery(T), sky:null, patT:null, free:false, follow:null, vue:lsGet("billy-gc-vue")==='tv' ? 'tv' : 'ciel'});
   V_vueBtn();
@@ -8171,23 +8178,18 @@ function gcLoop(now){
   if(t0<0 && t>=0){ gcBig("Partez !"); Sound.ding() }
   if(t0<-4.9 && t>=-4.9) gcSay(`Circuit du jour : ${T.th.name} !`, true);
   // positions : sur la grille au départ (deux rangées), puis le long de la piste
-  const pos = V.R.map(o=>{ const st = gcState(o, t), done = t>=o.fin, grid = (o.i%2 ? -30 : 0)*Math.max(0, 1-Math.max(0,t)/2.5);
-    const s = done ? T.L-40+Math.min(1,(t-o.fin)*.9)*90 : st.s+grid, p = gcAt(T, s);
-    let off = (o.lane + .12*Math.sin(Math.max(0,t)*.35+o.ph))*p.w*.8, z = o.r;
-    if(st.fall!=null){ const k = Math.min(1, st.fall*2.2); off = (o.lane<0?-1:1)*(Math.abs(off) + k*(p.w+40)); z = o.r - Math.max(0, st.fall-.3)*60 }
-    return {o, s:done ? T.L+(t-o.fin) : st.s, x:p.x+p.nx*off, y:p.y+p.ny*off, z, fall:st.fall, done, hide:st.fall!=null && st.fall>.6, tx:p.tx, ty:p.ty} });
+  const pos = gcPhys(t);
   pos.forEach(q=>{ const o = q.o, ds = q.s-o.ls;
     if(ds>.01 && ds<200){ const C = V.cam;
       if(V.vue!=='tv'){ const r0 = V.sky ? V.sky.rot : 0, mx = q.tx*Math.cos(r0)-q.ty*Math.sin(r0), my = q.tx*Math.sin(r0)+q.ty*Math.cos(r0); o.rot = mul3(rotAxis(my, mx, 0, ds/o.r), o.rot); o.dirty = true }
       else if(C.dx!=null){ const vx = q.tx*C.rx+q.ty*C.ry, vz = -(q.tx*C.dx+q.ty*C.dy); o.rot = mul3(rotAxis(vz,0,-vx, ds/o.r), o.rot); o.dirty = true }
       if(t>0 && !q.done && Math.random()<.35) V.fx.push({x:q.x-q.tx*o.r, y:q.y-q.ty*o.r, z:2, vx:(Math.random()-.5)*.6, vy:(Math.random()-.5)*.6, vz:.5+Math.random(), life:.8, col:T.th.dust||"#E9D9BC", sz:4}) }
-    o.ls = q.s;
-    if(q.fall!=null && !o.splash && q.fall>.35){ o.splash = 1; gcFx(q.x, q.y, T.th.water ? "#BFEFFF" : "#E8D2B0", 30, 3.5) } if(q.fall==null) o.splash = 0 });
+    o.ls = q.s });
   // les commentaires
   const order = [...pos].sort((a,b)=> (a.done&&b.done) ? a.o.fin-b.o.fin : b.s-a.s);
   if(t>3){ const L0 = order[0].o; if(L0!==V.lead){ if(V.lead && t-V.leadT>1.2 && !order[0].done) gcSay(`${L0.me?"Tu passes":gcName(L0)+" passe"} en tête !`); V.lead = L0; V.leadT = t } }
   V.R.forEach(o=>o.ev.forEach(e=>{ const at = e.t/o.k, key = o.i+e.k+e.t; if(t0<at && t>=at && !V.said[key]){ V.said[key] = 1; const rk = order.findIndex(q=>q.o===o);
-    if(e.k==="fall" && (rk<5 || o.me)) gcSay(T.th.water ? `Plouf ! ${o.me?"Ta bille tombe":gcName(o)+" tombe"} à l'eau !` : `Oh non ! ${o.me?"Ta bille sort":gcName(o)+" sort"} de la piste !`);
+    if(e.k==="fall" && (rk<5 || o.me)) gcSay(`Boum ! ${o.me?"Ta bille percute":gcName(o)+" percute"} le mur !`);
     else if(e.k==="trip" && (rk<4 || o.me)) gcSay(`${o.me?"Ta bille trébuche":gcName(o)+" trébuche"} sur un caillou !`);
     else if(e.k==="boost" && (rk<4 || o.me)){ gcSay(`Accélérateur pour ${o.me?"toi":gcName(o)} !`); const q = pos.find(q=>q.o===o); gcFx(q.x,q.y,"#FFE14D",18,3) } } }));
   if(!V.said.last && order[0].s>T.L*.86){ V.said.last = 1; gcSay("Dernière ligne droite !", true) }
@@ -8214,6 +8216,68 @@ function gcLoop(now){
   const lastFin = V.R[V.R.length-1].fin;
   if(!V.done && t>Math.min(lastFin+1.5, V.R[0].fin+12)){ V.done = true; gcPodium() }
   GCV.raf = requestAnimationFrame(gcLoop);
+}
+// La physique de la course : chaque bille avance selon son plan (qui fixe l'ordre d'arrivée tiré par le serveur),
+// mais sur le côté elle est libre : elle rebondit contre les murs, contre les champignons et contre les autres billes.
+// Un choc la fait aussi avancer ou reculer un peu ; un ressort la ramène vers son plan, et dans la dernière ligne droite
+// l'écart est ramené à zéro : l'ordre d'arrivée ne change jamais. Pas de hasard ici (graine de la course) : tout le monde voit la même course.
+const GC_STEP = 1/60;
+function gcPhysInit(V){
+  const T = V.T, r = rng(V.race.graine ^ 0x5bd1e995);
+  V.ph = {t:-5, r, bd:T.bumps.map(b=>{ const p = gcAt(T, b.s); return {s:b.s, d:(b.x-p.x)*p.nx+(b.y-p.y)*p.ny, r:b.r} })};
+  // la grille de départ : 2 rangées de 4, derrière la ligne
+  V.R.forEach(o=>{ const row = Math.floor(o.i/4), col = o.i%4, w = gcAt(T, 40).w;
+    Object.assign(o, {d:[-.66,-.22,.22,.66][col]*w + (row ? w*.1 : 0), vd:0, e:52-row*38, ve:0, crash:0, hit:0, sp:0, lastSp:0}) });
+}
+function gcPhysStep(V, t){
+  const T = V.T, R = V.R, r = V.ph.r, dt = GC_STEP;
+  const st = R.map(o=>{ const g = gcState(o, t); return {sp: t>=o.fin ? T.L : g.s, fall:g.fall} });
+  R.forEach((o,i)=>{ if(t>=o.fin) return; const S0 = st[i], pr = S0.sp/T.L, w = gcAt(T, S0.sp+o.e).w, lim = w-o.r*1.15-3;
+    // le ressort vers le plan : de plus en plus fort, et nul à l'arrivée
+    const k = 4+40*Math.max(0,(pr-.8)/.15), maxE = 70*Math.max(0, 1-Math.max(0,(pr-.82)/.12));
+    o.ve += (-k*o.e - 2.2*Math.sqrt(k)*o.ve)*dt; o.e += o.ve*dt*60; o.e = Math.max(-maxE, Math.min(maxE, o.e));
+    if(t<0) o.e = Math.min(o.e, 0);
+    // sur le côté : un petit vent qui la pousse vers sa ligne préférée, et un peu de hasard
+    const lane = o.lane*w*.55 + Math.sin(t*.4+o.ph)*w*.25;
+    o.vd += ((lane-o.d)*.6 + (r()-.5)*14)*dt; o.vd *= .985;
+    // le plan dit « choc » (anciennes chutes) : elle part en travers et tape le mur
+    if(S0.fall!=null && !o.crash){ o.crash = 1; o.vd = (o.d>=0?1:-1)*(9+r()*4) } if(S0.fall==null) o.crash = 0;
+    o.d += o.vd*dt*60;
+    if(Math.abs(o.d)>lim){ const sp = Math.abs(o.vd); o.d = Math.sign(o.d)*lim; o.vd = -o.vd*.72;
+      if(sp>2.5 && t>0){ o.hit = Math.min(1, sp/8); o.wallFx = 1 } }
+  });
+  // les champignons
+  R.forEach(o=>{ if(t>=o.fin) return; const s = gcPosS(o, st[o.i]); V.ph.bd.forEach(b=>{ const ds = s-b.s, dd = o.d-b.d, d = Math.hypot(ds,dd), m = o.r+b.r;
+    if(d<m && d>0){ const nx = ds/d, ny = dd/d, ov = m-d; o.e += nx*ov; o.d += ny*ov; const vn = ((o.sp??0)-(o.lastSp??o.sp??0)+o.ve)*nx+o.vd*ny;
+      if(vn<0){ o.vd -= 1.8*vn*ny; o.ve -= 1.8*vn*nx; o.hit = 1; o.bumpFx = b } } }) });
+  // les billes entre elles
+  for(let i=0;i<R.length;i++) for(let j=i+1;j<R.length;j++){ const a = R[i], b = R[j]; if(t>=a.fin || t>=b.fin) continue;
+    const sa = gcPosS(a, st[i]), sb = gcPosS(b, st[j]), ds = sb-sa, dd = b.d-a.d, d = Math.hypot(ds,dd), m = a.r+b.r;
+    if(d<m && d>0){ const nx = ds/d, ny = dd/d, ov = m-d, ma = a.r**3, mb = b.r**3, ka = mb/(ma+mb), kb = ma/(ma+mb);
+      a.e -= nx*ov*ka; a.d -= ny*ov*ka; b.e += nx*ov*kb; b.d += ny*ov*kb;
+      // vitesses : la vitesse du plan + celle de l'écart, dans le sens de la piste ; et la vitesse sur le côté
+      const va = (st[i].sp-(a.lastSp??st[i].sp))+a.ve, vb = (st[j].sp-(b.lastSp??st[j].sp))+b.ve;
+      const vn = (vb-va)*nx+(b.vd-a.vd)*ny;
+      if(vn<0){ const J = -1.85*vn/(1/ma+1/mb);
+        a.ve -= J/ma*nx*.6; a.vd -= J/ma*ny; b.ve += J/mb*nx*.6; b.vd += J/mb*ny;
+        if(-vn>1.2 && t>0){ a.hit = b.hit = Math.min(1,-vn/5); a.clash = b; } } }
+  }
+  R.forEach((o,i)=>{ o.lastSp = st[i].sp; o.sp = st[i].sp });
+}
+const gcPosS = (o, S0) => S0.sp+o.e;
+function gcPhys(t){
+  const V = GCV, T = V.T;
+  if(!V.ph || t < V.ph.t-.5) gcPhysInit(V);
+  // pas fixes : la même course pour tout le monde, quelle que soit la fluidité de l'écran (et on rattrape si on saute en avant)
+  let n = 0; while(V.ph.t+GC_STEP <= t && n<6000){ V.ph.t += GC_STEP; if(V.ph.t>0) gcPhysStep(V, V.ph.t); n++ }   // rien ne bouge avant le départ
+  return V.R.map(o=>{ const done = t>=o.fin;
+    if(done){ const k = Math.min(1,(t-o.fin)*.9), q = gcAt(T, T.L-40+k*90); return {o, s:T.L+(t-o.fin), x:q.x+q.nx*o.d, y:q.y+q.ny*o.d, z:o.r, fall:null, done, hide:false, tx:q.tx, ty:q.ty} }
+    const s = (o.sp ?? 0)+o.e, p = gcAt(T, s);
+    // les étincelles et la poussière des chocs
+    if(o.hit>.3){ gcFx(p.x+p.nx*o.d, p.y+p.ny*o.d, o.wallFx ? "#FFFFFF" : o.bumpFx ? "#FF8FB8" : "#FFE14D", Math.round(4+o.hit*8), 1.5+o.hit*2);
+      if(Math.random()<.5) Sound.hit(o.hit*.25) }
+    o.hit = 0; o.wallFx = 0; o.bumpFx = null;
+    return {o, s, x:p.x+p.nx*o.d, y:p.y+p.ny*o.d, z:o.r, fall:null, crash:o.crash, done, hide:false, tx:p.tx, ty:p.ty} });
 }
 function gcFx(x,y,col,n,sp){ for(let i=0;i<n;i++){ const a = Math.random()*TAU, v = sp*(.3+Math.random()); GCV.fx.push({x,y,z:4,vx:Math.cos(a)*v,vy:Math.sin(a)*v,vz:1+Math.random()*3,life:1,col,sz:5}) } }
 const gcGL = (()=>{ try{ return new MarbleGL(document.createElement("canvas")) }catch(e){ return null } })();
@@ -8354,7 +8418,7 @@ function gcDrawSky(cv, pos, t){
   T.crowd.forEach(p=>{ const j = Math.max(0, Math.sin(now*7*hype+p.ph))*2.5*hype; c.fillStyle = "rgba(0,0,0,.25)"; c.beginPath(); c.arc(p.x+2,p.y+3,6,0,TAU); c.fill();
     c.fillStyle = p.c; c.beginPath(); c.arc(p.x-j*.4,p.y-j,6+j*.15,0,TAU); c.fill(); c.fillStyle = "rgba(255,255,255,.35)"; c.beginPath(); c.arc(p.x-j*.4-2,p.y-j-2,2,0,TAU); c.fill() });
   // traînées et ombres des billes
-  pos.forEach(q=>{ const o = q.o; if(q.hide) return; o.trail = o.trail || []; if(t>0 && !q.done){ o.trail.push([q.x,q.y]); if(o.trail.length>18) o.trail.shift() } else if(q.done && o.trail.length) o.trail.shift();
+  pos.forEach(q=>{ const o = q.o; if(q.hide) return; o.trail = o.trail || []; if(t>0 && !q.done){ const l = o.trail[o.trail.length-1]; if(l && Math.hypot(l[0]-q.x,l[1]-q.y)>60) o.trail.length = 0; o.trail.push([q.x,q.y]); if(o.trail.length>18) o.trail.shift() } else if(q.done && o.trail.length) o.trail.shift();
     if(o.trail.length>2){ c.lineCap = "round"; for(let i=1;i<o.trail.length;i++){ const a = o.trail[i-1], b = o.trail[i], k = i/o.trail.length; c.strokeStyle = rgba(o.col, .32*k); c.lineWidth = o.r*1.4*k; c.beginPath(); c.moveTo(a[0],a[1]); c.lineTo(b[0],b[1]); c.stroke() } }
     const sc = q.fall!=null ? Math.max(.3, 1-q.fall*1.4) : 1; c.fillStyle = "rgba(0,0,0,.32)"; c.beginPath(); c.ellipse(q.x+wx*.8, q.y+wy*.8, o.r*1.15*sc, o.r*.95*sc, 0, 0, TAU); c.fill() });
   // la banderole d'arrivée, tendue au-dessus de la piste
@@ -8456,7 +8520,7 @@ function gcHud(order, t){
   if(meI>=8) rows.push(order[meI]);
   const b = document.getElementById("gc-board");
   if(b) b.innerHTML = `<h3>Classement en direct</h3>` + rows.map(q=>{ const i = order.indexOf(q), o = q.o;
-    return `<div class="gcr${o.me?" me":""}${q.done?" fin":""}${V.follow===o.i?" on":""}" data-i="${o.i}" role="button" title="Suivre cette bille"><span class="pos">${i+1}</span>${mImg(o.spec,52,24,"")}<span class="nm">${esc(o.me?"Toi":o.bot?o.nom:o.pseudo)}</span><span class="st">${q.done?"Arrivé":q.hide||q.fall!=null?"Plouf !":`${Math.round((V.T.L-q.s)/10)} cm`}</span></div>` }).join("");
+    return `<div class="gcr${o.me?" me":""}${q.done?" fin":""}${V.follow===o.i?" on":""}" data-i="${o.i}" role="button" title="Suivre cette bille"><span class="pos">${i+1}</span>${mImg(o.spec,52,24,"")}<span class="nm">${esc(o.me?"Toi":o.bot?o.nom:o.pseudo)}</span><span class="st">${q.done?"Arrivé":q.crash?"Boum !":`${Math.round((V.T.L-q.s)/10)} cm`}</span></div>` }).join("");
   const m = document.getElementById("gc-mini"); if(!m) return; const x = m.getContext("2d"), sx = m.width/GW, sy = m.height/GH;
   x.clearRect(0,0,m.width,m.height); x.lineCap = x.lineJoin = "round"; x.strokeStyle = "rgba(255,255,255,.3)"; x.lineWidth = 6; x.beginPath(); V.T.P.forEach((p,i)=>i?x.lineTo(p.x*sx,p.y*sy):x.moveTo(p.x*sx,p.y*sy)); x.stroke();
   x.strokeStyle = V.T.th.track; x.lineWidth = 3; x.stroke();

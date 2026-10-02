@@ -1059,6 +1059,13 @@ button.vit-slot:hover{background:var(--panel-2);color:var(--ink)}
 .roue-res{display:grid;justify-items:center;gap:8px}
 .roue-res .pills{display:flex;gap:5px;flex-wrap:wrap;justify-content:center}
 .roue-res .btns{display:flex;gap:8px;margin-top:6px}
+.modal.lab-pop{display:block;width:min(860px,100%);max-height:calc(100dvh - 32px);overflow:auto;padding:24px 22px}
+.lab-pop h2{font-family:var(--display);font-weight:400;font-size:30px;margin:6px 0 10px}
+.lab-row{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:8px}
+.lab-dot{display:inline-block;width:12px;height:12px;border-radius:50%;border:1px solid rgba(127,127,127,.5);margin-right:-3px}.lab-dot.sq{border-radius:3px;margin:0 0 0 2px}
+.lab-row .chip{display:inline-flex;align-items:center;gap:6px}
+.lab-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(110px,1fr));gap:8px}
+.lab-grid .sh-tile{padding:10px 6px}
 .mr-legend{list-style:none;margin:0;padding:0;display:flex;flex-wrap:wrap;justify-content:center;gap:4px 12px;font-size:12px;font-weight:800;color:var(--ink-2)}
 .mr-legend li{display:flex;align-items:center;gap:5px}.mr-legend i{width:10px;height:10px;border-radius:3px}
 .mr-slot{min-width:240px;padding:12px 20px;border-radius:16px;background:#24253D;color:#fff;font-family:var(--display);font-size:30px;line-height:1.1;box-shadow:inset 0 0 0 3px #FFE14D}
@@ -7465,6 +7472,38 @@ function pachiSparks(x, y, n, cols, big){
     P.push({x, y, vx:Math.cos(a)*v, vy:Math.sin(a)*v, life:1, dec:big ? .012+Math.random()*.012 : .05, col:cols[i%cols.length], sq:big && i%2===0}) }
   if(P.length>400) P.splice(0, P.length-400);
 }
+/* ---------- Maquettes de coloris (outil de test, comptes testeurs) ----------
+   Des coloris inventés par les joueurs, essayés sur de vraies billes avant de les ajouter au jeu. Rien n'est enregistré :
+   les coloris sont ajoutés en mémoire, seulement le temps de les regarder. Un coloris = 3 couleurs : la base, la vedette, les détails.
+   Les 3 versions répartissent les couleurs différemment (A : dans l'ordre donné). */
+const COLORIS_MAQUETTES = [
+  {nom:"Zède", cols:["#1DD10D","#000000","#156115"]},
+  {nom:"uwu",  cols:["#FFFFFF","#F99AEC","#C10BA9"]},
+];
+const LAB_VERS = {A:[0,1,2], B:[2,0,1], C:[1,0,2]};
+const labIdx = new Map();
+function labPal(c, v){
+  const k = c+"|"+v; if(labIdx.has(k)) return labIdx.get(k);
+  const M = COLORIS_MAQUETTES[c], o = LAB_VERS[v].map(i=>M.cols[i]);
+  const tint = "#"+[1,3,5].map(i=>Math.round(parseInt(o[1].slice(i,i+2),16)*.2+255*.8).toString(16).padStart(2,"0")).join("");
+  PALETTES.push([M.nom, o[0], o[1], o[2], tint]); labIdx.set(k, PALETTES.length-1); return PALETTES.length-1;
+}
+function labOpen(c=0, v=null){
+  v = v || "A"; const pal = labPal(c, v), M = COLORIS_MAQUETTES[c];
+  const tile = (x, sub) => `<button class="sh-tile" data-action="preview" data-k="${pv(x)}" style="${tstyle(x.type)}">${mImg(x,160,x.type==="calot"?64:Math.round(60*scaleOf(x.type)+14),"")}<b>${esc(sub[0])}</b><small>${esc(sub[1])}</small></button>`;
+  const decs = [0,1,6,7,11,12,18,20,24,2,30,34].filter(f=>FAMILIES[f]);
+  const el = document.getElementById("modal");
+  el.innerHTML = `<div class="modal lab-pop" role="dialog" aria-modal="true" aria-label="Maquettes de coloris"><button class="close-x" data-action="close-modal" aria-label="Fermer">×</button>
+    <span class="dc-kick">${ic("star",14)} Outil de test · rien n'est enregistré</span><h2>Maquettes de coloris</h2>
+    <div class="lab-row">${COLORIS_MAQUETTES.map((m,i)=>`<button class="chip" data-action="lab-pick" data-c="${i}" aria-pressed="${i===c}">${m.cols.map(x=>`<i class="lab-dot" style="background:${x}"></i>`).join("")}${esc(m.nom)}</button>`).join("")}</div>
+    <div class="lab-row">${Object.keys(LAB_VERS).map(k=>`<button class="chip" data-action="lab-pick" data-c="${c}" data-v="${k}" aria-pressed="${k===v}">Version ${k} ${LAB_VERS[k].map(i=>`<i class="lab-dot sq" style="background:${M.cols[i]}"></i>`).join("")}</button>`).join("")}</div>
+    <p class="meta">Base, vedette, détails : ${LAB_VERS[v].map(i=>M.cols[i]).join(" · ")}. Touche une bille pour la voir tourner.</p>
+    <h3 class="sub-h">12 décors, en Calot</h3><div class="lab-grid">${decs.map(f=>tile({seed:hash("lab"+f), type:"calot", family:f, pal, shiny:0}, [FAMILIES[f].name, DECOR_RAR[FAMILIES[f].rar].name])).join("")}</div>
+    <h3 class="sub-h">Les 6 tailles (Tourbillon)</h3><div class="lab-grid">${TK.map(t=>tile({seed:hash("lab-t"+t), type:t, family:1, pal, shiny:0}, [TYPES[t].label, TYPES[t].mm+" mm"])).join("")}</div>
+    <h3 class="sub-h">En shiny (Marbre)</h3><div class="lab-grid">${[1,2,3].map(k=>tile({seed:hash("lab-s"+k), type:"calot", family:18, pal, shiny:k}, [SHINIES[k].name, "Shiny"])).join("")}</div>
+  </div>`;
+  el.hidden = false; el.querySelector(".close-x").focus();
+}
 // Les chances du Mammouth gagné au Pachinko (case Mammouth) et au Château (rasé en un tir) : la roulette tire la rareté du décor
 // avec les mêmes chances que dans un sachet ; le coloris est au hasard, le shiny comme dans le Sachet Collector.
 function billeOdds(from){
@@ -9742,6 +9781,7 @@ function viewSoon(){
           <button class="btn btn-ghost" data-action="bell-test">Écouter la sonnerie de récré</button>
           <button class="btn btn-ghost" data-action="daily-reset">Revoir le bonbec du jour</button>
           <button class="btn btn-ghost" data-action="pity-max">Garantie Boulet au prochain sachet</button>
+          <button class="btn btn-ghost" data-action="lab-open">${ic("star",16)} Maquettes de coloris</button>
         </div>
       </section>
       <section class="panel"><div class="panel-head"><h3>Recommencer</h3></div>
@@ -10508,6 +10548,8 @@ document.addEventListener("click", e=>{
       break;
     }
     case "set-title": S.title = t.dataset.title; save(); renderTop(); renderView(); break;
+    case "lab-open": labOpen(); break;
+    case "lab-pick": labOpen(+t.dataset.c, t.dataset.v ?? null); break;
     case "bille-odds": billeOdds(t.dataset.from); break;
     case "zoom": if(specById(t.dataset.id)) openZoom(t.dataset.id); break;
     case "a-restart": initArena(ui.view); break;

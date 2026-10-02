@@ -7595,23 +7595,31 @@ async function pachiGo(pay){
   if(!pay && !pachiFree()) return;
   if(pay && S.jetons<PACHI_PRICE){ toast(`Il te manque ${fmt(PACHI_PRICE-S.jetons)} ${CUR.many}.`); return }
   pachi.busy = true;
-  let slot, bille = null;
+  // Pas de spoiler : pendant la chute, le solde ne montre que la mise payée ; le gain (bonbecs, sachet, Mammouth)
+  // n'apparaît qu'une fois la bille dans sa case (gain() est appelé à l'arrivée).
+  let slot, bille = null, gain;
   try{
-    if(srvOn()){ const r = await srv(()=>Cloud.eco.pachinko(!!pay)); slot = r.case; applyEco(r.eco); if(r.bille) bille = srvAdopt([r.bille])[0] }
-    else { slot = pickW(Math.random(), PACHI.map(c=>c.w)); const cs = PACHI[slot];
-      if(pay) S.jetons -= PACHI_PRICE; if(cs.j) S.jetons += cs.j; if(cs.sac) S.bagInv[cs.sac] = (S.bagInv[cs.sac]||0)+1;
-      if(cs.roue) bille = makeSpec("mammouth", {shiny:Math.random()<MAMM_SHINY ? rollShiny() : 0, src:"pachinko"}) }
+    if(srvOn()){ const r = await srv(()=>Cloud.eco.pachinko(!!pay)); slot = r.case; if(r.bille) bille = srvAdopt([r.bille])[0];
+      gain = () => applyEco(r.eco) }
+    else { slot = pickW(Math.random(), PACHI.map(c=>c.w)); const c0 = PACHI[slot];
+      if(c0.roue) bille = makeSpec("mammouth", {shiny:Math.random()<MAMM_SHINY ? rollShiny() : 0, src:"pachinko"});
+      gain = () => { if(c0.j) S.jetons += c0.j; if(c0.sac) S.bagInv[c0.sac] = (S.bagInv[c0.sac]||0)+1; save() } }
   }catch(e){ pachi.busy = false; srvFail(e); return }
+  if(pay){ S.jetons -= PACHI_PRICE; renderTop() }   // la mise part tout de suite (le serveur l'a déjà prise)
+  let given = false;
+  const give = () => { if(given) return; given = true; gain(); if(bille){ S.specs.push(bille); S.unseen.push(bille.id); logFind(bille); save() } };
+  // si on quitte le plateau pendant la chute, le gain arrive quand même, à l'heure où la bille serait tombée
+  setTimeout(give, (PACHI_ROWS+1)*PACHI_HOP*1000 + 600);
   const cs = PACHI[slot];
   if(!pay) playedToday().pachinko = {done:1, rew:cs.j||0};
   S.stats.pachi = (S.stats.pachi||0)+1;
-  if(bille){ S.specs.push(bille); S.unseen.push(bille.id); logFind(bille) }
   save();
   document.querySelectorAll('[data-action="pachi-go"]').forEach(b=>b.disabled = true);
   const w0 = document.getElementById("p-win"); if(w0) w0.hidden = true;
   pachi.land = null;
   pachi.ball = {spec:activeSpec(), path:pachiPath(slot), t0:performance.now()+150, seg:-1, onEnd:()=>{
     pachi.land = slot; pachi.landT = performance.now(); pachi.busy = false;
+    give();
     pachiSparks(pachiSlotX(slot), PH-100, cs.j===0 ? 10 : 50, cs.j===0 ? ["#8E8898"] : ["#FFE14D","#FF4FD8","#39E6FF","#7CE59A", cs.c], cs.j!==0);
     const big = cs.roue || cs.sac==="collector" || cs.sac==="premium" || cs.j>=400;
     const w = document.getElementById("p-win");

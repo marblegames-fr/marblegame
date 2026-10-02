@@ -1059,6 +1059,10 @@ button.vit-slot:hover{background:var(--panel-2);color:var(--ink)}
 .roue-res{display:grid;justify-items:center;gap:8px}
 .roue-res .pills{display:flex;gap:5px;flex-wrap:wrap;justify-content:center}
 .roue-res .btns{display:flex;gap:8px;margin-top:6px}
+.mr-legend{list-style:none;margin:0;padding:0;display:flex;flex-wrap:wrap;justify-content:center;gap:4px 12px;font-size:12px;font-weight:800;color:var(--ink-2)}
+.mr-legend li{display:flex;align-items:center;gap:5px}.mr-legend i{width:10px;height:10px;border-radius:3px}
+.mr-slot{min-width:240px;padding:12px 20px;border-radius:16px;background:#24253D;color:#fff;font-family:var(--display);font-size:30px;line-height:1.1;box-shadow:inset 0 0 0 3px #FFE14D}
+.mr-win{display:block;transition:transform .2s}.mr-win.on{color:#FFE14D;transform:scale(1.15)}
 .evf-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(190px,1fr));gap:10px;margin-top:12px}
 .evf-card{display:grid;justify-items:center;gap:6px;padding:12px 10px;border-radius:16px;border:1.5px dashed var(--line-2);background:var(--panel-2);text-align:center}
 .evf-card.ok{border-style:solid;border-color:var(--yellow);background:color-mix(in srgb,var(--yellow) 10%,var(--panel))}
@@ -7177,7 +7181,7 @@ const ARENA = {
     rules:["5 lancers, toujours depuis le milieu de la ligne de craie : ta bille ne bouge pas, à toi de trouver le bon angle.","Avant chaque lancer, le pot et les cailloux changent de place !","Chaque bille dans le pot rapporte 30 bonbecs.","Une bille qui ne rentre pas disparaît. Des cailloux gardent le pot : vise les rebonds !","1 bille dans le pot : 1 étoile (+20), 3 billes : 2 étoiles (+50), 5 billes : 3 étoiles (+100).","Une partie par jour : si tu quittes en route, tu la reprends là où tu en étais."]},
   chateau:{title:"Le Château", icon:"castle",
     lead:"Dix billes rangées au milieu d'un cercle de craie, dans une forme différente chaque jour. Fais-les toutes sortir, et le plus vite possible !",
-    rules:["3 tirs depuis la ligne de craie, d'un endroit différent à chaque fois.","Chaque jour, une nouvelle forme : triangle, carré, ligne, cercle ou croix. Les 3 Calots sont plus lourds, plus durs à sortir.","Chaque bille sortie du cercle rapporte 10 bonbecs.","3 billes sorties : 1 étoile, 6 : 2 étoiles, les 10 : 3 étoiles et la roue de la bille : une vraie bille pour ta boîte, de la Mini au Mammouth !","Château rasé en 1 tir : +120 bonbecs, en 2 tirs : +60.","Plus ta bille active est grosse, plus elle tape fort.","Une partie par jour : si tu quittes en route, tu la reprends là où tu en étais."]},
+    rules:["3 tirs depuis la ligne de craie, d'un endroit différent à chaque fois.","Chaque jour, une nouvelle forme (triangle, carré, ligne, cercle ou croix), tournée dans un sens différent. Les 3 Calots sont plus lourds, plus durs à sortir.","Chaque bille sortie du cercle rapporte 10 bonbecs.","3 billes sorties : 1 étoile, 6 : 2 étoiles, les 10 : 3 étoiles.","Les 10 sorties : +60 bonbecs, et +60 de plus si c'est en 2 tirs.","Château rasé en un seul tir : +160 bonbecs et un Mammouth garanti, dont la roulette choisit le décor !","Plus ta bille active est grosse, plus elle tape fort.","Une partie par jour : si tu quittes en route, tu la reprends là où tu en étais."]},
   course:{title:"La Course sur la plage", icon:"flag",
     lead:"Le Tour de France des billes des vacances : une piste creusée dans le sable, trois adversaires, et chacun sa pichenette à son tour. Le premier qui passe la ligne a gagné !",
     rules:["Chacun joue une pichenette à son tour : toi, puis tes trois adversaires.","Si ta bille sort de la piste, elle revient là où elle était. Pas de raccourci !","Tu peux bousculer les autres billes : c'est de bonne guerre.","1re place : 200 bonbecs, 2e : 120, 3e : 70, 4e : 30. 30 pichenettes au maximum.","Une partie par jour : si tu quittes en route, tu la reprends là où tu en étais."]},
@@ -7280,27 +7284,29 @@ function artCourse(){ return `<svg viewBox="0 0 240 130" preserveAspectRatio="xM
 // Cases de gauche à droite : mêmes valeurs que interne.pachinko_cases() dans serveur.sql. Le serveur tire la case, le jeu anime la chute.
 // Plus un lot vaut cher, plus il est rare (sachets comptés à leur prix : Classique 300, Premium 600, Collector 1 500) :
 // 50 > 200 > Classique > 400 > Premium > 1000 > Collector > Bille. Les lots les plus rares sont au bord, comme sur un vrai plateau.
-// La bille coûte 100 (2 octobre 2026, le soir, choix du joueur-auteur) avec les chances d'avant : on retrouve au moins sa mise dans 41 % des cas,
-// et en moyenne une bille rend ~171 bonbecs (sans compter la case Bille) : le Pachinko payant rapporte plus qu'il ne coûte.
+// La bille coûte 100 (2 octobre 2026, le soir) avec les chances d'avant : on retrouve au moins sa mise dans 41 % des cas,
+// et en moyenne une bille rend ~173 bonbecs (sans compter le Mammouth) : le Pachinko payant rapporte plus qu'il ne coûte.
+// Case Mammouth (2 octobre 2026, tard) : 0,05 %, un Mammouth garanti dont la roulette tire le décor (mêmes chances que dans un sachet),
+// coloris au hasard, shiny comme dans le Sachet Collector. Les 0,45 % libérés vont aux lots juste en dessous.
 const PACHI = [
-  {w:.5,   roue:true,       lbl:"Bille",     c:"#E5484D"},
-  {w:3,    j:1000,          lbl:"1000",      c:"#E8743B"},
-  {w:6.5,  j:400,           lbl:"400",       c:"#7B6CF6"},
+  {w:.05,  roue:true,       lbl:"Mammouth",  c:"#E5484D"},
+  {w:3.1,  j:1000,          lbl:"1000",      c:"#E8743B"},
+  {w:6.6,  j:400,           lbl:"400",       c:"#7B6CF6"},
   {w:9,    j:200,           lbl:"200",       c:"#C98E4E"},
   {w:16,   j:50,            lbl:"50",        c:"#8E8898"},
   {w:27,   j:0,             lbl:"0",         c:"#4A3F5C"},
   {w:16,   j:50,            lbl:"50",        c:"#8E8898"},
   {w:9,    j:200,           lbl:"200",       c:"#C98E4E"},
   {w:8,    sac:"classique", lbl:"Classique", c:"#2A8A74"},
-  {w:4,    sac:"premium",   lbl:"Premium",   c:"#34469C"},
-  {w:1,    sac:"collector", lbl:"Collector", c:"#D9A020"},
+  {w:4.1,  sac:"premium",   lbl:"Premium",   c:"#34469C"},
+  {w:1.15, sac:"collector", lbl:"Collector", c:"#D9A020"},
 ];
-// la roue de la case « Bille » (la plus rare) : la taille (mêmes chances que interne.pachinko_roue), puis décor, coloris et shiny au hasard
-const PACHI_ROUE = [10,15,20,25,20,10];
+// le Mammouth gagné (Pachinko, Château rasé en un tir) : shiny avec les chances du Sachet Collector
+const MAMM_SHINY = SHINY_RATE*10;
 const PACHI_PRICE = 100, PACHI_ROWS = PACHI.length-1, PW = 540, PH = 700, PACHI_GAP = 47;
 const pachi = {raf:0, busy:false};
 const pachiFree = () => !playedToday().pachinko;
-const pachiPrize = c => c.roue ? "une bille" : c.sac ? `un ${BAG_BY[c.sac].name}` : c.j ? `${c.j} ${CUR.many}` : "rien cette fois";
+const pachiPrize = c => c.roue ? "un Mammouth" : c.sac ? `un ${BAG_BY[c.sac].name}` : c.j ? `${c.j} ${CUR.many}` : "rien cette fois";
 function viewPachinko(){
   const act = activeSpec(), tot = PACHI.reduce((a,c)=>a+c.w,0), free = pachiFree();
   const kinds = [...new Map(PACHI.map(c=>[c.lbl,c])).values()];
@@ -7318,8 +7324,8 @@ function viewPachinko(){
     <aside style="display:grid;gap:20px">
       <section class="panel"><div class="panel-head"><h3>Les cases</h3><span class="sample-tag">Chances</span></div>
         <ul class="rewards-list">${kinds.map(c=>({c, p:PACHI.filter(x=>x.lbl===c.lbl).reduce((a,x)=>a+x.w,0)/tot})).sort((a,b)=>a.p-b.p).map(({c,p})=>{
-          return `<li><span><i class="pachi-dot" style="background:${c.c}"></i>${c.roue?`Une bille : la roue choisit sa taille ${oddsBtn("pachinko")}`:c.sac?BAG_BY[c.sac].name+" offert":c.j?`${fmt(c.j)} ${CUR.many}`:"Rien du tout"}</span><b>${pct(+(p*100).toFixed(p<.1?1:0))}</b></li>` }).join("")}</ul>
-        <p class="meta" style="margin-top:8px">La roue de la bille : ${TK.map((t,i)=>`${TYPES[t].label} ${PACHI_ROUE[i]} %`).join(" · ")}. Décor, coloris et shiny au hasard, comme dans un sachet.</p>
+          return `<li><span><i class="pachi-dot" style="background:${c.c}"></i>${c.roue?`Un Mammouth : la roulette choisit son décor ${oddsBtn("pachinko")}`:c.sac?BAG_BY[c.sac].name+" offert":c.j?`${fmt(c.j)} ${CUR.many}`:"Rien du tout"}</span><b>${pct(+(p*100).toFixed(p<.1?1:0))}</b></li>` }).join("")}</ul>
+        <p class="meta" style="margin-top:8px">Le Mammouth : la roulette tire la rareté de son décor avec les mêmes chances que dans un sachet, le coloris est au hasard, et il peut être shiny comme dans un Sachet Collector.</p>
         <p class="meta" style="margin-top:8px">Tu retrouves au moins ta mise ${pct(41)} du temps. La bille du jour, elle, est gratuite et compte dans tes jeux du jour.</p></section>
       <section class="panel"><div class="panel-head"><h3>Ta bille</h3><button class="see-all" data-action="pick-active">Changer ${ic("chev",14)}</button></div>
         ${act?`<div class="my-ball">${mImg(act,120,48,"")}<div><b>${esc(specName(act))}</b><small>${TYPES[act.type].label} · ${TYPES[act.type].mm} mm</small></div></div>`:""}</section>
@@ -7459,44 +7465,63 @@ function pachiSparks(x, y, n, cols, big){
     P.push({x, y, vx:Math.cos(a)*v, vy:Math.sin(a)*v, life:1, dec:big ? .012+Math.random()*.012 : .05, col:cols[i%cols.length], sq:big && i%2===0}) }
   if(P.length>400) P.splice(0, P.length-400);
 }
-// Les chances de « la bille » gagnée au Pachinko (case Bille) et au Château (les 10 sorties) : la roue choisit la taille,
-// puis le décor, le coloris et le shiny sont tirés comme dans un sachet gratuit (mêmes valeurs que le serveur).
+// Les chances du Mammouth gagné au Pachinko (case Mammouth) et au Château (rasé en un tir) : la roulette tire la rareté du décor
+// avec les mêmes chances que dans un sachet ; le coloris est au hasard, le shiny comme dans le Sachet Collector.
 function billeOdds(from){
-  const tot = PACHI_ROUE.reduce((a,x)=>a+x,0), fw = DECOR_IDS.reduce((a,f)=>a+FAM_W[f],0), sw = SHINIES.slice(1).reduce((a,x)=>a+x.w,0);
+  const fw = DECOR_IDS.reduce((a,f)=>a+FAM_W[f],0), sw = SHINIES.slice(1).reduce((a,x)=>a+x.w,0);
   const rows = (l) => `<ul class="rewards-list">${l.map(([a,b])=>`<li><span>${a}</span><b>${b}</b></li>`).join("")}</ul>`;
   const el = document.getElementById("modal");
-  el.innerHTML = `<div class="modal odds-pop" role="dialog" aria-modal="true" aria-label="Les chances de la bille"><button class="close-x" data-action="close-modal" aria-label="Fermer">×</button>
-    <span class="dc-kick">${ic(from==="chateau"?"castle":"pachi",14)} ${from==="chateau"?"Le Château · les 10 sorties":"Le Pachinko · case Bille"}</span>
-    <h2>Les chances de la bille</h2>
-    <p class="meta">La roue choisit d'abord la taille. Ensuite, le décor, le coloris et l'effet shiny sont tirés au hasard, comme pour une bille du sachet gratuit.</p>
-    <h3>1. La taille (la roue)</h3>${rows(TK.map((t,i)=>[`<i class="pachi-dot" style="background:${RARITY[i].c}"></i>${TYPES[t].label}`, pct(+(PACHI_ROUE[i]/tot*100).toFixed(1))]))}
-    <h3>2. Le décor</h3>${rows(DECOR_RAR.map((R,k)=>({R, n:DECOR_IDS.filter(f=>FAMILIES[f].rar===k).length})).filter(x=>x.n).map(({R,n})=>
-      [`<i class="pachi-dot" style="background:${R.c}"></i>${R.name} <small class="meta">(${n} décor${n>1?"s":""})</small>`, `${pct(+(R.w*n/fw*100).toFixed(1))} <small class="meta">· ${oneIn(R.w/fw)} chacun</small>`]))}
-    <h3>3. Le coloris</h3>${rows([[`Chacun des ${BASE_PALS} coloris`, oneIn(1/BASE_PALS)]])}
-    <h3>4. L'effet shiny</h3>${rows([["Une shiny, tous effets confondus", oneIn(SHINY_RATE)], ...SHINIES.slice(1).map(x=>[`dont ${x.name}`, oneIn(SHINY_RATE*x.w/sw)])])}
+  el.innerHTML = `<div class="modal odds-pop" role="dialog" aria-modal="true" aria-label="Les chances du Mammouth"><button class="close-x" data-action="close-modal" aria-label="Fermer">×</button>
+    <span class="dc-kick">${ic(from==="chateau"?"castle":"pachi",14)} ${from==="chateau"?"Le Château · rasé en un tir":"Le Pachinko · case Mammouth"}</span>
+    <h2>Les chances du Mammouth</h2>
+    <p class="meta">C'est toujours un Mammouth. La roulette tire la rareté de son décor, avec les mêmes chances que dans un sachet. Le coloris est au hasard, et il peut être shiny comme dans un Sachet Collector.</p>
+    <h3>1. Le décor (la roulette)</h3>${rows(DECOR_RAR.map((R,k)=>({R, n:DECOR_IDS.filter(f=>FAMILIES[f].rar===k).length})).filter(x=>x.n).map(({R,n})=>
+      [`<i class="pachi-dot" style="background:${R.c}"></i>${R.name} <small class="meta">(${n} décor${n>1?"s":""})</small>`, `${pct(+(R.w*n/fw*100).toFixed(R.w*n/fw<.01?2:1))} <small class="meta">· ${oneIn(R.w/fw)} chacun</small>`]))}
+    <h3>2. Le coloris</h3>${rows([[`Chacun des ${BASE_PALS} coloris`, oneIn(1/BASE_PALS)]])}
+    <h3>3. L'effet shiny</h3>${rows([["Une shiny, tous effets confondus", oneIn(MAMM_SHINY)], ...SHINIES.slice(1).map(x=>[`dont ${x.name}`, oneIn(MAMM_SHINY*x.w/sw)])])}
   </div>`;
   el.hidden = false; el.querySelector(".close-x").focus();
 }
-const oddsBtn = from => `<button class="odds-i" data-action="bille-odds" data-from="${from}" aria-label="Voir les chances de la bille" title="Voir les chances de la bille">?</button>`;
+const oddsBtn = from => `<button class="odds-i" data-action="bille-odds" data-from="${from}" aria-label="Voir les chances du Mammouth" title="Voir les chances du Mammouth">?</button>`;
 // la roue de la case « Bille » : elle tourne et s'arrête sur la taille tirée, puis la bille apparaît
-function pachiRoue(b, kick="Case Bille"){
-  const el = document.getElementById("modal"), tot = PACHI_ROUE.reduce((a,x)=>a+x,0), k = TIDX[b.type];
-  let a0 = 0; const segs = PACHI_ROUE.map((w,i)=>{ const a1 = a0+w/tot*360, seg = {i, a0, a1}; a0 = a1; return seg });
-  const grad = segs.map(g=>`${RARITY[g.i].c} ${g.a0}deg ${g.a1}deg`).join(",");
-  const target = segs[k], mid = target.a0 + (target.a1-target.a0)*(.25+.5*Math.random());
-  const labels = segs.map(g=>{ const m = (g.a0+g.a1)/2; return `<span class="rw-l" style="transform:rotate(${m}deg) translateY(-118px) rotate(${-m}deg)">${TYPES[TK[g.i]].label.replace("Bille chinoise","Chinoise").replace("Mini bille","Mini")}</span>` }).join("");
-  el.innerHTML = `<div class="modal roue-modal" role="dialog" aria-modal="true" aria-label="La roue de la bille">
-    <span class="dc-kick">${ic(kick==="Case Bille"?"pachi":"castle",14)} ${kick}</span><h2>La roue de la bille</h2>
+// La roulette du Mammouth : 1) elle tourne et s'arrête sur la rareté du décor (chaque part à sa vraie taille : le Légendaire n'est
+// qu'un filet doré), 2) les décors de cette rareté défilent comme une machine à sous jusqu'au bon, 3) le Mammouth apparaît.
+// Le serveur a déjà tout tiré : la roulette ne fait que le montrer.
+function mammRoulette(b, from){
+  const el = document.getElementById("modal"), F = FAMILIES[b.family], fw = DECOR_IDS.reduce((a,f)=>a+FAM_W[f],0);
+  const rars = DECOR_RAR.map((R,k)=>({R, k, p:DECOR_IDS.filter(f=>FAMILIES[f].rar===k).reduce((a,f)=>a+FAM_W[f],0)/fw})).filter(x=>x.p>0);
+  let a0 = 0; const segs = rars.map(x=>{ const a1 = a0+x.p*360, g = {...x, a0, a1}; a0 = a1; return g });
+  const grad = segs.map(g=>`${g.R.c} ${g.a0}deg ${g.a1}deg`).join(",");
+  const target = segs.find(g=>g.k===F.rar) || segs[0], mid = target.a0 + (target.a1-target.a0)*(.3+.4*Math.random());
+  const labels = segs.filter(g=>g.a1-g.a0>28).map(g=>{ const m = (g.a0+g.a1)/2; return `<span class="rw-l" style="transform:rotate(${m}deg) translateY(-104px) rotate(${-m}deg)">${g.R.name}</span>` }).join("");
+  const same = DECOR_IDS.filter(f=>FAMILIES[f].rar===F.rar);
+  el.innerHTML = `<div class="modal roue-modal mamm-modal" role="dialog" aria-modal="true" aria-label="La roulette du Mammouth">
+    <span class="dc-kick">${ic(from==="chateau"?"castle":"pachi",14)} ${from==="chateau"?"Château rasé en un tir":"Case Mammouth"}</span><h2>Un Mammouth pour toi !</h2>
+    <p class="meta" id="mr-step">La roulette choisit la rareté de son décor…</p>
     <div class="roue-wrap"><i class="roue-ptr"></i><div class="roue" id="roue" style="background:conic-gradient(${grad})">${labels}</div></div>
-    <div class="roue-res" id="roue-res" hidden><span class="ball">${mImg(b,240,Math.round(70*scaleOf(b.type)+40),"")}</span><b>${esc(TYPES[b.type].label+" "+specName(b))}</b>
+    <ul class="mr-legend">${segs.map(g=>`<li><i style="background:${g.R.c}"></i>${g.R.name} <b>${pct(+(g.p*100).toFixed(g.p<.01?2:1))}</b></li>`).join("")}</ul>
+    <div class="mr-slot" id="mr-slot" hidden><span class="mr-win" id="mr-win"></span></div>
+    <div class="roue-res" id="roue-res" hidden><span class="ball">${mImg(b,300,170,"")}</span><b>${esc(specName(b))}</b>
       <span class="pills">${typePill(b.type,true)}${shinyPill(b)}${rarTag(b.family)}</span>
       <div class="btns"><button class="btn btn-ghost" data-action="spec" data-id="${b.id}">Voir la fiche</button><button class="btn btn-yellow" data-action="close-modal">Super !</button></div></div></div>`;
   el.hidden = false;
-  const r = document.getElementById("roue"), spin = 360*6 + (360-mid);
-  requestAnimationFrame(()=>{ r.style.transition = "transform 4.2s cubic-bezier(.12,.75,.15,1)"; r.style.transform = `rotate(${spin}deg)` });
-  let ticks = 0; const tk = setInterval(()=>{ if(++ticks>28){ clearInterval(tk); return } Sound.hit(.08) }, 140);
-  setTimeout(()=>{ const res = document.getElementById("roue-res"); if(!res) return; res.hidden = false;
-    Sound.reveal?.(FMT_TIER[b.type], !!b.shiny); if(TIDX[b.type]>=4 || b.shiny) FX.fireworks(SHINY_COLS, 6) }, 4400);
+  const r = document.getElementById("roue"), spin = 360*7 + (360-mid);
+  requestAnimationFrame(()=>{ r.style.transition = "transform 4.6s cubic-bezier(.12,.75,.15,1)"; r.style.transform = `rotate(${spin}deg)` });
+  let ticks = 0; const tk = setInterval(()=>{ if(++ticks>30){ clearInterval(tk); return } Sound.hit(.08) }, 140);
+  // 2) la machine à sous des décors
+  setTimeout(()=>{ if(!document.getElementById("mr-slot")) return;
+    document.getElementById("mr-step").innerHTML = `<b style="color:${DECOR_RAR[F.rar].c}">${DECOR_RAR[F.rar].name}</b> ! Et le décor…`;
+    if(F.rar>=3){ FX.burst(innerWidth/2, innerHeight/2, [DECOR_RAR[F.rar].c, "#FFF3D6"], F.rar===4 ? 90 : 45, 1.1); Sound.decor?.(F.rar) }
+    const slot = document.getElementById("mr-slot"), win = document.getElementById("mr-win"); slot.hidden = false;
+    const seq = []; for(let i=0;i<14;i++) seq.push(same[Math.floor(Math.random()*same.length)]); seq.push(b.family);
+    let k = 0; const step = () => { if(!document.body.contains(win)) return; win.textContent = FAMILIES[seq[k]].name; Sound.tap?.(0,.3);
+      if(++k < seq.length) setTimeout(step, 60 + k*k*2.2); else { win.classList.add("on"); setTimeout(reveal, 700) } };
+    step() }, 4800);
+  // 3) le Mammouth
+  const reveal = () => { const res = document.getElementById("roue-res"); if(!res) return;
+    document.querySelector(".mamm-modal .roue-wrap").hidden = true; document.querySelector(".mamm-modal .mr-legend").hidden = true;
+    document.getElementById("mr-step").textContent = `${F.name} · ${PALETTES[b.pal][0]}`; res.hidden = false;
+    Sound.reveal?.(FMT_TIER.mammouth, !!b.shiny); FX.fireworks(b.shiny ? SHINY_COLS : [DECOR_RAR[F.rar].c, "#FFE14D", "#FFFFFF"], b.shiny || F.rar>=3 ? 9 : 5) };
 }
 let pachiSpr = null;
 function pachiSprite(spec, px){ const key = `${spec.seed}|${px}`; if(pachiSpr?.key===key) return pachiSpr.img;
@@ -7527,7 +7552,7 @@ async function pachiGo(pay){
     if(srvOn()){ const r = await srv(()=>Cloud.eco.pachinko(!!pay)); slot = r.case; applyEco(r.eco); if(r.bille) bille = srvAdopt([r.bille])[0] }
     else { slot = pickW(Math.random(), PACHI.map(c=>c.w)); const cs = PACHI[slot];
       if(pay) S.jetons -= PACHI_PRICE; if(cs.j) S.jetons += cs.j; if(cs.sac) S.bagInv[cs.sac] = (S.bagInv[cs.sac]||0)+1;
-      if(cs.roue) bille = makeSpec(TK[pickW(Math.random(), PACHI_ROUE)], {shiny:Math.random()<SHINY_RATE ? rollShiny() : 0, src:"pachinko"}) }
+      if(cs.roue) bille = makeSpec("mammouth", {shiny:Math.random()<MAMM_SHINY ? rollShiny() : 0, src:"pachinko"}) }
   }catch(e){ pachi.busy = false; srvFail(e); return }
   const cs = PACHI[slot];
   if(!pay) playedToday().pachinko = {done:1, rew:cs.j||0};
@@ -7542,9 +7567,9 @@ async function pachiGo(pay){
     pachiSparks(pachiSlotX(slot), PH-100, cs.j===0 ? 10 : 50, cs.j===0 ? ["#8E8898"] : ["#FFE14D","#FF4FD8","#39E6FF","#7CE59A", cs.c], cs.j!==0);
     const big = cs.roue || cs.sac==="collector" || cs.sac==="premium" || cs.j>=400;
     const w = document.getElementById("p-win");
-    if(w){ w.innerHTML = `<b>${cs.roue ? "Une bille !" : big ? "Bravo !" : cs.j===0 ? "Raté…" : "Gagné !"}</b><span>${cs.roue ? "La roue choisit sa taille…" : pachiPrize(cs)}</span>`; w.hidden = false }
+    if(w){ w.innerHTML = `<b>${cs.roue ? "MAMMOUTH !" : big ? "Bravo !" : cs.j===0 ? "Raté…" : "Gagné !"}</b><span>${cs.roue ? "La roulette choisit son décor…" : pachiPrize(cs)}</span>`; w.hidden = false }
     if(big){ Sound.ding(); FX.fireworks(SHINY_COLS, 4) } else if(cs.j!==0) Sound.coin(); else Sound.pop();
-    if(cs.roue && bille) setTimeout(()=>pachiRoue(bille), 700);
+    if(cs.roue && bille) setTimeout(()=>mammRoulette(bille, "pachinko"), 700);
     renderTop(); renderNav();
     if(!pay) gamesBonus();
     // les boutons se remettent à jour (la bille reste posée dans sa case)
@@ -7971,7 +7996,7 @@ function fxDraw(c){
 // Gains maximum (mêmes plafonds dans supabase/serveur.sql, public.gagner, source 'jeu').
 const DAY_GAMES = {
   pot:     {title:"Le Pot", max:250},
-  chateau: {title:"Le Château", max:300},
+  chateau: {title:"Le Château", max:340},
   casse:   {title:"Le Casse-briques", max:300},
   pachinko:{title:"Le Pachinko", max:0, prize:"une bille"},   // la bille gratuite du jour (supabase/serveur.sql, public.pachinko)
   tic:     {title:"La Tic", max:200},
@@ -7986,7 +8011,7 @@ function gamesBonus(){
 }
 const DAY_INFO = {
   pot:     {goal:"Envoie un maximum de billes dans le pot en 5 lancers, toujours depuis le milieu de la ligne de craie. Le pot et les cailloux changent de place à chaque lancer, et une bille ratée disparaît !", rew:[["Chaque bille dans le pot","30"],["1, 3 ou 5 billes : 1, 2 ou 3 étoiles","+20 · +50 · +100"]]},
-  chateau: {goal:"Fais sortir les 10 billes du cercle de craie en 3 tirs au plus. Le château change de forme chaque jour !", rew:[["Chaque bille sortie du cercle","10"],["3, 6 ou 10 billes : 1, 2 ou 3 étoiles","+20 · +40 · +80"],["Rasé en 1 tir / en 2 tirs","+120 · +60"],["Les 10 sorties","la roue de la bille !"]]},
+  chateau: {goal:"Fais sortir les 10 billes du cercle de craie en 3 tirs au plus. Le château change de forme chaque jour !", rew:[["Chaque bille sortie du cercle","10"],["3, 6 ou 10 billes : 1, 2 ou 3 étoiles","+20 · +40 · +80"],["Les 10 sorties / en 2 tirs","+60 · +120"],["Rasé en un seul tir","+160 et un Mammouth !"]]},
   casse:   {goal:"Casse les murs de briques niveau après niveau, sans laisser tomber ta bille. 3 vies pour toute la partie, et des niveaux nouveaux chaque jour, de plus en plus durs.", rew:[["Chaque niveau réussi (6 au plus)","30"],["1, 3 ou 5 niveaux : 1, 2 ou 3 étoiles","+20 · +60 · +120"]]},
   course:  {goal:"Une course contre 3 joueurs de la cour, une pichenette chacun son tour. Le premier qui passe la ligne a gagné !", rew:[["1re place","200"],["2e place","120"],["3e place","70"],["4e place","30"]]},
   tic:     {goal:"Touche la bille de ton adversaire avant qu'il touche la tienne. 5 tirs chacun, et des cachettes partout : fais des rebonds sur les bords !", rew:[["Victoire","200"],["Match nul","80"],["Défaite","40"]]},
@@ -8026,7 +8051,7 @@ function dayCard(key, el){
 }
 // le panneau « Récompenses » à droite de chaque jeu (comme au Tir)
 const dayRewards = key => DAY_INFO[key] ? `<section class="panel"><div class="panel-head"><h3>Récompenses</h3></div><ul class="rewards-list">
-  ${DAY_INFO[key].rew.map(([l,v])=>`<li><span>${l}${/roue de la bille/.test(v) ? ` ${oddsBtn(key)}` : ""}</span><b>${/^[\d +·]+$/.test(v) ? `${v} ${CUR.many}` : v}</b></li>`).join("")}
+  ${DAY_INFO[key].rew.map(([l,v])=>`<li><span>${l}${/Mammouth/.test(v) ? ` ${oddsBtn(key)}` : ""}</span><b>${/^[\d +·]+$/.test(v) ? `${v} ${CUR.many}` : v}</b></li>`).join("")}
   <li><span>Ta partie du jour rapporte</span><b>↻ minuit</b></li></ul></section>` : "";
 // fin de la partie du jour : on paie (une fois), on montre le résultat
 function dayFinish(key, st, rew, title, text, resId="a-result"){
@@ -8119,7 +8144,9 @@ const SETUP = {
       croix:    ()=>[[0,0],[d,0],[2*d,0],[-d,0],[-2*d,0],[0,d],[0,2*d],[0,-d],[0,-2*d],[d,d]],
     };
     const keys = Object.keys(shapes); A.shape = keys[Math.floor(r()*keys.length)];
-    const pos = shapes[A.shape](), heavy = new Set(); while(heavy.size<3) heavy.add(Math.floor(r()*10));
+    const heavy = new Set(); while(heavy.size<3) heavy.add(Math.floor(r()*10));
+    // la forme est tournée d'un angle différent chaque jour : impossible d'apprendre « le tir parfait » par cœur
+    const rot = r()*TAU, cr = Math.cos(rot), sr = Math.sin(rot), pos = shapes[A.shape]().map(([x,y])=>[x*cr-y*sr, x*sr+y*cr]);
     A.castle = [];
     pos.forEach(([x,y],i)=>{ const sp = {...randSpec(heavy.has(i)?"calot":"bille"), seed:Math.floor(r()*4e9)}, b = mkBall(cx+x, cy+y, sp, {castle:true}); A.castle.push(b); A.balls.push(b) });
     A.decor = c=>{ chalk(c); c.setLineDash([14,12]); c.beginPath(); c.moveTo(152,AB+10); c.lineTo(152,AH-AB-10); c.stroke(); c.setLineDash([]);
@@ -8131,21 +8158,21 @@ const SETUP = {
         if(w && !b.won){ fxText(b.x, b.y-b.r-14, "+12"); fxBurst(b.x, b.y, "#BFF5C4", 10, 2) } b.won = w });
       A.out = A.castle.filter(b=>b.won).length;
       if(A.shots>0 && A.out<10){ next(); updArenaHud(); return }
-      // rasé en peu de tirs : un gros bonus (1 tir +120, 2 tirs +60) ; plafond 300 (même valeur dans serveur.sql)
-      const n=A.out, used = 3-A.shots, st = n>=10?3:n>=6?2:n>=3?1:0, fast = n>=10 ? [0,120,60,0][used] : 0, rew = n*10+[0,20,40,80][st]+fast;
+      // les 10 sorties : +60 en 3 tirs, +120 en 2 tirs ; rasé en un seul tir : +160 et un Mammouth (plafond 340, même valeur dans serveur.sql)
+      const n=A.out, used = 3-A.shots, st = n>=10?3:n>=6?2:n>=3?1:0, fast = n>=10 ? [0,160,120,60][used] : 0, rew = n*10+[0,20,40,80][st]+fast;
       S.stats.castle += n;
       let prize = "";
-      if(st===3 && gameLive("chateau")){
-        // comme la case « Bille » du Pachinko : la roue choisit la taille de la bille gagnée
-        prize = " Et pour de vrai : tu gagnes une bille ! La roue choisit sa taille…";
-        const won = s => { S.specs.push(s); S.unseen.push(s.id); logFind(s); save(); setTimeout(()=>pachiRoue(s, "Château rasé"), 1600) };
+      if(st===3 && used===1 && gameLive("chateau")){
+        // rasé en un seul tir : un Mammouth garanti, comme la case Mammouth du Pachinko (la roulette montre son décor)
+        prize = " Et un Mammouth pour ta boîte : la roulette choisit son décor…";
+        const won = s => { S.specs.push(s); S.unseen.push(s.id); logFind(s); save(); setTimeout(()=>mammRoulette(s, "chateau"), 1600) };
         if(srvOn()) srv(()=>Cloud.eco.marble("chateau","")).then(r=>{ applyEco(r.eco); won(srvAdopt([r.bille])[0]) }, srvFail);
-        else won(makeSpec(TK[pickW(Math.random(), PACHI_ROUE)], {shiny:Math.random()<SHINY_RATE ? rollShiny() : 0, src:"chateau"}));
+        else won(makeSpec("mammouth", {shiny:Math.random()<MAMM_SHINY ? rollShiny() : 0, src:"chateau"}));
       }
-      dayFinish("chateau", st, rew, n>=10?(used===1?"En un seul tir !!":"Château rasé !"):n>=6?"Belle démolition !":n?"Quelques briques en moins":"Le château tient bon", `${n} bille${n>1?"s":""} sortie${n>1?"s":""} du cercle sur 10${n>=10?` en ${used} tir${used>1?"s":""}${fast?` (bonus vitesse +${fast})`:""}`:""}.${prize}`);
+      dayFinish("chateau", st, rew, n>=10?(used===1?"En un seul tir !!":"Château rasé !"):n>=6?"Belle démolition !":n?"Quelques briques en moins":"Le château tient bon", `${n} bille${n>1?"s":""} sortie${n>1?"s":""} du cercle sur 10${n>=10?` en ${used} tir${used>1?"s":""} (bonus +${fast})`:""}.${prize}`);
     };
     A.hud = ()=>[["Château du jour",{triangle:"Triangle",carre:"Carré",ligne:"Ligne",cercle:"Cercle",croix:"Croix"}[A.shape]],["Tirs restants",A.shots],["Billes sorties",`${A.out} / 10`]];
-    spawnMine(120, 260);
+    spawnMine(120, 150+hash(dayKey()+"|chateau-depart")%220);   // le premier tir part d'un endroit différent chaque jour
   },
   tic(){
     const A = arena, lvl = 1+arena.level;

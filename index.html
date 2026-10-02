@@ -986,14 +986,34 @@ button.vit-slot:hover{background:var(--panel-2);color:var(--ink)}
 @media (max-width:560px){ .prof-card{grid-template-columns:minmax(0,1fr)} .vitrine,.prof-stats{grid-template-columns:repeat(2,minmax(0,1fr))} }
 
 /* ---------- la confiserie : échanger ou fusionner ---------- */
-.evf{margin-top:18px;border-top:4px solid #C8322F}
+.evf{border-top:4px solid #C8322F}
+/* Jeux de la cour : ta bille et la Grande Course, côte à côte */
+.gm-duo{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:18px;margin-bottom:18px}
+.gm-kick{display:inline-flex;align-items:center;gap:6px;font-size:11.5px;font-weight:900;letter-spacing:.08em;text-transform:uppercase;color:var(--muted)}
+.gm-ball-card{display:grid;justify-items:center;gap:8px;text-align:center;padding:18px;background:radial-gradient(ellipse 70% 60% at 50% 38%,color-mix(in srgb,var(--rc) 22%,transparent),transparent 70%),var(--panel)}
+.gm-main{display:flex;align-items:center;gap:16px}
+.gm-big{display:grid;place-items:center;min-width:150px;min-height:130px;filter:drop-shadow(0 14px 12px rgba(0,0,0,.35));transition:transform .2s}
+.gm-big:hover{transform:scale(1.05) rotate(-4deg)}
+.gm-name{font-family:var(--display);font-weight:400;font-size:24px;line-height:1.05}
+.gm-ball-card .pills{display:flex;gap:5px;flex-wrap:wrap;justify-content:center}
+.gm-gc{display:grid;justify-items:center;align-content:center;gap:10px;text-align:center;padding:18px;color:#fff;border:0;
+  background:radial-gradient(circle at 80% 10%,rgba(255,225,77,.35),transparent 40%),linear-gradient(135deg,#C8322F,#7B2FB0);transition:transform .2s}
+.gm-gc:hover{transform:translateY(-2px)}
+.gm-gc .gm-kick{color:rgba(255,255,255,.8)}
+.gm-gc-t{font-family:var(--display);font-weight:400;font-size:28px;line-height:1}
+.gm-gc-clock{display:grid;gap:2px;padding:10px 22px;border-radius:16px;background:rgba(0,0,0,.25)}
+.gm-gc-clock small{font-size:11px;font-weight:900;letter-spacing:.08em;text-transform:uppercase;opacity:.8}
+.gm-gc-clock b{font-family:var(--display);font-weight:400;font-size:34px;color:#FFE14D}
+.gm-gc-st{font-size:13px;font-weight:800;opacity:.92;max-width:34ch}
+.gm-gc-st.ok{display:inline-flex;align-items:center;gap:6px;padding:4px 12px;border-radius:999px;background:rgba(47,163,90,.9)}
+@media (max-width:760px){ .gm-duo{grid-template-columns:1fr} }
 .craft-filters{display:grid;gap:4px;margin:4px 0 8px}
 .craft-filters .chips{gap:6px}
 .craft-filters .chip{height:32px;padding:0 12px;font-size:12.5px}
 .craft-filters .chip.ev{border-color:#C8322F;color:#E5484D}
 .craft-filters .col-search{margin:10px 0 6px}
 .pachi-stage{position:relative;max-width:540px;margin:0 auto}
-.game-stage.pachi-stage canvas{width:100%;height:auto;aspect-ratio:540/620;border-radius:16px;display:block}
+.game-stage.pachi-stage canvas{width:100%;height:auto;aspect-ratio:540/700;border-radius:16px;display:block}
 .pachi-panel ~ aside .rewards-list b{white-space:nowrap}
 .pachi-btns{display:flex;gap:10px;flex-wrap:wrap;justify-content:center;margin-top:14px}
 .pachi-win{position:absolute;left:50%;top:20%;translate:-50% -50%;display:grid;justify-items:center;gap:4px;padding:16px 26px;border-radius:18px;background:rgba(20,12,30,.86);color:#fff;text-align:center;box-shadow:0 20px 40px -10px rgba(0,0,0,.6);animation:ask-in .25s ease-out}
@@ -1016,7 +1036,7 @@ button.vit-slot:hover{background:var(--panel-2);color:var(--ink)}
 .evf-card small{font-size:12px;font-weight:800;color:var(--ink-2)}
 .evf-balls{display:flex;align-items:center;gap:6px;color:var(--muted);min-height:64px}
 .evf-balls em{font-style:normal;font-weight:900;font-size:12px;color:var(--ink-2);margin-left:-8px;align-self:flex-end}
-.conf-choices{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px;margin-bottom:18px}
+.conf-choices{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:12px;margin-bottom:18px}
 /* devanture de la Confiserie : un store rayé comme chez le confiseur */
 .cf-shop{margin-bottom:20px}
 .cf-shop .conf-choices{margin:0;padding:26px 14px 14px;background:var(--panel);border:1px solid var(--line);border-top:0;border-radius:0 0 22px 22px}
@@ -1026,6 +1046,7 @@ button.vit-slot:hover{background:var(--panel-2);color:var(--ink)}
 .conf-choice .cc-ic{display:grid;place-items:center;width:52px;height:52px;flex:none;border-radius:50%;color:#fff;box-shadow:inset 0 -4px 0 rgba(0,0,0,.15)}
 .cc-echange .cc-ic{background:radial-gradient(circle at 35% 30%,#FFB3CF,#E0588E)}
 .cc-fusion .cc-ic{background:radial-gradient(circle at 35% 30%,#C9B2FF,#7A4FE0)}
+.cc-event .cc-ic{background:radial-gradient(circle at 35% 30%,#FF9A8A,#C8322F)}
 .conf-choice[aria-pressed="true"].cc-echange{border-color:#E0588E;background:color-mix(in srgb,#E0588E 9%,var(--panel))}
 .conf-choice[aria-pressed="true"].cc-fusion{border-color:#7A4FE0;background:color-mix(in srgb,#7A4FE0 9%,var(--panel))}
 .cf-filter{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:14px}
@@ -2842,19 +2863,14 @@ const BAGS = [FREE_BAG,
    slots:[sizeOdds([0,0,85,15,0,0]),sizeOdds([0,0,65,35,0,0]),sizeOdds([0,0,40,50,10,0]),sizeOdds([0,0,0,60,38,2]),sizeOdds([0,0,0,0,87,13])]},
 ];
 // sacs d'événement : en vente seulement pendant l'événement ; toutes leurs billes ont le décor de l'événement et un de ses coloris
-BAGS.push({id:"pirate", event:"pirates", name:"Sac Pirate", desc:"3 billes, avec la chance d'y trouver des billes Pirate, chacune dans un des 5 coloris pirates. Seulement pendant l'événement « À l'abordage ! ». 4 fois plus de chances de shiny.",
-  evFill:.12, evStar:.3,   // chances qu'une bille soit Pirate : 12 %, et 30 % pour la dernière ; le sac offert garantit la dernière (même chose dans serveur.sql)
-  price:600, n:3, color:"#2E2B36", tint:"#EADFC4", shiny:SHINY_RATE*4,
+// Le Sac Pirate (2 octobre 2026) : 600 bonbecs, 5 billes, TOUTES Pirate (chacune dans un des 5 coloris), avec des tailles un peu plus grosses.
+// Réglé pour qu'un joueur régulier complète l'album Pirate (5 coloris × 6 tailles) en 2 semaines : en simulation, ~21 sacs suffisent
+// 3 fois sur 4 avec la fusion d'événement, et à 15 sacs il manque en moyenne moins de 2 billes. Même chose dans serveur.sql (interne.sac).
+BAGS.push({id:"pirate", event:"pirates", name:"Sac Pirate", desc:"5 billes Pirate, chacune dans un des 5 coloris pirates. Seulement pendant l'événement « À l'abordage ! ». 4 fois plus de chances de shiny.",
+  evFill:1, evStar:1,
+  price:600, n:5, color:"#2E2B36", tint:"#EADFC4", shiny:SHINY_RATE*4,
   fam:FAMILIES.findIndex(F=>F.event==="pirates"), pals:EVENTS.pirates.palIdx,
-  slots:[sizeOdds([60,32,8,0,0,0]),sizeOdds([40,35,18,6,1,0]),sizeOdds([20,28,24,17,8,3])]});
-// Sac Pirate Premium : 5 billes aux tailles du Sac Classique, plus de chances de Pirate (15 %, 35 % pour la dernière).
-// Prix calé pour qu'aucun sac ne soit plus avantageux : comme les sacs de base, ~3 fois la valeur des billes (300 pour 5 billes Classique),
-// et chaque bille Pirate attendue coûte ~740 bonbecs, comme dans le Sac Pirate (0,95 Pirate par sac en moyenne contre 0,54).
-BAGS.push({id:"pirate-premium", event:"pirates", name:"Sac Pirate Premium", desc:"5 billes, avec plus de chances d'y trouver des billes Pirate (environ une par sac en moyenne). Seulement pendant l'événement « À l'abordage ! ». 4 fois plus de chances de shiny.",
-  evFill:.15, evStar:.35,   // même chose dans serveur.sql (ouvrir_sac)
-  price:1000, n:5, color:"#6E1A22", tint:"#F0DCC8", shiny:SHINY_RATE*4,
-  fam:FAMILIES.findIndex(F=>F.event==="pirates"), pals:EVENTS.pirates.palIdx,
-  slots:[sizeOdds([70,30,0,0,0,0]),sizeOdds([50,38,12,0,0,0]),sizeOdds([35,40,20,5,0,0]),sizeOdds([20,35,30,13,2,0]),sizeOdds([10,25,30,20,12,3])]});
+  slots:[sizeOdds([40,35,18,7,0,0]),sizeOdds([30,32,22,12,4,0]),sizeOdds([20,28,26,16,8,2]),sizeOdds([10,22,26,22,15,5]),sizeOdds([0,5,20,30,30,15])]});
 // par bille en moyenne (pour les chances d'une bille précise), et « au moins une » de chaque taille dans un sac
 BAGS.forEach(b=>{
   b.star = b.slots[b.n-1];
@@ -5213,7 +5229,7 @@ function heroSlides(){
       <div class="hm-txt">
         <span class="hm-k">${ic("flag",15)} Événement · jusqu'au ${dayMonth(E.end)}</span>
         <h1>${esc(E.name)} Les billes Pirate débarquent !</h1>
-        <p>Un décor inédit et ${E.pals.length} coloris qu'on ne trouve que dans le ${b.name}, pendant encore <b>${eventLeft(E)}</b>.${n?" Ton sac offert contient au moins une bille Pirate !":""}</p>
+        <p>Un décor inédit et ${E.pals.length} coloris qu'on ne trouve que dans le ${b.name}, pendant encore <b>${eventLeft(E)}</b>.</p>
         ${n ? `<button class="btn btn-yellow btn-xl" data-action="open-gift" data-bag="${b.id}">${ic("gift",22)} Ouvrir mon ${b.name} offert</button>`
             : `<button class="btn btn-yellow btn-xl" data-action="ev-bag" data-bag="${b.id}"><span class="hs-bb">${bagSVG(b)}</span> Voir le ${b.name}</button>`}
       </div>`}) });
@@ -5363,7 +5379,7 @@ function viewBags(){
   <div class="bg-stage">
     <div class="bg-info">
       <div>${b.event&&eventLive(EVENTS[b.event])?`<span class="sample-tag">${ic("clock",12)} Encore ${eventLeft(EVENTS[b.event])} · ${untilLabel(EVENTS[b.event].end)}</span>`:""}<h2>${b.name}</h2><p>${b.desc}</p>
-        ${b.event?`<p class="ev-rate">${ic("flag",14)} Bille Pirate : ${Math.round(b.evFill*100)} % par bille, ${Math.round(b.evStar*100)} % pour la vedette · au moins une dans ${Math.round(100*(1-Math.pow(1-b.evFill,b.n-1)*(1-b.evStar)))} % des sacs${S.bagInv[b.id]?` (ton sac offert en garantit une)`:""}</p><div class="ev-pals">${b.pals.map(pl=>`<span title="${esc(PALETTES[pl][0])}">${mImg({seed:hash("evp"+pl),type:"calot",family:b.fam,pal:pl,shiny:0},80,34,"")}</span>`).join("")}</div>`:""}</div>
+        ${b.event?`<p class="ev-rate">${ic("flag",14)} ${b.evFill>=1 ? `Les ${b.n} billes sont des billes ${FAMILIES[b.fam].name}` : `Bille ${FAMILIES[b.fam].name} : ${Math.round(b.evFill*100)} % par bille, ${Math.round(b.evStar*100)} % pour la vedette`} · ${b.pals.length} coloris à collectionner, dans les 6 tailles</p><div class="ev-pals">${b.pals.map(pl=>`<span title="${esc(PALETTES[pl][0])}">${mImg({seed:hash("evp"+pl),type:"calot",family:b.fam,pal:pl,shiny:0},80,34,"")}</span>`).join("")}</div>`:""}</div>
       <div class="bg-cta">${cta}</div>
       ${(()=>{ const left = PITY-(S.pity||0);
         return `<button class="pity-line${left<=3?" hot":""}" data-action="draw-how" title="Si tu ouvres ${PITY} sacs d'affilée sans Boulet ni Mammouth, le ${PITY}ᵉ te donne au minimum un Boulet.">${ic("shield",14)}<span>${left<=1?"Boulet garanti dans ce sac !":`Boulet garanti dans ${left} sacs au plus`}</span><i class="pl-bar"><i style="width:${(S.pity||0)/PITY*100}%"></i></i></button>` })()}
@@ -5858,8 +5874,7 @@ function viewCraft(){
         <div class="cf-step"><button data-action="craft-rm" data-k="${k}" ${inn?"":"disabled"} aria-label="En retirer une">−</button><b>${inn}</b><button data-action="craft-add" data-k="${k}" ${inn<l.length&&!full?"":"disabled"} aria-label="En ajouter une">+</button></div></div>` }).join("")}</div>`
       : `<p class="empty">Aucune bille de cette taille à fusionner pour l'instant.</p>`}
     <p class="meta" style="margin-top:12px">Les shiny, ta bille active, ta vitrine et les billes de saison ne peuvent pas être fusionnées.</p>
-  </section>
-  ${evFusionPanel()}`;
+  </section>`;
 }
 // Fusion d'événement : des billes d'événement d'une même taille et d'un même coloris donnent la taille au-dessus,
 // dans le même décor et le même coloris (le seul chemin réaliste vers un Mammouth Pirate). Même règle dans serveur.sql (fusion_evenement).
@@ -5952,7 +5967,8 @@ function byModel(list){
   return [...m.entries()].sort((a,b)=>TIDX[b[1][0].type]-TIDX[a[1][0].type] || specName(a[1][0]).localeCompare(specName(b[1][0]),"fr"));
 }
 function viewConfiserie(){
-  const tab = ui.confTab==="fusion" ? "fusion" : "echange";
+  const tab = ["fusion","evenement"].includes(ui.confTab) ? ui.confTab : "echange";
+  const evN = (()=>{ const g = new Map(); evPool().forEach(s=>{ const k = `${s.type}|${s.pal}`; g.set(k,(g.get(k)||0)+1) }); return [...g].filter(([k,n])=>TIDX[k.split("|")[0]]<TK.length-1 && n>=FUSION_EV[TIDX[k.split("|")[0]]]).length })();
   const dups = recyclableDups(), dupVal = dups.reduce((a,s)=>a+recycleValue(s),0);
   const fusions = TK.slice(0,-1).reduce((a,_,t)=>a+Math.floor(craftPool(t).length/craftN(t)),0);
   return `<div class="page-head"><div><h1>La Confiserie</h1><p>Comme à la boulangerie du coin après l'école. Tes billes en trop, deux façons d'en profiter : les échanger contre des ${CUR.many}, ou tenter la fusion pour une plus grosse.</p></div>
@@ -5964,9 +5980,11 @@ function viewConfiserie(){
         <div><b>Échanger contre des ${CUR.many}</b><small>${dups.length?`${dups.length} double${dups.length>1?"s":""} · +${fmt(dupVal)} ${CUR.many}`:"De 5 (Mini) à 400 (Mammouth) par bille"}</small></div></button>
       <button class="conf-choice cc-fusion" data-action="conf-tab" data-tab="fusion" aria-pressed="${tab==="fusion"}"><span class="cc-ic">${ic("flask",26)}</span>
         <div><b>Fusionner des billes</b><small>${fusions?`${fusions} fusion${fusions>1?"s":""} possible${fusions>1?"s":""}`:`${CRAFT_NS[0]} à ${CRAFT_NS[4]} billes d'une taille → 1 de la taille au-dessus`}</small></div></button>
+      ${evPool().length || liveEvents().length ? `<button class="conf-choice cc-event" data-action="conf-tab" data-tab="evenement" aria-pressed="${tab==="evenement"}"><span class="cc-ic">${ic("flag",26)}</span>
+        <div><b>Fusion d'événement</b><small>${evN?`${evN} fusion${evN>1?"s":""} possible${evN>1?"s":""}`:"Même coloris → la taille au-dessus"}</small></div></button>` : ""}
     </div>
   </div>
-  ${tab==="fusion" ? viewCraft() : confEchange(dups, dupVal)}`;
+  ${tab==="fusion" ? viewCraft() : tab==="evenement" ? evFusionPanel() : confEchange(dups, dupVal)}`;
 }
 function confEchange(dups, dupVal){
   const seules = ui.confF==="seules", singles = recyclableSingles();
@@ -6795,7 +6813,7 @@ function viewGame(){
         <div id="g-holes"></div>
       </section>
       <section class="panel">
-        <div class="panel-head"><h3>Ta bille</h3><button class="see-all" data-action="to-collection">Changer ${ic("chev",14)}</button></div>
+        <div class="panel-head"><h3>Ta bille</h3><button class="see-all" data-action="pick-active">Changer ${ic("chev",14)}</button></div>
         ${act?`<div class="my-ball">${mImg(act,120,48,"")}<div><b>${esc(specName(act))}</b><small>${TYPES[act.type].label} · ${TYPES[act.type].mm} mm</small></div></div>`:""}
       </section>
       <section class="panel">
@@ -7054,8 +7072,8 @@ function gDraw(){
 const AW=900, AH=520, AB=22, AMAXV=21;
 const ARENA = {
   pot:{title:"Le Pot", icon:"pot",
-    lead:"Le grand classique : envoie tes billes dans le trou creusé dans la terre. Tes billes restent sur le terrain, alors sers-t'en pour pousser les autres dans le pot !",
-    rules:["5 lancers depuis la ligne de craie : fais glisser ta bille le long de la ligne pour choisir d'où tu tires.","Avant chaque lancer, le pot et les cailloux changent de place !","Chaque bille dans le pot rapporte 20 bonbecs.","Les billes déjà lancées restent en jeu : pousse-les dans le pot !","1 bille dans le pot : 1 étoile, 3 billes : 2 étoiles, 5 billes : 3 étoiles.","Une partie par jour : si tu quittes en route, tu la reprends là où tu en étais."]},
+    lead:"Le grand classique : envoie tes billes dans le trou creusé dans la terre. Mais le pot change de place à chaque lancer, et des cailloux le gardent : il faudra viser les rebonds !",
+    rules:["5 lancers depuis la ligne de craie : fais glisser ta bille le long de la ligne pour choisir d'où tu tires.","Avant chaque lancer, le pot et les cailloux changent de place !","Chaque bille dans le pot rapporte 20 bonbecs.","Une bille qui ne rentre pas disparaît. Des cailloux gardent le pot : vise les rebonds !","1 bille dans le pot : 1 étoile, 3 billes : 2 étoiles, 5 billes : 3 étoiles.","Une partie par jour : si tu quittes en route, tu la reprends là où tu en étais."]},
   chateau:{title:"Le Château", icon:"castle",
     lead:"Dix billes rangées au milieu d'un cercle de craie, dans une forme différente chaque jour. Fais-les toutes sortir, et le plus vite possible !",
     rules:["3 tirs depuis la ligne de craie, d'un endroit différent à chaque fois.","Chaque jour, une nouvelle forme : triangle, carré, ligne, cercle ou croix. Les 3 Calots sont plus lourds, plus durs à sortir.","Chaque bille sortie du cercle rapporte 10 bonbecs.","3 billes sorties : 1 étoile, 6 : 2 étoiles, les 10 : 3 étoiles et une vraie bille gagnée pour ta boîte à billes !","Château rasé en 1 tir : +120 bonbecs, en 2 tirs : +60.","Plus ta bille active est grosse, plus elle tape fort.","Une partie par jour : si tu quittes en route, tu la reprends là où tu en étais."]},
@@ -7083,24 +7101,26 @@ function artCourse(){ return `<svg viewBox="0 0 240 130" preserveAspectRatio="xM
   <path d="M205 20v42" stroke="#5A3A20" stroke-width="2.5"/><path d="M205 20h24v14h-24z" fill="#fff"/><path d="M205 20h6v7h-6zM217 20h6v7h-6zM211 27h6v7h-6zM223 27h6v7h-6z" fill="#24253D"/></svg>` }
 /* ---------- le Pachinko : une bille tombe de clou en clou jusqu'à une case ---------- */
 // Cases de gauche à droite : mêmes valeurs que interne.pachinko_cases() dans serveur.sql. Le serveur tire la case, le jeu anime la chute.
-// On retrouve au moins sa mise (200) dans 42 % des cas ; en moyenne une bille rend ~187 bonbecs (93 %, sacs comptés à leur prix).
+// On retrouve au moins sa mise (200) dans 42 % des cas ; en moyenne une bille rend ~188 bonbecs (94 %, sacs comptés à leur prix).
 const PACHI = [
-  {w:.4,  roue:true,       lbl:"Bille",     c:"#E5484D"},
-  {w:2.2, sac:"premium",   lbl:"Premium",   c:"#34469C"},
-  {w:8.5, j:400,           lbl:"400",       c:"#7B6CF6"},
-  {w:12,  j:200,           lbl:"200",       c:"#C98E4E"},
-  {w:58,  j:100,           lbl:"100",       c:"#8E8898"},
-  {w:12,  j:200,           lbl:"200",       c:"#C98E4E"},
-  {w:5.5, sac:"classique", lbl:"Classique", c:"#2A8A74"},
-  {w:.5,  sac:"collector", lbl:"Collector", c:"#D9A020"},
-  {w:.9,  j:1000,          lbl:"1000",      c:"#E8743B"},
+  {w:.2,   roue:true,       lbl:"Bille",     c:"#E5484D"},
+  {w:3,    j:1000,          lbl:"1000",      c:"#E8743B"},
+  {w:3,    sac:"premium",   lbl:"Premium",   c:"#34469C"},
+  {w:10,   j:200,           lbl:"200",       c:"#C98E4E"},
+  {w:16.5, j:100,           lbl:"100",       c:"#8E8898"},
+  {w:25,   j:0,             lbl:"0",         c:"#4A3F5C"},
+  {w:16.5, j:100,           lbl:"100",       c:"#8E8898"},
+  {w:10,   j:200,           lbl:"200",       c:"#C98E4E"},
+  {w:9,    j:400,           lbl:"400",       c:"#7B6CF6"},
+  {w:6,    sac:"classique", lbl:"Classique", c:"#2A8A74"},
+  {w:.8,   sac:"collector", lbl:"Collector", c:"#D9A020"},
 ];
-// la roue de la case « Bille » : la taille (mêmes chances que interne.pachinko_roue), puis décor, coloris et shiny au hasard
-const PACHI_ROUE = [30,25,20,14,8,3];
-const PACHI_PRICE = 200, PACHI_ROWS = PACHI.length-1, PW = 540, PH = 620, PACHI_GAP = 56;
+// la roue de la case « Bille » (la plus rare) : la taille (mêmes chances que interne.pachinko_roue), puis décor, coloris et shiny au hasard
+const PACHI_ROUE = [10,15,20,25,20,10];
+const PACHI_PRICE = 200, PACHI_ROWS = PACHI.length-1, PW = 540, PH = 700, PACHI_GAP = 47;
 const pachi = {raf:0, busy:false};
 const pachiFree = () => !playedToday().pachinko;
-const pachiPrize = c => c.roue ? "une bille" : c.sac ? `un ${BAG_BY[c.sac].name}` : `${c.j} ${CUR.many}`;
+const pachiPrize = c => c.roue ? "une bille" : c.sac ? `un ${BAG_BY[c.sac].name}` : c.j ? `${c.j} ${CUR.many}` : "rien cette fois";
 function artPachinko(){ let pegs=""; for(let r=0;r<5;r++) for(let i=0;i<=r+3;i++) pegs+=`<circle cx="${120+(i-(r+3)/2)*24}" cy="${22+r*17}" r="2.6" fill="#F4E3C2"/>`;
   return `<svg viewBox="0 0 240 130" preserveAspectRatio="xMidYMid slice" aria-hidden="true"><rect width="240" height="130" fill="#3A1F4E"/>${pegs}
   ${[0,1,2,3,4,5,6].map(i=>`<rect x="${36+i*24}" y="110" width="22" height="20" rx="3" fill="${["#E5484D","#34469C","#2A8A74","#8E8898","#2A8A74","#34469C","#D9A020"][i]}"/>`).join("")}
@@ -7117,22 +7137,21 @@ function viewPachinko(){
       <div class="pachi-btns">
         <button class="btn btn-yellow btn-xl" data-action="pachi-go" data-pay="0" ${free?"":"disabled"}>${ic("gift",18)} ${free?"Lâcher ma bille du jour":"Bille du jour lâchée"}</button>
         <button class="btn ${free?"btn-ghost":"btn-yellow btn-xl"}" data-action="pachi-go" data-pay="1" ${S.jetons<PACHI_PRICE?"disabled":""}>Une bille de plus · <span class="price">${COIN}${PACHI_PRICE}</span></button>
-        ${free ? "" : `<button class="btn btn-ghost" data-action="pachi-go" data-pay="fun">${ic("play",16)} Pour le plaisir (sans gain)</button>`}
       </div>
     </section>
     <aside style="display:grid;gap:20px">
       <section class="panel"><div class="panel-head"><h3>Les cases</h3><span class="sample-tag">Chances</span></div>
         <ul class="rewards-list">${kinds.map(c=>{ const p = PACHI.filter(x=>x.lbl===c.lbl).reduce((a,x)=>a+x.w,0)/tot;
-          return `<li><span><i class="pachi-dot" style="background:${c.c}"></i>${c.roue?"Une bille : la roue choisit sa taille":c.sac?BAG_BY[c.sac].name+" offert":`${fmt(c.j)} ${CUR.many}`}</span><b>${pct(+(p*100).toFixed(p<.1?1:0))}</b></li>` }).join("")}</ul>
+          return `<li><span><i class="pachi-dot" style="background:${c.c}"></i>${c.roue?"Une bille : la roue choisit sa taille":c.sac?BAG_BY[c.sac].name+" offert":c.j?`${fmt(c.j)} ${CUR.many}`:"Rien du tout"}</span><b>${pct(+(p*100).toFixed(p<.1?1:0))}</b></li>` }).join("")}</ul>
         <p class="meta" style="margin-top:8px">La roue de la bille : ${TK.map((t,i)=>`${TYPES[t].label} ${PACHI_ROUE[i]} %`).join(" · ")}. Décor, coloris et shiny au hasard, comme dans un sac.</p>
         <p class="meta" style="margin-top:8px">Tu retrouves au moins ta mise ${pct(42)} du temps ; en moyenne, une bille rend un peu moins que ses ${PACHI_PRICE} ${CUR.many}. La bille du jour, elle, est gratuite et compte dans tes jeux du jour.</p></section>
-      <section class="panel"><div class="panel-head"><h3>Ta bille</h3><button class="see-all" data-action="to-collection">Changer ${ic("chev",14)}</button></div>
+      <section class="panel"><div class="panel-head"><h3>Ta bille</h3><button class="see-all" data-action="pick-active">Changer ${ic("chev",14)}</button></div>
         ${act?`<div class="my-ball">${mImg(act,120,48,"")}<div><b>${esc(specName(act))}</b><small>${TYPES[act.type].label} · ${TYPES[act.type].mm} mm</small></div></div>`:""}</section>
     </aside>
   </div>`;
 }
 // le plateau : des rangées de clous en quinconce (la rangée r a r+1 clous, la première un seul au milieu), et les cases en bas
-const pachiPeg = (r, i) => ({x:PW/2 + (i - r/2)*PACHI_GAP, y:80 + r*58});
+const pachiPeg = (r, i) => ({x:PW/2 + (i - r/2)*PACHI_GAP, y:70 + r*54});
 const pachiSlotX = i => PW/2 + (i-(PACHI.length-1)/2)*PACHI_GAP;
 function pachiInit(){
   cancelAnimationFrame(pachi.raf);
@@ -7157,7 +7176,7 @@ function pachiDraw(){
   const sw = PACHI_GAP, y0 = PH-92;
   PACHI.forEach((cs,i)=>{ const x = pachiSlotX(i)-sw/2+3, on = pachi.land===i && now-pachi.landT<3000;
     c.fillStyle = on ? "#FFE14D" : cs.c; c.beginPath(); c.roundRect(x, y0, sw-6, 84, 10); c.fill();
-    c.fillStyle = on ? "#24253D" : "#fff"; c.textAlign = "center"; c.font = `900 ${cs.lbl.length>4?12:16}px Nunito, sans-serif`;
+    c.fillStyle = on ? "#24253D" : "#fff"; c.textAlign = "center"; c.font = `900 ${cs.lbl.length>4?11:14}px Nunito, sans-serif`;
     c.save(); c.translate(x+(sw-6)/2, y0+46); if(cs.lbl.length>4) c.rotate(-Math.PI/2); c.fillText(cs.lbl, 0, 5); c.restore() });
   // la bille
   const B = pachi.ball;
@@ -7206,13 +7225,6 @@ function pachiPos(B, now){
 }
 async function pachiGo(pay){
   if(pachi.busy) return;
-  const fun = pay==="fun";   // pour le plaisir : la bille tombe, rien n'est gagné ni dépensé
-  if(fun){ pachi.busy = true; const slot = pickW(Math.random(), PACHI.map(c=>c.w));
-    document.querySelectorAll('[data-action="pachi-go"]').forEach(b=>b.disabled = true); const w0 = document.getElementById("p-win"); if(w0) w0.hidden = true; pachi.land = null;
-    pachi.ball = {spec:activeSpec(), path:pachiPath(slot), t0:performance.now()+150, seg:-1, onEnd:()=>{ pachi.land = slot; pachi.landT = performance.now(); pachi.busy = false;
-      const w = document.getElementById("p-win"); if(w){ w.innerHTML = `<b>Pour le plaisir</b><span>Elle serait tombée sur : ${pachiPrize(PACHI[slot])}</span>`; w.hidden = false }
-      Sound.pop(); document.querySelectorAll('[data-action="pachi-go"]').forEach(b=>{ b.disabled = b.dataset.pay==="0" || (b.dataset.pay==="1" && S.jetons<PACHI_PRICE) }) }};
-    return }
   if(!pay && !pachiFree()) return;
   if(pay && S.jetons<PACHI_PRICE){ toast(`Il te manque ${fmt(PACHI_PRICE-S.jetons)} ${CUR.many}.`); return }
   pachi.busy = true;
@@ -7235,8 +7247,8 @@ async function pachiGo(pay){
     pachi.land = slot; pachi.landT = performance.now(); pachi.busy = false;
     const big = cs.roue || cs.sac==="collector" || cs.sac==="premium" || cs.j>=1000;
     const w = document.getElementById("p-win");
-    if(w){ w.innerHTML = `<b>${cs.roue ? "Une bille !" : big ? "Bravo !" : "Gagné !"}</b><span>${cs.roue ? "La roue choisit sa taille…" : pachiPrize(cs)}</span>`; w.hidden = false }
-    if(big){ Sound.ding(); FX.fireworks(SHINY_COLS, 4) } else Sound.coin();
+    if(w){ w.innerHTML = `<b>${cs.roue ? "Une bille !" : big ? "Bravo !" : cs.j===0 ? "Raté…" : "Gagné !"}</b><span>${cs.roue ? "La roue choisit sa taille…" : pachiPrize(cs)}</span>`; w.hidden = false }
+    if(big){ Sound.ding(); FX.fireworks(SHINY_COLS, 4) } else if(cs.j!==0) Sound.coin(); else Sound.pop();
     if(cs.roue && bille) setTimeout(()=>pachiRoue(bille), 700);
     renderTop(); renderNav();
     if(!pay) gamesBonus();
@@ -7273,7 +7285,7 @@ function viewGames(){
     {...day("tic"), d:ARENA.tic.lead, art:artTic(), stat:`${S.stats.tic} victoire${S.stats.tic>1?"s":""}`},
   ];
   const act = activeSpec();
-  [solo, multi].forEach(l=>l.sort((a,b)=>b.ok-a.ok));   // ceux qui restent à jouer aujourd'hui d'abord
+  [solo, multi].forEach(l=>l.sort((a,b)=>b.ok-a.ok));   // ceux qui restent à jouer aujourd'hui d'abord (puis tout est réuni en une seule liste)
   return `<div class="page-head"><div><h1>Jeux de la cour</h1><p>Les jeux de billes de la récré : une partie par jour à chaque jeu, et des ${CUR.many} à la clé. Tu ne perds jamais tes billes.</p></div>
     <span class="hand-note">Qui c'est le plus fort de la cour ?</span></div>
   <section class="panel games-hero${left?"":" all-done"}">
@@ -7294,21 +7306,29 @@ function viewGames(){
         <i class="gp-bar"><i style="width:${doneN/keys.length*100}%"></i></i></div>
     </div>
   </section>
-  <button class="panel gc-banner" data-action="nav" data-view="grandecourse"><span class="gcb-flag">${ic("flag",26)}</span>
-    <span class="gcb-txt"><b>La Grande Course de 20 h</b><small>${gc.etat?.inscrit ? `${ic("check",12,3)} Tu es inscrit` : "Inscris-toi, c'est gratuit"} · départ dans <span data-gc-timer>${gcLeft(gcNext().depart-Date.now())}</span></small></span>
-    <span class="btn btn-yellow">${gc.etat?.inscrit ? "Voir" : "S'inscrire"}</span></button>
-  ${act?`<div class="panel gm-playing" style="${tstyle(act.type)}">
-    <button class="gm-ball" data-action="spec" data-id="${act.id}" aria-label="Voir ta bille active">${mImg(act,120,48,"")}</button>
-    <div><small>Tu joues avec</small><b>${esc(specName(act))}</b> ${typePill(act.type)}</div>
-    <div class="gm-sp"></div>
-    <button class="nav-arrow" data-action="active-step" data-dir="-1" aria-label="Bille précédente">${ic("chevl",14,2.5)}</button>
-    <button class="nav-arrow" data-action="active-step" data-dir="1" aria-label="Bille suivante">${ic("chev",14,2.5)}</button>
-    <button class="btn btn-ghost" data-action="pick-active">Choisir une autre bille</button>
-  </div>`:""}
-  <section class="games-sec"><div class="gs-head"><h2>Jeux solo</h2><p>Une partie par jour et par jeu : si tu quittes en route, tu la reprends là où tu en étais. Les parties reviennent à minuit.</p></div>
-    <div class="games-grid">${solo.map(tile).join("")}</div></section>
-  <section class="games-sec"><div class="gs-head"><h2>Défis contre la cour</h2><p>Affronte d'autres joueurs, une fois par jour. Pas de mise : tu gagnes toujours quelque chose, et plus encore si tu finis devant. En attendant le vrai multijoueur, tes adversaires sont simulés.</p></div>
-    <div class="games-grid">${multi.map(tile).join("")}</div></section>`;
+  <div class="gm-duo">
+    ${act?`<section class="panel gm-ball-card" style="${tstyle(act.type)}">
+      <span class="gm-kick">${ic("target",14)} Ta bille pour jouer</span>
+      <div class="gm-main">
+        <button class="nav-arrow" data-action="active-step" data-dir="-1" aria-label="Bille précédente">${ic("chevl",16,2.5)}</button>
+        <button class="gm-big" data-action="spec" data-id="${act.id}" aria-label="Voir ta bille">${mImg(act,260,Math.round(60*scaleOf(act.type)+50),"")}</button>
+        <button class="nav-arrow" data-action="active-step" data-dir="1" aria-label="Bille suivante">${ic("chev",16,2.5)}</button>
+      </div>
+      <b class="gm-name">${esc(specName(act))}</b>
+      <span class="pills">${typePill(act.type,true)}${shinyPill(act)}</span>
+      <small class="meta">Elle roule dans tous les jeux. Plus elle est grosse, plus elle frappe fort.</small>
+      <button class="btn btn-ghost" data-action="pick-active">${ic("layers",16)} Choisir une autre bille</button>
+    </section>`:""}
+    <button class="panel gm-gc" data-action="nav" data-view="grandecourse">
+      <span class="gm-kick">${ic("flag",14)} Ce soir</span>
+      <b class="gm-gc-t">La Grande Course de 20 h</b>
+      <span class="gm-gc-clock"><small>Départ dans</small><b data-gc-timer>${gcLeft(gcNext().depart-Date.now())}</b></span>
+      <span class="gm-gc-st${gc.etat?.inscrit?" ok":""}">${gc.etat?.inscrit ? `${ic("check",14,3)} Tu es inscrit` : "Inscription gratuite : 500 bonbecs et un Sac Premium pour le gagnant"}</span>
+      <span class="btn btn-yellow">${gc.etat?.inscrit ? "Voir la course" : "M'inscrire"}</span>
+    </button>
+  </div>
+  <section class="games-sec"><div class="gs-head"><h2>Les jeux de la cour</h2><p>Une partie du jour par jeu, avec des bonbecs à la clé. Ensuite, tu peux rejouer pour le plaisir. Les parties reviennent à minuit.</p></div>
+    <div class="games-grid">${[...solo, ...multi].map(tile).join("")}</div></section>`;
 }
 function viewArena(){
   const G = ARENA[ui.view], act = activeSpec();
@@ -7322,7 +7342,7 @@ function viewArena(){
     <aside style="display:grid;gap:20px">
       <section class="panel"><div class="panel-head"><h3>Règles</h3></div><ul class="soon-list">${G.rules.map(r=>`<li>${r}</li>`).join("")}</ul></section>
       ${dayRewards(ui.view)}
-      <section class="panel"><div class="panel-head"><h3>Ta bille</h3><button class="see-all" data-action="to-collection">Changer ${ic("chev",14)}</button></div>
+      <section class="panel"><div class="panel-head"><h3>Ta bille</h3><button class="see-all" data-action="pick-active">Changer ${ic("chev",14)}</button></div>
         ${act?`<div class="my-ball">${mImg(act,120,48,"")}<div><b>${esc(specName(act))}</b><small>${TYPES[act.type].label} · ${TYPES[act.type].mm} mm</small></div></div>`:""}</section>
     </aside>
   </div>`;
@@ -7664,7 +7684,7 @@ const DAY_GAMES = {
   pot:     {title:"Le Pot", max:200},
   chateau: {title:"Le Château", max:300},
   casse:   {title:"Le Casse-briques", max:200},
-  pachinko:{title:"Le Pachinko", max:0, prize:"un Mammouth"},   // la bille gratuite du jour (supabase/serveur.sql, public.pachinko)
+  pachinko:{title:"Le Pachinko", max:0, prize:"une bille"},   // la bille gratuite du jour (supabase/serveur.sql, public.pachinko)
   tic:     {title:"La Tic", max:200},
 };
 // les 6 jeux du jour joués (Tir compris) : un Sac Premium offert (le serveur vérifie les 6 parties : source 'jeux-bonus')
@@ -7676,7 +7696,7 @@ function gamesBonus(){
   setTimeout(()=>{ toast(`Les 6 jeux du jour sont faits : un ${BAG_BY[GAMES_BONUS].name} t'est offert !`); Sound.ding() }, 1400);
 }
 const DAY_INFO = {
-  pot:     {goal:"Envoie un maximum de billes dans le pot en 5 lancers. Attention : le pot et les cailloux changent de place à chaque lancer, et c'est toi qui choisis d'où tu tires !", rew:[["Chaque bille dans le pot","20"],["1, 3 ou 5 billes : 1, 2 ou 3 étoiles","+20 · +50 · +100"]]},
+  pot:     {goal:"Envoie un maximum de billes dans le pot en 5 lancers. Le pot et les cailloux changent de place à chaque lancer, une bille ratée disparaît, et c'est toi qui choisis d'où tu tires !", rew:[["Chaque bille dans le pot","20"],["1, 3 ou 5 billes : 1, 2 ou 3 étoiles","+20 · +50 · +100"]]},
   chateau: {goal:"Fais sortir les 10 billes du cercle de craie en 3 tirs au plus. Le château change de forme chaque jour !", rew:[["Chaque bille sortie du cercle","10"],["3, 6 ou 10 billes : 1, 2 ou 3 étoiles","+20 · +40 · +80"],["Rasé en 1 tir / en 2 tirs","+120 · +60"],["Les 10 sorties","une vraie bille !"]]},
   casse:   {goal:"Casse les murs de briques niveau après niveau, sans laisser tomber ta bille. 3 vies.", rew:[["Chaque niveau réussi","20"],["1, 3 ou 5 niveaux : 1, 2 ou 3 étoiles","+20 · +50 · +100"]]},
   course:  {goal:"Une course contre 3 joueurs de la cour, une pichenette chacun son tour. Le premier qui passe la ligne a gagné !", rew:[["1re place","200"],["2e place","120"],["3e place","70"],["4e place","30"]]},
@@ -7765,8 +7785,11 @@ const SETUP = {
     // avant chaque lancer, le pot et les cailloux bougent (toujours les mêmes places pour un même jour : recharger ne change rien)
     A.shuffle = ()=>{ const r = dayRng("pot"+A.shots);
       A.pot = {x:500+r()*260, y:120+r()*280, r:18};
-      const out = [];
-      for(let k=0;k<300 && out.length<6;k++){ const q = {x:250+r()*560, y:60+r()*400, r:9+r()*9};
+      // des cailloux qui gardent le pot (avec des trous entre eux), puis d'autres un peu partout : il faut souvent faire un rebond
+      const out = [], a0 = r()*TAU;
+      for(let g=0;g<4;g++){ const a = a0+g*TAU/4+(r()-.5)*.5, d = 52+r()*16, q = {x:A.pot.x+Math.cos(a)*d, y:A.pot.y+Math.sin(a)*d, r:11+r()*6};
+        if(q.x>AB+q.r && q.x<AW-AB-q.r && q.y>AB+q.r && q.y<AH-AB-q.r) out.push(q) }
+      for(let k=0;k<400 && out.length<11;k++){ const q = {x:240+r()*580, y:55+r()*410, r:9+r()*10};
         if(Math.hypot(q.x-A.pot.x,q.y-A.pot.y)>q.r+A.pot.r+34 && out.every(o=>Math.hypot(o.x-q.x,o.y-q.y)>o.r+q.r+30) && A.balls.every(b=>!b.alive || Math.hypot(b.x-q.x,b.y-q.y)>b.r+q.r+6)) out.push(q) }
       A.pebbles = out };
     A.shuffle();
@@ -7782,6 +7805,8 @@ const SETUP = {
     A.onShot = ()=>{ A.shots-- };
     A.onSink = ()=>{ A.potted++; Sound.hole(); updArenaHud(); fxBurst(A.pot.x, A.pot.y, "#7A5230", 14, 2.4); fxText(A.pot.x, A.pot.y-34, "+20") };
     A.onRest = ()=>{
+      // une bille qui n'est pas dans le pot disparaît : le terrain est vide pour le lancer suivant
+      A.balls.forEach(b=>{ if(b.alive && b.mine){ b.alive = false; fxBurst(b.x, b.y, "#F3E2C4", 10, 1.4) } });
       if(A.shots>0){ A.shuffle(); fxText(AW/2, 40, "Le pot a bougé !", "#FFE14D");
         let y=A.start.y; for(let k=0;k<12 && A.balls.some(b=>b.alive && Math.hypot(b.x-A.start.x,b.y-y)<34);k++) y = 80+((y+70)%360); spawnMine(A.start.x,y); updArenaHud(); return }
       const n=A.potted, st = n>=5?3:n>=3?2:n>=1?1:0, rew = n*20+[0,20,50,100][st];
@@ -8014,7 +8039,7 @@ function viewCasse(){
     <aside style="display:grid;gap:20px">
       <section class="panel"><div class="panel-head"><h3>Règles</h3></div><ul class="soon-list">${G.rules.map(r=>`<li>${r}</li>`).join("")}</ul></section>
       ${dayRewards(ui.view)}
-      <section class="panel"><div class="panel-head"><h3>Ta bille</h3><button class="see-all" data-action="to-collection">Changer ${ic("chev",14)}</button></div>
+      <section class="panel"><div class="panel-head"><h3>Ta bille</h3><button class="see-all" data-action="pick-active">Changer ${ic("chev",14)}</button></div>
         ${act?`<div class="my-ball">${mImg(act,120,48,"")}<div><b>${esc(specName(act))}</b><small>${TYPES[act.type].label} · ${TYPES[act.type].mm} mm</small></div></div>`:""}</section>
     </aside>
   </div>`;
@@ -9698,8 +9723,8 @@ document.addEventListener("click", e=>{
     case "conf-tab": ui.confTab=t.dataset.tab; renderView(); break;
     case "evf-go": evFuse(t.dataset.k); break;
     case "craft-f": ui.craftF = {...(ui.craftF||{}), rar:t.dataset.v}; renderView(); break;
-    case "craft-ev": document.querySelector(".evf")?.scrollIntoView({behavior:"smooth", block:"start"}); break;
-    case "pachi-go": pachiGo(t.dataset.pay==="fun" ? "fun" : t.dataset.pay==="1"); break;
+    case "craft-ev": ui.confTab = "evenement"; renderView(); break;
+    case "pachi-go": pachiGo(t.dataset.pay==="1"); break;
     case "conf-filter": ui.confF=t.dataset.f; renderView(); break;
     case "conf-size": ui.confSize=t.dataset.v; renderView(); break;
     case "conf-cat": ui.confCat=t.dataset.v; renderView(); break;
@@ -9735,7 +9760,7 @@ document.addEventListener("click", e=>{
         <div class="od-slots">${b.slots.map((o,i)=>{ const star = i===b.n-1;
           return `<div class="od-slot${star?" star":""}"><span class="od-pos">${star?`${ic("star",14,2.6)} Vedette`:`${i+1}${i?"ᵉ":"ʳᵉ"} bille`}</span>
             <div class="od-chips">${TK.map((t,k)=>o[t]?`<span class="od-chip" style="--rc:${TYPES[t].rc}">${mImg(SHOWCASE[k],60,22,"")}<span>${shortSize(t)}</span><b>${pct(o[t])}</b></span>`:"").join("")}</div></div>` }).join("")}</div>
-        <p class="meta" style="margin-top:12px">Shiny : ${pct(+(b.shiny*100).toFixed(2))} sur chaque bille.${b.event?` Bille ${FAMILIES[b.fam].name} : ${Math.round(b.evFill*100)} % par bille, ${Math.round(b.evStar*100)} % pour la vedette.`:""}</p></div>`;
+        <p class="meta" style="margin-top:12px">Shiny : ${pct(+(b.shiny*100).toFixed(2))} sur chaque bille.${b.event?(b.evFill>=1?` Toutes les billes sont des billes ${FAMILIES[b.fam].name}.`:` Bille ${FAMILIES[b.fam].name} : ${Math.round(b.evFill*100)} % par bille, ${Math.round(b.evStar*100)} % pour la vedette.`):""}</p></div>`;
       el.hidden = false; el.querySelector(".close-x").focus(); break }
     case "ami-ajouter-pseudo": { const v = t.dataset.pseudo; t.disabled = true;
       Cloud.cour.ajouter(v).then(r=>{ toast(r==="ami" ? `${v} t'avait déjà demandé : vous êtes copains !` : `Demande envoyée à ${v}.`); courRefresh("moi","fil"); closeModal() }, e=>{ t.disabled = false; courFail(e) }); break }
@@ -9840,7 +9865,7 @@ document.addEventListener("click", e=>{
         ${pickFilter(list)}<div class="pick-grid">${list.map(x=>`<button class="m-card${x.id===S.active?" on":""}" data-action="set-active" data-id="${x.id}" ${pickData(x)} style="${tstyle(x.type)}"><span class="ball">${mImg(x,120,Math.round(40*scaleOf(x.type)+14),"")}</span><b>${esc(specName(x))}</b>${typePill(x.type)}</button>`).join("")}</div></div>`;
       el.hidden = false; (el.querySelector(".pick-q")||el.querySelector(".close-x")).focus(); break }
     case "pick-t": t.parentNode.querySelectorAll(".chip").forEach(c=>c.setAttribute("aria-pressed", c===t)); applyPick(); break;
-    case "set-active": S.active=t.dataset.id; save(); renderTop(); renderNav(); closeModal(); renderView(); toast(`${specName(activeSpec())} jouera au Tir.`); break;
+    case "set-active": S.active=t.dataset.id; save(); renderTop(); renderNav(); closeModal(); renderView(); toast(`${specName(activeSpec())} jouera dans tous les jeux.`); break;
     case "close-modal": closeModal(); break;
     case "active-step": {
       const list=[...S.specs].sort(tierSort); const i=list.findIndex(s=>s.id===S.active);

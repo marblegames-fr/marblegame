@@ -141,7 +141,8 @@ language sql immutable as $$
     ('classique', 300, 5, null,      0.0010, array[[70,30,0,0,0,0],[50,38,12,0,0,0],[35,40,20,5,0,0],[20,35,30,13,2,0],[10,25,30,20,12,3]]::numeric[]),
     ('premium',   600, 5, 3,         0.0020, array[[0,80,20,0,0,0],[0,60,35,5,0,0],[0,40,45,15,0,0],[0,0,55,38,7,0],[0,0,0,60,34,6]]::numeric[]),
     ('collector',1500, 5, 4,         0.0050, array[[0,0,85,15,0,0],[0,0,65,35,0,0],[0,0,40,50,10,0],[0,0,0,60,38,2],[0,0,0,0,87,13]]::numeric[]),
-    ('pirate',    600, 3, null,      0.0020, array[[60,32,8,0,0,0],[40,35,18,6,1,0],[20,28,24,17,8,3]]::numeric[]),
+    -- Sac Pirate (2 octobre 2026) : 5 billes, toutes Pirate (voir ouvrir_sac), tailles un peu plus grosses
+    ('pirate',    600, 5, null,      0.0020, array[[40,35,18,7,0,0],[30,32,22,12,4,0],[20,28,26,16,8,2],[10,22,26,22,15,5],[0,5,20,30,30,15]]::numeric[]),
     -- Sac Pirate Premium (2 octobre 2026) : tailles du Classique, 15 % de Pirate par bille et 35 % pour la dernière (voir ouvrir_sac)
     ('pirate-premium', 1000, 5, null, 0.0020, array[[70,30,0,0,0,0],[50,38,12,0,0,0],[35,40,20,5,0,0],[20,35,30,13,2,0],[10,25,30,20,12,3]]::numeric[])
   ) v(nom, prix, n, garantie, shiny, cotes) where v.nom = sac.nom
@@ -311,7 +312,7 @@ begin
     -- sac d'événement : chaque bille a une chance d'être du décor de l'événement (12 %, 30 % pour la dernière,
     -- garantie pour la dernière d'un sac offert), sinon c'est une bille normale
     evb := ev.decor is not null and (case when i = r.n and offert then true
-             else random() < case when nom = 'pirate-premium' then (case when i = r.n then 0.35 else 0.15 end)
+             else nom = 'pirate' or random() < case when nom = 'pirate-premium' then (case when i = r.n then 0.35 else 0.15 end)
                                   else (case when i = r.n then 0.3 else 0.12 end) end end);
     billes := billes || interne.nouvelle_bille(qui, (interne.tailles())[tirees[i]+1], shiny => shinies[i], src => nom,
       decor => case when evb then ev.decor end,
@@ -388,14 +389,14 @@ end $$;
 
 -- Le Pachinko (2 octobre 2026) : une bille gratuite par jour (elle compte dans les 6 jeux du jour), puis 200 bonbecs la bille.
 -- Le serveur tire la case ; le jeu fait tomber la bille jusqu'à elle. Cases de gauche à droite : mêmes valeurs que PACHI dans index.html.
--- On retrouve au moins sa mise dans 42 % des cas ; en moyenne une bille rend ~187 bonbecs (sacs comptés à leur prix), soit 93 %.
+-- On retrouve au moins sa mise dans 42 % des cas ; en moyenne une bille rend ~188 bonbecs (sacs comptés à leur prix), soit 94 %.
 -- La case « Bille » fait tourner une roue : la taille (mêmes chances que PACHI_ROUE), puis décor, coloris et shiny comme d'habitude.
 create or replace function interne.pachinko_cases() returns table(k int, poids numeric, bonbecs int, sac text, taille text) language sql immutable as $$
-  select * from (values (0, 0.4, 0, null::text, 'roue'::text), (1, 2.2, 0, 'premium', null), (2, 8.5, 400, null, null),
-    (3, 12, 200, null, null), (4, 58, 100, null, null), (5, 12, 200, null, null), (6, 5.5, 0, 'classique', null),
-    (7, 0.5, 0, 'collector', null), (8, 0.9, 1000, null, null)) v(k, poids, bonbecs, sac, taille)
+  select * from (values (0, 0.2, 0, null::text, 'roue'::text), (1, 3, 1000, null, null), (2, 3, 0, 'premium', null),
+    (3, 10, 200, null, null), (4, 16.5, 100, null, null), (5, 25, 0, null, null), (6, 16.5, 100, null, null),
+    (7, 10, 200, null, null), (8, 9, 400, null, null), (9, 6, 0, 'classique', null), (10, 0.8, 0, 'collector', null)) v(k, poids, bonbecs, sac, taille)
 $$;
-create or replace function interne.pachinko_roue() returns numeric[] language sql immutable as $$ select array[30,25,20,14,8,3]::numeric[] $$;   -- Mini → Mammouth
+create or replace function interne.pachinko_roue() returns numeric[] language sql immutable as $$ select array[10,15,20,25,20,10]::numeric[] $$;   -- Mini → Mammouth
 create or replace function public.pachinko(payer boolean default false)
 returns jsonb language plpgsql security definer set search_path = public as $$
 declare qui uuid := interne.moi(); today text := interne.aujourdhui()::text; c record; b jsonb := null; x numeric; acc numeric := 0; t text := null;

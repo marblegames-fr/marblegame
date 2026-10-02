@@ -2290,6 +2290,81 @@ button.vit-slot:hover{background:var(--panel-2);color:var(--ink)}
 @media (pointer:coarse){ #auth-fx{pointer-events:none} }
 @media (prefers-reduced-motion:reduce){ .auth *{animation:none!important} }
 .pp-links button.pp-out{color:var(--warn)}
+/* la Grande Course de 20 h */
+.gc-banner{display:flex;align-items:center;gap:14px;width:100%;margin-bottom:18px;padding:14px 18px;text-align:left;cursor:pointer;color:#fff;background:linear-gradient(110deg,#C81E32,#7A1FA2);border:0;box-shadow:0 14px 30px -18px rgba(120,20,60,.8)}
+.gc-banner:hover{filter:brightness(1.06)}
+.gcb-flag{width:48px;height:48px;border-radius:14px;display:grid;place-items:center;background:rgba(255,255,255,.18)}
+.gcb-txt{flex:1;display:grid;gap:2px}.gcb-txt b{font-family:var(--display);font-weight:400;font-size:22px}.gcb-txt small{display:inline-flex;align-items:center;gap:4px;font-weight:800;opacity:.9}
+.gc-hero{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1.1fr);gap:22px;margin-bottom:18px}
+@media (max-width:900px){ .gc-hero{grid-template-columns:1fr} }
+.gc-main{display:grid;gap:12px;align-content:start}
+.gc-main .gh-kick{justify-self:start}
+.gc-clock small{display:block;font-size:12px;font-weight:900;text-transform:uppercase;letter-spacing:.06em;color:var(--muted)}
+.gc-clock b{font-family:var(--display);font-weight:400;font-size:44px;line-height:1}
+.gc-reg{display:flex;align-items:center;gap:12px;padding:12px 14px;border-radius:16px;font-weight:800}
+.gc-reg.on{background:var(--green-soft);color:var(--green);border:1px solid var(--green-line)}
+.gc-reg.on b{display:block;font-size:16px}.gc-reg.on small{display:block;color:var(--ink-2);font-weight:700}
+.gc-reg.off{background:var(--panel-2);color:var(--ink-2)}
+.gc-pickrow{display:flex;align-items:center;gap:12px}
+.gc-pickrow small{display:block;font-size:12px;font-weight:800;color:var(--muted)}.gc-pickrow b{font-size:16px}
+.gc-ball{display:grid;justify-items:center;gap:2px;background:var(--panel-2);border:1px dashed var(--line-2);border-radius:16px;padding:6px 10px;cursor:pointer;color:var(--ink-2);font-size:11px;font-weight:800}
+.gc-prizes{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
+.gc-prizes div{background:var(--panel-2);border-radius:14px;padding:9px;text-align:center;font-weight:800;font-size:12.5px;display:grid;justify-items:center;gap:2px}
+.gc-prizes b{font-family:var(--display);font-weight:400;font-size:22px;color:#D99A00}
+.gc-prizes .coin{width:15px;height:15px;vertical-align:-3px}
+.gc-side{display:grid;gap:10px;align-content:start}
+.gc-side .btn{justify-self:start}
+.gc-prev{position:relative;border-radius:18px;overflow:hidden;background:#000}
+.gc-prev canvas{display:block;width:100%;height:auto}
+.gc-prev span{position:absolute;left:12px;top:12px;background:rgba(0,0,0,.6);color:#fff;border-radius:999px;padding:5px 12px;font-weight:900;font-size:13px}
+.gc-last .panel-head h2{display:flex;align-items:center;gap:8px}
+.gc-livedot{width:10px;height:10px;border-radius:50%;background:#E5484D;animation:brPulse 1s infinite}
+.gc-res{list-style:none;padding:0;margin:8px 0;display:flex;gap:18px;flex-wrap:wrap;font-weight:800}
+.gc-mine{font-weight:800}
+.modal.gc-pop{display:block;width:min(480px,100%);padding:28px 24px 22px;text-align:center}
+.gc-pop h2{font-family:var(--display);font-weight:400;font-size:30px;margin:10px 0 6px}
+.gc-pop .btns{display:flex;justify-content:center;margin-top:14px}
+body.gc-open{overflow:hidden}
+.gc-ov{position:fixed;inset:0;z-index:80;background:#141220;color:#fff}
+.gc-ov[hidden]{display:none}
+#gc-cv{position:absolute;inset:0;width:100%;height:100%;display:block}
+.gc-top{position:absolute;left:14px;right:14px;top:14px;display:flex;gap:10px;align-items:flex-start;z-index:2}
+.gc-top .sp{flex:1}
+.gc-ov .chip{background:rgba(20,18,32,.82);backdrop-filter:blur(8px);border:1px solid rgba(255,255,255,.12);border-radius:16px;padding:8px 14px}
+.gc-ov .chip small{display:block;font-size:11px;font-weight:800;color:rgba(255,255,255,.6);text-transform:uppercase;letter-spacing:.06em}
+.gc-ov .chip b{font-family:var(--display);font-weight:400;font-size:20px}
+.gc-x{width:44px;height:44px;border-radius:50%;border:0;background:rgba(255,255,255,.14);color:#fff;font-size:26px;line-height:1;cursor:pointer}
+.gc-board{position:absolute;right:14px;top:72px;width:240px;z-index:2;background:rgba(20,18,32,.82);backdrop-filter:blur(8px);border:1px solid rgba(255,255,255,.12);border-radius:18px;padding:10px;display:grid;gap:3px}
+.gc-board h3{margin:2px 6px 6px;font-size:11.5px;text-transform:uppercase;letter-spacing:.08em;color:rgba(255,255,255,.6)}
+.gcr{display:flex;align-items:center;gap:8px;padding:4px 8px;border-radius:12px}
+.gcr.me{background:rgba(255,201,63,.16);box-shadow:inset 0 0 0 1px rgba(255,201,63,.45)}
+.gcr .pos{width:20px;font-family:var(--display);font-size:17px;text-align:center}
+.gcr img{width:24px;height:24px}
+.gcr .nm{flex:1;font-weight:800;font-size:13px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.gcr .st{font-size:11px;font-weight:800;color:rgba(255,255,255,.55)}
+.gcr.fin .st{color:#FFC93F}
+.gc-mini{position:absolute;left:14px;bottom:14px;z-index:2;border-radius:14px;background:rgba(20,18,32,.82);border:1px solid rgba(255,255,255,.12)}
+.gc-ticker{position:absolute;left:50%;bottom:18px;transform:translateX(-50%);z-index:2;display:grid;gap:6px;justify-items:center;pointer-events:none;width:max-content;max-width:calc(100% - 300px)}
+.gc-ticker div{background:rgba(20,18,32,.9);border:1px solid rgba(255,255,255,.14);border-radius:999px;padding:7px 16px;font-weight:800;font-size:14px;animation:cardIn .3s both}
+.gc-big{position:absolute;inset:0;display:grid;place-items:center;pointer-events:none;z-index:3}
+.gc-big span{font-family:var(--display);font-size:min(20vw,170px);color:#FFC93F;-webkit-text-stroke:6px #3A1E00;paint-order:stroke;animation:gcBig .95s cubic-bezier(.2,1.6,.4,1) both}
+@keyframes gcBig{0%{opacity:0;transform:scale(2.2)}30%{opacity:1;transform:scale(1)}80%{opacity:1}100%{opacity:0;transform:scale(.9)}}
+.gc-end{position:absolute;inset:0;z-index:4;display:flex;overflow:auto;background:radial-gradient(120% 80% at 50% 0%,rgba(229,72,77,.3),rgba(14,12,24,.92) 60%);animation:cardIn .4s both}
+.gc-end[hidden]{display:none}
+.gc-pod{margin:auto;text-align:center;padding:24px}
+.gc-pod h2{font-family:var(--display);font-weight:400;font-size:50px;margin:10px 0 0}
+.gcs-row{display:flex;align-items:flex-end;justify-content:center;gap:12px;margin:24px 0 16px}
+.gcs{display:grid;justify-items:center;gap:6px;width:140px}
+.gcs img{width:80px;height:80px;filter:drop-shadow(0 10px 10px rgba(0,0,0,.4));animation:gcHop 1s ease-in-out infinite alternate}
+.gcs .blk{width:100%;border-radius:14px 14px 0 0;display:grid;place-items:start center;padding-top:6px;font-family:var(--display);font-size:38px;color:rgba(0,0,0,.35)}
+.gcs:nth-child(1) .blk{height:100px;background:linear-gradient(#C9D2E0,#93A0B6)}
+.gcs:nth-child(2) .blk{height:150px;background:linear-gradient(#FFE07A,#E8A91A)}
+.gcs:nth-child(3) .blk{height:74px;background:linear-gradient(#F2B98A,#C77A43)}
+@keyframes gcHop{to{transform:translateY(-8px)}}
+.gc-pod .gc-mine{display:inline-block;background:rgba(255,255,255,.1);border-radius:16px;padding:10px 16px;margin-bottom:14px}
+.gc-pod .btns{display:flex;gap:10px;justify-content:center}
+.gc-pod .meta{color:rgba(255,255,255,.55);margin-top:12px}
+@media (max-width:760px){ .gc-board{display:none} .gc-mini{width:160px;height:90px} .gc-ticker{max-width:calc(100% - 28px);bottom:116px} .gc-pod h2{font-size:36px} .gcs{width:100px} }
 /* le ruban de la bêta, tout en haut */
 .beta-rib{position:relative;z-index:31;display:flex;align-items:center;justify-content:center;gap:12px;min-height:36px;padding:5px 16px;background:repeating-linear-gradient(135deg,#C81E32 0 16px,#B9182B 16px 32px);color:#fff;font-size:13px;line-height:1.3;box-shadow:inset 0 -2px 0 rgba(0,0,0,.18)}
 .beta-rib[hidden]{display:none}
@@ -2341,6 +2416,7 @@ button.vit-slot:hover{background:var(--panel-2);color:var(--ink)}
 <div class="mj-scrim" id="mj-sheet" hidden></div>
 
 <div class="scrim" id="modal" hidden></div>
+<div class="gc-ov" id="gc-ov" hidden></div>
 <div class="scrim ask-scrim" id="ask" hidden></div>
 <div class="ov" id="ov" hidden>
   <div class="ov-bg" aria-hidden="true"></div>
@@ -4490,7 +4566,7 @@ const giftCount = () => Object.values(S.bagInv).reduce((a,b)=>a+b,0);
    ===================================================================== */
 const NAV = [["accueil","Accueil","home"],["sacs","Ouvrir des sacs","bag"],["collection","Boîte à billes","layers"],["jeux","Jeux de la cour","pad"],["confiserie","La Confiserie","candy"],["cour","La cour de récré","cour"]];
 // les pages qui ne sont pas dans le menu allument leur « parent »
-const NAV_PARENT = {billepedia:"collection", tir:"jeux", pot:"jeux", chateau:"jeux", casse:"jeux", tic:"jeux", course:"jeux", atelier:"confiserie"};
+const NAV_PARENT = {billepedia:"collection", tir:"jeux", pot:"jeux", chateau:"jeux", casse:"jeux", tic:"jeux", course:"jeux", grandecourse:"jeux", atelier:"confiserie"};
 const SOLO_GAMES = [["pot","Le Pot"],["chateau","Le Château"],["casse","Le Casse-briques"],["course","La Course"],["tic","La Tic"]];
 function gamesReady(){
   const out = SOLO_GAMES.filter(g=>soloReady(g[0])).map(g=>g[1]);
@@ -4796,9 +4872,10 @@ document.addEventListener("keydown", e=>{ if(e.key==="Escape") toggleProfPop(fal
 function go(view){ toggleProfPop(false); if(view==="atelier"){ view="confiserie"; ui.confTab="fusion" } if(view==="billepedia"){ view="collection"; ui.tab="pedia" } ui.view=view; renderNav(); renderView(); window.scrollTo({top:0}); }
 function renderView(){
   const v = document.getElementById("view");
-  const map = {cour:viewCour, succes:viewSucces, accueil:viewHome, sacs:viewBags, collection:viewCollection, jeux:viewGames, tir:viewGame, pot:viewArena, chateau:viewArena, casse:viewCasse, tic:viewArena, course:viewArena, quetes:viewQuests, billepedia:viewPedia, passe:viewPass, profil:viewProfile, atelier:viewCraft, confiserie:viewConfiserie};
+  const map = {cour:viewCour, succes:viewSucces, accueil:viewHome, sacs:viewBags, collection:viewCollection, jeux:viewGames, tir:viewGame, pot:viewArena, chateau:viewArena, casse:viewCasse, tic:viewArena, course:viewArena, grandecourse:viewGrandeCourse, quetes:viewQuests, billepedia:viewPedia, passe:viewPass, profil:viewProfile, atelier:viewCraft, confiserie:viewConfiserie};
   v.innerHTML = (map[ui.view] || viewSoon)();
   if(ui.view==="passe") focusTrack();
+  if(ui.view==="grandecourse") gcAfterRender();
   document.querySelector(".layout")?.classList.toggle("on-home", ui.view==="accueil");   // avant hcInit : la largeur de l'accueil en dépend
   if(ui.view==="accueil") hcInit();
   if(ui.view==="tir") initGame();
@@ -6662,6 +6739,7 @@ function artCourse(){ return `<svg viewBox="0 0 240 130" preserveAspectRatio="xM
   <path d="M205 20v42" stroke="#5A3A20" stroke-width="2.5"/><path d="M205 20h24v14h-24z" fill="#fff"/><path d="M205 20h6v7h-6zM217 20h6v7h-6zM211 27h6v7h-6zM223 27h6v7h-6z" fill="#24253D"/></svg>` }
 const GAME_ICON = {tir:"target", pot:"pot", chateau:"castle", casse:"layers", course:"flag", tic:"tic"};
 function viewGames(){
+  gcLoad();
   const P = playedToday(), tirDone = !!P.tir[0], tirL = LEVELS[tirOfDay()];
   const keys = ["tir", ...Object.keys(DAY_GAMES)], isDone = k => k==="tir" ? tirDone : !soloReady(k);
   const doneN = keys.filter(isDone).length, left = keys.length-doneN;
@@ -6700,6 +6778,9 @@ function viewGames(){
       <small>${ic("clock",13)} Nouvelles parties dans <b data-quest-timer>${untilMidnight()}</b></small>
     </div>
   </section>
+  <button class="panel gc-banner" data-action="nav" data-view="grandecourse"><span class="gcb-flag">${ic("flag",26)}</span>
+    <span class="gcb-txt"><b>La Grande Course de 20 h</b><small>${gc.etat?.inscrit ? `${ic("check",12,3)} Tu es inscrit` : "Inscris-toi, c'est gratuit"} · départ dans <span data-gc-timer>${gcLeft(gcNext().depart-Date.now())}</span></small></span>
+    <span class="btn btn-yellow">${gc.etat?.inscrit ? "Voir" : "S'inscrire"}</span></button>
   ${act?`<div class="panel gm-playing" style="${tstyle(act.type)}">
     <button class="gm-ball" data-action="spec" data-id="${act.id}" aria-label="Voir ta bille active">${mImg(act,120,48,"")}</button>
     <div><small>Tu joues avec</small><b>${esc(specName(act))}</b> ${typePill(act.type)}</div>
@@ -7638,6 +7719,384 @@ function cbLoop(t){
 }
 
 /* =====================================================================
+   LA GRANDE COURSE DE 20 H (supabase/course.sql)
+   On s'inscrit quand on veut dans la journée (jusqu'à 19 h 59, sinon c'est pour le lendemain), avec la bille de son choix.
+   À 20 h, le serveur tire l'ordre d'arrivée au hasard : chaque bille a exactement la même chance, le choix de la bille ne change rien.
+   Ici on ne fait que mettre la course en scène à partir de la graine et de l'ordre d'arrivée : tout le monde voit la même course.
+   ===================================================================== */
+const COURSE_PRIX = [{j:500, sac:"premium"}, {j:300}, {j:200}], COURSE_PART = 50;   // mêmes valeurs que interne.course_prix
+const gc = {etat:null, busy:false, pick:null, live:null};
+function gcLoad(force){
+  if(!srvOn() || gc.busy || (gc.etat && !force)) return;
+  gc.busy = true;
+  Cloud.course.etat().then(e=>{ gc.etat = e; if(ui.view==="grandecourse") renderView(); renderNav() }, ()=>{}).finally(()=>{ gc.busy = false });
+}
+const isoDay = (d=new Date()) => `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,"0")}-${String(d.getDate()).padStart(2,"0")}`;
+// sans compte (ou avant la réponse du serveur) : la prochaine course, calculée ici
+function gcNext(){
+  if(gc.etat) return {jour:gc.etat.jour, depart:gc.etat.depart};
+  const d = new Date(); if(d.getHours()*60+d.getMinutes() >= 19*60+59) d.setDate(d.getDate()+1);
+  d.setHours(20,0,0,0); return {jour:isoDay(d), depart:d.getTime()};
+}
+function gcLeft(ms){ ms = Math.max(0,ms); const h = Math.floor(ms/36e5), m = Math.floor(ms/6e4)%60, s = Math.floor(ms/1e3)%60; return h ? `${h} h ${String(m).padStart(2,"0")}` : `${m} min ${String(s).padStart(2,"0")} s` }
+const gcMine = () => { const E = gc.etat; return E?.inscrit ? (E.bille && specById(E.bille)) || null : null };
+const gcPickable = () => S.specs.filter(s=>sync.known?.has(s.id)).sort(tierSort);
+const gcMeIn = R => (R||[]).findIndex(x=>x.joueur && x.joueur===sync.uid);
+
+// ---------- la page ----------
+function viewGrandeCourse(){
+  gcLoad();
+  const E = gc.etat, N = gcNext(), tonight = N.jour===isoDay(), when = tonight ? "ce soir" : "demain soir";
+  const pick = (gc.pick && specById(gc.pick)) || gcMine() || activeSpec();
+  const D = E?.derniere, me = D ? gcMeIn(D.resultats) : -1;
+  const T = gcTrack(N.jour);
+  const prize = (k,l) => `<div><b>${l}</b>${COIN} ${COURSE_PRIX[k].j}${COURSE_PRIX[k].sac?` + ${BAG_BY[COURSE_PRIX[k].sac].name}`:""}</div>`;
+  let reg;
+  if(!srvOn()) reg = `<div class="gc-reg off">${ic("user",18)} Crée ton compte (c'est gratuit) pour t'inscrire à la Grande Course.</div>
+    ${window.Cloud?.available && !sync.on ? `<button class="btn btn-yellow" data-action="acct-signup">Créer mon compte</button>` : ""}`;
+  else if(E?.inscrit) reg = `<div class="gc-reg on">${pick?mImg(pick,96,44,""):""}<div><b>Tu es inscrit pour ${when} !</b><small>Tu cours avec ${pick?esc(specName(pick)):"ta bille"}. Rendez-vous à 20 h.</small></div></div>
+    <div class="btns"><button class="btn btn-ghost" data-action="gc-pickopen">Changer de bille</button><button class="btn btn-ghost" data-action="gc-unreg">Me désinscrire</button></div>`;
+  else reg = `<div class="gc-pickrow"><button class="gc-ball" data-action="gc-pickopen" aria-label="Choisir ma bille">${pick?mImg(pick,120,56,""):""}<span>Changer</span></button>
+      <div><small>Ta bille pour la course</small><b>${pick?esc(specName(pick)):"—"}</b></div></div>
+    <button class="btn btn-yellow btn-xl" data-action="gc-reg">${ic("flag",18)} M'inscrire pour ${when}</button>`;
+  const live = D && Date.now() < D.depart + GC_DUR*1000;
+  return `<div class="page-head"><div><button class="back-link" data-action="nav" data-view="jeux">${ic("chevl",14)} Tous les jeux</button><h1>La Grande Course de 20 h</h1>
+    <p>Tous les soirs à 20 h, les billes inscrites dévalent le circuit du jour. Chaque bille a exactement la même chance de gagner : c'est la surprise du soir !</p></div></div>
+  <section class="panel gc-hero">
+    <div class="gc-main">
+      <span class="gh-kick">${ic("flag",14)} Course du ${new Date(N.depart).toLocaleDateString("fr-FR",{weekday:"long", day:"numeric", month:"long"})}</span>
+      <div class="gc-clock"><small>Départ dans</small><b data-gc-timer>${gcLeft(N.depart-Date.now())}</b></div>
+      ${reg}
+      <div class="gc-prizes">${prize(0,"1er")}${prize(1,"2e")}${prize(2,"3e")}</div>
+      <p class="meta">Tous les autres inscrits gagnent ${COURSE_PART} ${CUR.many}. ${E ? `${E.inscrits} inscrit${E.inscrits>1?"s":""} pour l'instant.` : ""} Inscriptions jusqu'à 19 h 59 : après, c'est pour la course du lendemain. Le choix de ta bille ne change rien à tes chances, c'est juste pour le style !</p>
+    </div>
+    <div class="gc-side"><div class="gc-prev"><canvas id="gc-prev" width="680" height="380"></canvas><span>${esc(T.th.name)}</span></div>
+      <p class="meta">Un circuit différent chaque jour : la cour, la plage, la forêt, la banquise, le jardin, la fête foraine et le désert.</p>
+      <button class="btn btn-ghost" data-action="gc-test">${ic("play",16)} Voir une course d'essai</button></div>
+  </section>
+  ${D ? `<section class="panel gc-last"><div class="panel-head"><h2>${live?`<span class="gc-livedot"></span> En direct`:"Dernière course"} · ${new Date(D.depart).toLocaleDateString("fr-FR",{weekday:"long", day:"numeric", month:"long"})}</h2>
+      <button class="btn btn-yellow" data-action="gc-watch">${ic("play",16)} ${live?"Regarder en direct":"Revoir la course"}</button></div>
+    ${live ? `<p class="meta">La course est en cours : regarde-la pour découvrir le podium !</p>` : `<ol class="gc-res">${D.resultats.slice(0,3).map((x,i)=>`<li>${["🥇","🥈","🥉"][i]} <b>${esc(gcName(x))}</b></li>`).join("")}</ol>
+    ${me>=0 ? `<p class="gc-mine">Tu as fini <b>${me+1}${me?"e":"er"}</b> sur ${D.resultats.length} · +${D.resultats[me].prix} ${CUR.many}${D.resultats[me].sac?` et un ${BAG_BY[D.resultats[me].sac].name}`:""}</p>` : ""}`}
+  </section>` : ""}`;
+}
+const gcName = x => x.bot ? `${x.nom} (bille de la cour)` : x.pseudo;
+function gcAfterRender(){
+  const c = document.getElementById("gc-prev"); if(c){ const T = gcTrack(gcNext().jour); c.getContext("2d").drawImage(T.world, 0, 0, c.width, c.height) }
+}
+function gcPickOpen(){
+  const el = document.getElementById("modal"), list = gcPickable().slice(0,150), cur = gc.pick || gc.etat?.bille || S.active;
+  el.innerHTML = `<div class="modal bag-sum pick-modal" role="dialog" aria-modal="true" aria-label="Choisir ta bille"><button class="close-x" data-action="close-modal" aria-label="Fermer">×</button>
+    <h2>Avec quelle bille tu cours ?</h2><p class="meta">Toutes les billes ont la même chance de gagner : choisis celle que tu veux montrer à tout le monde !</p>
+    <div class="pick-grid">${list.map(x=>`<button class="m-card${x.id===cur?" on":""}" data-action="gc-pick" data-id="${x.id}" style="${tstyle(x.type)}"><span class="ball">${mImg(x,120,Math.round(40*scaleOf(x.type)+14),"")}</span><b>${esc(specName(x))}</b>${typePill(x.type)}</button>`).join("")}</div></div>`;
+  el.hidden = false; el.querySelector(".close-x").focus();
+}
+function gcRegister(){
+  const s = (gc.pick && specById(gc.pick)) || activeSpec(), bid = s && sync.known?.has(s.id) ? s.id : null;
+  srv(()=>Cloud.course.inscrire(bid)).then(e=>{ gc.etat = e; renderView(); renderNav(); toast(`Inscrit ! Rendez-vous ${e.jour===isoDay()?"ce soir":"demain soir"} à 20 h.`); Sound.ding() }, srvFail);
+}
+// toutes les secondes : le compte à rebours ; à 20 h, la course commence pour les inscrits qui sont sur le site
+setInterval(()=>{
+  const N = gcNext();
+  document.querySelectorAll("[data-gc-timer]").forEach(el=>el.textContent = gcLeft(N.depart-Date.now()));
+  const E = gc.etat;
+  if(E && E.inscrit && Date.now()>=E.depart && Date.now()<E.depart+40000 && gc.live!==E.jour && srvOn()){
+    gc.live = E.jour; const jour = E.jour;
+    setTimeout(()=>Cloud.course.etat().then(e=>{ gc.etat = e; renderNav(); if(ui.view==="grandecourse") renderView();
+      if(e.derniere?.jour===jour && document.getElementById("gc-ov").hidden){
+        if(popupsFree() && !inGame()) gcLivePopup(); else toast("La Grande Course de 20 h commence ! Va la regarder dans les jeux de la cour.") } }, ()=>{}), 2500);
+  }
+}, 1000);
+function gcLivePopup(){
+  const el = document.getElementById("modal");
+  el.innerHTML = `<div class="modal gc-pop" role="dialog" aria-modal="true" aria-label="La Grande Course"><button class="close-x" data-action="close-modal" aria-label="Fermer">×</button>
+    <span class="gh-kick">${ic("flag",14)} 20 h 00</span><h2>C'est l'heure de la Grande Course !</h2><p>Les billes sont sur la ligne de départ. Qui va gagner ce soir ?</p>
+    <div class="btns"><button class="btn btn-yellow btn-xl" data-action="gc-watch">${ic("play",18)} Regarder en direct</button></div></div>`;
+  el.hidden = false;
+}
+// à l'arrivée : les résultats d'une course où on était inscrit et qu'on n'a pas encore vue
+const gcDue = () => { const D = gc.etat?.derniere; return !!D && gcMeIn(D.resultats)>=0 && S.gcSeen!==D.jour && Date.now()>D.depart+GC_DUR*1000 };
+function gcResultPopup(){
+  const D = gc.etat.derniere, me = gcMeIn(D.resultats), x = D.resultats[me];
+  S.gcSeen = D.jour; save();
+  const el = document.getElementById("modal");
+  el.innerHTML = `<div class="modal gc-pop" role="dialog" aria-modal="true" aria-label="Résultats de la Grande Course"><button class="close-x" data-action="close-modal" aria-label="Fermer">×</button>
+    <span class="gh-kick">${ic("flag",14)} La Grande Course</span><h2>${me===0?"Tu as gagné la Grande Course !":me<3?"Tu es sur le podium !":"La course est finie !"}</h2>
+    <p>Tu as fini <b>${me+1}${me?"e":"er"}</b> sur ${D.resultats.length} : +${x.prix} ${CUR.many}${x.sac?` et un ${BAG_BY[x.sac].name}`:""} !</p>
+    <div class="btns"><button class="btn btn-yellow btn-xl" data-action="gc-watch">${ic("play",18)} Revoir la course</button></div></div>`;
+  el.hidden = false; ecoRefresh();
+}
+
+// ---------- le circuit du jour (le même pour tout le monde : tiré de la date) ----------
+const GW = 3400, GH = 1900;
+const GC_THEMES = [
+  {name:"Grand Prix de la cour", ground:"#7E8691", dots:"rgba(255,255,255,.08)", track:"#5B6270", edge:"#FFFFFF", curb:["#E5484D","#FFFFFF"], deco:"cour"},
+  {name:"La Plage des pirates", ground:"#EBD3A0", dots:"rgba(150,110,60,.18)", track:"#D7B676", edge:"#F7E7C4", deco:"plage", water:true},
+  {name:"Le Sentier des écureuils", ground:"#4E7A2E", dots:"rgba(20,40,10,.25)", track:"#9A6B3E", edge:"#6B4524", deco:"foret"},
+  {name:"La Banquise glissante", ground:"#EEF5FF", dots:"rgba(120,160,210,.2)", track:"#BFDDF5", edge:"#FFFFFF", curb:["#5AB8FF","#FFFFFF"], deco:"glace", water:true},
+  {name:"Le Jardin des champignons", ground:"#6FA347", dots:"rgba(30,60,10,.2)", track:"#A9D07A", edge:"#E9F5D4", deco:"jardin"},
+  {name:"La Nuit de la fête foraine", ground:"#17132A", dots:"rgba(255,255,255,.05)", track:"#2C2550", edge:"#FF4FD8", curb:["#FF4FD8","#39E6FF"], deco:"foire", neon:true},
+  {name:"Le Canyon du désert", ground:"#D9894A", dots:"rgba(120,50,10,.18)", track:"#EDB57A", edge:"#B8612E", deco:"desert"},
+];
+const GC_COLS = ["#FFC93F","#5AB8FF","#FF6FB5","#7CE59A","#B07BFF","#FF9F43","#FFFFFF","#4DD4C6"];
+const gcTracks = new Map();
+function gcTrack(jour){
+  if(gcTracks.has(jour)) return gcTracks.get(jour);
+  const [y,m,d] = jour.split("-").map(Number), date = new Date(y,m-1,d), r = rng(hash("course20h|"+jour)), th = GC_THEMES[date.getDay()];
+  const ctrl = [], n = 11;
+  for(let i=0;i<n;i++){ const x = 220+i*(GW-440)/(n-1);
+    ctrl.push([x, i===0 ? GH*.5 : Math.max(220, Math.min(GH-220, ctrl[i-1][1] + (ctrl[i-1][1]>GH*.5?-1:1)*(r()<.25?-1:1)*(300+r()*520)))]) }
+  const P = [];
+  for(let i=0;i<n-1;i++){ const p0 = ctrl[Math.max(0,i-1)], p1 = ctrl[i], p2 = ctrl[i+1], p3 = ctrl[Math.min(n-1,i+2)], steps = Math.ceil(Math.hypot(p2[0]-p1[0],p2[1]-p1[1])/6);
+    for(let k=0;k<steps;k++){ const t = k/steps, t2 = t*t, t3 = t2*t, f = (a,b,c,e) => .5*((2*b)+(-a+c)*t+(2*a-5*b+4*c-e)*t2+(-a+3*b-3*c+e)*t3);
+      P.push({x:f(p0[0],p1[0],p2[0],p3[0]), y:f(p0[1],p1[1],p2[1],p3[1])}) } }
+  P.push({x:ctrl[n-1][0], y:ctrl[n-1][1]});
+  let s = 0; P.forEach((p,i)=>{ if(i) s += Math.hypot(p.x-P[i-1].x, p.y-P[i-1].y); p.s = s });
+  const L = s, narrows = [.3+r()*.15, .62+r()*.15].map(f=>f*L);
+  P.forEach((p,i)=>{ const a = P[Math.max(0,i-1)], b = P[Math.min(P.length-1,i+1)], l = Math.hypot(b.x-a.x,b.y-a.y)||1;
+    p.tx = (b.x-a.x)/l; p.ty = (b.y-a.y)/l; p.nx = -p.ty; p.ny = p.tx;
+    let w = p.s<260 ? 120 : 92+16*Math.sin(p.s/260);
+    narrows.forEach(c=>{ const dd = Math.abs(p.s-c); if(dd<120) w = Math.min(w, 56+dd*.33) }); p.w = w });
+  const T = {jour, date, th, P, L, narrows, boosts:[], bumps:[]};
+  for(let i=0;i<5;i++){ const ss = 500+(L-1000)*(i+.5)/5+(r()-.5)*120, p = gcAt(T,ss), o = (r()-.5)*p.w*.5; T.boosts.push({s:ss, x:p.x+p.nx*o, y:p.y+p.ny*o, a:Math.atan2(p.ty,p.tx)}) }
+  for(let i=0;i<6;i++){ const ss = 400+(L-800)*(i+.5)/6+(r()-.5)*120, p = gcAt(T,ss), sd = r()<.5?-1:1; T.bumps.push({s:ss, x:p.x+p.nx*(p.w-16)*sd, y:p.y+p.ny*(p.w-16)*sd, r:12+r()*5}) }
+  gcPaint(T, r);
+  gcTracks.set(jour, T); return T;
+}
+function gcAt(T, s){
+  const P = T.P; s = Math.max(0, Math.min(T.L, s));
+  let lo = 0, hi = P.length-1; while(hi-lo>1){ const m = (lo+hi)>>1; if(P[m].s<=s) lo = m; else hi = m }
+  const a = P[lo], b = P[hi], t = (s-a.s)/((b.s-a.s)||1);
+  return {x:a.x+(b.x-a.x)*t, y:a.y+(b.y-a.y)*t, nx:a.nx, ny:a.ny, tx:a.tx, ty:a.ty, w:a.w+(b.w-a.w)*t};
+}
+function gcNearD(T, x, y){ let best = 1e9, w = 90; for(let i=0;i<T.P.length;i+=3){ const p = T.P[i], d = Math.hypot(x-p.x, y-p.y); if(d<best){ best = d; w = p.w } } return best-w }
+function gcPaint(T, r){
+  const c = document.createElement("canvas"); c.width = GW; c.height = GH; const x = c.getContext("2d"), th = T.th, P = T.P;
+  x.fillStyle = th.ground; x.fillRect(0,0,GW,GH);
+  for(let i=0;i<9000;i++){ x.fillStyle = th.dots; x.fillRect(r()*GW, r()*GH, 2+r()*3, 2+r()*3) }
+  if(th.water){ const g = x.createLinearGradient(0,0,0,240); g.addColorStop(0, th.deco==="glace"?"#2B5D8A":"#1F7FB8"); g.addColorStop(1, th.deco==="glace"?"#6FA8D8":"#5EC3E0"); x.fillStyle = g;
+    x.beginPath(); x.moveTo(0,0); for(let i=0;i<=GW;i+=40) x.lineTo(i, 130+30*Math.sin(i/120)); x.lineTo(GW,0); x.fill();
+    x.strokeStyle = "rgba(255,255,255,.7)"; x.lineWidth = 6; x.beginPath(); for(let i=0;i<=GW;i+=40) x.lineTo(i, 130+30*Math.sin(i/120)); x.stroke() }
+  // ombre et lueur douces : peintes en tout petit puis agrandies (bien plus rapide qu'un flou)
+  const soft = (extra, col, alpha) => { const k = 8, sc = document.createElement("canvas"); sc.width = GW/k; sc.height = GH/k; const y = sc.getContext("2d");
+    y.scale(1/k,1/k); y.lineCap = "round"; y.strokeStyle = col;
+    for(let i=0;i<P.length-1;i+=2){ const p = P[i], q = P[Math.min(P.length-1,i+2)]; y.lineWidth = 2*(p.w+extra); y.beginPath(); y.moveTo(p.x,p.y); y.lineTo(q.x,q.y); y.stroke() }
+    x.save(); x.globalAlpha = alpha; x.drawImage(sc, 0, 0, GW, GH); x.restore() };
+  // la piste, segment par segment en traits arrondis : des bords lisses même dans les épingles
+  const band = (extra, style, dash) => { x.strokeStyle = style; x.lineCap = dash ? "butt" : "round"; if(dash) x.setLineDash(dash);
+    for(let i=0;i<P.length-1;i++){ const p = P[i], q = P[i+1]; x.lineWidth = 2*(p.w+extra); if(dash) x.lineDashOffset = -p.s; x.beginPath(); x.moveTo(p.x,p.y); x.lineTo(q.x,q.y); x.stroke() }
+    x.setLineDash([]) };
+  soft(26, "#000", .4);
+  if(th.neon) soft(34, th.edge, .6);
+  band(12, th.curb ? th.curb[1] : th.edge);
+  if(th.curb) band(12, th.curb[0], [26,26]);
+  band(0, th.track);
+  for(let i=0;i<5000;i++){ const p = P[Math.floor(r()*P.length)], o = (r()*2-1)*p.w; x.fillStyle = r()<.5 ? "rgba(0,0,0,.07)" : "rgba(255,255,255,.08)"; x.fillRect(p.x+p.nx*o, p.y+p.ny*o, 2, 2) }
+  x.setLineDash([18,22]); x.strokeStyle = "rgba(255,255,255,.28)"; x.lineWidth = 3; x.beginPath(); P.forEach((p,i)=>i?x.lineTo(p.x,p.y):x.moveTo(p.x,p.y)); x.stroke(); x.setLineDash([]);
+  T.narrows.forEach(s0=>{ for(let s=s0-110;s<=s0+110;s+=14){ const p = gcAt(T,s); x.save(); x.translate(p.x,p.y); x.rotate(Math.atan2(p.ty,p.tx));
+    x.fillStyle = "#8A5A30"; x.fillRect(-6,-p.w-4,12,2*p.w+8); x.fillStyle = "rgba(0,0,0,.2)"; x.fillRect(4,-p.w-4,2,2*p.w+8); x.restore() } });
+  const line = (s, q, rows) => { const p = gcAt(T,s); x.save(); x.translate(p.x,p.y); x.rotate(Math.atan2(p.ty,p.tx));
+    for(let i=-Math.ceil(p.w/q);i<Math.ceil(p.w/q);i++) for(let j=0;j<rows;j++){ x.fillStyle = (i+j)%2 ? "#111" : "#fff"; x.fillRect(j*q-q, i*q, q, q) } x.restore() };
+  line(150, 10, 2); line(T.L-40, 14, 3);
+  for(let i=0;i<460;i++){ const px = r()*GW, py = r()*GH; if(gcNearD(T,px,py)<40 || (th.water && py<190)) continue; x.save(); x.translate(px,py); const dc = th.deco;
+    if(dc==="foret"||dc==="glace"){ const s = 18+r()*22; x.fillStyle = "rgba(0,0,0,.25)"; x.beginPath(); x.ellipse(6,8,s,s*.8,0,0,TAU); x.fill();
+      const cs = dc==="glace" ? ["#2E5E3E","#3E7A52"] : ["#2F5E1E","#3F7A2A","#4E8F33"];
+      for(let k=0;k<3;k++){ x.fillStyle = cs[k%cs.length]; x.beginPath(); x.arc((r()-.5)*s*.6,(r()-.5)*s*.6,s*(.7-k*.15),0,TAU); x.fill() }
+      if(dc==="glace"){ x.fillStyle = "rgba(255,255,255,.85)"; x.beginPath(); x.arc(-s*.2,-s*.25,s*.35,0,TAU); x.fill() } }
+    else if(dc==="plage"){ if(r()<.25){ x.fillStyle = ["#E5484D","#2E8CFF","#FFC93F"][i%3]; x.beginPath(); x.arc(0,0,22,0,TAU); x.fill(); x.fillStyle = "rgba(255,255,255,.85)"; for(let k=0;k<6;k+=2){ x.beginPath(); x.moveTo(0,0); x.arc(0,0,22,k*Math.PI/3,(k+1)*Math.PI/3); x.fill() } }
+      else { x.fillStyle = ["#FFF4E6","#F7D9C4"][i%2]; x.beginPath(); x.arc(0,0,4+r()*3,Math.PI,0); x.fill() } }
+    else if(dc==="jardin"){ const cl = ["#FF6FB5","#FFFFFF","#FFC93F","#B07BFF"][i%4]; for(let k=0;k<5;k++){ x.fillStyle = cl; x.beginPath(); x.arc(Math.cos(k*1.256)*5,Math.sin(k*1.256)*5,4,0,TAU); x.fill() } x.fillStyle = "#FFC93F"; x.beginPath(); x.arc(0,0,3,0,TAU); x.fill() }
+    else if(dc==="desert"){ if(r()<.4){ x.fillStyle = "#3E8A4A"; x.fillRect(-5,-26,10,30); x.fillRect(-16,-16,8,14); x.fillRect(8,-20,8,12); x.fillRect(-16,-8,12,6); x.fillRect(4,-12,12,6) } else { x.fillStyle = "#A0522D"; x.beginPath(); x.ellipse(0,0,10+r()*12,7+r()*6,r()*3,0,TAU); x.fill() } }
+    else if(dc==="foire"){ x.fillStyle = GC_COLS[i%GC_COLS.length]; x.shadowColor = x.fillStyle; x.shadowBlur = 14; x.beginPath(); x.arc(0,0,3,0,TAU); x.fill() }
+    else { if(r()<.3){ x.strokeStyle = "rgba(255,255,255,.6)"; x.lineWidth = 3; x.strokeRect(-18,-18,36,36) } else { x.fillStyle = "rgba(255,255,255,.15)"; x.beginPath(); x.arc(0,0,3,0,TAU); x.fill() } }
+    x.restore() }
+  // des gradins pleins de monde près de l'arrivée
+  const f = gcAt(T, T.L-150);
+  for(const sd of [1,-1]){ x.save(); x.translate(f.x+f.nx*(f.w+70)*sd, f.y+f.ny*(f.w+70)*sd); x.rotate(Math.atan2(f.ty,f.tx));
+    x.fillStyle = "#6B4A2E"; x.fillRect(-160,-26,320,52);
+    for(let k=0;k<40;k++){ x.fillStyle = GC_COLS[k%GC_COLS.length]; x.beginPath(); x.arc(-150+(k%20)*16, -12+Math.floor(k/20)*24, 7, 0, TAU); x.fill() }
+    x.restore() }
+  T.world = c;
+}
+
+// ---------- la mise en scène : l'ordre d'arrivée est connu, on invente une course qui y mène ----------
+const GC_DT = 1/30, GC_WIN = 40, GC_DUR = 60;   // le gagnant passe la ligne vers 40 s ; une course dure environ une minute
+const gcSpec = x => x.bille && x.bille.type ? {seed:x.bille.seed, type:x.bille.type, family:x.bille.family, pal:x.bille.pal, shiny:x.bille.shiny||0}
+  : (()=>{ const r = rng(x.graine || hash(x.pseudo||x.nom||"?")); return {seed:Math.floor(r()*4e9), type:TK[pickW(r(),[30,30,15,12,8,5])], family:pickW(r(),FAM_W), pal:Math.floor(r()*BASE_PALS), shiny:0} })();
+function gcPlan(T, list, seed){
+  const r = rng(seed), base = T.L/(GC_WIN-2), sm = (a,b,v) => { const k = Math.max(0,Math.min(1,(v-a)/(b-a))); return k*k*(3-2*k) };
+  const lanes = list.map((_,i)=>-.75+1.5*(i+.5)/list.length).sort(()=>r()-.5);
+  const R = list.map((x,i)=>{
+    const ph = [r()*6.3, r()*6.3, r()*6.3], fr = [.18+r()*.1, .45+r()*.2, 1+r()*.4];
+    // des scénarios : le gagnant revient de loin, un autre mène longtemps puis craque
+    const early = i===0 ? -.1 : (i===1 || r()<.25) ? .13 : (r()-.5)*.12, late = i===0 ? .2 : i===1 ? .04 : -early*.6;
+    const fall = (i>2 && r()<.35) || (i>0 && r()<.08) ? .2+r()*.6 : null, trip = r()<.45 ? .1+r()*.8 : null;
+    const xs = [0], ev = []; let s = 0, t = 0, pause = 0, slow = 0, boost = 0, fell = false, tripped = false, bi = 0;
+    while(s<T.L && t<200){
+      const pr = s/T.L;
+      if(fall!=null && !fell && pr>=fall){ fell = true; pause = 2.4; ev.push({k:"fall", t, s}) }
+      if(trip!=null && !tripped && pr>=trip){ tripped = true; slow = .9; ev.push({k:"trip", t, s}) }
+      while(bi<T.boosts.length && T.boosts[bi].s < s) bi++;
+      if(bi<T.boosts.length && Math.abs(T.boosts[bi].s-s)<base*GC_DT && Math.abs(lanes[i])<.4 && r()<.5){ boost = .7; ev.push({k:"boost", t, s}) }
+      let v = 1 + .14*Math.sin(t*fr[0]+ph[0]) + .08*Math.sin(t*fr[1]+ph[1]) + .04*Math.sin(t*fr[2]+ph[2]) + early*(1-sm(.3,.6,pr)) + late*sm(.6,.92,pr);
+      if(t<1.4) v *= .1+.9*t/1.4;
+      if(pause>0){ pause -= GC_DT; v = 0 } if(slow>0){ slow -= GC_DT; v *= .35 } if(boost>0){ boost -= GC_DT; v *= 1.7 }
+      s = Math.min(T.L, s+v*base*GC_DT); t += GC_DT; xs.push(s);
+    }
+    return {...x, i, spec:gcSpec(x), me:!!x.joueur && x.joueur===(sync.uid||GC_ME), raw:xs, rawT:t, ev, lane:lanes[i], ph:r()*6.3, col:GC_COLS[i%GC_COLS.length], rot:I3.slice(), dirty:true, ls:0};
+  });
+  // les temps d'arrivée, dans l'ordre tiré par le serveur (parfois un photo-finish)
+  let f = GC_WIN-1+r()*2;
+  R.forEach((o,i)=>{ if(i) f += i===1 ? (r()<.45 ? .1+r()*.15 : .5+r()*.9) : .3+r()*1.2; o.fin = f; o.k = o.rawT/f; o.r = radOf(o.spec.type)*.85 });
+  return R;
+}
+function gcState(o, t){   // où en est la bille o au temps t : progression, chute en cours
+  if(t<=0) return {s:0, fall:null};
+  const rt = t*o.k, idx = rt/GC_DT, i = Math.floor(idx), a = o.raw[Math.min(i,o.raw.length-1)], b = o.raw[Math.min(i+1,o.raw.length-1)];
+  const s = a+(b-a)*(idx-i), fe = o.ev.find(e=>e.k==="fall" && rt>=e.t && rt<e.t+2.4);
+  return {s, fall: fe ? (rt-fe.t)/2.4 : null};
+}
+
+// ---------- l'écran de la course ----------
+const GCV = {raf:0};
+function gcWatch(race){
+  const T = gcTrack(race.jour), R = gcPlan(T, race.resultats, race.graine);
+  const ov = document.getElementById("gc-ov");
+  ov.innerHTML = `<canvas id="gc-cv"></canvas>
+    <div class="gc-top"><div class="chip"><small>${new Date(race.depart).toLocaleDateString("fr-FR",{weekday:"long", day:"numeric"})}${race.test?" · course d'essai":""}</small><b>${esc(T.th.name)}</b></div>
+      <div class="chip" id="gc-chrono"><small>Temps</small><b>0,0 s</b></div><span class="sp"></span>
+      <button class="gc-x" data-action="gc-close" aria-label="Quitter la course">×</button></div>
+    <div class="gc-board" id="gc-board"></div><canvas class="gc-mini" id="gc-mini" width="240" height="134"></canvas>
+    <div class="gc-ticker" id="gc-ticker"></div><div class="gc-big" id="gc-big"></div><div class="gc-end" id="gc-end" hidden></div>`;
+  ov.hidden = false; document.body.classList.add("gc-open");
+  // en direct : on reprend là où en est la course ; sinon depuis le début (avec le survol du circuit)
+  const since = (Date.now()-race.depart)/1000, live = !race.test && !race.replay && since>0 && since<GC_DUR;
+  Object.assign(GCV, {race, T, R, t: live ? since-5 : -5, last:performance.now(), cam:{x:0,y:0,z:.6}, fx:[], said:{}, lead:null, leadT:0, done:false, live, finished:[]});
+  if(live && since>5) gcSay("En direct : la course a déjà commencé !");
+  cancelAnimationFrame(GCV.raf); GCV.raf = requestAnimationFrame(gcLoop);
+}
+function gcClose(){
+  cancelAnimationFrame(GCV.raf); const ov = document.getElementById("gc-ov"); ov.hidden = true; ov.innerHTML = ""; document.body.classList.remove("gc-open");
+  if(GCV.race && !GCV.race.test){ S.gcSeen = GCV.race.jour; save(); ecoRefresh() }
+}
+function gcSay(t, big){ const k = document.getElementById("gc-ticker"); if(!k) return; const el = document.createElement("div"); el.textContent = t; k.appendChild(el); while(k.children.length>3) k.firstChild.remove(); setTimeout(()=>el.remove(), big?5200:3400) }
+function gcBig(t){ const b = document.getElementById("gc-big"); if(!b) return; b.innerHTML = `<span>${t}</span>`; setTimeout(()=>{ if(b.textContent===t) b.innerHTML = "" }, 950) }
+function gcLoop(now){
+  const V = GCV, cv = document.getElementById("gc-cv"); if(!cv) return;
+  const dt = Math.min(.1, (now-V.last)/1000); V.last = now; const t0 = V.t; V.t += dt; const t = V.t, T = V.T;
+  // compte à rebours et départ
+  [[-3,"3"],[-2,"2"],[-1,"1"],[0,"Partez !"]].forEach(([k,l])=>{ if(t0<k && t>=k) gcBig(l) });
+  if(t0<-4.9 && t>=-4.9) gcSay(`Circuit du jour : ${T.th.name} !`, true);
+  // positions
+  const pos = V.R.map(o=>{ const st = gcState(o, t), done = t>=o.fin, p = gcAt(T, done ? T.L : st.s);
+    let lane = o.lane + .12*Math.sin(t*.35+o.ph), off = lane*p.w*.8;
+    if(st.fall!=null){ const k = Math.min(1, st.fall*2.2); off = (lane<0?-1:1)*(Math.abs(off) + k*(p.w+40)) }
+    if(done){ const k = Math.min(1,(t-o.fin)*.9), q = gcAt(T, T.L-40); return {o, s:T.L+k, x:q.x+q.tx*(30+60*k)+q.nx*off, y:q.y+q.ty*(30+60*k)+q.ny*off, fall:null, done, hide:false} }
+    return {o, s:st.s, x:p.x+p.nx*off, y:p.y+p.ny*off, fall:st.fall, done, hide:st.fall!=null && st.fall>.45, tx:p.tx, ty:p.ty} });
+  // roulement des billes
+  pos.forEach(q=>{ const o = q.o, ds = q.s-o.ls; if(ds>.01 && !q.done){ o.rot = mul3(rotAxis(q.ty||0, q.tx||1, 0, ds/o.r), o.rot); o.dirty = true } o.ls = q.s;
+    if(q.fall!=null && !o.splash && q.fall>.4){ o.splash = 1; gcFx(q.x, q.y, T.th.water ? "#7FD3F2" : "#E8D2B0", 26, 3.5) } if(q.fall==null) o.splash = 0 });
+  // les commentaires
+  const order = [...pos].sort((a,b)=> (a.done&&b.done) ? a.o.fin-b.o.fin : b.s-a.s);
+  if(t>3){ const L0 = order[0].o; if(L0!==V.lead){ if(V.lead && t-V.leadT>1.2 && !order[0].done) gcSay(`${L0.me?"Tu passes":gcName(L0)+" passe"} en tête !`); V.lead = L0; V.leadT = t } }
+  V.R.forEach(o=>o.ev.forEach(e=>{ const at = e.t/o.k, key = o.i+e.k+e.t; if(t0<at && t>=at && !V.said[key]){ V.said[key] = 1; const rk = order.findIndex(q=>q.o===o);
+    if(e.k==="fall" && (rk<5 || o.me)) gcSay(T.th.water ? `Plouf ! ${o.me?"Ta bille tombe":gcName(o)+" tombe"} à l'eau !` : `Oh non ! ${o.me?"Ta bille sort":gcName(o)+" sort"} de la piste !`);
+    else if(e.k==="trip" && (rk<4 || o.me)) gcSay(`${o.me?"Ta bille trébuche":gcName(o)+" trébuche"} sur un caillou !`);
+    else if(e.k==="boost" && (rk<4 || o.me)){ gcSay(`Accélérateur pour ${o.me?"toi":gcName(o)} !`); const q = pos.find(q=>q.o===o); gcFx(q.x,q.y,"#FFE14D",16,3) } } }));
+  if(!V.said.last && order[0].s>T.L*.86){ V.said.last = 1; gcSay("Dernière ligne droite !", true) }
+  V.R.forEach((o,i)=>{ if(t0<o.fin && t>=o.fin){ const q = pos.find(q=>q.o===o); gcFx(q.x,q.y,o.col,40,5);
+    if(i===0) gcSay(`${o.me?"TU GAGNES":gcName(o)+" gagne"} la Grande Course !`, true);
+    else if(i===1 && o.fin-V.R[0].fin<.3) gcSay("Photo-finish ! C'était serré !", true);
+    else if(o.me) gcSay(`Tu passes la ligne : ${i+1}e !`, true) } });
+  // la caméra : le survol du circuit au début, puis la tête de course
+  const cam = V.cam, W0 = cv.clientWidth, H0 = cv.clientHeight;
+  if(t<0){ const k = Math.min(1,(t+5)/4), e = k<.5 ? 2*k*k : 1-Math.pow(-2*k+2,2)/2, p = gcAt(T, T.L*(1-e)); cam.x = p.x; cam.y = p.y; cam.z = .6+.4*e }
+  else { const live = order.filter(q=>!q.done && !q.hide).slice(0,4), me = pos.find(q=>q.o.me && !q.done);
+    const grp = live.length ? live : order.slice(0,3); if(me && Math.abs(me.s-grp[0].s)<500 && !grp.includes(me)) grp.push(me);
+    let x0=1e9,y0=1e9,x1=-1e9,y1=-1e9; grp.forEach(q=>{ x0=Math.min(x0,q.x); y0=Math.min(y0,q.y); x1=Math.max(x1,q.x); y1=Math.max(y1,q.y) });
+    const z = Math.max(.5, Math.min(1.15, Math.min(W0/(x1-x0+520), H0/(y1-y0+420))));
+    cam.x += ((x0+x1)/2-cam.x)*.07; cam.y += ((y0+y1)/2-cam.y)*.07; cam.z += (z-cam.z)*.04 }
+  // la caméra ne sort jamais du décor
+  cam.z = Math.max(cam.z, Math.max(W0/GW, H0/GH));
+  const vw = W0/cam.z/2, vh = H0/cam.z/2; cam.x = Math.max(vw, Math.min(GW-vw, cam.x)); cam.y = Math.max(vh, Math.min(GH-vh, cam.y));
+  gcDraw(cv, pos, t);
+  gcHud(order, t);
+  const lastFin = V.R[V.R.length-1].fin;
+  if(!V.done && t>Math.min(lastFin+1.5, V.R[0].fin+12)){ V.done = true; gcPodium() }
+  GCV.raf = requestAnimationFrame(gcLoop);
+}
+function gcFx(x,y,col,n,sp){ for(let i=0;i<n;i++){ const a = Math.random()*TAU, v = sp*(.3+Math.random()); GCV.fx.push({x,y,vx:Math.cos(a)*v,vy:Math.sin(a)*v,life:1,col}) } }
+const gcGL = (()=>{ try{ return new MarbleGL(document.createElement("canvas")) }catch(e){ return null } })();
+function gcSprite(o, px){
+  if(!gcGL) return null; if(!o.cv) o.cv = document.createElement("canvas");
+  if(o.dirty || o.cv.width!==px){ gcGL.draw(o.spec, px, o.rot); o.cv.width = o.cv.height = px; o.cv.getContext("2d").drawImage(gcGL.cv,0,0); o.dirty = false }
+  return o.cv;
+}
+function gcDraw(cv, pos, t){
+  const dpr = Math.min(2, devicePixelRatio||1), w = Math.round(cv.clientWidth*dpr), h = Math.round(cv.clientHeight*dpr);
+  if(cv.width!==w || cv.height!==h){ cv.width = w; cv.height = h }
+  const c = cv.getContext("2d"), V = GCV, T = V.T, z = V.cam.z*dpr, now = performance.now()/1000;
+  c.setTransform(1,0,0,1,0,0); c.fillStyle = "#141220"; c.fillRect(0,0,w,h);
+  c.setTransform(z,0,0,z, w/2-V.cam.x*z, h/2-V.cam.y*z);
+  c.drawImage(T.world, 0, 0);
+  // accélérateurs qui clignotent, champignons
+  T.boosts.forEach(b=>{ c.save(); c.translate(b.x,b.y); c.rotate(b.a);
+    for(let k=0;k<3;k++){ const ph = (now*2.2+k/3)%1; c.globalAlpha = .35+.65*(1-Math.abs(ph-.5)*2); c.fillStyle = T.th.neon ? "#39E6FF" : "#FFE14D";
+      const ox = -18+k*14; c.beginPath(); c.moveTo(ox,-14); c.lineTo(ox+12,0); c.lineTo(ox,14); c.lineTo(ox+5,0); c.closePath(); c.fill() } c.restore(); c.globalAlpha = 1 });
+  T.bumps.forEach(b=>{ c.fillStyle = "rgba(0,0,0,.3)"; c.beginPath(); c.ellipse(b.x+4,b.y+6,b.r,b.r*.8,0,0,TAU); c.fill();
+    const g = c.createRadialGradient(b.x-b.r*.3,b.y-b.r*.4,2,b.x,b.y,b.r); g.addColorStop(0,"#FF8FB8"); g.addColorStop(1,"#C21E5C"); c.fillStyle = g; c.beginPath(); c.arc(b.x,b.y,b.r,0,TAU); c.fill();
+    c.fillStyle = "rgba(255,255,255,.9)"; for(let k=0;k<4;k++){ c.beginPath(); c.arc(b.x+Math.cos(k*1.7)*b.r*.5, b.y+Math.sin(k*1.7)*b.r*.5, b.r*.16, 0, TAU); c.fill() } });
+  for(let i=V.fx.length-1;i>=0;i--){ const p = V.fx[i]; p.life -= .025; if(p.life<=0){ V.fx.splice(i,1); continue } p.x += p.vx; p.y += p.vy; p.vx *= .92; p.vy *= .92;
+    c.fillStyle = rgba(p.col, .85*p.life); c.beginPath(); c.arc(p.x,p.y,3*(.4+.6*p.life),0,TAU); c.fill() }
+  // billes : ombre, bille en 3D qui roule, nom
+  const vis = (x,y) => Math.abs(x-V.cam.x)*V.cam.z < cv.clientWidth/2+60 && Math.abs(y-V.cam.y)*V.cam.z < cv.clientHeight/2+60;
+  [...pos].sort((a,b)=>a.y-b.y).forEach(q=>{ if(q.hide || !vis(q.x,q.y)) return; const o = q.o, sc = q.fall!=null ? Math.max(.3, 1-q.fall*1.5) : 1, rr = o.r*sc;
+    c.fillStyle = "rgba(0,0,0,.3)"; c.beginPath(); c.ellipse(q.x+3,q.y+5,rr,rr*.8,0,0,TAU); c.fill();
+    if(t>=0 && !q.done && q.fall==null) { c.fillStyle = rgba(o.col,.18); c.beginPath(); c.ellipse(q.x-(q.tx||0)*rr*1.6, q.y-(q.ty||0)*rr*1.6, rr*.9, rr*.6, Math.atan2(q.ty||0,q.tx||1), 0, TAU); c.fill() }
+    const D = rr*2/.9, spr = gcSprite(o, Math.max(20, Math.ceil(D*z)));
+    if(spr) c.drawImage(spr, q.x-D/2, q.y-D/2, D, D); else { c.fillStyle = o.col; c.beginPath(); c.arc(q.x,q.y,rr,0,TAU); c.fill() }
+    if(o.me){ const k = .5+.5*Math.sin(now*5); c.strokeStyle = `rgba(255,225,77,${.5+.4*k})`; c.lineWidth = 3; c.beginPath(); c.arc(q.x,q.y,rr+6+k*3,0,TAU); c.stroke() }
+    const nm = o.me ? "Toi" : o.bot ? o.nom : o.pseudo;
+    c.font = "900 13px Nunito, sans-serif"; c.textAlign = "center"; c.lineWidth = 4; c.strokeStyle = "rgba(20,15,30,.85)"; c.strokeText(nm, q.x, q.y-rr-10);
+    c.fillStyle = o.me ? "#FFE14D" : "#fff"; c.fillText(nm, q.x, q.y-rr-10) });
+  // l'arche d'arrivée
+  const f = gcAt(T, T.L-40); c.save(); c.translate(f.x,f.y); c.rotate(Math.atan2(f.ty,f.tx));
+  c.fillStyle = "rgba(229,72,77,.92)"; c.fillRect(-10,-f.w-16,20,2*f.w+32); c.fillStyle = "#fff"; c.font = "900 16px Nunito, sans-serif"; c.rotate(Math.PI/2); c.textAlign = "center"; c.fillText("ARRIVÉE", 0, 6); c.restore();
+}
+function gcHud(order, t){
+  const V = GCV, ch = document.querySelector("#gc-chrono b"); if(ch) ch.textContent = t<0 ? "—" : `${Math.min(t, V.R[0].fin).toFixed(1).replace(".",",")} s`;
+  const meI = order.findIndex(q=>q.o.me), rows = order.slice(0,8);
+  if(meI>=8) rows.push(order[meI]);
+  const b = document.getElementById("gc-board");
+  if(b) b.innerHTML = `<h3>Classement en direct</h3>` + rows.map(q=>{ const i = order.indexOf(q), o = q.o;
+    return `<div class="gcr${o.me?" me":""}${q.done?" fin":""}"><span class="pos">${i+1}</span>${mImg(o.spec,52,24,"")}<span class="nm">${esc(o.me?"Toi":o.bot?o.nom:o.pseudo)}</span><span class="st">${q.done?"Arrivé":q.hide||q.fall!=null?"Plouf !":`${Math.round((V.T.L-q.s)/10)} cm`}</span></div>` }).join("");
+  const m = document.getElementById("gc-mini"); if(!m) return; const x = m.getContext("2d"), sx = m.width/GW, sy = m.height/GH;
+  x.clearRect(0,0,m.width,m.height); x.lineCap = x.lineJoin = "round"; x.strokeStyle = "rgba(255,255,255,.3)"; x.lineWidth = 6; x.beginPath(); V.T.P.forEach((p,i)=>i?x.lineTo(p.x*sx,p.y*sy):x.moveTo(p.x*sx,p.y*sy)); x.stroke();
+  x.strokeStyle = V.T.th.track; x.lineWidth = 3; x.stroke();
+  order.forEach(q=>{ x.fillStyle = q.o.me ? "#FFE14D" : q.o.col; x.beginPath(); x.arc(q.x*sx, q.y*sy, q.o.me?4.5:3, 0, TAU); x.fill() });
+}
+function gcPodium(){
+  const V = GCV, R = V.R, me = R.findIndex(o=>o.me), el = document.getElementById("gc-end"); if(!el) return;
+  const step = i => R[i] ? `<div class="gcs"><img src="${marbleURL(R[i].spec,168)}" alt=""><b>${esc(R[i].me?"Toi !":R[i].bot?R[i].nom:R[i].pseudo)}</b><div class="blk">${i+1}</div></div>` : "";
+  const mine = me<0 ? "" : V.race.test ? `<div class="gc-mine">Course d'essai : tu finis <b>${me+1}${me?"e":"er"}</b>. Pour de vrai, inscris-toi à la course de 20 h !</div>`
+    : `<div class="gc-mine">Tu finis <b>${me+1}${me?"e":"er"}</b> sur ${R.length} · +${R[me].prix} ${CUR.many}${R[me].sac?` et un ${BAG_BY[R[me].sac].name}`:""} !</div>`;
+  el.innerHTML = `<div class="gc-pod"><span class="gh-kick">${ic("flag",14)} Résultats · ${esc(V.T.th.name)}</span><h2>${me===0?"Champion du soir !":me>0&&me<3?"Sur le podium !":"Et le gagnant est…"}</h2>
+    <div class="gcs-row">${step(1)}${step(0)}${step(2)}</div>${mine}
+    <div class="btns"><button class="btn btn-yellow" data-action="gc-replay">${ic("play",16)} Revoir</button><button class="btn btn-ghost" data-action="gc-close">Fermer</button></div>
+    <p class="meta">Chaque bille avait exactement la même chance : l'ordre d'arrivée est tiré au sort à 20 h.</p></div>`;
+  el.hidden = false;
+  if(me>=0 && me<3) Sound.ding();
+}
+// une course d'essai : toi et 7 billes de la cour, rien à gagner
+let GC_ME = null;   // sans compte : l'identifiant du joueur dans la course d'essai
+function gcTest(){
+  const names = [...FEED_NAMES].sort(()=>Math.random()-.5).slice(0,7);
+  GC_ME = sync.uid ? null : "__moi";
+  const list = [{joueur:sync.uid||GC_ME, pseudo:S.name, bille:activeSpec(), prix:0}, ...names.map(n=>({bot:true, nom:n, graine:randU32()}))].sort(()=>Math.random()-.5);
+  gcWatch({jour:isoDay(), graine:randU32(), depart:Date.now(), resultats:list, test:true});
+}
+
+/* =====================================================================
    PAGES À VENIR & PARAMÈTRES
    ===================================================================== */
 const SOON = {
@@ -8431,6 +8890,14 @@ document.addEventListener("click", e=>{
     case "zoom": if(specById(t.dataset.id)) openModal(t.dataset.id); break;
     case "a-restart": initArena(ui.view); break;
     case "c-restart": initCasse(); break;
+    case "gc-pickopen": gcPickOpen(); break;
+    case "gc-pick": gc.pick = t.dataset.id; closeModal(); if(gc.etat?.inscrit) gcRegister(); else renderView(); break;
+    case "gc-reg": gcRegister(); break;
+    case "gc-unreg": srv(()=>Cloud.course.desinscrire()).then(e=>{ gc.etat = e; renderView(); renderNav(); toast("Tu n'es plus inscrit à la Grande Course.") }, srvFail); break;
+    case "gc-watch": if(gc.etat?.derniere){ closeModal(); gcWatch(gc.etat.derniere) } break;
+    case "gc-test": closeModal(); gcTest(); break;
+    case "gc-replay": gcWatch({...GCV.race, replay:true}); break;
+    case "gc-close": gcClose(); break;
     case "game-go": {
       const k = t.dataset.g;
       if(!gameBegin(k)){ renderView(); break }
@@ -8745,7 +9212,7 @@ function eventGifts(){
 }
 function ecoRefresh(){ if(srvOn()) srv(()=>Cloud.eco.state()).then(applyEco, ()=>{}) }
 // une fois connecté au serveur : les nouvelles de la cour (demandes, trocs) et les billes reçues entre-temps
-function courStart(){ if(!srvOn()) return; courLoad("moi", true); syncMarbles(true); courNews(true) }
+function courStart(){ if(!srvOn()) return; courLoad("moi", true); syncMarbles(true); courNews(true); gcLoad(true) }
 const DEVICE = (()=>{ try{ let d = localStorage.getItem("billy-device"); if(!d){ d = newId(); localStorage.setItem("billy-device", d) } return d }catch(e){ return newId() } })();
 const GUEST_FLAG = "billy-guest";   // le joueur a choisi de jouer sans compte sur cet appareil
 const lsGet = k => { try{ return localStorage.getItem(k) }catch(e){ return null } };
@@ -9359,7 +9826,7 @@ document.addEventListener("pointerout", e=>{
 // à l'arrivée (et une fois la partie du compte chargée) : le résumé d'un sac pas fini d'ouvrir, sinon le bonbec du jour (une fois par jour)
 // le calendrier passe toujours en premier : les nouvelles de la cour attendent qu'il soit fermé
 const dailyDue = () => dailyReady() && S.dailySeen!==dayKey();
-const popupsFree = () => ["auth","modal","ov","ask"].every(id=>document.getElementById(id)?.hidden!==false);
+const popupsFree = () => ["auth","modal","ov","ask","gc-ov"].every(id=>document.getElementById(id)?.hidden!==false);
 const inGame = () => ["tir","pot","chateau","casse","tic","course"].includes(ui.view) && !document.querySelector(".g-result:not([hidden])");
 let heldNews = null;
 function showHeldNews(){ if(!heldNews || !popupsFree()) return; const n = heldNews; heldNews = null; openNews(n) }
@@ -9371,11 +9838,12 @@ function bootPopups(){
     if(results.length && BAG_BY[P.bag]){ showBagSummary({bag:BAG_BY[P.bag], results, left:true}); return }
   }
   if(dailyDue()){ S.dailySeen = dayKey(); save(); openDaily(); return }
-  showHeldNews();
+  if(heldNews){ showHeldNews(); return }
+  if(gcDue()) gcResultPopup();
 }
 setTimeout(bootPopups, 800);
 // une fenêtre déjà ouverte (ou un sac en cours) : on repasse dès qu'elle se ferme ; au retour sur l'onglet après minuit aussi
-setInterval(()=>{ if(document.visibilityState==="visible" && (dailyDue() || heldNews) && popupsFree() && !inGame()) bootPopups() }, 2000);
+setInterval(()=>{ if(document.visibilityState==="visible" && (dailyDue() || heldNews || gcDue()) && popupsFree() && !inGame()) bootPopups() }, 2000);
 // petits secrets
 document.getElementById("logo-marble").addEventListener("click", ()=>{
   S.logo = (S.logo||0)+1; save();

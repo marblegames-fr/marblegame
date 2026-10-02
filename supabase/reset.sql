@@ -13,6 +13,8 @@ begin;
 
 -- la cour de récré
 truncate table public.offres, public.annonces, public.trocs, public.demandes_amis, public.amis restart identity cascade;
+-- la Grande Course de 20 h
+truncate table public.course_inscrits, public.courses;
 -- l'économie
 truncate table public.gains, public.mises, public.portefeuilles restart identity;
 -- les billes (et leur historique), SAUF les billes Bêta données par le serveur pendant la bêta

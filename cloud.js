@@ -100,6 +100,12 @@
       settle: (mise, gain) => rpc("regler_mise", {mise, gain}),
       test: action => rpc("outil_test", {action}),
     },
+    // ---------- la Grande Course de 20 h (supabase/course.sql) ----------
+    course: {
+      etat: () => rpc("course_etat"),
+      inscrire: bid => rpc("course_inscrire", {bid:bid||null}),
+      desinscrire: () => rpc("course_desinscrire"),
+    },
     // ---------- la cour de récré : copains, troc, marché (supabase/cour.sql) ----------
     cour: {
       moi: () => rpc("cour_moi"),

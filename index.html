@@ -2697,14 +2697,16 @@ const dayMonth = t => new Date(t).toLocaleDateString("fr-FR",{day:"numeric",mont
 // « jusqu'au 14 octobre à 23 h 59 » (heure de Paris)
 const untilLabel = t => { const [h,m] = new Date(t).toLocaleTimeString("fr-FR",{hour:"2-digit",minute:"2-digit",timeZone:"Europe/Paris"}).split(":"); return `jusqu'au ${dayMonth(t)} à ${+h} h ${m}` };
 const SHINIES = [null,
-  {name:"Irisée",    w:70, desc:"Reflets arc-en-ciel à la surface."},
-  {name:"Dorée",     w:25, desc:"Des paillettes d'or qui scintillent à la lumière."},
-  {name:"Lumineuse", w:5,  desc:"Elle brille, même dans le noir."},
+  {name:"Irisée",    w:75, desc:"Reflets arc-en-ciel à la surface."},
+  {name:"Dorée",     w:21, desc:"Des paillettes d'or qui scintillent à la lumière."},
+  {name:"Lumineuse", w:4,  desc:"Elle brille, même dans le noir."},
 ];
 // tirage pondéré : r dans [0,1[, w = poids
 function pickW(r,w){ const tot=w.reduce((a,b)=>a+b,0); let x=r*tot; for(let i=0;i<w.length;i++){ x-=w[i]; if(x<0) return i } return w.length-1 }
 const rollShiny = () => 1+pickW(Math.random(), SHINIES.slice(1).map(x=>x.w));
-const SHINY_RATE = .0001;  // 0,01 % par bille : le graal ultime (0,02 % dans le Sac Premium, 0,05 % dans le Sac Collector)
+// 1 sur 2 000 par bille (0,1 % dans le Sac Premium et le Sac Pirate, 0,25 % dans le Collector) : une shiny de temps en temps,
+// la Dorée reste rare et la Lumineuse le vrai graal. Mêmes valeurs dans serveur.sql (taux_shiny, interne.sac, tirer_shiny).
+const SHINY_RATE = .0005;
 
 // Recyclage : ce que rapporte une bille échangée. Proportionnel à sa rareté dans le sac gratuit
 // (chaque taille rapporte donc autant en moyenne), et toujours bien moins que ce qu'elle coûte à trouver.

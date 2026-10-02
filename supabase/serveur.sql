@@ -126,7 +126,7 @@ create or replace function interne.coloris_base() returns int language sql immut
 -- Elles sont rangées avec les billes secrètes (secrete = 'beta') : ni troc, ni marché, ni recyclage, ni classement.
 -- supabase/reset.sql les garde. Au lancement : remplacer true par false (et BETA.open:false dans index.html).
 create or replace function interne.beta_ouverte() returns boolean language sql immutable as $$ select true $$;
-create or replace function interne.taux_shiny() returns numeric language sql immutable as $$ select 0.0001::numeric $$;
+create or replace function interne.taux_shiny() returns numeric language sql immutable as $$ select 0.0005::numeric $$;   -- 1 sur 2 000 (relevé le 2 octobre 2026 : 1 sur 10 000, c'était presque jamais)
 create or replace function interne.revente() returns int[] language sql immutable as $$ select array[5,8,20,50,150,600] $$;
 create or replace function interne.prime_shiny() returns int[] language sql immutable as $$ select array[2000,5000,15000] $$;
 create or replace function interne.fusion_n() returns int[] language sql immutable as $$ select array[3,5,5,6,8] $$;
@@ -137,11 +137,11 @@ drop function if exists interne.sac(text);
 create or replace function interne.sac(nom text, out prix int, out n int, out garantie int, out shiny numeric, out cotes numeric[])
 language sql immutable as $$
   select v.prix, v.n, v.garantie, v.shiny, v.cotes from (values
-    ('gratuit',     0, 3, null::int, 0.0001, array[[75,25,0,0,0,0],[55,35,10,0,0,0],[30,33,20,12,4,1]]::numeric[]),
-    ('classique', 300, 5, null,      0.0001, array[[70,30,0,0,0,0],[50,38,12,0,0,0],[35,40,20,5,0,0],[20,35,30,13,2,0],[10,25,30,20,12,3]]::numeric[]),
-    ('premium',   600, 5, 3,         0.0002, array[[0,80,20,0,0,0],[0,60,35,5,0,0],[0,40,45,15,0,0],[0,0,55,38,7,0],[0,0,0,60,34,6]]::numeric[]),
-    ('collector',1500, 5, 4,         0.0005, array[[0,0,85,15,0,0],[0,0,65,35,0,0],[0,0,40,50,10,0],[0,0,0,60,38,2],[0,0,0,0,87,13]]::numeric[]),
-    ('pirate',    600, 3, null,      0.0002, array[[60,32,8,0,0,0],[40,35,18,6,1,0],[20,28,24,17,8,3]]::numeric[])
+    ('gratuit',     0, 3, null::int, 0.0005, array[[75,25,0,0,0,0],[55,35,10,0,0,0],[30,33,20,12,4,1]]::numeric[]),
+    ('classique', 300, 5, null,      0.0005, array[[70,30,0,0,0,0],[50,38,12,0,0,0],[35,40,20,5,0,0],[20,35,30,13,2,0],[10,25,30,20,12,3]]::numeric[]),
+    ('premium',   600, 5, 3,         0.0010, array[[0,80,20,0,0,0],[0,60,35,5,0,0],[0,40,45,15,0,0],[0,0,55,38,7,0],[0,0,0,60,34,6]]::numeric[]),
+    ('collector',1500, 5, 4,         0.0025, array[[0,0,85,15,0,0],[0,0,65,35,0,0],[0,0,40,50,10,0],[0,0,0,60,38,2],[0,0,0,0,87,13]]::numeric[]),
+    ('pirate',    600, 3, null,      0.0010, array[[60,32,8,0,0,0],[40,35,18,6,1,0],[20,28,24,17,8,3]]::numeric[])
   ) v(nom, prix, n, garantie, shiny, cotes) where v.nom = sac.nom
 $$;
 
@@ -194,9 +194,9 @@ begin
   return interne.tirer(p) - 1;
 end $$;
 
--- 0 = pas shiny, 1 Irisée (70 %), 2 Dorée (25 %), 3 Lumineuse (5 %)
+-- 0 = pas shiny, 1 Irisée (75 %), 2 Dorée (21 %), 3 Lumineuse (4 %)
 create or replace function interne.tirer_shiny(taux numeric) returns int language sql volatile as $$
-  select case when random() < taux then interne.tirer(array[70,25,5]::numeric[]) else 0 end
+  select case when random() < taux then interne.tirer(array[75,21,4]::numeric[]) else 0 end
 $$;
 
 -- crée une bille en base pour ce joueur et la renvoie telle que le jeu la connaît

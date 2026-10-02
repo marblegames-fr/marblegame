@@ -1204,6 +1204,8 @@ button.vit-slot:hover{background:var(--panel-2);color:var(--ink)}
 .gh-txt h2{font-family:var(--display);font-weight:400;font-size:28px;line-height:1.05;margin:8px 0 4px}
 .gh-txt p{color:var(--ink-2);font-weight:600}
 .gh-side{display:grid;justify-items:end;gap:8px}
+.gh-bonus{display:inline-flex;align-items:center;gap:7px;margin-top:10px;padding:6px 12px;border-radius:999px;font-weight:900;font-size:13px;color:#fff;background:var(--bc,#2E6BE6);box-shadow:0 3px 0 rgba(0,0,0,.2)}
+.gh-bonus.got{background:var(--green)}
 .gh-side small{display:inline-flex;align-items:center;gap:5px;font-weight:800;color:var(--muted);font-size:12px}
 .gh-side small b{color:var(--ink)}
 .gh-dots{display:flex;gap:8px;flex-wrap:wrap}
@@ -3041,7 +3043,9 @@ vec4 fam(vec3 q, out vec3 e){
     float d=length(fc-off*0.35);
     float sh=step(0.5,hb)*smoothstep(0.06,0.0,abs(d-rb))*smoothstep(0.92,0.75,r);
     e=vec3(1.0)*sh*1.5;
-    return vec4(mix(uC2,vec3(1.0),0.6), 0.25+sh*22.0);
+    // le verre prend vraiment la couleur du coloris : sombre au cœur, plus clair vers la paroi
+    vec3 col=mix(uC1,mix(uC2,vec3(1.0),0.2),smoothstep(0.1,0.9,r));
+    return vec4(col, 0.42+sh*22.0);
   }
 #elif MODE==12
   { // arlequin
@@ -6523,7 +6527,7 @@ function finishHole(success){
     const rec = !S.best[game.lvl] || game.strokes<S.best[game.lvl];
     if(rec) S.best[game.lvl] = game.strokes;
     const P = playedToday(), paid = !P.tir[0];
-    if(paid){ P.tir[0] = 1; earn("jeu", "tir|0", rew) }   // une récompense par jour (le serveur compte « tir|0 »)
+    if(paid){ P.tir[0] = 1; earn("jeu", "tir|0", rew); gamesBonus() }   // une récompense par jour (le serveur compte « tir|0 »)
     S.holes++; save(); renderTop(); updHud(); renderHoles();
     const pxp = paid ? passXP(PASS_XP.star*st) : 0;
     questEvent("hole");
@@ -6630,16 +6634,16 @@ const AW=900, AH=520, AB=22, AMAXV=21;
 const ARENA = {
   pot:{title:"Le Pot", icon:"pot",
     lead:"Le grand classique : envoie tes billes dans le trou creusé dans la terre. Tes billes restent sur le terrain, alors sers-t'en pour pousser les autres dans le pot !",
-    rules:["5 lancers depuis la ligne de craie.","Chaque bille dans le pot rapporte 10 bonbecs.","Les billes déjà lancées restent en jeu : pousse-les dans le pot !","1 bille dans le pot : 1 étoile, 3 billes : 2 étoiles, 5 billes : 3 étoiles.","Une partie par jour : elle compte dès que tu cliques sur « C'est parti ! »."]},
+    rules:["5 lancers depuis la ligne de craie.","Chaque bille dans le pot rapporte 20 bonbecs.","Les billes déjà lancées restent en jeu : pousse-les dans le pot !","1 bille dans le pot : 1 étoile, 3 billes : 2 étoiles, 5 billes : 3 étoiles.","Une partie par jour : elle compte dès que tu cliques sur « C'est parti ! »."]},
   chateau:{title:"Le Château", icon:"castle",
     lead:"Dix billes rangées en triangle au milieu d'un cercle de craie. Tu as 3 tirs pour en faire sortir un maximum du cercle.",
-    rules:["3 tirs depuis la ligne de craie, d'un endroit différent à chaque fois.","Chaque bille sortie du cercle rapporte 6 bonbecs.","3 billes sorties : 1 étoile, 6 : 2 étoiles, les 10 : 3 étoiles et une vraie bille gagnée pour ta boîte à billes !","Plus ta bille active est grosse, plus elle tape fort.","Une partie par jour : elle compte dès que tu cliques sur « C'est parti ! »."]},
+    rules:["3 tirs depuis la ligne de craie, d'un endroit différent à chaque fois.","Chaque bille sortie du cercle rapporte 12 bonbecs.","3 billes sorties : 1 étoile, 6 : 2 étoiles, les 10 : 3 étoiles et une vraie bille gagnée pour ta boîte à billes !","Plus ta bille active est grosse, plus elle tape fort.","Une partie par jour : elle compte dès que tu cliques sur « C'est parti ! »."]},
   course:{title:"La Course sur la plage", icon:"flag",
     lead:"Le Tour de France des billes des vacances : une piste creusée dans le sable, trois adversaires, et chacun sa pichenette à son tour. Le premier qui passe la ligne a gagné !",
-    rules:["Chacun joue une pichenette à son tour : toi, puis tes trois adversaires.","Si ta bille sort de la piste, elle revient là où elle était. Pas de raccourci !","Tu peux bousculer les autres billes : c'est de bonne guerre.","1re place : 100 bonbecs, 2e : 60, 3e : 35, 4e : 15. 30 pichenettes au maximum.","Une partie par jour : elle compte dès que tu cliques sur « C'est parti ! »."]},
+    rules:["Chacun joue une pichenette à son tour : toi, puis tes trois adversaires.","Si ta bille sort de la piste, elle revient là où elle était. Pas de raccourci !","Tu peux bousculer les autres billes : c'est de bonne guerre.","1re place : 200 bonbecs, 2e : 120, 3e : 70, 4e : 30. 30 pichenettes au maximum.","Une partie par jour : elle compte dès que tu cliques sur « C'est parti ! »."]},
   tic:{title:"La Tic", icon:"tic",
     lead:"Chacun son tour, on essaie de toucher la bille de l'autre. Le premier qui fait « tic » a gagné !",
-    rules:["Tu tires en premier, puis ton adversaire.","Touche sa bille pour gagner la partie.","Les billes restent là où elles s'arrêtent : attention à ne pas finir à sa portée.","5 tirs chacun au maximum. Victoire : 100 bonbecs, match nul : 40, défaite : 20.","Une partie par jour : elle compte dès que tu cliques sur « C'est parti ! »."]},
+    rules:["Tu tires en premier, puis ton adversaire.","Touche sa bille pour gagner la partie.","Les billes restent là où elles s'arrêtent : attention à ne pas finir à sa portée.","5 tirs chacun au maximum. Victoire : 200 bonbecs, match nul : 80, défaite : 40.","Une partie par jour : elle compte dès que tu cliques sur « C'est parti ! »."]},
 };
 function artPot(){ return `<svg viewBox="0 0 240 130" preserveAspectRatio="xMidYMid slice" aria-hidden="true"><rect width="240" height="130" fill="#B8895A"/><circle cx="60" cy="30" r="1.5" fill="#8C6440"/><circle cx="200" cy="100" r="2" fill="#8C6440"/><circle cx="120" cy="110" r="1.5" fill="#D9B48A"/>
   <path d="M40 10v110" stroke="#fff" stroke-width="3" stroke-dasharray="7 6" opacity=".8"/><ellipse cx="165" cy="68" rx="20" ry="13" fill="#3A2614"/><ellipse cx="165" cy="66" rx="20" ry="12" fill="#1E130A"/>
@@ -6689,7 +6693,8 @@ function viewGames(){
   <section class="panel games-hero${left?"":" all-done"}">
     <div class="gh-txt"><span class="gh-kick">${ic("gift",14)} Tes parties du jour</span>
       <h2>${left ? `${left} partie${left>1?"s":""} à jouer aujourd'hui` : "Tout est joué : bravo !"}</h2>
-      <p>${won ? `Déjà <b>${fmt(won)} ${CUR.many}</b> gagnés aux jeux aujourd'hui.` : `Jusqu'à <b>${fmt(maxAll)} ${CUR.many}</b> à gagner chaque jour.`} ${left ? "Prends ton temps : chaque jeu ne se joue qu'une fois." : "Reviens demain pour de nouvelles parties !"}</p></div>
+      <p>${won ? `Déjà <b>${fmt(won)} ${CUR.many}</b> gagnés aux jeux aujourd'hui.` : `Jusqu'à <b>${fmt(maxAll)} ${CUR.many}</b> à gagner chaque jour.`} ${left ? "Prends ton temps : chaque jeu ne se joue qu'une fois." : "Reviens demain pour de nouvelles parties !"}</p>
+      <span class="gh-bonus${P.bonus?" got":""}" style="--bc:${BAG_BY[GAMES_BONUS].color}">${ic("bag",16)} ${P.bonus ? `${BAG_BY[GAMES_BONUS].name} gagné aujourd'hui !` : `Les 6 jeux faits : un ${BAG_BY[GAMES_BONUS].name} offert`}</span></div>
     <div class="gh-side">
       <div class="gh-dots">${keys.map(k=>`<button class="gh-dot${isDone(k)?" done":""}" data-action="nav" data-view="${k}" title="${k==="tir"?"Le Tir":DAY_GAMES[k].title}${isDone(k)?" : joué":""}">${ic(GAME_ICON[k],20)}${isDone(k)?`<span class="ok">${ic("check",10,3.4)}</span>`:""}</button>`).join("")}</div>
       <small>${ic("clock",13)} Nouvelles parties dans <b data-quest-timer>${untilMidnight()}</b></small>
@@ -7050,18 +7055,26 @@ function fxDraw(c){
 // Elle compte dès « C'est parti ! » : quitter en route ou recharger la page ne permet pas de la recommencer.
 // Gains maximum (mêmes plafonds dans supabase/serveur.sql, public.gagner, source 'jeu').
 const DAY_GAMES = {
-  pot:     {title:"Le Pot", max:100},
-  chateau: {title:"Le Château", max:120},
-  casse:   {title:"Le Casse-briques", max:100},
-  course:  {title:"La Course sur la plage", max:100},
-  tic:     {title:"La Tic", max:100},
+  pot:     {title:"Le Pot", max:200},
+  chateau: {title:"Le Château", max:240},
+  casse:   {title:"Le Casse-briques", max:200},
+  course:  {title:"La Course sur la plage", max:200},
+  tic:     {title:"La Tic", max:200},
 };
+// les 6 jeux du jour joués (Tir compris) : un Sac Premium offert (le serveur vérifie les 6 parties : source 'jeux-bonus')
+const GAMES_BONUS = "premium";
+const allGamesDone = () => !!playedToday().tir[0] && Object.keys(DAY_GAMES).every(k=>dayGame(k)?.done);
+function gamesBonus(){
+  const P = playedToday(); if(P.bonus || !allGamesDone()) return;
+  P.bonus = 1; earn("jeux-bonus", dayKey(), 0, GAMES_BONUS); save(); renderTop(); renderNav();
+  setTimeout(()=>{ toast(`Les 6 jeux du jour sont faits : un ${BAG_BY[GAMES_BONUS].name} t'est offert !`); Sound.ding() }, 1400);
+}
 const DAY_INFO = {
-  pot:     {goal:"Envoie un maximum de billes dans le pot en 5 lancers. Tes billes restent sur le terrain : sers-t'en pour pousser les autres !", rew:[["Chaque bille dans le pot","10"],["1, 3 ou 5 billes : 1, 2 ou 3 étoiles","+10 · +25 · +50"]]},
-  chateau: {goal:"Fais sortir les 10 billes du cercle de craie en 3 tirs.", rew:[["Chaque bille sortie du cercle","6"],["3, 6 ou 10 billes : 1, 2 ou 3 étoiles","+10 · +25 · +60"],["Les 10 sorties","une vraie bille !"]]},
-  casse:   {goal:"Casse les murs de briques niveau après niveau, sans laisser tomber ta bille. 3 vies.", rew:[["Chaque niveau réussi","10"],["1, 3 ou 5 niveaux : 1, 2 ou 3 étoiles","+10 · +25 · +50"]]},
-  course:  {goal:"Une course contre 3 joueurs de la cour, une pichenette chacun son tour. Le premier qui passe la ligne a gagné !", rew:[["1re place","100"],["2e place","60"],["3e place","35"],["4e place","15"]]},
-  tic:     {goal:"Touche la bille de ton adversaire avant qu'il touche la tienne. 5 tirs chacun.", rew:[["Victoire","100"],["Match nul","40"],["Défaite","20"]]},
+  pot:     {goal:"Envoie un maximum de billes dans le pot en 5 lancers. Tes billes restent sur le terrain : sers-t'en pour pousser les autres !", rew:[["Chaque bille dans le pot","20"],["1, 3 ou 5 billes : 1, 2 ou 3 étoiles","+20 · +50 · +100"]]},
+  chateau: {goal:"Fais sortir les 10 billes du cercle de craie en 3 tirs.", rew:[["Chaque bille sortie du cercle","12"],["3, 6 ou 10 billes : 1, 2 ou 3 étoiles","+20 · +50 · +120"],["Les 10 sorties","une vraie bille !"]]},
+  casse:   {goal:"Casse les murs de briques niveau après niveau, sans laisser tomber ta bille. 3 vies.", rew:[["Chaque niveau réussi","20"],["1, 3 ou 5 niveaux : 1, 2 ou 3 étoiles","+20 · +50 · +100"]]},
+  course:  {goal:"Une course contre 3 joueurs de la cour, une pichenette chacun son tour. Le premier qui passe la ligne a gagné !", rew:[["1re place","200"],["2e place","120"],["3e place","70"],["4e place","30"]]},
+  tic:     {goal:"Touche la bille de ton adversaire avant qu'il touche la tienne. 5 tirs chacun.", rew:[["Victoire","200"],["Match nul","80"],["Défaite","40"]]},
 };
 function playedToday(){ if(!S.played || S.played.day!==dayKey()) S.played = {day:dayKey(), tir:{}}; return S.played }
 const soloReady = key => !playedToday()[key];
@@ -7111,7 +7124,7 @@ function dayFinish(key, st, rew, title, text, resId="a-result"){
     const step = t => { const k = Math.min(1,(t-t0)/900); c.textContent = "+"+Math.round(end*(1-Math.pow(1-k,3))); if(k<1 && document.body.contains(c)) requestAnimationFrame(step) };
     setTimeout(()=>requestAnimationFrame(step), 450) }
   if(st===3) Sound.ding();
-  renderNav();
+  renderNav(); gamesBonus();
   return paid;
 }
 // src : le jeu qui paie sa partie du jour (le serveur compte une récompense par jour et par jeu)
@@ -7144,10 +7157,10 @@ const SETUP = {
       chalk(c); c.lineWidth=2.5; c.globalAlpha=.55; c.setLineDash([3,7]); c.beginPath(); c.arc(p.x,p.y,p.r+30,0,TAU); c.stroke(); c.setLineDash([]); c.globalAlpha=1;
     };
     A.onShot = ()=>{ A.shots-- };
-    A.onSink = ()=>{ A.potted++; Sound.hole(); updArenaHud(); fxBurst(A.pot.x, A.pot.y, "#7A5230", 14, 2.4); fxText(A.pot.x, A.pot.y-34, "+10") };
+    A.onSink = ()=>{ A.potted++; Sound.hole(); updArenaHud(); fxBurst(A.pot.x, A.pot.y, "#7A5230", 14, 2.4); fxText(A.pot.x, A.pot.y-34, "+20") };
     A.onRest = ()=>{
       if(A.shots>0){ let y=A.start.y; for(let k=0;k<12 && A.balls.some(b=>b.alive && Math.hypot(b.x-A.start.x,b.y-y)<34);k++) y = 80+((y+70)%360); spawnMine(A.start.x,y); updArenaHud(); return }
-      const n=A.potted, st = n>=5?3:n>=3?2:n>=1?1:0, rew = n*10+[0,10,25,50][st];
+      const n=A.potted, st = n>=5?3:n>=3?2:n>=1?1:0, rew = n*20+[0,20,50,100][st];
       S.stats.pot += n;
       dayFinish("pot", st, rew, n>=5?"Le grand chelem !":n?"Dans le pot !":"Raté !", `${n} bille${n>1?"s":""} dans le pot sur 5 lancers.`);
     };
@@ -7166,10 +7179,10 @@ const SETUP = {
     A.onShot = ()=>{ A.shots-- };
     A.onRest = ()=>{
       A.castle.forEach(b=>{ const w = Math.hypot(b.x-A.circle.x,b.y-A.circle.y)>A.circle.r;
-        if(w && !b.won){ fxText(b.x, b.y-b.r-14, "+6"); fxBurst(b.x, b.y, "#BFF5C4", 10, 2) } b.won = w });
+        if(w && !b.won){ fxText(b.x, b.y-b.r-14, "+12"); fxBurst(b.x, b.y, "#BFF5C4", 10, 2) } b.won = w });
       A.out = A.castle.filter(b=>b.won).length;
       if(A.shots>0){ next(); updArenaHud(); return }
-      const n=A.out, st = n>=10?3:n>=6?2:n>=3?1:0, rew = n*6+[0,10,25,60][st];
+      const n=A.out, st = n>=10?3:n>=6?2:n>=3?1:0, rew = n*12+[0,20,50,120][st];
       S.stats.castle += n;
       let prize = "";
       if(st===3 && gameLive("chateau")){
@@ -7293,7 +7306,7 @@ function aiCourse(){
 }
 function endCourse(){
   const A = arena, me = A.racers[0];
-  const pos = me.done ? A.rank.indexOf(me)+1 : 4, st = [3,2,1,0][pos-1], rew = [100,60,35,15][pos-1];
+  const pos = me.done ? A.rank.indexOf(me)+1 : 4, st = [3,2,1,0][pos-1], rew = [200,120,70,30][pos-1];
   if(pos===1) S.stats.race++;
   dayFinish("course", st, rew, pos===1?"Maillot jaune !":pos===2?"Deuxième !":pos===3?"Sur le podium !":me.done?"Quatrième":"Pas fini…",
     me.done ? `Tu passes la ligne en ${pos}${pos===1?"re":"e"} position, en ${A.flicks} pichenette${A.flicks>1?"s":""}.` : "Les autres sont arrivés avant toi : retente ta chance demain !");
@@ -7309,9 +7322,9 @@ function aiShot(){
 }
 function endTic(res){
   const A = arena, foe = esc(A.foe.name);
-  if(res==="win"){ S.stats.tic++; dayFinish("tic", 3, 100, "Tic !", `Tu as touché la bille de ${foe} en premier : bien visé !`) }
-  else if(res==="lose") dayFinish("tic", 0, 20, "Tic… pour lui !", `${foe} a touché ta bille en premier. Tu gardes ta bille, et quelques bonbecs pour la peine.`);
-  else dayFinish("tic", 1, 40, "Match nul", "Personne n'a fait tic en 5 tirs.");
+  if(res==="win"){ S.stats.tic++; dayFinish("tic", 3, 200, "Tic !", `Tu as touché la bille de ${foe} en premier : bien visé !`) }
+  else if(res==="lose") dayFinish("tic", 0, 40, "Tic… pour lui !", `${foe} a touché ta bille en premier. Tu gardes ta bille, et quelques bonbecs pour la peine.`);
+  else dayFinish("tic", 1, 80, "Match nul", "Personne n'a fait tic en 5 tirs.");
 }
 
 /* =====================================================================
@@ -7330,7 +7343,7 @@ const CB_MAPS = [
 ];
 const CB_INFO = {title:"Le Casse-briques",
   lead:"Le mur du préau est couvert de briques de couleur. Ta bille les casse une à une, et toi tu la renvoies avec ta règle. Ne la laisse pas tomber !",
-  rules:["3 vies. Une bille qui tombe sous la règle, c'est une vie perdue.","Là où la bille touche la règle, elle repart plus ou moins en biais.","Les briques à bord foncé tiennent 2 coups, les dorées 3. L'acier ne casse jamais.","Attrape les bonus qui tombent : règle géante, trois billes, bille ralentie, vie en plus.","Chaque niveau réussi rapporte 10 bonbecs. 1 niveau : 1 étoile, 3 niveaux : 2 étoiles, 5 niveaux : 3 étoiles.","Un Boulet ou un Mammouth casse 2 épaisseurs d'un coup.","Une partie par jour : elle compte dès que tu cliques sur « C'est parti ! »."]};
+  rules:["3 vies. Une bille qui tombe sous la règle, c'est une vie perdue.","Là où la bille touche la règle, elle repart plus ou moins en biais.","Les briques à bord foncé tiennent 2 coups, les dorées 3. L'acier ne casse jamais.","Attrape les bonus qui tombent : règle géante, trois billes, bille ralentie, vie en plus.","Chaque niveau réussi rapporte 20 bonbecs. 1 niveau : 1 étoile, 3 niveaux : 2 étoiles, 5 niveaux : 3 étoiles.","Un Boulet ou un Mammouth casse 2 épaisseurs d'un coup.","Une partie par jour : elle compte dès que tu cliques sur « C'est parti ! »."]};
 const cb = {raf:0, keys:{}};
 const cbClamp = (v,a,b) => Math.max(a, Math.min(b, v));
 
@@ -7541,7 +7554,7 @@ function cbUpdate(dt){
 }
 function cbFinish(){
   cb.state = "over"; cb.done = true;
-  const n = cb.cleared, st = n>=5?3:n>=3?2:n>=1?1:0, rew = Math.min(n,5)*10+[0,10,25,50][st];
+  const n = cb.cleared, st = n>=5?3:n>=3?2:n>=1?1:0, rew = Math.min(n,5)*20+[0,20,50,100][st];
   S.stats.casse = Math.max(S.stats.casse||0, n);
   S.stats.casseScore = Math.max(S.stats.casseScore||0, cb.score);
   dayFinish("casse", st, rew, n>=5?"Le mur est tombé !":n?"Bien joué !":"Raté !", `${n} niveau${n>1?"x":""} réussi${n>1?"s":""} et ${fmt(cb.score)} points.`, "c-result");

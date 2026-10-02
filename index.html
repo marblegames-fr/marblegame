@@ -2375,6 +2375,11 @@ body.gc-open{overflow:hidden}
 .gc-rest span{width:30px;font-weight:900;opacity:.7}.gc-rest b{flex:1;text-align:left}.gc-rest em{font-style:normal;font-weight:800;color:#FFC93F;font-size:12px}
 .gc-sizes{margin:10px 0 4px;flex-wrap:wrap}
 .beta-b .sil{display:block;border-radius:50%;background:radial-gradient(circle at 35% 30%,color-mix(in srgb,var(--c2) 35%,transparent),color-mix(in srgb,var(--c1) 30%,transparent) 70%)}
+.gcr{cursor:pointer}.gcr:hover{background:rgba(255,255,255,.08)}.gcr.on{box-shadow:inset 0 0 0 2px #5AB8FF}
+.gc-auto[hidden]{display:none}
+.gc-hint{position:absolute;left:50%;top:150px;transform:translateX(-50%);z-index:2;background:rgba(20,18,32,.85);border:1px solid rgba(255,255,255,.15);border-radius:999px;padding:7px 14px;font-size:12.5px;font-weight:800;display:inline-flex;gap:6px;align-items:center;max-width:calc(100% - 28px);text-align:center;transition:opacity .6s;pointer-events:none}
+.gc-hint.bye{opacity:0}
+#gc-cv{cursor:grab;touch-action:none}#gc-cv:active{cursor:grabbing}
 .gc-pod .gc-mine{display:inline-block;background:rgba(255,255,255,.1);border-radius:16px;padding:10px 16px;margin-bottom:14px}
 .gc-pod .btns{display:flex;gap:10px;justify-content:center}
 .gc-pod .meta{color:rgba(255,255,255,.55);margin-top:12px}
@@ -3782,13 +3787,15 @@ void main(){
   }
 #endif
   if(uShiny>0.5 && uShiny<1.5){
-    // irisée : film d'huile en volutes, dessiné sur la bille (et qui glisse un peu avec l'angle, comme un vrai reflet)
-    float th=fbm(qo*1.7+uSeed.xyz*20.0)*2.4+qo.y*0.5+uSeed.w;
-    vec3 iri=0.5+0.5*cos(6.2831*(vec3(0.0,0.33,0.67)+th+(1.0-n.z)*0.5));
-    // le film couvre toute la bille (plus épais par endroits) : on voit l'arc-en-ciel partout, le décor reste lisible dessous
-    float film=0.2+0.4*smoothstep(0.28,0.78,fbm(qo*2.6-uSeed.zxy*12.0));
-    col=mix(col,col*0.55+iri*0.6,film);
-    col+=iri*(F*1.7+0.07);
+    // irisée : un vernis arc-en-ciel en dégradé lisse, comme une bulle de savon. Les couleurs suivent une diagonale de la bille
+    // (qui tourne avec elle) et glissent avec l'angle de vue : le bord change de couleur quand la bille bouge.
+    vec3 ax=normalize(vec3(0.55,0.8,0.25)+(uSeed.xyz-0.5)*0.7);
+    float hue=dot(qo,ax)*0.45+(1.0-n.z)*0.55+uSeed.w+0.04*sin(dot(qo,ax.zxy)*3.0);
+    vec3 rb=0.5+0.5*cos(6.2831*(vec3(0.0,0.33,0.67)+hue));
+    rb=mix(rb,vec3(1.0),0.18);                      // des tons pastel, lumineux
+    col=mix(col,col*0.55+rb*0.55,0.4);
+    col+=rb*(F*1.5+0.06);
+    col+=rb*pow(max(dot(reflect(d0,n),L),0.0),6.0)*0.25;   // un reflet coloré autour du point de lumière
   }
   if(uShiny>1.5 && uShiny<2.5){
     // dorée : de petites paillettes d'or posées sur la surface, chacune inclinée un peu différemment ;
@@ -8055,21 +8062,40 @@ function gcWatch(race){
   ov.innerHTML = `<canvas id="gc-cv"></canvas><div class="gc-vig"></div>
     <div class="gc-top"><div class="chip"><small>${new Date(race.depart).toLocaleDateString("fr-FR",{weekday:"long", day:"numeric"})}${race.test?" · course d'essai":""}</small><b>${esc(T.th.name)}</b></div>
       <div class="chip" id="gc-chrono"><small>Temps</small><b>—</b></div><span class="sp"></span>
-      <button class="btn btn-ghost gc-skip" data-action="gc-vue" id="gc-vue"></button><button class="btn btn-ghost gc-skip" data-action="gc-skip">Passer à l'arrivée</button>
+      <button class="btn btn-yellow gc-skip gc-auto" data-action="gc-auto" id="gc-auto" hidden>${ic("flag",14)} Suivre la course</button><button class="btn btn-ghost gc-skip" data-action="gc-vue" id="gc-vue"></button><button class="btn btn-ghost gc-skip" data-action="gc-skip">Passer à l'arrivée</button>
       <button class="gc-x" data-action="gc-close" aria-label="Quitter la course">×</button></div>
     <div class="gc-lights" id="gc-lights">${"<i></i>".repeat(5)}</div>
     <div class="gc-board" id="gc-board"></div><canvas class="gc-mini" id="gc-mini" width="240" height="134"></canvas>
-    <div class="gc-ticker" id="gc-ticker"></div><div class="gc-big" id="gc-big"></div><div class="gc-end" id="gc-end" hidden></div>`;
+    <div class="gc-ticker" id="gc-ticker"></div><div class="gc-big" id="gc-big"></div><div class="gc-end" id="gc-end" hidden></div>
+    <div class="gc-hint" id="gc-hint">${ic("target",14)} Fais glisser pour déplacer la caméra, molette ou deux doigts pour zoomer, clique sur un nom pour suivre une bille</div>`;
   ov.hidden = false; document.body.classList.add("gc-open");
+  setTimeout(()=>document.getElementById("gc-hint")?.classList.add("bye"), 6000);
+  gcControls(document.getElementById("gc-cv"));
+  // le classement est redessiné à chaque image : on suit une bille dès qu'on appuie sur son nom
+  document.getElementById("gc-board").addEventListener("pointerdown", e=>{ const r = e.target.closest(".gcr"); if(r){ GCV.follow = +r.dataset.i; GCV.free = false } });
   // en direct : on reprend là où en est la course ; sinon depuis la ligne de départ (5 s de feux)
   const since = (Date.now()-race.depart)/1000, live = !race.test && !race.replay && since>0 && since<GC_DUR;
   const p0 = gcAt(T, 40);
   Object.assign(GCV, {race, T, R, t: live ? since-5 : -5, last:performance.now(), fx:[], said:{}, lead:null, leadT:0, done:false, live,
-    cam:{s:-10, ang:Math.atan2(p0.ty,p0.tx), back:680, h:150}, scen:gcScenery(T), sky:null, vue:lsGet("billy-gc-vue")==='tv' ? 'tv' : 'ciel'});
+    cam:{s:-10, ang:Math.atan2(p0.ty,p0.tx), back:680, h:150}, scen:gcScenery(T), sky:null, free:false, follow:null, vue:lsGet("billy-gc-vue")==='tv' ? 'tv' : 'ciel'});
   V_vueBtn();
   R.forEach(o=>{ o.trail = [] });
   if(live && since>5) gcSay("En direct : la course a déjà commencé !");
   cancelAnimationFrame(GCV.raf); GCV.raf = requestAnimationFrame(gcLoop);
+}
+// la caméra à la main : glisser pour se déplacer, molette ou pincer pour zoomer (vue du ciel)
+function gcControls(cv){
+  const pts = new Map(); let pinch = 0;
+  const free = () => { if(GCV.vue==='tv') return false; if(!GCV.sky) return false; GCV.free = true; GCV.follow = null; return true };
+  cv.addEventListener("pointerdown", e=>{ pts.set(e.pointerId, {x:e.clientX, y:e.clientY}); cv.setPointerCapture(e.pointerId); if(pts.size===2){ const [a,b] = [...pts.values()]; pinch = Math.hypot(a.x-b.x, a.y-b.y) } });
+  cv.addEventListener("pointermove", e=>{ const p0 = pts.get(e.pointerId); if(!p0) return; const C = GCV.sky;
+    if(pts.size===1){ const dx = e.clientX-p0.x, dy = e.clientY-p0.y; if(Math.abs(dx)+Math.abs(dy)<1 || !free()) return;
+      const cr = Math.cos(C.rot), sr = Math.sin(C.rot); C.x -= (dx*cr+dy*sr)/C.z; C.y -= (-dx*sr+dy*cr)/C.z }
+    p0.x = e.clientX; p0.y = e.clientY;
+    if(pts.size===2 && free()){ const [a,b] = [...pts.values()], d = Math.hypot(a.x-b.x, a.y-b.y); if(pinch) C.z = Math.max(.35, Math.min(1.8, C.z*d/pinch)); pinch = d } });
+  const up = e=>{ pts.delete(e.pointerId); if(pts.size<2) pinch = 0 };
+  cv.addEventListener("pointerup", up); cv.addEventListener("pointercancel", up);
+  cv.addEventListener("wheel", e=>{ e.preventDefault(); if(!free()) return; GCV.sky.z = Math.max(.35, Math.min(1.8, GCV.sky.z*Math.exp(-e.deltaY*.0015))) }, {passive:false});
 }
 function V_vueBtn(){ const b = document.getElementById("gc-vue"); if(b) b.textContent = GCV.vue==='tv' ? "Vue du ciel" : "Vue télé" }
 function gcClose(){
@@ -8120,7 +8146,9 @@ function gcLoop(now){
     const front = order.filter(q=>!q.done && !q.hide).slice(0,4), me = pos.find(q=>q.o.me && !q.done && !q.hide);
     if(me && front.length && Math.abs(me.s-front[0].s)<350 && !front.includes(me)) front.push(me);
     let target, spread = 0;
-    if(!front.length || order[0].done){ target = T.L-330 } else { const ss = front.map(q=>q.s); target = (Math.max(...ss)+Math.min(...ss))/2+40; spread = Math.max(...ss)-Math.min(...ss) }
+    const fq = V.follow!=null ? pos.find(q=>q.o.i===V.follow && !q.done) : null;
+    if(fq){ target = fq.s+40 }
+    else if(!front.length || order[0].done){ target = T.L-330 } else { const ss = front.map(q=>q.s); target = (Math.max(...ss)+Math.min(...ss))/2+40; spread = Math.max(...ss)-Math.min(...ss) }
     C.s += (target-C.s)*Math.min(1, dt*2.2);
     C.back += ((430+Math.min(spread,500)*.55)-C.back)*Math.min(1, dt*1.5);
   }
@@ -8215,7 +8243,10 @@ function gcScenery(T){
 function gcSkyCam(pos, order, t, dt){
   const V = GCV, T = V.T, C = V.sky || (V.sky = (()=>{ const p = gcAt(T,40); return {x:p.x, y:p.y, z:1.2, rot:-Math.atan2(p.ty,p.tx)-Math.PI/2} })());
   let tx, ty, z, h;
-  if(t<=0){ const p = gcAt(T,30); tx = p.x; ty = p.y; z = 1; h = Math.atan2(p.ty,p.tx) }
+  if(V.free){ C.x = Math.max(0, Math.min(GW, C.x)); C.y = Math.max(0, Math.min(GH, C.y)); return C }   // le joueur dirige la caméra
+  const fq = V.follow!=null ? pos.find(q=>q.o.i===V.follow && !q.hide) : null;
+  if(fq){ const a = gcAt(T, Math.min(fq.s, T.L-60)), b = gcAt(T, Math.min(fq.s, T.L-60)+180); tx = fq.x; ty = fq.y; z = .95; h = Math.atan2(b.y-a.y, b.x-a.x) }
+  else if(t<=0){ const p = gcAt(T,30); tx = p.x; ty = p.y; z = 1; h = Math.atan2(p.ty,p.tx) }
   else if(order[0].done && t>V.R[0].fin+.6){ const p = gcAt(T,T.L-70); tx = p.x; ty = p.y; z = .9; h = Math.atan2(p.ty,p.tx) }
   else {
     const g = order.filter(q=>!q.done && !q.hide).slice(0,4), me = pos.find(q=>q.o.me && !q.done && !q.hide);
@@ -8361,11 +8392,12 @@ function gcDraw3D(cv, pos, t, focus){
 }
 function gcHud(order, t){
   const V = GCV, ch = document.querySelector("#gc-chrono b"); if(ch) ch.textContent = t<0 ? "—" : `${Math.min(t, V.R[0].fin).toFixed(1).replace(".",",")} s`;
+  const auto = document.getElementById("gc-auto"); if(auto) auto.hidden = !(V.free || V.follow!=null);
   const meI = order.findIndex(q=>q.o.me), rows = order.slice(0,8);
   if(meI>=8) rows.push(order[meI]);
   const b = document.getElementById("gc-board");
   if(b) b.innerHTML = `<h3>Classement en direct</h3>` + rows.map(q=>{ const i = order.indexOf(q), o = q.o;
-    return `<div class="gcr${o.me?" me":""}${q.done?" fin":""}"><span class="pos">${i+1}</span>${mImg(o.spec,52,24,"")}<span class="nm">${esc(o.me?"Toi":o.bot?o.nom:o.pseudo)}</span><span class="st">${q.done?"Arrivé":q.hide||q.fall!=null?"Plouf !":`${Math.round((V.T.L-q.s)/10)} cm`}</span></div>` }).join("");
+    return `<div class="gcr${o.me?" me":""}${q.done?" fin":""}${V.follow===o.i?" on":""}" data-i="${o.i}" role="button" title="Suivre cette bille"><span class="pos">${i+1}</span>${mImg(o.spec,52,24,"")}<span class="nm">${esc(o.me?"Toi":o.bot?o.nom:o.pseudo)}</span><span class="st">${q.done?"Arrivé":q.hide||q.fall!=null?"Plouf !":`${Math.round((V.T.L-q.s)/10)} cm`}</span></div>` }).join("");
   const m = document.getElementById("gc-mini"); if(!m) return; const x = m.getContext("2d"), sx = m.width/GW, sy = m.height/GH;
   x.clearRect(0,0,m.width,m.height); x.lineCap = x.lineJoin = "round"; x.strokeStyle = "rgba(255,255,255,.3)"; x.lineWidth = 6; x.beginPath(); V.T.P.forEach((p,i)=>i?x.lineTo(p.x*sx,p.y*sy):x.moveTo(p.x*sx,p.y*sy)); x.stroke();
   x.strokeStyle = V.T.th.track; x.lineWidth = 3; x.stroke();
@@ -9207,6 +9239,8 @@ document.addEventListener("click", e=>{
     case "gc-replay": gcWatch({...GCV.race, replay:true}); break;
     case "gc-close": gcClose(); break;
     case "gc-vue": GCV.vue = GCV.vue==='tv' ? 'ciel' : 'tv'; lsSet("billy-gc-vue", GCV.vue); V_vueBtn(); break;
+    case "gc-auto": GCV.free = false; GCV.follow = null; break;
+    case "gc-follow": GCV.follow = +t.dataset.i; GCV.free = false; break;
     case "gc-skip": if(GCV.R && !GCV.done){ GCV.t = Math.max(GCV.t, GCV.R[0].fin+.5) } break;
     case "game-go": {
       const k = t.dataset.g;

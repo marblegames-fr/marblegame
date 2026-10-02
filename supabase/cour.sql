@@ -358,15 +358,20 @@ create or replace function interne.annonce_json(a public.annonces, b public.bill
 $$;
 
 drop function if exists public.vendre(uuid, int);
-create or replace function public.vendre(bille uuid, prix int, jours int default 3) returns bigint language plpgsql security definer set search_path = public as $$
+drop function if exists public.vendre(uuid, int, int);
+-- durée : en jours (1, 3, 7) ou, si heures est donné, 3 h ou 12 h (ajouté le 2 octobre 2026)
+create or replace function public.vendre(bille uuid, prix int, jours int default 3, heures int default null) returns bigint language plpgsql security definer set search_path = public as $$
 declare moi uuid := interne.moi(); aid bigint;
 begin
   perform interne.expirer_annonces();
   if prix < 1 or prix > 1000000 then raise exception 'prix_invalide'; end if;
-  if jours not in (1, 3, 7) then raise exception 'duree_invalide'; end if;
+  if heures is not null then
+    if heures not in (3, 12) then raise exception 'duree_invalide'; end if;
+  elsif jours not in (1, 3, 7) then raise exception 'duree_invalide'; end if;
   if not interne.bille_libre(bille, moi) then raise exception 'bille_indisponible'; end if;
   if (select count(*) from annonces a where a.vendeur = moi and a.vendue_le is null and a.retiree_le is null) >= 30 then raise exception 'trop_annonces'; end if;
-  insert into annonces (vendeur, bille, prix, expire_le) values (moi, vendre.bille, vendre.prix, now() + make_interval(days => jours)) returning id into aid;
+  insert into annonces (vendeur, bille, prix, expire_le)
+    values (moi, vendre.bille, vendre.prix, now() + case when heures is not null then make_interval(hours => heures) else make_interval(days => jours) end) returning id into aid;
   return aid;
 end $$;
 

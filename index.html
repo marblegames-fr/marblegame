@@ -7280,20 +7280,20 @@ function artCourse(){ return `<svg viewBox="0 0 240 130" preserveAspectRatio="xM
 // Cases de gauche à droite : mêmes valeurs que interne.pachinko_cases() dans serveur.sql. Le serveur tire la case, le jeu anime la chute.
 // Plus un lot vaut cher, plus il est rare (sachets comptés à leur prix : Classique 300, Premium 600, Collector 1 500) :
 // 50 > 200 > Classique > 400 > Premium > 1000 > Collector > Bille. Les lots les plus rares sont au bord, comme sur un vrai plateau.
-// La bille coûte 100 (2 octobre 2026, le soir) : on retrouve au moins sa mise dans 20 % des cas ; en moyenne une bille rend ~94 bonbecs
-// sans compter la case Bille (~94 %).
+// La bille coûte 100 (2 octobre 2026, le soir, choix du joueur-auteur) avec les chances d'avant : on retrouve au moins sa mise dans 41 % des cas,
+// et en moyenne une bille rend ~171 bonbecs (sans compter la case Bille) : le Pachinko payant rapporte plus qu'il ne coûte.
 const PACHI = [
-  {w:.3,   roue:true,       lbl:"Bille",     c:"#E5484D"},
-  {w:1.2,  j:1000,          lbl:"1000",      c:"#E8743B"},
-  {w:3,    j:400,           lbl:"400",       c:"#7B6CF6"},
-  {w:4.5,  j:200,           lbl:"200",       c:"#C98E4E"},
-  {w:20,   j:50,            lbl:"50",        c:"#8E8898"},
-  {w:40,   j:0,             lbl:"0",         c:"#4A3F5C"},
-  {w:20,   j:50,            lbl:"50",        c:"#8E8898"},
-  {w:4.5,  j:200,           lbl:"200",       c:"#C98E4E"},
-  {w:4,    sac:"classique", lbl:"Classique", c:"#2A8A74"},
-  {w:2,    sac:"premium",   lbl:"Premium",   c:"#34469C"},
-  {w:.5,   sac:"collector", lbl:"Collector", c:"#D9A020"},
+  {w:.5,   roue:true,       lbl:"Bille",     c:"#E5484D"},
+  {w:3,    j:1000,          lbl:"1000",      c:"#E8743B"},
+  {w:6.5,  j:400,           lbl:"400",       c:"#7B6CF6"},
+  {w:9,    j:200,           lbl:"200",       c:"#C98E4E"},
+  {w:16,   j:50,            lbl:"50",        c:"#8E8898"},
+  {w:27,   j:0,             lbl:"0",         c:"#4A3F5C"},
+  {w:16,   j:50,            lbl:"50",        c:"#8E8898"},
+  {w:9,    j:200,           lbl:"200",       c:"#C98E4E"},
+  {w:8,    sac:"classique", lbl:"Classique", c:"#2A8A74"},
+  {w:4,    sac:"premium",   lbl:"Premium",   c:"#34469C"},
+  {w:1,    sac:"collector", lbl:"Collector", c:"#D9A020"},
 ];
 // la roue de la case « Bille » (la plus rare) : la taille (mêmes chances que interne.pachinko_roue), puis décor, coloris et shiny au hasard
 const PACHI_ROUE = [10,15,20,25,20,10];
@@ -7320,7 +7320,7 @@ function viewPachinko(){
         <ul class="rewards-list">${kinds.map(c=>({c, p:PACHI.filter(x=>x.lbl===c.lbl).reduce((a,x)=>a+x.w,0)/tot})).sort((a,b)=>a.p-b.p).map(({c,p})=>{
           return `<li><span><i class="pachi-dot" style="background:${c.c}"></i>${c.roue?`Une bille : la roue choisit sa taille ${oddsBtn("pachinko")}`:c.sac?BAG_BY[c.sac].name+" offert":c.j?`${fmt(c.j)} ${CUR.many}`:"Rien du tout"}</span><b>${pct(+(p*100).toFixed(p<.1?1:0))}</b></li>` }).join("")}</ul>
         <p class="meta" style="margin-top:8px">La roue de la bille : ${TK.map((t,i)=>`${TYPES[t].label} ${PACHI_ROUE[i]} %`).join(" · ")}. Décor, coloris et shiny au hasard, comme dans un sachet.</p>
-        <p class="meta" style="margin-top:8px">Tu retrouves au moins ta mise ${pct(20)} du temps ; en moyenne, une bille rend un peu moins que ses ${PACHI_PRICE} ${CUR.many}. La bille du jour, elle, est gratuite et compte dans tes jeux du jour.</p></section>
+        <p class="meta" style="margin-top:8px">Tu retrouves au moins ta mise ${pct(41)} du temps. La bille du jour, elle, est gratuite et compte dans tes jeux du jour.</p></section>
       <section class="panel"><div class="panel-head"><h3>Ta bille</h3><button class="see-all" data-action="pick-active">Changer ${ic("chev",14)}</button></div>
         ${act?`<div class="my-ball">${mImg(act,120,48,"")}<div><b>${esc(specName(act))}</b><small>${TYPES[act.type].label} · ${TYPES[act.type].mm} mm</small></div></div>`:""}</section>
     </aside>

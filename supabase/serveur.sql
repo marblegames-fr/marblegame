@@ -141,7 +141,7 @@ language sql immutable as $$
     ('classique', 300, 5, null,      0.0010, array[[70,30,0,0,0,0],[50,38,12,0,0,0],[35,40,20,5,0,0],[20,35,30,13,2,0],[10,25,30,20,12,3]]::numeric[]),
     ('premium',   600, 5, 3,         0.0020, array[[0,80,20,0,0,0],[0,60,35,5,0,0],[0,40,45,15,0,0],[0,0,55,38,7,0],[0,0,0,60,34,6]]::numeric[]),
     ('collector',1500, 5, 4,         0.0050, array[[0,0,85,15,0,0],[0,0,65,35,0,0],[0,0,40,50,10,0],[0,0,0,60,38,2],[0,0,0,0,87,13]]::numeric[]),
-    -- Sac Pirate (2 octobre 2026) : 5 billes, toutes Pirate (voir ouvrir_sac), tailles un peu plus grosses
+    -- Sac Pirate (2 octobre 2026) : 5 billes, 60 % Pirate et la dernière toujours Pirate (voir ouvrir_sac), tailles un peu plus grosses
     ('pirate',    400, 5, null,      0.0020, array[[40,35,18,7,0,0],[30,32,22,12,4,0],[20,28,26,16,8,2],[10,22,26,22,15,5],[0,5,20,30,30,15]]::numeric[]),
     -- Sac Pirate Premium (2 octobre 2026) : tailles du Classique, 15 % de Pirate par bille et 35 % pour la dernière (voir ouvrir_sac)
     ('pirate-premium', 1000, 5, null, 0.0020, array[[70,30,0,0,0,0],[50,38,12,0,0,0],[35,40,20,5,0,0],[20,35,30,13,2,0],[10,25,30,20,12,3]]::numeric[])
@@ -389,15 +389,17 @@ begin
                                     shiny => interne.tirer_shiny(interne.taux_shiny() * g.nb), src => 'fusion'));
 end $$;
 
--- Le Pachinko (2 octobre 2026) : une bille gratuite par jour (elle compte dans les 6 jeux du jour), puis 200 bonbecs la bille.
+-- Le Pachinko (2 octobre 2026) : une bille gratuite par jour (elle compte dans les 6 jeux du jour), puis 100 bonbecs la bille (200 jusqu'au 2 octobre au soir).
 -- Le serveur tire la case ; le jeu fait tomber la bille jusqu'à elle. Cases de gauche à droite : mêmes valeurs que PACHI dans index.html.
--- Plus un lot vaut cher, plus il est rare : 100 > 200 > Classique (300) > 400 > Premium (600) > 1000 > Collector (1 500) > Bille.
--- On retrouve au moins sa mise dans 41 % des cas ; en moyenne une bille rend ~187 bonbecs (sacs comptés à leur prix, sans la case Bille).
--- La case « Bille » fait tourner une roue : la taille (mêmes chances que PACHI_ROUE), puis décor, coloris et shiny comme d'habitude.
+-- Plus un lot vaut cher, plus il est rare : 50 > 200 > Classique (300) > 400 > Premium (600) > 1000 > Collector (1 500) > Bille.
+-- Chances d'avant gardées avec la mise à 100 : on retrouve au moins sa mise dans 41 % des cas ;
+-- en moyenne une bille rend ~173 bonbecs (sacs comptés à leur prix, sans le Mammouth).
+-- Case Mammouth (2 octobre 2026, tard) : 0,05 %, un Mammouth garanti (décor tiré comme dans un sachet, coloris au hasard,
+-- shiny comme dans le Sachet Collector) ; les 0,45 % libérés vont aux lots juste en dessous.
 create or replace function interne.pachinko_cases() returns table(k int, poids numeric, bonbecs int, sac text, taille text) language sql immutable as $$
-  select * from (values (0, 0.5, 0, null::text, 'roue'::text), (1, 3, 1000, null, null), (2, 6.5, 400, null, null),
-    (3, 9, 200, null, null), (4, 16, 100, null, null), (5, 27, 0, null, null), (6, 16, 100, null, null),
-    (7, 9, 200, null, null), (8, 8, 0, 'classique', null), (9, 4, 0, 'premium', null), (10, 1, 0, 'collector', null)) v(k, poids, bonbecs, sac, taille)
+  select * from (values (0, 0.05, 0, null::text, 'mammouth'::text), (1, 3.1, 1000, null, null), (2, 6.6, 400, null, null),
+    (3, 9, 200, null, null), (4, 16, 50, null, null), (5, 27, 0, null, null), (6, 16, 50, null, null),
+    (7, 9, 200, null, null), (8, 8, 0, 'classique', null), (9, 4.1, 0, 'premium', null), (10, 1.15, 0, 'collector', null)) v(k, poids, bonbecs, sac, taille)
 $$;
 create or replace function interne.pachinko_roue() returns numeric[] language sql immutable as $$ select array[10,15,20,25,20,10]::numeric[] $$;   -- Mini → Mammouth
 create or replace function public.pachinko(payer boolean default false)
@@ -409,7 +411,7 @@ begin
     begin insert into gains (joueur, source, cle, montant) values (qui, 'jeu', today || '|pachinko', 0);
     exception when unique_violation then raise exception 'deja'; end;
   else
-    update portefeuilles set bonbecs = bonbecs - 200, maj_le = now() where joueur = qui and bonbecs >= 200;
+    update portefeuilles set bonbecs = bonbecs - 100, maj_le = now() where joueur = qui and bonbecs >= 100;
     if not found then raise exception 'pas_assez'; end if;
   end if;
   x := random() * (select sum(poids) from interne.pachinko_cases());
@@ -418,9 +420,9 @@ begin
   end loop;
   perform interne.crediter(qui, c.bonbecs, c.sac);
   if not payer and c.bonbecs > 0 then update gains set montant = c.bonbecs where joueur = qui and source = 'jeu' and cle = today || '|pachinko'; end if;
-  if c.taille = 'roue' then
-    t := (interne.tailles())[interne.tirer(interne.pachinko_roue())];
-    b := interne.nouvelle_bille(qui, t, shiny => interne.tirer_shiny(interne.taux_shiny()), src => 'pachinko');
+  if c.taille = 'mammouth' then
+    t := 'mammouth';
+    b := interne.nouvelle_bille(qui, t, shiny => interne.tirer_shiny(interne.taux_shiny() * 10), src => 'pachinko');
   end if;
   return jsonb_build_object('eco', interne.etat(qui), 'case', c.k, 'bonbecs', c.bonbecs, 'sac', c.sac, 'taille', t, 'bille', b);
 end $$;
@@ -462,7 +464,7 @@ begin
       if montant <> 0 or sac is distinct from 'classique' then raise exception 'montant_invalide'; end if;
       k := today;
     when 'jeu' then     -- une récompense par jour et par jeu (au Tir : par trou)
-      maxi := case when cle ~ '^tir\|[0-5]$' then 250 when cle = 'pot' then 250 when cle = 'chateau' then 300 when cle = 'casse' then 300
+      maxi := case when cle ~ '^tir\|[0-5]$' then 250 when cle = 'pot' then 250 when cle = 'chateau' then 340 when cle = 'casse' then 300
                    when cle in ('course','tic') then 200 end;   -- une partie par jour et par jeu (DAY_GAMES dans index.html)
       if maxi is null or montant > maxi or sac is not null then raise exception 'montant_invalide'; end if;
       k := today || '|' || cle;
@@ -505,10 +507,10 @@ declare qui uuid := interne.moi(); b jsonb; m int; c int; t text; sh int;
         fams int[] := array[35,36,37,38,39,40,41,42,43,44,45,46];   -- un décor de saison par mois (édition limitée)
 begin
   case source
-    when 'chateau' then   -- 3 étoiles au Château : une bille, une fois par jour ; sa taille sort de la roue du Pachinko
+    when 'chateau' then   -- Château rasé en un seul tir : un Mammouth, une fois par jour ; décor tiré comme dans un sachet, shiny comme le Collector
       begin insert into gains (joueur, source, cle) values (qui, 'bille-chateau', interne.aujourdhui()::text);
       exception when unique_violation then raise exception 'deja'; end;
-      b := interne.nouvelle_bille(qui, (interne.tailles())[interne.tirer(interne.pachinko_roue())], shiny => interne.tirer_shiny(interne.taux_shiny()), src => 'chateau');
+      b := interne.nouvelle_bille(qui, 'mammouth', shiny => interne.tirer_shiny(interne.taux_shiny() * 10), src => 'chateau');
     when 'passe' then     -- cle : « 2026-9|free|10 »
       if not interne.saison_valide(split_part(cle, '|', 1)) then raise exception 'montant_invalide'; end if;
       select x.t, x.sh into t, sh from (values ('free|1','mini',0), ('free|10','bille',0), ('free|20','chinoise',0), ('free|30','calot',1),

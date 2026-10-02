@@ -987,6 +987,11 @@ button.vit-slot:hover{background:var(--panel-2);color:var(--ink)}
 
 /* ---------- la confiserie : échanger ou fusionner ---------- */
 .evf{margin-top:18px;border-top:4px solid #C8322F}
+.craft-filters{display:grid;gap:4px;margin:4px 0 8px}
+.craft-filters .chips{gap:6px}
+.craft-filters .chip{height:32px;padding:0 12px;font-size:12.5px}
+.craft-filters .chip.ev{border-color:#C8322F;color:#E5484D}
+.craft-filters .col-search{margin:10px 0 6px}
 .pachi-stage{position:relative;max-width:540px;margin:0 auto}
 .game-stage.pachi-stage canvas{width:100%;height:auto;aspect-ratio:540/620;border-radius:16px;display:block}
 .pachi-panel ~ aside .rewards-list b{white-space:nowrap}
@@ -995,6 +1000,15 @@ button.vit-slot:hover{background:var(--panel-2);color:var(--ink)}
 .pachi-win b{font-family:var(--display);font-weight:400;font-size:34px;color:#FFE14D}
 .pachi-win span{font-weight:800}
 .pachi-dot{display:inline-block;width:10px;height:10px;border-radius:3px;margin-right:7px;vertical-align:0}
+.modal.roue-modal{display:grid;grid-template-columns:minmax(0,1fr);justify-items:center;gap:12px;overflow:visible;width:min(460px,100%);padding:26px 22px;text-align:center}
+.roue-modal h2{font-family:var(--display);font-weight:400;font-size:30px}
+.roue-wrap{position:relative;width:300px;height:300px;max-width:80vw;max-height:80vw}
+.roue{position:absolute;inset:0;border-radius:50%;box-shadow:0 0 0 6px #fff,0 0 0 9px var(--ink),0 18px 30px -10px rgba(0,0,0,.5)}
+.roue .rw-l{position:absolute;left:50%;top:50%;margin:-10px 0 0 -40px;width:80px;text-align:center;font-weight:900;font-size:13px;color:#fff;text-shadow:0 1px 2px rgba(0,0,0,.6)}
+.roue-ptr{position:absolute;left:50%;top:-14px;translate:-50% 0;z-index:2;width:0;height:0;border-left:14px solid transparent;border-right:14px solid transparent;border-top:26px solid #FFE14D;filter:drop-shadow(0 2px 2px rgba(0,0,0,.5))}
+.roue-res{display:grid;justify-items:center;gap:8px}
+.roue-res .pills{display:flex;gap:5px;flex-wrap:wrap;justify-content:center}
+.roue-res .btns{display:flex;gap:8px;margin-top:6px}
 .evf-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(190px,1fr));gap:10px;margin-top:12px}
 .evf-card{display:grid;justify-items:center;gap:6px;padding:12px 10px;border-radius:16px;border:1.5px dashed var(--line-2);background:var(--panel-2);text-align:center}
 .evf-card.ok{border-style:solid;border-color:var(--yellow);background:color-mix(in srgb,var(--yellow) 10%,var(--panel))}
@@ -4751,7 +4765,7 @@ function grantPassReward(P, se, track, t){
   const key = `${se.id}|${track}|${t}`;
   if(r.k==="jetons") earn("passe", key, r.n);
   else if(r.k==="bag") earn("passe", key, 0, r.bag);
-  else if(r.k==="title"){ if(!S.titles.includes(r.name)) S.titles.push(r.name); S.title = r.name }
+  else if(r.k==="title"){ if(!S.titles.includes(r.name)) S.titles.push(r.name) }   // à choisir dans le profil
   else { const sp = rewardSpec(track,t,r,se), s = makeSpec(sp.type,{...sp, src:"passe"}); s.ed = sp.ed; srvMint(s, "passe", key); S.specs.push(s); S.unseen.push(s.id); r.spec = s }
   return r;
 }
@@ -4898,7 +4912,7 @@ function claimBonus(){
 }
 function claimRew(r, source, key){   // récompense d'un succès ou d'une série
   if(r.j || r.bag) earn(source, key, r.j||0, r.bag);
-  if(r.title && !S.titles.includes(r.title)){ S.titles.push(r.title); S.title = r.title }
+  if(r.title && !S.titles.includes(r.title)) S.titles.push(r.title);   // le titre choisi dans le profil reste affiché
 }
 function claimChal(c){
   if(!c || S.chal.includes(c.id) || chalProg(c)<c.goal) return false;
@@ -4929,7 +4943,7 @@ function showRecap(before, lines, title){
         ${specs.slice(0,8).map((x,i)=>`<div class="rc-item" style="--i:${i+bags.length}">${mImg(x,120,58,"")}<b>${esc(specName(x))}</b><small>${TYPES[x.type].label}</small></div>`).join("")}
       </div>` : ""}
       ${specs.length>8 ? `<p class="meta">et ${specs.length-8} autre${specs.length-8>1?"s":""} bille${specs.length-8>1?"s":""}</p>` : ""}
-      ${titles.length ? `<p class="rc-titles">${titles.map(x=>`<span class="pill" style="--rc:#B7791F;--rb:#FFF1C9">${ic("trophy",12)} Titre « ${esc(x)} »</span>`).join(" ")}</p>` : ""}
+      ${titles.length ? `<p class="rc-titles">${titles.map(x=>`<span class="pill" style="--rc:#B7791F;--rb:#FFF1C9">${ic("trophy",12)} Titre « ${esc(x)} »</span>`).join(" ")}<br><small class="meta">Pour l'afficher, choisis-le dans ton profil.</small></p>` : ""}
       ${lines.length ? `<p class="meta rc-from">${lines.join(" · ")}</p>` : ""}
       <button class="btn btn-yellow btn-xl" data-action="close-modal">Super !</button>
     </div></div>`;
@@ -5782,8 +5796,10 @@ function craftResult(T){
 }
 // remplissage auto : seulement des doubles (on garde toujours un exemplaire de chaque bille, l'album ne perd rien).
 // Les billes déjà dans le chaudron restent ; s'il n'y a pas assez de doubles, on complète à la main.
+// filtre de la fusion (rareté du décor, texte) : il s'applique à la liste et aux remplissages automatiques
+const craftFilt = s => { const F = ui.craftF||{}; return (F.rar==null || F.rar==="" || FAMILIES[s.family].rar===+F.rar) && (!F.q || fold(specName(s)).includes(fold(F.q))) };
 function craftAuto(t, keep=[]){
-  const cnt = slotCounts(), pool = craftPool(t), sel = keep.filter(id=>pool.some(s=>s.id===id)).slice(0, craftN(t));
+  const cnt = slotCounts(), pool = craftPool(t).filter(craftFilt), sel = keep.filter(id=>pool.some(s=>s.id===id)).slice(0, craftN(t));
   sel.forEach(id=>cnt[colorKey(specById(id))]--);
   const rest = pool.filter(s=>!sel.includes(s.id)).sort((a,b)=>cnt[colorKey(b)]-cnt[colorKey(a)] || a.at-b.at);
   for(const s of rest){ if(sel.length>=craftN(t)) break; const k=colorKey(s); if(cnt[k]>1){ sel.push(s.id); cnt[k]-- } }
@@ -5791,7 +5807,7 @@ function craftAuto(t, keep=[]){
 }
 // remplissage au hasard avec des billes qu'on n'a qu'en un exemplaire (elles quitteront l'album)
 function craftSingles(t, keep=[]){
-  const cnt = slotCounts(), pool = craftPool(t), sel = keep.filter(id=>pool.some(s=>s.id===id)).slice(0, craftN(t));
+  const cnt = slotCounts(), pool = craftPool(t).filter(craftFilt), sel = keep.filter(id=>pool.some(s=>s.id===id)).slice(0, craftN(t));
   const singles = pool.filter(s=>!sel.includes(s.id) && cnt[colorKey(s)]===1);
   for(let i=singles.length-1;i>0;i--){ const j=Math.floor(Math.random()*(i+1)); [singles[i],singles[j]]=[singles[j],singles[i]] }
   return sel.concat(singles.slice(0, craftN(t)-sel.length).map(s=>s.id));
@@ -5810,7 +5826,11 @@ function viewCraft(){
     return s ? `<button class="fz-slot filled" style="${r}" data-action="craft-toggle" data-id="${s.id}" aria-label="Retirer ${esc(specName(s))}">${mImg(s,120,44,"")}</button>` : `<span class="fz-slot" style="${r}"></span>` }).join("");
   const last = C.sel.filter(id=>{ const s=specById(id); return !S.specs.some(x=>colorKey(x)===colorKey(s) && !C.sel.includes(x.id)) }).length;
   const full = C.sel.length===N;
-  const groups = byModel(pool).sort((a,b)=>cnt[b[0]]-cnt[a[0]]);
+  const groups = byModel(pool.filter(craftFilt)).sort((a,b)=>cnt[b[0]]-cnt[a[0]]), F = ui.craftF||{}, nEv = evPool().length;
+  const fChip = (v,l) => `<button class="chip" data-action="craft-f" data-v="${v}" aria-pressed="${String(F.rar??"")===String(v)}">${l}</button>`;
+  const craftBar = `<div class="craft-filters"><div class="chips">${fChip("","Tous les décors")}${DECOR_RAR.map((R,k)=>fChip(k, R.name)).join("")}
+      ${nEv?`<button class="chip ev" data-action="craft-ev">${ic("flag",13)} Billes Pirate (${nEv})</button>`:""}</div>
+    <div class="col-search"><span class="cs-ic">${ic("search",17)}</span><input type="search" id="craft-q" placeholder="Chercher : Galaxie, Azur…" value="${esc(F.q||"")}" aria-label="Chercher une bille à fusionner" autocomplete="off" spellcheck="false"></div></div>`;
   return `<p class="conf-intro">Mets des billes d'une même taille dans le chaudron pour obtenir une bille de la taille au-dessus. Son décor et son coloris sont tirés au hasard, et elle peut même sortir shiny.</p>
   <div class="recipes">${recipes}</div>
   <section class="panel fuse2" style="--a:${A};--b:${B};--p:${C.sel.length/N}">
@@ -5830,7 +5850,8 @@ function viewCraft(){
     </div>
   </section>
   <section>
-    <div class="panel-head"><h2>Tes ${RAR_PL[C.t]} (${pool.length})</h2><span class="sample-tag">+ pour en mettre une dans le chaudron</span></div>
+    ${craftBar}
+    <div class="panel-head"><h2>Tes ${RAR_PL[C.t]} (${groups.reduce((a,[k,l])=>a+l.length,0)}${groups.reduce((a,[k,l])=>a+l.length,0)<pool.length?` sur ${pool.length}`:""})</h2><span class="sample-tag">+ pour en mettre une dans le chaudron</span></div>
     ${groups.length ? `<div class="cf-grid">${groups.map(([k,l])=>{ const x=l[0], inn=l.filter(y=>C.sel.includes(y.id)).length;
       return `<div class="cf-card${inn?" in":""}" style="${tstyle(x.type)}">${cnt[k]>1?`<span class="dup-tag">Double</span>`:""}${l.length>1?`<span class="cf-n">×${l.length}</span>`:""}
         <button class="ball" data-action="spec" data-id="${x.id}" aria-label="Voir ${esc(specName(x))}">${mImg(x,160,Math.round(58*scaleOf(x.type)+14),"")}</button><b>${esc(specName(x))}</b>
@@ -6085,6 +6106,11 @@ function applyPick(){
 }
 document.addEventListener("input", e=>{ if(e.target.classList?.contains("pick-q")) applyPick() });
 let colQT = 0;
+document.addEventListener("input", e=>{
+  if(e.target.id!=="craft-q") return;
+  clearTimeout(colQT); colQT = setTimeout(()=>{ ui.craftF = {...(ui.craftF||{}), q:e.target.value}; renderView();
+    const q = document.getElementById("craft-q"); if(q){ q.focus(); q.setSelectionRange(q.value.length, q.value.length) } }, 180);
+});
 document.addEventListener("input", e=>{
   if(e.target.id!=="col-q") return;
   clearTimeout(colQT); colQT = setTimeout(()=>{
@@ -7057,22 +7083,24 @@ function artCourse(){ return `<svg viewBox="0 0 240 130" preserveAspectRatio="xM
   <path d="M205 20v42" stroke="#5A3A20" stroke-width="2.5"/><path d="M205 20h24v14h-24z" fill="#fff"/><path d="M205 20h6v7h-6zM217 20h6v7h-6zM211 27h6v7h-6zM223 27h6v7h-6z" fill="#24253D"/></svg>` }
 /* ---------- le Pachinko : une bille tombe de clou en clou jusqu'à une case ---------- */
 // Cases de gauche à droite : mêmes valeurs que interne.pachinko_cases() dans serveur.sql. Le serveur tire la case, le jeu anime la chute.
-// En moyenne une bille rapporte ~178 bonbecs (sacs comptés à leur prix), un peu moins que les 200 d'une bille en plus.
+// On retrouve au moins sa mise (200) dans 42 % des cas ; en moyenne une bille rend ~187 bonbecs (93 %, sacs comptés à leur prix).
 const PACHI = [
-  {w:.3,  taille:"mammouth", lbl:"Mammouth", c:"#E5484D"},
-  {w:2.75,sac:"premium",  lbl:"Premium",  c:"#34469C"},
-  {w:7.5, sac:"classique",lbl:"Classique",c:"#2A8A74"},
-  {w:19,  j:120, lbl:"120", c:"#C98E4E"},
-  {w:40,  j:60,  lbl:"60",  c:"#8E8898"},
-  {w:19,  j:120, lbl:"120", c:"#C98E4E"},
-  {w:7.5, sac:"classique",lbl:"Classique",c:"#2A8A74"},
-  {w:2.75,sac:"premium",  lbl:"Premium",  c:"#34469C"},
-  {w:1.2, sac:"collector",lbl:"Collector",c:"#D9A020"},
+  {w:.4,  roue:true,       lbl:"Bille",     c:"#E5484D"},
+  {w:2.2, sac:"premium",   lbl:"Premium",   c:"#34469C"},
+  {w:8.5, j:400,           lbl:"400",       c:"#7B6CF6"},
+  {w:12,  j:200,           lbl:"200",       c:"#C98E4E"},
+  {w:58,  j:100,           lbl:"100",       c:"#8E8898"},
+  {w:12,  j:200,           lbl:"200",       c:"#C98E4E"},
+  {w:5.5, sac:"classique", lbl:"Classique", c:"#2A8A74"},
+  {w:.5,  sac:"collector", lbl:"Collector", c:"#D9A020"},
+  {w:.9,  j:1000,          lbl:"1000",      c:"#E8743B"},
 ];
+// la roue de la case « Bille » : la taille (mêmes chances que interne.pachinko_roue), puis décor, coloris et shiny au hasard
+const PACHI_ROUE = [30,25,20,14,8,3];
 const PACHI_PRICE = 200, PACHI_ROWS = PACHI.length-1, PW = 540, PH = 620, PACHI_GAP = 56;
 const pachi = {raf:0, busy:false};
 const pachiFree = () => !playedToday().pachinko;
-const pachiPrize = c => c.taille ? `un ${TYPES[c.taille].label}` : c.sac ? `un ${BAG_BY[c.sac].name}` : `${c.j} ${CUR.many}`;
+const pachiPrize = c => c.roue ? "une bille" : c.sac ? `un ${BAG_BY[c.sac].name}` : `${c.j} ${CUR.many}`;
 function artPachinko(){ let pegs=""; for(let r=0;r<5;r++) for(let i=0;i<=r+3;i++) pegs+=`<circle cx="${120+(i-(r+3)/2)*24}" cy="${22+r*17}" r="2.6" fill="#F4E3C2"/>`;
   return `<svg viewBox="0 0 240 130" preserveAspectRatio="xMidYMid slice" aria-hidden="true"><rect width="240" height="130" fill="#3A1F4E"/>${pegs}
   ${[0,1,2,3,4,5,6].map(i=>`<rect x="${36+i*24}" y="110" width="22" height="20" rx="3" fill="${["#E5484D","#34469C","#2A8A74","#8E8898","#2A8A74","#34469C","#D9A020"][i]}"/>`).join("")}
@@ -7089,13 +7117,15 @@ function viewPachinko(){
       <div class="pachi-btns">
         <button class="btn btn-yellow btn-xl" data-action="pachi-go" data-pay="0" ${free?"":"disabled"}>${ic("gift",18)} ${free?"Lâcher ma bille du jour":"Bille du jour lâchée"}</button>
         <button class="btn ${free?"btn-ghost":"btn-yellow btn-xl"}" data-action="pachi-go" data-pay="1" ${S.jetons<PACHI_PRICE?"disabled":""}>Une bille de plus · <span class="price">${COIN}${PACHI_PRICE}</span></button>
+        ${free ? "" : `<button class="btn btn-ghost" data-action="pachi-go" data-pay="fun">${ic("play",16)} Pour le plaisir (sans gain)</button>`}
       </div>
     </section>
     <aside style="display:grid;gap:20px">
       <section class="panel"><div class="panel-head"><h3>Les cases</h3><span class="sample-tag">Chances</span></div>
         <ul class="rewards-list">${kinds.map(c=>{ const p = PACHI.filter(x=>x.lbl===c.lbl).reduce((a,x)=>a+x.w,0)/tot;
-          return `<li><span><i class="pachi-dot" style="background:${c.c}"></i>${c.taille?`Un ${TYPES[c.taille].label} (décor au hasard)`:c.sac?BAG_BY[c.sac].name+" offert":`${c.j} ${CUR.many}`}</span><b>${pct(+(p*100).toFixed(p<.1?1:0))}</b></li>` }).join("")}</ul>
-        <p class="meta" style="margin-top:8px">En moyenne, une bille rapporte un peu moins que les ${PACHI_PRICE} ${CUR.many} qu'elle coûte. La bille du jour, elle, est gratuite et compte dans tes jeux du jour.</p></section>
+          return `<li><span><i class="pachi-dot" style="background:${c.c}"></i>${c.roue?"Une bille : la roue choisit sa taille":c.sac?BAG_BY[c.sac].name+" offert":`${fmt(c.j)} ${CUR.many}`}</span><b>${pct(+(p*100).toFixed(p<.1?1:0))}</b></li>` }).join("")}</ul>
+        <p class="meta" style="margin-top:8px">La roue de la bille : ${TK.map((t,i)=>`${TYPES[t].label} ${PACHI_ROUE[i]} %`).join(" · ")}. Décor, coloris et shiny au hasard, comme dans un sac.</p>
+        <p class="meta" style="margin-top:8px">Tu retrouves au moins ta mise ${pct(42)} du temps ; en moyenne, une bille rend un peu moins que ses ${PACHI_PRICE} ${CUR.many}. La bille du jour, elle, est gratuite et compte dans tes jeux du jour.</p></section>
       <section class="panel"><div class="panel-head"><h3>Ta bille</h3><button class="see-all" data-action="to-collection">Changer ${ic("chev",14)}</button></div>
         ${act?`<div class="my-ball">${mImg(act,120,48,"")}<div><b>${esc(specName(act))}</b><small>${TYPES[act.type].label} · ${TYPES[act.type].mm} mm</small></div></div>`:""}</section>
     </aside>
@@ -7135,6 +7165,26 @@ function pachiDraw(){
     c.fillStyle = "rgba(0,0,0,.3)"; c.beginPath(); c.ellipse(q.x+3, q.y+5, 13, 10, 0, 0, TAU); c.fill();
     if(spr && spr.complete && spr.naturalWidth) c.drawImage(spr, q.x-D/2, q.y-D/2, D, D); else { c.fillStyle = "#2E8CFF"; c.beginPath(); c.arc(q.x, q.y, 14, 0, TAU); c.fill() } }
 }
+// la roue de la case « Bille » : elle tourne et s'arrête sur la taille tirée, puis la bille apparaît
+function pachiRoue(b){
+  const el = document.getElementById("modal"), tot = PACHI_ROUE.reduce((a,x)=>a+x,0), k = TIDX[b.type];
+  let a0 = 0; const segs = PACHI_ROUE.map((w,i)=>{ const a1 = a0+w/tot*360, seg = {i, a0, a1}; a0 = a1; return seg });
+  const grad = segs.map(g=>`${RARITY[g.i].c} ${g.a0}deg ${g.a1}deg`).join(",");
+  const target = segs[k], mid = target.a0 + (target.a1-target.a0)*(.25+.5*Math.random());
+  const labels = segs.map(g=>{ const m = (g.a0+g.a1)/2; return `<span class="rw-l" style="transform:rotate(${m}deg) translateY(-118px) rotate(${-m}deg)">${TYPES[TK[g.i]].label.replace("Bille chinoise","Chinoise").replace("Mini bille","Mini")}</span>` }).join("");
+  el.innerHTML = `<div class="modal roue-modal" role="dialog" aria-modal="true" aria-label="La roue de la bille">
+    <span class="dc-kick">${ic("pachi",14)} Case Bille</span><h2>La roue de la bille</h2>
+    <div class="roue-wrap"><i class="roue-ptr"></i><div class="roue" id="roue" style="background:conic-gradient(${grad})">${labels}</div></div>
+    <div class="roue-res" id="roue-res" hidden><span class="ball">${mImg(b,240,Math.round(70*scaleOf(b.type)+40),"")}</span><b>${esc(TYPES[b.type].label+" "+specName(b))}</b>
+      <span class="pills">${typePill(b.type,true)}${shinyPill(b)}${rarTag(b.family)}</span>
+      <div class="btns"><button class="btn btn-ghost" data-action="spec" data-id="${b.id}">Voir la fiche</button><button class="btn btn-yellow" data-action="close-modal">Super !</button></div></div></div>`;
+  el.hidden = false;
+  const r = document.getElementById("roue"), spin = 360*6 + (360-mid);
+  requestAnimationFrame(()=>{ r.style.transition = "transform 4.2s cubic-bezier(.12,.75,.15,1)"; r.style.transform = `rotate(${spin}deg)` });
+  let ticks = 0; const tk = setInterval(()=>{ if(++ticks>28){ clearInterval(tk); return } Sound.hit(.08) }, 140);
+  setTimeout(()=>{ const res = document.getElementById("roue-res"); if(!res) return; res.hidden = false;
+    Sound.reveal?.(FMT_TIER[b.type], !!b.shiny); if(TIDX[b.type]>=4 || b.shiny) FX.fireworks(SHINY_COLS, 6) }, 4400);
+}
 let pachiSpr = null;
 function pachiSprite(spec, px){ const key = `${spec.seed}|${px}`; if(pachiSpr?.key===key) return pachiSpr.img;
   const im = new Image(); im.src = marbleURL(spec, Math.max(48, px*2)); pachiSpr = {key, img:im}; return im }
@@ -7156,6 +7206,13 @@ function pachiPos(B, now){
 }
 async function pachiGo(pay){
   if(pachi.busy) return;
+  const fun = pay==="fun";   // pour le plaisir : la bille tombe, rien n'est gagné ni dépensé
+  if(fun){ pachi.busy = true; const slot = pickW(Math.random(), PACHI.map(c=>c.w));
+    document.querySelectorAll('[data-action="pachi-go"]').forEach(b=>b.disabled = true); const w0 = document.getElementById("p-win"); if(w0) w0.hidden = true; pachi.land = null;
+    pachi.ball = {spec:activeSpec(), path:pachiPath(slot), t0:performance.now()+150, seg:-1, onEnd:()=>{ pachi.land = slot; pachi.landT = performance.now(); pachi.busy = false;
+      const w = document.getElementById("p-win"); if(w){ w.innerHTML = `<b>Pour le plaisir</b><span>Elle serait tombée sur : ${pachiPrize(PACHI[slot])}</span>`; w.hidden = false }
+      Sound.pop(); document.querySelectorAll('[data-action="pachi-go"]').forEach(b=>{ b.disabled = b.dataset.pay==="0" || (b.dataset.pay==="1" && S.jetons<PACHI_PRICE) }) }};
+    return }
   if(!pay && !pachiFree()) return;
   if(pay && S.jetons<PACHI_PRICE){ toast(`Il te manque ${fmt(PACHI_PRICE-S.jetons)} ${CUR.many}.`); return }
   pachi.busy = true;
@@ -7164,7 +7221,7 @@ async function pachiGo(pay){
     if(srvOn()){ const r = await srv(()=>Cloud.eco.pachinko(!!pay)); slot = r.case; applyEco(r.eco); if(r.bille) bille = srvAdopt([r.bille])[0] }
     else { slot = pickW(Math.random(), PACHI.map(c=>c.w)); const cs = PACHI[slot];
       if(pay) S.jetons -= PACHI_PRICE; if(cs.j) S.jetons += cs.j; if(cs.sac) S.bagInv[cs.sac] = (S.bagInv[cs.sac]||0)+1;
-      if(cs.taille) bille = makeSpec(cs.taille, {shiny:Math.random()<SHINY_RATE ? rollShiny() : 0, src:"pachinko"}) }
+      if(cs.roue) bille = makeSpec(TK[pickW(Math.random(), PACHI_ROUE)], {shiny:Math.random()<SHINY_RATE ? rollShiny() : 0, src:"pachinko"}) }
   }catch(e){ pachi.busy = false; srvFail(e); return }
   const cs = PACHI[slot];
   if(!pay) playedToday().pachinko = {done:1, rew:cs.j||0};
@@ -7176,10 +7233,11 @@ async function pachiGo(pay){
   pachi.land = null;
   pachi.ball = {spec:activeSpec(), path:pachiPath(slot), t0:performance.now()+150, seg:-1, onEnd:()=>{
     pachi.land = slot; pachi.landT = performance.now(); pachi.busy = false;
-    const big = cs.taille || cs.sac==="collector" || cs.sac==="premium";
+    const big = cs.roue || cs.sac==="collector" || cs.sac==="premium" || cs.j>=1000;
     const w = document.getElementById("p-win");
-    if(w){ w.innerHTML = `<b>${cs.taille ? "JACKPOT !" : big ? "Bravo !" : "Gagné !"}</b><span>${bille ? esc(TYPES[bille.type].label+" "+specName(bille)) : pachiPrize(cs)}</span>`; w.hidden = false }
+    if(w){ w.innerHTML = `<b>${cs.roue ? "Une bille !" : big ? "Bravo !" : "Gagné !"}</b><span>${cs.roue ? "La roue choisit sa taille…" : pachiPrize(cs)}</span>`; w.hidden = false }
     if(big){ Sound.ding(); FX.fireworks(SHINY_COLS, 4) } else Sound.coin();
+    if(cs.roue && bille) setTimeout(()=>pachiRoue(bille), 700);
     renderTop(); renderNav();
     if(!pay) gamesBonus();
     // les boutons se remettent à jour (la bille reste posée dans sa case)
@@ -7654,7 +7712,7 @@ function dayCard(key, el){
       ${g.done && g.st!=null ? `<div class="stars">${[1,2,3].map(k=>STAR(k<=g.st)).join("")}</div>` : ""}
       <p>${g.rew ? `Aujourd'hui, ce jeu t'a rapporté <b>${g.rew} ${CUR.many}</b>.` : "Pas de bonbecs cette fois : retente ta chance demain !"}</p>
       <div class="dc-next">${ic("clock",16)} Prochaine partie dans <b data-quest-timer>${untilMidnight()}</b></div>
-      <div class="row"><button class="btn btn-ghost" data-action="nav" data-view="jeux">Tous les jeux</button>${nextGameBtn(key)}</div></div>`;
+      <div class="row"><button class="btn btn-ghost" data-action="game-fun" data-g="${key}">${ic("play",16)} Rejouer pour le plaisir</button><button class="btn btn-ghost" data-action="nav" data-view="jeux">Tous les jeux</button>${nextGameBtn(key)}</div></div>`;
   el.hidden = false;
 }
 // le panneau « Récompenses » à droite de chaque jeu (comme au Tir)
@@ -7670,9 +7728,9 @@ function dayFinish(key, st, rew, title, text, resId="a-result"){
   const el = document.getElementById(resId); if(!el) return paid;
   const conf = st===3 ? `<div class="confetti" aria-hidden="true">${Array.from({length:28},(_,i)=>`<i style="left:${(i*37)%100}%;background:${["#FFC93F","#E5484D","#2E8CFF","#2FA35A","#7B6CF6","#F472B6"][i%6]};animation-delay:${(i%7)*.12}s;animation-duration:${1.6+(i%5)*.25}s"></i>`).join("")}</div>` : "";
   el.innerHTML = `<div class="g-card res-card">${conf}<h2>${title}</h2>${st==null?"":`<div class="stars pop">${[1,2,3].map(k=>STAR(k<=st)).join("")}</div>`}<p>${text}</p>
-    ${paid && rew ? `<span class="reward">${COIN}<b data-count="${rew}">+0</b> ${CUR.many}</span>` : ""}
-    <div class="dc-next">${ic("clock",16)} Prochaine partie dans <b data-quest-timer>${untilMidnight()}</b></div>
-    <div class="row"><button class="btn btn-ghost" data-action="nav" data-view="jeux">Tous les jeux</button>${nextGameBtn(key)}</div></div>`;
+    ${paid && rew ? `<span class="reward">${COIN}<b data-count="${rew}">+0</b> ${CUR.many}</span>` : !paid ? `<p class="meta">Partie pour le plaisir : pas de bonbecs, juste l'honneur.</p>` : ""}
+    <div class="dc-next">${ic("clock",16)} Prochaine partie du jour dans <b data-quest-timer>${untilMidnight()}</b></div>
+    <div class="row"><button class="btn btn-ghost" data-action="game-fun" data-g="${key}">${ic("play",16)} Rejouer pour le plaisir</button><button class="btn btn-ghost" data-action="nav" data-view="jeux">Tous les jeux</button>${nextGameBtn(key)}</div></div>`;
   el.hidden = false;
   const c = el.querySelector("[data-count]");
   if(c){ const end = +c.dataset.count, t0 = performance.now();
@@ -9639,7 +9697,9 @@ document.addEventListener("click", e=>{
     case "nav": closeModal(); openDay(false); if(t.dataset.conftab) ui.confTab=t.dataset.conftab; go(t.dataset.view); break;
     case "conf-tab": ui.confTab=t.dataset.tab; renderView(); break;
     case "evf-go": evFuse(t.dataset.k); break;
-    case "pachi-go": pachiGo(t.dataset.pay==="1"); break;
+    case "craft-f": ui.craftF = {...(ui.craftF||{}), rar:t.dataset.v}; renderView(); break;
+    case "craft-ev": document.querySelector(".evf")?.scrollIntoView({behavior:"smooth", block:"start"}); break;
+    case "pachi-go": pachiGo(t.dataset.pay==="fun" ? "fun" : t.dataset.pay==="1"); break;
     case "conf-filter": ui.confF=t.dataset.f; renderView(); break;
     case "conf-size": ui.confSize=t.dataset.v; renderView(); break;
     case "conf-cat": ui.confCat=t.dataset.v; renderView(); break;
@@ -9829,6 +9889,14 @@ document.addEventListener("click", e=>{
     case "gc-auto": GCV.free = false; GCV.follow = null; break;
     case "gc-follow": GCV.follow = +t.dataset.i; GCV.free = false; break;
     case "gc-skip": if(GCV.R && !GCV.done){ GCV.t = Math.max(GCV.t, GCV.R[0].fin+.5) } break;
+    // rejouer pour le plaisir, une fois la partie du jour finie : un terrain neuf, sans bonbecs ni sauvegarde de la partie
+    case "game-fun": {
+      const k = t.dataset.g; if(!dayGame(k)?.done) break;
+      if(k==="casse"){ initCasse(); document.getElementById("c-result").hidden = true; cb.done = false; cb.live = true }
+      else { initArena(k); document.getElementById("a-result").hidden = true; arena.done = false; updArenaHud(); if(arena.turn==="opp") setTimeout(aiShot, 900) }
+      Sound.tap(0,.6); toast("Partie pour le plaisir : elle ne rapporte rien, mais elle compte pour la gloire !");
+      break;
+    }
     case "game-go": {
       const k = t.dataset.g;
       if(!gameBegin(k) && !gameLive(k)){ renderView(); break }

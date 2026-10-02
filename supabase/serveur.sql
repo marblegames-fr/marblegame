@@ -388,15 +388,17 @@ end $$;
 
 -- Le Pachinko (2 octobre 2026) : une bille gratuite par jour (elle compte dans les 6 jeux du jour), puis 200 bonbecs la bille.
 -- Le serveur tire la case ; le jeu fait tomber la bille jusqu'à elle. Cases de gauche à droite : mêmes valeurs que PACHI dans index.html.
--- En moyenne une bille rapporte ~178 bonbecs (sacs comptés à leur prix) : un peu moins que ce qu'elle coûte.
+-- On retrouve au moins sa mise dans 42 % des cas ; en moyenne une bille rend ~187 bonbecs (sacs comptés à leur prix), soit 93 %.
+-- La case « Bille » fait tourner une roue : la taille (mêmes chances que PACHI_ROUE), puis décor, coloris et shiny comme d'habitude.
 create or replace function interne.pachinko_cases() returns table(k int, poids numeric, bonbecs int, sac text, taille text) language sql immutable as $$
-  select * from (values (0, 0.3, 0, null::text, 'mammouth'::text), (1, 2.75, 0, 'premium', null), (2, 7.5, 0, 'classique', null),
-    (3, 19, 120, null, null), (4, 40, 60, null, null), (5, 19, 120, null, null), (6, 7.5, 0, 'classique', null),
-    (7, 2.75, 0, 'premium', null), (8, 1.2, 0, 'collector', null)) v(k, poids, bonbecs, sac, taille)
+  select * from (values (0, 0.4, 0, null::text, 'roue'::text), (1, 2.2, 0, 'premium', null), (2, 8.5, 400, null, null),
+    (3, 12, 200, null, null), (4, 58, 100, null, null), (5, 12, 200, null, null), (6, 5.5, 0, 'classique', null),
+    (7, 0.5, 0, 'collector', null), (8, 0.9, 1000, null, null)) v(k, poids, bonbecs, sac, taille)
 $$;
+create or replace function interne.pachinko_roue() returns numeric[] language sql immutable as $$ select array[30,25,20,14,8,3]::numeric[] $$;   -- Mini → Mammouth
 create or replace function public.pachinko(payer boolean default false)
 returns jsonb language plpgsql security definer set search_path = public as $$
-declare qui uuid := interne.moi(); today text := interne.aujourdhui()::text; c record; b jsonb := null; x numeric; acc numeric := 0;
+declare qui uuid := interne.moi(); today text := interne.aujourdhui()::text; c record; b jsonb := null; x numeric; acc numeric := 0; t text := null;
 begin
   perform 1 from portefeuilles where joueur = qui for update;
   if not payer then   -- la bille du jour (une seule)
@@ -412,8 +414,11 @@ begin
   end loop;
   perform interne.crediter(qui, c.bonbecs, c.sac);
   if not payer and c.bonbecs > 0 then update gains set montant = c.bonbecs where joueur = qui and source = 'jeu' and cle = today || '|pachinko'; end if;
-  if c.taille is not null then b := interne.nouvelle_bille(qui, c.taille, shiny => interne.tirer_shiny(interne.taux_shiny()), src => 'pachinko'); end if;
-  return jsonb_build_object('eco', interne.etat(qui), 'case', c.k, 'bonbecs', c.bonbecs, 'sac', c.sac, 'bille', b);
+  if c.taille = 'roue' then
+    t := (interne.tailles())[interne.tirer(interne.pachinko_roue())];
+    b := interne.nouvelle_bille(qui, t, shiny => interne.tirer_shiny(interne.taux_shiny()), src => 'pachinko');
+  end if;
+  return jsonb_build_object('eco', interne.etat(qui), 'case', c.k, 'bonbecs', c.bonbecs, 'sac', c.sac, 'taille', t, 'bille', b);
 end $$;
 
 -- Le bonbec du jour : calendrier de 4 semaines, calculé par le serveur

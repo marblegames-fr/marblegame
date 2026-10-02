@@ -121,7 +121,8 @@ create or replace function interne.poids_rarete() returns numeric[] language sql
 $$ select array[10,5,2.5,0.8,0.2,0]::numeric[] $$;   -- la 6e : décors d'événement, jamais tirés
 
 create or replace function interne.coloris_base() returns int language sql immutable as $$ select 48 $$;
--- La bêta : tant qu'elle dure, chaque joueur peut réclamer une bille Bêta de chaque taille (décor 47, coloris 70 : BETA dans index.html).
+-- La bêta : tant qu'elle dure, chaque joueur peut réclamer une bille Bêta de chaque taille (décor 47, coloris 70 + rang de la taille :
+-- Rubis, Émeraude, Saphir, Améthyste, Onyx, Diamant ; BETA dans index.html).
 -- Elles sont rangées avec les billes secrètes (secrete = 'beta') : ni troc, ni marché, ni recyclage, ni classement.
 -- supabase/reset.sql les garde. Au lancement : remplacer true par false (et BETA.open:false dans index.html).
 create or replace function interne.beta_ouverte() returns boolean language sql immutable as $$ select true $$;
@@ -463,7 +464,7 @@ begin
       perform 1 from portefeuilles where joueur = qui for update;
       if exists (select 1 from billes where proprietaire = qui and secrete = 'beta' and taille = cle and origine = 'serveur' and detruite_le is null)
         then raise exception 'deja'; end if;
-      b := interne.nouvelle_bille(qui, cle, 47, 70, 0, 'beta', graine, jsonb_build_object('ed', 'Bêta 2026'), bid, 'beta');
+      b := interne.nouvelle_bille(qui, cle, 47, 70 + interne.rang(cle), 0, 'beta', graine, jsonb_build_object('ed', 'Bêta 2026'), bid, 'beta');
     else raise exception 'source_inconnue';
   end case;
   return jsonb_build_object('eco', interne.etat(qui), 'bille', b);

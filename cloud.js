@@ -91,6 +91,7 @@
       start: (bonbecs, sacs, pity) => rpc("eco_demarrer", {bonbecs, sacs, pity}),
       state: () => rpc("eco_etat"),
       openBag: (nom, offert) => rpc("ouvrir_sac", {nom, offert:!!offert}),
+      boutique: (taille, coloris) => rpc("boutique_evenement", {taille, coloris}),   // une bille d'événement contre des doublons
       recycle: ids => rpc("echanger_billes", {ids}),
       fuse: ids => rpc("fusionner", {ids}),
       fuseEv: ids => rpc("fusion_evenement", {ids}),

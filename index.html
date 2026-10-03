@@ -8937,10 +8937,9 @@ function gcPrevSVG(cid="lacets"){
     return `<path d="M${l} ${y1+4}L${r} ${y2+4}L${r} ${y2+14}L${l} ${y1+14}Z" fill="${cbShade(T.ramp,-50)}"/><path d="M${l} ${y1-6}L${r} ${y2-6}L${r} ${y2+4}L${l} ${y1+4}Z" fill="${T.ramp}"/>${deco(i, at, a)}` }).join("")
     + `<rect x="430" y="340" width="200" height="22" rx="6" fill="${T.tray}"/>${flag(455,306)}`;
   if(cid==="plinko") return frame(`<rect x="190" y="18" width="300" height="350" rx="10" fill="${cbShade(T.bg,22)}" stroke="${T.ramp}" stroke-width="6"/>
-    ${Array.from({length:4},(_,s)=>{ const y0 = 30+s*84;
-      return Array.from({length:4},(_,row)=>Array.from({length:8},(_,c)=>{ const x = 212+c*36+(row%2?18:0); return x<480 ? `<circle cx="${x}" cy="${y0+8+row*15}" r="4" fill="${T.peg}"/>` : "" }).join("")).join("")
-        + (s<3 ? `<path d="M${s%2?470:210} ${y0+70}L${s%2?225:455} ${y0+78}" stroke="${T.ramp}" stroke-width="6" stroke-linecap="round"/>` : "") }).join("")}
-    <rect x="200" y="350" width="280" height="12" rx="4" fill="${T.tray}"/>${[[260,50],[330,44],[410,60],[300,130],[380,214],[270,300]].map(([x,y],i)=>ball(x,y,i)).join("")}`);
+    ${Array.from({length:20},(_,row)=>Array.from({length:9},(_,c)=>{ const x = 206+c*34+(row%2?17:0), y = 34+row*15.5; if(x>476) return "";
+      const big = (row*7+c*3)%23===5; return `<circle cx="${x}" cy="${y}" r="${big?7:3.6}" fill="${big?T.bump:T.peg}"/>` }).join("")).join("")}
+    <rect x="200" y="350" width="280" height="12" rx="4" fill="${T.tray}"/>${[[260,50],[330,44],[410,90],[300,150],[380,214],[270,290]].map(([x,y],i)=>ball(x,y,i)).join("")}`);
   if(cid==="spirale"){ const pts = [], back = [];
     for(let a=0; a<=3.5*TAU; a+=.08){ const x = 340+190*Math.cos(a), y = 40+a*12+42*Math.sin(a); (Math.sin(a)>0 ? pts : back).push([x,y,a]) }
     const seg = (L, w, c, op) => L.map(([x,y],i)=>i && Math.abs(L[i-1][2]-L[i][2])<.1 ? `<line x1="${L[i-1][0]}" y1="${L[i-1][1]}" x2="${x}" y2="${y}" stroke="${c}" stroke-width="${w}" stroke-linecap="round" opacity="${op}"/>` : "").join("");
@@ -9302,7 +9301,15 @@ function g3Zigzag(k, o, deco){
   for(let i=0;i<RAMPS;i++){
     const dir = i%2 ? -1 : 1, y = i*-STEP, rot = -dir*ANG, cx = -dir*ext/2;
     const sY = x => y - Math.tan(ANG)*dir*(x-cx);
-    if(!o.noRamp) k.box([LEN+ext, .4, WID], [cx, y, 0], [0,0,rot]);
+    // une trappe (o.holes) : un trou d'un côté de la rampe ; la bille qui passe dessus tombe sur la rampe du dessous et prend un raccourci
+    const hole = o.holes && i<RAMPS-1 ? o.holes(i) : null;
+    if(!o.noRamp && !hole) k.box([LEN+ext, .4, WID], [cx, y, 0], [0,0,rot]);
+    if(hole){ const L = LEN+ext, c = Math.cos(rot), s = Math.sin(rot), HL = 1.5, HW = hole.w || 2;
+      const uh = (-dir*LEN/2 + dir*hole.f*LEN - cx)/c, piece = (u0, u1, w, z) => { const u = (u0+u1)/2; k.box([u1-u0, .4, w], [cx + u*c, y + u*s, z], [0,0,rot]) };
+      // le trou ne touche pas le mur (une bande de 0,5 reste) : la bille tombe bien entre les murs de la rampe du dessous
+      piece(-L/2, uh-HL/2, WID, 0); piece(uh+HL/2, L/2, WID, 0);
+      piece(uh-HL/2, uh+HL/2, WID-HW-.5, -hole.side*(HW+.5)/2); piece(uh-HL/2, uh+HL/2, .5, hole.side*(WID/2-.25)) }
+    if(i===0) k.box([.4, wall+1, WID+.6], [cx - (LEN+ext)/2*Math.cos(rot) - .2, y + wall/2, 0], [0,0,0], "end");   // derrière la ligne de départ
     k.box([LEN+ext, wall, .3], [cx, y+wall/2-.1, WID/2+.15], [0,0,rot], "wall"); k.box([LEN+ext, wall, .3], [cx, y+wall/2-.1, -WID/2-.15], [0,0,rot], "wall");
     if(i<RAMPS-1){ const xe = dir*(LEN/2+1.4); k.box([.4, STEP+1.6, WID+.6], [xe, y-STEP/2+.6, 0], [0,0,0], "end") }
     path.push([-dir*(LEN/2-1), sY(-dir*(LEN/2-1))+.5, 0], [dir*(LEN/2), sY(dir*LEN/2)+.5, 0]);
@@ -9361,10 +9368,10 @@ const G3C = {
         cam:p=>[p[0]*.5, p[1]-1, 23], look:p=>[p[0]*.8, p[1]-3, 0]} }},
 
   // Une grande spirale qui tourne autour d'une tour : les billes collent au bord en prenant de la vitesse
-  spirale:{name:"L'Entonnoir", desc:"Une grande spirale qui tourne autour d'une tour : les billes descendent en tournant, collées au bord, jusqu'au fond.",
+  spirale:{name:"L'Entonnoir", desc:"Une grande spirale autour d'une tour, semée de plots et de pales qui tournent : elles retiennent une bille, en laissent filer une autre… Rien n'est joué avant le fond !",
     theme:{bg:"#0E1A2B", ramp:"#3FB6A8", tray:"#FFB547"}, axis:1,
     build(k, r, n){
-      const RM = 7, WID = 2.8, TURNS = 3.5, NS = 28, DROP = 6, BANK = 9*Math.PI/180, path = [];
+      const RM = 7, WID = 2.8, TURNS = 2.5, NS = 28, DROP = 12, BANK = 9*Math.PI/180, path = [];
       const dA = TAU/NS, N = TURNS*NS, slope = DROP/(TAU*RM), RO = RM+WID/2, len = 2*RO*Math.sin(dA/2)*1.04;
       const at = a => [RM*Math.cos(a), -a/TAU*DROP, RM*Math.sin(a)];
       for(let j=0;j<N;j++){ const a = (j+.5)*dA, P = at(a), rad = [Math.cos(a),0,Math.sin(a)];
@@ -9376,8 +9383,17 @@ const G3C = {
         const Xw = v3.norm([-Math.sin(a), -slope, Math.cos(a)]), Yw = [0,1,0], Zw = v3.norm(v3.cross(Xw, Yw));
         const qw = g3Basis(Xw, v3.cross(Zw, Xw), Zw);
         k.box([len, 2.2, .25], v3.add(P, v3.add(v3.mul(rad, WID/2+.2), [0, .9, 0])), qw, "wall");
-        k.box([len*.82, 1.2, .25], v3.add(P, v3.add(v3.mul(rad, -WID/2-.15), [0, .5, 0])), qw, "inner");
+        k.box([len*.82, 2.4, .25], v3.add(P, v3.add(v3.mul(rad, -WID/2-.15), [0, 1.1, 0])), qw, "inner");
         if(j%2===0) path.push(v3.add(P, [0, .5, 0]));
+        // les obstacles, après le départ : des plots sur la piste, des bosses rondes en travers,
+        // et de temps en temps une pale qui tourne en travers de la piste
+        // (up : le dessus de la piste ; Y pointe vers le bas avec cette base)
+        const up = Y[1] < 0 ? v3.mul(Y, -1) : Y;
+        if(j>6 && j<N-3){
+          // une pale tous les quarts de tour (elle retient une bille au hasard, en laisse filer une autre), un plot entre deux
+          if(j%14===3) k.spin([.4, .45, WID-.7], v3.add(P, v3.mul(up, .5)), q, v3.mul(up, (j%14<7 ? 1 : -1)*(1.8+.6*r())));
+          else if(j%7===6 || j%14===10) k.cyl(.24, 1.2, v3.add(P, v3.add(v3.mul(rad, (j%14<7 ? .3 : -.05)), v3.mul(up, .75))), q);
+        }
       }
       const yEnd = at(N*dA)[1];
       // la tour au centre, et le grand bac rond en bas
@@ -9391,33 +9407,36 @@ const G3C = {
         starts.push([rr*Math.cos(a), P[1] + .2 + G3.R + .05 + .2, rr*Math.sin(a)]) }
       const ag = .25 + Math.ceil(n/3)*1.05/RM + .12, G = at(ag);
       const gate = k.box([.3, 2, WID], v3.add(G, [0, .9, 0]), g3Basis(v3.norm([-Math.sin(ag),0,Math.cos(ag)]), [0,1,0], v3.cross(v3.norm([-Math.sin(ag),0,Math.cos(ag)]), [0,1,0])), "gate");
-      return {path, starts, gate, finishY:yb+1, floorY:yb-1,
+      return {path, starts, gate, finishY:yb+1, floorY:yb-1, trayR:26,
         cam:p=>{ const a = Math.atan2(p[2], p[0]); return [Math.cos(a)*(RM+12), p[1]+6, Math.sin(a)*(RM+12)] }} }},
 
   // De longues pentes raides, des tremplins et des marches : ça saute !
-  toboggan:{name:"Le Toboggan", desc:"De longues pentes raides, des tremplins qui font décoller les billes et des marches pour retomber plus bas : ça saute dans tous les sens !",
+  toboggan:{name:"Le Toboggan", desc:"De longues pentes pleines de bosses, de plots et de champignons, et sur chaque rampe une trappe qui fait tomber les chanceuses directement sur la rampe du dessous !",
     theme:{bg:"#1E1410", ramp:"#E8743B", tray:"#2FA35A"},
-    build(k, r, n){ const o = {RAMPS:5, LEN:34, WID:5, STEP:9, ANG:10*Math.PI/180, wall:3.4};
+    build(k, r, n){ const o = {RAMPS:5, LEN:34, WID:6, STEP:9, ANG:10*Math.PI/180, wall:3.4, holes:i=>({f:.48, side:i%2 ? -1 : 1, w:1.9})};
       const z = g3Zigzag(k, o, (i, {dir, sY, rot})=>{
         // deux tremplins par rampe, et des bosses rondes en travers
         [.35,.7].forEach((f, j)=>{ const x = -dir*o.LEN/2 + dir*f*o.LEN;
           k.cyl(2.2, o.WID, [x, sY(x)+.2-2.2+.3, 0], [Math.PI/2,0,0], "kick") });
         [.18,.52,.86].forEach(f=>{ const x = -dir*o.LEN/2 + dir*f*o.LEN; k.cyl(.35, o.WID, [x, sY(x), 0], [Math.PI/2,0,0], "bump") });
-        // quelques plots au hasard pour départager le peloton
-        for(let j=0;j<3;j++){ const x = -dir*o.LEN/2 + dir*(.25+j*.25+(r()-.5)*.06)*o.LEN; k.cyl(.22, 1.4, [x, sY(x)+.7, (r()-.5)*2.6]) } });
+        // des rangées de plots entre les bosses (3 puis 2, en quinconce), et un champignon à ressort au bout de chaque rampe
+        [.1,.27,.44,.61,.79].forEach((f, j)=>{ const x = -dir*o.LEN/2 + dir*f*o.LEN;
+          (j%2 ? [-.8,.8] : [-1.55,0,1.55]).forEach(zz=>k.cyl(.22, 1.4, [x, sY(x)+.7, zz + (r()-.5)*.1])) });
+        { const x = -dir*o.LEN/2 + dir*.94*o.LEN; k.cyl(.45, 1.2, [x, sY(x)+.4, (r()-.5)*2], null, "bump", "rebond") } });
       return {...z, ...g3ZigStart(k, o, n, r), cam:g3ZigCam} }},
 
   // Des pales qui tournent en travers de la piste et repoussent les billes
-  moulins:{name:"Les Moulins", desc:"Des pales qui tournent en travers de la piste : elles balaient les billes, les retiennent ou les lancent. Il faut passer au bon moment !",
+  moulins:{name:"Les Moulins", desc:"Trois pales qui tournent sur chaque rampe, des rangées de plots, et une trappe-raccourci : les billes sont balayées, retenues, lancées… Il faut passer au bon moment !",
     theme:{bg:"#101A14", ramp:"#9C7A4E", tray:"#5AB8FF", spin:"#FFD34D"},
-    build(k, r, n){ const o = {RAMPS:4, LEN:32, WID:7, STEP:9.5, ANG:12.5*Math.PI/180};
+    build(k, r, n){ const o = {RAMPS:5, LEN:32, WID:7, STEP:9.5, ANG:12.5*Math.PI/180, wall:4.5, holes:i=>({f:.68, side:i%2 ? 1 : -1, w:2.2})};
       const z = g3Zigzag(k, o, (i, {dir, sY, rot})=>{
         const nrm = [-Math.sin(rot), Math.cos(rot), 0];
-        [.38,.78].forEach((f, j)=>{ const x = -dir*o.LEN/2 + dir*f*o.LEN, w = ((i+j)%2 ? 1 : -1)*(1.1 + .25*j);
+        [i ? .25 : .36,.55,.85].forEach((f, j)=>{ const x = -dir*o.LEN/2 + dir*f*o.LEN, w = ((i+j)%2 ? 1 : -1)*(.8 + .5*r());
           const c = v3.add([x, sY(x), 0], v3.mul(nrm, .55));
           k.spin([4.6, .5, .5], c, [0,0,rot], v3.mul(nrm, w));
           k.cyl(.3, 1.6, v3.add([x, sY(x), 0], v3.mul(nrm, .8)), [0,0,rot], "axle") });
-        for(let j=0;j<2;j++){ const x = -dir*o.LEN/2 + dir*(.45+j*.3)*o.LEN; k.cyl(.22, 1.4, [x, sY(x)+.7, (r()-.5)*4]) } });
+        // entre les pales, des rangées de plots (3 de front)
+        [.12,.4,.7].forEach(f=>{ const x = -dir*o.LEN/2 + dir*f*o.LEN; [-2,0,2].forEach(zz=>k.cyl(.22, 1.4, [x, sY(x)+.7, zz + (r()-.5)*.3])) }) });
       return {...z, ...g3ZigStart(k, o, n, r), cam:g3ZigCam} }},
 
   // Un grand escalier de flipper : des marches et des champignons qui renvoient les billes
@@ -9447,7 +9466,7 @@ function g3World(CANNON, seed, n, cid="lacets"){
   // le chemin : longueurs cumulées, pour savoir où en est chaque bille
   const P = T.path, cum = [0]; for(let i=1;i<P.length;i++) cum.push(cum[i-1] + Math.hypot(...v3.sub(P[i], P[i-1])));
   const statics = k.statics.filter(s=>s.kind!=="gate");
-  return {world, balls, statics, kin:k.kin, gate:T.gate, finishY:T.finishY, floorY:T.floorY, path:P, cum, cam:T.cam, look:T.look, C, id:cid in G3C ? cid : "lacets"};
+  return {world, balls, statics, kin:k.kin, gate:T.gate, finishY:T.finishY, end:P[P.length-1], trayR:T.trayR||10, floorY:T.floorY, path:P, cum, cam:T.cam, look:T.look, C, id:cid in G3C ? cid : "lacets"};
 }
 // où en est une bille sur le chemin : la distance parcourue, et la direction de la piste à cet endroit
 function g3Where(W, x, y, z){
@@ -9473,13 +9492,14 @@ function g3Simulate(CANNON, seed, n, cid){
     // reçoit une pichenette dans le sens de la piste, de plus en plus forte si ça ne suffit pas
     if(f%30===0) W.balls.forEach((b,i)=>{ if(fin[i]!=null || t<4) return; const {s, T} = g3Where(W, b.position.x, b.position.y, b.position.z);
       if(b.best==null || s > b.best+.5){ b.best = s; b.bestT = t; b.kicks = 0; return }
-      if(t-b.bestT>4){ b.bestT = t; b.kicks = (b.kicks||0)+1; const side = i%2 ? 1 : -1, p = Math.min(4, b.kicks);
+      if(t-b.bestT>4){ b.bestT = t; b.kicks = (b.kicks||0)+1; const side = i%2 ? 1 : -1, p = Math.min(2.5, 1+.5*(b.kicks-1));   // plafonnée : une bille ne doit jamais sauter hors de la piste
         // dans le sens de la piste, et sur le côté (sur une piste qui descend tout droit, comme le Plinko, c'est le côté qui débloque)
         const L = Math.hypot(T[0], T[2]) > .3 ? v3.norm([T[2], 0, -T[0]]) : [1, 0, 0];
-        b.applyImpulse(new CANNON.Vec3(T[0]*1.2*p + side*L[0]*.8*p, .6*p, T[2]*1.2*p + side*L[2]*.8*p)) } });
+        b.applyImpulse(new CANNON.Vec3(T[0]*1.2*p + side*L[0]*.8*p, .5, T[2]*1.2*p + side*L[2]*.8*p)) } });
     const fr = new Float32Array(n*7); W.balls.forEach((b,i)=>fr.set([b.position.x,b.position.y,b.position.z,b.quaternion.x,b.quaternion.y,b.quaternion.z,b.quaternion.w], i*7)); frames.push(fr);
     if(W.kin.length){ const kq = new Float32Array(W.kin.length*4); W.kin.forEach((d,i)=>kq.set([d.body.quaternion.x,d.body.quaternion.y,d.body.quaternion.z,d.body.quaternion.w], i*4)); kf.push(kq) }
-    W.balls.forEach((b,i)=>{ if(fin[i]==null && b.position.y < W.finishY) fin[i] = t });
+    // arrivée : sous la ligne, et dans le bac (une bille tombée hors de la piste n'arrive jamais)
+    W.balls.forEach((b,i)=>{ if(fin[i]==null && b.position.y < W.finishY && Math.hypot(b.position.x-W.end[0], b.position.z-W.end[2]) < W.trayR) fin[i] = t });
     if(fin.every(x=>x!=null) && t>Math.max(...fin)+2) break;
   }
   fin.forEach((x,i)=>{ if(x==null) fin[i] = 900+i });

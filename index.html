@@ -610,6 +610,10 @@ main{padding:22px 24px 40px;min-width:0}
 .m-card .shiny-mark{position:absolute;top:8px;left:9px}
 .m-card .x-n{position:absolute;top:8px;right:9px;font-size:12px;font-weight:900;padding:2px 8px;border-radius:999px;background:var(--ink);color:var(--on-ink)}
 .m-card .x-n.low{top:32px}
+/* les étiquettes d'une carte de la boîte (shiny, Gardée/Double à gauche ; Nouveau, ×2 à droite) : une rangée qui passe à la ligne, jamais l'une sur l'autre */
+.m-card .m-tags{position:absolute;top:7px;left:8px;right:8px;display:flex;flex-wrap:wrap;align-items:center;gap:4px;pointer-events:none;z-index:1}
+.m-card .m-tags > span{position:static}
+.m-card .m-tags-sp{flex:1 0 0;min-width:0}
 .m-card b{font-size:13.5px;font-weight:800;line-height:1.2}
 .m-card small{font-size:11.5px;font-weight:700;color:var(--ink-2)}
 .m-card.missing{background:repeating-linear-gradient(135deg,var(--panel) 0 10px,var(--panel-2) 10px 20px);border-style:dashed;border-color:var(--line-2)}
@@ -4806,14 +4810,13 @@ const XP_AT = [0,0]; for(let t=2;t<=PASS_TIERS;t++) XP_AT[t] = XP_AT[t-1]+TIER_C
 const PASS_MAX_XP = XP_AT[PASS_TIERS];
 // où on en est dans le palier en cours : [XP déjà faite, XP à faire]
 const tierProg = (xp, tier) => tier>=PASS_TIERS ? [1,1] : [xp-XP_AT[tier], TIER_COST(tier+1)];
-// Rythme visé : un joueur régulier finit le passe en ~3 semaines, un joueur qui passe juste faire ses quêtes vers la fin du mois
-const BAG_XP = {gratuit:20, classique:60, premium:120, collector:300, pirate:150};
-// l'XP des sachets est plafonnée à 600 par jour : ouvrir des sachets sans fin ne fait plus filer le passe
-const BAG_XP_DAY = 600;
+// L'XP des sachets (3 octobre 2026) : plus de plafond par jour, mais deux fois moins d'XP qu'avant (0,1 XP par bonbec dépensé).
+// En simulation sur un mois : un joueur régulier finit le passe 1 fois sur 2 (vers le 29e jour), un très actif vers le 22e jour,
+// un joueur occasionnel arrive vers le palier 14.
+const BAG_XP = {gratuit:10, classique:30, premium:60, collector:150};
 // un sachet absent de BAG_XP rapporte 0 XP (le 2 octobre 2026, le Sachet Pirate Premium n'y était pas : son XP « pas un nombre »
 // a remis l'XP du passe à zéro, voir ensurePass)
-function bagXP(n){ const P = ensurePass(); if(P.bagDay!==dayKey() || !Number.isFinite(P.bagXP)){ P.bagDay = dayKey(); P.bagXP = 0 }
-  const k = Math.max(0, Math.min(Number.isFinite(n) ? n : 0, BAG_XP_DAY-P.bagXP)); P.bagXP += k; return k }
+const bagXP = n => Number.isFinite(n) && n>0 ? n : 0;
 const PASS_XP = {quest:150, bonus:200, star:15, recycle:2, craft:40, daily:100};
 // le premier passe de saison (septembre 2026) : un décor de saison n'est montré qu'une fois son mois arrivé
 const SEASON_LAUNCH = new Date(2026, 8, 1);
@@ -4938,7 +4941,7 @@ const giftCount = () => Object.values(S.bagInv).reduce((a,b)=>a+b,0);
 const NAV = [["accueil","Accueil","home"],["sacs","Ouvrir des sachets","bag"],["collection","Boîte à billes","layers"],["jeux","Jeux de la cour","pad"],["confiserie","La Confiserie","candy"],["cour","La cour de récré","cour"]];
 // les pages qui ne sont pas dans le menu allument leur « parent »
 const NAV_PARENT = {billepedia:"collection", tir:"jeux", pot:"jeux", chateau:"jeux", casse:"jeux", tic:"jeux", pachinko:"jeux", course:"jeux", grandecourse:"jeux", atelier:"confiserie"};
-const SOLO_GAMES = [["pot","Le Pot"],["chateau","Le Château"],["casse","Le Casse-briques"],["pachinko","Le Pachinko"],["tic","La Tic"]];
+const SOLO_GAMES = [["pot","Le Pot"],["chateau","Le Château"],["casse","Le Casse-briques"],["pachinko","Le Plinko"],["tic","La Tic"]];
 function gamesReady(){
   const out = SOLO_GAMES.filter(g=>soloReady(g[0]) || gameLive(g[0])).map(g=>g[1]);
   if(!playedToday().tir[0]) out.unshift("Le Tir");
@@ -5713,7 +5716,7 @@ function viewCollection(){
     </section>` };
   const ballCard = (x, grp=[x]) => { const nw = grp.filter(y=>unseenIds.has(y.id)).map(y=>y.id);
     return `<button class="m-card${x.shiny?" is-shiny":""}" data-action="spec" data-id="${x.id}"${nw.length?` data-unseen="${nw.join(",")}"`:""}>
-      ${x.shiny?`<span class="shiny-mark">${shinyPill(x)}</span>`:""}${nw.length&&show!=="dups"?`<span class="new">Nouveau</span>`:""}${grp.length>1?`<span class="x-n${nw.length?" low":""}" title="Tu as ${grp.length} exemplaires de cette bille">×${grp.length}</span>`:""}${show==="dups"?(keep.has(x.id)?`<span class="keep-tag">Gardée</span>`:`<span class="dup-tag">Double</span>`):""}
+      <span class="m-tags">${x.shiny?shinyPill(x):""}${show==="dups"?(keep.has(x.id)?`<span class="keep-tag">Gardée</span>`:`<span class="dup-tag">Double</span>`):""}<i class="m-tags-sp"></i>${nw.length&&show!=="dups"?`<span class="new">Nouveau</span>`:""}${grp.length>1?`<span class="x-n" title="Tu as ${grp.length} exemplaires de cette bille">×${grp.length}</span>`:""}</span>
       <span class="ball">${mImg(x,160,Math.round(84*scaleOf(x.type)+6))}</span><b>${esc(specName(x))}</b>${typePill(x.type)}</button>` };
   const EMPTY = {new:"Aucune nouveauté : tu as tout regardé !", dups:"Aucun doublon pour l'instant. Ouvre des sachets pour en trouver.", shiny:"Pas encore de shiny ici. Elles sont très rares : bonne chance !", season:"Pas encore de bille de saison ici. Le passe de saison en donne à certains paliers.", all:"Aucune bille dans ce format."};
 
@@ -5903,7 +5906,7 @@ function viewPass(){
     <section class="panel">
       <div class="panel-head"><h2>Gagner de l'XP de saison</h2></div>
       <ul class="xp-list">
-        <li>${ic("bag",20)}<span>Ouvrir un sachet <small>(jusqu'à ${BAG_XP_DAY} XP par jour${ensurePass().bagDay===dayKey()?` · ${ensurePass().bagXP} aujourd'hui`:""})</small></span><b>+${BAG_XP.gratuit} à +${BAG_XP.collector}</b></li>
+        <li>${ic("bag",20)}<span>Ouvrir un sachet</span><b>+${BAG_XP.gratuit} à +${BAG_XP.collector}</b></li>
         <li>${ic("gift",20)}<span>Récupérer le bonbec du jour</span><b>+${PASS_XP.daily}</b></li>
         <li>${ic("quest",20)}<span>Récupérer une quête du jour</span><b>+${PASS_XP.quest}</b></li>
         <li>${ic("trophy",20)}<span>Bonus des 3 quêtes</span><b>+${PASS_XP.bonus}</b></li>
@@ -6937,7 +6940,7 @@ function finishReveal(){
   } else {
     again = freeReady() ? `<button class="btn btn-yellow" data-action="open-next-free">Ouvrir le suivant (${freeStock()} en stock)</button>` : `<button class="btn btn-yellow" data-action="to-bags">Voir les sachets payants</button>`;
   }
-  document.getElementById("ov-actions").innerHTML = `<span class="ov-xp" style="flex-basis:100%;justify-content:center">${ic("ticket",18)} ${ovState.pxp ? `+${ovState.pxp} XP de saison` : `XP des sachets au maximum pour aujourd'hui (${BAG_XP_DAY})`}</span>${again}<button class="btn btn-ghost" data-action="to-collection">Voir ma boîte à billes</button>`;
+  document.getElementById("ov-actions").innerHTML = `<span class="ov-xp" style="flex-basis:100%;justify-content:center">${ic("ticket",18)} +${ovState.pxp} XP de saison</span>${again}<button class="btn btn-ghost" data-action="to-collection">Voir ma boîte à billes</button>`;
 }
 function closeOv(quiet){
   // fermé avant d'avoir tout découvert : les billes sont déjà rangées, on montre quand même ce qu'il y avait
@@ -7359,8 +7362,8 @@ function artPachinko(){
     <rect width="320" height="100" fill="url(#apgB)"/>
     <g opacity=".12" fill="#FF8FE0"><path d="M160 0L60 100h30zM160 0L230 100h30zM160 0L140 100h20z"/></g>
     ${bulbs}${pegs}
-    <text x="52" y="38" text-anchor="middle" font-family="Lilita One, sans-serif" font-size="17" fill="#FF4FD8" filter="url(#apgN)">PACHINKO</text>
-    <text x="52" y="38" text-anchor="middle" font-family="Lilita One, sans-serif" font-size="17" fill="#FFD6F5">PACHINKO</text>
+    <text x="52" y="38" text-anchor="middle" font-family="Lilita One, sans-serif" font-size="17" fill="#FF4FD8" filter="url(#apgN)">PLINKO</text>
+    <text x="52" y="38" text-anchor="middle" font-family="Lilita One, sans-serif" font-size="17" fill="#FFD6F5">PLINKO</text>
     <text x="270" y="38" text-anchor="middle" font-family="Lilita One, sans-serif" font-size="14" fill="#39E6FF" filter="url(#apgN)">JACKPOT</text>
     <text x="270" y="38" text-anchor="middle" font-family="Lilita One, sans-serif" font-size="14" fill="#D6FBFF">JACKPOT</text>
     ${slots.map((c,i)=>`<rect x="${49+i*20.4}" y="78" width="17" height="22" rx="3" fill="${c}"/><rect x="${51+i*20.4}" y="80" width="13" height="3.5" rx="1.5" fill="#fff" opacity=".3"/>`).join("")}
@@ -7371,7 +7374,7 @@ function artCourse(){ return `<svg viewBox="0 0 240 130" preserveAspectRatio="xM
   <path d="M-5 105C60 105 60 40 120 40S180 100 245 60" stroke="#C9A56A" stroke-width="30" fill="none" stroke-linecap="round"/><path d="M-5 105C60 105 60 40 120 40S180 100 245 60" stroke="#D9BC80" stroke-width="22" fill="none" stroke-linecap="round"/>
   <circle cx="40" cy="103" r="7" fill="#2E8CFF" stroke="#fff" stroke-width="1.5"/><circle cx="92" cy="58" r="6.5" fill="#E5484D"/><circle cx="140" cy="45" r="6.5" fill="#FFC93F"/>
   <path d="M205 20v42" stroke="#5A3A20" stroke-width="2.5"/><path d="M205 20h24v14h-24z" fill="#fff"/><path d="M205 20h6v7h-6zM217 20h6v7h-6zM211 27h6v7h-6zM223 27h6v7h-6z" fill="#24253D"/></svg>` }
-/* ---------- le Pachinko : une bille tombe de clou en clou jusqu'à une case ---------- */
+/* ---------- le Plinko : une bille tombe de clou en clou jusqu'à une case ---------- */
 // Cases de gauche à droite : mêmes valeurs que interne.pachinko_cases() dans serveur.sql. Le serveur tire la case, le jeu anime la chute.
 // Plus un lot vaut cher, plus il est rare (sachets comptés à leur prix : Classique 300, Premium 600, Collector 1 500) :
 // 50 > 200 > Classique > 400 > Premium > 1000 > Collector > Bille. Les lots les plus rares sont au bord, comme sur un vrai plateau.
@@ -7379,7 +7382,7 @@ function artCourse(){ return `<svg viewBox="0 0 240 130" preserveAspectRatio="xM
 // Collector 1 500) ; en bonbecs seuls, ~85. On retrouve au moins sa mise 4 fois sur 10.
 // Case Mammouth : 0,1 %, un Mammouth garanti dont la roulette tire le décor (mêmes chances que dans un sachet),
 // coloris au hasard, shiny comme dans le Sachet Collector.
-// 3 octobre 2026 : la bille passe à 150 et les chances changent (choix de l'équipe) : 0 → 33 %, 50 → 26 %, 200 → 18 %, Classique 13 %,
+// 3 octobre 2026 : la bille passe à 150 et les chances changent (choix de l'équipe) : 0 → 32,9 %, 50 → 26 %, 200 → 18 %, Classique 13 %,
 // 400 → 4 %, Premium 3 %, 1000 → 2 %, Collector 1 %, Mammouth 0,1 %. Les cases en double (50, 200) se partagent leurs chances.
 const PACHI = [
   {w:.1,   roue:true,       lbl:"Mammouth",  c:"#E5484D"},
@@ -7387,14 +7390,14 @@ const PACHI = [
   {w:4,    j:400,           lbl:"400",       c:"#7B6CF6"},
   {w:9,    j:200,           lbl:"200",       c:"#C98E4E"},
   {w:13,   j:50,            lbl:"50",        c:"#8E8898"},
-  {w:33,   j:0,             lbl:"0",         c:"#4A3F5C"},
+  {w:32.9, j:0,             lbl:"0",         c:"#4A3F5C"},   // 32,9 : le total fait juste 100 % avec le Mammouth à 0,1 %
   {w:13,   j:50,            lbl:"50",        c:"#8E8898"},
   {w:9,    j:200,           lbl:"200",       c:"#C98E4E"},
   {w:13,   sac:"classique", lbl:"Classique", c:"#2A8A74"},
   {w:3,    sac:"premium",   lbl:"Premium",   c:"#34469C"},
   {w:1,    sac:"collector", lbl:"Collector", c:"#D9A020"},
 ];
-// le Mammouth gagné (Pachinko, Château rasé en un tir) : shiny avec les chances du Sachet Collector
+// le Mammouth gagné (Plinko, Château rasé en un tir) : shiny avec les chances du Sachet Collector
 const MAMM_SHINY = SHINY_RATE*10;
 const PACHI_PRICE = 150, PACHI_ROWS = PACHI.length-1, PW = 540, PH = 700, PACHI_GAP = 47;
 // les cases : leur haut et leur hauteur (elles s'arrêtent avant le cadre doré et ses ampoules)
@@ -7405,12 +7408,12 @@ const pachiPrize = c => c.roue ? "un Mammouth" : c.sac ? `un ${BAG_BY[c.sac].nam
 function viewPachinko(){
   const act = activeSpec(), tot = PACHI.reduce((a,c)=>a+c.w,0), free = pachiFree();
   const kinds = [...new Map(PACHI.map(c=>[c.lbl,c])).values()];
-  return `<div class="page-head"><div><button class="back-link" data-action="nav" data-view="jeux">${ic("chevl",14)} Tous les jeux</button><h1>Le Pachinko</h1>
+  return `<div class="page-head"><div><button class="back-link" data-action="nav" data-view="jeux">${ic("chevl",14)} Tous les jeux</button><h1>Le Plinko</h1>
     <p>Lâche ta bille en haut du plateau : elle rebondit de clou en clou et tombe dans une case. Une bille gratuite par jour, et d'autres pour ${PACHI_PRICE} ${CUR.many}.</p>
     <span class="gt-state${free?" ok":""}" id="day-chip">${free ? `${ic("gift",14)} Ta bille du jour t'attend` : `${ic("check",14,3)} Bille du jour lâchée · la prochaine dans <b data-quest-timer>${untilMidnight()}</b>`}</span></div></div>
   <div class="game-wrap">
     <section class="panel pachi-panel">
-      <div class="game-stage pachi-stage"><canvas id="p-canvas" aria-label="Plateau du Pachinko"></canvas><div class="pachi-win" id="p-win" hidden></div></div>
+      <div class="game-stage pachi-stage"><canvas id="p-canvas" aria-label="Plateau du Plinko"></canvas><div class="pachi-win" id="p-win" hidden></div></div>
       <div class="pachi-btns">
         <button class="btn btn-yellow btn-xl" data-action="pachi-go" data-pay="0" ${free?"":"disabled"}>${ic("gift",18)} ${free?"Lâcher ma bille du jour":"Bille du jour lâchée"}</button>
         <button class="btn ${free?"btn-ghost":"btn-yellow btn-xl"}" data-action="pachi-go" data-pay="1" ${S.jetons<PACHI_PRICE?"disabled":""}>Une bille de plus · <span class="price">${COIN}${PACHI_PRICE}</span></button>
@@ -7460,7 +7463,7 @@ function pachiBack(k){
   const neon = (txt, x, y, size, col) => { c.font = `${size}px "Lilita One", sans-serif`; c.textAlign = "center"; c.textBaseline = "middle";
     c.save(); c.shadowColor = col; c.shadowBlur = 18; c.fillStyle = col; c.fillText(txt, x, y); c.shadowBlur = 6; c.fillText(txt, x, y); c.restore();
     c.fillStyle = "rgba(255,255,255,.85)"; c.font = `${size}px "Lilita One", sans-serif`; c.globalAlpha = .55; c.fillText(txt, x, y); c.globalAlpha = 1 };
-  neon("PACHINKO", 118, 58, 34, "#FF4FD8");
+  neon("PLINKO", 118, 58, 34, "#FF4FD8");
   neon("★ BILLY ★", PW-112, 58, 24, "#39E6FF");
   const fg = c.createLinearGradient(0,6,0,34); fg.addColorStop(0,"#FFE7A0"); fg.addColorStop(.5,"#C9922E"); fg.addColorStop(1,"#6B4A12");
   c.fillStyle = fg; c.beginPath(); c.roundRect(PW/2-34, 6, 68, 30, 15); c.fill();
@@ -7576,7 +7579,10 @@ function pachiSparks(x, y, n, cols, big){
    les coloris sont ajoutés en mémoire, seulement le temps de les regarder. Un coloris = 3 couleurs : la base, la vedette, les détails.
    Les 3 versions répartissent les couleurs différemment (A : dans l'ordre donné). */
 // (Zède et uwu ont été validés le 2 octobre 2026 : ils sont maintenant de vrais coloris, voir PLAYER_PALS.)
-const COLORIS_MAQUETTES = [];
+// 3 octobre 2026 : Poups (noir, blanc, orange), proposé par un joueur, à valider
+const COLORIS_MAQUETTES = [
+  {nom:"Poups", cols:["#000000","#FFFFFF","#E48B25"]},
+];
 const LAB_VERS = {A:[0,1,2], B:[2,0,1], C:[1,0,2]};
 const labIdx = new Map();
 function labPal(c, v){
@@ -7601,14 +7607,14 @@ function labOpen(c=0, v=null){
   </div>`;
   el.hidden = false; el.querySelector(".close-x").focus();
 }
-// Les chances du Mammouth gagné au Pachinko (case Mammouth) et au Château (rasé en un tir) : la roulette tire la rareté du décor
+// Les chances du Mammouth gagné au Plinko (case Mammouth) et au Château (rasé en un tir) : la roulette tire la rareté du décor
 // avec les mêmes chances que dans un sachet ; le coloris est au hasard, le shiny comme dans le Sachet Collector.
 function billeOdds(from){
   const fw = DECOR_IDS.reduce((a,f)=>a+FAM_W[f],0), sw = SHINIES.slice(1).reduce((a,x)=>a+x.w,0);
   const rows = (l) => `<ul class="rewards-list">${l.map(([a,b])=>`<li><span>${a}</span><b>${b}</b></li>`).join("")}</ul>`;
   const el = document.getElementById("modal");
   el.innerHTML = `<div class="modal odds-pop" role="dialog" aria-modal="true" aria-label="Les chances du Mammouth"><button class="close-x" data-action="close-modal" aria-label="Fermer">×</button>
-    <span class="dc-kick">${ic(from==="chateau"?"castle":"pachi",14)} ${from==="chateau"?"Le Château · rasé en un tir":"Le Pachinko · case Mammouth"}</span>
+    <span class="dc-kick">${ic(from==="chateau"?"castle":"pachi",14)} ${from==="chateau"?"Le Château · rasé en un tir":"Le Plinko · case Mammouth"}</span>
     <h2>Les chances du Mammouth</h2>
     <p class="meta">C'est toujours un Mammouth. La roulette tire la rareté de son décor, avec les mêmes chances que dans un sachet. Le coloris est au hasard, et il peut être shiny comme dans un Sachet Collector.</p>
     <h3>1. Le décor (la roulette)</h3>${rows(DECOR_RAR.map((R,k)=>({R, n:DECOR_IDS.filter(f=>FAMILIES[f].rar===k).length})).filter(x=>x.n).map(({R,n})=>
@@ -7797,8 +7803,25 @@ function viewGames(){
     <div class="games-grid">${[...solo, ...multi].map(tile).join("")}</div></section>`;
 }
 // « Ta bille » en haut de la colonne de chaque mini-jeu : on voit tout de suite avec quelle bille on joue, et on la change
-const gameBallPanel = act => `<section class="panel"><div class="panel-head"><h3>Ta bille</h3><button class="see-all" data-action="pick-active">Changer ${ic("chev",14)}</button></div>
+const gameBallPanel = act => `<section class="panel" id="game-ball-panel"><div class="panel-head"><h3>Ta bille</h3><button class="see-all" data-action="pick-active">Changer ${ic("chev",14)}</button></div>
         ${act?`<div class="my-ball">${mImg(act,120,48,"")}<div><b>${esc(specName(act))}</b><small>${TYPES[act.type].label} · ${TYPES[act.type].mm} mm</small></div></div>`:""}</section>`;
+// Changer de bille en pleine partie : la nouvelle bille prend la place de l'ancienne tout de suite, sans recharger le jeu
+// (on ne perd ni un coup ni sa partie). Renvoie false si on n'est pas dans un mini-jeu (la page est alors redessinée).
+function swapGameBall(spec){
+  const v = ui.view; if(!spec) return false;
+  const restyle = b => { b.spec = spec; b.r = radOf(spec.type); b.m = Math.min(b.r*b.r*b.r, arena.mode==="chateau" && arena.capMass || Infinity); b.img = ballImg(spec); b.dirty = true };
+  if(v==="tir" && game.cv && document.body.contains(game.cv)){
+    game.spec = spec; BR = radOf(spec.type); game.ballImg = ballGL ? null : Object.assign(new Image(), {src:marbleURL(spec,96)});
+  } else if(ARENA[v] && arena.cv && document.body.contains(arena.cv)){
+    (arena.balls||[]).forEach(b=>{ if(b.mine) restyle(b) });
+    (arena.racers||[]).forEach(x=>{ if(x.mine) x.spec = spec });
+  } else if(v==="casse" && cb.cv && document.body.contains(cb.cv)){
+    cb.spec = spec; cb.R = cbClamp(radOf(spec.type)*.7, 7, 15); cb.power = TYPES[spec.type].mm>=35 ? 2 : 1;
+    (cb.balls||[]).forEach(b=>{ b.spec = spec; b.dirty = true });
+  } else if(v!=="pachinko") return false;   // au Plinko, la bille est prise au moment de la lâcher
+  const p = document.getElementById("game-ball-panel"); if(p) p.outerHTML = gameBallPanel(spec);
+  return true;
+}
 function viewArena(){
   const G = ARENA[ui.view], act = activeSpec();
   return `<div class="page-head"><div><button class="back-link" data-action="nav" data-view="jeux">${ic("chevl",14)} Tous les jeux</button><h1>${G.title}</h1><p>${G.lead}</p>${dayChip(ui.view)}</div></div>
@@ -8148,7 +8171,7 @@ const DAY_GAMES = {
   pot:     {title:"Le Pot", max:250},
   chateau: {title:"Le Château", max:340},
   casse:   {title:"Le Casse-briques", max:450},
-  pachinko:{title:"Le Pachinko", max:0, prize:"une bille"},   // la bille gratuite du jour (supabase/serveur.sql, public.pachinko)
+  pachinko:{title:"Le Plinko", max:0, prize:"une bille"},   // la bille gratuite du jour (supabase/serveur.sql, public.pachinko)
   tic:     {title:"La Tic", max:200},
 };
 // les 6 jeux du jour joués (Tir compris) : un Sachet Premium offert (le serveur vérifie les 6 parties : source 'jeux-bonus')
@@ -8240,6 +8263,7 @@ const blocked = (a, b, r, pebbles) => pebbles.some(p=>{ const dx=b.x-a.x, dy=b.y
 function spawnMine(x,y){
   const A = arena;
   A.shooter = mkBall(x, y, activeSpec(), {mine:true});
+  if(A.mode==="chateau" && A.capMass) A.shooter.m = Math.min(A.shooter.m, A.capMass);   // au Château, une grosse bille ne frappe pas plus fort qu'un gros Calot
   A.balls.push(A.shooter);
 }
 const SETUP = {
@@ -8283,7 +8307,8 @@ const SETUP = {
   },
   chateau(){
     const A = arena;
-    Object.assign(A,{fric:.975, shots:3, out:0, circle:{x:630,y:260,r:125}});
+    // la force de frappe est plafonnée (3 octobre 2026) : avec un Mammouth, raser le château en un tir était devenu trop facile
+    Object.assign(A,{fric:.975, shots:3, out:0, circle:{x:630,y:260,r:140}, capMass:Math.pow(radOf("calot"),3)*1.4});
     const d = 2*radOf("calot")+2, cx = A.circle.x, cy = A.circle.y, r = dayRng("chateau");
     // une forme par jour (10 billes), dont 3 Calots plus lourds, plus dures à sortir
     const shapes = {
@@ -8313,7 +8338,7 @@ const SETUP = {
       S.stats.castle += n;
       let prize = "";
       if(st===3 && used===1 && gameLive("chateau")){
-        // rasé en un seul tir : un Mammouth garanti, comme la case Mammouth du Pachinko (la roulette montre son décor)
+        // rasé en un seul tir : un Mammouth garanti, comme la case Mammouth du Plinko (la roulette montre son décor)
         prize = " Et un Mammouth pour ta boîte : la roulette choisit son décor…";
         const won = s => { S.specs.push(s); S.unseen.push(s.id); logFind(s); save(); setTimeout(()=>mammRoulette(s, "chateau"), 1600) };
         if(srvOn()) srv(()=>Cloud.eco.marble("chateau","")).then(r=>{ applyEco(r.eco); won(srvAdopt([r.bille])[0]) }, srvFail);
@@ -8904,8 +8929,7 @@ function viewGrandeCourse(){
     </div>
     <div class="gc-side"><div class="gc-prev">${gcPrevSVG(cN)}<span>${whenS} : ${esc(G3C[cN].name)}</span></div>
       <p class="meta">${esc(G3C[cN].desc)} En 3D, avec ta vraie bille !</p>
-      <button class="btn btn-ghost" data-action="gc-test" data-c="${cN}">${ic("play",16)} Voir une course d'essai</button>
-      <div class="gc-try"><small>Essayer un autre circuit</small><div class="chips">${G3_ORDER.filter(c=>c!==cN).map(c=>`<button class="chip" data-action="gc-test" data-c="${c}">${esc(G3C[c].name)}</button>`).join("")}</div></div></div>
+      ${devTools() ? `<div class="gc-try"><small>Courses d'essai (compte admin)</small><div class="chips">${G3_ORDER.map(c=>`<button class="chip" data-action="gc-test" data-c="${c}">${esc(G3C[c].name)}</button>`).join("")}</div></div>` : ""}</div>
   </section>
   ${E?.participants?.length ? `<section class="panel gc-parts"><div class="panel-head"><h2>Les inscrits · ${whenS}</h2><span class="sample-tag">${E.participants.length} bille${E.participants.length>1?"s":""}</span></div>
     <div class="gc-plist">${E.participants.map(x=>{ const sp = gcSpec({bille:x.bille, pseudo:x.pseudo});
@@ -9188,7 +9212,7 @@ function gcPaint(T, r0){
 }
 
 // ---------- la mise en scène : l'ordre d'arrivée est connu, on invente une course qui y mène ----------
-const GC_DT = 1/30, GC_WIN = 40, GC_DUR = 60;   // le gagnant passe la ligne vers 40 s ; une course dure environ une minute
+const GC_DT = 1/30, GC_WIN = 40, GC_DUR = 110;   // une course en 3D : le gagnant arrive entre 35 et 90 s selon le circuit, le podium 15 s plus tard au plus
 const gcSpec = x => x.bille && x.bille.type ? {seed:x.bille.seed, type:x.bille.type, family:x.bille.family, pal:x.bille.pal, shiny:x.bille.shiny||0}
   : (()=>{ const r = rng(x.graine || hash(x.pseudo||x.nom||"?")); return {seed:Math.floor(r()*4e9), type:TK[pickW(r(),[30,30,15,12,8,5])], family:pickW(r(),FAM_W), pal:randPal(r()), shiny:0} })();
 function gcPlan(T, list, seed){
@@ -9314,6 +9338,9 @@ function g3Zigzag(k, o, deco){
     if(i<RAMPS-1){ const xe = dir*(LEN/2+1.4); k.box([.4, STEP+1.6, WID+.6], [xe, y-STEP/2+.6, 0], [0,0,0], "end") }
     path.push([-dir*(LEN/2-1), sY(-dir*(LEN/2-1))+.5, 0], [dir*(LEN/2), sY(dir*LEN/2)+.5, 0]);
     deco && deco(i, {dir, y, rot, cx, sY});
+    // des bosses rondes dans les murs, d'un côté puis de l'autre : une bille qui longe le mur est renvoyée vers le milieu
+    (o.wallBumps||[]).forEach((f, j)=>{ const x = -dir*LEN/2 + dir*f*LEN, sd = (i+j)%2 ? 1 : -1;
+      k.cyl(.5, 1.4, [x, sY(x)+.75, sd*(WID/2+.05)], [0,0,rot], "wall2") });
   }
   const yl = (RAMPS-1)*-STEP, dirL = (RAMPS-1)%2 ? -1 : 1, xf = dirL*(LEN/2+6), yt = yl-STEP;
   k.box([14, .4, WID+4], [xf, yt+.4, 0], [0,0,0], "tray");
@@ -9337,7 +9364,7 @@ const G3C = {
   // Cinq rampes en zigzag et des plots qui font rebondir les billes dans tous les sens
   lacets:{name:"Le circuit des lacets", desc:"Cinq rampes en zigzag, des plots qui font rebondir les billes dans tous les sens, et l'arrivée dans le grand bac bleu.",
     theme:{bg:"#1B1428", ramp:"#C9955C", tray:"#2E8CFF"},
-    build(k, r, n){ const o = {RAMPS:5, LEN:30, WID:6, STEP:8, ANG:12*Math.PI/180};
+    build(k, r, n){ const o = {RAMPS:5, LEN:30, WID:6, STEP:8, ANG:12*Math.PI/180, wallBumps:[.12,.27,.42,.57,.72,.88]};
       const z = g3Zigzag(k, o, (i, {dir, sY})=>{
         for(let j=0;j<5;j++){ const x = -dir*(o.LEN/2-6) + dir*j*(o.LEN-12)/4, zs = j%2 ? [-.95,.95] : [-1.75,0,1.75];
           zs.forEach(zz=>k.cyl(.22, 1.4, [x, sY(x)+.7, zz + (r()-.5)*.3])) } });
@@ -9413,7 +9440,7 @@ const G3C = {
   // De longues pentes raides, des tremplins et des marches : ça saute !
   toboggan:{name:"Le Toboggan", desc:"De longues pentes pleines de bosses, de plots et de champignons, et sur chaque rampe une trappe qui fait tomber les chanceuses directement sur la rampe du dessous !",
     theme:{bg:"#1E1410", ramp:"#E8743B", tray:"#2FA35A"},
-    build(k, r, n){ const o = {RAMPS:5, LEN:34, WID:6, STEP:9, ANG:10*Math.PI/180, wall:3.4, holes:i=>({f:.48, side:i%2 ? -1 : 1, w:1.9})};
+    build(k, r, n){ const o = {RAMPS:5, LEN:34, WID:6, STEP:9, ANG:11*Math.PI/180, wall:8, holes:i=>({f:.48, side:i%2 ? -1 : 1, w:1.9}), wallBumps:[.19,.36,.53,.7]};
       const z = g3Zigzag(k, o, (i, {dir, sY, rot})=>{
         // deux tremplins par rampe, et des bosses rondes en travers
         [.35,.7].forEach((f, j)=>{ const x = -dir*o.LEN/2 + dir*f*o.LEN;
@@ -9428,7 +9455,7 @@ const G3C = {
   // Des pales qui tournent en travers de la piste et repoussent les billes
   moulins:{name:"Les Moulins", desc:"Trois pales qui tournent sur chaque rampe, des rangées de plots, et une trappe-raccourci : les billes sont balayées, retenues, lancées… Il faut passer au bon moment !",
     theme:{bg:"#101A14", ramp:"#9C7A4E", tray:"#5AB8FF", spin:"#FFD34D"},
-    build(k, r, n){ const o = {RAMPS:5, LEN:32, WID:7, STEP:9.5, ANG:12.5*Math.PI/180, wall:4.5, holes:i=>({f:.68, side:i%2 ? 1 : -1, w:2.2})};
+    build(k, r, n){ const o = {RAMPS:5, LEN:32, WID:7, STEP:9.5, ANG:12.5*Math.PI/180, wall:8.5, holes:i=>({f:.68, side:i%2 ? 1 : -1, w:2.2}), wallBumps:[.3,.47,.62,.78,.95]};
       const z = g3Zigzag(k, o, (i, {dir, sY, rot})=>{
         const nrm = [-Math.sin(rot), Math.cos(rot), 0];
         [i ? .25 : .36,.55,.85].forEach((f, j)=>{ const x = -dir*o.LEN/2 + dir*f*o.LEN, w = ((i+j)%2 ? 1 : -1)*(.8 + .5*r());
@@ -9442,7 +9469,7 @@ const G3C = {
   // Un grand escalier de flipper : des marches et des champignons qui renvoient les billes
   flipper:{name:"Le Flipper", desc:"Un grand escalier de flipper : les billes dégringolent les marches et rebondissent sur des champignons à ressort.",
     theme:{bg:"#1A0F22", ramp:"#3A4E9C", tray:"#FF6FB5", bump:"#FF4F7A"},
-    build(k, r, n){ const o = {RAMPS:4, LEN:34, WID:8, STEP:9.5, ANG:12*Math.PI/180, noRamp:true};
+    build(k, r, n){ const o = {RAMPS:4, LEN:34, WID:8, STEP:9.5, ANG:12*Math.PI/180, noRamp:true, wallBumps:[.265,.395,.525,.655,.85]};
       const z = g3Zigzag(k, o, (i, {dir, y, rot, cx, sY})=>{
         // la rampe en marches : 6 marches, chacune un peu plus bas que la droite de la pente
         const ext = 2.6, L = o.LEN+ext, x0 = cx - dir*L/2, sl = L/6;
@@ -10904,7 +10931,9 @@ document.addEventListener("click", e=>{
         ${pickFilter(list)}<div class="pick-grid">${list.map(x=>`<button class="m-card${x.id===S.active?" on":""}" data-action="set-active" data-id="${x.id}" ${pickData(x)} style="${tstyle(x.type)}"><span class="ball">${mImg(x,120,Math.round(40*scaleOf(x.type)+14),"")}</span><b>${esc(specName(x))}</b>${typePill(x.type)}</button>`).join("")}</div></div>`;
       el.hidden = false; (el.querySelector(".pick-q")||el.querySelector(".close-x")).focus(); break }
     case "pick-t": t.parentNode.querySelectorAll(".chip").forEach(c=>c.setAttribute("aria-pressed", c===t)); applyPick(); break;
-    case "set-active": S.active=t.dataset.id; save(); renderTop(); renderNav(); closeModal(); renderView(); toast(`${specName(activeSpec())} jouera dans tous les jeux.`); break;
+    case "set-active": S.active=t.dataset.id; save(); renderTop(); renderNav(); closeModal();
+      if(!swapGameBall(activeSpec())) renderView();
+      toast(`${specName(activeSpec())} jouera dans tous les jeux.`); break;
     case "close-modal": closeModal(); break;
     case "active-step": {
       const list=[...S.specs].sort(tierSort); const i=list.findIndex(s=>s.id===S.active);
@@ -10950,7 +10979,7 @@ document.addEventListener("click", e=>{
     case "gc-unreg": srv(()=>Cloud.course.desinscrire()).then(e=>{ gc.etat = e; renderView(); renderNav(); toast("Tu n'es plus inscrit à la Grande Course.") }, srvFail); break;
     case "gc-watch": { const D = gc.etat?.rediffs?.[t.dataset.h] || gc.etat?.derniere; if(D){ closeModal(); gcWatch(D) } break }
     case "gc-claim": { const D = gc.etat?.rediffs?.[t.dataset.h]; if(D){ t.disabled = true; closeModal(); gcClaim(D).catch(()=>{ t.disabled = false }) } break }
-    case "gc-test": closeModal(); gcTest(t.dataset.c); break;
+    case "gc-test": if(!devTools()) break; closeModal(); gcTest(t.dataset.c); break;   // courses d'essai : compte admin seulement
     case "gc-replay": gcWatch({...GCV.race, replay:true}); break;
     case "g3-cam": g3Cam(); break;
     case "g3-skip": g3Skip(); break;

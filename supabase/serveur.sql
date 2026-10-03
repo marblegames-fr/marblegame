@@ -401,9 +401,9 @@ end $$;
 -- ~62 en bonbecs seuls ; on retrouve au moins sa mise 1 fois sur 5.
 -- Case Mammouth : 0,05 %, un Mammouth garanti (décor tiré comme dans un sachet, coloris au hasard, shiny comme dans le Sachet Collector).
 create or replace function interne.pachinko_cases() returns table(k int, poids numeric, bonbecs int, sac text, taille text) language sql immutable as $$
-  -- 3 octobre 2026 : bille à 150, et 0 → 33 %, 50 → 26 %, 200 → 18 %, Classique 13 %, 400 → 4 %, Premium 3 %, 1000 → 2 %, Collector 1 %, Mammouth 0,1 % (PACHI dans index.html)
+  -- 3 octobre 2026 : bille à 150, et 0 → 32,9 %, 50 → 26 %, 200 → 18 %, Classique 13 %, 400 → 4 %, Premium 3 %, 1000 → 2 %, Collector 1 %, Mammouth 0,1 % (PACHI dans index.html)
   select * from (values (0, 0.1, 0, null::text, 'mammouth'::text), (1, 2, 1000, null, null), (2, 4, 400, null, null),
-    (3, 9, 200, null, null), (4, 13, 50, null, null), (5, 33, 0, null, null), (6, 13, 50, null, null),
+    (3, 9, 200, null, null), (4, 13, 50, null, null), (5, 32.9, 0, null, null), (6, 13, 50, null, null),
     (7, 9, 200, null, null), (8, 13, 0, 'classique', null), (9, 3, 0, 'premium', null), (10, 1, 0, 'collector', null)) v(k, poids, bonbecs, sac, taille)
 $$;
 create or replace function interne.pachinko_roue() returns numeric[] language sql immutable as $$ select array[10,15,20,25,20,10]::numeric[] $$;   -- Mini → Mammouth
@@ -513,6 +513,9 @@ declare qui uuid := interne.moi(); b jsonb; m int; c int; t text; sh int;
 begin
   case source
     when 'chateau' then   -- Château rasé en un seul tir : un Mammouth, une fois par jour ; décor tiré comme dans un sachet, shiny comme le Collector
+      -- seulement pendant la partie du jour : si elle est déjà enregistrée (depuis plus d'une minute), c'est une partie pour le plaisir (3 octobre 2026)
+      if exists (select 1 from gains g where g.joueur = qui and g.source = 'jeu' and g.cle = interne.aujourdhui()::text || '|chateau'
+                   and g.le < now() - interval '1 minute') then raise exception 'deja'; end if;
       begin insert into gains (joueur, source, cle) values (qui, 'bille-chateau', interne.aujourdhui()::text);
       exception when unique_violation then raise exception 'deja'; end;
       b := interne.nouvelle_bille(qui, 'mammouth', shiny => interne.tirer_shiny(interne.taux_shiny() * 10), src => 'chateau');

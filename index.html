@@ -5263,7 +5263,11 @@ function toggleProfPop(open){
 }
 document.addEventListener("click", e=>{ if(!e.target.closest(".prof-wrap")) toggleProfPop(false) }, true);
 document.addEventListener("keydown", e=>{ if(e.key==="Escape") toggleProfPop(false) });
-function go(view){ toggleProfPop(false); if(view==="atelier"){ view="confiserie"; ui.confTab="fusion" } if(view==="billepedia"){ view="collection"; ui.tab="pedia" } ui.view=view; renderNav(); renderView(); window.scrollTo({top:0}); }
+// à la Confiserie, la boîte est reprise du serveur (au plus toutes les 30 s) : les fusions faites ailleurs sont prises en compte
+let lastResync = 0;
+function confResync(){ if(!srvOn() || Date.now()-lastResync<30000) return; lastResync = Date.now();
+  resyncBilles().then(()=>{ if(ui.view==="confiserie" && document.getElementById("ov").hidden) renderView() }, ()=>{}) }
+function go(view){ toggleProfPop(false); if(view==="confiserie") confResync(); if(view==="atelier"){ view="confiserie"; ui.confTab="fusion" } if(view==="billepedia"){ view="collection"; ui.tab="pedia" } ui.view=view; renderNav(); renderView(); window.scrollTo({top:0}); }
 function renderView(){
   if(ui.view==="course") ui.view = "jeux";   // la Course sur la plage a été retirée (2 octobre 2026) : un vieux lien ramène aux jeux
   const v = document.getElementById("view");
@@ -6046,13 +6050,25 @@ function evFusionPanel(){
     ${list.length ? `<div class="evf-grid">${list.map(card).join("")}</div>` : `<p class="empty">Pas encore de bille d'événement à fusionner. Elles se trouvent dans les sachets d'événement.</p>`}
   </section>`;
 }
-function evFuse(key){
+// Les billes de la boîte, reprises du serveur : si la boîte affichée n'est plus à jour (une fusion faite dans un autre onglet,
+// une réponse perdue…), on retire les billes qui n'existent plus et on ajoute celles qui manquent, sans recharger la page.
+async function resyncBilles(){
+  if(!srvOn()) return false;
+  const list = await Cloud.billes(sync.uid), ids = new Set(list.map(x=>x.id));
+  S.specs = S.specs.filter(s=>!s.srv || ids.has(s.id));
+  const have = new Set(S.specs.map(s=>s.id)); list.forEach(x=>{ if(!have.has(x.id)) S.specs.push(x) });
+  sync.known = new Set([...sync.known].filter(id=>ids.has(id))); list.forEach(x=>sync.known.add(x.id));
+  S.unseen = S.unseen.filter(id=>specById(id)); S.vitrine = S.vitrine.map(id=>id && specById(id) ? id : null);
+  if(!specById(S.active)) S.active = [...S.specs].sort(tierSort)[0]?.id;
+  save(); return true;
+}
+function evFuse(key, again){
   const [type, f, pal] = key.split("|"), t = TIDX[type], n = FUSION_EV[t];
   const ids = evPool().filter(s=>s.type===type && s.family===+f && s.pal===+pal).sort((a,b)=>a.at-b.at).slice(0,n).map(s=>s.id);
-  if(ids.length<n) return;
+  if(ids.length<n){ if(again){ toast("Ta boîte a été remise à jour : il n'y a plus assez de billes pour cette fusion."); renderView() } return }
   const x = specById(ids[0]);
-  ask({title:`Fusionner ${n} ${TYPES[type].pl} ${FAMILIES[+f].name} ?`, balls:ids.map(specById), ok:"Fusionner",
-       text:`Elles donnent 1 <b>${TYPES[TK[t+1]].label} ${esc(specName(x))}</b>, dans le même coloris. Les ${n} billes disparaissent.`}).then(ok=>{
+  (again ? Promise.resolve(true) : ask({title:`Fusionner ${n} ${TYPES[type].pl} ${FAMILIES[+f].name} ?`, balls:ids.map(specById), ok:"Fusionner",
+       text:`Elles donnent 1 <b>${TYPES[TK[t+1]].label} ${esc(specName(x))}</b>, dans le même coloris. Les ${n} billes disparaissent.`})).then(ok=>{
     if(!ok) return;
     if(srvOn() && eco.busy) return;
     const inputs = ids.map(specById), gone = new Set(ids);
@@ -6062,7 +6078,10 @@ function evFuse(key){
     if(srvOn()){
       eco.busy = true; gone.forEach(id=>sync.known.delete(id));
       srv(()=>Cloud.eco.fuseEv(ids)).then(r=>{ applyEco(r.eco); done(srvAdopt([r.bille])[0]) },
-        e=>{ inputs.forEach(y=>{ S.specs.push(y); sync.known.add(y.id) }); srvFail(e); renderView() }).finally(()=>{ eco.busy = false });
+        e=>{ inputs.forEach(y=>{ S.specs.push(y); sync.known.add(y.id) });
+          // la boîte n'était plus à jour : on la reprend du serveur et on refait la fusion une fois, avec les bonnes billes
+          if(e?.code==="fusion_invalide" && !again){ eco.busy = false; resyncBilles().then(()=>evFuse(key, true), ()=>{ srvFail(e); renderView() }); return }
+          srvFail(e); renderView() }).finally(()=>{ eco.busy = false });
       return;
     }
     gone.forEach(id=>sync.why[id]="fusionnee");
@@ -8937,13 +8956,13 @@ function viewGrandeCourse(){
       <div class="gc-clock"><small>Départ dans</small><b data-gc-timer>${gcLeft(N.depart-Date.now())}</b></div>
       ${reg}
       <div class="gc-prizes">${prize(0,"1er")}${prize(1,"2e")}${prize(2,"3e")}</div>
-      <p class="meta">Tous les autres inscrits gagnent ${COURSE_PART} ${CUR.many}. ${E ? `${E.inscrits} inscrit${E.inscrits>1?"s":""} pour l'instant.` : ""} Inscriptions jusqu'à ${N.heure===12?"11 h 59":"19 h 59"} pour cette course : après, c'est pour la suivante. Le choix de ta bille ne change rien à tes chances, c'est juste pour le style !</p>
+      <p class="meta">Tous les autres inscrits gagnent ${COURSE_PART} ${CUR.many}. ${GC_MAX} billes au plus par course : au-delà, les inscrits sont répartis au hasard en manches, et chaque manche a son podium et ses lots. ${E ? `${E.inscrits} inscrit${E.inscrits>1?"s":""} pour l'instant${gcManches(E.inscrits)>1?` : ${gcManches(E.inscrits)} manches`:""}.` : ""} Inscriptions jusqu'à ${N.heure===12?"11 h 59":"19 h 59"} pour cette course : après, c'est pour la suivante. Le choix de ta bille ne change rien à tes chances, c'est juste pour le style !</p>
     </div>
     <div class="gc-side"><div class="gc-prev">${gcPrevSVG(cN)}<span>${whenS} : ${esc(G3C[cN].name)}</span></div>
       <p class="meta">${esc(G3C[cN].desc)} En 3D, avec ta vraie bille !</p>
       ${devTools() ? `<div class="gc-try"><small>Courses d'essai (compte admin)</small><div class="chips">${G3_ORDER.map(c=>`<button class="chip" data-action="gc-test" data-c="${c}">${esc(G3C[c].name)}</button>`).join("")}</div></div>` : ""}</div>
   </section>
-  ${E?.participants?.length ? `<section class="panel gc-parts"><div class="panel-head"><h2>Les inscrits · ${whenS}</h2><span class="sample-tag">${E.participants.length} bille${E.participants.length>1?"s":""}</span></div>
+  ${E?.participants?.length ? `<section class="panel gc-parts"><div class="panel-head"><h2>Les inscrits · ${whenS}</h2><span class="sample-tag">${E.participants.length} bille${E.participants.length>1?"s":""}${gcManches(E.participants.length)>1?` · ${gcManches(E.participants.length)} manches`:""}</span></div>
     <div class="gc-plist">${E.participants.map(x=>{ const sp = gcSpec({bille:x.bille, pseudo:x.pseudo});
       return `<div class="gc-pl${x.moi?" me":""}" style="${tstyle(sp.type)}">${mImg(sp,72,34,"")}<span><b>${esc(x.moi?"Toi":x.pseudo)}</b><small>${esc(specName(sp))}</small></span></div>` }).join("")}</div>
     ${E.participants.length<8 ? `<p class="meta">Moins de 8 inscrits : des billes de la cour compléteront la ligne de départ (elles ne gagnent rien).</p>` : ""}</section>` : ""}
@@ -8952,7 +8971,7 @@ function viewGrandeCourse(){
 // une rediffusion : la dernière course de midi, ou la dernière du soir (les plus anciennes ne sont plus sur le site)
 function gcRediff(D){
   const me = gcMeIn(D.resultats), live = Date.now() < D.depart + GC_DUR*1000, h = D.heure||20;
-  return `<section class="panel gc-last"><div class="panel-head"><h2 title="${esc(G3C[g3CircuitOf(D)].name)}">${live?`<span class="gc-livedot"></span> En direct`:`Course ${gcSlotName(h)}`} · ${new Date(D.depart).toLocaleDateString("fr-FR",{weekday:"long", day:"numeric", month:"long"})} à ${h} h <small class="gc-cname">${esc(G3C[g3CircuitOf(D)].name)}</small></h2>
+  return `<section class="panel gc-last"><div class="panel-head"><h2 title="${esc(G3C[g3CircuitOf(D)].name)}">${live?`<span class="gc-livedot"></span> En direct`:`Course ${gcSlotName(h)}`} · ${new Date(D.depart).toLocaleDateString("fr-FR",{weekday:"long", day:"numeric", month:"long"})} à ${h} h${gcManche(D)} <small class="gc-cname">${esc(G3C[g3CircuitOf(D)].name)}</small></h2>
       <button class="btn btn-yellow" data-action="gc-watch" data-h="${h}">${ic("play",16)} ${live?"Regarder en direct":"Revoir la course"}</button></div>
     ${live || !gcSeenIt(D) ? `<p class="meta">${live ? "La course est en cours : regarde-la pour découvrir le podium !" : `Regarde la course pour découvrir le podium${me>=0&&!D.lots?" et récupérer tes lots":""} !`}</p>` : `<ol class="gc-res">${D.resultats.slice(0,3).map((x,i)=>`<li>${["🥇","🥈","🥉"][i]} <b>${esc(gcName(x))}</b></li>`).join("")}</ol>
     ${me>=0 ? `<p class="gc-mine">Tu as fini <b>${me+1}${me?"e":"er"}</b> sur ${D.resultats.length} · ${gcLotTxt(D.resultats[me],me)}${D.lots?` <span class="gc-ok">${ic("check",14,3)} récupérés</span>`:""}</p>` : ""}`}
@@ -9224,6 +9243,10 @@ function gcPaint(T, r0){
 }
 
 // ---------- la mise en scène : l'ordre d'arrivée est connu, on invente une course qui y mène ----------
+// 24 coureurs au plus par course : au-delà, le serveur répartit les inscrits au hasard en manches (chacune son podium et ses lots)
+const GC_MAX = 24;   // même valeur dans supabase/course.sql (interne.course_max)
+const gcManches = n => Math.max(1, Math.ceil(n/GC_MAX));
+const gcManche = D => (D.manches||1) > 1 ? ` · Manche ${D.manche||1} / ${D.manches}` : "";
 const GC_DT = 1/30, GC_WIN = 40, GC_DUR = 110;   // une course en 3D : le gagnant arrive entre 35 et 90 s selon le circuit, le podium 15 s plus tard au plus
 const gcSpec = x => x.bille && x.bille.type ? {seed:x.bille.seed, type:x.bille.type, family:x.bille.family, pal:x.bille.pal, shiny:x.bille.shiny||0}
   : (()=>{ const r = rng(x.graine || hash(x.pseudo||x.nom||"?")); return {seed:Math.floor(r()*4e9), type:TK[pickW(r(),[30,30,15,12,8,5])], family:pickW(r(),FAM_W), pal:randPal(r()), shiny:0} })();
@@ -9452,7 +9475,7 @@ const G3C = {
   // De longues pentes raides, des tremplins et des marches : ça saute !
   toboggan:{name:"Le Toboggan", desc:"De longues pentes pleines de bosses, de plots et de champignons, et sur chaque rampe une trappe qui fait tomber les chanceuses directement sur la rampe du dessous !",
     theme:{bg:"#1E1410", ramp:"#E8743B", tray:"#2FA35A"},
-    build(k, r, n){ const o = {RAMPS:5, LEN:34, WID:6, STEP:9, ANG:11*Math.PI/180, wall:8, holes:i=>({f:.48, side:i%2 ? -1 : 1, w:1.9}), wallBumps:[.19,.36,.53,.7]};
+    build(k, r, n){ const o = {RAMPS:4, LEN:34, WID:6, STEP:9, ANG:11*Math.PI/180, wall:8, holes:i=>({f:.9, side:i%2 ? -1 : 1, w:1.2}), wallBumps:[.19,.36,.53,.7]};
       const z = g3Zigzag(k, o, (i, {dir, sY, rot})=>{
         // deux tremplins par rampe, et des bosses rondes en travers
         [.35,.7].forEach((f, j)=>{ const x = -dir*o.LEN/2 + dir*f*o.LEN;
@@ -9467,7 +9490,7 @@ const G3C = {
   // Des pales qui tournent en travers de la piste et repoussent les billes
   moulins:{name:"Les Moulins", desc:"Trois pales qui tournent sur chaque rampe, des rangées de plots, et une trappe-raccourci : les billes sont balayées, retenues, lancées… Il faut passer au bon moment !",
     theme:{bg:"#101A14", ramp:"#9C7A4E", tray:"#5AB8FF", spin:"#FFD34D"},
-    build(k, r, n){ const o = {RAMPS:5, LEN:32, WID:7, STEP:9.5, ANG:12.5*Math.PI/180, wall:8.5, holes:i=>({f:.68, side:i%2 ? 1 : -1, w:2.2}), wallBumps:[.3,.47,.62,.78,.95]};
+    build(k, r, n){ const o = {RAMPS:4, LEN:32, WID:7, STEP:9.5, ANG:12.5*Math.PI/180, wall:8.5, holes:i=>({f:.9, side:i%2 ? 1 : -1, w:1.4}), wallBumps:[.3,.47,.62,.78,.95]};
       const z = g3Zigzag(k, o, (i, {dir, sY, rot})=>{
         const nrm = [-Math.sin(rot), Math.cos(rot), 0];
         [i ? .25 : .36,.55,.85].forEach((f, j)=>{ const x = -dir*o.LEN/2 + dir*f*o.LEN, w = ((i+j)%2 ? 1 : -1)*(.8 + .5*r());
@@ -9570,7 +9593,7 @@ async function gcWatch3D(race){
   const who = []; order.forEach((ball, place)=>{ who[ball] = R[place]; R[place].fin = sim.fin[ball]; R[place].ball = ball });
   const nm = o => o.me ? "Toi" : o.bot ? o.nom : o.pseudo;
   ov.innerHTML = `<div class="g3-stage" id="g3-stage"></div><div class="gc-vig"></div><div class="g3-labels" id="g3-labels"></div>
-    <div class="gc-top"><div class="chip"><small>${new Date(race.depart).toLocaleDateString("fr-FR",{weekday:"long", day:"numeric"})}${race.test?" · course d'essai":""}</small><b>${esc(C.name)}</b></div>
+    <div class="gc-top"><div class="chip"><small>${new Date(race.depart).toLocaleDateString("fr-FR",{weekday:"long", day:"numeric"})}${race.test?" · course d'essai":""}${gcManche(race)}</small><b>${esc(C.name)}</b></div>
       <div class="chip" id="gc-chrono"><small>Temps</small><b>—</b></div><span class="sp"></span>
       <button class="btn btn-yellow gc-skip" data-action="g3-cam" id="g3-cam" hidden>${ic("flag",14)} La tête de course</button>
       <button class="btn btn-ghost gc-skip" data-action="g3-skip" id="g3-skip">Voir l'arrivée</button>
@@ -10778,7 +10801,10 @@ function craftGo(C){
     if(eco.busy) return; eco.busy = true;
     gone.forEach(id=>sync.known.delete(id));
     srv(()=>Cloud.eco.fuse([...gone])).then(r=>{ applyEco(r.eco); done(srvAdopt([r.bille])[0]) },
-      e=>{ inputs.forEach(x=>{ S.specs.push(x); sync.known.add(x.id) }); srvFail(e); renderView() }).finally(()=>{ eco.busy = false });
+      e=>{ inputs.forEach(x=>{ S.specs.push(x); sync.known.add(x.id) });
+        if(e?.code==="fusion_invalide"){   // la boîte n'était plus à jour : on la reprend du serveur, et on propose une nouvelle sélection
+          resyncBilles().then(()=>{ C.sel = craftAuto(C.t); renderView(); toast("Ta boîte a été remise à jour : vérifie la sélection et relance la fusion.") }, ()=>{ srvFail(e); renderView() }); return }
+        srvFail(e); renderView() }).finally(()=>{ eco.busy = false });
     return;
   }
   gone.forEach(id=>sync.why[id]="fusionnee");

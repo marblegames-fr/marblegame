@@ -45,6 +45,17 @@ do $$ begin
     alter table public.courses add primary key (jour, heure);
   end if;
 end $$;
+-- Manches (3 octobre 2026) : 24 coureurs au plus par course. Au-delà, les inscrits sont répartis au hasard en manches de tailles
+-- égales, chacune avec sa graine, son ordre d'arrivée et son podium (les lots de 1er, 2e et 3e dans chaque manche).
+alter table public.courses add column if not exists manche smallint not null default 1;
+alter table public.course_inscrits add column if not exists manche smallint;
+do $$ begin
+  if (select pg_get_constraintdef(oid) from pg_constraint where conname = 'courses_pkey') = 'PRIMARY KEY (jour, heure)' then
+    alter table public.courses drop constraint courses_pkey;
+    alter table public.courses add primary key (jour, heure, manche);
+  end if;
+end $$;
+create or replace function interne.course_max() returns int language sql immutable as $$ select 24 $$;   -- même valeur que GC_MAX dans index.html
 drop function if exists interne.course_jour(timestamptz);
 drop function if exists interne.course_depart(date);
 drop function if exists interne.course_tirer(date);
@@ -66,35 +77,44 @@ create or replace function interne.course_prix(rang int, out j int, out sac text
          case rang when 1 then 'collector' when 2 then 'premium' when 3 then 'classique' end
 $$;
 
--- tirage d'une course (une seule fois) : ordre au hasard
+-- tirage d'une course (une seule fois) : les inscrits répartis au hasard en manches de 24 au plus, puis l'ordre d'arrivée de chaque manche
 create or replace function interne.course_tirer(j date, h int) returns void language plpgsql security definer set search_path = public as $$
-declare g bigint := floor(random()*4294967296)::bigint; res jsonb := '[]'; r record; k int := 0; n int; p record;
+declare res jsonb; r record; k int; n int; m int; mi int; nm int; p record;
         noms text[] := array['Lulu','Noé','Inès','Malo','Zoé','Tom','Léa','Sacha','Jade','Hugo','Mila','Nino'];
 begin
   perform pg_advisory_xact_lock(hashtext('course-' || j::text || '-' || h));
   if exists (select 1 from courses where jour = j and heure = h) then return; end if;
   select count(*) into n from course_inscrits where jour = j and heure = h;
   if n = 0 then return; end if;
-  -- les coureurs dans un ordre tiré au sort ; des billes de la cour complètent jusqu'à 8
-  for r in
-    select * from (
-      select i.joueur, pr.pseudo, b.donnees || jsonb_build_object('id', b.id) as bille, null::text as nom, null::bigint as gb
-        from course_inscrits i join profils pr on pr.id = i.joueur
-        left join billes b on b.id = i.bille and b.proprietaire = i.joueur and b.detruite_le is null
-        where i.jour = j and i.heure = h
-      union all
-      select null, null, null, noms[1 + (x % 12)], floor(random()*4294967296)::bigint from generate_series(1, greatest(0, 8 - n)) x
-    ) t order by random()
-  loop
-    k := k + 1;
-    if r.joueur is null then
-      res := res || jsonb_build_array(jsonb_build_object('bot', true, 'nom', r.nom, 'graine', r.gb));
-    else
-      select * into p from interne.course_prix(k);
-      res := res || jsonb_build_array(jsonb_build_object('joueur', r.joueur, 'pseudo', r.pseudo, 'bille', r.bille, 'prix', p.j, 'sac', p.sac));
-    end if;
+  m := ceil(n::numeric / interne.course_max())::int;
+  -- la manche de chacun : un ordre au hasard, puis 1, 2, …, m, 1, 2… (des manches de tailles égales à une bille près)
+  update course_inscrits ci set manche = x.mm from (
+    select joueur, ((row_number() over (order by random()) - 1) % m + 1)::smallint mm from course_inscrits where jour = j and heure = h
+  ) x where ci.jour = j and ci.heure = h and ci.joueur = x.joueur;
+  for mi in 1..m loop
+    res := '[]'; k := 0;
+    select count(*) into nm from course_inscrits where jour = j and heure = h and manche = mi;
+    -- les coureurs dans un ordre tiré au sort ; des billes de la cour complètent jusqu'à 8
+    for r in
+      select * from (
+        select i.joueur, pr.pseudo, b.donnees || jsonb_build_object('id', b.id) as bille, null::text as nom, null::bigint as gb
+          from course_inscrits i join profils pr on pr.id = i.joueur
+          left join billes b on b.id = i.bille and b.proprietaire = i.joueur and b.detruite_le is null
+          where i.jour = j and i.heure = h and i.manche = mi
+        union all
+        select null, null, null, noms[1 + (x % 12)], floor(random()*4294967296)::bigint from generate_series(1, greatest(0, 8 - nm)) x
+      ) t order by random()
+    loop
+      k := k + 1;
+      if r.joueur is null then
+        res := res || jsonb_build_array(jsonb_build_object('bot', true, 'nom', r.nom, 'graine', r.gb));
+      else
+        select * into p from interne.course_prix(k);
+        res := res || jsonb_build_array(jsonb_build_object('joueur', r.joueur, 'pseudo', r.pseudo, 'bille', r.bille, 'prix', p.j, 'sac', p.sac));
+      end if;
+    end loop;
+    insert into courses (jour, heure, manche, graine, resultats) values (j, h, mi, floor(random()*4294967296)::bigint, res);
   end loop;
-  insert into courses (jour, heure, graine, resultats) values (j, h, g, res);
 end $$;
 
 -- s'inscrire (ou changer de bille) pour la prochaine course
@@ -117,7 +137,8 @@ end $$;
 
 -- une course pour la page : ses résultats et si mes lots sont déjà récupérés
 create or replace function interne.course_json(c courses, qui uuid) returns jsonb language sql stable as $$
-  select jsonb_build_object('jour', c.jour, 'heure', c.heure, 'graine', c.graine,
+  select jsonb_build_object('jour', c.jour, 'heure', c.heure, 'graine', c.graine, 'manche', c.manche,
+    'manches', (select count(*) from courses y where y.jour = c.jour and y.heure = c.heure),
     'lots', exists (select 1 from course_inscrits x where x.jour = c.jour and x.heure = c.heure and x.joueur = qui and x.lots_le is not null),
     'depart', floor(extract(epoch from interne.course_depart(c.jour, c.heure))*1000)::bigint, 'resultats', c.resultats)
 $$;
@@ -132,10 +153,13 @@ begin
              and not exists (select 1 from courses y where y.jour = ci.jour and y.heure = ci.heure) order by 1, 2 loop
     perform interne.course_tirer(d.jour, d.heure);
   end loop;
-  select * into c12 from courses where heure = 12 and interne.course_depart(jour, heure) <= now() order by jour desc limit 1;
-  select * into c20 from courses where heure = 20 and interne.course_depart(jour, heure) <= now() order by jour desc limit 1;
+  -- la dernière course de midi et du soir : la manche où je cours (sinon la première)
+  select * into c12 from courses where heure = 12 and interne.course_depart(jour, heure) <= now()
+    order by jour desc, (resultats @> jsonb_build_array(jsonb_build_object('joueur', qui))) desc, manche limit 1;
+  select * into c20 from courses where heure = 20 and interne.course_depart(jour, heure) <= now()
+    order by jour desc, (resultats @> jsonb_build_array(jsonb_build_object('joueur', qui))) desc, manche limit 1;
   -- une course plus ancienne n'est plus visible sur le site : mes lots pas encore récupérés sont versés tout de suite
-  for c in select y.* from courses y join course_inscrits ci on ci.jour = y.jour and ci.heure = y.heure and ci.joueur = qui and ci.lots_le is null
+  for c in select y.* from courses y join course_inscrits ci on ci.jour = y.jour and ci.heure = y.heure and coalesce(ci.manche, 1) = y.manche and ci.joueur = qui and ci.lots_le is null
             where not (y.jour = c12.jour and y.heure = 12) is true and not (y.jour = c20.jour and y.heure = 20) is true
               and interne.course_depart(y.jour, y.heure) <= now() loop
     select e into x from jsonb_array_elements(c.resultats) e where e->>'joueur' = qui::text;

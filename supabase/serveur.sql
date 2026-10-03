@@ -163,6 +163,20 @@ $$;
 create or replace function interne.evenement_du_sac(s text) returns text language sql immutable as $$
   select case when s in ('pirate', 'pirate-premium') then 'pirates' end
 $$;
+-- Billes d'événement (3 octobre 2026) : plus de sac d'événement en vente. Pendant l'événement, chaque bille d'un sac Classique,
+-- Premium ou Collector a une petite chance d'être du décor de l'événement (5 / 8 / 12 %) ; la fusion d'événement permet de finir
+-- la collection. Mêmes valeurs dans index.html (EV_DROP). (Les doublons et la boutique d'événement ont été retirés le même jour.)
+alter table public.portefeuilles drop column if exists doublons;
+drop function if exists public.boutique_evenement(text, int);
+drop function if exists interne.doublons_du_sac(text);
+drop function if exists interne.prix_doublons();
+create or replace function interne.evenement_en_cours(out nom text, out debut timestamptz, out fin timestamptz, out decor int, out coloris int[])
+language sql stable as $$
+  select e.nom, v.debut, v.fin, v.decor, v.coloris from unnest(array['pirates']) e(nom), interne.evenement(e.nom) v
+  where now() between v.debut and v.fin limit 1
+$$;
+create or replace function interne.taux_evenement(s text) returns numeric language sql immutable as $$
+  select case s when 'classique' then 0.05 when 'premium' then 0.08 when 'collector' then 0.12 else 0 end::numeric $$;
 
 -- la date du jour, à l'heure française (les quêtes et le bonbec du jour changent à minuit)
 create or replace function interne.aujourdhui() returns date language sql stable as
@@ -278,7 +292,7 @@ begin return interne.etat(interne.moi()); end $$;
 -- Ouvrir un sac (acheté, gratuit ou offert). Renvoie les billes tirées.
 create or replace function public.ouvrir_sac(nom text, offert boolean default false)
 returns jsonb language plpgsql security definer set search_path = public as $$
-declare qui uuid := interne.moi(); p portefeuilles; r record; ev record; evb boolean; stock int; t int; i int;
+declare qui uuid := interne.moi(); p portefeuilles; r record; ev record; evc record; evb boolean; stock int; t int; i int; d int; c int;
         tirees int[] := '{}'; shinies int[] := '{}'; billes jsonb := '[]'; force boolean := false;
 begin
   select * into r from interne.sac(nom);
@@ -286,6 +300,8 @@ begin
   -- un sac d'événement : on ne l'achète que pendant l'événement (un sac offert s'ouvre quand on veut)
   select * into ev from interne.evenement(coalesce(interne.evenement_du_sac(nom), ''));   -- aucune ligne : tout à null
   if ev.sac is not null and not offert and not (now() between ev.debut and ev.fin) then raise exception 'evenement_fini'; end if;
+  if ev.sac is not null and not offert then raise exception 'plus_en_vente'; end if;   -- les sacs d'événement ne se vendent plus (offerts seulement)
+  select * into evc from interne.evenement_en_cours();
   select * into p from portefeuilles where joueur = qui for update;
   if offert then
     if coalesce((p.sacs->>nom)::int,0) < 1 then raise exception 'plus_de_sac'; end if;
@@ -321,9 +337,12 @@ begin
              when nom = 'pirate' then random() < 0.6
              else random() < case when nom = 'pirate-premium' then (case when i = r.n then 0.35 else 0.15 end)
                                   else (case when i = r.n then 0.3 else 0.12 end) end end);
-    billes := billes || interne.nouvelle_bille(qui, (interne.tailles())[tirees[i]+1], shiny => shinies[i], src => nom,
-      decor => case when evb then ev.decor end,
-      coloris => case when evb then ev.coloris[1 + floor(random()*array_length(ev.coloris,1))::int] end);
+    d := case when evb then ev.decor end; c := case when evb then ev.coloris[1 + floor(random()*array_length(ev.coloris,1))::int] end;
+    -- pendant l'événement, une bille d'un sac Classique, Premium ou Collector peut être une bille d'événement
+    if d is null and evc.decor is not null and random() < interne.taux_evenement(nom) then
+      d := evc.decor; c := evc.coloris[1 + floor(random()*array_length(evc.coloris,1))::int];
+    end if;
+    billes := billes || interne.nouvelle_bille(qui, (interne.tailles())[tirees[i]+1], shiny => shinies[i], src => nom, decor => d, coloris => c);
   end loop;
   return jsonb_build_object('eco', interne.etat(qui), 'billes', billes, 'force', force);
 end $$;
@@ -401,9 +420,10 @@ end $$;
 -- ~62 en bonbecs seuls ; on retrouve au moins sa mise 1 fois sur 5.
 -- Case Mammouth : 0,05 %, un Mammouth garanti (décor tiré comme dans un sachet, coloris au hasard, shiny comme dans le Sachet Collector).
 create or replace function interne.pachinko_cases() returns table(k int, poids numeric, bonbecs int, sac text, taille text) language sql immutable as $$
-  select * from (values (0, 0.05, 0, null::text, 'mammouth'::text), (1, 1.15, 1000, null, null), (2, 3, 400, null, null),
-    (3, 4.6, 200, null, null), (4, 20.5, 50, null, null), (5, 39, 0, null, null), (6, 20.5, 50, null, null),
-    (7, 4.6, 200, null, null), (8, 4, 0, 'classique', null), (9, 2.1, 0, 'premium', null), (10, 0.5, 0, 'collector', null)) v(k, poids, bonbecs, sac, taille)
+  -- 3 octobre 2026 : bille à 150, et 0 → 32,9 %, 50 → 26 %, 200 → 18 %, Classique 13 %, 400 → 4 %, Premium 3 %, 1000 → 2 %, Collector 1 %, Mammouth 0,1 % (PACHI dans index.html)
+  select * from (values (0, 0.1, 0, null::text, 'mammouth'::text), (1, 2, 1000, null, null), (2, 4, 400, null, null),
+    (3, 9, 200, null, null), (4, 13, 50, null, null), (5, 32.9, 0, null, null), (6, 13, 50, null, null),
+    (7, 9, 200, null, null), (8, 13, 0, 'classique', null), (9, 3, 0, 'premium', null), (10, 1, 0, 'collector', null)) v(k, poids, bonbecs, sac, taille)
 $$;
 create or replace function interne.pachinko_roue() returns numeric[] language sql immutable as $$ select array[10,15,20,25,20,10]::numeric[] $$;   -- Mini → Mammouth
 create or replace function public.pachinko(payer boolean default false)
@@ -415,7 +435,7 @@ begin
     begin insert into gains (joueur, source, cle, montant) values (qui, 'jeu', today || '|pachinko', 0);
     exception when unique_violation then raise exception 'deja'; end;
   else
-    update portefeuilles set bonbecs = bonbecs - 100, maj_le = now() where joueur = qui and bonbecs >= 100;
+    update portefeuilles set bonbecs = bonbecs - 150, maj_le = now() where joueur = qui and bonbecs >= 150;   -- la bille de plus : 150 (PACHI_PRICE)
     if not found then raise exception 'pas_assez'; end if;
   end if;
   x := random() * (select sum(poids) from interne.pachinko_cases());
@@ -468,7 +488,7 @@ begin
       if montant <> 0 or sac is distinct from 'classique' then raise exception 'montant_invalide'; end if;
       k := today;
     when 'jeu' then     -- une récompense par jour et par jeu (au Tir : par trou)
-      maxi := case when cle ~ '^tir\|[0-5]$' then 250 when cle = 'pot' then 250 when cle = 'chateau' then 340 when cle = 'casse' then 300
+      maxi := case when cle ~ '^tir\|[0-5]$' then 250 when cle = 'pot' then 250 when cle = 'chateau' then 340 when cle = 'casse' then 450
                    when cle in ('course','tic') then 200 end;   -- une partie par jour et par jeu (DAY_GAMES dans index.html)
       if maxi is null or montant > maxi or sac is not null then raise exception 'montant_invalide'; end if;
       k := today || '|' || cle;
@@ -512,6 +532,9 @@ declare qui uuid := interne.moi(); b jsonb; m int; c int; t text; sh int;
 begin
   case source
     when 'chateau' then   -- Château rasé en un seul tir : un Mammouth, une fois par jour ; décor tiré comme dans un sachet, shiny comme le Collector
+      -- seulement pendant la partie du jour : si elle est déjà enregistrée (depuis plus d'une minute), c'est une partie pour le plaisir (3 octobre 2026)
+      if exists (select 1 from gains g where g.joueur = qui and g.source = 'jeu' and g.cle = interne.aujourdhui()::text || '|chateau'
+                   and g.le < now() - interval '1 minute') then raise exception 'deja'; end if;
       begin insert into gains (joueur, source, cle) values (qui, 'bille-chateau', interne.aujourdhui()::text);
       exception when unique_violation then raise exception 'deja'; end;
       b := interne.nouvelle_bille(qui, 'mammouth', shiny => interne.tirer_shiny(interne.taux_shiny() * 10), src => 'chateau');

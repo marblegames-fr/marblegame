@@ -2528,6 +2528,10 @@ button.gh-cell:hover{transform:translateY(-2px)}
 .gc-prizes .coin{width:15px;height:15px;vertical-align:-3px}
 .gc-side{display:grid;gap:10px;align-content:start}
 .gc-side .btn{justify-self:start}
+.gc-try{display:grid;gap:6px}
+.gc-cname{font-size:13px;font-weight:800;color:var(--muted);margin-left:4px}
+.gc-try small{font-size:12px;font-weight:800;color:var(--muted);text-transform:uppercase;letter-spacing:.06em}
+.gc-try .chips{display:flex;flex-wrap:wrap;gap:6px}
 .gc-prev{position:relative;border-radius:18px;overflow:hidden;background:#000}
 .gc-prev canvas,.gc-prev svg{display:block;width:100%;height:auto}
 .gc-prev span{position:absolute;left:12px;top:12px;background:rgba(0,0,0,.6);color:#fff;border-radius:999px;padding:5px 12px;font-weight:900;font-size:13px}
@@ -8842,7 +8846,7 @@ function gcClaim(D, quiet){
 // ---------- la page ----------
 function viewGrandeCourse(){
   gcLoad();
-  const E = gc.etat, N = gcNext(), when = gcWhen(N), whenS = gcWhen(N, true);
+  const E = gc.etat, N = gcNext(), when = gcWhen(N), whenS = gcWhen(N, true), cN = g3CircuitOf(N);
   const pick = (gc.pick && specById(gc.pick)) || gcMine() || gcDefault();
   const D = E?.derniere, me = D ? gcMeIn(D.resultats) : -1;
   const prize = (k,l) => `<div><b>${l}</b>${COIN} ${COURSE_PRIX[k].j}${COURSE_PRIX[k].sac?` + ${BAG_BY[COURSE_PRIX[k].sac].name}`:""}</div>`;
@@ -8856,7 +8860,7 @@ function viewGrandeCourse(){
     <button class="btn btn-yellow btn-xl" data-action="gc-reg">${ic("flag",18)} M'inscrire pour ${when}</button>`;
   const live = D && Date.now() < D.depart + GC_DUR*1000;
   return `<div class="page-head"><div><button class="back-link" data-action="nav" data-view="jeux">${ic("chevl",14)} Tous les jeux</button><h1>La Grande Course</h1>
-    <p>Deux courses par jour, à 12 h et à 20 h : les billes inscrites dévalent le circuit des lacets. Chaque bille a exactement la même chance de gagner : c'est la surprise !</p></div></div>
+    <p>Deux courses par jour, à 12 h et à 20 h : les billes inscrites dévalent un circuit différent à chaque course. Chaque bille a exactement la même chance de gagner : c'est la surprise !</p></div></div>
   ${gcWaiting().map(gcLotsBanner).join("")}
   <section class="panel gc-hero">
     <div class="gc-main">
@@ -8866,9 +8870,10 @@ function viewGrandeCourse(){
       <div class="gc-prizes">${prize(0,"1er")}${prize(1,"2e")}${prize(2,"3e")}</div>
       <p class="meta">Tous les autres inscrits gagnent ${COURSE_PART} ${CUR.many}. ${E ? `${E.inscrits} inscrit${E.inscrits>1?"s":""} pour l'instant.` : ""} Inscriptions jusqu'à ${N.heure===12?"11 h 59":"19 h 59"} pour cette course : après, c'est pour la suivante. Le choix de ta bille ne change rien à tes chances, c'est juste pour le style !</p>
     </div>
-    <div class="gc-side"><div class="gc-prev">${gcPrevSVG()}<span>Le circuit des lacets</span></div>
-      <p class="meta">Cinq rampes en zigzag, des plots qui font rebondir les billes dans tous les sens, et l'arrivée dans le grand bac bleu. En 3D, avec ta vraie bille !</p>
-      <button class="btn btn-ghost" data-action="gc-test">${ic("play",16)} Voir une course d'essai</button></div>
+    <div class="gc-side"><div class="gc-prev">${gcPrevSVG(cN)}<span>${whenS} : ${esc(G3C[cN].name)}</span></div>
+      <p class="meta">${esc(G3C[cN].desc)} En 3D, avec ta vraie bille !</p>
+      <button class="btn btn-ghost" data-action="gc-test" data-c="${cN}">${ic("play",16)} Voir une course d'essai</button>
+      <div class="gc-try"><small>Essayer un autre circuit</small><div class="chips">${G3_ORDER.filter(c=>c!==cN).map(c=>`<button class="chip" data-action="gc-test" data-c="${c}">${esc(G3C[c].name)}</button>`).join("")}</div></div></div>
   </section>
   ${E?.participants?.length ? `<section class="panel gc-parts"><div class="panel-head"><h2>Les inscrits · ${whenS}</h2><span class="sample-tag">${E.participants.length} bille${E.participants.length>1?"s":""}</span></div>
     <div class="gc-plist">${E.participants.map(x=>{ const sp = gcSpec({bille:x.bille, pseudo:x.pseudo});
@@ -8879,7 +8884,7 @@ function viewGrandeCourse(){
 // une rediffusion : la dernière course de midi, ou la dernière du soir (les plus anciennes ne sont plus sur le site)
 function gcRediff(D){
   const me = gcMeIn(D.resultats), live = Date.now() < D.depart + GC_DUR*1000, h = D.heure||20;
-  return `<section class="panel gc-last"><div class="panel-head"><h2>${live?`<span class="gc-livedot"></span> En direct`:`Course ${gcSlotName(h)}`} · ${new Date(D.depart).toLocaleDateString("fr-FR",{weekday:"long", day:"numeric", month:"long"})} à ${h} h</h2>
+  return `<section class="panel gc-last"><div class="panel-head"><h2 title="${esc(G3C[g3CircuitOf(D)].name)}">${live?`<span class="gc-livedot"></span> En direct`:`Course ${gcSlotName(h)}`} · ${new Date(D.depart).toLocaleDateString("fr-FR",{weekday:"long", day:"numeric", month:"long"})} à ${h} h <small class="gc-cname">${esc(G3C[g3CircuitOf(D)].name)}</small></h2>
       <button class="btn btn-yellow" data-action="gc-watch" data-h="${h}">${ic("play",16)} ${live?"Regarder en direct":"Revoir la course"}</button></div>
     ${live || !gcSeenIt(D) ? `<p class="meta">${live ? "La course est en cours : regarde-la pour découvrir le podium !" : `Regarde la course pour découvrir le podium${me>=0&&!D.lots?" et récupérer tes lots":""} !`}</p>` : `<ol class="gc-res">${D.resultats.slice(0,3).map((x,i)=>`<li>${["🥇","🥈","🥉"][i]} <b>${esc(gcName(x))}</b></li>`).join("")}</ol>
     ${me>=0 ? `<p class="gc-mine">Tu as fini <b>${me+1}${me?"e":"er"}</b> sur ${D.resultats.length} · ${gcLotTxt(D.resultats[me],me)}${D.lots?` <span class="gc-ok">${ic("check",14,3)} récupérés</span>`:""}</p>` : ""}`}
@@ -8887,8 +8892,37 @@ function gcRediff(D){
 }
 const gcName = x => x.bot ? `${x.nom} (bille de la cour)` : x.pseudo;
 function gcAfterRender(){}
-// l'aperçu du circuit des lacets (la course en 3D) : les rampes en zigzag, les plots, le bac d'arrivée
-function gcPrevSVG(){
+// l'aperçu d'un circuit de la course en 3D (un dessin pour chacun)
+function gcPrevSVG(cid="lacets"){
+  const C = G3C[cid] || G3C.lacets, T = C.theme, cols = ["#FFC93F","#5AB8FF","#FF6FB5","#7CE59A","#B07BFF","#FF9F43"];
+  const ball = (x,y,i) => `<circle cx="${x}" cy="${y}" r="9" fill="${cols[i%6]}"/><circle cx="${x-3}" cy="${y-3}" r="3" fill="#fff" opacity=".7"/>`;
+  const frame = body => `<svg viewBox="0 0 680 380" aria-hidden="true"><defs><radialGradient id="gcpv-${cid}" cx=".5" cy=".3" r=".8"><stop offset="0" stop-color="${cbShade(T.bg,40)}"/><stop offset="1" stop-color="${T.bg}"/></radialGradient></defs>
+    <rect width="680" height="380" fill="url(#gcpv-${cid})"/>${body}</svg>`;
+  const flag = (x,y) => `<path d="M${x} ${y}v26M${x+150} ${y}v26" stroke="#fff" stroke-width="4"/><rect x="${x}" y="${y}" width="150" height="12" fill="#fff"/>${Array.from({length:10},(_,i)=>`<rect x="${x+i*15}" y="${y+(i%2?6:0)}" width="15" height="6" fill="#24253D"/>`).join("")}`;
+  // des rampes en zigzag (Toboggan, Moulins, Flipper), avec ce que chacune porte
+  const zig = (nb, deco) => Array.from({length:nb},(_,i)=>{ const y = 58+i*(260/nb)+10, l = i%2 ? 150 : 70, r = i%2 ? 610 : 530, a = i%2 ? -1 : 1, y1 = y - a*14, y2 = y + a*14;
+    const at = f => [l+(r-l)*f, y1+(y2-y1)*f];
+    return `<path d="M${l} ${y1+4}L${r} ${y2+4}L${r} ${y2+14}L${l} ${y1+14}Z" fill="${cbShade(T.ramp,-50)}"/><path d="M${l} ${y1-6}L${r} ${y2-6}L${r} ${y2+4}L${l} ${y1+4}Z" fill="${T.ramp}"/>${deco(i, at, a)}` }).join("")
+    + `<rect x="430" y="340" width="200" height="22" rx="6" fill="${T.tray}"/>${flag(455,306)}`;
+  if(cid==="plinko") return frame(`<rect x="190" y="18" width="300" height="350" rx="10" fill="${cbShade(T.bg,22)}" stroke="${T.ramp}" stroke-width="6"/>
+    ${Array.from({length:4},(_,s)=>{ const y0 = 30+s*84;
+      return Array.from({length:4},(_,row)=>Array.from({length:8},(_,c)=>{ const x = 212+c*36+(row%2?18:0); return x<480 ? `<circle cx="${x}" cy="${y0+8+row*15}" r="4" fill="${T.peg}"/>` : "" }).join("")).join("")
+        + (s<3 ? `<path d="M${s%2?470:210} ${y0+70}L${s%2?225:455} ${y0+78}" stroke="${T.ramp}" stroke-width="6" stroke-linecap="round"/>` : "") }).join("")}
+    <rect x="200" y="350" width="280" height="12" rx="4" fill="${T.tray}"/>${[[260,50],[330,44],[410,60],[300,130],[380,214],[270,300]].map(([x,y],i)=>ball(x,y,i)).join("")}`);
+  if(cid==="spirale"){ const pts = [], back = [];
+    for(let a=0; a<=3.5*TAU; a+=.08){ const x = 340+190*Math.cos(a), y = 40+a*12+42*Math.sin(a); (Math.sin(a)>0 ? pts : back).push([x,y,a]) }
+    const seg = (L, w, c, op) => L.map(([x,y],i)=>i && Math.abs(L[i-1][2]-L[i][2])<.1 ? `<line x1="${L[i-1][0]}" y1="${L[i-1][1]}" x2="${x}" y2="${y}" stroke="${c}" stroke-width="${w}" stroke-linecap="round" opacity="${op}"/>` : "").join("");
+    return frame(`${seg(back, 16, cbShade(T.ramp,-40), .8)}<rect x="300" y="40" width="80" height="300" rx="10" fill="${cbShade(T.ramp,-35)}"/>${seg(pts, 18, T.ramp, 1)}
+      <ellipse cx="340" cy="352" rx="240" ry="20" fill="${T.tray}"/>${[[520,70],[190,120],[480,190],[200,250],[500,300]].map(([x,y],i)=>ball(x,y,i)).join("")}`) }
+  if(cid==="toboggan") return frame(zig(4, (i, at, a)=>[.35,.7].map(f=>{ const [x,y] = at(f); return `<path d="M${x-26} ${y-6}Q${x} ${y-26} ${x+26} ${y-6}" fill="${cbShade(T.ramp,30)}"/>` }).join("")
+    + ball(...at(.5).map((v,j)=>j ? v-34 : v), i) + ball(...at(.2).map((v,j)=>j ? v-12 : v), i+2)));
+  if(cid==="moulins") return frame(zig(4, (i, at)=>[.38,.78].map((f,j)=>{ const [x,y] = at(f), r = (i*40+j*70)%180;
+    return `<rect x="${x-40}" y="${y-14}" width="80" height="8" rx="4" fill="${T.spin}" transform="rotate(${r-90+50} ${x} ${y-10})"/><circle cx="${x}" cy="${y-10}" r="5" fill="#8A8FA3"/>` }).join("") + ball(...at(.58).map((v,j)=>j ? v-12 : v), i)));
+  if(cid==="flipper") return frame(zig(4, (i, at, a)=>Array.from({length:5},(_,s)=>{ const [x,y] = at(.1+s*.18); return `<path d="M${x-30} ${y-6}h${a*0+60}" stroke="${cbShade(T.ramp,40)}" stroke-width="2" opacity=".6"/>` }).join("")
+    + [.25,.45,.65].map((f,j)=>{ const [x,y] = at(f); return `<circle cx="${x}" cy="${y-16}" r="10" fill="${T.bump}"/><circle cx="${x}" cy="${y-16}" r="4" fill="#fff" opacity=".8"/>` }).join("") + ball(...at(.8).map((v,j)=>j ? v-12 : v), i)));
+  return gcPrevLacets();
+}
+function gcPrevLacets(){
   const ramps = [0,1,2,3,4].map(i=>{ const y = 58+i*60, l = i%2 ? 150 : 70, r = i%2 ? 610 : 530, a = i%2 ? -1 : 1;
     const y1 = y - a*14, y2 = y + a*14;
     const pegs = [0,1,2,3,4].map(k=>{ const x = l+60+k*(r-l-120)/4; return (k%2?[-1,1]:[-1.6,0,1.6]).map(z=>`<circle cx="${x+z*7}" cy="${y1+(y2-y1)*(x-l)/(r-l)-9+z*2}" r="4.2" fill="#F4E3C2" stroke="#8A6A40" stroke-width="1"/>`).join("") }).join("");
@@ -9167,51 +9201,233 @@ const GCV = {raf:0};
    1re prend le nom du 1er du tirage, la 2e celui du 2e, etc. La physique est vraie, et le résultat reste celui du serveur.
    Toutes les billes ont la même taille dans la simulation : chaque bille garde exactement la même chance.
    Moteurs chargés à la demande (three.js, cannon-es : importmap en haut du fichier). En cas de souci, la course 2D prend le relais. */
-const G3 = {RAMPS:5, LEN:30, WID:6, STEP:8, ANG:12*Math.PI/180, R:.42, DT:1/60, MAXT:150};
+const G3 = {R:.42, DT:1/60, MAXT:150};
 let G3LIB = null;
 async function g3Load(){
   if(G3LIB) return G3LIB;
   const [THREE, CANNON] = await Promise.all([import("three"), import("cannon-es")]);
   return G3LIB = {THREE, CANNON};
 }
-function g3World(CANNON, seed, n){
-  const {RAMPS, LEN, WID, STEP, ANG, R} = G3, r = rng(seed);
-  const world = new CANNON.World({gravity: new CANNON.Vec3(0,-9.81,0)});
-  world.allowSleep = false; world.broadphase = new CANNON.SAPBroadphase(world); world.solver.iterations = 14;
-  const mat = new CANNON.Material("piste"), bmat = new CANNON.Material("bille");
-  world.addContactMaterial(new CANNON.ContactMaterial(mat, bmat, {friction:.04, restitution:.35}));
-  world.addContactMaterial(new CANNON.ContactMaterial(bmat, bmat, {friction:.02, restitution:.75}));
-  const statics = [];
-  const add = (b, d) => { b.aabbNeedsUpdate = true; world.addBody(b); statics.push(d) };   // (sinon la zone de choc reste à l'origine)
-  const box = (sx,sy,sz, x,y,z, rotZ=0, kind="ramp") => { const b = new CANNON.Body({mass:0, material:mat, shape:new CANNON.Box(new CANNON.Vec3(sx/2,sy/2,sz/2))});
-    b.position.set(x,y,z); b.quaternion.setFromEuler(0,0,rotZ); add(b, {kind, size:[sx,sy,sz], pos:[x,y,z], rotZ}) };
-  const peg = (x,y,z,h=1.4) => { const b = new CANNON.Body({mass:0, material:mat, shape:new CANNON.Cylinder(.22,.22,h,12)}); b.position.set(x,y,z); add(b, {kind:"peg", size:[.22,h], pos:[x,y,z]}) };
+// Les circuits de la Grande Course. Chacun pose ses pièces avec les outils de g3Kit et dit :
+// où partent les billes (starts), où est l'arrivée (finishY), le chemin suivi (path : pour le classement en direct, la caméra
+// et les pichenettes), et d'où la caméra regarde (cam). Un circuit par course : celui de midi et celui du soir sont toujours différents.
+// Les pièces qui bougent (moulins) tournent à vitesse fixe : tout le monde voit exactement la même course.
+const G3_ORDER = ["lacets","plinko","spirale","toboggan","moulins","flipper"];
+const g3DayNo = jour => Math.round(Date.UTC(...jour.split("-").map((x,i)=>i===1 ? x-1 : +x))/864e5);
+// le circuit d'une course : midi et soir passent chacun par tous les circuits, un par jour, et le soir a 3 crans d'avance
+// sur midi (jamais le même circuit deux fois dans la journée)
+const g3CircuitOf = race => G3C[race.circuit] ? race.circuit : G3_ORDER[((g3DayNo(race.jour||"2026-10-03") + ((race.heure||20)===20 ? 3 : 0)) % G3_ORDER.length + G3_ORDER.length) % G3_ORDER.length];
+
+// quaternion à partir de trois axes (colonnes d'une matrice de rotation)
+function g3Basis(X, Y, Z){
+  const [m00,m10,m20] = X, [m01,m11,m21] = Y, [m02,m12,m22] = Z, tr = m00+m11+m22; let x, y, z, w;
+  if(tr>0){ const s = .5/Math.sqrt(tr+1); w = .25/s; x = (m21-m12)*s; y = (m02-m20)*s; z = (m10-m01)*s }
+  else if(m00>m11 && m00>m22){ const s = 2*Math.sqrt(1+m00-m11-m22); w = (m21-m12)/s; x = .25*s; y = (m01+m10)/s; z = (m02+m20)/s }
+  else if(m11>m22){ const s = 2*Math.sqrt(1+m11-m00-m22); w = (m02-m20)/s; x = (m01+m10)/s; y = .25*s; z = (m12+m21)/s }
+  else { const s = 2*Math.sqrt(1+m22-m00-m11); w = (m10-m01)/s; x = (m02+m20)/s; y = (m12+m21)/s; z = .25*s }
+  return [x,y,z,w];
+}
+const v3 = {sub:(a,b)=>[a[0]-b[0],a[1]-b[1],a[2]-b[2]], add:(a,b)=>[a[0]+b[0],a[1]+b[1],a[2]+b[2]], mul:(a,k)=>[a[0]*k,a[1]*k,a[2]*k],
+  dot:(a,b)=>a[0]*b[0]+a[1]*b[1]+a[2]*b[2], cross:(a,b)=>[a[1]*b[2]-a[2]*b[1], a[2]*b[0]-a[0]*b[2], a[0]*b[1]-a[1]*b[0]],
+  norm:a=>{ const l = Math.hypot(...a)||1; return [a[0]/l,a[1]/l,a[2]/l] }};
+
+// les outils : une boîte, un cylindre (un plot), une pièce qui tourne ; chaque pièce est notée pour être dessinée en 3D
+function g3Kit(CANNON, world){
+  const M = {piste:new CANNON.Material("piste"), bille:new CANNON.Material("bille"), rebond:new CANNON.Material("rebond")};
+  world.addContactMaterial(new CANNON.ContactMaterial(M.piste, M.bille, {friction:.04, restitution:.35}));
+  world.addContactMaterial(new CANNON.ContactMaterial(M.bille, M.bille, {friction:.02, restitution:.75}));
+  world.addContactMaterial(new CANNON.ContactMaterial(M.rebond, M.bille, {friction:0, restitution:1.1}));
+  const statics = [], kin = [];
+  const put = (shape, info, pos, rot, kind, mat, spin) => {
+    const b = new CANNON.Body({mass:0, material:M[mat||"piste"], shape, type:spin ? CANNON.Body.KINEMATIC : CANNON.Body.STATIC});
+    b.position.set(...pos);
+    if(rot && rot.length===4) b.quaternion.set(...rot); else if(rot) b.quaternion.setFromEuler(...rot);
+    if(spin) b.angularVelocity.set(...spin);
+    b.aabbNeedsUpdate = true; world.addBody(b);   // (sinon la zone de choc reste à l'origine)
+    const d = {kind, ...info, pos, quat:[b.quaternion.x, b.quaternion.y, b.quaternion.z, b.quaternion.w]};
+    if(spin){ d.body = b; kin.push(d) } else statics.push(d);
+    return b };
+  return {M, statics, kin,
+    box:(size, pos, rot, kind="ramp", mat) => put(new CANNON.Box(new CANNON.Vec3(size[0]/2, size[1]/2, size[2]/2)), {shape:"box", size}, pos, rot, kind, mat),
+    cyl:(r, h, pos, rot, kind="peg", mat) => put(new CANNON.Cylinder(r, r, h, 14), {shape:"cyl", size:[r,h]}, pos, rot, kind, mat),
+    // un plot entre deux vitres : pour la physique une petite sphère (la bille ne bouge pas en profondeur), dessiné comme un cylindre
+    pin:(r, h, pos, kind="peg", mat) => { const b = new CANNON.Body({mass:0, material:M[mat||"piste"], shape:new CANNON.Sphere(r)}); b.position.set(...pos); b.aabbNeedsUpdate = true; world.addBody(b);
+      statics.push({kind, shape:"cyl", size:[r,h], pos, quat:[Math.SQRT1_2,0,0,Math.SQRT1_2]}); return b },
+    // du décor seulement (pas de choc)
+    look:(shape, size, pos, quat, kind) => statics.push({kind, shape, size, pos, quat:quat||[0,0,0,1]}),
+    spin:(size, pos, rot, w) => put(new CANNON.Box(new CANNON.Vec3(size[0]/2, size[1]/2, size[2]/2)), {shape:"box", size}, pos, rot, "spin", "piste", w)};
+}
+
+// Rampes en zigzag (les lacets, le toboggan, les moulins, le flipper) : chaque rampe descend dans un sens, la bille tombe au bout
+// sur la suivante. deco(i, info) ajoute les obstacles de la rampe i. Renvoie le chemin et le bac d'arrivée.
+function g3Zigzag(k, o, deco){
+  const {RAMPS, LEN, WID, STEP, ANG, wall=3} = o, ext = 2.6, path = [];
   for(let i=0;i<RAMPS;i++){
-    const dir = i%2 ? -1 : 1, y = i*-STEP, rot = -dir*ANG, ext = 2.6, cx = -dir*ext/2;
+    const dir = i%2 ? -1 : 1, y = i*-STEP, rot = -dir*ANG, cx = -dir*ext/2;
     const sY = x => y - Math.tan(ANG)*dir*(x-cx);
-    box(LEN+ext, .4, WID, cx, y, 0, rot);
-    box(LEN+ext, 3, .3, cx, y+1.4, WID/2+.15, rot, "wall"); box(LEN+ext, 3, .3, cx, y+1.4, -WID/2-.15, rot, "wall");
-    if(i<RAMPS-1){ const xe = dir*(LEN/2+1.4); box(.4, STEP+1.6, WID+.6, xe, y-STEP/2+.6, 0, 0, "end") }
-    for(let k=0;k<5;k++){ const x = -dir*(LEN/2-6) + dir*k*(LEN-12)/4, zs = k%2 ? [-.95,.95] : [-1.75,0,1.75];
-      zs.forEach(z=>peg(x, sY(x)+.7, z + (r()-.5)*.3)) }
+    if(!o.noRamp) k.box([LEN+ext, .4, WID], [cx, y, 0], [0,0,rot]);
+    k.box([LEN+ext, wall, .3], [cx, y+wall/2-.1, WID/2+.15], [0,0,rot], "wall"); k.box([LEN+ext, wall, .3], [cx, y+wall/2-.1, -WID/2-.15], [0,0,rot], "wall");
+    if(i<RAMPS-1){ const xe = dir*(LEN/2+1.4); k.box([.4, STEP+1.6, WID+.6], [xe, y-STEP/2+.6, 0], [0,0,0], "end") }
+    path.push([-dir*(LEN/2-1), sY(-dir*(LEN/2-1))+.5, 0], [dir*(LEN/2), sY(dir*LEN/2)+.5, 0]);
+    deco && deco(i, {dir, y, rot, cx, sY});
   }
   const yl = (RAMPS-1)*-STEP, dirL = (RAMPS-1)%2 ? -1 : 1, xf = dirL*(LEN/2+6), yt = yl-STEP;
-  box(14, .4, WID+4, xf, yt+.4, 0, 0, "tray");
-  box(.4, 3, WID+4, xf+dirL*7, yt+1.8, 0, 0, "end"); box(.4, 3, WID+4, xf-dirL*7, yt+1.8, 0, 0, "end");
-  box(14, 3, .4, xf, yt+1.8, WID/2+2, 0, "wall"); box(14, 3, .4, xf, yt+1.8, -WID/2-2, 0, "wall");
-  const balls = [], rows = Math.ceil(n/4);
-  for(let i=0;i<n;i++){
-    const b = new CANNON.Body({mass:1, material:bmat, shape:new CANNON.Sphere(R), linearDamping:.02, angularDamping:.05});
-    const row = Math.floor(i/4), col = i%4, x = -LEN/2 + .8 + row*1.05 + (r()-.5)*.05;
-    b.position.set(x, -Math.tan(ANG)*(x+1.3) + .2 + R + .03, (col-1.5)*1.2 + (r()-.5)*.05);
-    world.addBody(b); balls.push(b);
-  }
-  const gx = -LEN/2 + .8 + rows*1.05 + .6, gate = new CANNON.Body({mass:0, material:mat, shape:new CANNON.Box(new CANNON.Vec3(.15,1,WID/2))});
-  gate.position.set(gx, -Math.tan(ANG)*(gx+1.3)+1.2, 0); gate.aabbNeedsUpdate = true; world.addBody(gate);
-  return {world, balls, statics, gate, finishY:yt+1.2};
+  k.box([14, .4, WID+4], [xf, yt+.4, 0], [0,0,0], "tray");
+  k.box([.4, 3, WID+4], [xf+dirL*7, yt+1.8, 0], [0,0,0], "end"); k.box([.4, 3, WID+4], [xf-dirL*7, yt+1.8, 0], [0,0,0], "end");
+  k.box([14, 3, .4], [xf, yt+1.8, WID/2+2], [0,0,0], "wall"); k.box([14, 3, .4], [xf, yt+1.8, -WID/2-2], [0,0,0], "wall");
+  path.push([xf, yt+1, 0]);
+  return {path, finishY:yt+1.2, floorY:yt-3};
 }
-function g3Simulate(CANNON, seed, n){
-  const {DT, MAXT, STEP} = G3, W = g3World(CANNON, seed, n), frames = [], fin = new Array(n).fill(null);
+// la ligne de départ des rampes en zigzag : 4 billes de front, en haut de la première rampe, derrière une barrière
+function g3ZigStart(k, o, n, r){
+  const {LEN, ANG, WID} = o, lanes = WID>=7 ? 5 : 4, rows = Math.ceil(n/lanes), starts = [];
+  for(let i=0;i<n;i++){ const row = Math.floor(i/lanes), col = i%lanes, x = -LEN/2 + .8 + row*1.05 + (r()-.5)*.05;
+    starts.push([x, -Math.tan(ANG)*(x+1.3) + .2 + G3.R + .03, (col-(lanes-1)/2)*1.2 + (r()-.5)*.05]) }
+  const gx = -LEN/2 + .8 + rows*1.05 + .6;
+  return {starts, gate:k.box([.3, 2, WID], [gx, -Math.tan(ANG)*(gx+1.3)+1.2, 0], [0,0,0], "gate")};
+}
+// la caméra des rampes : sur le côté de la piste, un peu en arrière de la bille
+const g3ZigCam = (p, T) => [p[0] - 4*Math.sign(T[0]||1), p[1]+3, p[2]+14];
+
+const G3C = {
+  // Cinq rampes en zigzag et des plots qui font rebondir les billes dans tous les sens
+  lacets:{name:"Le circuit des lacets", desc:"Cinq rampes en zigzag, des plots qui font rebondir les billes dans tous les sens, et l'arrivée dans le grand bac bleu.",
+    theme:{bg:"#1B1428", ramp:"#C9955C", tray:"#2E8CFF"},
+    build(k, r, n){ const o = {RAMPS:5, LEN:30, WID:6, STEP:8, ANG:12*Math.PI/180};
+      const z = g3Zigzag(k, o, (i, {dir, sY})=>{
+        for(let j=0;j<5;j++){ const x = -dir*(o.LEN/2-6) + dir*j*(o.LEN-12)/4, zs = j%2 ? [-.95,.95] : [-1.75,0,1.75];
+          zs.forEach(zz=>k.cyl(.22, 1.4, [x, sY(x)+.7, zz + (r()-.5)*.3])) } });
+      return {...z, ...g3ZigStart(k, o, n, r), cam:g3ZigCam} }},
+
+  // Un mur géant de plots, entre deux vitres : les billes tombent de plot en plot, étage après étage
+  plinko:{name:"Le Grand Plinko", desc:"Un mur géant de plots entre deux vitres : les billes tombent de plot en plot sur quatre étages, et chaque étage les renvoie de l'autre côté.",
+    theme:{bg:"#120B24", ramp:"#7B4FD6", tray:"#FF4FD8", peg:"#FFD34D"}, axis:1,
+    build(k, r, n){
+      const W = 15, GAP = 1.0, D = GAP+.6, STAGES = 5, SH = 15, rows = 7, path = [];
+      const top = 4, bottom = top - STAGES*SH - 4;
+      // le fond, la vitre de devant, les deux côtés
+      const H = top - bottom + 6, cy = (top + bottom)/2 + 2;
+      k.box([W+1, H, .3], [0, cy, -GAP/2-.15], [0,0,0], "back"); k.box([W+1, H, .3], [0, cy, GAP/2+.15], [0,0,0], "glass");
+      k.box([.4, H, D], [-W/2-.2, cy, 0], [0,0,0], "wall2"); k.box([.4, H, D], [W/2+.2, cy, 0], [0,0,0], "wall2");
+      for(let s=0;s<STAGES;s++){
+        const y0 = top - s*SH, side = s%2 ? -1 : 1;
+        path.push([0, y0, 0]);
+        // les plots, en quinconce
+        for(let row=0; row<rows; row++){ const y = y0 - 2 - row*1.55, off = row%2 ? .9 : 0;
+          for(let x=-W/2+1.2+off; x<W/2-.9; x+=1.8) k.pin(.2, GAP*.9, [x + (r()-.5)*.12, y, 0]) }
+        // l'étagère du bas de l'étage : un peu penchée, ouverte d'un côté (pas de côté pour le dernier : le bac)
+        if(s<STAGES-1){ const ys = y0 - 2 - rows*1.55 - .6, len = W-1.7, xs = -side*.85;
+          k.box([len, .3, D], [xs, ys, 0], [0,0,-side*6*Math.PI/180], "ramp");
+          path.push([-side*W/2*.7, ys+.5, 0], [side*(W/2-.8), ys-.2, 0]) }
+      }
+      k.box([W+1, .3, D], [0, top+3.8, 0], [0,0,0], "glass");   // le couvercle
+      const yb = top - STAGES*SH + .5;
+      k.box([W, .4, D], [0, yb-1.5, 0], [0,0,0], "tray"); path.push([0, yb-1, 0]);
+      // départ : les billes alignées tout en haut sur un plancher qui s'ouvre
+      const cols = 14, starts = [];
+      for(let i=0;i<n;i++){ const c = i%cols, rw = Math.floor(i/cols); starts.push([-W/2+.75 + c*(W-1.5)/(cols-1) + (r()-.5)*.04, top + 1 + rw*.95, 0]) }
+      return {path, starts, gate:k.box([W, .3, D], [0, top+.4, 0], [0,0,0], "gate"), finishY:yb-.5, floorY:bottom-2,
+        cam:p=>[p[0]*.55, p[1]+1.5, 21], look:p=>[p[0]*.8, p[1]-2, 0]} }},
+
+  // Une grande spirale qui tourne autour d'une tour : les billes collent au bord en prenant de la vitesse
+  spirale:{name:"L'Entonnoir", desc:"Une grande spirale qui tourne autour d'une tour : les billes descendent en tournant, collées au bord, jusqu'au fond.",
+    theme:{bg:"#0E1A2B", ramp:"#3FB6A8", tray:"#FFB547"}, axis:1,
+    build(k, r, n){
+      const RM = 7, WID = 2.8, TURNS = 3.5, NS = 28, DROP = 6, BANK = 9*Math.PI/180, path = [];
+      const dA = TAU/NS, N = TURNS*NS, slope = DROP/(TAU*RM), RO = RM+WID/2, len = 2*RO*Math.sin(dA/2)*1.04;
+      const at = a => [RM*Math.cos(a), -a/TAU*DROP, RM*Math.sin(a)];
+      for(let j=0;j<N;j++){ const a = (j+.5)*dA, P = at(a), rad = [Math.cos(a),0,Math.sin(a)];
+        const X = v3.norm([-Math.sin(a), -slope, Math.cos(a)]);
+        // relevée vers l'extérieur : le bord extérieur est plus haut
+        let Z = v3.norm(v3.add(v3.mul(rad, Math.cos(BANK)), [0, Math.sin(BANK), 0])); const Y = v3.norm(v3.cross(Z, X)); Z = v3.cross(X, Y);
+        const q = g3Basis(X, Y, Z);
+        k.box([len, .35, WID], P, q, "ramp");
+        const Xw = v3.norm([-Math.sin(a), -slope, Math.cos(a)]), Yw = [0,1,0], Zw = v3.norm(v3.cross(Xw, Yw));
+        const qw = g3Basis(Xw, v3.cross(Zw, Xw), Zw);
+        k.box([len, 2.2, .25], v3.add(P, v3.add(v3.mul(rad, WID/2+.2), [0, .9, 0])), qw, "wall");
+        k.box([len*.82, 1.2, .25], v3.add(P, v3.add(v3.mul(rad, -WID/2-.15), [0, .5, 0])), qw, "inner");
+        if(j%2===0) path.push(v3.add(P, [0, .5, 0]));
+      }
+      const yEnd = at(N*dA)[1];
+      // la tour au centre, et le grand bac rond en bas
+      const tH = -yEnd + 6; k.look("cyl", [RM-WID/2-.1, tH], [0, yEnd + tH/2 - 3, 0], null, "tower");
+      const yb = yEnd - 4; k.box([2*RO+6, .4, 2*RO+6], [0, yb, 0], [0,0,0], "tray");
+      [[1,0],[-1,0],[0,1],[0,-1]].forEach(([sx,sz])=>k.box(sx ? [.4, 3, 2*RO+6] : [2*RO+6, 3, .4], [sx*(RO+3), yb+1.6, sz*(RO+3)], [0,0,0], "wall"));
+      path.push([RM+2, yb+1, 0]);
+      // départ : trois files sur le début de la spirale, derrière une barrière
+      const starts = [];
+      for(let i=0;i<n;i++){ const row = Math.floor(i/3), lane = i%3, a = .25 + row*1.05/RM + (r()-.5)*.01, P = at(a), rr = RM + (lane-1)*.85 + (r()-.5)*.08;
+        starts.push([rr*Math.cos(a), P[1] + .2 + G3.R + .05 + .2, rr*Math.sin(a)]) }
+      const ag = .25 + Math.ceil(n/3)*1.05/RM + .12, G = at(ag);
+      const gate = k.box([.3, 2, WID], v3.add(G, [0, .9, 0]), g3Basis(v3.norm([-Math.sin(ag),0,Math.cos(ag)]), [0,1,0], v3.cross(v3.norm([-Math.sin(ag),0,Math.cos(ag)]), [0,1,0])), "gate");
+      return {path, starts, gate, finishY:yb+1, floorY:yb-1,
+        cam:p=>{ const a = Math.atan2(p[2], p[0]); return [Math.cos(a)*(RM+12), p[1]+6, Math.sin(a)*(RM+12)] }} }},
+
+  // De longues pentes raides, des tremplins et des marches : ça saute !
+  toboggan:{name:"Le Toboggan", desc:"De longues pentes raides, des tremplins qui font décoller les billes et des marches pour retomber plus bas : ça saute dans tous les sens !",
+    theme:{bg:"#1E1410", ramp:"#E8743B", tray:"#2FA35A"},
+    build(k, r, n){ const o = {RAMPS:5, LEN:34, WID:5, STEP:9, ANG:10*Math.PI/180, wall:3.4};
+      const z = g3Zigzag(k, o, (i, {dir, sY, rot})=>{
+        // deux tremplins par rampe, et des bosses rondes en travers
+        [.35,.7].forEach((f, j)=>{ const x = -dir*o.LEN/2 + dir*f*o.LEN;
+          k.cyl(2.2, o.WID, [x, sY(x)+.2-2.2+.3, 0], [Math.PI/2,0,0], "kick") });
+        [.18,.52,.86].forEach(f=>{ const x = -dir*o.LEN/2 + dir*f*o.LEN; k.cyl(.35, o.WID, [x, sY(x), 0], [Math.PI/2,0,0], "bump") });
+        // quelques plots au hasard pour départager le peloton
+        for(let j=0;j<3;j++){ const x = -dir*o.LEN/2 + dir*(.25+j*.25+(r()-.5)*.06)*o.LEN; k.cyl(.22, 1.4, [x, sY(x)+.7, (r()-.5)*2.6]) } });
+      return {...z, ...g3ZigStart(k, o, n, r), cam:g3ZigCam} }},
+
+  // Des pales qui tournent en travers de la piste et repoussent les billes
+  moulins:{name:"Les Moulins", desc:"Des pales qui tournent en travers de la piste : elles balaient les billes, les retiennent ou les lancent. Il faut passer au bon moment !",
+    theme:{bg:"#101A14", ramp:"#9C7A4E", tray:"#5AB8FF", spin:"#FFD34D"},
+    build(k, r, n){ const o = {RAMPS:4, LEN:32, WID:7, STEP:9.5, ANG:12.5*Math.PI/180};
+      const z = g3Zigzag(k, o, (i, {dir, sY, rot})=>{
+        const nrm = [-Math.sin(rot), Math.cos(rot), 0];
+        [.38,.78].forEach((f, j)=>{ const x = -dir*o.LEN/2 + dir*f*o.LEN, w = ((i+j)%2 ? 1 : -1)*(1.1 + .25*j);
+          const c = v3.add([x, sY(x), 0], v3.mul(nrm, .55));
+          k.spin([4.6, .5, .5], c, [0,0,rot], v3.mul(nrm, w));
+          k.cyl(.3, 1.6, v3.add([x, sY(x), 0], v3.mul(nrm, .8)), [0,0,rot], "axle") });
+        for(let j=0;j<2;j++){ const x = -dir*o.LEN/2 + dir*(.45+j*.3)*o.LEN; k.cyl(.22, 1.4, [x, sY(x)+.7, (r()-.5)*4]) } });
+      return {...z, ...g3ZigStart(k, o, n, r), cam:g3ZigCam} }},
+
+  // Un grand escalier de flipper : des marches et des champignons qui renvoient les billes
+  flipper:{name:"Le Flipper", desc:"Un grand escalier de flipper : les billes dégringolent les marches et rebondissent sur des champignons à ressort.",
+    theme:{bg:"#1A0F22", ramp:"#3A4E9C", tray:"#FF6FB5", bump:"#FF4F7A"},
+    build(k, r, n){ const o = {RAMPS:4, LEN:34, WID:8, STEP:9.5, ANG:12*Math.PI/180, noRamp:true};
+      const z = g3Zigzag(k, o, (i, {dir, y, rot, cx, sY})=>{
+        // la rampe en marches : 6 marches, chacune un peu plus bas que la droite de la pente
+        const ext = 2.6, L = o.LEN+ext, x0 = cx - dir*L/2, sl = L/6;
+        for(let s=0;s<6;s++){ const xc = x0 + dir*(s+.5)*sl; k.box([sl+.3, .4, o.WID], [xc, sY(xc), 0], [0,0,rot*.55], "ramp") }
+        // les champignons à ressort, en triangles
+        for(let j=0;j<5;j++){ const f = .2 + j*.13, x = -dir*o.LEN/2 + dir*f*o.LEN, zs = j%2 ? [-1.3, 1.3] : [-2.3, 0, 2.3];
+          zs.forEach(zz=>k.cyl(.45, 1.2, [x, sY(x)+.4, zz + (r()-.5)*.3], null, "bump", "rebond")) }
+});
+      return {...z, ...g3ZigStart(k, o, n, r), cam:g3ZigCam} }},
+};
+
+// la piste d'une course : les pièces du circuit, les billes au départ et leur barrière
+function g3World(CANNON, seed, n, cid="lacets"){
+  const r = rng(seed), C = G3C[cid] || G3C.lacets;
+  const world = new CANNON.World({gravity: new CANNON.Vec3(0,-9.81,0)});
+  world.allowSleep = false; world.broadphase = new CANNON.SAPBroadphase(world); world.solver.iterations = 14;
+  if(C.axis!=null) world.broadphase.axisIndex = C.axis;
+  const k = g3Kit(CANNON, world), T = C.build(k, r, n);
+  const balls = T.starts.map(p=>{ const b = new CANNON.Body({mass:1, material:k.M.bille, shape:new CANNON.Sphere(G3.R), linearDamping:.02, angularDamping:.05});
+    b.position.set(...p); world.addBody(b); return b });
+  // le chemin : longueurs cumulées, pour savoir où en est chaque bille
+  const P = T.path, cum = [0]; for(let i=1;i<P.length;i++) cum.push(cum[i-1] + Math.hypot(...v3.sub(P[i], P[i-1])));
+  const statics = k.statics.filter(s=>s.kind!=="gate");
+  return {world, balls, statics, kin:k.kin, gate:T.gate, finishY:T.finishY, floorY:T.floorY, path:P, cum, cam:T.cam, look:T.look, C, id:cid in G3C ? cid : "lacets"};
+}
+// où en est une bille sur le chemin : la distance parcourue, et la direction de la piste à cet endroit
+function g3Where(W, x, y, z){
+  const P = W.path; let best = 1e9, s = 0, T = [1,0,0];
+  for(let i=1;i<P.length;i++){ const a = P[i-1], d = v3.sub(P[i], a), L2 = v3.dot(d,d)||1, t = Math.max(0, Math.min(1, v3.dot(v3.sub([x,y,z], a), d)/L2));
+    const q = v3.add(a, v3.mul(d, t)), e = Math.hypot(x-q[0], (y-q[1])*1.6, z-q[2]);
+    if(e<best){ best = e; s = W.cum[i-1] + t*Math.sqrt(L2); T = v3.norm(d) } }
+  return {s, T};
+}
+function g3Simulate(CANNON, seed, n, cid){
+  const {DT, MAXT} = G3, W = g3World(CANNON, seed, n, cid), frames = [], kf = [], fin = new Array(n).fill(null);
   // les chocs (pour le son) : image -> [force bille contre bille, force contre le décor, bille concernée]
   const hits = new Map(); let curF = 0;
   W.balls.forEach((b,i)=>b.addEventListener("collide", e=>{ const o = e.body, ball = o.mass>0; if(ball && W.balls.indexOf(o)<i) return;
@@ -9222,15 +9438,17 @@ function g3Simulate(CANNON, seed, n){
     curF = f;
     if(t>=3 && W.gate.world) W.world.removeBody(W.gate);   // 3 s de feux, puis la barrière tombe
     W.world.step(DT); t += DT;
-    // une bille calée plus de 2 s reçoit une petite pichenette vers le bas de la pente
+    // une bille calée plus de 2 s reçoit une petite pichenette dans le sens de la piste
     W.balls.forEach((b,i)=>{ if(fin[i]!=null || t<4) return; b.still = b.velocity.length()<.08 ? (b.still||0)+DT : 0;
-      if(b.still>2){ b.still = 0; const d = Math.max(0,Math.round(-b.position.y/STEP))%2 ? -1 : 1; b.applyImpulse(new CANNON.Vec3(d*1.2, .6, (b.position.z>0?-1:1)*.4)) } });
+      if(b.still>2){ b.still = 0; b.kicks = (b.kicks||0)+1; const {T} = g3Where(W, b.position.x, b.position.y, b.position.z), side = i%2 ? 1 : -1, p = Math.min(4, b.kicks);
+        b.applyImpulse(new CANNON.Vec3(T[0]*1.2*p + side*T[2]*.4, .6*p, T[2]*1.2*p - side*T[0]*.4)) } });
     const fr = new Float32Array(n*7); W.balls.forEach((b,i)=>fr.set([b.position.x,b.position.y,b.position.z,b.quaternion.x,b.quaternion.y,b.quaternion.z,b.quaternion.w], i*7)); frames.push(fr);
+    if(W.kin.length){ const kq = new Float32Array(W.kin.length*4); W.kin.forEach((d,i)=>kq.set([d.body.quaternion.x,d.body.quaternion.y,d.body.quaternion.z,d.body.quaternion.w], i*4)); kf.push(kq) }
     W.balls.forEach((b,i)=>{ if(fin[i]==null && b.position.y < W.finishY) fin[i] = t });
     if(fin.every(x=>x!=null) && t>Math.max(...fin)+2) break;
   }
   fin.forEach((x,i)=>{ if(x==null) fin[i] = 900+i });
-  return {W, frames, fin, hits};
+  return {W, frames, kf, fin, hits};
 }
 // la texture d'une bille : les couleurs de son coloris, en filets dans le verre (dessinée une fois)
 function g3Texture(THREE, spec, k){
@@ -9241,7 +9459,6 @@ function g3Texture(THREE, spec, k){
     const y0 = r()*128, a = 10+r()*20, f = 25+r()*30; x.moveTo(0,y0); for(let s=0;s<=256;s+=8) x.lineTo(s, y0+Math.sin(s/f+i)*a); x.stroke() }
   const tx = new THREE.CanvasTexture(c); tx.colorSpace = THREE.SRGBColorSpace; return tx;
 }
-const g3progress = (x, y) => { const lvl = Math.max(0, Math.min(G3.RAMPS, Math.round(-y/G3.STEP))), dir = lvl%2 ? -1 : 1; return lvl*1000 + (lvl<G3.RAMPS ? dir*x + G3.LEN/2 : 0) };
 
 async function gcWatch3D(race){
   const ov = document.getElementById("gc-ov");
@@ -9251,14 +9468,15 @@ async function gcWatch3D(race){
   const {THREE, CANNON} = L;
   const list = race.resultats, n = list.length;
   await new Promise(r=>setTimeout(r, 30));   // laisse le message s'afficher avant le calcul
-  const sim = g3Simulate(CANNON, (race.graine>>>0) || 1, n);
+  const cid = g3CircuitOf(race), C = G3C[cid], TH = C.theme;
+  const sim = g3Simulate(CANNON, (race.graine>>>0) || 1, n, cid), W = sim.W;
   // la bille arrivée k-ième dans la simulation prend le k-ième du tirage du serveur
   const order = sim.fin.map((x,i)=>i).sort((a,b)=>sim.fin[a]-sim.fin[b]);
   const R = list.map((x,i)=>({...x, i, spec:gcSpec(x), me:!!x.joueur && x.joueur===(sync.uid||GC_ME)}));
   const who = []; order.forEach((ball, place)=>{ who[ball] = R[place]; R[place].fin = sim.fin[ball]; R[place].ball = ball });
   const nm = o => o.me ? "Toi" : o.bot ? o.nom : o.pseudo;
   ov.innerHTML = `<div class="g3-stage" id="g3-stage"></div><div class="gc-vig"></div><div class="g3-labels" id="g3-labels"></div>
-    <div class="gc-top"><div class="chip"><small>${new Date(race.depart).toLocaleDateString("fr-FR",{weekday:"long", day:"numeric"})}${race.test?" · course d'essai":""}</small><b>Le circuit des lacets</b></div>
+    <div class="gc-top"><div class="chip"><small>${new Date(race.depart).toLocaleDateString("fr-FR",{weekday:"long", day:"numeric"})}${race.test?" · course d'essai":""}</small><b>${esc(C.name)}</b></div>
       <div class="chip" id="gc-chrono"><small>Temps</small><b>—</b></div><span class="sp"></span>
       <button class="btn btn-yellow gc-skip" data-action="g3-cam" id="g3-cam" hidden>${ic("flag",14)} La tête de course</button>
       <button class="btn btn-ghost gc-skip" data-action="g3-skip" id="g3-skip">Voir l'arrivée</button>
@@ -9274,18 +9492,30 @@ async function gcWatch3D(race){
   renderer.setPixelRatio(Math.min(2, devicePixelRatio)); renderer.setSize(stage.clientWidth, stage.clientHeight);
   renderer.shadowMap.enabled = true; renderer.shadowMap.type = THREE.PCFSoftShadowMap; renderer.toneMapping = THREE.ACESFilmicToneMapping;
   stage.appendChild(renderer.domElement);
-  const scene = new THREE.Scene(); scene.background = new THREE.Color("#1B1428"); scene.fog = new THREE.Fog("#1B1428", 40, 120);
+  const scene = new THREE.Scene(); scene.background = new THREE.Color(TH.bg); scene.fog = new THREE.Fog(TH.bg, 40, 120);
   const camera = new THREE.PerspectiveCamera(50, stage.clientWidth/stage.clientHeight, .1, 300);
   scene.add(new THREE.HemisphereLight("#FFE9C9", "#2A1E3A", 1.1));
   const sun = new THREE.DirectionalLight("#FFF4DE", 2.2); sun.position.set(-20,40,25); sun.castShadow = true;
-  sun.shadow.mapSize.set(2048,2048); Object.assign(sun.shadow.camera, {left:-40, right:40, top:40, bottom:-45, near:1, far:130}); scene.add(sun);
-  const MAT = {ramp:new THREE.MeshStandardMaterial({color:"#C9955C", roughness:.65}), tray:new THREE.MeshStandardMaterial({color:"#2E8CFF", roughness:.5}),
-    wall:new THREE.MeshPhysicalMaterial({color:"#BFE6FF", roughness:.1, transparent:true, opacity:.28}), end:new THREE.MeshPhysicalMaterial({color:"#BFE6FF", roughness:.1, transparent:true, opacity:.4}),
-    peg:new THREE.MeshStandardMaterial({color:"#F4E3C2", roughness:.35, metalness:.2})};
-  sim.W.statics.forEach(s=>{ const m = s.kind==="peg" ? new THREE.Mesh(new THREE.CylinderGeometry(s.size[0], s.size[0], s.size[1], 16), MAT.peg) : new THREE.Mesh(new THREE.BoxGeometry(...s.size), MAT[s.kind]);
-    if(s.rotZ) m.rotation.z = s.rotZ; m.position.set(...s.pos); m.castShadow = s.kind==="ramp"||s.kind==="peg"; m.receiveShadow = true; scene.add(m) });
-  const floor = new THREE.Mesh(new THREE.PlaneGeometry(300,300), new THREE.MeshStandardMaterial({color:"#2A2036", roughness:1}));
-  floor.rotation.x = -Math.PI/2; floor.position.y = -G3.RAMPS*G3.STEP-4; floor.receiveShadow = true; scene.add(floor);
+  // l'ombre couvre tout le circuit, quelle que soit sa forme
+  const bb = [[1e9,1e9,1e9],[-1e9,-1e9,-1e9]]; W.statics.forEach(s=>s.pos.forEach((p,j)=>{ bb[0][j] = Math.min(bb[0][j], p); bb[1][j] = Math.max(bb[1][j], p) }));
+  const mid = bb[0].map((p,j)=>(p+bb[1][j])/2), half = Math.max(...bb[0].map((p,j)=>(bb[1][j]-p)/2)) + 8;
+  sun.position.set(mid[0]-20, mid[1]+40, mid[2]+25); sun.target.position.set(...mid); scene.add(sun.target);
+  sun.shadow.mapSize.set(2048,2048); Object.assign(sun.shadow.camera, {left:-half, right:half, top:half, bottom:-half, near:1, far:half*2+90}); scene.add(sun);
+  // les matières de chaque pièce, aux couleurs du circuit
+  const glass = (o) => new THREE.MeshPhysicalMaterial({color:"#BFE6FF", roughness:.1, transparent:true, opacity:o, depthWrite:false});
+  const MAT = {ramp:new THREE.MeshStandardMaterial({color:TH.ramp, roughness:.65}), tray:new THREE.MeshStandardMaterial({color:TH.tray, roughness:.5}),
+    wall:glass(.28), inner:glass(.22), end:glass(.4), glass:glass(.12), wall2:new THREE.MeshStandardMaterial({color:TH.ramp, roughness:.5}),
+    back:new THREE.MeshStandardMaterial({color:cbShade(TH.bg, 18), roughness:.9}),
+    peg:new THREE.MeshStandardMaterial({color:TH.peg||"#F4E3C2", roughness:.35, metalness:.2}),
+    kick:new THREE.MeshStandardMaterial({color:cbShade(TH.ramp, 25), roughness:.5}), bump:new THREE.MeshStandardMaterial({color:TH.bump||"#FF4F7A", roughness:.3, metalness:.1, emissive:TH.bump||"#FF4F7A", emissiveIntensity:.25}),
+    spin:new THREE.MeshStandardMaterial({color:TH.spin||"#FFD34D", roughness:.35, metalness:.3}), axle:new THREE.MeshStandardMaterial({color:"#8A8FA3", roughness:.3, metalness:.6}),
+    tower:new THREE.MeshStandardMaterial({color:cbShade(TH.ramp, -25), roughness:.8})};
+  const piece = s => { const m = new THREE.Mesh(s.shape==="cyl" ? new THREE.CylinderGeometry(s.size[0], s.size[0], s.size[1], 20) : new THREE.BoxGeometry(...s.size), MAT[s.kind] || MAT.ramp);
+    m.position.set(...s.pos); m.quaternion.set(...s.quat); m.castShadow = !/wall|inner|end|glass|back/.test(s.kind); m.receiveShadow = true; scene.add(m); return m };
+  W.statics.forEach(piece);
+  const kinM = W.kin.map(piece);   // les pièces qui tournent (moulins) : replacées à chaque image
+  const floor = new THREE.Mesh(new THREE.PlaneGeometry(400,400), new THREE.MeshStandardMaterial({color:cbShade(TH.bg, 10), roughness:1}));
+  floor.rotation.x = -Math.PI/2; floor.position.y = W.floorY-1; floor.receiveShadow = true; scene.add(floor);
   // Les billes : la vraie bille de chaque joueur, dessinée par le même moteur que partout sur le site (décor, coloris, shiny),
   // tournée selon la physique et vue depuis la caméra. Une sphère invisible garde l'ombre portée sur la piste.
   // (sans le moteur de billes, on retombe sur une sphère aux couleurs du coloris)
@@ -9309,8 +9539,8 @@ async function gcWatch3D(race){
   const camPos = new THREE.Vector3(-30,10,22), camLook = new THREE.Vector3();
   cancelAnimationFrame(GCV.raf);
   Object.keys(GCV).forEach(k=>{ if(k!=="raf") delete GCV[k] });
-  Object.assign(GCV, {race, R, T:{th:{name:"Le circuit des lacets"}}, done:false, g3:true});
-  const G3V = {t0:performance.now() - (live ? since*1000 : 0), follow:null, said:{}, renderer, onResize, sim, who, lastF:-1, lastHit:0};
+  Object.assign(GCV, {race, R, T:{th:{name:C.name}}, done:false, g3:true});
+  const G3V = {t0:performance.now() - (live ? since*1000 : 0), follow:null, said:{}, renderer, onResize, sim, who, lastF:-1, lastHit:0, snap:true};
   GCV.g3v = G3V;
   // pas de bruit de roulement continu ici : avec toutes les billes, il sonnait comme un vent qui fait mal aux oreilles
   const big = t => { const b = document.getElementById("gc-big"); if(!b) return; b.innerHTML = `<span>${t}</span>`; setTimeout(()=>{ if(b.textContent===t) b.innerHTML = "" }, 1000) };
@@ -9322,7 +9552,8 @@ async function gcWatch3D(race){
     const cd = t<1 ? "3" : t<2 ? "2" : t<3 ? "1" : "go";
     if(cd!==G3V.cd){ G3V.cd = cd; big(cd==="go" ? "Partez !" : cd); if(cd==="go") Sound.ding(); else Sound.tap?.(0,.5) }
     for(let i=0;i<n;i++){ meshes[i].position.set(F[i*7],F[i*7+1],F[i*7+2]); meshes[i].quaternion.set(F[i*7+3],F[i*7+4],F[i*7+5],F[i*7+6]) }
-    const tt = f*G3.DT, rank = who.map((o,i)=>({o, i, done:sim.fin[i]<=tt, pr:g3progress(F[i*7],F[i*7+1])}))
+    if(kinM.length){ const K = sim.kf[f]; kinM.forEach((m,j)=>m.quaternion.set(K[j*4],K[j*4+1],K[j*4+2],K[j*4+3])) }
+    const tt = f*G3.DT, rank = who.map((o,i)=>({o, i, done:sim.fin[i]<=tt, pr:g3Where(W, F[i*7],F[i*7+1],F[i*7+2]).s}))
       .sort((a,b)=> (a.done&&b.done) ? sim.fin[a.i]-sim.fin[b.i] : a.done ? -1 : b.done ? 1 : b.pr-a.pr);
     const ch = document.getElementById("gc-chrono"); if(ch) ch.lastChild.textContent = t<3 ? "—" : `${Math.floor(Math.max(0,t-3)/60)}:${String(Math.floor(Math.max(0,t-3))%60).padStart(2,"0")}`;
     const bd = document.getElementById("gc-board");
@@ -9330,9 +9561,11 @@ async function gcWatch3D(race){
     if(rank[0].done && !G3V.said.win){ G3V.said.win = 1; big(`${rank[0].o.me ? "TU GAGNES" : esc(nm(rank[0].o))+" gagne"} !`); Sound.ding() }
     // la caméra : à côté de la piste, sur la tête de course ou sur la bille suivie
     const fi = G3V.follow!=null ? G3V.follow : (rank.find(q=>!q.done)?.i ?? rank[0].i), x = F[fi*7], y = F[fi*7+1], z = F[fi*7+2];
-    const side = Math.round(-y/G3.STEP)%2 ? -1 : 1;
-    v.set(x - 4*side, y+3, z+14);
-    if(G3V.snap){ camPos.copy(v); camLook.set(x,y,z); G3V.snap = false } else { camPos.lerp(v, .05); camLook.lerp(v.set(x, y, z), .08) }
+    const P = [x,y,z], at = W.look ? W.look(P) : P;
+    v.set(...W.cam(P, g3Where(W, x, y, z).T));
+    // (la même vitesse de suivi quel que soit le nombre d'images par seconde)
+    const dtf = Math.min(30, (now-(G3V.lastNow||now))/16.67); G3V.lastNow = now;
+    if(G3V.snap){ camPos.copy(v); camLook.set(...at); G3V.snap = false } else { camPos.lerp(v, 1-Math.pow(.95, dtf)); camLook.lerp(v.set(...at), 1-Math.pow(.92, dtf)) }
     camera.position.copy(camPos); camera.lookAt(camLook); camera.updateMatrixWorld();
     // les billes vues depuis la caméra (les plus proches redessinées à chaque image, les autres moins souvent)
     if(sprites.length){
@@ -9354,10 +9587,10 @@ async function gcWatch3D(race){
       if(now-G3V.lastHit>45){ if(hb>.04){ Sound.hit(.15+hb*.85); G3V.lastHit = now } else if(hd>.05){ Sound.wall(hd*.6); G3V.lastHit = now } } }
     G3V.lastF = f;
     // les noms au-dessus des billes
-    const W = stage.clientWidth, H = stage.clientHeight;
+    const SW = stage.clientWidth, SH = stage.clientHeight;
     for(let i=0;i<n;i++){ const el = document.getElementById("g3l"+i); if(!el) continue; v.set(F[i*7], F[i*7+1]+.8, F[i*7+2]).project(camera);
       const vis = v.z<1 && Math.abs(v.x)<1.1 && Math.abs(v.y)<1.1 && camera.position.distanceTo(meshes[i].position)<40;
-      el.style.opacity = vis ? 1 : 0; el.style.transform = `translate(${(v.x*.5+.5)*W}px,${(-v.y*.5+.5)*H}px) translate(-50%,-100%)` }
+      el.style.opacity = vis ? 1 : 0; el.style.transform = `translate(${(v.x*.5+.5)*SW}px,${(-v.y*.5+.5)*SH}px) translate(-50%,-100%)` }
     const lastFin = Math.max(...sim.fin.filter(x=>x<900));
     if(!GCV.done && tt > Math.min(lastFin+1.5, sim.fin[order[0]]+15)){ GCV.done = true; gcPodium() }
   };
@@ -9377,7 +9610,7 @@ function g3Skip(){ const G = GCV.g3v; if(!G) return; const sim = G.sim, nowT = (
   const target = Math.max(3, Math.min(...sim.fin)-5); if(nowT >= target) return;
   G.skip = (G.skip||0) + target - nowT;
   const f = Math.min(sim.frames.length-1, Math.floor(target/G3.DT)), F = sim.frames[f];
-  let best = -1, bp = -1e9; for(let i=0;i<G.who.length;i++){ if(sim.fin[i]<=target) continue; const p = g3progress(F[i*7], F[i*7+1]); if(p>bp){ bp = p; best = i } }
+  let best = -1, bp = -1e9; for(let i=0;i<G.who.length;i++){ if(sim.fin[i]<=target) continue; const p = g3Where(G.sim.W, F[i*7], F[i*7+1], F[i*7+2]).s; if(p>bp){ bp = p; best = i } }
   G.follow = best>=0 ? best : null; G.snap = true; G.lastF = f; G.lb = 0; g3CamBtn();
   const b = document.getElementById("g3-skip"); if(b) b.hidden = true }
 
@@ -9829,11 +10062,11 @@ function gcPodium(){
 }
 // une course d'essai : toi et 7 billes de la cour, rien à gagner
 let GC_ME = null;   // sans compte : l'identifiant du joueur dans la course d'essai
-function gcTest(){
+function gcTest(cid){
   const names = [...FEED_NAMES].sort(()=>Math.random()-.5).slice(0,7);
   GC_ME = sync.uid ? null : "__moi";
   const list = [{joueur:sync.uid||GC_ME, pseudo:S.name, bille:(gc.pick && specById(gc.pick)) || gcMine() || gcDefault(), prix:0}, ...names.map(n=>({bot:true, nom:n, graine:randU32()}))].sort(()=>Math.random()-.5);
-  gcWatch({jour:isoDay(), graine:randU32(), depart:Date.now(), resultats:list, test:true});
+  gcWatch({jour:isoDay(), graine:randU32(), depart:Date.now(), resultats:list, test:true, circuit:cid || g3CircuitOf(gcNext())});
 }
 
 /* =====================================================================
@@ -10662,7 +10895,7 @@ document.addEventListener("click", e=>{
     case "gc-unreg": srv(()=>Cloud.course.desinscrire()).then(e=>{ gc.etat = e; renderView(); renderNav(); toast("Tu n'es plus inscrit à la Grande Course.") }, srvFail); break;
     case "gc-watch": { const D = gc.etat?.rediffs?.[t.dataset.h] || gc.etat?.derniere; if(D){ closeModal(); gcWatch(D) } break }
     case "gc-claim": { const D = gc.etat?.rediffs?.[t.dataset.h]; if(D){ t.disabled = true; closeModal(); gcClaim(D).catch(()=>{ t.disabled = false }) } break }
-    case "gc-test": closeModal(); gcTest(); break;
+    case "gc-test": closeModal(); gcTest(t.dataset.c); break;
     case "gc-replay": gcWatch({...GCV.race, replay:true}); break;
     case "g3-cam": g3Cam(); break;
     case "g3-skip": g3Skip(); break;

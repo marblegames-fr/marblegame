@@ -90,7 +90,7 @@
     eco: {
       start: (bonbecs, sacs, pity) => rpc("eco_demarrer", {bonbecs, sacs, pity}),
       state: () => rpc("eco_etat"),
-      openBag: (nom, offert) => rpc("ouvrir_sac", {nom, offert:!!offert}),
+      openBag: (nom, offert, evenement) => rpc("ouvrir_sac", {nom, offert:!!offert, evenement:!!evenement}),   // evenement : la case « billes d'événement » cochée
       recycle: ids => rpc("echanger_billes", {ids}),
       fuse: ids => rpc("fusionner", {ids}),
       fuseEv: ids => rpc("fusion_evenement", {ids}),

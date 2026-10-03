@@ -163,9 +163,11 @@ $$;
 create or replace function interne.evenement_du_sac(s text) returns text language sql immutable as $$
   select case when s in ('pirate', 'pirate-premium') then 'pirates' end
 $$;
--- Billes d'événement (3 octobre 2026) : plus de sac d'événement en vente. Pendant l'événement, chaque bille d'un sac Classique,
--- Premium ou Collector a une petite chance d'être du décor de l'événement (5 / 8 / 12 %) ; la fusion d'événement permet de finir
--- la collection. Mêmes valeurs dans index.html (EV_DROP). (Les doublons et la boutique d'événement ont été retirés le même jour.)
+-- Billes d'événement (3 octobre 2026) : plus de sac d'événement en vente. Pendant l'événement, le joueur coche (ou non) « billes
+-- d'événement » sur les sacs Classique, Premium et Collector : case cochée, chaque bille a 50 % de chances d'être du décor de l'événement
+-- et la vedette (la dernière) l'est toujours ; case décochée, aucune. En simulation (fusion d'événement comprise), un joueur qui ouvre
+-- surtout des Classiques finit l'album d'événement avec ~20 000 bonbecs. Mêmes valeurs dans index.html (EV_DROP).
+-- (Les doublons et la boutique d'événement ont été retirés le même jour.)
 alter table public.portefeuilles drop column if exists doublons;
 drop function if exists public.boutique_evenement(text, int);
 drop function if exists interne.doublons_du_sac(text);
@@ -176,7 +178,7 @@ language sql stable as $$
   where now() between v.debut and v.fin limit 1
 $$;
 create or replace function interne.taux_evenement(s text) returns numeric language sql immutable as $$
-  select case s when 'classique' then 0.05 when 'premium' then 0.08 when 'collector' then 0.12 else 0 end::numeric $$;
+  select case when s in ('classique', 'premium', 'collector') then 0.5 else 0 end::numeric $$;
 
 -- la date du jour, à l'heure française (les quêtes et le bonbec du jour changent à minuit)
 create or replace function interne.aujourdhui() returns date language sql stable as
@@ -290,7 +292,9 @@ create or replace function public.eco_etat() returns jsonb language plpgsql secu
 begin return interne.etat(interne.moi()); end $$;
 
 -- Ouvrir un sac (acheté, gratuit ou offert). Renvoie les billes tirées.
-create or replace function public.ouvrir_sac(nom text, offert boolean default false)
+drop function if exists public.ouvrir_sac(text, boolean);
+-- evenement : la case « billes d'événement » cochée par le joueur
+create or replace function public.ouvrir_sac(nom text, offert boolean default false, evenement boolean default false)
 returns jsonb language plpgsql security definer set search_path = public as $$
 declare qui uuid := interne.moi(); p portefeuilles; r record; ev record; evc record; evb boolean; stock int; t int; i int; d int; c int;
         tirees int[] := '{}'; shinies int[] := '{}'; billes jsonb := '[]'; force boolean := false;
@@ -338,8 +342,9 @@ begin
              else random() < case when nom = 'pirate-premium' then (case when i = r.n then 0.35 else 0.15 end)
                                   else (case when i = r.n then 0.3 else 0.12 end) end end);
     d := case when evb then ev.decor end; c := case when evb then ev.coloris[1 + floor(random()*array_length(ev.coloris,1))::int] end;
-    -- pendant l'événement, une bille d'un sac Classique, Premium ou Collector peut être une bille d'événement
-    if d is null and evc.decor is not null and random() < interne.taux_evenement(nom) then
+    -- pendant l'événement, si le joueur l'a choisi : une bille d'un sac Classique, Premium ou Collector peut être une bille
+    -- d'événement (50 %), et la vedette l'est toujours
+    if d is null and evc.decor is not null and evenement and interne.taux_evenement(nom) > 0 and (i = r.n or random() < interne.taux_evenement(nom)) then
       d := evc.decor; c := evc.coloris[1 + floor(random()*array_length(evc.coloris,1))::int];
     end if;
     billes := billes || interne.nouvelle_bille(qui, (interne.tailles())[tirees[i]+1], shiny => shinies[i], src => nom, decor => d, coloris => c);
@@ -615,7 +620,7 @@ end $$;
 
 -- droits : le site ne peut appeler que ces fonctions-là
 do $$ declare f text; begin
-  foreach f in array array['eco_demarrer(int,jsonb,int)','eco_etat()','ouvrir_sac(text,boolean)','echanger_billes(uuid[])',
+  foreach f in array array['eco_demarrer(int,jsonb,int)','eco_etat()','ouvrir_sac(text,boolean,boolean)','echanger_billes(uuid[])',
     'fusionner(uuid[])','fusion_evenement(uuid[])','pachinko(boolean)','bonbec_du_jour()','gagner(text,text,int,text)','bille_gagnee(text,text,bigint,uuid)',
     'miser(text,int)','regler_mise(bigint,int)','outil_test(text)'] loop
     execute format('revoke all on function public.%s from public, anon', f);

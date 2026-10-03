@@ -2590,6 +2590,14 @@ button.gh-cell:hover{transform:translateY(-2px)}
 .gc-side{display:grid;gap:10px;align-content:start}
 .gc-side .btn{justify-self:start}
 .gc-try{display:grid;gap:6px}
+.ev-opt{display:flex;align-items:flex-start;gap:10px;margin:8px 0 2px;padding:10px 12px;border-radius:14px;border:1.5px dashed var(--line-2);cursor:pointer;max-width:520px}
+.ev-opt input{position:absolute;opacity:0;pointer-events:none}
+.ev-opt .ev-box{flex:none;width:22px;height:22px;border-radius:7px;border:2px solid var(--line-2);display:grid;place-items:center;color:transparent;margin-top:1px}
+.ev-opt.on{border-style:solid;border-color:#C8322F;background:color-mix(in srgb,#C8322F 10%,transparent)}
+.ev-opt.on .ev-box{background:#C8322F;border-color:#C8322F;color:#fff}
+.ev-opt b{display:flex;align-items:center;gap:5px;font-size:14px;font-weight:900}
+.ev-opt small{display:block;font-size:12.5px;font-weight:700;color:var(--ink-2);margin-top:2px}
+.ev-opt input:focus-visible + .ev-box{outline:3px solid var(--blue);outline-offset:2px}
 .ev-how{margin:2px 0 10px}
 .gc-cname{font-size:13px;font-weight:800;color:var(--muted);margin-left:4px}
 .gc-try small{font-size:12px;font-weight:800;color:var(--muted);text-transform:uppercase;letter-spacing:.06em}
@@ -2924,7 +2932,7 @@ const EVENTS = {
   // dates à l'heure de Paris (mêmes dates dans supabase/serveur.sql : interne.evenement)
   pirates: {name:"À l'abordage !", fam:"Pirate", color:"#C8322F", bag:"pirate",
     start:Date.parse("2026-09-30T00:00:00+02:00"), end:Date.parse("2026-10-14T23:59:59+02:00"),
-    desc:"Hissez le pavillon noir : pendant deux semaines, des billes Pirate se cachent dans les sachets Classique, Premium et Collector.",
+    desc:"Hissez le pavillon noir : pendant deux semaines, des billes Pirate dans les sachets Classique, Premium et Collector, pour ceux qui cochent la case.",
     pals:[["Pavillon noir","#15151B","#D4A537","#F1E9D2","#2A2A30"],
           ["Corsaire","#1B2C5A","#C8322F","#F4EEDC","#22335E"],
           ["Coffre au trésor","#4A2A12","#F2C230","#FFF4D6","#5A3A1E"],
@@ -2960,10 +2968,12 @@ const randPal = r => BASE_PAL_IDS[Math.floor(r*BASE_PALS)];
 const isBeta = s => s?.secret==="beta";
 const eventOf = s => FAMILIES[s.family]?.event ? EVENTS[FAMILIES[s.family].event] : null;
 const eventLive = E => !!E && Date.now()>=E.start && Date.now()<=E.end;
-// Billes d'événement (3 octobre 2026) : plus de sachet d'événement en vente. Pendant l'événement, chaque bille d'un sachet Classique,
-// Premium ou Collector a une petite chance d'être une bille de l'événement ; la fusion d'événement permet de finir la collection.
-// Mêmes valeurs dans serveur.sql (taux_evenement).
-const EV_DROP = {classique:.05, premium:.08, collector:.12};
+// Billes d'événement (3 octobre 2026) : plus de sachet d'événement en vente. Pendant l'événement, le joueur coche (ou non)
+// « billes d'événement » sur les sachets Classique, Premium et Collector : case cochée, chaque bille a 50 % de chances d'être une
+// bille de l'événement et la vedette (la 5e) l'est toujours ; case décochée, aucune. Le choix est retenu (S.evOpt).
+// Mêmes valeurs dans serveur.sql (taux_evenement, ouvrir_sac).
+const EV_DROP = {classique:.5, premium:.5, collector:.5};
+const evOptOn = bagId => !!(S.evOpt && EV_DROP[bagId] && liveEventKey());
 const liveEventKey = () => Object.keys(EVENTS).find(k=>eventLive(EVENTS[k]));
 const liveEvents = () => Object.keys(EVENTS).filter(k=>eventLive(EVENTS[k]));
 function eventLeft(E){ const ms=Math.max(0,E.end-Date.now()), d=Math.floor(ms/864e5), h=Math.floor(ms/36e5)%24; return d ? `${d} j ${h} h` : `${h} h ${Math.floor(ms/6e4)%60} min` }
@@ -5419,7 +5429,7 @@ function heroSlides(){
       <div class="hm-txt">
         <span class="hm-k">${ic("flag",15)} Événement · jusqu'au ${dayMonth(E.end)}</span>
         <h1>${esc(E.name)} Les billes Pirate débarquent !</h1>
-        <p>Un décor inédit et ${E.pals.length} coloris, cachés dans les sachets Classique, Premium et Collector pendant encore <b>${eventLeft(E)}</b>. La fusion d'événement t'aide à finir ta collection.</p>
+        <p>Un décor inédit et ${E.pals.length} coloris, pendant encore <b>${eventLeft(E)}</b> : coche « Billes Pirate » sur les sachets Classique, Premium et Collector pour en trouver. La fusion d'événement t'aide à finir ta collection.</p>
         ${n ? `<button class="btn btn-yellow btn-xl" data-action="open-gift" data-bag="${b.id}">${ic("gift",22)} Ouvrir mon ${b.name} offert</button>`
             : `<button class="btn btn-yellow btn-xl" data-action="ev-album">${ic("flag",22)} Ma collection ${esc(FAMILIES[f].name)}</button>`}
       </div>`}) });
@@ -5570,7 +5580,8 @@ function viewBags(){
     <div class="bg-info">
       <div>${b.event&&eventLive(EVENTS[b.event])?`<span class="sample-tag">${ic("clock",12)} Encore ${eventLeft(EVENTS[b.event])} · ${untilLabel(EVENTS[b.event].end)}</span>`:""}<h2>${b.name}</h2><p>${b.desc}</p>
         ${!b.event && liveEventKey() && EV_DROP[b.id] ? (()=>{ const k = liveEventKey(), F = FAMILIES.find(x=>x.event===k);
-          return `<p class="ev-rate">${ic("flag",14)} Événement : ${Math.round(EV_DROP[b.id]*100)} % de chances par bille d'être une bille ${F.name}</p>` })() : ""}
+          return `<label class="ev-opt${S.evOpt?" on":""}"><input type="checkbox" data-action="ev-opt"${S.evOpt?" checked":""}><span class="ev-box">${ic("check",14,3)}</span>
+            <span><b>${ic("flag",14)} Billes ${esc(F.name)}</b><small>Case cochée : ${Math.round(EV_DROP[b.id]*100)} % de chances par bille, et la vedette (la ${b.n}ᵉ) est toujours une bille ${esc(F.name)}. Elles ne comptent pas dans l'album.</small></span></label>` })() : ""}
         ${b.event?`<p class="ev-rate">${ic("flag",14)} ${b.evFill>=1 ? `Les ${b.n} billes sont des billes ${FAMILIES[b.fam].name}` : `Bille ${FAMILIES[b.fam].name} : ${Math.round(b.evFill*100)} % par bille, ${Math.round(b.evStar*100)} % pour la vedette`} · ${b.pals.length} coloris à collectionner, dans les 6 tailles</p><div class="ev-pals">${b.pals.map(pl=>`<span title="${esc(PALETTES[pl][0])}">${mImg({seed:hash("evp"+pl),type:"calot",family:b.fam,pal:pl,shiny:0},80,34,"")}</span>`).join("")}</div>`:""}</div>
       <div class="bg-cta">${cta}</div>
       ${(()=>{ const left = PITY-(S.pity||0);
@@ -5892,7 +5903,7 @@ function eventsView(){
     return `<section class="panel ev-album" style="--ec:${E.color}">
       <div class="ev-head"><div><h3>${F.name} <small>· ${esc(E.name)}</small></h3><p class="meta">${live ? `En cours : encore ${eventLeft(E)} (jusqu'au ${dayMonth(E.end)}).` : Date.now()<E.start ? `Commence le ${dayMonth(E.start)}.` : `Terminé le ${dayMonth(E.end)}.`}</p></div>
         <span class="serie-n">${got} / ${tot}</span></div>
-      ${live ? `<p class="meta ev-how">Les billes ${esc(F.name)} se cachent dans les sachets Classique (${Math.round(EV_DROP.classique*100)} % par bille), Premium (${Math.round(EV_DROP.premium*100)} %) et Collector (${Math.round(EV_DROP.collector*100)} %). Avec la fusion d'événement, à la Confiserie, tes billes ${esc(F.name)} d'un même coloris donnent la taille au-dessus.</p>` : ""}
+      ${live ? `<p class="meta ev-how">Coche « Billes ${esc(F.name)} » sur les sachets Classique, Premium et Collector : chaque bille a alors ${Math.round(EV_DROP.classique*100)} % de chances d'être une bille ${esc(F.name)}, et la vedette (la 5ᵉ) en est toujours une. Avec la fusion d'événement, à la Confiserie, tes billes ${esc(F.name)} d'un même coloris donnent la taille au-dessus.</p>` : ""}
       <div class="ev-grid"><div class="ev-row ev-cols"><b></b>${TK.map(t=>`<small>${TYPES[t].label.replace("Mini bille","Mini").replace("Bille chinoise","Chinoise")}</small>`).join("")}</div>${cells}</div>
     </section>` }).join("")}`;
 }
@@ -6615,7 +6626,7 @@ function pullBag(bag, gift){
     const ev = bag.fam!=null && (i===bag.n-1 ? (gift || Math.random()<bag.evStar) : Math.random()<bag.evFill);
     let extra = ev ? eventSpec(bag) : {};
     const evk = liveEventKey();   // pendant un événement, une bille de Classique, Premium ou Collector peut être une bille d'événement
-    if(!ev && evk && EV_DROP[bag.id] && Math.random()<EV_DROP[bag.id]){ const E = EVENTS[evk]; extra = {family:FAMILIES.findIndex(F=>F.event===evk), pal:E.palIdx[Math.floor(Math.random()*E.palIdx.length)]} }
+    if(!ev && evk && evOptOn(bag.id) && (i===bag.n-1 || Math.random()<EV_DROP[bag.id])){ const E = EVENTS[evk]; extra = {family:FAMILIES.findIndex(F=>F.event===evk), pal:E.palIdx[Math.floor(Math.random()*E.palIdx.length)]} }
     res.push(makeSpec(t,{shiny:shinyX, src:bag.id, ...extra}));
   }
   if((S.pity||0)+1>=PITY && !res.some(s=>tierOf(s)>=BIG)){
@@ -6641,7 +6652,7 @@ async function openBag(bagId, gift){
   if(srvOn()){   // le serveur encaisse et tire les billes
     if(eco.busy) return; eco.busy = true;
     try{
-      const r = await srv(()=>Cloud.eco.openBag(bagId, !!gift));
+      const r = await srv(()=>Cloud.eco.openBag(bagId, !!gift, evOptOn(bagId)));
       pulls = srvAdopt(r.billes);   // dans l'ordre des positions
       pulls.forced = r.force; applyEco(r.eco);
     }catch(e){ srvFail(e); return }
@@ -10910,6 +10921,7 @@ document.addEventListener("click", e=>{
     case "ami-voir": openProfil(t.dataset.id); break;
     case "ev-bag": ui.bag = t.dataset.bag; go("sacs"); break;
     case "ev-album": ui.tab = "events"; go("collection"); break;
+    case "ev-opt": S.evOpt = t.checked; save(); t.closest(".ev-opt")?.classList.toggle("on", t.checked); toast(t.checked ? "Billes d'événement activées pour tes sachets." : "Billes d'événement désactivées : tes sachets ne donnent que des billes normales."); break;
     case "draw-how": { const el = document.getElementById("modal");
       el.innerHTML = `<div class="modal bag-sum how-modal" role="dialog" aria-modal="true" aria-label="Comment chaque bille est tirée ?"><button class="close-x" data-action="close-modal" aria-label="Fermer">×</button>
         <h2>Comment chaque bille est tirée ?</h2>${drawExplainer()}</div>`;

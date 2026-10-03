@@ -191,8 +191,9 @@ begin
     and ((t.de = qui and t.vers = ami_retirer.ami) or (t.de = ami_retirer.ami and t.vers = qui));
 end $$;
 
--- le profil d'un copain : sa vitrine, sa bille active, ses chiffres et ses dernières belles trouvailles
--- le profil d'un joueur : tout le monde peut le voir (depuis le classement par exemple) ; le troc reste entre copains
+-- le profil d'un joueur (refait le 3 octobre 2026) : tout le monde peut le voir (depuis le classement par exemple) ; le troc reste entre copains.
+-- Sa vitrine (dans son ordre), sa plus belle bille, l'avancement de son album, ses billes par taille, ses shiny par sorte,
+-- ses collections d'événement et ses dernières belles trouvailles (avec leur date).
 create or replace function public.profil_joueur(qui uuid) returns jsonb language plpgsql security definer set search_path = public as $$
 declare moi uuid := auth.uid(); vit jsonb;
 begin
@@ -201,20 +202,30 @@ begin
   select s.donnees->'vitrine' into vit from sauvegardes s where s.joueur = qui;
   return interne.carte(qui) || jsonb_build_object(
     'ami', qui = moi or interne.sont_amis(moi, qui), 'moi', qui = moi,
-    -- ses 12 plus belles billes : les plus grosses, puis les shiny, puis les décors les plus rares
-    'meilleures', coalesce((select jsonb_agg(x.j) from (select interne.bille_json(b) j from billes b
-                 where b.proprietaire = qui and b.detruite_le is null and coalesce(b.donnees->>'src', '') <> 'test'
-                 order by interne.rang(b.taille) desc, b.shiny desc, nullif((interne.decor_rarete())[b.decor+1], 5) desc nulls last, b.numero
-                 limit 12) x), '[]'),
-    'vitrine', coalesce((select jsonb_agg(interne.bille_json(b)) from billes b
-                 where b.proprietaire = qui and b.detruite_le is null
-                   and b.id::text in (select jsonb_array_elements_text(coalesce(vit, '[]')) )), '[]'),
+    'depuis', (select floor(extract(epoch from p.cree_le)*1000)::bigint from profils p where p.id = qui),
+    -- la vitrine, dans l'ordre choisi par le joueur
+    'vitrine', coalesce((select jsonb_agg(interne.bille_json(b) order by v.pos) from jsonb_array_elements_text(coalesce(vit, '[]')) with ordinality v(id, pos)
+                 join billes b on b.id::text = v.id and b.proprietaire = qui and b.detruite_le is null), '[]'),
+    -- sa plus belle bille : la shiny la plus rare, puis la plus grosse, puis le décor le plus rare
+    'top', (select interne.bille_json(b) from billes b where b.proprietaire = qui and b.detruite_le is null and coalesce(b.donnees->>'src', '') <> 'test'
+              order by b.shiny desc, interne.rang(b.taille) desc, (interne.decor_rarete())[b.decor+1] desc, b.numero limit 1),
     'billes', (select count(*) from billes b where b.proprietaire = qui and b.detruite_le is null),
-    'cases', (select count(distinct (b.taille, b.decor)) from billes b where b.proprietaire = qui and b.detruite_le is null),
+    -- l'album : les billes différentes (taille, décor, coloris) et les cases (taille, décor), hors événements, saisons et secrètes
+    'album', (select count(distinct (b.taille, b.decor, b.coloris)) from billes b where b.proprietaire = qui and b.detruite_le is null
+                and interne.coloris_normal(b.coloris) and (interne.decor_rarete())[b.decor+1] < 5),
+    'cases', (select count(distinct (b.taille, b.decor)) from billes b where b.proprietaire = qui and b.detruite_le is null and (interne.decor_rarete())[b.decor+1] < 5),
+    'completes', (select count(*) from (select 1 from billes b where b.proprietaire = qui and b.detruite_le is null and interne.coloris_normal(b.coloris)
+                and (interne.decor_rarete())[b.decor+1] < 5 group by b.taille, b.decor having count(distinct b.coloris) >= interne.nb_coloris()) x),
+    'tailles', (select coalesce(jsonb_object_agg(t, n), '{}') from (select b.taille t, count(*) n from billes b where b.proprietaire = qui and b.detruite_le is null group by b.taille) x),
+    'shinies', (select jsonb_build_array(count(*) filter (where b.shiny = 1), count(*) filter (where b.shiny = 2), count(*) filter (where b.shiny = 3))
+                from billes b where b.proprietaire = qui and b.detruite_le is null),
     'shiny', (select count(*) from billes b where b.proprietaire = qui and b.detruite_le is null and b.shiny > 0),
-    'trouvailles', coalesce((select jsonb_agg(x.j) from (select interne.bille_json(b) j from billes b
-                 where b.proprietaire = qui and b.detruite_le is null and (interne.rang(b.taille) >= 4 or b.shiny > 0)
-                 order by b.obtenue_le desc limit 8) x), '[]')
+    -- les collections d'événement : les billes différentes (taille, coloris) de chaque décor d'événement
+    'evenements', (select coalesce(jsonb_object_agg(d, n), '{}') from (select b.decor d, count(distinct (b.taille, b.coloris)) n from billes b
+                where b.proprietaire = qui and b.detruite_le is null and interne.decor_evenement(b.decor) group by b.decor) x),
+    'trouvailles', coalesce((select jsonb_agg(x.j order by x.le desc) from (select interne.bille_json(b) || jsonb_build_object('le', floor(extract(epoch from b.obtenue_le)*1000)::bigint) j, b.obtenue_le le
+                 from billes b where b.proprietaire = qui and b.detruite_le is null and (interne.rang(b.taille) >= 4 or b.shiny > 0)
+                 order by b.obtenue_le desc limit 6) x), '[]')
   );
 end $$;
 

@@ -939,6 +939,12 @@ button.vit-slot:hover{background:var(--panel-2);color:var(--ink)}
 .vit-ball:hover img{transform:scale(1.06) rotate(-4deg)}
 .vit-slot b{font-size:13.5px;font-weight:900;line-height:1.2}
 .vit-slot .pills{display:flex;gap:4px;flex-wrap:wrap;justify-content:center}
+.vit-slot.filled{cursor:grab;-webkit-touch-callout:none;user-select:none;-webkit-user-select:none}
+.vit-slot img{-webkit-user-drag:none}
+.vit-slot.dragging{opacity:.35}
+.vit-slot.drop-on{outline:3px dashed var(--blue);outline-offset:3px}
+.vit-ghost{position:fixed;z-index:9999;pointer-events:none;transform:translate(-50%,-50%) scale(1.12);filter:drop-shadow(0 14px 12px rgba(40,20,60,.35))}
+body.vit-dragging,body.vit-dragging *{cursor:grabbing!important;user-select:none}
 .vit-x{position:absolute;top:6px;right:6px;width:26px;height:26px;border-radius:50%;background:var(--close-bg);font-size:18px;line-height:1;display:grid;place-items:center}
 .prof-stats{display:grid;grid-template-columns:repeat(auto-fill,minmax(140px,1fr));gap:10px}
 .prof-stats div{padding:12px;border-radius:12px;background:var(--panel-2);border:1px solid var(--line)}
@@ -2536,6 +2542,18 @@ button.gh-cell:hover{transform:translateY(-2px)}
 .gc-livedot{width:10px;height:10px;border-radius:50%;background:#E5484D;animation:brPulse 1s infinite}
 .gc-res{list-style:none;padding:0;margin:8px 0;display:flex;gap:18px;flex-wrap:wrap;font-weight:800}
 .gc-mine{font-weight:800}
+.gc-skip{display:block;margin:12px auto 0;background:none;border:0;padding:4px 8px;font-size:13px;font-weight:800;color:var(--muted);text-decoration:underline;text-underline-offset:3px}
+.gc-skip:hover{color:var(--ink)}
+.gc-ok{display:inline-flex;align-items:center;gap:4px;color:var(--green);font-size:13px}
+.gc-lots{display:flex;align-items:center;gap:16px;margin-bottom:18px;background:var(--gold-bg);border:2px solid var(--gold-line)}
+.gc-lots > div:not(.btns){flex:1;min-width:0;display:grid;gap:2px}
+.gc-lots b{font-size:17px;font-weight:900}
+.gc-lots small{color:var(--ink-2);font-weight:700}
+.gc-lots .btns{display:flex;gap:8px;flex-wrap:wrap}
+.gc-lots-ic{flex:none;width:48px;height:48px;border-radius:14px;display:grid;place-items:center;background:var(--yellow);color:#3A2410;animation:gcGift 1.6s ease-in-out infinite}
+@keyframes gcGift{ 0%,100%{transform:rotate(0)} 20%{transform:rotate(-10deg) scale(1.06)} 40%{transform:rotate(8deg)} 60%{transform:rotate(0)} }
+@media (prefers-reduced-motion:reduce){ .gc-lots-ic{animation:none} }
+@media (max-width:640px){ .gc-lots{flex-wrap:wrap} .gc-lots .btns{width:100%} .gc-lots .btns .btn{flex:1} }
 .modal.gc-pop{display:block;width:min(480px,100%);padding:28px 24px 22px;text-align:center}
 .gc-pop h2{font-family:var(--display);font-weight:400;font-size:30px;margin:10px 0 6px}
 .gc-pop .btns{display:flex;justify-content:center;margin-top:14px}
@@ -6114,7 +6132,9 @@ function confEchange(dups, dupVal){
    ===================================================================== */
 const rareKey = s => isSeason(s) ? 0 : chanceOf(s);
 // Photo de profil : recadrée en carré et réduite (192 px) sur l'appareil, gardée dans la partie. Visible seulement par le joueur.
-const avatarHTML = (a, px, sz) => S.photo ? `<img class="av-photo" src="${S.photo}" alt="">` : a ? mImg(a,px,sz,"") : "";
+// Sans photo, c'est une bille : celle choisie pour le profil (S.avatar), sinon la bille active.
+const avatarSpec = a => specById(S.avatar) || a;
+const avatarHTML = (a, px, sz) => { if(S.photo) return `<img class="av-photo" src="${S.photo}" alt="">`; const b = avatarSpec(a); return b ? mImg(b,px,sz,"") : "" };
 async function setPhoto(file){
   if(!file || !/^image\//.test(file.type)) return toast("Choisis une image (photo, dessin…).");
   if(file.size > 20e6) return toast("Cette image est trop lourde.");
@@ -6134,8 +6154,8 @@ function viewProfile(){
   <section class="panel prof-card">
     <div class="prof-av-wrap"><div class="avatar prof-av">${avatarHTML(act,220,104)}</div>
       <label class="btn btn-ghost" for="photo-in">${ic("plus",14)} ${S.photo?"Changer de photo":"Mettre une photo"}</label><input type="file" id="photo-in" accept="image/*" hidden>
-      ${S.photo?`<button class="btn btn-ghost" data-action="photo-rm">Remettre ma bille</button>`:""}
-      <small>Ta photo n'est visible que par toi.</small></div>
+      <button class="btn btn-ghost" data-action="pick-avatar">${ic("layers",14)} ${S.photo||!specById(S.avatar)?"Mettre une bille":"Changer de bille"}</button>
+      <small>${S.photo ? "Ta photo n'est visible que par toi." : specById(S.avatar) ? "La bille de ta photo de profil." : "Ta bille active, tant que tu n'en choisis pas une autre."}</small></div>
     <div class="prof-main">
       <form class="name-form" id="name-form">
         <label for="pseudo">Pseudo</label>
@@ -6149,13 +6169,58 @@ function viewProfile(){
     </div>
   </section>
   <section class="panel">
-    <div class="panel-head"><h2>Ma vitrine</h2><span class="sample-tag">Tes 5 plus belles billes</span></div>
-    <div class="vitrine">${vit.map((s,i)=> s
-      ? `<div class="vit-slot filled" style="${tstyle(s.type)}"><button class="vit-ball" data-action="spec" data-id="${s.id}">${mImg(s,240,Math.round(70*scaleOf(s.type)+34))}</button><b>${esc(specName(s))}</b><span class="pills">${typePill(s.type,true)}${shinyPill(s)}</span>${tierTag(s)}<button class="vit-x" data-action="vit-rm" data-id="${s.id}" aria-label="Retirer ${esc(specName(s))} de la vitrine">×</button></div>`
+    <div class="panel-head"><h2>Ma vitrine</h2><span class="sample-tag">Tes 5 plus belles billes · reste appuyé pour les déplacer</span></div>
+    <div class="vitrine" id="vitrine">${vit.map((s,i)=> s
+      ? `<div class="vit-slot filled" data-i="${i}" style="${tstyle(s.type)}"><button class="vit-ball" data-action="spec" data-id="${s.id}">${mImg(s,240,Math.round(70*scaleOf(s.type)+34))}</button><b>${esc(specName(s))}</b><span class="pills">${typePill(s.type,true)}${shinyPill(s)}</span>${tierTag(s)}<button class="vit-x" data-action="vit-rm" data-id="${s.id}" aria-label="Retirer ${esc(specName(s))} de la vitrine">×</button></div>`
       : `<button class="vit-slot" data-action="vit-pick" data-i="${i}">${ic("plus",26)}<span>Exposer une bille</span></button>`).join("")}</div>
   </section>
   ${statsPanel()}`;
 }
+// Vitrine : on déplace une bille en restant appuyé dessus et en la lâchant sur une autre case (les deux échangent leur place).
+// Souris : le glisser commence dès qu'on bouge ; doigt : après un appui long, pour pouvoir encore faire défiler la page.
+const vitDrag = {};
+function vitDragEnd(drop){
+  const D = vitDrag; clearTimeout(D.hold);
+  if(D.on){
+    D.ghost?.remove(); document.body.classList.remove("vit-dragging");
+    document.querySelectorAll("#vitrine .vit-slot").forEach(x=>x.classList.remove("dragging","drop-on"));
+    D.block = true; setTimeout(()=>D.block = false, 60);   // pas de clic (fiche de la bille) à la fin d'un glisser
+    const j = drop?.dataset.i;
+    if(j!=null && +j!==D.i){ const v = S.vitrine; [v[D.i], v[+j]] = [v[+j], v[D.i]]; save(); renderView() }
+  }
+  for(const k in D) if(k!=="block") delete D[k];
+}
+function vitDragStart(){
+  const D = vitDrag; D.on = true;
+  D.ghost = D.slot.querySelector(".vit-ball img").cloneNode(true); D.ghost.className = "vit-ghost";
+  document.body.append(D.ghost); document.body.classList.add("vit-dragging"); D.slot.classList.add("dragging");
+  vitDragMove(D.x, D.y);
+}
+function vitDragMove(x, y){
+  const D = vitDrag; D.ghost.style.left = x+"px"; D.ghost.style.top = y+"px";
+  const over = document.elementFromPoint(x, y)?.closest("#vitrine .vit-slot");
+  document.querySelectorAll("#vitrine .vit-slot").forEach(s=>s.classList.toggle("drop-on", s===over && s!==D.slot));
+}
+document.addEventListener("pointerdown", e=>{
+  const slot = e.button===0 && !e.target.closest(".vit-x") && e.target.closest("#vitrine .vit-slot.filled");
+  if(!slot) return;
+  vitDragEnd();
+  Object.assign(vitDrag, {id:e.pointerId, slot, i:+slot.dataset.i, x0:e.clientX, y0:e.clientY, x:e.clientX, y:e.clientY, mouse:e.pointerType==="mouse"});
+  if(!vitDrag.mouse) vitDrag.hold = setTimeout(()=>{ if(vitDrag.slot) vitDragStart() }, 320);
+});
+document.addEventListener("pointermove", e=>{
+  const D = vitDrag; if(!D.slot || e.pointerId!==D.id) return;
+  D.x = e.clientX; D.y = e.clientY;
+  const far = Math.hypot(D.x-D.x0, D.y-D.y0) > 8;
+  if(!D.on){ if(far && D.mouse) vitDragStart(); else if(far) vitDragEnd(); return }
+  vitDragMove(D.x, D.y);
+});
+document.addEventListener("pointerup", e=>{ if(vitDrag.slot && e.pointerId===vitDrag.id) vitDragEnd(vitDrag.on && document.elementFromPoint(e.clientX, e.clientY)?.closest("#vitrine .vit-slot")) });
+document.addEventListener("pointercancel", e=>{ if(vitDrag.slot && e.pointerId===vitDrag.id) vitDragEnd() });
+document.addEventListener("touchmove", e=>{ if(vitDrag.on) e.preventDefault() }, {passive:false});
+document.addEventListener("contextmenu", e=>{ if(vitDrag.slot && e.target.closest("#vitrine")) e.preventDefault() });
+document.addEventListener("dragstart", e=>{ if(e.target.closest?.("#vitrine")) e.preventDefault() });
+window.addEventListener("click", e=>{ if(vitDrag.block){ e.stopPropagation(); e.preventDefault(); vitDrag.block = false } }, true);
 // Mes statistiques : tout ce qu'on ne voit nulle part ailleurs, rangé par thème
 let courStats = null;
 function statsPanel(){
@@ -7289,6 +7354,8 @@ const PACHI = [
 // le Mammouth gagné (Pachinko, Château rasé en un tir) : shiny avec les chances du Sachet Collector
 const MAMM_SHINY = SHINY_RATE*10;
 const PACHI_PRICE = 100, PACHI_ROWS = PACHI.length-1, PW = 540, PH = 700, PACHI_GAP = 47;
+// les cases : leur haut et leur hauteur (elles s'arrêtent avant le cadre doré et ses ampoules)
+const PACHI_Y = PH-114, PACHI_H = 92;
 const pachi = {raf:0, busy:false};
 const pachiFree = () => !playedToday().pachinko;
 const pachiPrize = c => c.roue ? "un Mammouth" : c.sac ? `un ${BAG_BY[c.sac].name}` : c.j ? `${c.j} ${CUR.many}` : "rien cette fois";
@@ -7346,7 +7413,7 @@ function pachiBack(k){
   c.restore();
   // les rails du bord : la bille ne sort jamais du plateau
   c.strokeStyle = "rgba(255,255,255,.07)"; c.lineWidth = 2;
-  for(const sd of [-1,1]){ c.beginPath(); c.moveTo(PW/2+sd*30, 40); c.lineTo(PW/2+sd*(PW/2-22), PH-110); c.stroke() }
+  for(const sd of [-1,1]){ c.beginPath(); c.moveTo(PW/2+sd*30, 40); c.lineTo(PW/2+sd*(PW/2-22), PACHI_Y-14); c.stroke() }
   // l'enseigne au néon (dessinée floue puis nette) et le lance-bille doré
   const neon = (txt, x, y, size, col) => { c.font = `${size}px "Lilita One", sans-serif`; c.textAlign = "center"; c.textBaseline = "middle";
     c.save(); c.shadowColor = col; c.shadowBlur = 18; c.fillStyle = col; c.fillText(txt, x, y); c.shadowBlur = 6; c.fillText(txt, x, y); c.restore();
@@ -7357,27 +7424,34 @@ function pachiBack(k){
   c.fillStyle = fg; c.beginPath(); c.roundRect(PW/2-34, 6, 68, 30, 15); c.fill();
   c.fillStyle = "#12081F"; c.beginPath(); c.roundRect(PW/2-24, 12, 48, 18, 9); c.fill();
   // les cases : un bac en verre, des séparations chromées, chaque lot dans sa couleur
-  const sw = PACHI_GAP, y0 = PH-96;
-  const tray = c.createLinearGradient(0,y0-14,0,PH); tray.addColorStop(0,"rgba(255,255,255,.08)"); tray.addColorStop(1,"rgba(0,0,0,.35)");
-  c.fillStyle = tray; c.beginPath(); c.roundRect(14, y0-12, PW-28, PH-y0, 14); c.fill();
-  PACHI.forEach((cs,i)=>{ const x = pachiSlotX(i)-sw/2+3, w = sw-6, h = 84;
-    const sg = c.createLinearGradient(0,y0,0,y0+h); sg.addColorStop(0,cbShade(cs.c,55)); sg.addColorStop(.45,cs.c); sg.addColorStop(1,cbShade(cs.c,-55));
-    c.fillStyle = sg; c.beginPath(); c.roundRect(x, y0, w, h, 10); c.fill();
-    c.fillStyle = "rgba(255,255,255,.28)"; c.beginPath(); c.roundRect(x+4, y0+4, w-8, 10, 5); c.fill();
-    c.strokeStyle = "rgba(0,0,0,.35)"; c.lineWidth = 1.5; c.beginPath(); c.roundRect(x+.75, y0+.75, w-1.5, h-1.5, 10); c.stroke();
-    // l'étiquette du lot, avec son petit dessin
-    c.save(); c.translate(x+w/2, y0+h/2+4); c.fillStyle = "#fff"; c.textAlign = "center"; c.textBaseline = "middle";
-    c.shadowColor = "rgba(0,0,0,.5)"; c.shadowBlur = 4;
-    if(cs.roue){ const bg = c.createRadialGradient(-4,-20,1,0,-16,11); bg.addColorStop(0,"#fff"); bg.addColorStop(.3,"#FF8FA3"); bg.addColorStop(1,"#9E1B2E");
-      c.fillStyle = bg; c.beginPath(); c.arc(0,-16,10,0,TAU); c.fill(); c.fillStyle = "#fff" }
-    else if(cs.sac){ c.save(); c.translate(0,-27); c.scale(.8,.8); c.fillStyle = "rgba(255,255,255,.95)"; c.beginPath(); c.moveTo(-8,9); c.quadraticCurveTo(-10,-5,-4,-9); c.lineTo(4,-9); c.quadraticCurveTo(10,-5,8,9); c.closePath(); c.fill();
-      c.fillStyle = cbShade(cs.c,-40); c.fillRect(-6,-8,12,3); c.restore() }
-    else if(cs.j){ c.fillStyle = "#FFE14D"; c.beginPath(); c.ellipse(0,-17,9,6,0,0,TAU); c.fill(); c.fillStyle = "#FF4FB0"; c.beginPath(); c.moveTo(-9,-17); c.lineTo(-15,-22); c.lineTo(-15,-12); c.fill(); c.beginPath(); c.moveTo(9,-17); c.lineTo(15,-22); c.lineTo(15,-12); c.fill() }
-    c.fillStyle = "#fff"; c.font = `900 ${cs.lbl.length>5?9.5:cs.lbl.length>3?12:14}px Nunito, sans-serif`;
-    if(cs.lbl.length>5){ c.rotate(-Math.PI/2); c.fillText(cs.lbl, -12, 0) } else c.fillText(cs.lbl, 0, 14);
-    c.restore() });
+  const sw = PACHI_GAP, y0 = PACHI_Y, sh = PACHI_H;
+  const tray = c.createLinearGradient(0,y0-14,0,y0+sh+10); tray.addColorStop(0,"rgba(255,255,255,.08)"); tray.addColorStop(1,"rgba(0,0,0,.35)");
+  c.fillStyle = tray; c.beginPath(); c.roundRect(14, y0-12, PW-28, sh+20, 14); c.fill();
+  // une étiquette lisible sur le verre coloré : la police du jeu, un contour sombre, et une taille qui tient toujours dans la case
+  const label = (txt, x, y, max, size, vertical) => {
+    c.save(); c.translate(x, y); if(vertical) c.rotate(-Math.PI/2);
+    c.font = `${size}px "Lilita One", sans-serif`; const m = c.measureText(txt).width;
+    if(m > max){ size = Math.max(8, size*max/m); c.font = `${size}px "Lilita One", sans-serif` }
+    c.textAlign = "center"; c.textBaseline = "middle"; c.lineJoin = "round";
+    c.lineWidth = 3.5; c.strokeStyle = "rgba(0,0,0,.45)"; c.strokeText(txt, 0, 0);
+    c.fillStyle = "#fff"; c.fillText(txt, 0, 0); c.restore() };
+  PACHI.forEach((cs,i)=>{ const x = pachiSlotX(i)-sw/2+3, w = sw-6, cx = x+w/2, iy = y0+24;
+    const sg = c.createLinearGradient(0,y0,0,y0+sh); sg.addColorStop(0,cbShade(cs.c,55)); sg.addColorStop(.45,cs.c); sg.addColorStop(1,cbShade(cs.c,-55));
+    c.fillStyle = sg; c.beginPath(); c.roundRect(x, y0, w, sh, 10); c.fill();
+    c.fillStyle = "rgba(255,255,255,.28)"; c.beginPath(); c.roundRect(x+4, y0+4, w-8, 8, 4); c.fill();
+    c.strokeStyle = "rgba(0,0,0,.35)"; c.lineWidth = 1.5; c.beginPath(); c.roundRect(x+.75, y0+.75, w-1.5, sh-1.5, 10); c.stroke();
+    // en haut, le dessin du lot ; en dessous, son nom (debout pour les mots, à plat pour les nombres)
+    c.save(); c.shadowColor = "rgba(0,0,0,.45)"; c.shadowBlur = 4;
+    if(cs.roue){ c.fillStyle = "rgba(0,0,0,.3)"; c.beginPath(); c.arc(cx, iy+1, 15, 0, TAU); c.fill() }   // la vraie bille est posée dessus à chaque image
+    else if(cs.sac){ c.translate(cx, iy); c.fillStyle = "rgba(255,255,255,.95)"; c.beginPath(); c.moveTo(-9,11); c.quadraticCurveTo(-12,-5,-5,-10); c.lineTo(5,-10); c.quadraticCurveTo(12,-5,9,11); c.closePath(); c.fill();
+      c.fillStyle = cbShade(cs.c,-30); c.fillRect(-7,-9,14,3.5); c.beginPath(); c.arc(0,2,3.2,0,TAU); c.fill() }
+    else if(cs.j){ c.translate(cx, iy); c.fillStyle = "#FFE14D"; c.beginPath(); c.ellipse(0,0,9,6,0,0,TAU); c.fill(); c.fillStyle = "#FF4FB0"; c.beginPath(); c.moveTo(-9,0); c.lineTo(-15,-5); c.lineTo(-15,5); c.fill(); c.beginPath(); c.moveTo(9,0); c.lineTo(15,-5); c.lineTo(15,5); c.fill() }
+    c.restore();
+    if(cs.roue || cs.sac) label(cs.lbl, cx, y0+65, 46, 13, true);
+    else if(cs.j) label(cs.lbl, cx, y0+60, w-6, 16);
+    else label("0", cx, y0+sh/2, w-6, 22) });
   for(let i=0;i<=PACHI.length;i++){ const x = pachiSlotX(i)-sw/2, dg = c.createLinearGradient(x-3,0,x+3,0); dg.addColorStop(0,"#8A8FA3"); dg.addColorStop(.5,"#F2F4FA"); dg.addColorStop(1,"#6B7085");
-    c.fillStyle = dg; c.beginPath(); c.roundRect(x-2.5, y0-16, 5, 100, 2.5); c.fill() }
+    c.fillStyle = dg; c.beginPath(); c.roundRect(x-2.5, y0-16, 5, sh+16, 2.5); c.fill() }
   // les clous en laiton (leur ombre, leur reflet)
   for(let rr=0; rr<PACHI_ROWS; rr++) for(let i=0;i<=rr;i++){ const p = pachiPeg(rr, i);
     c.fillStyle = "rgba(0,0,0,.45)"; c.beginPath(); c.ellipse(p.x+2.5, p.y+4, 6.5, 5, 0, 0, TAU); c.fill();
@@ -7409,15 +7483,20 @@ function pachiDraw(){
     if(on){ const bg = c.createRadialGradient(x,y,0,x,y,11); bg.addColorStop(0,rgba(col,.95)); bg.addColorStop(1,rgba(col,0)); c.fillStyle = bg; c.beginPath(); c.arc(x,y,11,0,TAU); c.fill() }
     c.fillStyle = on ? "#FFFDF0" : "rgba(255,240,200,.35)"; c.beginPath(); c.arc(x,y,2.6,0,TAU); c.fill() });
   // les lots rares brillent doucement en attendant leur bille
-  const sw = PACHI_GAP, y0 = PH-96;
+  const sw = PACHI_GAP, y0 = PACHI_Y;
   PACHI.forEach((cs,i)=>{ const rare = cs.roue || cs.sac==="collector" || cs.j>=1000, x = pachiSlotX(i)-sw/2+3;
     const on = pachi.land===i && now-pachi.landT<3000;
-    if(rare && !on){ const a = .18+.14*Math.sin(t*3+i); c.fillStyle = rgba(cs.c, a); c.beginPath(); c.roundRect(x-4, y0-4, sw+2, 92, 12); c.fill() }
+    if(rare && !on){ const a = .18+.14*Math.sin(t*3+i); c.fillStyle = rgba(cs.c, a); c.beginPath(); c.roundRect(x-4, y0-4, sw+2, PACHI_H+8, 12); c.fill() }
     if(on){ const k2 = 1-(now-pachi.landT)/3000;
       // la case gagnante s'allume, et un faisceau de lumière monte du bac
       const beam = c.createLinearGradient(0,y0,0,y0-260); beam.addColorStop(0,rgba("#FFE14D",.5*k2)); beam.addColorStop(1,rgba("#FFE14D",0));
       c.fillStyle = beam; c.beginPath(); c.moveTo(x-6,y0); c.lineTo(x+sw,y0); c.lineTo(x+sw+30,y0-260); c.lineTo(x-36,y0-260); c.fill();
-      c.fillStyle = rgba("#FFF6C4", .55*k2+.15*Math.sin(t*20)*k2); c.beginPath(); c.roundRect(x, y0, sw-6, 84, 10); c.fill() }
+      c.fillStyle = rgba("#FFF6C4", .55*k2+.15*Math.sin(t*20)*k2); c.beginPath(); c.roundRect(x, y0, sw-6, PACHI_H, 10); c.fill() }
+    // la case Mammouth : une vraie bille Mammouth, qui tourne doucement et brille
+    if(cs.roue){ const im = pachiMammIcon(); if(im.complete && im.naturalWidth){ const cx = x+(sw-6)/2, cy = y0+24, d = 28+1.5*Math.sin(t*2.4);
+      c.save(); c.translate(cx, cy); c.rotate(Math.sin(t*.8)*.5); c.drawImage(im, -d/2, -d/2, d, d); c.restore();
+      const s = (t*1.3)%1; c.save(); c.globalCompositeOperation = "lighter"; c.fillStyle = rgba("#FFF6C4", 1-s); c.translate(cx+8, cy-8); c.rotate(s*2);
+      c.beginPath(); for(let k=0;k<4;k++){ c.rotate(Math.PI/2); c.lineTo(0,-4.5); c.lineTo(1,-1) } c.fill(); c.restore() } }
   });
   // le clou qu'on vient de toucher s'allume, avec une onde
   if(pachi.hit && now-pachi.hit.t<380){ const p = pachiPeg(pachi.hit.r, pachi.hit.i), a = 1-(now-pachi.hit.t)/380;
@@ -7538,7 +7617,10 @@ function mammRoulette(b, from){
     document.getElementById("mr-step").textContent = `${F.name} · ${PALETTES[b.pal][0]}`; res.hidden = false;
     Sound.reveal?.(FMT_TIER.mammouth, !!b.shiny); FX.fireworks(b.shiny ? SHINY_COLS : [DECOR_RAR[F.rar].c, "#FFE14D", "#FFFFFF"], b.shiny || F.rar>=3 ? 9 : 5) };
 }
-let pachiSpr = null;
+let pachiSpr = null, pachiMamm = null;
+const pachiMammIcon = () => pachiMamm || (pachiMamm = Object.assign(new Image(), {src:marbleURL({seed:hash("pachinko-mammouth"), type:"mammouth", family:1, pal:EX_PAL, shiny:0}, 96)}));
+// le décor est redessiné quand la police du jeu est chargée (les étiquettes des cases l'utilisent)
+document.fonts?.ready.then(()=>{ pachi.back = null });
 function pachiSprite(spec, px){ const key = `${spec.seed}|${px}`; if(pachiSpr?.key===key) return pachiSpr.img;
   const im = new Image(); im.src = marbleURL(spec, Math.max(48, px*2)); pachiSpr = {key, img:im}; return im }
 // le chemin : une suite de gauche/droite qui mène à la case tirée (autant de « droite » que le numéro de la case), dans un ordre au hasard
@@ -7547,7 +7629,7 @@ const PACHI_HOP = .3;   // secondes entre deux clous
 function pachiPos(B, now){
   if(!B.pts){ const pts = [{x:PW/2, y:18}]; let right = 0;
     for(let r=0;r<PACHI_ROWS;r++){ const p = pachiPeg(r, right); pts.push({x:p.x, y:p.y-19, r, i:right}); right += B.path[r] }
-    pts.push({x:pachiSlotX(right), y:PH-56}); B.pts = pts }
+    pts.push({x:pachiSlotX(right), y:PACHI_Y+50}); B.pts = pts }
   const pts = B.pts, t = (now-B.t0)/1000; if(t<0) return pts[0];
   const end = (pts.length-1)*PACHI_HOP;
   if(t>=end){ if(!B.done){ B.done = true; B.onEnd() } return pts[pts.length-1] }
@@ -7587,7 +7669,7 @@ async function pachiGo(pay){
   pachi.ball = {spec:activeSpec(), path:pachiPath(slot), t0:performance.now()+150, seg:-1, onEnd:()=>{
     pachi.land = slot; pachi.landT = performance.now(); pachi.busy = false;
     give();
-    pachiSparks(pachiSlotX(slot), PH-100, cs.j===0 ? 10 : 50, cs.j===0 ? ["#8E8898"] : ["#FFE14D","#FF4FD8","#39E6FF","#7CE59A", cs.c], cs.j!==0);
+    pachiSparks(pachiSlotX(slot), PACHI_Y-4, cs.j===0 ? 10 : 50, cs.j===0 ? ["#8E8898"] : ["#FFE14D","#FF4FD8","#39E6FF","#7CE59A", cs.c], cs.j!==0);
     const big = cs.roue || cs.sac==="collector" || cs.sac==="premium" || cs.j>=400;
     const w = document.getElementById("p-win");
     if(w){ w.innerHTML = `<b>${cs.roue ? "MAMMOUTH !" : big ? "Bravo !" : cs.j===0 ? "Raté…" : "Gagné !"}</b><span>${cs.roue ? "La roulette choisit son décor…" : pachiPrize(cs)}</span>`; w.hidden = false }
@@ -8727,6 +8809,28 @@ const gcPickable = () => S.specs.filter(s=>sync.known?.has(s.id)).sort(tierSort)
 const gcDefault = () => (S.gcBille && specById(S.gcBille)) || activeSpec();
 const gcMeIn = R => (R||[]).findIndex(x=>x.joueur && x.joueur===sync.uid);
 
+// ---------- les lots ----------
+// les courses finies où j'ai des lots pas encore récupérés (la dernière de midi, la dernière du soir)
+const gcWaiting = () => { const R = gc.etat?.rediffs || {};
+  return ["12","20"].map(h=>R[h]).filter(D=>D && !D.lots && gcMeIn(D.resultats)>=0 && Date.now()>D.depart+GC_DUR*1000).sort((a,b)=>b.depart-a.depart) };
+// le bandeau en haut de la page : regarder la course (les lots sont remis à l'arrivée), ou les prendre tout de suite
+function gcLotsBanner(D){ const h = D.heure||20, seen = gcSeenIt(D), me = gcMeIn(D.resultats);
+  return `<section class="panel gc-lots"><span class="gc-lots-ic">${ic("gift",26)}</span>
+    <div><b>Tes lots de la course ${gcSlotName(h)} t'attendent !</b><small>${seen ? `Tu as fini ${me+1}${me?"e":"er"} : ${gcLotTxt(D.resultats[me],me)}.` : "Regarde la course pour découvrir ta place, ou récupère tes lots tout de suite."}</small></div>
+    <div class="btns">${seen?"":`<button class="btn btn-ghost" data-action="gc-watch" data-h="${h}">${ic("play",16)} Regarder</button>`}<button class="btn btn-yellow" data-action="gc-claim" data-h="${h}">${ic("gift",16)} Récupérer mes lots</button></div></section>`;
+}
+// remet les lots d'une course, une seule fois (fin de la course, course fermée avant l'arrivée, ou bouton du bandeau)
+// quiet : pas de message (le podium affiche déjà le lot)
+function gcClaim(D, quiet){
+  if(!D || D.test || D.lots || D.claiming || !srvOn() || gcMeIn(D.resultats)<0) return Promise.resolve(false);
+  const key = gcKey(D), me = gcMeIn(D.resultats), all = () => [D, gc.etat?.derniere, ...Object.values(gc.etat?.rediffs||{})].filter(x=>x && gcKey(x)===key);
+  all().forEach(x=>x.claiming = true);
+  const fin = ok => { all().forEach(x=>{ x.claiming = false; if(ok) x.lots = true }); if(ui.view==="grandecourse" && document.getElementById("gc-ov").hidden) renderView(); renderNav() };
+  return srv(()=>Cloud.course.lots(D.jour, D.heure||20)).then(e=>{ applyEco(e); Sound.coin(); fin(true);
+      if(!quiet) toast(`Tu as fini ${me+1}${me?"e":"er"} : ${gcLotTxt(D.resultats[me],me)}, c'est dans ta poche !`); return true },
+    e=>{ fin(e?.code==="deja"); if(e?.code!=="deja" && !quiet) srvFail(e); throw e });
+}
+
 // ---------- la page ----------
 function viewGrandeCourse(){
   gcLoad();
@@ -8745,6 +8849,7 @@ function viewGrandeCourse(){
   const live = D && Date.now() < D.depart + GC_DUR*1000;
   return `<div class="page-head"><div><button class="back-link" data-action="nav" data-view="jeux">${ic("chevl",14)} Tous les jeux</button><h1>La Grande Course</h1>
     <p>Deux courses par jour, à 12 h et à 20 h : les billes inscrites dévalent le circuit des lacets. Chaque bille a exactement la même chance de gagner : c'est la surprise !</p></div></div>
+  ${gcWaiting().map(gcLotsBanner).join("")}
   <section class="panel gc-hero">
     <div class="gc-main">
       <span class="gh-kick">${ic("flag",14)} Course du ${new Date(N.depart).toLocaleDateString("fr-FR",{weekday:"long", day:"numeric", month:"long"})} à ${N.heure} h</span>
@@ -8768,8 +8873,8 @@ function gcRediff(D){
   const me = gcMeIn(D.resultats), live = Date.now() < D.depart + GC_DUR*1000, h = D.heure||20;
   return `<section class="panel gc-last"><div class="panel-head"><h2>${live?`<span class="gc-livedot"></span> En direct`:`Course ${gcSlotName(h)}`} · ${new Date(D.depart).toLocaleDateString("fr-FR",{weekday:"long", day:"numeric", month:"long"})} à ${h} h</h2>
       <button class="btn btn-yellow" data-action="gc-watch" data-h="${h}">${ic("play",16)} ${live?"Regarder en direct":"Revoir la course"}</button></div>
-    ${live || !gcSeenIt(D) ? `<p class="meta">${live ? "La course est en cours : regarde-la pour découvrir le podium !" : `Regarde la course pour découvrir le podium${me>=0?" et récupérer tes lots":""} !`}</p>` : `<ol class="gc-res">${D.resultats.slice(0,3).map((x,i)=>`<li>${["🥇","🥈","🥉"][i]} <b>${esc(gcName(x))}</b></li>`).join("")}</ol>
-    ${me>=0 ? `<p class="gc-mine">Tu as fini <b>${me+1}${me?"e":"er"}</b> sur ${D.resultats.length} · ${gcLotTxt(D.resultats[me],me)}${D.lots?"":` <button class="btn btn-yellow" data-action="gc-watch" data-h="${h}">Récupérer mes lots</button>`}</p>` : ""}`}
+    ${live || !gcSeenIt(D) ? `<p class="meta">${live ? "La course est en cours : regarde-la pour découvrir le podium !" : `Regarde la course pour découvrir le podium${me>=0&&!D.lots?" et récupérer tes lots":""} !`}</p>` : `<ol class="gc-res">${D.resultats.slice(0,3).map((x,i)=>`<li>${["🥇","🥈","🥉"][i]} <b>${esc(gcName(x))}</b></li>`).join("")}</ol>
+    ${me>=0 ? `<p class="gc-mine">Tu as fini <b>${me+1}${me?"e":"er"}</b> sur ${D.resultats.length} · ${gcLotTxt(D.resultats[me],me)}${D.lots?` <span class="gc-ok">${ic("check",14,3)} récupérés</span>`:""}</p>` : ""}`}
   </section>`;
 }
 const gcName = x => x.bot ? `${x.nom} (bille de la cour)` : x.pseudo;
@@ -8832,7 +8937,8 @@ function gcResultPopup(){   // sans rien dévoiler : on découvre le résultat (
   el.innerHTML = `<div class="modal gc-pop" role="dialog" aria-modal="true" aria-label="La Grande Course"><button class="close-x" data-action="close-modal" aria-label="Fermer">×</button>
     <span class="gh-kick">${ic("flag",14)} La Grande Course</span><h2>La course de ${new Date(D.depart).toLocaleDateString("fr-FR",{weekday:"long"})} ${(D.heure||20)===12?"midi":"soir"} est finie !</h2>
     <p>Qui a gagné ? Regarde la course pour découvrir le podium et récupérer tes lots.</p>
-    <div class="btns"><button class="btn btn-yellow btn-xl" data-action="gc-watch" data-h="${D.heure||20}">${ic("play",18)} Regarder la course</button></div></div>`;
+    <div class="btns"><button class="btn btn-yellow btn-xl" data-action="gc-watch" data-h="${D.heure||20}">${ic("play",18)} Regarder la course</button></div>
+    <button class="linkish gc-skip" data-action="gc-claim" data-h="${D.heure||20}">Récupérer mes lots sans regarder</button></div>`;
   el.hidden = false;
 }
 
@@ -9198,7 +9304,7 @@ async function gcWatch3D(race){
   Object.assign(GCV, {race, R, T:{th:{name:"Le circuit des lacets"}}, done:false, g3:true});
   const G3V = {t0:performance.now() - (live ? since*1000 : 0), follow:null, said:{}, renderer, onResize, sim, who, lastF:-1, lastHit:0};
   GCV.g3v = G3V;
-  Sound.rollStart();
+  // pas de bruit de roulement continu ici : avec toutes les billes, il sonnait comme un vent qui fait mal aux oreilles
   const big = t => { const b = document.getElementById("gc-big"); if(!b) return; b.innerHTML = `<span>${t}</span>`; setTimeout(()=>{ if(b.textContent===t) b.innerHTML = "" }, 1000) };
   const v = new THREE.Vector3(), mq = new THREE.Matrix4(), mc = new THREE.Matrix4(), qq = new THREE.Quaternion();
   const loop = now => {
@@ -9239,17 +9345,13 @@ async function gcWatch3D(race){
       hb = Math.min(1, hb/5); hd = Math.min(1, hd/9);
       if(now-G3V.lastHit>45){ if(hb>.04){ Sound.hit(.15+hb*.85); G3V.lastHit = now } else if(hd>.05){ Sound.wall(hd*.6); G3V.lastHit = now } } }
     G3V.lastF = f;
-    let sp = 0, cnt = 0;
-    if(f>0){ const P0 = sim.frames[f-1]; for(let i=0;i<n;i++){ if(sim.fin[i]<=tt || camera.position.distanceTo(meshes[i].position)>30) continue;
-      sp += Math.hypot(F[i*7]-P0[i*7], F[i*7+1]-P0[i*7+1], F[i*7+2]-P0[i*7+2])/G3.DT; cnt++ } }
-    Sound.roll(cnt ? Math.min(24, sp/cnt*3.2) : 0, false);
     // les noms au-dessus des billes
     const W = stage.clientWidth, H = stage.clientHeight;
     for(let i=0;i<n;i++){ const el = document.getElementById("g3l"+i); if(!el) continue; v.set(F[i*7], F[i*7+1]+.8, F[i*7+2]).project(camera);
       const vis = v.z<1 && Math.abs(v.x)<1.1 && Math.abs(v.y)<1.1 && camera.position.distanceTo(meshes[i].position)<40;
       el.style.opacity = vis ? 1 : 0; el.style.transform = `translate(${(v.x*.5+.5)*W}px,${(-v.y*.5+.5)*H}px) translate(-50%,-100%)` }
     const lastFin = Math.max(...sim.fin.filter(x=>x<900));
-    if(!GCV.done && tt > Math.min(lastFin+1.5, sim.fin[order[0]]+15)){ GCV.done = true; Sound.roll(0); gcPodium() }
+    if(!GCV.done && tt > Math.min(lastFin+1.5, sim.fin[order[0]]+15)){ GCV.done = true; gcPodium() }
   };
   GCV.raf = requestAnimationFrame(loop);
 }
@@ -9321,7 +9423,8 @@ function gcControls(cv){
 function V_vueBtn(){ const b = document.getElementById("gc-vue"); if(b) b.textContent = GCV.vue==='tv' ? "Vue du ciel" : "Vue télé" }
 function gcClose(){
   cancelAnimationFrame(GCV.raf); Sound.rollStop(); g3Free(); const ov = document.getElementById("gc-ov"); ov.hidden = true; ov.innerHTML = ""; document.body.classList.remove("gc-open");
-  if(GCV.race && !GCV.race.test){ gcMarkSeen(GCV.race); save(); renderView() }
+  // fermée avant l'arrivée : les lots sont remis quand même (on ne les perd jamais en passant la course)
+  if(GCV.race && !GCV.race.test){ gcMarkSeen(GCV.race); save(); renderView(); gcClaim(GCV.race).catch(()=>{}) }
 }
 function gcSay(t, big){ const k = document.getElementById("gc-ticker"); if(!k) return; const el = document.createElement("div"); el.textContent = t; k.appendChild(el); while(k.children.length>3) k.firstChild.remove(); setTimeout(()=>el.remove(), big?5200:3400) }
 function gcBig(t){ const b = document.getElementById("gc-big"); if(!b) return; b.innerHTML = `<span>${t}</span>`; setTimeout(()=>{ if(b.textContent===t) b.innerHTML = "" }, 950) }
@@ -9710,10 +9813,10 @@ function gcPodium(){
   if(me>=0 && me<3) Sound.ding();
   // les lots sont remis maintenant, à la fin de la course
   if(me>=0 && !V.race.test && srvOn()){
-    const st = document.getElementById("gc-lotst"), key = gcKey(V.race);
-    srv(()=>Cloud.course.lots(V.race.jour, V.race.heure||20)).then(e=>{ applyEco(e); if(st) st.textContent = "· récupérés !"; Sound.coin();
-      [gc.etat?.derniere, ...Object.values(gc.etat?.rediffs||{})].forEach(D=>{ if(D && gcKey(D)===key) D.lots = true }) },
-      e=>{ if(st) st.textContent = e?.code==="deja" ? "· déjà récupérés" : "· pas pu être récupérés, réessaie plus tard"; if(e?.code!=="deja") srvFail(e) });
+    const st = document.getElementById("gc-lotst");
+    if(V.race.lots){ if(st) st.textContent = "· déjà récupérés" }
+    else gcClaim(V.race, true).then(()=>{ if(st) st.textContent = "· récupérés !" },
+      e=>{ if(st) st.textContent = e?.code==="deja" ? "· déjà récupérés" : "· pas pu être récupérés : réessaie depuis la page de la course" });
   }
 }
 // une course d'essai : toi et 7 billes de la cour, rien à gagner
@@ -10491,7 +10594,13 @@ document.addEventListener("click", e=>{
     case "missing": toast(`${TYPES[t.dataset.type].label} ${FAMILIES[+t.dataset.fam].name} : pas encore trouvée. Elle se cache peut-être dans ton prochain sachet !`); break;
     case "beta-claim": claimBeta(); break;
     case "beta-see": showBeta(false); break;
-    case "photo-rm": delete S.photo; save(); renderTop(); renderView(); break;
+    case "pick-avatar": { const el = document.getElementById("modal"), list = [...S.specs].sort(tierSort), cur = S.photo ? null : avatarSpec(ownActive())?.id;
+      el.innerHTML = `<div class="modal bag-sum pick-modal" role="dialog" aria-modal="true" aria-label="Choisir la bille de ta photo de profil"><button class="close-x" data-action="close-modal" aria-label="Fermer">×</button>
+        <h2>Quelle bille en photo de profil ?</h2><p class="meta">Une des billes de ta boîte, à la place de ta photo.</p>
+        ${S.avatar&&specById(S.avatar)?`<p><button class="btn btn-ghost" data-action="set-avatar" data-id="">Reprendre ma bille active</button></p>`:""}
+        ${pickFilter(list)}<div class="pick-grid">${list.map(x=>`<button class="m-card${x.id===cur?" on":""}" data-action="set-avatar" data-id="${x.id}" ${pickData(x)} style="${tstyle(x.type)}"><span class="ball">${mImg(x,120,Math.round(40*scaleOf(x.type)+14),"")}</span><b>${esc(specName(x))}</b>${typePill(x.type)}</button>`).join("")}</div></div>`;
+      el.hidden = false; (el.querySelector(".pick-q")||el.querySelector(".close-x")).focus(); break }
+    case "set-avatar": delete S.photo; if(t.dataset.id) S.avatar = t.dataset.id; else delete S.avatar; save(); closeModal(); renderTop(); renderView(); toast("C'est ta nouvelle photo de profil !"); break;
     case "stats": toggleProfPop(false); courStats = null; go("profil"); setTimeout(()=>document.getElementById("stats")?.scrollIntoView({behavior:"smooth", block:"start"}), 60); break;
     case "pick-active": { const el = document.getElementById("modal"), list = [...S.specs].sort(tierSort);
       el.innerHTML = `<div class="modal bag-sum pick-modal" role="dialog" aria-modal="true" aria-label="Choisir ta bille"><button class="close-x" data-action="close-modal" aria-label="Fermer">×</button>
@@ -10544,6 +10653,7 @@ document.addEventListener("click", e=>{
     case "gc-reg": gcRegister(); break;
     case "gc-unreg": srv(()=>Cloud.course.desinscrire()).then(e=>{ gc.etat = e; renderView(); renderNav(); toast("Tu n'es plus inscrit à la Grande Course.") }, srvFail); break;
     case "gc-watch": { const D = gc.etat?.rediffs?.[t.dataset.h] || gc.etat?.derniere; if(D){ closeModal(); gcWatch(D) } break }
+    case "gc-claim": { const D = gc.etat?.rediffs?.[t.dataset.h]; if(D){ t.disabled = true; closeModal(); gcClaim(D).catch(()=>{ t.disabled = false }) } break }
     case "gc-test": closeModal(); gcTest(); break;
     case "gc-replay": gcWatch({...GCV.race, replay:true}); break;
     case "g3-cam": g3Cam(); break;
@@ -10940,6 +11050,7 @@ function prepForCloud(){
   });
   const re = id => map[id] || id;
   S.active = re(S.active);
+  if(S.avatar) S.avatar = re(S.avatar);
   S.vitrine = S.vitrine.map(id=>id && re(id));
   S.unseen = S.unseen.map(re);
   ["cover","keep"].forEach(k=>{ if(S[k]) for(const x in S[k]) S[k][x] = re(S[k][x]) });

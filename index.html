@@ -4775,8 +4775,10 @@ const tierProg = (xp, tier) => tier>=PASS_TIERS ? [1,1] : [xp-XP_AT[tier], TIER_
 const BAG_XP = {gratuit:20, classique:60, premium:120, collector:300, pirate:150};
 // l'XP des sachets est plafonnée à 600 par jour : ouvrir des sachets sans fin ne fait plus filer le passe
 const BAG_XP_DAY = 600;
-function bagXP(n){ const P = ensurePass(); if(P.bagDay!==dayKey()){ P.bagDay = dayKey(); P.bagXP = 0 }
-  const k = Math.max(0, Math.min(n, BAG_XP_DAY-P.bagXP)); P.bagXP += k; return k }
+// un sachet absent de BAG_XP rapporte 0 XP (le 2 octobre 2026, le Sachet Pirate Premium n'y était pas : son XP « pas un nombre »
+// a remis l'XP du passe à zéro, voir ensurePass)
+function bagXP(n){ const P = ensurePass(); if(P.bagDay!==dayKey() || !Number.isFinite(P.bagXP)){ P.bagDay = dayKey(); P.bagXP = 0 }
+  const k = Math.max(0, Math.min(Number.isFinite(n) ? n : 0, BAG_XP_DAY-P.bagXP)); P.bagXP += k; return k }
 const PASS_XP = {quest:150, bonus:200, star:15, recycle:2, craft:40, daily:100};
 // le premier passe de saison (septembre 2026) : un décor de saison n'est montré qu'une fois son mois arrivé
 const SEASON_LAUNCH = new Date(2026, 8, 1);
@@ -4801,7 +4803,12 @@ function ensurePass(){
     if(old) passRollover(old);
     save();
   }
-  return S.pass;
+  // XP perdue (le 2 octobre 2026 : une XP « pas un nombre » enregistrée comme vide, l'XP repartait de 0 mais les paliers
+  // récupérés restaient) : on a forcément eu l'XP du plus haut palier récupéré, on la rend en plus de ce qu'on a gagné depuis
+  const P = S.pass, top = Math.max(0, ...(P.free||[]), ...(P.prem||[])), xp = Number.isFinite(P.xp) ? P.xp : 0;
+  if(top>1 && xp < XP_AT[top]){ P.xp = Math.min(PASS_MAX_XP, XP_AT[top] + xp); save() }
+  else if(!Number.isFinite(P.xp)){ P.xp = xp; save() }
+  return P;
 }
 // Nouveau mois : les paliers atteints mais pas récupérés du passe d'avant sont ajoutés automatiquement
 // (si on revient dans les 7 premiers jours ; le serveur accepte le mois d'avant pendant ce temps-là).
@@ -4882,6 +4889,7 @@ function grantPassReward(P, se, track, t){
 }
 function passXP(n){
   const P = ensurePass(), before = passTier();
+  if(!Number.isFinite(n) || n<=0) return 0;
   P.xp = Math.min(PASS_MAX_XP, P.xp+n); save();
   const after = passTier();
   if(after>before){ note(`Passe de saison : palier ${after} atteint !`, "end", 400); renderNav() }

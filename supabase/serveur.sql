@@ -401,9 +401,10 @@ end $$;
 -- ~62 en bonbecs seuls ; on retrouve au moins sa mise 1 fois sur 5.
 -- Case Mammouth : 0,05 %, un Mammouth garanti (décor tiré comme dans un sachet, coloris au hasard, shiny comme dans le Sachet Collector).
 create or replace function interne.pachinko_cases() returns table(k int, poids numeric, bonbecs int, sac text, taille text) language sql immutable as $$
-  select * from (values (0, 0.05, 0, null::text, 'mammouth'::text), (1, 1.15, 1000, null, null), (2, 3, 400, null, null),
-    (3, 4.6, 200, null, null), (4, 20.5, 50, null, null), (5, 39, 0, null, null), (6, 20.5, 50, null, null),
-    (7, 4.6, 200, null, null), (8, 4, 0, 'classique', null), (9, 2.1, 0, 'premium', null), (10, 0.5, 0, 'collector', null)) v(k, poids, bonbecs, sac, taille)
+  -- 3 octobre 2026 : bille à 150, et 0 → 33 %, 50 → 26 %, 200 → 18 %, Classique 13 %, 400 → 4 %, Premium 3 %, 1000 → 2 %, Collector 1 %, Mammouth 0,1 % (PACHI dans index.html)
+  select * from (values (0, 0.1, 0, null::text, 'mammouth'::text), (1, 2, 1000, null, null), (2, 4, 400, null, null),
+    (3, 9, 200, null, null), (4, 13, 50, null, null), (5, 33, 0, null, null), (6, 13, 50, null, null),
+    (7, 9, 200, null, null), (8, 13, 0, 'classique', null), (9, 3, 0, 'premium', null), (10, 1, 0, 'collector', null)) v(k, poids, bonbecs, sac, taille)
 $$;
 create or replace function interne.pachinko_roue() returns numeric[] language sql immutable as $$ select array[10,15,20,25,20,10]::numeric[] $$;   -- Mini → Mammouth
 create or replace function public.pachinko(payer boolean default false)
@@ -415,7 +416,7 @@ begin
     begin insert into gains (joueur, source, cle, montant) values (qui, 'jeu', today || '|pachinko', 0);
     exception when unique_violation then raise exception 'deja'; end;
   else
-    update portefeuilles set bonbecs = bonbecs - 100, maj_le = now() where joueur = qui and bonbecs >= 100;
+    update portefeuilles set bonbecs = bonbecs - 150, maj_le = now() where joueur = qui and bonbecs >= 150;   -- la bille de plus : 150 (PACHI_PRICE)
     if not found then raise exception 'pas_assez'; end if;
   end if;
   x := random() * (select sum(poids) from interne.pachinko_cases());
@@ -468,7 +469,7 @@ begin
       if montant <> 0 or sac is distinct from 'classique' then raise exception 'montant_invalide'; end if;
       k := today;
     when 'jeu' then     -- une récompense par jour et par jeu (au Tir : par trou)
-      maxi := case when cle ~ '^tir\|[0-5]$' then 250 when cle = 'pot' then 250 when cle = 'chateau' then 340 when cle = 'casse' then 300
+      maxi := case when cle ~ '^tir\|[0-5]$' then 250 when cle = 'pot' then 250 when cle = 'chateau' then 340 when cle = 'casse' then 450
                    when cle in ('course','tic') then 200 end;   -- une partie par jour et par jeu (DAY_GAMES dans index.html)
       if maxi is null or montant > maxi or sac is not null then raise exception 'montant_invalide'; end if;
       k := today || '|' || cle;

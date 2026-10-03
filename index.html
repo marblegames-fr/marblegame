@@ -9213,10 +9213,15 @@ async function g3Load(){
 // et les pichenettes), et d'où la caméra regarde (cam). Un circuit par course : celui de midi et celui du soir sont toujours différents.
 // Les pièces qui bougent (moulins) tournent à vitesse fixe : tout le monde voit exactement la même course.
 const G3_ORDER = ["lacets","plinko","spirale","toboggan","moulins","flipper"];
-const g3DayNo = jour => Math.round(Date.UTC(...jour.split("-").map((x,i)=>i===1 ? x-1 : +x))/864e5);
-// le circuit d'une course : midi et soir passent chacun par tous les circuits, un par jour, et le soir a 3 crans d'avance
-// sur midi (jamais le même circuit deux fois dans la journée)
-const g3CircuitOf = race => G3C[race.circuit] ? race.circuit : G3_ORDER[((g3DayNo(race.jour||"2026-10-03") + ((race.heure||20)===20 ? 3 : 0)) % G3_ORDER.length + G3_ORDER.length) % G3_ORDER.length];
+// le circuit d'une course : tiré au hasard d'après le jour (le même pour tout le monde), jamais le même le midi et le soir.
+// G3_FORCE : une course dont on a choisi le circuit à la main (le Grand Plinko pour la première course de midi avec les circuits).
+const G3_FORCE = {"2026-10-03|12":"plinko"};
+function g3CircuitOf(race){
+  if(G3C[race.circuit]) return race.circuit;
+  const jour = race.jour || "2026-10-03", h = race.heure || 20, f = G3_FORCE[jour+"|"+h]; if(f) return f;
+  const N = G3_ORDER.length, midi = G3_FORCE[jour+"|12"] ? G3_ORDER.indexOf(G3_FORCE[jour+"|12"]) : hash(jour+"|midi") % N;
+  return G3_ORDER[h===12 ? midi : (midi + 1 + hash(jour+"|soir") % (N-1)) % N];
+}
 
 // quaternion à partir de trois axes (colonnes d'une matrice de rotation)
 function g3Basis(X, Y, Z){
@@ -9299,35 +9304,29 @@ const G3C = {
           zs.forEach(zz=>k.cyl(.22, 1.4, [x, sY(x)+.7, zz + (r()-.5)*.3])) } });
       return {...z, ...g3ZigStart(k, o, n, r), cam:g3ZigCam} }},
 
-  // Un mur géant de plots, entre deux vitres : les billes tombent de plot en plot, étage après étage
-  plinko:{name:"Le Grand Plinko", desc:"Un mur géant de plots entre deux vitres : les billes tombent de plot en plot sur quatre étages, et chaque étage les renvoie de l'autre côté.",
-    theme:{bg:"#120B24", ramp:"#7B4FD6", tray:"#FF4FD8", peg:"#FFD34D"}, axis:1,
+  // Un vrai Plinko géant : un seul grand mur de plots entre deux vitres, du haut jusqu'au bac. Le mur est penché vers l'arrière
+  // (les billes descendent moins vite qu'en chute libre) ; des champignons au hasard et des bosses dans les murs mélangent le peloton.
+  plinko:{name:"Le Grand Plinko", desc:"Un mur géant de plots entre deux vitres : les billes tombent de plot en plot jusqu'en bas. Impossible de savoir qui arrivera la première !",
+    theme:{bg:"#120B24", ramp:"#7B4FD6", tray:"#FF4FD8", peg:"#FFD34D", bump:"#39E6FF"}, axis:1, g:.42,
     build(k, r, n){
-      const W = 15, GAP = 1.0, D = GAP+.6, STAGES = 5, SH = 15, rows = 7, path = [];
-      const top = 4, bottom = top - STAGES*SH - 4;
-      // le fond, la vitre de devant, les deux côtés
+      const W = 18, GAP = 1.0, D = GAP+.6, ROWS = 40, DY = 1.5, top = 4, path = [[0, top, 0]];
+      const yLast = top - 2 - (ROWS-1)*DY, yb = yLast - 3, bottom = yb - 2;
       const H = top - bottom + 6, cy = (top + bottom)/2 + 2;
       k.box([W+1, H, .3], [0, cy, -GAP/2-.15], [0,0,0], "back"); k.box([W+1, H, .3], [0, cy, GAP/2+.15], [0,0,0], "glass");
       k.box([.4, H, D], [-W/2-.2, cy, 0], [0,0,0], "wall2"); k.box([.4, H, D], [W/2+.2, cy, 0], [0,0,0], "wall2");
-      for(let s=0;s<STAGES;s++){
-        const y0 = top - s*SH, side = s%2 ? -1 : 1;
-        path.push([0, y0, 0]);
-        // les plots, en quinconce
-        for(let row=0; row<rows; row++){ const y = y0 - 2 - row*1.55, off = row%2 ? .9 : 0;
-          for(let x=-W/2+1.2+off; x<W/2-.9; x+=1.8) k.pin(.2, GAP*.9, [x + (r()-.5)*.12, y, 0]) }
-        // l'étagère du bas de l'étage : un peu penchée, ouverte d'un côté (pas de côté pour le dernier : le bac)
-        if(s<STAGES-1){ const ys = y0 - 2 - rows*1.55 - .6, len = W-1.7, xs = -side*.85;
-          k.box([len, .3, D], [xs, ys, 0], [0,0,-side*6*Math.PI/180], "ramp");
-          path.push([-side*W/2*.7, ys+.5, 0], [side*(W/2-.8), ys-.2, 0]) }
-      }
       k.box([W+1, .3, D], [0, top+3.8, 0], [0,0,0], "glass");   // le couvercle
-      const yb = top - STAGES*SH + .5;
+      for(let row=0; row<ROWS; row++){ const y = top - 2 - row*DY, off = row%2 ? .9 : 0;
+        for(let x=-7.2+off; x<7.3; x+=1.8){   // symétrique : 9 plots sur les rangs pairs, 8 sur les impairs
+          // de temps en temps, un gros champignon à la place d'un plot : il renvoie les billes bien plus loin
+          if(row>2 && r()<.07) k.pin(.5, GAP*.9, [x, y, 0], "bump", "rebond"); else k.pin(.2, GAP*.9, [x + (r()-.5)*.12, y, 0]) }
+        // une bosse ronde dans chaque mur, un rang sur deux : personne ne descend tranquillement le long du bord
+        if(row%2===1) [-1,1].forEach(s=>k.pin(.5, GAP*.9, [s*(W/2+.05), y, 0], "wall2"));
+      }
       k.box([W, .4, D], [0, yb-1.5, 0], [0,0,0], "tray"); path.push([0, yb-1, 0]);
-      // départ : les billes alignées tout en haut sur un plancher qui s'ouvre
-      const cols = 14, starts = [];
+      const cols = 17, starts = [];
       for(let i=0;i<n;i++){ const c = i%cols, rw = Math.floor(i/cols); starts.push([-W/2+.75 + c*(W-1.5)/(cols-1) + (r()-.5)*.04, top + 1 + rw*.95, 0]) }
-      return {path, starts, gate:k.box([W, .3, D], [0, top+.4, 0], [0,0,0], "gate"), finishY:yb-.5, floorY:bottom-2,
-        cam:p=>[p[0]*.55, p[1]+1.5, 21], look:p=>[p[0]*.8, p[1]-2, 0]} }},
+      return {path, starts, gate:k.box([W, .3, D], [0, top+.4, 0], [0,0,0], "gate"), finishY:yb+1.5, floorY:bottom-2,
+        cam:p=>[p[0]*.5, p[1]-1, 23], look:p=>[p[0]*.8, p[1]-3, 0]} }},
 
   // Une grande spirale qui tourne autour d'une tour : les billes collent au bord en prenant de la vitesse
   spirale:{name:"L'Entonnoir", desc:"Une grande spirale qui tourne autour d'une tour : les billes descendent en tournant, collées au bord, jusqu'au fond.",
@@ -9407,7 +9406,7 @@ const G3C = {
 // la piste d'une course : les pièces du circuit, les billes au départ et leur barrière
 function g3World(CANNON, seed, n, cid="lacets"){
   const r = rng(seed), C = G3C[cid] || G3C.lacets;
-  const world = new CANNON.World({gravity: new CANNON.Vec3(0,-9.81,0)});
+  const world = new CANNON.World({gravity: new CANNON.Vec3(0, -9.81*(C.g||1), 0)});   // g : un mur penché (Plinko) fait descendre moins vite
   world.allowSleep = false; world.broadphase = new CANNON.SAPBroadphase(world); world.solver.iterations = 14;
   if(C.axis!=null) world.broadphase.axisIndex = C.axis;
   const k = g3Kit(CANNON, world), T = C.build(k, r, n);
@@ -9438,10 +9437,14 @@ function g3Simulate(CANNON, seed, n, cid){
     curF = f;
     if(t>=3 && W.gate.world) W.world.removeBody(W.gate);   // 3 s de feux, puis la barrière tombe
     W.world.step(DT); t += DT;
-    // une bille calée plus de 2 s reçoit une petite pichenette dans le sens de la piste
-    W.balls.forEach((b,i)=>{ if(fin[i]!=null || t<4) return; b.still = b.velocity.length()<.08 ? (b.still||0)+DT : 0;
-      if(b.still>2){ b.still = 0; b.kicks = (b.kicks||0)+1; const {T} = g3Where(W, b.position.x, b.position.y, b.position.z), side = i%2 ? 1 : -1, p = Math.min(4, b.kicks);
-        b.applyImpulse(new CANNON.Vec3(T[0]*1.2*p + side*T[2]*.4, .6*p, T[2]*1.2*p - side*T[0]*.4)) } });
+    // une bille qui n'avance plus sur le circuit depuis 4 s (calée, ou coincée dans un tas où elle tremble sur place)
+    // reçoit une pichenette dans le sens de la piste, de plus en plus forte si ça ne suffit pas
+    if(f%30===0) W.balls.forEach((b,i)=>{ if(fin[i]!=null || t<4) return; const {s, T} = g3Where(W, b.position.x, b.position.y, b.position.z);
+      if(b.best==null || s > b.best+.5){ b.best = s; b.bestT = t; b.kicks = 0; return }
+      if(t-b.bestT>4){ b.bestT = t; b.kicks = (b.kicks||0)+1; const side = i%2 ? 1 : -1, p = Math.min(4, b.kicks);
+        // dans le sens de la piste, et sur le côté (sur une piste qui descend tout droit, comme le Plinko, c'est le côté qui débloque)
+        const L = Math.hypot(T[0], T[2]) > .3 ? v3.norm([T[2], 0, -T[0]]) : [1, 0, 0];
+        b.applyImpulse(new CANNON.Vec3(T[0]*1.2*p + side*L[0]*.8*p, .6*p, T[2]*1.2*p + side*L[2]*.8*p)) } });
     const fr = new Float32Array(n*7); W.balls.forEach((b,i)=>fr.set([b.position.x,b.position.y,b.position.z,b.quaternion.x,b.quaternion.y,b.quaternion.z,b.quaternion.w], i*7)); frames.push(fr);
     if(W.kin.length){ const kq = new Float32Array(W.kin.length*4); W.kin.forEach((d,i)=>kq.set([d.body.quaternion.x,d.body.quaternion.y,d.body.quaternion.z,d.body.quaternion.w], i*4)); kf.push(kq) }
     W.balls.forEach((b,i)=>{ if(fin[i]==null && b.position.y < W.finishY) fin[i] = t });

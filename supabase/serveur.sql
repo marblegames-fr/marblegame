@@ -121,11 +121,11 @@ create or replace function interne.poids_rarete() returns numeric[] language sql
 $$ select array[10,5,2.5,0.8,0.2,0]::numeric[] $$;   -- la 6e : décors d'événement, jamais tirés
 
 create or replace function interne.coloris_base() returns int language sql immutable as $$ select 48 $$;   -- les coloris de saison commencent à 48
--- Les coloris qu'on tire dans les sachets : les 48 d'origine, puis ceux inventés par les joueurs (2 octobre 2026 : 76 Zède, 77 uwu).
+-- Les coloris qu'on tire dans les sachets : les 48 d'origine, puis ceux inventés par les joueurs (2 octobre 2026 : 76 Zède, 77 uwu ; 3 octobre : 78 Poups).
 -- Mêmes numéros que PLAYER_PALS dans index.html. Un coloris « normal » compte dans l'album, les cases, l'édition, le recyclage et la fusion.
-create or replace function interne.coloris_tirables() returns int[] language sql immutable as $$ select array(select generate_series(0, 47)) || array[76, 77] $$;
-create or replace function interne.coloris_normal(c int) returns boolean language sql immutable as $$ select c < 48 or c = any(array[76, 77]) $$;
-create or replace function interne.nb_coloris() returns int language sql immutable as $$ select 50 $$;
+create or replace function interne.coloris_tirables() returns int[] language sql immutable as $$ select array(select generate_series(0, 47)) || array[76, 77, 78] $$;
+create or replace function interne.coloris_normal(c int) returns boolean language sql immutable as $$ select c < 48 or c = any(array[76, 77, 78]) $$;
+create or replace function interne.nb_coloris() returns int language sql immutable as $$ select 51 $$;
 -- La bêta : tant qu'elle dure, chaque joueur peut réclamer une bille Bêta de chaque taille (décor 47, coloris 70 + rang de la taille :
 -- Rubis, Émeraude, Saphir, Améthyste, Onyx, Diamant ; BETA dans index.html).
 -- Elles sont rangées avec les billes secrètes (secrete = 'beta') : ni troc, ni marché, ni recyclage, ni classement.

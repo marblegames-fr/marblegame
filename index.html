@@ -2553,15 +2553,7 @@ button.gh-cell:hover{transform:translateY(-2px)}
 .gc-side{display:grid;gap:10px;align-content:start}
 .gc-side .btn{justify-self:start}
 .gc-try{display:grid;gap:6px}
-.doublon{width:1.1em;height:1.1em;vertical-align:-.18em;flex:none}
-.ev-wallet{display:inline-flex;align-items:center;gap:6px;padding:6px 12px;border-radius:999px;background:var(--gold-bg);border:1.5px solid var(--gold-line);font-weight:900}
-.ev-wallet .doublon{width:20px;height:20px}
-.ev-wallet small{font-weight:800;color:var(--ink-2);font-size:12px}
 .ev-how{margin:2px 0 10px}
-.ev-cell.buy{position:relative;cursor:pointer;border:1.5px dashed var(--gold-line);background:color-mix(in srgb,var(--gold-bg) 60%,transparent)}
-.ev-cell.buy:hover{background:var(--gold-bg);transform:translateY(-1px)}
-.ev-cell.buy i.ev-price{position:absolute;top:auto;bottom:3px;right:4px;display:inline-flex;align-items:center;gap:2px;font-style:normal;font-size:10.5px;font-weight:900;color:#7A4E0A;background:none;padding:0}
-.ev-price .doublon{width:11px;height:11px}
 .gc-cname{font-size:13px;font-weight:800;color:var(--muted);margin-left:4px}
 .gc-try small{font-size:12px;font-weight:800;color:var(--muted);text-transform:uppercase;letter-spacing:.06em}
 .gc-try .chips{display:flex;flex-wrap:wrap;gap:6px}
@@ -2931,14 +2923,10 @@ const isBeta = s => s?.secret==="beta";
 const eventOf = s => FAMILIES[s.family]?.event ? EVENTS[FAMILIES[s.family].event] : null;
 const eventLive = E => !!E && Date.now()>=E.start && Date.now()<=E.end;
 // Billes d'événement (3 octobre 2026) : plus de sachet d'événement en vente. Pendant l'événement, chaque bille d'un sachet Classique,
-// Premium ou Collector a une petite chance d'être une bille de l'événement, et chaque sachet ouvert donne des doublons, à échanger
-// dans l'album de l'événement contre la bille qui manque (Mini 1 … Mammouth 15). En simulation, un joueur régulier (~15 000 bonbecs
-// en deux semaines) finit l'album. Mêmes valeurs dans serveur.sql (taux_evenement, doublons_du_sac, prix_doublons).
-const EV_DROP = {classique:.05, premium:.08, collector:.12}, EV_DOUBLONS = {classique:3, premium:6, collector:15}, EV_PRIX = [1,2,3,5,8,15];
+// Premium ou Collector a une petite chance d'être une bille de l'événement ; la fusion d'événement permet de finir la collection.
+// Mêmes valeurs dans serveur.sql (taux_evenement).
+const EV_DROP = {classique:.05, premium:.08, collector:.12};
 const liveEventKey = () => Object.keys(EVENTS).find(k=>eventLive(EVENTS[k]));
-const evDoublons = k => (S.doublons||{})[k]||0;
-// le doublon : une pièce d'or
-const DOUBLON = `<svg class="doublon" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="10" fill="#E8B53A" stroke="#9A6A12" stroke-width="1.6"/><circle cx="12" cy="12" r="6.6" fill="none" stroke="#FFE7A0" stroke-width="1.3"/><path d="M10 8.5h2.2a3.5 3.5 0 0 1 0 7H10z" fill="none" stroke="#7A4E0A" stroke-width="1.6"/></svg>`;
 const liveEvents = () => Object.keys(EVENTS).filter(k=>eventLive(EVENTS[k]));
 function eventLeft(E){ const ms=Math.max(0,E.end-Date.now()), d=Math.floor(ms/864e5), h=Math.floor(ms/36e5)%24; return d ? `${d} j ${h} h` : `${h} h ${Math.floor(ms/6e4)%60} min` }
 const dayMonth = t => new Date(t).toLocaleDateString("fr-FR",{day:"numeric",month:"long"});
@@ -5389,9 +5377,9 @@ function heroSlides(){
       <div class="hm-txt">
         <span class="hm-k">${ic("flag",15)} Événement · jusqu'au ${dayMonth(E.end)}</span>
         <h1>${esc(E.name)} Les billes Pirate débarquent !</h1>
-        <p>Un décor inédit et ${E.pals.length} coloris, cachés dans les sachets Classique, Premium et Collector pendant encore <b>${eventLeft(E)}</b>. Chaque sachet te donne des doublons à échanger contre la bille qui te manque.</p>
+        <p>Un décor inédit et ${E.pals.length} coloris, cachés dans les sachets Classique, Premium et Collector pendant encore <b>${eventLeft(E)}</b>. La fusion d'événement t'aide à finir ta collection.</p>
         ${n ? `<button class="btn btn-yellow btn-xl" data-action="open-gift" data-bag="${b.id}">${ic("gift",22)} Ouvrir mon ${b.name} offert</button>`
-            : `<button class="btn btn-yellow btn-xl" data-action="ev-album">${DOUBLON} Ma collection ${esc(FAMILIES[f].name)} · ${fmt(evDoublons(k))} doublons</button>`}
+            : `<button class="btn btn-yellow btn-xl" data-action="ev-album">${ic("flag",22)} Ma collection ${esc(FAMILIES[f].name)}</button>`}
       </div>`}) });
   // la cour : seulement s'il y a du nouveau
   const C = hcCourInfo();
@@ -5540,7 +5528,7 @@ function viewBags(){
     <div class="bg-info">
       <div>${b.event&&eventLive(EVENTS[b.event])?`<span class="sample-tag">${ic("clock",12)} Encore ${eventLeft(EVENTS[b.event])} · ${untilLabel(EVENTS[b.event].end)}</span>`:""}<h2>${b.name}</h2><p>${b.desc}</p>
         ${!b.event && liveEventKey() && EV_DROP[b.id] ? (()=>{ const k = liveEventKey(), F = FAMILIES.find(x=>x.event===k);
-          return `<p class="ev-rate">${ic("flag",14)} Événement : ${Math.round(EV_DROP[b.id]*100)} % de chances par bille d'être une bille ${F.name} · +${EV_DOUBLONS[b.id]} doublons ${DOUBLON}</p>` })() : ""}
+          return `<p class="ev-rate">${ic("flag",14)} Événement : ${Math.round(EV_DROP[b.id]*100)} % de chances par bille d'être une bille ${F.name}</p>` })() : ""}
         ${b.event?`<p class="ev-rate">${ic("flag",14)} ${b.evFill>=1 ? `Les ${b.n} billes sont des billes ${FAMILIES[b.fam].name}` : `Bille ${FAMILIES[b.fam].name} : ${Math.round(b.evFill*100)} % par bille, ${Math.round(b.evStar*100)} % pour la vedette`} · ${b.pals.length} coloris à collectionner, dans les 6 tailles</p><div class="ev-pals">${b.pals.map(pl=>`<span title="${esc(PALETTES[pl][0])}">${mImg({seed:hash("evp"+pl),type:"calot",family:b.fam,pal:pl,shiny:0},80,34,"")}</span>`).join("")}</div>`:""}</div>
       <div class="bg-cta">${cta}</div>
       ${(()=>{ const left = PITY-(S.pity||0);
@@ -5852,28 +5840,17 @@ function betaView(){
         : `<span class="beta-b" style="${tstyle(t)};opacity:.45"><span class="sil" style="--c1:#7A0E1F;--c2:#D7263D;width:${Math.round(36+60*scaleOf(t))}px;height:${Math.round(36+60*scaleOf(t))}px"></span><small>${TYPES[t].label}</small></span>` }).join("")}</div>
   </section>`;
 }
-// La boutique de l'événement : une case vide de l'album contre des doublons
-async function evBuy(k, type, pal){
-  const E = EVENTS[k], prix = EV_PRIX[TIDX[type]], name = `${TYPES[type].label} ${FAMILIES.find(F=>F.event===k).name} ${PALETTES[pal][0]}`;
-  if(!eventLive(E)) return toast("L'événement est terminé : la boutique est fermée.");
-  if(evDoublons(k) < prix) return toast(`Il te manque ${prix-evDoublons(k)} doublon${prix-evDoublons(k)>1?"s":""} : ouvre des sachets Classique, Premium ou Collector pour en gagner.`);
-  if(!(await ask({title:`Prendre ce ${TYPES[type].label} ?`, text:`<b>${esc(name)}</b> pour <b>${prix} doublon${prix>1?"s":""}</b>. Il t'en restera ${evDoublons(k)-prix}.`, ok:"Échanger"}))) return;
-  const got = s => { S.specs.push(s); S.unseen.push(s.id); logFind(s); save(); renderView(); Sound.ding(); toast(`${name} rejoint ta collection !`); setTimeout(()=>openModal(s.id), 200) };
-  if(srvOn()) srv(()=>Cloud.eco.boutique(type, pal)).then(r=>{ applyEco(r.eco); got(srvAdopt([r.bille])[0]) }, srvFail);
-  else { S.doublons[k] = evDoublons(k)-prix; got(makeSpec(type, {family:FAMILIES.findIndex(F=>F.event===k), pal, src:"boutique"})) }
-}
 function eventsView(){
   return `<p class="conf-intro">Les décors d'événement ne tombent que pendant leur événement, et ne comptent ni dans l'album ni dans les succès : c'est ta collection d'événements, rien que pour le plaisir (et pour frimer dans la cour).</p>
   ${EVENT_FAMS.map(f=>{ const F = FAMILIES[f], E = EVENTS[F.event], live = eventLive(E), mine = S.specs.filter(x=>x.family===f);
     const cells = E.palIdx.map(pl=>`<div class="ev-row"><b>${esc(PALETTES[pl][0])}</b>${TK.map(t=>{ const l = mine.filter(x=>x.pal===pl && x.type===t).sort(tierSort);
       return l.length ? `<button class="ev-cell got" data-action="spec" data-id="${l[0].id}" style="${tstyle(t)}" aria-label="${TYPES[t].label} ${esc(PALETTES[pl][0])}">${mImg(l[0],100,Math.round(20+22*scaleOf(t)),"")}${l.length>1?`<i>×${l.length}</i>`:""}</button>`
-        : live ? `<button class="ev-cell buy" data-action="ev-buy" data-k="${F.event}" data-t="${t}" data-pal="${pl}" title="${TYPES[t].label} ${esc(PALETTES[pl][0])} : ${EV_PRIX[TIDX[t]]} doublon${EV_PRIX[TIDX[t]]>1?"s":""}" style="${tstyle(t)}"><span class="sil" style="--c1:${PALETTES[pl][1]};--c2:${PALETTES[pl][2]};width:${Math.round(14+18*scaleOf(t))}px;height:${Math.round(14+18*scaleOf(t))}px"></span><i class="ev-price">${DOUBLON}${EV_PRIX[TIDX[t]]}</i></button>`
         : `<span class="ev-cell" title="${TYPES[t].label} ${esc(PALETTES[pl][0])} : pas encore trouvée"><span class="sil" style="--c1:${PALETTES[pl][1]};--c2:${PALETTES[pl][2]};width:${Math.round(14+18*scaleOf(t))}px;height:${Math.round(14+18*scaleOf(t))}px"></span></span>` }).join("")}</div>`).join("");
     const got = new Set(mine.map(x=>x.type+"|"+x.pal)).size, tot = TK.length*E.pals.length;
     return `<section class="panel ev-album" style="--ec:${E.color}">
       <div class="ev-head"><div><h3>${F.name} <small>· ${esc(E.name)}</small></h3><p class="meta">${live ? `En cours : encore ${eventLeft(E)} (jusqu'au ${dayMonth(E.end)}).` : Date.now()<E.start ? `Commence le ${dayMonth(E.start)}.` : `Terminé le ${dayMonth(E.end)}.`}</p></div>
-        <span class="serie-n">${got} / ${tot}</span>${live ? `<span class="ev-wallet" title="Tes doublons">${DOUBLON}<b>${fmt(evDoublons(F.event))}</b><small>doublons</small></span>` : ""}</div>
-      ${live ? `<p class="meta ev-how">Les billes ${esc(F.name)} se cachent dans les sachets Classique (${Math.round(EV_DROP.classique*100)} % par bille), Premium (${Math.round(EV_DROP.premium*100)} %) et Collector (${Math.round(EV_DROP.collector*100)} %). Chaque sachet ouvert te donne aussi des doublons (${EV_DOUBLONS.classique}, ${EV_DOUBLONS.premium} ou ${EV_DOUBLONS.collector}) : touche une case vide pour échanger tes doublons contre la bille qui te manque (de ${EV_PRIX[0]} pour une Mini à ${EV_PRIX[5]} pour un Mammouth).</p>` : ""}
+        <span class="serie-n">${got} / ${tot}</span></div>
+      ${live ? `<p class="meta ev-how">Les billes ${esc(F.name)} se cachent dans les sachets Classique (${Math.round(EV_DROP.classique*100)} % par bille), Premium (${Math.round(EV_DROP.premium*100)} %) et Collector (${Math.round(EV_DROP.collector*100)} %). Avec la fusion d'événement, à la Confiserie, tes billes ${esc(F.name)} d'un même coloris donnent la taille au-dessus.</p>` : ""}
       <div class="ev-grid"><div class="ev-row ev-cols"><b></b>${TK.map(t=>`<small>${TYPES[t].label.replace("Mini bille","Mini").replace("Bille chinoise","Chinoise")}</small>`).join("")}</div>${cells}</div>
     </section>` }).join("")}`;
 }
@@ -6618,7 +6595,6 @@ async function openBag(bagId, gift){
     else S.jetons -= bag.price;
     pulls = pullBag(bag, gift);
     S.pity = pulls.some(s=>tierOf(s)>=BIG) ? 0 : (S.pity||0)+1;
-    const evk = liveEventKey(); if(evk && EV_DOUBLONS[bagId]) (S.doublons ||= {})[evk] = evDoublons(evk) + EV_DOUBLONS[bagId];
   }
   // « Rouvrir un sachet » : on ne ferme l'ouverture précédente qu'une fois les billes reçues du serveur,
   // pour enchaîner directement sans repasser par l'étagère des sachets
@@ -10847,7 +10823,6 @@ document.addEventListener("click", e=>{
     case "ami-voir": openProfil(t.dataset.id); break;
     case "ev-bag": ui.bag = t.dataset.bag; go("sacs"); break;
     case "ev-album": ui.tab = "events"; go("collection"); break;
-    case "ev-buy": evBuy(t.dataset.k, t.dataset.t, +t.dataset.pal); break;
     case "draw-how": { const el = document.getElementById("modal");
       el.innerHTML = `<div class="modal bag-sum how-modal" role="dialog" aria-modal="true" aria-label="Comment chaque bille est tirée ?"><button class="close-x" data-action="close-modal" aria-label="Fermer">×</button>
         <h2>Comment chaque bille est tirée ?</h2>${drawExplainer()}</div>`;
@@ -11304,7 +11279,7 @@ function srvOn(){ return !!(sync.on && eco.ready) }
 function srv(fn){ const p = eco.q.then(fn); eco.q = p.catch(()=>{}); return p }
 function applyEco(e){
   if(!e) return;
-  S.jetons = e.bonbecs; S.bagInv = Object.assign({}, e.sacs||{}); S.freeT0 = e.gratuit_t0; S.pity = e.pity; S.doublons = Object.assign({}, e.doublons||{});
+  S.jetons = e.bonbecs; S.bagInv = Object.assign({}, e.sacs||{}); S.freeT0 = e.gratuit_t0; S.pity = e.pity;
   if(e.serie_jour){ const [y,m,d] = e.serie_jour.split("-").map(Number); S.daily = {last:`${y}-${m}-${d}`, streak:e.serie} }
   eco.testeur = !!e.testeur;
   save(); renderTop(); renderNav();

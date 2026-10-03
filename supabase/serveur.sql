@@ -164,10 +164,12 @@ create or replace function interne.evenement_du_sac(s text) returns text languag
   select case when s in ('pirate', 'pirate-premium') then 'pirates' end
 $$;
 -- Billes d'événement (3 octobre 2026) : plus de sac d'événement en vente. Pendant l'événement, chaque bille d'un sac Classique,
--- Premium ou Collector a une petite chance d'être du décor de l'événement (5 / 8 / 12 %), et chaque sac ouvert donne des doublons
--- (3 / 6 / 15) à échanger à la boutique de l'événement contre la bille de son choix (Mini 1 … Mammouth 15).
--- En simulation, un joueur régulier (~15 000 bonbecs en 2 semaines) finit l'album de l'événement. Mêmes valeurs dans index.html (EV_DROP).
-alter table public.portefeuilles add column if not exists doublons jsonb not null default '{}';
+-- Premium ou Collector a une petite chance d'être du décor de l'événement (5 / 8 / 12 %) ; la fusion d'événement permet de finir
+-- la collection. Mêmes valeurs dans index.html (EV_DROP). (Les doublons et la boutique d'événement ont été retirés le même jour.)
+alter table public.portefeuilles drop column if exists doublons;
+drop function if exists public.boutique_evenement(text, int);
+drop function if exists interne.doublons_du_sac(text);
+drop function if exists interne.prix_doublons();
 create or replace function interne.evenement_en_cours(out nom text, out debut timestamptz, out fin timestamptz, out decor int, out coloris int[])
 language sql stable as $$
   select e.nom, v.debut, v.fin, v.decor, v.coloris from unnest(array['pirates']) e(nom), interne.evenement(e.nom) v
@@ -175,9 +177,6 @@ language sql stable as $$
 $$;
 create or replace function interne.taux_evenement(s text) returns numeric language sql immutable as $$
   select case s when 'classique' then 0.05 when 'premium' then 0.08 when 'collector' then 0.12 else 0 end::numeric $$;
-create or replace function interne.doublons_du_sac(s text) returns int language sql immutable as $$
-  select case s when 'classique' then 3 when 'premium' then 6 when 'collector' then 15 else 0 end $$;
-create or replace function interne.prix_doublons() returns int[] language sql immutable as $$ select array[1,2,3,5,8,15] $$;   -- Mini → Mammouth
 
 -- la date du jour, à l'heure française (les quêtes et le bonbec du jour changent à minuit)
 create or replace function interne.aujourdhui() returns date language sql stable as
@@ -247,7 +246,7 @@ end $$;
 create or replace function interne.etat(qui uuid) returns jsonb language sql stable as $$
   select jsonb_build_object('bonbecs', p.bonbecs, 'sacs', p.sacs,
     'gratuit_t0', floor(extract(epoch from p.gratuit_t0)*1000)::bigint, 'pity', p.pity, 'sacs_ouverts', p.sacs_ouverts,
-    'serie', p.serie, 'serie_jour', p.serie_jour, 'doublons', p.doublons, 'testeur', exists (select 1 from public.testeurs t where t.joueur = qui))
+    'serie', p.serie, 'serie_jour', p.serie_jour, 'testeur', exists (select 1 from public.testeurs t where t.joueur = qui))
   from public.portefeuilles p where p.joueur = qui
 $$;
 
@@ -330,11 +329,6 @@ begin
   update portefeuilles set sacs_ouverts = sacs_ouverts + 1, maj_le = now(),
     pity = case when exists (select 1 from unnest(tirees) x where x >= 4) then 0 else pity + 1 end
     where joueur = qui;
-  -- les doublons de l'événement en cours
-  if evc.nom is not null and interne.doublons_du_sac(nom) > 0 then
-    update portefeuilles set doublons = jsonb_set(doublons, array[evc.nom], to_jsonb(coalesce((doublons->>evc.nom)::int, 0) + interne.doublons_du_sac(nom)))
-      where joueur = qui;
-  end if;
   for i in 1..r.n loop
     -- sac d'événement : chaque bille a une chance d'être du décor de l'événement (12 %, 30 % pour la dernière,
     -- garantie pour la dernière d'un sac offert), sinon c'est une bille normale.
@@ -396,23 +390,6 @@ end $$;
 -- donnent une bille de la taille au-dessus, dans ce décor et ce coloris. 3 billes jusqu'à la Chinoise, puis 2 (FUSION_EV dans index.html).
 -- Pas de shiny en entrée ; la shiny peut sortir comme pour une fusion normale. Les billes en vente ou dans un troc ne peuvent pas fusionner.
 create or replace function interne.fusion_ev_n() returns int[] language sql immutable as $$ select array[3,3,2,2,2] $$;
--- La boutique de l'événement : une bille d'événement au choix (taille et coloris), contre des doublons
-create or replace function public.boutique_evenement(taille text, coloris int)
-returns jsonb language plpgsql security definer set search_path = public as $$
-declare qui uuid := interne.moi(); evc record; rg int; prix int; b jsonb;
-begin
-  select * into evc from interne.evenement_en_cours();
-  if evc.nom is null then raise exception 'evenement_fini'; end if;
-  if not (coloris = any(evc.coloris)) then raise exception 'montant_invalide'; end if;
-  rg := interne.rang(taille); if rg is null then raise exception 'montant_invalide'; end if;
-  prix := (interne.prix_doublons())[rg+1];
-  update portefeuilles set doublons = jsonb_set(doublons, array[evc.nom], to_jsonb((doublons->>evc.nom)::int - prix))
-    where joueur = qui and coalesce((doublons->>evc.nom)::int, 0) >= prix;
-  if not found then raise exception 'pas_assez'; end if;
-  b := interne.nouvelle_bille(qui, taille, decor => evc.decor, coloris => coloris, src => 'boutique');
-  return jsonb_build_object('eco', interne.etat(qui), 'bille', b);
-end $$;
-
 create or replace function interne.decor_evenement(d int) returns boolean language sql immutable as $$
   select exists (select 1 from unnest(array['pirates']) e(nom), interne.evenement(e.nom) v where v.decor = d)
 $$;
@@ -639,7 +616,7 @@ end $$;
 -- droits : le site ne peut appeler que ces fonctions-là
 do $$ declare f text; begin
   foreach f in array array['eco_demarrer(int,jsonb,int)','eco_etat()','ouvrir_sac(text,boolean)','echanger_billes(uuid[])',
-    'fusionner(uuid[])','fusion_evenement(uuid[])','boutique_evenement(text,int)','pachinko(boolean)','bonbec_du_jour()','gagner(text,text,int,text)','bille_gagnee(text,text,bigint,uuid)',
+    'fusionner(uuid[])','fusion_evenement(uuid[])','pachinko(boolean)','bonbec_du_jour()','gagner(text,text,int,text)','bille_gagnee(text,text,bigint,uuid)',
     'miser(text,int)','regler_mise(bigint,int)','outil_test(text)'] loop
     execute format('revoke all on function public.%s from public, anon', f);
     execute format('grant execute on function public.%s to authenticated', f);

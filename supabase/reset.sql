@@ -19,10 +19,14 @@ truncate table public.course_inscrits, public.courses;
 truncate table public.gains, public.mises, public.portefeuilles restart identity;
 -- les billes (et leur historique), SAUF les billes Bêta données par le serveur pendant la bêta
 delete from public.billes_historique h using public.billes b
-  where h.bille = b.id and not (b.secrete = 'beta' and b.origine = 'serveur' and b.detruite_le is null);
-delete from public.billes where not (secrete = 'beta' and origine = 'serveur' and detruite_le is null);
+  where h.bille = b.id and not coalesce(b.secrete = 'beta' and b.origine = 'serveur' and b.detruite_le is null, false);
+delete from public.billes where not coalesce(secrete = 'beta' and origine = 'serveur' and detruite_le is null, false);
 -- les parties sauvegardées (titres, succès, passe, quêtes…)
 truncate table public.sauvegardes;
+-- nouveau numéro de remise (supabase/remise.sql) : les pages restées ouvertes ne peuvent plus renvoyer l'ancienne partie,
+-- elles se rechargent toutes seules à zéro
+insert into public.remise (id, numero) values (1, floor(extract(epoch from clock_timestamp())*1000)::bigint)
+  on conflict (id) do update set numero = excluded.numero;
 
 commit;
 

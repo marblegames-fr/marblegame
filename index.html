@@ -11756,12 +11756,15 @@ async function cloudFlush(){
       gone.forEach(id=>{ sync.known.delete(id); delete sync.why[id] });
     }
     const data = Object.assign({}, S); delete data.specs;
+    data.remise = sync.remise ?? null;   // le serveur refuse la sauvegarde d'une page ouverte avant une remise à zéro
     await Cloud.pushSave(sync.uid, data, DEVICE);
     lsSet(knownKey(), JSON.stringify([...sync.known]));
     try{ localStorage.setItem(STORE_KEY, JSON.stringify(S)) }catch(e){}
     if(sync.edits===edits) lsSet(dirtyKey(), null);
     return true;
   }catch(e){
+    // la partie a été remise à zéro pendant que la page était ouverte : on oublie la copie de l'appareil et on repart de zéro
+    if(e?.message==="remise"){ sync.on = false; clearTimeout(sync.timer); [STORE_KEY, knownKey(), dirtyKey()].forEach(k=>lsSet(k, null)); location.reload(); return false }
     console.warn("Sauvegarde en ligne impossible pour l'instant", e);
     sync.timer = setTimeout(cloudFlush, 30000);   // on réessaie plus tard, la partie reste gardée sur l'appareil
     return false;
@@ -11801,7 +11804,7 @@ async function cloudStart0(user){
   let prevKnown = []; try{ prevKnown = JSON.parse(lsGet(knownKey())) || [] }catch(e){}
   if(!veilOn()) authShow("loading");
   let P;
-  try{ P = await Promise.race([Cloud.pull(user.id), new Promise((_,no)=>setTimeout(()=>no(new Error("délai")), 10000))]) }
+  try{ P = await Promise.race([Cloud.pull(user.id), new Promise((_,no)=>setTimeout(()=>no(new Error("délai")), 10000))]); sync.remise = P.remise }
   catch(e){
     if(cached){   // pas de réseau : on joue sur la copie de l'appareil, elle partira plus tard
       sync.known = new Set(prevKnown); adoptState(cached); sync.on = true; authHide(); rerenderAll();
@@ -11877,7 +11880,7 @@ document.addEventListener("visibilitychange", async ()=>{
     if(!u || u.appareil===DEVICE) return;
     const P = await Cloud.pull(sync.uid);
     if(!P.sauvegarde || P.sauvegarde.appareil===DEVICE) return;
-    const st = P.sauvegarde.donnees; st.specs = P.billes;
+    const st = P.sauvegarde.donnees; st.specs = P.billes; sync.remise = P.remise;
     sync.known = new Set(P.billes.map(s=>s.id));
     adoptState(st); if(P.profil) S.name = P.profil.pseudo;
     try{ localStorage.setItem(STORE_KEY, JSON.stringify(S)) }catch(e){}

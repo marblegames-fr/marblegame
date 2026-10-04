@@ -117,10 +117,10 @@ create or replace function interne.en_vente(bid uuid) returns boolean language s
                    and (a.expire_le > now() or a.encherisseur is not null))
 $$;
 
--- une bille qui peut circuler : à ce joueur, pas détruite, tirée par le serveur, pas secrète, pas en vente
+-- une bille qui peut circuler : à ce joueur, pas détruite, tirée par le serveur, pas secrète, pas liée au compte, pas en vente
 create or replace function interne.bille_libre(bid uuid, qui uuid) returns boolean language sql stable as $$
   select exists (select 1 from public.billes b where b.id = bid and b.proprietaire = qui and b.detruite_le is null
-                   and b.origine = 'serveur' and b.secrete is null)
+                   and b.origine = 'serveur' and b.secrete is null and not b.liee)
      and not interne.en_vente(bid)
 $$;
 
@@ -237,7 +237,7 @@ begin
   if qui <> moi and not interne.sont_amis(moi, qui) then raise exception 'pas_ami'; end if;
   return coalesce((select jsonb_agg(x.j) from (
     select interne.bille_json(b) j from billes b
-    where b.proprietaire = qui and b.detruite_le is null and b.origine = 'serveur' and b.secrete is null
+    where b.proprietaire = qui and b.detruite_le is null and b.origine = 'serveur' and b.secrete is null and not b.liee
       and not interne.en_vente(b.id)
     order by interne.rang(b.taille) desc, b.shiny desc, b.numero desc limit 500) x), '[]');
 end $$;
@@ -270,6 +270,7 @@ begin
   donne_bonbecs := coalesce(donne_bonbecs, 0); demande_bonbecs := coalesce(demande_bonbecs, 0);
   if donne_bonbecs not between 0 and 5000 or demande_bonbecs not between 0 and 5000 or (donne_bonbecs > 0 and demande_bonbecs > 0) then raise exception 'troc_invalide'; end if;
   if donne_bonbecs > 0 and not exists (select 1 from portefeuilles p where p.joueur = moi and p.bonbecs >= donne_bonbecs) then raise exception 'pas_assez'; end if;
+  if donne_bonbecs > interne.libres(moi) then raise exception 'bonbecs_depart'; end if;   -- les bonbecs de départ ne se donnent pas
   if remplace is not null then
     update trocs t set statut = 'contre', fini_le = now() where t.id = remplace and t.vers = moi and t.de = troc_proposer.vers and t.statut = 'attente';
     if not found then raise exception 'plus_de_troc'; end if;
@@ -307,10 +308,12 @@ begin
   if t.donne_bonbecs > 0 or t.demande_bonbecs > 0 then
     perform 1 from portefeuilles where joueur in (t.de, t.vers) order by joueur for update;
     if not exists (select 1 from portefeuilles where joueur = t.vers and bonbecs >= t.demande_bonbecs) then raise exception 'pas_assez'; end if;
-    if not exists (select 1 from portefeuilles where joueur = t.de and bonbecs >= t.donne_bonbecs) then
+    if t.demande_bonbecs > interne.libres(t.vers) then raise exception 'bonbecs_depart'; end if;
+    if interne.libres(t.de) < t.donne_bonbecs then
       update trocs set statut = 'impossible', fini_le = now() where id = t.id;
       return jsonb_build_object('statut', 'impossible');
     end if;
+    -- seuls des bonbecs libres changent de main : la part de départ de chacun ne bouge pas
     update portefeuilles set bonbecs = bonbecs - t.donne_bonbecs + t.demande_bonbecs, maj_le = now() where joueur = t.de;
     update portefeuilles set bonbecs = bonbecs + t.donne_bonbecs - t.demande_bonbecs, maj_le = now() where joueur = t.vers;
   end if;
@@ -412,8 +415,7 @@ begin
   if a.encherisseur = moi then raise exception 'deja_en_tete'; end if;
   if montant is null or montant < interne.offre_min(a.prix, a.offre) or montant > 1000000 then raise exception 'offre_trop_basse'; end if;
   perform 1 from portefeuilles where joueur in (moi, coalesce(a.encherisseur, moi)) order by joueur for update;
-  update portefeuilles set bonbecs = bonbecs - montant, maj_le = now() where joueur = moi and bonbecs >= montant;
-  if not found then raise exception 'pas_assez'; end if;
+  perform interne.payer_libre(moi, montant);   -- les bonbecs de départ ne servent pas aux enchères
   if a.encherisseur is not null then perform interne.crediter(a.encherisseur, a.offre); end if;
   insert into offres (annonce, joueur, montant) values (a.id, moi, montant);
   update annonces set offre = montant, encherisseur = moi, nb_offres = nb_offres + 1,
@@ -439,8 +441,7 @@ begin
   if a.vendeur = moi then raise exception 'ta_bille'; end if;
   -- on verrouille les deux portefeuilles dans le même ordre pour ne jamais se bloquer
   perform 1 from portefeuilles where joueur in (moi, a.vendeur) order by joueur for update;
-  update portefeuilles set bonbecs = bonbecs - a.prix, maj_le = now() where joueur = moi and bonbecs >= a.prix;
-  if not found then raise exception 'pas_assez'; end if;
+  perform interne.payer_libre(moi, a.prix);   -- les bonbecs de départ ne paient pas au marché
   update portefeuilles set bonbecs = bonbecs + a.prix, maj_le = now() where joueur = a.vendeur;
   perform public.transferer_bille(a.bille, a.vendeur, moi, 'vente');
   update annonces set vendue_le = now(), acheteur = moi where id = a.id;

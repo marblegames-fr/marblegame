@@ -5366,6 +5366,7 @@ function renderGcBtn(){
 function renderTop(){
   renderBeta(); renderGcBtn(); renderBell();
   document.getElementById("jetons").textContent = fmt(S.jetons);
+  document.getElementById("jetons").title = S.depart ? `Dont ${fmt(Math.min(S.depart, S.jetons))} ${CUR.many} de départ : pour les sachets et les jeux, pas pour les trocs ni le marché` : "";
   const db = document.getElementById("daily-btn");
   if(!db.querySelector("svg")) db.insertAdjacentHTML("afterbegin", ic("gift",21));
   db.classList.toggle("ready", dailyReady());
@@ -6632,7 +6633,7 @@ function openModal(id, pv, reveal=false){
         <dt>Format</dt><dd>${T.label} · ${T.mm} mm</dd>
         <dt>Décor</dt><dd>${F.name} · ${F.event?`<b style="color:${EVENTS[F.event].color}">Événement</b>`:`<b style="color:${DECOR_RAR[F.rar].c}">${DECOR_RAR[F.rar].name}</b>`}</dd>
         <dt>Coloris</dt><dd>${PALETTES[s.pal][0]}</dd>
-        <dt>Chance</dt><dd>${isBeta(s)?"Réservée aux bêta-testeurs : elle reste dans ta boîte après la remise à zéro":s.secret?"Bille secrète : une seule par joueur":eventOf(s)?`Exclusive à l'événement « ${eventOf(s).name} »`:isSeason(s)?"Exclusive au passe de saison":`${oneIn(chanceOf(s))} <small class="meta">par bille du sachet gratuit</small>`}</dd>
+        ${s.lie?`<dt>Échange</dt><dd>Cadeau de bienvenue : elle reste dans ta boîte (pas de troc ni de vente)</dd>`:""}<dt>Chance</dt><dd>${isBeta(s)?"Réservée aux bêta-testeurs : elle reste dans ta boîte après la remise à zéro":s.secret?"Bille secrète : une seule par joueur":eventOf(s)?`Exclusive à l'événement « ${eventOf(s).name} »`:isSeason(s)?"Exclusive au passe de saison":`${oneIn(chanceOf(s))} <small class="meta">par bille du sachet gratuit</small>`}</dd>
         ${pv||!editionOf(s)?"":`<dt>Édition</dt><dd>${editionOf(s)===1?`<span class="first-pill">Première mondiale</span>`:`n° ${fmt(editionOf(s))} <small class="meta">de ce modèle trouvée dans le monde${s.edn?"":" (estimation)"}</small>`}</dd>`}
         ${pv||!s.no?"":`<dt>N° de série</dt><dd><code>#${String(s.no).padStart(7,"0")}</code> <small class="meta">unique, dans l'ordre d'apparition</small></dd>`}
         ${pv||!SRC_LABEL[s.src]?"":`<dt>Trouvée</dt><dd>${SRC_LABEL[s.src]}${s.via&&s.found?` <small class="meta">le ${dateFr(s.found)}</small>`:""}</dd>`}
@@ -6641,7 +6642,7 @@ function openModal(id, pv, reveal=false){
       </dl>
       ${pv&&pv.cour?`<p class="meta">${esc(pv.cour)}</p>`:pv?`<p class="meta">Aperçu Billepedia · ${S.specs.some(x=>slotKey(x)===slotKey(s))?"tu as déjà ce format dans ce décor.":"pas encore dans ta boîte à billes."}</p>`:`<div class="modal-actions">
         ${S.vitrine.includes(s.id)?`<button class="btn btn-ghost" data-action="vit-rm" data-id="${s.id}">${ic("layers",16)} Retirer de la vitrine</button>`:`<button class="btn btn-ghost" data-action="vit-add" data-id="${s.id}">${ic("layers",16)} Mettre en vitrine</button>`}
-        ${srvOn() && s.srv && !s.secret ? `<button class="btn btn-ghost" data-action="cour-sell-this" data-id="${s.id}">${ic("cour",16)} Vendre au marché</button>` : ""}
+        ${srvOn() && s.srv && !s.secret && !s.lie ? `<button class="btn btn-ghost" data-action="cour-sell-this" data-id="${s.id}">${ic("cour",16)} Vendre au marché</button>` : ""}
         
         ${S.active===s.id||s.secret?"":`<button class="btn btn-ghost" data-action="recycle" data-id="${s.id}">${ic("candy",16)} Échanger · +${fmt(recycleValue(s))} ${CUR.many}</button>`}
         ${sib.length>1 && keepOf(sib).id!==s.id?`<button class="btn btn-ghost" data-action="keep-copy" data-id="${s.id}">${ic("check",16)} Garder cet exemplaire</button>`:""}
@@ -10484,6 +10485,7 @@ const COUR_ERR = {inconnu:"Personne ne s'appelle comme ça dans la cour.", soi_m
   plus_de_demande:"Cette demande n'existe plus.", pas_ami:"Vous n'êtes pas (ou plus) copains.", bille_indisponible:"Une de ces billes n'est plus disponible.",
   troc_invalide:"Ce troc n'est pas possible.", trop_trocs:"Tu as déjà 20 trocs en attente.", plus_de_troc:"Ce troc n'existe plus.",
   prix_invalide:"Choisis un prix entre 1 et 1 000 000.", duree_invalide:"Choisis une durée dans la liste.", trop_annonces:"Tu as déjà 30 billes en vente.", plus_en_vente:"Cette bille n'est plus en vente.",
+  bonbecs_depart:`Les ${CUR.many} de ton cadeau de départ servent à ouvrir des sachets et à jouer, pas aux trocs ni au marché.`,
   ta_bille:"C'est ta propre bille !", pas_assez:`Il te manque des ${CUR.many}.`, reseau:"Pas de connexion : réessaie dans un instant.",
   enchere_finie:"Cette enchère est terminée.", deja_en_tete:"Tu as déjà la meilleure offre !", offre_trop_basse:"Quelqu'un a déjà proposé plus : regarde la nouvelle offre minimum.",
   deja_des_offres:"Des joueurs ont déjà enchéri : l'enchère doit aller jusqu'au bout.", en_enchere:"Cette bille est aux enchères avec des offres : elle est promise au gagnant."};
@@ -11064,9 +11066,9 @@ function mkCard(a, mesEnch){
     : deal ? `<span class="mk-rib deal">${ic("star",11,2.8)} Bonne affaire</span>` : "";
   const btn = a.moi ? (E && a.offre ? `<button class="btn btn-ghost btn-sm" disabled>Enchère en cours</button>` : `<button class="btn btn-ghost btn-sm" data-action="mk-retirer" data-id="${a.id}">Retirer</button>`)
     : E ? (a.en_tete ? `<button class="btn btn-ghost btn-sm" disabled>${ic("check",15,2.6)} Tu mènes</button>`
-        : S.jetons < a.min ? `<button class="btn btn-yellow btn-sm" disabled>Il te manque ${fmt(a.min-S.jetons)}</button>`
+        : libres() < a.min ? `<button class="btn btn-yellow btn-sm" disabled>Il te manque ${fmt(a.min-libres())}</button>`
         : `<button class="btn btn-orange btn-sm" data-action="mk-encherir" data-id="${a.id}">${ic("gavel",15,2.4)} Enchérir · ${fmt(a.min)}</button>`)
-    : S.jetons<a.prix ? `<button class="btn btn-yellow btn-sm" disabled>Il te manque ${fmt(a.prix-S.jetons)}</button>`
+    : libres()<a.prix ? `<button class="btn btn-yellow btn-sm" disabled>Il te manque ${fmt(a.prix-libres())}</button>`
     : `<button class="btn btn-yellow btn-sm" data-action="mk-acheter" data-id="${a.id}" data-prix="${a.prix}">Acheter</button>`;
   return `<div class="mk${a.moi?" mine":""}${E?" ench":""}" style="${tstyle(x.type)}">${rib}${E?`<span class="mk-tag">${ic("gavel",12,2.4)} Enchère</span>`:`<span class="mk-tag fixe">${ic("candy",12,2.4)} Prix fixe</span>`}
     <span class="mk-vis" data-action="cour-see" data-k="${courSpec(x, a.moi?"Ta bille en vente.":E?`Aux enchères, par ${a.vendeur}.`:`En vente par ${a.vendeur}.`)}">${mImg(x,160,Math.round(44*scaleOf(x.type)+30),"")}</span>
@@ -11085,11 +11087,11 @@ function bidAsk(id){
   ask({title:`Enchérir sur ${specName(a.bille)} ?`, balls:[a.bille], ok:"Enchérir",
        text:`${a.offre ? `Meilleure offre : <b>${fmt(a.offre)} ${CUR.many}</b> (${esc(a.meilleur||"?")}).` : `Mise à prix : <b>${fmt(a.prix)} ${CUR.many}</b>.`} Tes ${CUR.many} sont mis de côté tout de suite. Si quelqu'un propose plus, ils te sont rendus.`,
        extra:`<label class="price-in ask-in">${COIN}<input type="number" id="ask-val" min="${min}" max="1000000" step="1" value="${min}" aria-label="Ton offre en ${CUR.many}"><small>${CUR.many}</small></label>
-         <small class="meta">Au moins ${fmt(min)} · tu as ${fmt(S.jetons)} ${CUR.many}</small>`})
+         <small class="meta">Au moins ${fmt(min)} · tu as ${fmt(libres())} ${CUR.many}${departTxt()}</small>`})
   .then(ok=>{ if(!ok) return;
     const v = Math.round(+ask.val);
     if(!(v>=min)){ toast(`Ton offre doit être d'au moins ${fmt(min)} ${CUR.many}.`); return }
-    if(v>S.jetons){ toast(`Tu n'as que ${fmt(S.jetons)} ${CUR.many}.`); return }
+    if(v>libres()){ toast(`Tu n'as que ${fmt(libres())} ${CUR.many} pour enchérir${departTxt()}.`); return }
     Cloud.cour.encherir(a.id, v).then(r=>{ applyEco(r.eco); Sound.coin(); toast(`C'est toi qui mènes l'enchère avec ${fmt(v)} ${CUR.many} !`); courRefresh("marche","encheres","journal") },
       e=>{ courFail(e); courRefresh("marche","encheres") });
   });
@@ -11247,7 +11249,7 @@ document.addEventListener("click", e=>{
     }
     case "troc-oui": case "troc-non": {
       const oui = t.dataset.action==="troc-oui", id = +t.dataset.id, T0 = (cour.trocs?.recus||[]).find(x=>x.id===id), who = esc(T0?.de_pseudo||"ton copain");
-      if(oui && T0?.demande_bonbecs > S.jetons){ toast(`Ce troc te demande ${fmt(T0.demande_bonbecs)} ${CUR.many} : il t'en manque ${fmt(T0.demande_bonbecs-S.jetons)}.`); break }
+      if(oui && T0?.demande_bonbecs > libres()){ toast(`Ce troc te demande ${fmt(T0.demande_bonbecs)} ${CUR.many} : il t'en manque ${fmt(T0.demande_bonbecs-libres())}${departTxt()}.`); break }
       ask(oui ? {title:`Accepter le troc de ${T0?.de_pseudo||"ton copain"} ?`, extra:T0 ? trocSummary(T0.donne, T0.demande, T0.donne_bonbecs, T0.demande_bonbecs) : "",
                  text:`Tu reçois ${nbTroc(T0?.donne, T0?.donne_bonbecs)} et tu donnes ${nbTroc(T0?.demande, T0?.demande_bonbecs)}. L'échange se fait tout de suite, et c'est définitif.${(T0?.demande||[]).map(partWarn).join("")}`, ok:"Accepter le troc"}
               : {title:`Refuser le troc de ${T0?.de_pseudo||"ton copain"} ?`, text:`${who} sera prévenu. Tu peux aussi lui faire une contre-proposition.`, ok:"Refuser", danger:true})
@@ -11580,7 +11582,7 @@ document.addEventListener("submit", e=>{
     const gb = Math.round(+document.getElementById("troc-gb").value||0), wb = Math.round(+document.getElementById("troc-wb").value||0);
     if(gb<0 || wb<0 || gb>TROC_BONBECS_MAX || wb>TROC_BONBECS_MAX){ toast(`Entre 0 et ${fmt(TROC_BONBECS_MAX)} ${CUR.many} dans un troc.`); return }
     if(gb>0 && wb>0){ toast(`Des ${CUR.many} d'un seul côté : tu en ajoutes, ou tu en demandes.`); return }
-    if(gb>S.jetons){ toast(`Tu n'as que ${fmt(S.jetons)} ${CUR.many}.`); return }
+    if(gb>libres()){ toast(`Tu n'as que ${fmt(libres())} ${CUR.many} à donner${departTxt()}.`); return }
     C.gb = gb; C.wb = wb;
     ask({title: C.remplace ? `Envoyer ta contre-proposition à ${C.pseudo} ?` : `Envoyer ce troc à ${C.pseudo} ?`, extra:trocSummary(want, give, wb, gb),
          text:`${C.remplace?"Son troc sera remplacé par le tien. ":""}Si ${esc(C.pseudo)} accepte, l'échange se fait tout de suite. Tu peux l'annuler tant qu'il n'a pas répondu.${gb?` Tes ${CUR.many} ne partent que s'il accepte.`:""}${give.map(partWarn).join("")}`, ok:"Envoyer"})
@@ -11676,12 +11678,15 @@ function srvOn(){ return !!(sync.on && eco.ready) }
 function srv(fn){ const p = eco.q.then(fn); eco.q = p.catch(()=>{}); return p }
 function applyEco(e){
   if(!e) return;
-  S.jetons = e.bonbecs; S.bagInv = Object.assign({}, e.sacs||{}); S.freeT0 = e.gratuit_t0; S.pity = e.pity;
+  S.jetons = e.bonbecs; S.depart = e.depart||0; S.bagInv = Object.assign({}, e.sacs||{}); S.freeT0 = e.gratuit_t0; S.pity = e.pity;
   if(e.serie_jour){ const [y,m,d] = e.serie_jour.split("-").map(Number); S.daily = {last:`${y}-${m}-${d}`, streak:e.serie} }
   eco.testeur = !!e.testeur;
   save(); renderTop(); renderNav();
 }
-const ECO_ERR = {evenement_fini:"L'événement est terminé : ce sachet n'est plus en vente.", pas_assez:`Il te manque des ${CUR.many}.`, pas_encore:"Ton sachet gratuit n'est pas encore prêt.", plus_de_sac:"Tu n'as plus de sachet offert de ce type.",
+// les bonbecs qu'on peut donner à un autre joueur (troc, marché, enchères) : pas ceux du cadeau de départ (serveur : interne.libres)
+const libres = () => Math.max(0, S.jetons - Math.min(S.depart||0, S.jetons));
+const departTxt = () => S.depart ? ` (tes ${fmt(Math.min(S.depart, S.jetons))} ${CUR.many} de départ servent seulement à jouer)` : "";
+const ECO_ERR = {bonbecs_depart:`Les ${CUR.many} de ton cadeau de départ servent à ouvrir des sachets et à jouer, pas aux trocs ni au marché.`, evenement_fini:"L'événement est terminé : ce sachet n'est plus en vente.", pas_assez:`Il te manque des ${CUR.many}.`, pas_encore:"Ton sachet gratuit n'est pas encore prêt.", plus_de_sac:"Tu n'as plus de sachet offert de ce type.",
   reseau:"Pas de connexion : réessaie dans un instant.", fusion_invalide:"Cette fusion n'est pas possible.", reserve_aux_testeurs:"Ces outils sont réservés aux comptes de test."};
 function srvFail(e){
   console.warn("Serveur :", e);

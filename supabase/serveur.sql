@@ -71,6 +71,17 @@ create table if not exists public.portefeuilles (
   serie_jour   date,
   maj_le       timestamptz not null default now()
 );
+-- Le cadeau de bienvenue est lié au compte (4 octobre 2026, contre les faux comptes qui donnent tout à un compte principal) :
+--  - depart : la part des bonbecs qui vient du cadeau de départ (1000). Elle est dépensée en premier (sachets, Pachinko),
+--    mais ne peut ni partir dans un troc, ni payer au marché, ni servir aux enchères.
+--  - ce qu'on obtient avec (billes, bonbecs ou sachets gagnés au Pachinko, recyclage, fusion) reste lié au compte.
+--  - gratuits_lies : les sachets gratuits qu'on a en arrivant (5) donnent eux aussi des billes liées.
+--  - sacs_lies : parmi les sachets offerts en réserve, ceux gagnés avec des bonbecs de départ.
+alter table public.portefeuilles add column if not exists depart int not null default 0;
+alter table public.portefeuilles add column if not exists gratuits_lies int not null default 0;
+alter table public.portefeuilles add column if not exists sacs_lies jsonb not null default '{}';
+alter table public.billes add column if not exists liee boolean not null default false;   -- une bille du cadeau de bienvenue : ne s'échange pas
+grant select (liee) on public.billes to authenticated;
 -- chaque gain déjà payé (une quête du jour, un succès, un palier du passe…) : impossible de le toucher deux fois
 create table if not exists public.gains (
   id      bigint generated always as identity primary key,
@@ -227,7 +238,8 @@ $$;
 -- src : d'où elle vient (gratuit, classique, premium, collector, fusion, chateau, passe, secrete, test)
 drop function if exists interne.nouvelle_bille(uuid, text, int, int, int, text, bigint, jsonb, uuid);
 create or replace function interne.nouvelle_bille(qui uuid, taille text, decor int default null, coloris int default null,
-  shiny int default 0, secrete text default null, graine bigint default null, extra jsonb default '{}', bid uuid default null, src text default null)
+  shiny int default 0, secrete text default null, graine bigint default null, extra jsonb default '{}', bid uuid default null, src text default null,
+  liee boolean default false)
 returns jsonb language plpgsql volatile as $$
 declare d int := coalesce(decor, interne.tirer_decor());
         c int := coalesce(coloris, (interne.coloris_tirables())[1 + floor(random()*array_length(interne.coloris_tirables(), 1))::int]);
@@ -238,15 +250,19 @@ begin
            'at', floor(extract(epoch from now())*1000)::bigint) || extra;
   if secrete is not null then don := don || jsonb_build_object('secret', secrete); end if;
   if src is not null then don := don || jsonb_build_object('src', src); end if;
-  insert into public.billes (id, proprietaire, seed, taille, decor, coloris, shiny, secrete, donnees, origine)
-    values (coalesce(bid, gen_random_uuid()), qui, s, taille, d, c, shiny, secrete, don, 'serveur')
+  if liee then don := don || jsonb_build_object('lie', true); end if;
+  insert into public.billes (id, proprietaire, seed, taille, decor, coloris, shiny, secrete, donnees, origine, liee)
+    values (coalesce(bid, gen_random_uuid()), qui, s, taille, d, c, shiny, secrete, don, 'serveur', coalesce(liee, false))
     returning id, numero, donnees into r;   -- donnees : avec l'édition ajoutée par la base
   return r.donnees || jsonb_build_object('id', r.id, 'no', r.numero, 'srv', true);
 end $$;
 
+-- (l'ancienne version, sans « liee », rendrait les appels ambigus)
+drop function if exists interne.nouvelle_bille(uuid, text, int, int, int, text, bigint, jsonb, uuid, text);
+
 -- l'état du portefeuille, envoyé au jeu après chaque action
 create or replace function interne.etat(qui uuid) returns jsonb language sql stable as $$
-  select jsonb_build_object('bonbecs', p.bonbecs, 'sacs', p.sacs,
+  select jsonb_build_object('bonbecs', p.bonbecs, 'depart', least(p.depart, p.bonbecs), 'sacs', p.sacs,
     'gratuit_t0', floor(extract(epoch from p.gratuit_t0)*1000)::bigint, 'pity', p.pity, 'sacs_ouverts', p.sacs_ouverts,
     'serie', p.serie, 'serie_jour', p.serie_jour, 'testeur', exists (select 1 from public.testeurs t where t.joueur = qui))
   from public.portefeuilles p where p.joueur = qui
@@ -266,23 +282,50 @@ begin
   where joueur = qui;
 end $$;
 
+-- un gain obtenu avec des bonbecs de départ : il reste de départ
+create or replace function interne.crediter_lie(qui uuid, j int, sac text default null) returns void language plpgsql as $$
+begin
+  perform interne.crediter(qui, j, sac);
+  update public.portefeuilles set depart = depart + greatest(j,0),
+    sacs_lies = case when sac is null then sacs_lies else jsonb_set(sacs_lies, array[sac], to_jsonb(coalesce((sacs_lies->>sac)::int,0) + 1)) end
+  where joueur = qui;
+end $$;
+-- payer pour jouer (sachet, Pachinko) : les bonbecs de départ partent en premier. Renvoie vrai si on en a utilisé (ce qu'on obtient est alors lié).
+create or replace function interne.payer(qui uuid, montant int) returns boolean language plpgsql as $$
+declare d int;
+begin
+  select least(depart, bonbecs) into d from public.portefeuilles where joueur = qui;
+  update public.portefeuilles set bonbecs = bonbecs - montant, depart = greatest(least(depart, bonbecs) - montant, 0), maj_le = now()
+    where joueur = qui and bonbecs >= montant;
+  if not found then raise exception 'pas_assez'; end if;
+  return coalesce(d, 0) > 0;
+end $$;
+-- payer un autre joueur (troc, marché, enchère) : seulement avec les bonbecs gagnés en jouant, jamais ceux du départ
+create or replace function interne.payer_libre(qui uuid, montant int) returns void language plpgsql as $$
+begin
+  if montant <= 0 then return; end if;
+  if not exists (select 1 from public.portefeuilles where joueur = qui and bonbecs >= montant) then raise exception 'pas_assez'; end if;
+  update public.portefeuilles set bonbecs = bonbecs - montant, maj_le = now() where joueur = qui and bonbecs - least(depart, bonbecs) >= montant;
+  if not found then raise exception 'bonbecs_depart'; end if;
+end $$;
+-- ce qu'on peut donner à un autre joueur
+create or replace function interne.libres(qui uuid) returns int language sql stable as
+$$ select coalesce((select bonbecs - least(depart, bonbecs) from public.portefeuilles where joueur = qui), 0) $$;
+
 -- =====================================================================
 --  FONCTIONS APPELÉES PAR LE JEU
 -- =====================================================================
 
--- Première connexion après la mise en place du serveur : on reprend les bonbecs et les sacs offerts
--- de la partie (plafonnés), ensuite c'est le serveur qui compte.
+-- Première connexion d'un compte : le cadeau de bienvenue, toujours le même (1000 bonbecs de départ et 5 sachets gratuits liés).
+-- (4 octobre 2026 : on ne reprend plus les bonbecs ni les sacs annoncés par la page, qu'un tricheur pouvait gonfler.
+--  Les paramètres restent pour les pages déjà ouvertes, mais sont ignorés.)
 create or replace function public.eco_demarrer(bonbecs int default 1000, sacs jsonb default '{}', pity int default 0)
 returns jsonb language plpgsql security definer set search_path = public as $$
-declare qui uuid := auth.uid(); s jsonb := '{}'; k text;
+declare qui uuid := auth.uid();
 begin
   if qui is null then raise exception 'connexion_requise'; end if;
   if not exists (select 1 from portefeuilles where joueur = qui) then
-    foreach k in array array['classique','premium','collector'] loop
-      if coalesce((sacs->>k)::int,0) > 0 then s := s || jsonb_build_object(k, least((sacs->>k)::int, 5)); end if;
-    end loop;
-    insert into portefeuilles (joueur, bonbecs, sacs, pity)
-      values (qui, least(greatest(coalesce(bonbecs,1000),0), 10000), s, least(greatest(coalesce(pity,0),0), 9))
+    insert into portefeuilles (joueur, bonbecs, depart, gratuits_lies) values (qui, 1000, 1000, 5)
       on conflict (joueur) do nothing;
   end if;
   return interne.etat(qui);
@@ -297,7 +340,7 @@ drop function if exists public.ouvrir_sac(text, boolean);
 create or replace function public.ouvrir_sac(nom text, offert boolean default false, evenement boolean default false)
 returns jsonb language plpgsql security definer set search_path = public as $$
 declare qui uuid := interne.moi(); p portefeuilles; r record; ev record; evc record; evb boolean; stock int; t int; i int; d int; c int;
-        tirees int[] := '{}'; shinies int[] := '{}'; billes jsonb := '[]'; force boolean := false;
+        tirees int[] := '{}'; shinies int[] := '{}'; billes jsonb := '[]'; force boolean := false; lie boolean := false;
 begin
   select * into r from interne.sac(nom);
   if r.n is null then raise exception 'sac_inconnu'; end if;
@@ -309,15 +352,19 @@ begin
   select * into p from portefeuilles where joueur = qui for update;
   if offert then
     if coalesce((p.sacs->>nom)::int,0) < 1 then raise exception 'plus_de_sac'; end if;
-    update portefeuilles set sacs = jsonb_set(sacs, array[nom], to_jsonb((sacs->>nom)::int - 1)) where joueur = qui;
+    lie := coalesce((p.sacs_lies->>nom)::int,0) > 0;   -- un sachet gagné avec des bonbecs de départ
+    update portefeuilles set sacs = jsonb_set(sacs, array[nom], to_jsonb((sacs->>nom)::int - 1)),
+      sacs_lies = case when lie then jsonb_set(sacs_lies, array[nom], to_jsonb((sacs_lies->>nom)::int - 1)) else sacs_lies end
+      where joueur = qui;
   elsif r.prix = 0 then
     stock := least(10, floor(extract(epoch from now() - p.gratuit_t0) / 600)::int);   -- jusqu'à 10 d'avance (FREE_MAX)
     if stock < 1 then raise exception 'pas_encore'; end if;
-    update portefeuilles set gratuit_t0 = case when stock >= 10 then now() - interval '90 minutes' else gratuit_t0 + interval '10 minutes' end
+    lie := p.gratuits_lies > 0;   -- les sachets gratuits du cadeau de bienvenue
+    update portefeuilles set gratuit_t0 = case when stock >= 10 then now() - interval '90 minutes' else gratuit_t0 + interval '10 minutes' end,
+      gratuits_lies = greatest(gratuits_lies - 1, 0)
       where joueur = qui;
   else
-    if p.bonbecs < r.prix then raise exception 'pas_assez'; end if;
-    update portefeuilles set bonbecs = bonbecs - r.prix where joueur = qui;
+    lie := interne.payer(qui, r.prix);
   end if;
   -- les tailles
   for i in 1..r.n loop
@@ -347,7 +394,7 @@ begin
     if d is null and evc.decor is not null and evenement and interne.taux_evenement(nom) > 0 and (i = r.n or random() < interne.taux_evenement(nom)) then
       d := evc.decor; c := evc.coloris[1 + floor(random()*array_length(evc.coloris,1))::int];
     end if;
-    billes := billes || interne.nouvelle_bille(qui, (interne.tailles())[tirees[i]+1], shiny => shinies[i], src => nom, decor => d, coloris => c);
+    billes := billes || interne.nouvelle_bille(qui, (interne.tailles())[tirees[i]+1], shiny => shinies[i], src => nom, decor => d, coloris => c, liee => lie);
   end loop;
   return jsonb_build_object('eco', interne.etat(qui), 'billes', billes, 'force', force);
 end $$;
@@ -355,29 +402,31 @@ end $$;
 -- La Confiserie : échange des billes contre des bonbecs. Seules les billes tirées par le serveur rapportent.
 create or replace function public.echanger_billes(ids uuid[])
 returns jsonb language plpgsql security definer set search_path = public as $$
-declare qui uuid := interne.moi(); total int := 0; n int := 0; b record;
+declare qui uuid := interne.moi(); total int := 0; lie int := 0; v int; n int := 0; b record;
 begin
   perform 1 from portefeuilles where joueur = qui for update;
   for b in select * from billes where id = any(ids) and proprietaire = qui and detruite_le is null and secrete is null for update loop
     if b.origine = 'serveur' then
-      total := total + case when b.shiny > 0 and interne.coloris_normal(b.coloris)
+      v := case when b.shiny > 0 and interne.coloris_normal(b.coloris)
         then (interne.revente())[interne.rang(b.taille)+1] * 10 + (interne.prime_shiny())[b.shiny]
         else (interne.revente())[interne.rang(b.taille)+1] end;
+      total := total + v; if b.liee then lie := lie + v; end if;   -- une bille liée rend des bonbecs de départ
     end if;
     update billes set detruite_le = now(), detruite_raison = 'recyclee' where id = b.id;
     insert into billes_historique (bille, de, vers, motif) values (b.id, qui, null, 'detruite');
     n := n + 1;
   end loop;
-  perform interne.crediter(qui, total);
+  perform interne.crediter(qui, total - lie);
+  perform interne.crediter_lie(qui, lie);
   return jsonb_build_object('eco', interne.etat(qui), 'total', total, 'n', n);
 end $$;
 
 -- La fusion : N billes d'une même taille contre une de la taille au-dessus
 create or replace function public.fusionner(ids uuid[])
 returns jsonb language plpgsql security definer set search_path = public as $$
-declare qui uuid := interne.moi(); tailles text[]; rg int; nb int; b record;
+declare qui uuid := interne.moi(); tailles text[]; rg int; nb int; b record; lie boolean;
 begin
-  select array_agg(distinct taille), count(*) into tailles, nb from billes
+  select array_agg(distinct taille), count(*), bool_or(liee) into tailles, nb, lie from billes
     where id = any(ids) and proprietaire = qui and detruite_le is null and secrete is null
       and shiny = 0 and interne.coloris_normal(coloris) and origine = 'serveur';
   if tailles is null or array_length(tailles,1) <> 1 then raise exception 'fusion_invalide'; end if;
@@ -388,7 +437,7 @@ begin
     insert into billes_historique (bille, de, vers, motif) values (b.id, qui, null, 'detruite');
   end loop;
   return jsonb_build_object('eco', interne.etat(qui),
-    'bille', interne.nouvelle_bille(qui, (interne.tailles())[rg+2], shiny => interne.tirer_shiny(interne.taux_shiny() * nb), src => 'fusion'));
+    'bille', interne.nouvelle_bille(qui, (interne.tailles())[rg+2], shiny => interne.tirer_shiny(interne.taux_shiny() * nb), src => 'fusion', liee => lie));   -- une bille liée dedans : le résultat l'est aussi
 end $$;
 
 -- Fusion d'événement (2 octobre 2026) : des billes d'événement (décor 32 Pirate…) d'une même taille, d'un même décor et d'un même coloris
@@ -402,20 +451,21 @@ create or replace function public.fusion_evenement(ids uuid[])
 returns jsonb language plpgsql security definer set search_path = public as $$
 declare qui uuid := interne.moi(); g record; rg int; b record;
 begin
-  select count(*) nb, count(distinct taille) nt, count(distinct decor) nd, count(distinct coloris) nc, min(taille) taille, min(decor) decor, min(coloris) coloris
+  select count(*) nb, count(distinct taille) nt, count(distinct decor) nd, count(distinct coloris) nc, min(taille) taille, min(decor) decor, min(coloris) coloris,
+    bool_or(liee) lie
     into g from billes
     where id = any(ids) and proprietaire = qui and detruite_le is null and secrete is null and shiny = 0 and origine = 'serveur';
   if g.nb = 0 or g.nt <> 1 or g.nd <> 1 or g.nc <> 1 or g.nb <> array_length(ids,1) or not interne.decor_evenement(g.decor) then raise exception 'fusion_invalide'; end if;
   rg := interne.rang(g.taille);
   if rg >= 5 or g.nb <> (interne.fusion_ev_n())[rg+1] then raise exception 'fusion_invalide'; end if;
   for b in select id from billes where id = any(ids) for update loop
-    if not interne.bille_libre(b.id, qui) then raise exception 'bille_indisponible'; end if;
+    if interne.en_vente(b.id) then raise exception 'bille_indisponible'; end if;   -- (une bille liée peut fusionner)
     update billes set detruite_le = now(), detruite_raison = 'fusionnee' where id = b.id;
     insert into billes_historique (bille, de, vers, motif) values (b.id, qui, null, 'detruite');
   end loop;
   return jsonb_build_object('eco', interne.etat(qui),
     'bille', interne.nouvelle_bille(qui, (interne.tailles())[rg+2], decor => g.decor, coloris => g.coloris,
-                                    shiny => interne.tirer_shiny(interne.taux_shiny() * g.nb), src => 'fusion'));
+                                    shiny => interne.tirer_shiny(interne.taux_shiny() * g.nb), src => 'fusion', liee => g.lie));
 end $$;
 
 -- Le Pachinko (2 octobre 2026) : une bille gratuite par jour (elle compte dans les 6 jeux du jour), puis 100 bonbecs la bille (200 jusqu'au 2 octobre au soir).
@@ -433,25 +483,24 @@ $$;
 create or replace function interne.pachinko_roue() returns numeric[] language sql immutable as $$ select array[10,15,20,25,20,10]::numeric[] $$;   -- Mini → Mammouth
 create or replace function public.pachinko(payer boolean default false)
 returns jsonb language plpgsql security definer set search_path = public as $$
-declare qui uuid := interne.moi(); today text := interne.aujourdhui()::text; c record; b jsonb := null; x numeric; acc numeric := 0; t text := null;
+declare qui uuid := interne.moi(); today text := interne.aujourdhui()::text; c record; b jsonb := null; x numeric; acc numeric := 0; t text := null; lie boolean := false;
 begin
   perform 1 from portefeuilles where joueur = qui for update;
   if not payer then   -- la bille du jour (une seule)
     begin insert into gains (joueur, source, cle, montant) values (qui, 'jeu', today || '|pachinko', 0);
     exception when unique_violation then raise exception 'deja'; end;
   else
-    update portefeuilles set bonbecs = bonbecs - 150, maj_le = now() where joueur = qui and bonbecs >= 150;   -- la bille de plus : 150 (PACHI_PRICE)
-    if not found then raise exception 'pas_assez'; end if;
+    lie := interne.payer(qui, 150);   -- la bille de plus : 150 (PACHI_PRICE) ; payée avec des bonbecs de départ, le lot reste lié
   end if;
   x := random() * (select sum(poids) from interne.pachinko_cases());
   for c in select * from interne.pachinko_cases() order by k loop
     acc := acc + c.poids; exit when x < acc;
   end loop;
-  perform interne.crediter(qui, c.bonbecs, c.sac);
+  if lie then perform interne.crediter_lie(qui, c.bonbecs, c.sac); else perform interne.crediter(qui, c.bonbecs, c.sac); end if;
   if not payer and c.bonbecs > 0 then update gains set montant = c.bonbecs where joueur = qui and source = 'jeu' and cle = today || '|pachinko'; end if;
   if c.taille = 'mammouth' then
     t := 'mammouth';
-    b := interne.nouvelle_bille(qui, t, shiny => interne.tirer_shiny(interne.taux_shiny() * 10), src => 'pachinko');
+    b := interne.nouvelle_bille(qui, t, shiny => interne.tirer_shiny(interne.taux_shiny() * 10), src => 'pachinko', liee => lie);
   end if;
   return jsonb_build_object('eco', interne.etat(qui), 'case', c.k, 'bonbecs', c.bonbecs, 'sac', c.sac, 'taille', t, 'bille', b);
 end $$;
@@ -579,8 +628,7 @@ returns jsonb language plpgsql security definer set search_path = public as $$
 declare qui uuid := interne.moi(); mid bigint;
 begin
   if jeu not in ('course','tic') or montant not in (10,25,50,100) then raise exception 'mise_invalide'; end if;
-  update portefeuilles set bonbecs = bonbecs - montant where joueur = qui and bonbecs >= montant;
-  if not found then raise exception 'pas_assez'; end if;
+  perform interne.payer_libre(qui, montant);
   insert into mises (joueur, jeu, montant) values (qui, jeu, montant) returning mises.id into mid;
   return jsonb_build_object('eco', interne.etat(qui), 'mise', mid);
 end $$;

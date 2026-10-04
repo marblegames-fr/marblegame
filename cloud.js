@@ -135,6 +135,15 @@
       annonces: () => rpc("mes_annonces"),
       journal: (depuis, limite) => rpc("cour_journal", {depuis:depuis||0, limite:limite||80}),
       stats: () => rpc("cour_stats"),
+      // les notifications en temps réel (supabase/notifs.sql) : cb(quoi) dès qu'il se passe quelque chose qui concerne ce joueur.
+      // Renvoie une fonction pour arrêter d'écouter.
+      ecouter(uid, cb){
+        if(!db || !uid) return () => {};
+        const ch = db.channel("pings-" + uid)
+          .on("postgres_changes", {event:"*", schema:"public", table:"pings", filter:"joueur=eq." + uid}, p => cb(p.new?.quoi || null))
+          .subscribe();
+        return () => { try{ db.removeChannel(ch) }catch(e){} };
+      },
     },
     async setPseudo(uid, pseudo){
       need();

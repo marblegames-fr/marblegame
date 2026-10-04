@@ -117,10 +117,10 @@ create or replace function interne.en_vente(bid uuid) returns boolean language s
                    and (a.expire_le > now() or a.encherisseur is not null))
 $$;
 
--- une bille qui peut circuler : à ce joueur, pas détruite, tirée par le serveur, pas secrète, pas liée au compte, pas en vente
+-- une bille qui peut circuler : à ce joueur, pas détruite, tirée par le serveur, pas secrète, pas liée au compte (15 jours après l'inscription), pas en vente
 create or replace function interne.bille_libre(bid uuid, qui uuid) returns boolean language sql stable as $$
   select exists (select 1 from public.billes b where b.id = bid and b.proprietaire = qui and b.detruite_le is null
-                   and b.origine = 'serveur' and b.secrete is null and not b.liee)
+                   and b.origine = 'serveur' and b.secrete is null and not interne.encore_liee(b.liee, b.proprietaire))
      and not interne.en_vente(bid)
 $$;
 
@@ -237,7 +237,7 @@ begin
   if qui <> moi and not interne.sont_amis(moi, qui) then raise exception 'pas_ami'; end if;
   return coalesce((select jsonb_agg(x.j) from (
     select interne.bille_json(b) j from billes b
-    where b.proprietaire = qui and b.detruite_le is null and b.origine = 'serveur' and b.secrete is null and not b.liee
+    where b.proprietaire = qui and b.detruite_le is null and b.origine = 'serveur' and b.secrete is null and not interne.encore_liee(b.liee, b.proprietaire)
       and not interne.en_vente(b.id)
     order by interne.rang(b.taille) desc, b.shiny desc, b.numero desc limit 500) x), '[]');
 end $$;

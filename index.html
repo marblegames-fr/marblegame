@@ -6633,7 +6633,7 @@ function openModal(id, pv, reveal=false){
         <dt>Format</dt><dd>${T.label} · ${T.mm} mm</dd>
         <dt>Décor</dt><dd>${F.name} · ${F.event?`<b style="color:${EVENTS[F.event].color}">Événement</b>`:`<b style="color:${DECOR_RAR[F.rar].c}">${DECOR_RAR[F.rar].name}</b>`}</dd>
         <dt>Coloris</dt><dd>${PALETTES[s.pal][0]}</dd>
-        ${s.lie?`<dt>Échange</dt><dd>Cadeau de bienvenue : elle reste dans ta boîte (pas de troc ni de vente)</dd>`:""}<dt>Chance</dt><dd>${isBeta(s)?"Réservée aux bêta-testeurs : elle reste dans ta boîte après la remise à zéro":s.secret?"Bille secrète : une seule par joueur":eventOf(s)?`Exclusive à l'événement « ${eventOf(s).name} »`:isSeason(s)?"Exclusive au passe de saison":`${oneIn(chanceOf(s))} <small class="meta">par bille du sachet gratuit</small>`}</dd>
+        ${estLiee(s)?`<dt>Échange</dt><dd>Cadeau de bienvenue : échangeable à partir du ${new Date(lieeJusqu(s)).toLocaleDateString("fr-FR",{day:"numeric", month:"long"})}</dd>`:""}<dt>Chance</dt><dd>${isBeta(s)?"Réservée aux bêta-testeurs : elle reste dans ta boîte après la remise à zéro":s.secret?"Bille secrète : une seule par joueur":eventOf(s)?`Exclusive à l'événement « ${eventOf(s).name} »`:isSeason(s)?"Exclusive au passe de saison":`${oneIn(chanceOf(s))} <small class="meta">par bille du sachet gratuit</small>`}</dd>
         ${pv||!editionOf(s)?"":`<dt>Édition</dt><dd>${editionOf(s)===1?`<span class="first-pill">Première mondiale</span>`:`n° ${fmt(editionOf(s))} <small class="meta">de ce modèle trouvée dans le monde${s.edn?"":" (estimation)"}</small>`}</dd>`}
         ${pv||!s.no?"":`<dt>N° de série</dt><dd><code>#${String(s.no).padStart(7,"0")}</code> <small class="meta">unique, dans l'ordre d'apparition</small></dd>`}
         ${pv||!SRC_LABEL[s.src]?"":`<dt>Trouvée</dt><dd>${SRC_LABEL[s.src]}${s.via&&s.found?` <small class="meta">le ${dateFr(s.found)}</small>`:""}</dd>`}
@@ -6642,7 +6642,7 @@ function openModal(id, pv, reveal=false){
       </dl>
       ${pv&&pv.cour?`<p class="meta">${esc(pv.cour)}</p>`:pv?`<p class="meta">Aperçu Billepedia · ${S.specs.some(x=>slotKey(x)===slotKey(s))?"tu as déjà ce format dans ce décor.":"pas encore dans ta boîte à billes."}</p>`:`<div class="modal-actions">
         ${S.vitrine.includes(s.id)?`<button class="btn btn-ghost" data-action="vit-rm" data-id="${s.id}">${ic("layers",16)} Retirer de la vitrine</button>`:`<button class="btn btn-ghost" data-action="vit-add" data-id="${s.id}">${ic("layers",16)} Mettre en vitrine</button>`}
-        ${srvOn() && s.srv && !s.secret && !s.lie ? `<button class="btn btn-ghost" data-action="cour-sell-this" data-id="${s.id}">${ic("cour",16)} Vendre au marché</button>` : ""}
+        ${srvOn() && s.srv && !s.secret && !estLiee(s) ? `<button class="btn btn-ghost" data-action="cour-sell-this" data-id="${s.id}">${ic("cour",16)} Vendre au marché</button>` : ""}
         
         ${S.active===s.id||s.secret?"":`<button class="btn btn-ghost" data-action="recycle" data-id="${s.id}">${ic("candy",16)} Échanger · +${fmt(recycleValue(s))} ${CUR.many}</button>`}
         ${sib.length>1 && keepOf(sib).id!==s.id?`<button class="btn btn-ghost" data-action="keep-copy" data-id="${s.id}">${ic("check",16)} Garder cet exemplaire</button>`:""}
@@ -11684,6 +11684,9 @@ function applyEco(e){
   save(); renderTop(); renderNav();
 }
 // les bonbecs qu'on peut donner à un autre joueur (troc, marché, enchères) : pas ceux du cadeau de départ (serveur : interne.libres)
+// une bille du cadeau de bienvenue : échangeable 15 jours après l'inscription (s.lie = la date, en ms)
+const lieeJusqu = s => s.lie===true ? Infinity : +s.lie||0;
+const estLiee = s => lieeJusqu(s) > Date.now();
 const libres = () => Math.max(0, S.jetons - Math.min(S.depart||0, S.jetons));
 const departTxt = () => S.depart ? ` (tes ${fmt(Math.min(S.depart, S.jetons))} ${CUR.many} de départ servent seulement à jouer)` : "";
 const ECO_ERR = {bonbecs_depart:`Les ${CUR.many} de ton cadeau de départ servent à ouvrir des sachets et à jouer, pas aux trocs ni au marché.`, evenement_fini:"L'événement est terminé : ce sachet n'est plus en vente.", pas_assez:`Il te manque des ${CUR.many}.`, pas_encore:"Ton sachet gratuit n'est pas encore prêt.", plus_de_sac:"Tu n'as plus de sachet offert de ce type.",

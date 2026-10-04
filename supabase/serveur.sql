@@ -80,8 +80,13 @@ create table if not exists public.portefeuilles (
 alter table public.portefeuilles add column if not exists depart int not null default 0;
 alter table public.portefeuilles add column if not exists gratuits_lies int not null default 0;
 alter table public.portefeuilles add column if not exists sacs_lies jsonb not null default '{}';
-alter table public.billes add column if not exists liee boolean not null default false;   -- une bille du cadeau de bienvenue : ne s'échange pas
+alter table public.billes add column if not exists liee boolean not null default false;   -- une bille du cadeau de bienvenue : ne s'échange pas tout de suite
 grant select (liee) on public.billes to authenticated;
+-- (4 octobre 2026, plus tard) les billes liées deviennent échangeables 15 jours après l'inscription du joueur
+create or replace function interne.fin_liee(qui uuid) returns timestamptz language sql stable as
+$$ select created_at + interval '15 days' from auth.users where id = qui $$;
+create or replace function interne.encore_liee(liee boolean, qui uuid) returns boolean language sql stable as
+$$ select coalesce(liee and now() < coalesce(interne.fin_liee(qui), 'infinity'), false) $$;
 -- chaque gain déjà payé (une quête du jour, un succès, un palier du passe…) : impossible de le toucher deux fois
 create table if not exists public.gains (
   id      bigint generated always as identity primary key,
@@ -250,7 +255,7 @@ begin
            'at', floor(extract(epoch from now())*1000)::bigint) || extra;
   if secrete is not null then don := don || jsonb_build_object('secret', secrete); end if;
   if src is not null then don := don || jsonb_build_object('src', src); end if;
-  if liee then don := don || jsonb_build_object('lie', true); end if;
+  if liee then don := don || jsonb_build_object('lie', floor(extract(epoch from coalesce(interne.fin_liee(qui), now()))*1000)::bigint); end if;   -- échangeable à partir de (ms)
   insert into public.billes (id, proprietaire, seed, taille, decor, coloris, shiny, secrete, donnees, origine, liee)
     values (coalesce(bid, gen_random_uuid()), qui, s, taille, d, c, shiny, secrete, don, 'serveur', coalesce(liee, false))
     returning id, numero, donnees into r;   -- donnees : avec l'édition ajoutée par la base
@@ -410,7 +415,7 @@ begin
       v := case when b.shiny > 0 and interne.coloris_normal(b.coloris)
         then (interne.revente())[interne.rang(b.taille)+1] * 10 + (interne.prime_shiny())[b.shiny]
         else (interne.revente())[interne.rang(b.taille)+1] end;
-      total := total + v; if b.liee then lie := lie + v; end if;   -- une bille liée rend des bonbecs de départ
+      total := total + v; if interne.encore_liee(b.liee, qui) then lie := lie + v; end if;   -- une bille encore liée rend des bonbecs de départ
     end if;
     update billes set detruite_le = now(), detruite_raison = 'recyclee' where id = b.id;
     insert into billes_historique (bille, de, vers, motif) values (b.id, qui, null, 'detruite');
@@ -426,7 +431,7 @@ create or replace function public.fusionner(ids uuid[])
 returns jsonb language plpgsql security definer set search_path = public as $$
 declare qui uuid := interne.moi(); tailles text[]; rg int; nb int; b record; lie boolean;
 begin
-  select array_agg(distinct taille), count(*), bool_or(liee) into tailles, nb, lie from billes
+  select array_agg(distinct taille), count(*), bool_or(interne.encore_liee(liee, qui)) into tailles, nb, lie from billes
     where id = any(ids) and proprietaire = qui and detruite_le is null and secrete is null
       and shiny = 0 and interne.coloris_normal(coloris) and origine = 'serveur';
   if tailles is null or array_length(tailles,1) <> 1 then raise exception 'fusion_invalide'; end if;
@@ -452,7 +457,7 @@ returns jsonb language plpgsql security definer set search_path = public as $$
 declare qui uuid := interne.moi(); g record; rg int; b record;
 begin
   select count(*) nb, count(distinct taille) nt, count(distinct decor) nd, count(distinct coloris) nc, min(taille) taille, min(decor) decor, min(coloris) coloris,
-    bool_or(liee) lie
+    bool_or(interne.encore_liee(liee, qui)) lie
     into g from billes
     where id = any(ids) and proprietaire = qui and detruite_le is null and secrete is null and shiny = 0 and origine = 'serveur';
   if g.nb = 0 or g.nt <> 1 or g.nd <> 1 or g.nc <> 1 or g.nb <> array_length(ids,1) or not interne.decor_evenement(g.decor) then raise exception 'fusion_invalide'; end if;

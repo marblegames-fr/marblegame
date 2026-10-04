@@ -10715,7 +10715,8 @@ function courListen(){
     pingT = setTimeout(()=>{ courNews(false); courLoad("moi", true);
       if(quoi==="ami") courRefresh("fil");
       if(ui.view==="cour" && ui.courTab==="troc") courRefresh("trocs");
-      if(ui.view==="cour" && ui.courTab==="marche") courRefresh("marche","annonces","encheres") }, 700);
+      if(quoi==="marche") courRefresh("annonces","encheres");
+      if(ui.view==="cour" && ui.courTab==="marche") courRefresh("marche") }, 700);
   });
 }
 // acheter une annonce du marché (après confirmation)
@@ -11019,7 +11020,7 @@ function courMarche(){
   courLoad("marche"); courLoad("annonces"); courLoad("encheres");
   const L = cour.marche, A = cour.annonces, f = cour.f, aucOK = !cour.absent.encheres, ME = aucOK ? (cour.encheres||[]) : [];
   const sel = (id, opts, v) => `<select id="${id}" aria-label="${id}">${opts.map(([k,l])=>`<option value="${k}"${v===k?" selected":""}>${l}</option>`).join("")}</select>`;
-  const mine = (A||[]), sold = mine.filter(a=>a.vendue).length, mkTab = ui.mkTab || "acheter";
+  const mine = (A||[]).filter(a=>!a.vendue), sold = 0, mkTab = ui.mkTab || "acheter";
   const mt = (k,l,n) => `<button class="chip" data-action="mk-tab" data-t="${k}" aria-pressed="${mkTab===k}">${l}${n?` <span class="n">${n}</span>`:""}</button>`;
   const ann = a => { const x = a.bille, E = a.enchere, st = a.vendue ? `<span class="ann-st">${ic("check",13,3)} Vendue à ${esc(a.acheteur||"?")}</span>`
       : E && a.offre ? `<span class="ann-st hot">${ic("gavel",13,2.4)} ${a.nb_offres} offre${a.nb_offres>1?"s":""} · ${esc(a.meilleur||"?")} en tête</span>${finSpan(a.fin, true)}`
@@ -11263,7 +11264,7 @@ document.addEventListener("click", e=>{
     case "mk-encherir": bidAsk(+t.dataset.id); break;
     case "sell-mode": if(!cour.sell) break; cour.sell.prix = document.getElementById("sell-prix")?.value || cour.sell.prix; cour.sell.mode = t.dataset.m; renderView(); break;
     case "mk-reset": Object.assign(cour.f, {taille:"", decor:null, shiny:"", genre:""}); courRefresh("marche"); renderView(); break;
-    case "mk-tab": ui.mkTab = t.dataset.t; renderView(); break;
+    case "mk-tab": ui.mkTab = t.dataset.t; if(t.dataset.t!=="acheter") courRefresh("annonces","encheres"); renderView(); break;
     case "troc-tab": ui.trocTab = t.dataset.t; renderView(); break;
     case "notif-pop": toggleBell(); break;
     case "notif-go": notifGo(+t.dataset.i); break;

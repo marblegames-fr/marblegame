@@ -1076,6 +1076,13 @@ body.vit-dragging,body.vit-dragging *{cursor:grabbing!important;user-select:none
 .evf-card.ok{border-style:solid;border-color:var(--yellow);background:color-mix(in srgb,var(--yellow) 10%,var(--panel))}
 .evf-card b{font-size:13.5px;font-weight:900}
 .evf-card small{font-size:12px;font-weight:800;color:var(--ink-2)}
+.evf-card{position:relative;padding-top:30px}
+.evf-card .dup-tag{position:absolute;top:8px;left:8px;font-size:10px;font-weight:900;background:var(--green-soft);color:var(--green);border-radius:999px;padding:1px 7px;text-transform:uppercase;letter-spacing:.04em}
+.evf-card .dup-tag.one{background:var(--panel);color:var(--muted);border:1px solid var(--line-2)}
+.evf-card.last{border-style:solid;border-color:#E8833A}
+.evf-card small.evf-warn{font-size:11px;color:#C25A12}
+.evf-sum{margin-top:10px;font-size:13.5px;font-weight:700;color:var(--ink-2)}
+.evf-chips{margin-top:10px;gap:6px}
 .evf-balls{display:flex;align-items:center;gap:6px;color:var(--muted);min-height:64px}
 .evf-balls em{font-style:normal;font-weight:900;font-size:12px;color:var(--ink-2);margin-left:-8px;align-self:flex-end}
 .conf-choices{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:12px;margin-bottom:18px}
@@ -1500,6 +1507,10 @@ button.gh-cell:hover{transform:translateY(-2px)}
     repeating-linear-gradient(45deg,rgba(255,255,255,.028) 0 2px,transparent 2px 5px),
     radial-gradient(ellipse 120% 90% at 50% 35%,color-mix(in srgb,var(--dr,var(--rc)) 62%,#1d1726) 0%,color-mix(in srgb,var(--dr,var(--rc)) 30%,#120e18) 75%)}
 .modal-visual canvas{width:min(250px,100%);aspect-ratio:1;filter:drop-shadow(0 18px 14px rgba(30,20,50,.35))}
+/* la boîte de la bille prend toute la largeur et la centre : sur un écran Retina (Mac), le canevas fait 2× sa taille affichée
+   et la boîte, calée sur cette taille-là, laissait la bille collée à gauche */
+#live-slot{align-self:stretch;display:flex;justify-content:center;min-width:0}
+#live-slot > canvas, #live-slot > img{display:block;flex:none;max-width:100%}
 .modal-visual canvas{cursor:grab;touch-action:none}
 .modal-visual canvas.grabbing{cursor:grabbing}
 .modal-visual > .rot-hint{font-size:11px;font-weight:700;color:rgba(255,255,255,.7);margin-top:-6px}
@@ -1646,6 +1657,17 @@ button.gh-cell:hover{transform:translateY(-2px)}
 .hud-stat b{font-size:22px;font-weight:900;font-variant-numeric:tabular-nums;line-height:1.1}
 .game-stage{position:relative;border-radius:16px;overflow:hidden;box-shadow:0 14px 30px -14px rgba(60,35,10,.55)}
 .game-stage canvas{display:block;width:100%;aspect-ratio:900/520;touch-action:none;cursor:crosshair;background:#3E9A4A}
+/* les jeux en grand : pendant une partie, le rail « Ma journée » se replie (il reste le bouton en haut) et le terrain prend la place,
+   sans jamais dépasser la hauteur de l'écran (--ar : largeur / hauteur du terrain) */
+@media (min-width:1340px){
+  .layout:has(#view .game-wrap){grid-template-columns:216px minmax(0,1fr)}
+  .layout:has(#view .game-wrap) .mj-rail{display:none}
+  body:has(#view .game-wrap) .mj-btn{display:flex}
+}
+.game-wrap{grid-template-columns:minmax(0,1fr) 260px}
+.game-stage{--ar:900/520;width:100%;max-width:max(340px,calc((100vh / var(--vz,1) - 190px) * var(--ar)));margin-inline:auto}
+.game-stage:has(canvas.bricks){--ar:3/2}
+.game-stage.pachi-stage{--ar:540/700}
 .g-result{position:absolute;inset:0;display:grid;place-items:center;background:rgba(20,30,18,.62)}   /* pas de flou : le jeu continue de se dessiner dessous */
 .g-card{background:var(--panel);border-radius:20px;padding:24px 28px;text-align:center;display:flex;flex-direction:column;align-items:center;gap:10px;box-shadow:0 20px 40px -16px rgba(0,0,0,.5);max-width:calc(100% - 32px)}
 .g-card h2{font-family:var(--display);font-weight:400;font-size:32px;line-height:1}
@@ -6084,19 +6106,34 @@ function viewCraft(){
 // dans le même décor et le même coloris (le seul chemin réaliste vers un Mammouth Pirate). Même règle dans serveur.sql (fusion_evenement).
 const FUSION_EV = [3,3,2,2,2];
 const evPool = () => S.specs.filter(s=>eventOf(s) && !s.shiny && !s.secret && s.id!==S.active && !S.vitrine.includes(s.id) && (!srvOn() || s.srv));
+// Pour chaque bille d'événement à fusionner : combien on en a en tout (vitrine, bille active et shiny comprises).
+// Si la fusion en laisse au moins une, elle ne prend que des doubles ; sinon elle emporte le dernier exemplaire (avertissement).
+const evKey = s => `${s.type}|${s.family}|${s.pal}`;
+const evTotal = k => S.specs.filter(s=>evKey(s)===k).length;
 function evFusionPanel(){
   const pool = evPool(); if(!pool.length && !liveEvents().length) return "";
-  const groups = new Map(); pool.forEach(s=>{ const k = `${s.type}|${s.family}|${s.pal}`; if(!groups.has(k)) groups.set(k,[]); groups.get(k).push(s) });
-  const list = [...groups.values()].filter(l=>TIDX[l[0].type]<TK.length-1).sort((a,b)=>TIDX[b[0].type]-TIDX[a[0].type] || b.length-a.length);
-  const card = l => { const x = l[0], t = TIDX[x.type], n = FUSION_EV[t], ok = l.length>=n, nx = {...x, type:TK[t+1], seed:hash("evf"+x.family+x.pal+t)};
-    return `<div class="evf-card${ok?" ok":""}" style="${tstyle(x.type)}">
+  const groups = new Map(); pool.forEach(s=>{ const k = evKey(s); if(!groups.has(k)) groups.set(k,[]); groups.get(k).push(s) });
+  const info = l => { const x = l[0], t = TIDX[x.type], n = FUSION_EV[t], tot = evTotal(evKey(x));
+    return {l, x, t, n, dbl:tot-1, ok:l.length>=n, safe:l.length>=n && tot-n>=1} };
+  const all = [...groups.values()].filter(l=>TIDX[l[0].type]<TK.length-1).map(info)
+    .sort((a,b)=>b.safe-a.safe || b.ok-a.ok || b.t-a.t || b.l.length-a.l.length);
+  const F = ui.evfF || "", nDbl = all.filter(g=>g.dbl>0).length, nSafe = all.filter(g=>g.safe).length, nLast = all.filter(g=>g.ok && !g.safe).length;
+  const list = all.filter(g=>F==="doubles" ? g.dbl>0 : F==="seules" ? g.dbl===0 : true);
+  const card = ({l, x, t, n, dbl, ok, safe}) => { const nx = {...x, type:TK[t+1], seed:hash("evf"+x.family+x.pal+t)};
+    return `<div class="evf-card${safe?" ok":ok?" last":""}" style="${tstyle(x.type)}">
+      ${dbl>0?`<span class="dup-tag">${dbl} double${dbl>1?"s":""}</span>`:`<span class="dup-tag one">Seul exemplaire</span>`}
       <span class="evf-balls">${mImg(x,120,Math.round(26*scaleOf(x.type)+18),"")}<em>×${n}</em>${ic("arrow",14)}${mImg(nx,140,Math.round(26*scaleOf(nx.type)+22),"")}</span>
       <b>${esc(specName(x))}</b><small>${l.length} / ${n} ${TYPES[x.type].pl} · donne 1 ${TYPES[nx.type].label}</small>
-      <button class="btn ${ok?"btn-yellow":"btn-ghost"} btn-sm" data-action="evf-go" data-k="${x.type}|${x.family}|${x.pal}" ${ok?"":"disabled"}>${ic("flask",15)} Fusionner</button></div>` };
+      ${safe ? `<button class="btn btn-yellow btn-sm" data-action="evf-go" data-k="${evKey(x)}">${ic("flask",15)} Fusionner mes doubles</button>`
+        : ok ? `<button class="btn btn-ghost btn-sm" data-action="evf-go" data-k="${evKey(x)}">${ic("flask",15)} Fusionner (dernier exemplaire)</button><small class="evf-warn">Il te faut ${n+1} billes pour en garder une</small>`
+        : `<button class="btn btn-ghost btn-sm" disabled>${ic("flask",15)} Fusionner</button>`}</div>` };
+  const chip = (v,l,c) => `<button class="chip" data-action="evf-f" data-f="${v}" aria-pressed="${F===v}">${l}${c!=null?` <span class="n">${c}</span>`:""}</button>`;
   return `<section class="panel evf">
     <div class="panel-head"><h2>${ic("flag",18)} Fusion d'événement</h2><span class="sample-tag">Même décor, même coloris</span></div>
     <p class="cour-lead">Des billes d'événement d'une même taille et d'un même coloris donnent la taille au-dessus, <b>dans ce coloris</b> : ${TK.slice(0,-1).map((t,i)=>`${FUSION_EV[i]} ${TYPES[t].pl}`).join(", ")}. C'est le chemin vers les Mammouths Pirate ! Pense aussi au troc et au marché pour réunir un même coloris.</p>
-    ${list.length ? `<div class="evf-grid">${list.map(card).join("")}</div>` : `<p class="empty">Pas encore de bille d'événement à fusionner. Elles se trouvent dans les sachets d'événement.</p>`}
+    ${all.length ? `<p class="evf-sum">${nSafe ? `<b>${nSafe} fusion${nSafe>1?"s":""} possible${nSafe>1?"s":""} avec tes doubles</b>, sans perdre de bille de ta collection.` : "Aucune fusion possible avec tes seuls doubles pour l'instant."}${nLast ? ` ${nLast} autre${nLast>1?"s":""} emporterai${nLast>1?"en":""}t ton dernier exemplaire.` : ""}</p>
+    <div class="chips evf-chips">${chip("","Toutes",all.length)}${chip("doubles",`${ic("layers",14)} Avec des doubles`,nDbl)}${chip("seules",`${ic("star",14)} En un seul exemplaire`,all.length-nDbl)}</div>` : ""}
+    ${list.length ? `<div class="evf-grid">${list.map(card).join("")}</div>` : all.length ? `<p class="empty">Aucune bille d'événement dans ce filtre.</p>` : `<p class="empty">Pas encore de bille d'événement à fusionner. Elles se trouvent dans les sachets d'événement.</p>`}
   </section>`;
 }
 // Les billes de la boîte, reprises du serveur : si la boîte affichée n'est plus à jour (une fusion faite dans un autre onglet,
@@ -6115,10 +6152,14 @@ function evFuse(key, again){
   const [type, f, pal] = key.split("|"), t = TIDX[type], n = FUSION_EV[t];
   const ids = evPool().filter(s=>s.type===type && s.family===+f && s.pal===+pal).sort((a,b)=>a.at-b.at).slice(0,n).map(s=>s.id);
   if(ids.length<n){ if(again){ toast("Ta boîte a été remise à jour : il n'y a plus assez de billes pour cette fusion."); renderView() } return }
-  const x = specById(ids[0]);
-  (again ? Promise.resolve(true) : ask({title:`Fusionner ${n} ${TYPES[type].pl} ${FAMILIES[+f].name} ?`, balls:ids.map(specById), ok:"Fusionner",
-       text:`Elles donnent 1 <b>${TYPES[TK[t+1]].label} ${esc(specName(x))}</b>, dans le même coloris. Les ${n} billes disparaissent.`})).then(ok=>{
+  const x = specById(ids[0]), last = evTotal(key)-n<1;   // la fusion emporte le dernier exemplaire de cette bille
+  const warn = last && S.evSinglesOk!==dayKey();
+  (again ? Promise.resolve(true) : ask({title:warn ? "Fusionner ton dernier exemplaire ?" : `Fusionner ${n} ${TYPES[type].pl} ${FAMILIES[+f].name} ?`, balls:ids.map(specById), ok:"Fusionner",
+       text:`Elles donnent 1 <b>${TYPES[TK[t+1]].label} ${esc(specName(x))}</b>, dans le même coloris. Les ${n} billes disparaissent.`
+         + (warn ? `<span class="warn-note">Pas assez de doubles : cette fusion prend ton dernier exemplaire, tu n'auras plus de ${TYPES[type].label} ${esc(specName(x))} dans ta collection.</span>` : ""),
+       extra:warn ? `<label class="check ask-chk"><input type="checkbox" id="ask-chk"> Ne plus me demander aujourd'hui</label>` : ""})).then(ok=>{
     if(!ok) return;
+    if(warn && ask.chk){ S.evSinglesOk = dayKey(); save() }
     if(srvOn() && eco.busy) return;
     const inputs = ids.map(specById), gone = new Set(ids);
     const done = out => { S.specs.push(out); S.unseen.push(out.id); if(tierOf(out)>=BIG || out.shiny) logFind(out);
@@ -6377,7 +6418,8 @@ function openPicker(i){
 // Recherche dans les listes de billes à choisir (ta bille, la vitrine) : par nom (décor, coloris), shiny, rareté, et par taille.
 // On cache les cartes sans tout redessiner.
 const fold = x => x.normalize("NFD").replace(/[\u0300-\u036f]/g,"").toLowerCase();
-const pickData = s => `data-q="${esc(fold([specName(s), TYPES[s.type].label, s.shiny?"shiny "+SHINIES[s.shiny].name:"", FAMILIES[s.family].rar!=null&&!extraFam(s.family)?DECOR_RAR[FAMILIES[s.family].rar].name:"", isBeta(s)?"beta":"", eventOf(s)?.name||""].join(" ")))}" data-t="${s.type}"`;
+const pickText = s => fold([specName(s), TYPES[s.type].label, s.shiny?"shiny "+SHINIES[s.shiny].name:"", FAMILIES[s.family].rar!=null&&!extraFam(s.family)?DECOR_RAR[FAMILIES[s.family].rar].name:"", isBeta(s)?"beta":"", eventOf(s)?.name||""].join(" "));
+const pickData = s => `data-q="${esc(pickText(s))}" data-t="${s.type}"`;
 const pickFilter = list => list.length<8 ? "" : `<div class="pick-filter">
   <input type="search" class="pick-q" placeholder="Chercher : Galaxie, Rubis, shiny, légendaire…" aria-label="Chercher une bille" autocomplete="off" spellcheck="false">
   <div class="chips">${["",...TK.filter(t=>list.some(s=>s.type===t))].map(t=>`<button class="chip" data-action="pick-t" data-t="${t}" aria-pressed="${!t}">${t?TYPES[t].label:"Toutes"}</button>`).join("")}</div>
@@ -7159,7 +7201,22 @@ function updHud(){
   document.getElementById("g-best").textContent = S.best[game.lvl] || "–";
 }
 function gPos(e){ const r=game.cv.getBoundingClientRect(); return {x:(e.clientX-r.left)/r.width*W, y:(e.clientY-r.top)/r.height*H} }
-function gDown(e){ if(game.moving||game.done||game.sink) return; game.aim = gPos(e); game.cv.setPointerCapture(e.pointerId) }
+// on vise en tirant en arrière : on peut relâcher n'importe où, même hors du terrain (pavé tactile d'un portable…).
+// En plus de la capture du pointeur, toute la fenêtre écoute le mouvement et le relâchement tant qu'on vise.
+function holdAim(cv, e, move, up){
+  if(e.pointerType==="mouse") e.preventDefault();   // pas de sélection de texte ni de glisser-déposer qui couperait le geste
+  try{ cv.setPointerCapture(e.pointerId) }catch(_){}
+  const mv = ev => { if(ev.target!==cv) move(ev) };   // sur le terrain, son propre écouteur s'en charge déjà
+  const fin = ev => {
+    window.removeEventListener("pointermove", mv, true);
+    ["pointerup","mouseup","pointercancel"].forEach(k=>window.removeEventListener(k, fin, true)); cv.removeEventListener("lostpointercapture", fin);
+    if(ev.type==="pointercancel" && ev.pointerType!=="mouse") return;   // au doigt, une annulation reste une annulation
+    up();
+  };
+  window.addEventListener("pointermove", mv, true);
+  ["pointerup","mouseup","pointercancel"].forEach(k=>window.addEventListener(k, fin, true)); cv.addEventListener("lostpointercapture", fin);
+}
+function gDown(e){ if(game.moving||game.done||game.sink) return; game.aim = gPos(e); holdAim(game.cv, e, gMove, gUp) }
 function gMove(e){ if(game.aim) game.aim = gPos(e) }
 function gUp(){
   if(!game.aim) return;
@@ -7997,7 +8054,7 @@ function updArenaHud(){
 }
 const canShoot = () => !arena.moving && !arena.done && arena.shooter && arena.turn!=="opp";
 function aPos(e){ const r=arena.cv.getBoundingClientRect(); return {x:(e.clientX-r.left)/r.width*AW, y:(e.clientY-r.top)/r.height*AH} }
-function aDown(e){ if(!canShoot()) return; arena.aim = aPos(e); arena.cv.setPointerCapture(e.pointerId) }
+function aDown(e){ if(!canShoot()) return; arena.aim = aPos(e); holdAim(arena.cv, e, aMove, aUp) }
 function aMove(e){ if(arena.aim) arena.aim = aPos(e) }
 function aUp(){
   if(!arena.aim) return;
@@ -8624,7 +8681,7 @@ function viewCasse(){
     <section class="panel">
       <div class="hud"><div class="hole-name">${G.title}</div><div class="hud-stat"><small>Niveau</small><b id="c-lvl">1</b></div><div class="hud-stat"><small>Score</small><b id="c-score">0</b></div><div class="hud-stat"><small>Vies</small><b id="c-lives">3</b></div><div class="hud-stat c-time"><small>Temps</small><b id="c-time">1:00</b></div></div>
       <div class="game-stage"><canvas id="c-canvas" class="bricks" aria-label="${G.title} : bouge la règle avec la souris ou les flèches, clique pour lancer ta bille."></canvas><div class="g-result" id="c-result" hidden></div></div>
-      <div class="g-help"><span>${ic("target",16)} Souris, doigt ou flèches pour bouger la règle.</span><span>Clic ou Espace pour lancer · P pour la pause.</span></div>
+      <div class="g-help"><span>${ic("target",16)} Souris, doigt ou flèches pour bouger la règle.</span><span>Clic ou Espace pour lancer · P pour la pause · Échap pour libérer la souris.</span></div>
     </section>
     <aside style="display:grid;gap:20px">
       ${gameBallPanel(act)}
@@ -8643,8 +8700,8 @@ function initCasse(){
     paddle:{x:CW/2, y:CH-42, w:120, tw:120, h:14}, score:0, lives:3, level:1, cleared:0, shake:0, parts:[], drops:[], slowT:0, largeT:0,
     done:false, live:false, state:"serve", last:performance.now(), lastWall:0});
   cb.ctx.setTransform(dpr,0,0,dpr,0,0);
-  cv.onpointermove = e=>{ cb.paddle.x = cbX(e) };
-  cv.onpointerdown = e=>{ cb.paddle.x = cbX(e); cbLaunch() };
+  cv.onpointermove = e=>{ cb.paddle.x = cbLocked() ? cbClamp(cb.paddle.x + e.movementX*CW/(cv.getBoundingClientRect().width||CW), 0, CW) : cbX(e) };
+  cv.onpointerdown = e=>{ if(!cbLocked()) cb.paddle.x = cbX(e); if(e.pointerType==="mouse") cbLock(); cbLaunch() };
   const o = gameLive("casse") && dayGame("casse").snap;
   if(o){
     cbLoad(o.level);
@@ -8659,6 +8716,15 @@ function initCasse(){
   cb.raf = requestAnimationFrame(cbLoop);
 }
 function cbX(e){ const r = cb.cv.getBoundingClientRect(); return (e.clientX-r.left)/r.width*CW }
+// à la souris, le curseur reste prisonnier du terrain pendant la partie (verrouillage du pointeur) : la règle suit les mouvements
+// de la souris sans que le curseur sorte du jeu. Échap le libère (la partie se met en pause), il est rendu à la fin de la partie.
+const cbLocked = () => !!cb.cv && document.pointerLockElement===cb.cv;
+function cbLock(){
+  if(cb.done || cbLocked() || !cb.cv.requestPointerLock) return;
+  try{ const r = cb.cv.requestPointerLock(); r && r.catch && r.catch(()=>{}) }catch(_){}
+}
+function cbUnlock(){ if(cbLocked()) document.exitPointerLock() }
+document.addEventListener("pointerlockchange", ()=>{ if(cb.cv && !cbLocked() && cb.state==="play" && !cb.done) cb.state = "pause" });
 // le chrono de chaque niveau : 1 min 40 au premier, puis un peu plus à chaque niveau (il y a plus de briques), 3 minutes au plus
 const cbTime = n => Math.min(180, 90+10*n);
 function cbLoad(n){
@@ -8916,7 +8982,8 @@ function cbDraw(){
   if(cb.state==="clear") cbBanner(`Niveau ${cb.level} réussi !`, `+${200*cb.level} points`);
 }
 function cbLoop(t){
-  if(ui.view!=="casse" || !document.body.contains(cb.cv)) return;
+  if(ui.view!=="casse" || !document.body.contains(cb.cv)){ if(document.pointerLockElement===cb.cv) document.exitPointerLock(); return }
+  if(cb.done) cbUnlock();   // partie finie : la souris est rendue pour les boutons
   const dt = Math.min((t-cb.last)/1000, 1/30); cb.last = t;
   cbUpdate(dt); cbDraw();
   cb.raf = requestAnimationFrame(cbLoop);
@@ -9073,14 +9140,29 @@ function gcPrevLacets(){
     ${balls}<circle cx="520" cy="346" r="9" fill="#FFE14D"/><text x="524" y="292" text-anchor="middle" font-family="Lilita One, sans-serif" font-size="20" fill="#FFE14D">ARRIVÉE</text></svg>`;
 }
 function gcPickOpen(){
-  const el = document.getElementById("modal"), all = gcPickable(), list = all.filter(x=>!gc.pickT || x.type===gc.pickT).slice(0,200), cur = gc.pick || gc.etat?.bille || gcDefault()?.id;
+  const el = document.getElementById("modal"), all = gcPickable();
   const chips = `<div class="chips gc-sizes"><button class="chip" data-action="gc-pickt" data-t="" aria-pressed="${!gc.pickT}">Toutes <span class="n">${all.length}</span></button>${TK.map(t=>{ const n = all.filter(x=>x.type===t).length;
     return n ? `<button class="chip" data-action="gc-pickt" data-t="${t}" aria-pressed="${gc.pickT===t}" style="${tstyle(t)}">${TYPES[t].label.replace("Mini bille","Mini").replace("Bille chinoise","Chinoise")} <span class="n">${n}</span></button>` : "" }).join("")}</div>`;
   el.innerHTML = `<div class="modal bag-sum pick-modal" role="dialog" aria-modal="true" aria-label="Choisir ta bille"><button class="close-x" data-action="close-modal" aria-label="Fermer">×</button>
     <h2>Avec quelle bille tu cours ?</h2><p class="meta">Toutes les billes ont la même chance de gagner : choisis celle que tu veux montrer à tout le monde !</p>
-    ${chips}<div class="pick-grid">${list.map(x=>`<button class="m-card${x.id===cur?" on":""}" data-action="gc-pick" data-id="${x.id}" style="${tstyle(x.type)}"><span class="ball">${mImg(x,120,Math.round(40*scaleOf(x.type)+14),"")}</span><b>${esc(specName(x))}</b>${typePill(x.type)}</button>`).join("")}</div></div>`;
-  el.hidden = false; el.querySelector(".close-x").focus();
+    <div class="pick-filter"><input type="search" id="gc-q" class="pick-q gc-q" value="${esc(gc.pickQ||"")}" placeholder="Chercher par nom : Galaxie, Rubis, shiny, légendaire…" aria-label="Chercher une bille" autocomplete="off" spellcheck="false">${chips}</div>
+    <div class="pick-grid" id="gc-grid">${gcPickGrid()}</div></div>`;
+  el.hidden = false; el.querySelector("#gc-q").focus();
 }
+// la grille du choix de bille : filtrée par taille et par nom, 200 billes au plus à l'écran (au-delà, on affine la recherche)
+function gcPickGrid(){
+  const q = fold(gc.pickQ||"").trim().split(/\s+/).filter(Boolean), cur = gc.pick || gc.etat?.bille || gcDefault()?.id;
+  const all = gcPickable().filter(x=>(!gc.pickT || x.type===gc.pickT) && (!q.length || (t=>q.every(w=>t.includes(w)))(pickText(x))));
+  const list = all.slice(0,200);
+  return list.map(x=>`<button class="m-card${x.id===cur?" on":""}" data-action="gc-pick" data-id="${x.id}" style="${tstyle(x.type)}"><span class="ball">${mImg(x,120,Math.round(40*scaleOf(x.type)+14),"")}</span><b>${esc(specName(x))}</b>${typePill(x.type)}</button>`).join("")
+    + (!all.length ? `<p class="meta" style="grid-column:1/-1">Aucune bille ne correspond.</p>` : all.length>200 ? `<p class="meta" style="grid-column:1/-1">Et ${fmt(all.length-200)} autres : affine ta recherche pour les voir.</p>` : "");
+}
+let gcQT = 0;
+document.addEventListener("input", e=>{
+  if(e.target.id!=="gc-q") return;
+  gc.pickQ = e.target.value; clearTimeout(gcQT);
+  gcQT = setTimeout(()=>{ const g = document.getElementById("gc-grid"); if(g) g.innerHTML = gcPickGrid() }, 150);
+});
 function gcRegister(){
   const s = (gc.pick && specById(gc.pick)) || gcDefault(), bid = s && sync.known?.has(s.id) ? s.id : null;
   const was = gc.etat?.inscrit;
@@ -9089,15 +9171,23 @@ function gcRegister(){
 // toutes les secondes : le compte à rebours ; au départ (12 h ou 20 h), la course commence pour les inscrits qui sont sur le site
 setInterval(()=>{
   const N = gcNext();
-  document.querySelectorAll("[data-gc-timer]").forEach(el=>el.textContent = gcLeft(N.depart-Date.now()));
+  document.querySelectorAll("[data-gc-timer]").forEach(el=>el.textContent = N.depart-Date.now()<=0 ? "C'est parti !" : gcLeft(N.depart-Date.now()));
   document.querySelectorAll("[data-gc-short]").forEach(el=>el.textContent = gcShort(N.depart-Date.now()));
   if(N.depart-Date.now()<=0 && !gc.etat) renderGcBtn();
   const E = gc.etat;
-  if(E && E.inscrit && Date.now()>=E.depart && Date.now()<E.depart+40000 && gc.live!==gcKey(E) && srvOn()){
-    gc.live = gcKey(E); const key = gcKey(E);
-    setTimeout(()=>Cloud.course.etat().then(e=>{ gc.etat = e; renderNav(); if(ui.view==="grandecourse") renderView();
-      if(e.derniere && gcKey(e.derniere)===key && document.getElementById("gc-ov").hidden){
-        if(popupsFree() && !inGame()) gcLivePopup(); else toast("La Grande Course commence ! Va la regarder dans les jeux de la cour.") } }, ()=>{}), 2500);
+  // le départ est passé : on redemande l'état au serveur (toutes les 3 s jusqu'à ce qu'il réponde), pour tout le monde.
+  // La page passe toute seule à la course en direct (bouton « Regarder ») et à la course suivante, sans rafraîchir.
+  // (le serveur passe à la course suivante dès 11 h 59 / 19 h 59 : on surveille donc aussi le départ précédent, tant qu'il n'est pas connu)
+  if(E && srvOn() && !gc.busy && Date.now()-(gc.retry||0)>3000){
+    const prev = E.depart - ((E.heure||20)===20 ? 8 : 16)*36e5, since = Date.now()-prev;
+    const known = [E.derniere, ...Object.values(E.rediffs||{})].some(D=>D && D.depart===prev);
+    if(Date.now()>=E.depart+1000 || (since>=1000 && since<GC_DUR*1000 && !known)){ gc.retry = Date.now(); gcLoad(true) }
+  }
+  // une course où je suis inscrit vient de partir (le serveur l'a tirée) : on propose de la regarder
+  const D = E?.derniere;
+  if(D && srvOn() && gcMeIn(D.resultats)>=0 && Date.now()>=D.depart && Date.now()<D.depart+40000 && gc.live!==gcKey(D) && !gcSeenIt(D) && document.getElementById("gc-ov").hidden){
+    gc.live = gcKey(D);
+    if(popupsFree() && !inGame()) gcLivePopup(); else toast("La Grande Course commence ! Va la regarder dans les jeux de la cour.");
   }
 }, 1000);
 function gcLivePopup(){
@@ -9702,7 +9792,8 @@ async function gcWatch3D(race){
   // la caméra suit la bille qu'on touche dans le classement (on la retouche, ou « Suivre la tête de course », pour revenir à la tête)
   document.getElementById("gc-board").addEventListener("pointerdown", e=>{ const r = e.target.closest(".gcr"); if(!r) return; const b = +r.dataset.b;
     G3V.follow = G3V.follow===b ? null : b; G3V.lb = 0; g3CamBtn() });
-  const since = (Date.now()-race.depart)/1000, live = !race.test && !race.replay && since>0 && since<90;
+  // même en retard, chacun regarde la course depuis le compte à rebours (4 octobre 2026 : on ne rate plus le départ)
+  const since = 0, live = false;
   const camPos = new THREE.Vector3(-30,10,22), camLook = new THREE.Vector3();
   cancelAnimationFrame(GCV.raf);
   Object.keys(GCV).forEach(k=>{ if(k!=="raf") delete GCV[k] });
@@ -9803,8 +9894,8 @@ function gcWatch2D(race){
   gcControls(document.getElementById("gc-cv"));
   // le classement est redessiné à chaque image : on suit une bille dès qu'on appuie sur son nom
   document.getElementById("gc-board").addEventListener("pointerdown", e=>{ const r = e.target.closest(".gcr"); if(r){ GCV.follow = +r.dataset.i; GCV.free = false } });
-  // en direct : on reprend là où en est la course ; sinon depuis la ligne de départ (5 s de feux)
-  const since = (Date.now()-race.depart)/1000, live = !race.test && !race.replay && since>0 && since<GC_DUR;
+  // toujours depuis la ligne de départ (5 s de feux), même si on arrive en retard
+  const since = 0, live = false;
   const p0 = gcAt(T, 40);
   GCV.ph = null;
   Object.assign(GCV, {race, T, R, t: live ? since-5 : -5, last:performance.now(), fx:[], said:{}, lead:null, leadT:0, done:false, live,
@@ -10892,6 +10983,7 @@ document.addEventListener("click", e=>{
     case "nav": closeModal(); openDay(false); if(t.dataset.conftab) ui.confTab=t.dataset.conftab; go(t.dataset.view); break;
     case "conf-tab": ui.confTab=t.dataset.tab; renderView(); break;
     case "evf-go": evFuse(t.dataset.k); break;
+    case "evf-f": ui.evfF = t.dataset.f || ""; renderView(); break;
     case "craft-f": ui.craftF = {...(ui.craftF||{}), rar:t.dataset.v}; renderView(); break;
     case "craft-ev": ui.confTab = "evenement"; renderView(); break;
     case "pachi-go": pachiGo(t.dataset.pay==="1"); break;
@@ -11085,7 +11177,8 @@ document.addEventListener("click", e=>{
     case "a-restart": initArena(ui.view); break;
     case "c-restart": initCasse(); break;
     case "gc-pickopen": gcPickOpen(); break;
-    case "gc-pickt": gc.pickT = t.dataset.t || null; gcPickOpen(); break;
+    case "gc-pickt": gc.pickT = t.dataset.t || null; t.parentNode.querySelectorAll(".chip").forEach(c=>c.setAttribute("aria-pressed", c===t));
+      { const g = document.getElementById("gc-grid"); if(g) g.innerHTML = gcPickGrid() } break;
     case "gc-pick": gc.pick = S.gcBille = t.dataset.id; save(); closeModal(); if(gc.etat?.inscrit) gcRegister(); else renderView(); break;
     case "gc-reg": gcRegister(); break;
     case "gc-unreg": srv(()=>Cloud.course.desinscrire()).then(e=>{ gc.etat = e; renderView(); renderNav(); toast("Tu n'es plus inscrit à la Grande Course.") }, srvFail); break;

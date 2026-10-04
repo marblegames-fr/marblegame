@@ -2788,6 +2788,7 @@ body.gc-open{overflow:hidden}
 #gc-cv{cursor:grab;touch-action:none}#gc-cv:active{cursor:grabbing}
 .gc-pod .gc-mine{display:inline-block;background:rgba(255,255,255,.1);border-radius:16px;padding:10px 16px;margin-bottom:14px}
 .gc-pod .btns{display:flex;gap:10px;justify-content:center}
+.gc-podclaim{display:inline-flex;margin:8px auto 0;height:38px}
 .gc-pod .meta{color:rgba(255,255,255,.55);margin-top:12px}
 @media (max-width:760px){ .gc-top .chip small,#gc-chrono{display:none} .gc-top .chip b{font-size:15px} .gc-top .chip{padding:6px 10px;max-width:52vw} .gc-skip{height:36px!important;font-size:12px;padding:0 10px} .gc-x{width:36px;height:36px;font-size:22px} .gc-lights{top:62px} .gc-lights i{width:22px;height:22px} .gc-board{top:auto;bottom:10px;left:10px;right:10px;width:auto;display:flex;overflow-x:auto;gap:5px;padding:6px;border-radius:14px;scrollbar-width:none} .gc-board h3{display:none} .gc-board .gcr{flex:none;padding:4px 9px 4px 6px} .gcr .nm{max-width:86px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap} .gc-top{flex-wrap:wrap} .gc-mini{width:160px;height:90px;bottom:64px} .gc-ticker{max-width:calc(100% - 28px);bottom:116px} .gc-pod h2{font-size:36px} .gcs{width:100px} }
 /* le ruban de la bêta, tout en haut */
@@ -5357,10 +5358,10 @@ function gcShort(ms){ ms = Math.max(0,ms); const h = Math.floor(ms/36e5), m = Ma
   return h ? `${h} h ${String(m).padStart(2,"0")} min` : m>=10 ? `${m} min` : `${m}:${String(s).padStart(2,"0")}` }
 function renderGcBtn(){
   const b = document.getElementById("gc-btn"); if(!b) return;
-  const reg = !!gc.etat?.inscrit, N = gcNext();
-  b.innerHTML = `${ic("flag",21)}<span class="gc-cd" data-gc-short>${gcShort(N.depart-Date.now())}</span><span class="dot"></span><span class="tip">${reg ? `Inscrit pour la course ${gcWhen(N)}` : `Grande Course ${gcWhen(N)} : inscris-toi !`}</span>`;
-  b.classList.toggle("ready", !reg); b.classList.toggle("ok", reg);
-  b.setAttribute("aria-label", reg ? `La Grande Course ${gcWhen(N)} : tu es inscrit` : `La Grande Course ${gcWhen(N)} : pas encore inscrit`);
+  const reg = !!gc.etat?.inscrit, N = gcNext(), lots = srvOn() && gcWaiting().length>0;   // des lots à récupérer : le raccourci mène à la page de la course (bouton « Récupérer mes lots »)
+  b.innerHTML = `${ic(lots?"gift":"flag",21)}<span class="gc-cd" data-gc-short>${gcShort(N.depart-Date.now())}</span><span class="dot"></span><span class="tip">${lots ? "Tes lots de la Grande Course t'attendent !" : reg ? `Inscrit pour la course ${gcWhen(N)}` : `Grande Course ${gcWhen(N)} : inscris-toi !`}</span>`;
+  b.classList.toggle("ready", lots || !reg); b.classList.toggle("ok", reg && !lots);
+  b.setAttribute("aria-label", lots ? "La Grande Course : tes lots t'attendent, viens les récupérer" : reg ? `La Grande Course ${gcWhen(N)} : tu es inscrit` : `La Grande Course ${gcWhen(N)} : pas encore inscrit`);
 }
 function renderTop(){
   renderBeta(); renderGcBtn(); renderBell();
@@ -9101,8 +9102,8 @@ const gcMeIn = R => (R||[]).findIndex(x=>x.joueur && x.joueur===sync.uid);
 
 // ---------- les lots ----------
 // les courses finies où j'ai des lots pas encore récupérés (la dernière de midi, la dernière du soir)
-const gcWaiting = () => { const R = gc.etat?.rediffs || {};
-  return ["12","20"].map(h=>R[h]).filter(D=>D && !D.lots && gcMeIn(D.resultats)>=0 && Date.now()>D.depart+GC_DUR*1000).sort((a,b)=>b.depart-a.depart) };
+function gcWaiting(){ const R = gc.etat?.rediffs || {};
+  return ["12","20"].map(h=>R[h]).filter(D=>D && !D.lots && gcMeIn(D.resultats)>=0 && (gcSeenIt(D) || Date.now()>D.depart+GC_DUR*1000)).sort((a,b)=>b.depart-a.depart) }
 // le bandeau en haut de la page : regarder la course (les lots sont remis à l'arrivée), ou les prendre tout de suite
 function gcLotsBanner(D){ const h = D.heure||20, seen = gcSeenIt(D), me = gcMeIn(D.resultats);
   return `<section class="panel gc-lots"><span class="gc-lots-ic">${ic("gift",26)}</span>
@@ -9256,6 +9257,9 @@ setInterval(()=>{
     const known = [E.derniere, ...Object.values(E.rediffs||{})].some(D=>D && D.depart===prev);
     if(Date.now()>=E.depart+1000 || (since>=1000 && since<GC_DUR*1000 && !known)){ gc.retry = Date.now(); gcLoad(true) }
   }
+  // une course vient de finir (ou d'être vue) avec des lots à prendre : le bandeau « Récupérer mes lots » et le raccourci du haut apparaissent tout seuls
+  const wk = srvOn() ? gcWaiting().map(gcKey).join(",") : "";
+  if(wk!==gc.waitK){ gc.waitK = wk; renderGcBtn(); if(ui.view==="grandecourse" && document.getElementById("gc-ov").hidden) renderView() }
   // une course où je suis inscrit vient de partir (le serveur l'a tirée) : on propose de la regarder
   const D = E?.derniere;
   if(D && srvOn() && gcMeIn(D.resultats)>=0 && Date.now()>=D.depart && Date.now()<D.depart+40000 && gc.live!==gcKey(D) && !gcSeenIt(D) && document.getElementById("gc-ov").hidden){
@@ -10384,12 +10388,16 @@ function gcPodium(){
   el.hidden = false;
   if(me>=0 && me<3) Sound.ding();
   // les lots sont remis maintenant, à la fin de la course
-  if(me>=0 && !V.race.test && srvOn()){
-    const st = document.getElementById("gc-lotst");
-    if(V.race.lots){ if(st) st.textContent = "· déjà récupérés" }
-    else gcClaim(V.race, true).then(()=>{ if(st) st.textContent = "· récupérés !" },
-      e=>{ if(st) st.textContent = e?.code==="deja" ? "· déjà récupérés" : "· pas pu être récupérés : réessaie depuis la page de la course" });
-  }
+  if(me>=0 && !V.race.test && srvOn()) gcPodClaim();
+}
+// sur le podium : les lots sont pris tout seuls ; si ça rate, un bouton « Récupérer mes lots » pour réessayer
+function gcPodClaim(){
+  const D = GCV.race, st = document.getElementById("gc-lotst"); if(!D || D.test) return;
+  const btn = () => { if(st) st.innerHTML = `<button class="btn btn-yellow gc-podclaim" data-action="gc-claim-pod">${ic("gift",16)} Récupérer mes lots</button>` };
+  if(D.lots){ if(st) st.textContent = "· déjà récupérés"; return }
+  if(st) st.textContent = "…";
+  gcClaim(D, true).then(ok=>{ if(ok || D.lots){ if(st) st.textContent = "· récupérés !" } else btn() },
+    e=>{ if(e?.code==="deja"){ if(st) st.textContent = "· déjà récupérés" } else { btn(); srvFail(e) } });
 }
 // une course d'essai : toi et 7 billes de la cour, rien à gagner
 let GC_ME = null;   // sans compte : l'identifiant du joueur dans la course d'essai
@@ -11376,6 +11384,7 @@ document.addEventListener("click", e=>{
     case "gc-watch": { const D = gc.etat?.rediffs?.[t.dataset.h] || gc.etat?.derniere; if(D){ closeModal(); gcWatch(D) } break }
     case "gc-claim": { const D = gc.etat?.rediffs?.[t.dataset.h]; if(D){ t.disabled = true; closeModal(); gcClaim(D).catch(()=>{ t.disabled = false }) } break }
     case "gc-test": if(!devTools()) break; closeModal(); gcTest(t.dataset.c); break;   // courses d'essai : compte admin seulement
+    case "gc-claim-pod": t.disabled = true; gcPodClaim(); break;
     case "gc-replay": gcWatch({...GCV.race, replay:true}); break;
     case "g3-cam": g3Cam(); break;
     case "g3-skip": g3Skip(); break;

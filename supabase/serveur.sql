@@ -509,10 +509,8 @@ begin
     when 'serie' then
       if montant > 6000 then raise exception 'montant_invalide'; end if;
       k := cle;
-    when 'evenement' then   -- le sac offert à chacun, une fois, pendant l'événement
-      select * into ev from interne.evenement(cle);
-      if ev.sac is null or montant <> 0 or sac is distinct from ev.sac or not (now() between ev.debut and ev.fin) then raise exception 'montant_invalide'; end if;
-      k := cle;
+    when 'evenement' then   -- (4 octobre 2026) plus de sachet d'événement offert : on coche « billes d'événement » sur les sachets.
+      raise exception 'deja';   -- 'deja' : les anciens clients ne montrent pas d'erreur, et le serveur corrige leur compte de sachets
     when 'passe' then   -- paliers de la saison en cours seulement
       if not interne.saison_valide(split_part(cle, '|', 1)) or montant > 400 then raise exception 'montant_invalide'; end if;
       k := cle;

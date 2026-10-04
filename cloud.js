@@ -58,12 +58,13 @@
     // tout ce qu'il faut pour reprendre la partie
     async pull(uid){
       need();
-      const [profil, sauvegarde, billes] = await Promise.all([
+      const [profil, sauvegarde, billes, remise] = await Promise.all([
         db.from("profils").select("pseudo").eq("id", uid).maybeSingle().then(ok),
         db.from("sauvegardes").select("donnees, appareil, maj_le").eq("joueur", uid).maybeSingle().then(ok),
         this.billes(uid),
+        this.remise(),
       ]);
-      return {profil, sauvegarde, billes};
+      return {profil, sauvegarde, billes, remise};
     },
     async billes(uid){
       const out = [];
@@ -73,6 +74,8 @@
         if(rows.length<1000) return out;
       }
     },
+    // le numéro de la dernière remise à zéro (supabase/remise.sql), null s'il n'y en a jamais eu
+    async remise(){ const {data, error} = await db.from("remise").select("numero").eq("id", 1).maybeSingle(); return error ? null : data?.numero ?? null },
     async lastUpdate(uid){ need(); return ok(await db.from("sauvegardes").select("appareil, maj_le").eq("joueur", uid).maybeSingle()); },
     async pushSave(uid, donnees, appareil){
       need();

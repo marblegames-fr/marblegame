@@ -876,6 +876,9 @@ button.rw:hover{transform:translateY(-2px)}
 .filt-it[aria-pressed="true"]{background:color-mix(in srgb,var(--tc) 30%,#fff)}
 .filt-hide{display:flex;margin:6px 4px 2px;padding-top:10px;border-top:1.5px dashed var(--line-2)}
 .bx-bar .seen-all{flex-basis:100%;margin:0;height:36px}
+.se-filt{display:flex;gap:6px;flex-wrap:wrap;margin:0 0 16px}
+.se-filt .bx-dot.all{display:inline-flex;align-items:center;gap:5px;height:42px}
+.se-filt .bx-dot.all small{font-family:var(--body);font-size:12px;font-weight:900;opacity:.6;margin-left:2px}
 /* les en-têtes de taille : une ligne écrite à la main */
 .th-line{display:flex;align-items:center;gap:12px;margin:4px 0 12px}
 .th-line h2{font-family:var(--hand);font-size:32px;font-weight:700;line-height:1;color:var(--ol,#2B2233);white-space:nowrap}
@@ -5982,8 +5985,14 @@ function seriesView(){
   const list = SERIES.map(se=>{ const fill = seriesFill(se), n = fill.filter(Boolean).length, got = done.includes(se.id);
     return {se, fill, n, got, ready: n>=se.items.length && !got} });
   list.sort((a,b)=>(b.ready-a.ready) || (a.got-b.got) || b.n/b.se.items.length - a.n/a.se.items.length);
-  return `<p class="conf-intro">De petites collections à thème : remplis toutes les cases d'une série pour gagner sa récompense. <b>${done.length} / ${SERIES.length}</b> séries terminées.</p>
-  <div class="series-grid">${list.map(({se,fill,n,got,ready})=>{
+  // le filtre : toutes, en cours (dont celles à récupérer) ou terminées
+  const F = ui.serieF || "all", nGot = list.filter(x=>x.got).length;
+  const shown = list.filter(x=>F==="all" || (F==="done" ? x.got : !x.got));
+  const chip = (k,l,n) => `<button class="bx-dot all" data-action="serie-f" data-f="${k}" aria-pressed="${F===k}">${l} <small>${n}</small></button>`;
+  return `<p class="conf-intro">De petites collections à thème : remplis toutes les cases d'une série pour gagner sa récompense.</p>
+  <div class="se-filt" role="group" aria-label="Filtrer les séries">${chip("all","Toutes",list.length)}${chip("todo","En cours",list.length-nGot)}${chip("done","Terminées",nGot)}</div>
+  ${shown.length ? "" : `<p class="empty">${F==="done" ? "Aucune série terminée pour l'instant : la plus avancée est dans « En cours »." : "Tu as terminé toutes les séries, bravo !"}</p>`}
+  <div class="series-grid">${shown.map(({se,fill,n,got,ready})=>{
     const mins = [...new Set(se.items.map(it=>it.min||""))], common = mins.length===1 && mins[0] ? mins[0] : "";
     const lbl = it => seriesLabel(common ? {...it, min:undefined} : it);
     return `<section class="panel serie${ready?" ready":""}${got?" claimed":""}">
@@ -11532,6 +11541,7 @@ document.addEventListener("click", e=>{
       if(ui.view==="collection" && ui.tab!==t.dataset.tab) Sound.page();
       ui.tab=t.dataset.tab; closeModal(); if(ui.view!=="collection") go("collection"); else renderView(); break;
     case "ftype": ui.type=t.dataset.type; renderView(); break;
+    case "serie-f": ui.serieF=t.dataset.f; renderView(); break;
     case "show": ui.show=t.dataset.show; renderView(); break;
     case "col-q-clear": ui.q = ""; renderView(); document.getElementById("col-q")?.focus(); break;
     case "album-type": ui.tab="album"; ui.type=t.dataset.type; go("collection"); break;

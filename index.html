@@ -778,7 +778,7 @@ button.rw:hover{transform:translateY(-2px)}
    une vraie feuille à carreaux Seyès, toujours claire (c'est un objet posé sur la table), contour d'encre,
    les pages du dessous qui dépassent, un bout de scotch, le titre écrit à la main et surligné ;
    les intercalaires en carton de couleur sur le côté gauche (en haut sur téléphone) ---------- */
-.cahier{--ol:#2B2233;--paper:#FFFDF4;display:grid;grid-template-columns:154px minmax(0,1fr);align-items:start;margin-top:6px}
+.cahier{--ol:#2B2233;--paper:#FFFDF4;--card:#fff;--kraft:linear-gradient(170deg,#DCBF94,#CFAE7E);--old:#F4E7C5;display:grid;grid-template-columns:154px minmax(0,1fr);align-items:start;margin-top:6px}
 .cahier-tabs{position:sticky;top:calc(84px + var(--rib,0px));z-index:2;display:flex;flex-direction:column;gap:12px;padding-top:34px}
 .ctab{position:relative;display:grid;grid-template-columns:auto 1fr;align-items:center;column-gap:8px;min-height:56px;margin-right:-3px;padding:6px 12px 6px 12px;text-align:left;
   color:var(--ol);background:color-mix(in srgb,var(--c) 45%,#fff);border:3px solid var(--ol);border-right:0;border-radius:16px 0 0 16px;
@@ -786,26 +786,26 @@ button.rw:hover{transform:translateY(-2px)}
 .ctab:nth-child(even){transform:translateX(16px) rotate(1deg)}
 .ctab svg{grid-row:span 2;color:var(--ol)}
 .ctab b{font-family:var(--hand);font-size:25px;font-weight:700;line-height:.9}
-.ctab small{font-size:11px;font-weight:900;opacity:.7}
+.ctab small{font-size:11.5px;font-weight:900;opacity:.85}
 .ctab:hover,.ctab:nth-child(even):hover{transform:translateX(7px) rotate(0)}
 .ctab[aria-selected="true"]{z-index:1;transform:none;background:var(--c);box-shadow:inset 0 5px 0 rgba(255,255,255,.3)}
 .ctab .tab-dot{position:absolute;top:-8px;left:-8px;margin:0;border:2px solid var(--ol)}
 .cahier-page{position:relative;min-width:0;min-height:70vh;padding:26px 26px 34px 62px;color:var(--ink);color-scheme:light;
-  --bg:#FBF4E6;--panel:#FFFFFF;--panel-2:#FFF8EC;--line:#EADFC8;--line-2:#D9C7A5;--ink:#24253D;--ink-2:#56546B;--muted:#857F8F;--on-ink:#fff;--track:#EDE6DA;--glow:#fff;
+  --bg:#FBF4E6;--panel:var(--card);--panel-2:#FFF8EC;--line:#EADFC8;--line-2:#D9C7A5;--ink:#24253D;--ink-2:#45435A;--muted:#66606F;--on-ink:#fff;--track:#EDE6DA;--glow:#fff;
   --yellow-soft:#FFE5A0;--blue:#2E6BE6;--blue-2:#1F4FB8;--blue-soft:#D6E4FC;--purple-soft:#E9DCFB;--green:#2FA35A;--green-soft:#D6F1D4;
   --gold-line:#F4CF6A;--gold-bg:#FFF6DC;--blue-line:#B7CEF6;--purple-line:#D3BEF3;--green-line:#B3E1AE;--warn:#B4462B;
   --shadow:0 1px 0 rgba(120,90,40,.06),0 6px 18px -10px rgba(120,90,40,.25);
-  --m:40px;--pm:linear-gradient(90deg,transparent var(--m),#F2A3A3 var(--m) calc(var(--m) + 2px),transparent calc(var(--m) + 2px) calc(var(--m) + 5px),#F2A3A3 calc(var(--m) + 5px) calc(var(--m) + 6px),transparent calc(var(--m) + 6px));
-  --pl:repeating-linear-gradient(180deg,transparent 0 31px,#B5CFEC 31px 32px),repeating-linear-gradient(180deg,transparent 0 7px,#EAF0F8 7px 8px);
+  --m:40px;--pm:linear-gradient(90deg,transparent var(--m),rgba(220,85,85,.45) var(--m) calc(var(--m) + 2px),transparent calc(var(--m) + 2px) calc(var(--m) + 5px),rgba(220,85,85,.45) calc(var(--m) + 5px) calc(var(--m) + 6px),transparent calc(var(--m) + 6px));
+  --pl:repeating-linear-gradient(180deg,transparent 0 31px,rgba(60,110,180,.22) 31px 32px),repeating-linear-gradient(180deg,transparent 0 7px,rgba(60,110,180,.07) 7px 8px);
   --pb:var(--paper);
   background:var(--pm),var(--pl),var(--pb);isolation:isolate;
   border:3px solid var(--ol);border-radius:6px 20px 0 6px;
   box-shadow:7px 7px 0 -3px #F4ECD9,7px 7px 0 0 var(--ol),14px 14px 0 -3px #EBE0C6,14px 14px 0 0 var(--ol),20px 26px 34px -18px rgba(0,0,0,.55)}
 /* un papier par intercalaire : Seyès (Album), petits carreaux (Mes billes), kraft (Séries), vieux livre (Billepedia) */
-.cahier-page[data-paper="billes"]{--pl:repeating-linear-gradient(180deg,transparent 0 19px,#D3E2F3 19px 20px),repeating-linear-gradient(90deg,transparent 0 19px,#D3E2F3 19px 20px)}
+.cahier-page[data-paper="billes"]{--pl:repeating-linear-gradient(180deg,transparent 0 19px,rgba(60,110,180,.14) 19px 20px),repeating-linear-gradient(90deg,transparent 0 19px,rgba(60,110,180,.14) 19px 20px)}
 .cahier-page[data-paper="series"]{--pm:linear-gradient(transparent,transparent);--pl:radial-gradient(circle at 20% 30%,rgba(255,255,255,.12) 0 2px,transparent 3px) 0 0/23px 29px,radial-gradient(circle at 70% 60%,rgba(90,55,20,.12) 0 1.5px,transparent 2.5px) 0 0/31px 19px;
-  --pb:linear-gradient(170deg,#DCBF94,#CFAE7E);--muted:#6E5A3E;--ink-2:#4D3F2C}
-.cahier-page[data-paper="pedia"]{--pm:linear-gradient(transparent,transparent);--pl:radial-gradient(ellipse at 50% 40%,transparent 55%,rgba(130,85,30,.2) 100%);--pb:#F4E7C5}
+  --pb:var(--kraft);--muted:#6E5A3E;--ink-2:#4D3F2C}
+.cahier-page[data-paper="pedia"]{--pm:linear-gradient(transparent,transparent);--pl:radial-gradient(ellipse at 50% 40%,transparent 55%,rgba(130,85,30,.2) 100%);--pb:var(--old)}
 .cahier-page[data-paper="pedia"] .cp-title h2{font-family:Georgia,"Times New Roman",serif;font-style:italic;font-weight:700;font-size:38px;background:none;border-bottom:3px double rgba(90,60,25,.5);padding:0 4px 4px;transform:none}
 .cahier-page[data-paper="pedia"] .cp-title span{font-family:Georgia,"Times New Roman",serif;font-style:italic;font-size:17px;color:#6B5434}
 .cahier-page[data-paper="series"] .cp-title span{color:#4D3F2C}
@@ -833,12 +833,12 @@ button.rw:hover{transform:translateY(-2px)}
 .cahier-page[data-paper="album"] .m-card.case:nth-child(even)::before{transform:rotate(3deg)}
 .cahier-page[data-paper="album"] .card-grid{row-gap:20px;padding-top:6px}
 .cahier-page .m-card.missing{background:transparent;border:2px dashed rgba(60,60,75,.32)}
-.cahier-page .m-card.missing img{filter:brightness(0) invert(1) drop-shadow(1.5px 0 0 #7A7888) drop-shadow(-1.5px 0 0 #7A7888) drop-shadow(0 1.5px 0 #7A7888) drop-shadow(0 -1.5px 0 #7A7888) opacity(.6)}
-.cahier-page :is(.pill,.type-box):not(#_){--rbg:var(--rb);--rtx:var(--rc)}
+.cahier-page .m-card.missing img{filter:brightness(0) invert(1) drop-shadow(1.5px 0 0 #5F5C6E) drop-shadow(-1.5px 0 0 #5F5C6E) drop-shadow(0 1.5px 0 #5F5C6E) drop-shadow(0 -1.5px 0 #5F5C6E) opacity(.6)}
+.cahier-page :is(.pill,.type-box):not(#_){--rbg:var(--rb);--rtx:color-mix(in srgb,var(--rc) 62%,#000)}
 .cp-title{position:relative;display:flex;align-items:baseline;gap:10px 16px;flex-wrap:wrap;margin:-4px 0 14px}
 .cp-title h2{margin:0;font-family:var(--hand);font-size:44px;font-weight:700;line-height:1;color:var(--ol);
   background:linear-gradient(transparent 58%,color-mix(in srgb,var(--tc) 45%,transparent) 58% 88%,transparent 88%);padding:0 6px;transform:rotate(-1.5deg)}
-.cp-title span{font-family:var(--hand);font-size:23px;color:#5B5470}
+.cp-title span{font-family:var(--hand);font-size:23px;color:#3E3850}
 /* le bout de scotch en haut de la page */
 .cahier-page::before{content:"";position:absolute;top:-15px;right:56px;width:96px;height:28px;background:color-mix(in srgb,var(--tc) 40%,rgba(255,255,255,.55));border:1.5px dashed rgba(43,34,51,.25);transform:rotate(4deg);opacity:.9}
 .cahier-page .m-card{border:2px solid rgba(43,34,51,.16);box-shadow:0 3px 0 rgba(43,34,51,.12)}
@@ -848,26 +848,26 @@ button.rw:hover{transform:translateY(-2px)}
 .bx-dots{display:flex;align-items:center;gap:4px;flex-wrap:wrap}
 .bx-dot{display:grid;place-items:center;width:44px;height:44px;border-radius:50%;border:2.5px solid transparent;background:transparent;transition:transform .15s}
 .bx-dot:hover{transform:translateY(-2px)}
-.bx-dot[aria-pressed="true"]{border-color:var(--ol,#2B2233);background:#fff;box-shadow:0 3px 0 rgba(43,34,51,.2)}
-.bx-dot.all{width:auto;padding:0 14px;border-radius:999px;font-family:var(--hand);font-size:22px;font-weight:700;color:var(--ol,#2B2233);border-color:rgba(43,34,51,.2);background:#fff}
+.bx-dot[aria-pressed="true"]{border-color:var(--ol,#2B2233);background:var(--card);box-shadow:0 3px 0 rgba(43,34,51,.2)}
+.bx-dot.all{width:auto;padding:0 14px;border-radius:999px;font-family:var(--hand);font-size:22px;font-weight:700;color:var(--ol,#2B2233);border-color:rgba(43,34,51,.2);background:var(--card)}
 .bx-dot.all[aria-pressed="true"]{background:var(--tc);border-color:var(--ol,#2B2233)}
 .bx-tools{display:flex;align-items:center;gap:8px}
 .bx-q{position:relative;display:flex;align-items:center}
 .bx-q .cs-ic{position:absolute;left:12px;color:var(--ink-2);display:grid;pointer-events:none}
-.bx-q input{width:42px;height:42px;padding:0 0 0 40px;border-radius:999px;border:2px solid rgba(43,34,51,.2);background:#fff;color:var(--ink);font:inherit;font-weight:700;cursor:pointer;transition:width .25s}
+.bx-q input{width:42px;height:42px;padding:0 0 0 40px;border-radius:999px;border:2px solid rgba(43,34,51,.2);background:var(--card);color:var(--ink);font:inherit;font-weight:700;cursor:pointer;transition:width .25s}
 .bx-q input::placeholder{color:transparent}
 .bx-q input:focus,.bx-q.on input{width:min(230px,52vw);padding-right:30px;cursor:text;outline:none;border-color:var(--ol,#2B2233)}
 .bx-q input:focus::placeholder{color:var(--muted)}
 .bx-q input::-webkit-search-cancel-button{display:none}
 .bx-q .cs-x{position:absolute;right:6px;width:26px;height:26px;border-radius:50%;font-size:17px;font-weight:900;color:var(--ink-2);background:var(--panel-2)}
-.bx-sel{height:42px;padding:0 10px;border-radius:999px;border:2px solid rgba(43,34,51,.2);background:#fff;color:var(--ink);font:inherit;font-weight:800;font-size:13px}
+.bx-sel{height:42px;padding:0 10px;border-radius:999px;border:2px solid rgba(43,34,51,.2);background:var(--card);color:var(--ink);font:inherit;font-weight:800;font-size:13px}
 .bx-filt{position:relative}
-.bx-filt summary{list-style:none;display:flex;align-items:center;gap:6px;height:42px;padding:0 14px;border-radius:999px;border:2px solid rgba(43,34,51,.2);background:#fff;font-weight:800;font-size:13.5px;cursor:pointer;user-select:none;white-space:nowrap}
+.bx-filt summary{list-style:none;display:flex;align-items:center;gap:6px;height:42px;padding:0 14px;border-radius:999px;border:2px solid rgba(43,34,51,.2);background:var(--card);font-weight:800;font-size:13.5px;cursor:pointer;user-select:none;white-space:nowrap}
 .bx-filt summary::-webkit-details-marker{display:none}
 .bx-filt summary::after{content:"";width:7px;height:7px;margin-left:2px;border-right:2px solid currentColor;border-bottom:2px solid currentColor;transform:translateY(-2px) rotate(45deg)}
 .bx-filt summary.on{background:var(--tc);border-color:var(--ol,#2B2233)}
 .bx-filt summary .n{display:grid;place-items:center;min-width:19px;height:19px;border-radius:999px;background:var(--ol,#2B2233);color:#fff;font-size:11px}
-.filt-menu{position:absolute;left:0;top:calc(100% + 8px);z-index:20;width:250px;padding:8px;border-radius:16px;background:#fff;border:2.5px solid var(--ol,#2B2233);box-shadow:5px 6px 0 rgba(43,34,51,.25)}
+.filt-menu{position:absolute;left:0;top:calc(100% + 8px);z-index:20;width:250px;padding:8px;border-radius:16px;background:var(--card);border:2.5px solid var(--ol,#2B2233);box-shadow:5px 6px 0 rgba(43,34,51,.25)}
 .filt-it{display:flex;align-items:center;gap:10px;width:100%;padding:9px 10px;border-radius:10px;font-weight:800;font-size:14px;text-align:left;color:var(--ink)}
 .filt-it span{flex:1}
 .filt-it svg{width:15px;height:15px;flex:none}
@@ -882,7 +882,7 @@ button.rw:hover{transform:translateY(-2px)}
 /* les en-têtes de taille : une ligne écrite à la main */
 .th-line{display:flex;align-items:center;gap:12px;margin:4px 0 12px}
 .th-line h2{font-family:var(--hand);font-size:32px;font-weight:700;line-height:1;color:var(--ol,#2B2233);white-space:nowrap}
-.th-line .th-n{font-family:var(--hand);font-size:22px;color:#5B5470;white-space:nowrap}
+.th-line .th-n{font-family:var(--hand);font-size:24px;color:#3E3850;white-space:nowrap}
 .th-line .bar{flex:1;max-width:220px;height:6px}
 .th-line .bar i{background:var(--rc)}
 /* les cartes allégées : la rareté en pastille, les coloris en barre fine, « Nouveau » en point rouge */
@@ -893,7 +893,7 @@ button.rw:hover{transform:translateY(-2px)}
 .cahier-page .m-card .case-prog small{display:none}
 .cahier-page .m-card .case-prog .bar{height:4px}
 .cahier-page .m-card .new{top:8px;right:8px;width:12px;height:12px;padding:0;font-size:0;border:2px solid #fff;box-shadow:0 0 0 1.5px #E5484D}
-.cahier-page .m-card.missing{opacity:.6;transform:scale(.94);box-shadow:none}
+.cahier-page .m-card.missing{opacity:.78;transform:scale(.94);box-shadow:none}
 .cahier-page .m-card.missing:hover{opacity:1;transform:scale(.97)}
 .cahier-page .m-card.missing small{display:none}
 .cahier-page .m-card b{font-size:13px}
@@ -910,8 +910,11 @@ button.rw:hover{transform:translateY(-2px)}
   .bx-q input::placeholder{color:var(--muted)}
   .th-line h2{font-size:27px}
 }
-.cahier-page .m-card:not(.missing){background:#fff}
-.cahier-page .bx-size{background:#fff;border-width:2px}
+.cahier-page .m-card:not(.missing){background:var(--card)}
+.cahier-page .bx-size{background:var(--card);border-width:2px}
+/* en mode sombre, le cahier est « sous la lampe » : un papier crème plus doux, qui n'éblouit pas au milieu de l'écran sombre */
+@media (prefers-color-scheme:dark){ :root:not([data-theme="light"]) .cahier{--paper:#E3D9C2;--card:#F1EADA;--kraft:linear-gradient(170deg,#BFA27A,#AF9068);--old:#DED0AC} }
+:root[data-theme="dark"] .cahier{--paper:#E3D9C2;--card:#F1EADA;--kraft:linear-gradient(170deg,#BFA27A,#AF9068);--old:#DED0AC}
 @media (max-width:760px){
   .cahier{grid-template-columns:minmax(0,1fr);margin-right:6px}
   .cahier-tabs{position:static;flex-direction:row;gap:5px;padding:0 6px;overflow-x:auto;scrollbar-width:none;margin-bottom:-3px}
@@ -7260,56 +7263,46 @@ function showReveal(){
   // chaque bille tombe du sachet et rebondit (les gros formats sonnent plus grave)
   else results.forEach(({s},i)=>Sound.drop(i*.13+.32, 1.25-scaleOf(s.type)*.5+Math.random()*.08));
 }
-// Comme quand on vidait son sachet dans la cour : les billes jaillissent du goulot, rebondissent,
-// roulent un peu trop loin, reviennent... et s'arrêtent chacune devant sa place.
+// Les papillotes jaillissent du goulot du sachet, font une ou deux culbutes en l'air, retombent devant leur place
+// en s'écrasant un peu (comme un bonbon qu'on lâche sur la table), font un ou deux petits rebonds et se posent en se tortillant.
 function rollOut(){
-  const [fx,fy] = ovState.from, g = 3200, rolls = [], slots = document.querySelectorAll(".slot");
-  const many = slots.length>3, gap = many ? .15 : .21, vol = many ? .8 : 1;
+  const [fx,fy] = ovState.from, g = 3200, slots = document.querySelectorAll(".slot");
+  const many = slots.length>3, gap = many ? .13 : .19, vol = (many ? .8 : 1)*.75;
   slots.forEach((el,i)=>{
     const orb = el.querySelector(".orb"), spin = el.querySelector(".orb-spin"), sh = el.querySelector(".ball-shadow");
     if(!orb) return;
     el.classList.add("rolling");
     const r = orb.getBoundingClientRect(), R = r.width/2;
-    const x0 = fx-(r.left+R), y0 = Math.min(fy-(r.top+R), -40);   // le sol est à y = 0
-    const xl = x0*.55 + (Math.random()-.5)*110;                       // point de chute, entre le sachet et sa place
-    // vol : la bille jaillit (80 px au-dessus du goulot) puis retombe ; ensuite rebonds de plus en plus petits
-    const v0 = Math.sqrt(2*g*80), tp = v0/g, tf = Math.sqrt(2*(80-y0)/g), T1 = tp+tf;
-    // sol dur de la cour : la bille rebondit plusieurs fois, de plus en plus vite (comme dans l'enregistrement)
-    const Troll = 1.1 + Math.min(1.2, Math.abs(xl)/650), T = T1+Troll, delay = i*gap + (many ? Math.random()*.04 : 0);
-    const vi = g*tf, hops = []; let v = vi*.6, t = T1;
-    while(v>28 && t+2*v/g < T-.05){ hops.push([t, 2*v/g, v]); t += 2*v/g; v *= .64 }
-    const X = t => t<=T1 ? x0+(xl-x0)*t/T1 : (u=>xl*Math.exp(-3*u)*Math.cos(Math.PI*1.25*u)*(1-u**6))((t-T1)/Troll);
+    const x0 = fx-(r.left+R), y0 = Math.min(fy-(r.top+R), -40);   // le sol est à y = 0, la place à x = 0
+    // vol : la papillote jaillit (90 px au-dessus du goulot) et retombe pile à sa place
+    const v0 = Math.sqrt(2*g*90), tp = v0/g, tf = Math.sqrt(2*(90-y0)/g), T1 = tp+tf, vi = g*tf;
+    // puis deux petits rebonds, et un tortillement pour finir
+    const hops = []; let v = vi*.32, t = T1;
+    for(let k=0;k<2 && v>40;k++){ hops.push([t, 2*v/g, v]); t += 2*v/g; v *= .45 }
+    const Tw = .42, T = t+Tw, delay = i*gap + (many ? Math.random()*.04 : 0);
+    const turns = (Math.random()<.5?-1:1)*(1+Math.round(Math.random()));   // une ou deux culbutes en l'air
+    const impacts = [[T1,1], ...hops.map(([h0,d],k)=>[h0+d, .45/(k+1)])];
+    const X = t => t<=T1 ? x0*(1-t/T1) : 0;
     const Y = t => { if(t<=T1) return y0 - v0*t + g*t*t/2;
       for(const [h0,d,hv] of hops) if(t>=h0 && t<h0+d){ const q=t-h0; return -hv*q + g*q*q/2 }
       return 0 };
+    const ROT = t => { if(t<=T1){ const u=t/T1; return turns*360*(1-(1-u)**2) }
+      const end = t-(T-Tw); return end>0 ? 14*Math.exp(-6*end)*Math.sin(end*26) : (t<hops[0]?.[0]+hops[0]?.[1] ? -8*Math.sin((t-T1)/(hops[0][1])*Math.PI) : 0) };
+    const SQ = t => impacts.reduce((m,[ti,s])=>{ const d=Math.abs(t-ti); return d<.07 ? Math.max(m, s*(1-d/.07)) : m }, 0);
     const N = 70, kOrb = [], kSpin = [], kSh = [];
     for(let k=0;k<=N;k++){
-      const t = T*k/N, x = X(t), y = Math.min(0,Y(t)), sc = t<T1 ? .45+.55*t/T1 : 1, off = k/N;
-      kOrb.push({offset:off, transform:`translate(${x}px,${y}px) scale(${sc})`, opacity:t<.06?t/.06:1});
-      kSpin.push({offset:off, transform:`rotate(${(x-x0)/R*57.3}deg)`});
+      const t = T*k/N, x = X(t), y = Math.min(0,Y(t)), sc = t<T1 ? .45+.55*t/T1 : 1, off = k/N, q = SQ(t), sx = 1+.2*q, sy = 1-.2*q;
+      kOrb.push({offset:off, transform:`translate(${x}px,${y + R*(1-sy)}px) scale(${sc*sx},${sc*sy})`, opacity:t<.06?t/.06:1});
+      kSpin.push({offset:off, transform:`rotate(${ROT(t)}deg)`});
       kSh.push({offset:off, transform:`translateX(${x}px) scale(${Math.max(.3,1+y/260)*sc})`, opacity:Math.max(.15,1+y/200)*(t<.06?t/.06:1)});
     }
     const opt = {duration:T*1000, delay:delay*1000, easing:"linear", fill:"backwards"};
     el._roll = [orb.animate(kOrb,opt), spin.animate(kSpin,opt), sh.animate(kSh,opt)];
-    // chaque choc sur le sol joue le vrai son de bille, pile au moment où elle touche, à sa place dans la stéréo
-    const s = ovState.results[i].s, rate = 1.2-(scaleOf(s.type)-.5)*.9+(Math.random()-.5)*.06;
-    const pan = t => ((r.left+R+X(t))/innerWidth*2-1)*.7;
-    Sound.bounce(delay+T1, Math.min(1,vi/900), rate, pan(T1), vol);
-    hops.forEach(([h0,d,hv])=>Sound.bounce(delay+h0+d, Math.min(1,hv/900), rate, pan(h0+d), vol));
-    rolls.push({X, T1, T, delay});
+    // chaque choc sur la table joue le vrai son de bille (plus doux : elle est emballée), à sa place dans la stéréo
+    const s = ovState.results[i].s, rate = 1.2-(scaleOf(s.type)-.5)*.9+(Math.random()-.5)*.06, pan = ((r.left+R)/innerWidth*2-1)*.7;
+    Sound.bounce(delay+T1, Math.min(1,vi/900), rate, pan, vol);
+    hops.forEach(([h0,d,hv])=>Sound.bounce(delay+h0+d, Math.min(1,hv/900), rate, pan, vol));
   });
-  // le roulement sur le sol suit la vitesse des billes
-  const t0 = performance.now(), end = Math.max(...rolls.map(r=>r.delay+r.T));
-  Sound.rollStart();
-  const tick = ()=>{
-    if(!ovState) return Sound.rollStop();
-    const t = (performance.now()-t0)/1000;
-    if(t>end){ Sound.rollStop(); ovState.rollRaf = 0; return }
-    const sp = rolls.reduce((a,r)=>{ const q=t-r.delay; return q>r.T1 && q<r.T ? a+Math.abs(r.X(q+.016)-r.X(q)) : a }, 0);
-    Sound.roll(Math.min(16, sp*.9), false);
-    ovState.rollRaf = requestAnimationFrame(tick);
-  };
-  ovState.rollRaf = requestAnimationFrame(tick);
 }
 function reveal(i){
   if(!ovState) return;

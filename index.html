@@ -3187,8 +3187,8 @@ const QUESTS = {
   twoshots:      {title:"Mets ta bille dans le trou en 2 tirs", goal:1, reward:90, icon:"target", desc:"Ou moins, sur le trou du jour du Tir (les plongeons dans l'eau ne comptent pas comme des tirs). Tu peux réessayer autant que tu veux.", go:"tir"},
   find_bille:    {title:"Trouve 2 Billes ou plus grosses", goal:2, reward:90, icon:"layers", desc:"Bille, Bille chinoise, Calot, Boulet ou Mammouth : les Mini billes ne comptent pas.", go:"sacs"},
   find_calot:    {title:"Trouve un Calot ou mieux", goal:1, reward:120, icon:"layers", desc:"Calot, Boulet ou Mammouth.", go:"sacs"},
-  new_slot:      {title:"Commence une nouvelle case", goal:1, reward:100, icon:"book", desc:"Une taille et un décor que tu n'avais pas encore dans l'album.", go:"sacs"},
-  new_color:     {title:"Trouve 3 nouvelles billes", goal:3, reward:100, icon:"star", desc:"Des billes que tu n'avais pas encore : nouvelle case ou nouveau coloris.", go:"sacs"},
+  new_slot:      {title:"Trouve un nouveau décor", goal:1, reward:100, icon:"book", desc:"Un décor que tu n'avais pas encore dans cette taille.", go:"sacs"},
+  new_color:     {title:"Trouve 3 nouvelles billes", goal:3, reward:100, icon:"star", desc:"Des billes que tu n'avais pas encore : nouveau décor ou nouveau coloris.", go:"sacs"},
   open_paid:     {title:"Ouvre un sachet payant", goal:1, reward:120, icon:"bag", desc:"Classique, Premium ou Collector, acheté ou offert.", go:"sacs"},
   craft:         {title:"Réussis une fusion", goal:1, reward:120, icon:"flask", desc:"Des billes d'une même taille contre une plus grosse, à la Confiserie.", go:"confiserie|fusion"},
   shake:         {title:"Secoue bien les sachets", goal:20, reward:60, icon:"bag", desc:"Secoue les sachets avant de les ouvrir : 20 secousses en tout.", go:"sacs"},
@@ -4880,15 +4880,15 @@ const CHALLENGES = [
   // --- l'album : combien de billes différentes
   ...[[25,200],[50,300],[100,500,"premium"],[250,800,"premium"],[500,1200,"collector"],[1000,2000,"collector","Collectionneur fou"],[2000,3500,"collector"],[3000,5000,"collector","Encyclopédie vivante"],[4000,8000,"collector","Grand collectionneur"]]
     .map(([n,j,bag,title])=>({id:"found-"+n, cat:"album", icon:"book", title:`${fmt(n)} billes`, desc:`Trouve ${fmt(n)} billes différentes (taille, décor et coloris).`, goal:n, prog:()=>albumFound(SC()).size, rew:{j, bag, title}})),
-  {id:"half", cat:"album", icon:"book", title:"Mi-parcours", desc:"Commence la moitié des cases de l'album (une taille et un décor).", goal:Math.ceil(TOTAL_SLOTS/2), prog:()=>slotsOwned(SC()).size, rew:{j:600, bag:"premium"}},
-  {id:"full", cat:"album", icon:"trophy", title:"Album bien rempli", desc:`Commence 170 des ${TOTAL_SLOTS} cases de l'album (une taille et un décor).`, goal:170, prog:()=>slotsOwned(SC()).size, rew:{j:3000, bag:"collector"}},
+  {id:"half", cat:"album", icon:"book", title:"Mi-parcours", desc:`Trouve la moitié des décors de l'album : ${Math.ceil(TOTAL_SLOTS/2)} sur ${TOTAL_SLOTS}, toutes tailles confondues.`, goal:Math.ceil(TOTAL_SLOTS/2), prog:()=>slotsOwned(SC()).size, rew:{j:600, bag:"premium"}},
+  {id:"full", cat:"album", icon:"trophy", title:"Album bien rempli", desc:`Trouve 170 des ${TOTAL_SLOTS} décors de l'album, toutes tailles confondues.`, goal:170, prog:()=>slotsOwned(SC()).size, rew:{j:3000, bag:"collector"}},
   {id:"t-caid", cat:"album", icon:"layers", title:"Caïd des billes", desc:"Possède 100 billes en même temps.", goal:100, prog:()=>SC().length, rew:{j:700, title:"Caïd des billes"}},
   // --- les coloris
   {id:"pal10", cat:"coloris", icon:"book", title:"Nuancier", desc:"Un même décor dans 10 coloris différents.", goal:10, prog:()=>Math.max(0,...FAMILIES.map((_,f)=>new Set(SC().filter(s=>s.family===f&&isBasePal(s.pal)).map(s=>s.pal)).size)), rew:{j:400}},
   {id:"pal24", cat:"coloris", icon:"book", title:"Grand nuancier", desc:"Un même décor dans 24 coloris différents.", goal:24, prog:()=>Math.max(0,...FAMILIES.map((_,f)=>new Set(SC().filter(s=>s.family===f&&isBasePal(s.pal)).map(s=>s.pal)).size)), rew:{j:900}},
   {id:"allpals", cat:"coloris", icon:"book", title:"Boîte de peinture", desc:`Trouve les ${BASE_PALS} coloris, tous décors et tailles confondus.`, goal:BASE_PALS, prog:()=>new Set(SC().filter(s=>isBasePal(s.pal)).map(s=>s.pal)).size, rew:{j:500, title:"Peintre en billes"}},
-  {id:"case1", cat:"coloris", icon:"star", title:"Case complète", desc:`Une case dans les ${BASE_PALS} coloris.`, goal:1, prog:()=>[...slotsOwned(SC()).values()].filter(l=>casePals(l)===BASE_PALS).length, rew:{j:1500, bag:"collector", title:"Nuancier vivant"}},
-  {id:"case5", cat:"coloris", icon:"star", title:"Cinq cases complètes", desc:`Cinq cases dans les ${BASE_PALS} coloris.`, goal:5, prog:()=>[...slotsOwned(SC()).values()].filter(l=>casePals(l)===BASE_PALS).length, rew:{j:4000, bag:"collector"}},
+  {id:"case1", cat:"coloris", icon:"star", title:"Décor complet", desc:`Un décor dans les ${BASE_PALS} coloris, dans une même taille.`, goal:1, prog:()=>[...slotsOwned(SC()).values()].filter(l=>casePals(l)===BASE_PALS).length, rew:{j:1500, bag:"collector", title:"Nuancier vivant"}},
+  {id:"case5", cat:"coloris", icon:"star", title:"Cinq décors complets", desc:`Cinq décors dans les ${BASE_PALS} coloris.`, goal:5, prog:()=>[...slotsOwned(SC()).values()].filter(l=>casePals(l)===BASE_PALS).length, rew:{j:4000, bag:"collector"}},
   // --- les tailles : des décors différents dans chaque format, et les grosses billes
   ...TK.map((t,i)=>({id:"fmt-"+t, cat:"tailles", icon:"layers", title:FMT_GOAL[i]>=N_DECORS?`Tous les décors en ${TYPES[t].label}`:`${FMT_GOAL[i]} décors en ${TYPES[t].label}`,
     desc:FMT_GOAL[i]>=N_DECORS?`Trouve les ${N_DECORS} décors au format ${TYPES[t].label}.`:`Trouve ${FMT_GOAL[i]} décors différents (sur ${N_DECORS}) au format ${TYPES[t].label}.`, goal:Math.min(FMT_GOAL[i],N_DECORS),
@@ -5825,7 +5825,7 @@ function nextGoals(){
   // une case presque complète
   const cases = [...slotsOwned()].map(([k,l])=>({k,l,got:casePals(l)})).filter(c=>c.got<BASE_PALS).sort((a,b)=>b.got-a.got);
   if(cases[0] && cases[0].got>=2){ const c=cases[0], x=coverOf(c.l);
-    goals.push({icon:"layers", img:exSpec(x.type, x.family, "objectif"), title:`Complète ta case ${FAMILIES[x.family].name} · ${TYPES[x.type].label}`, text:`Plus que ${BASE_PALS-c.got} coloris pour la case complète.`, p:c.got, goal:BASE_PALS, act:`data-action="sheet" data-type="${x.type}" data-fam="${x.family}"`, cta:"Voir les coloris"}) }
+    goals.push({icon:"layers", img:exSpec(x.type, x.family, "objectif"), title:`Complète ton décor ${FAMILIES[x.family].name} · ${TYPES[x.type].label}`, text:`Plus que ${BASE_PALS-c.got} coloris pour le décor complet.`, p:c.got, goal:BASE_PALS, act:`data-action="sheet" data-type="${x.type}" data-fam="${x.family}"`, cta:"Voir les coloris"}) }
   // la série la plus avancée
   const se = SERIES.filter(x=>!(S.seriesDone||[]).includes(x.id)).map(x=>({x,p:seriesProg(x)})).sort((a,b)=>b.p/b.x.items.length-a.p/a.x.items.length)[0];
   if(se){ const left=se.x.items.length-se.p;
@@ -6007,7 +6007,7 @@ function viewCollection(){
         const isNew = list.some(s=>S.unseen.includes(s.id));
         return `<button class="m-card case${best.shiny?" is-shiny":""}${full?" full":""}" data-action="sheet" data-type="${t}" data-fam="${f}" aria-label="${TYPES[t].label} ${F.name} : ${got} coloris sur ${BASE_PALS}"${isNew?` data-unseen="${list.filter(s=>S.unseen.includes(s.id)).map(s=>s.id).join(",")}"`:""}>
           ${best.shiny?`<span class="shiny-mark">${shinyPill(best)}</span>`:""}
-          ${full?`<span class="full-tag">${ic("star",11,2.6)} Complète</span>`:""}${isNew?`<span class="new">Nouveau</span>`:""}
+          ${full?`<span class="full-tag">${ic("star",11,2.6)} Complet</span>`:""}${isNew?`<span class="new">Nouveau</span>`:""}
           <span class="ball">${mImg(best,160,Math.round(84*scaleOf(t)+6))}</span><b>${F.name}</b>${rarTag(f)}
           <span class="case-prog"><span class="bar"><i style="width:${got/BASE_PALS*100}%"></i></span><small>${got} / ${BASE_PALS} coloris</small></span></button>`;
       }).join("") + EVENT_FAMS.map(f=>evCard(t,f)).join("") + SEASON_FAMS.map(f=>seCard(t,f)).join("");
@@ -6054,12 +6054,12 @@ function viewCollection(){
         return `<button class="ctab" role="tab" style="--c:${c}" data-action="tab" data-tab="${k}" aria-selected="${ui.tab===k}">${ic(icon,16,2.4)}<b>${lbl}</b>${n!=null?`<small>${n}</small>`:""}${k==="series"&&seriesClaimable()?`<span class="tab-dot">${seriesClaimable()}</span>`:""}</button>` }).join("")}
     </div>
     <div class="cahier-page">
-    ${(()=>{ const T = {album:["Mon album", `${slots.size} / ${TOTAL_SLOTS} cases`], billes:["Mes billes", `${S.specs.length} bille${S.specs.length>1?"s":""}`], series:["Mes séries", `${nSeries} / ${SERIES.length} complétées`],
+    ${(()=>{ const T = {album:["Mon album", `${slots.size} / ${TOTAL_SLOTS} décors trouvés`], billes:["Mes billes", `${S.specs.length} bille${S.specs.length>1?"s":""}`], series:["Mes séries", `${nSeries} / ${SERIES.length} complétées`],
         beta:["Billes Bêta", `${betaOwned().length} / ${TK.length}`], events:["Événements", ""], pedia:["Billepedia", "toutes les billes du jeu"]}[ui.tab] || ["", ""];
       return T[0] ? `<div class="cp-title"><h2>${T[0]}</h2>${T[1]?`<span>${T[1]}</span>`:""}</div>` : "" })()}
   ${ui.tab==="pedia" ? viewPedia().replace(/^<div class="page-head">[\s\S]*?(?=<section class="pedia-sec">)/, "") : ui.tab==="events" ? eventsView() : ui.tab==="beta" ? betaView() : `
   ${ui.tab==="album"||ui.tab==="billes" ? `<div class="bx-sizes" role="group" aria-label="Filtrer par taille">
-    <button class="bx-size all" data-action="ftype" data-type="all" aria-pressed="${ui.type==="all"}"><b>Toutes</b><small>${ui.tab==="billes" ? `${fmt(S.specs.length)} bille${S.specs.length>1?"s":""}` : `${nFull} complète${nFull>1?"s":""} · ${shinyCount} shiny`}</small></button>
+    <button class="bx-size all" data-action="ftype" data-type="all" aria-pressed="${ui.type==="all"}"><b>Toutes</b><small>${ui.tab==="billes" ? `${fmt(S.specs.length)} bille${S.specs.length>1?"s":""}` : `${nFull} complet${nFull>1?"s":""} · ${shinyCount} shiny`}</small></button>
     ${TK.map(sizeBtn).join("")}</div>` : ""}
   ${filters}
   ${body}`}
@@ -6438,7 +6438,7 @@ function confEchange(dups, dupVal){
       <button class="chip" data-action="conf-filter" data-f="doubles" aria-pressed="${!seules}">${ic("layers",14)} Mes doubles <span class="n">${dups.length}</span></button>
       <button class="chip" data-action="conf-filter" data-f="seules" aria-pressed="${seules}">${ic("star",14)} Billes en un seul exemplaire <span class="n">${singles.length}</span></button>
     </div>
-  ${seules ? `<section class="panel cf-warn">${ic("quest",22)}<div><b>Attention, ce sont tes seuls exemplaires</b><p>En échanger une la retire de ton album : la case peut redevenir vide, et une série ou un succès peut reculer. Les shiny, les billes secrètes et celles du passe ne sont jamais proposées ici.</p></div></section>`
+  ${seules ? `<section class="panel cf-warn">${ic("quest",22)}<div><b>Attention, ce sont tes seuls exemplaires</b><p>En échanger une la retire de ton album : le décor peut redevenir vide dans cette taille, et une série ou un succès peut reculer. Les shiny, les billes secrètes et celles du passe ne sont jamais proposées ici.</p></div></section>`
   : `<section class="panel cf-sum">
       <div class="cf-receipt"><div class="rc-head">Ticket de la Confiserie</div>
         ${lines || `<div class="rc-row"><span>Aucun double pour l'instant</span><i></i><b>0</b></div>`}
@@ -6735,7 +6735,7 @@ function openModal(id, pv, reveal=false){
         
         ${S.active===s.id||s.secret?"":`<button class="btn btn-ghost" data-action="recycle" data-id="${s.id}">${ic("candy",16)} Échanger · +${fmt(recycleValue(s))} ${CUR.many}</button>`}
         ${sib.length>1 && keepOf(sib).id!==s.id?`<button class="btn btn-ghost" data-action="keep-copy" data-id="${s.id}">${ic("check",16)} Garder cet exemplaire</button>`:""}
-        ${fromSheet?"":`<button class="btn btn-ghost" data-action="sheet" data-type="${s.type}" data-fam="${s.family}">${ic("layers",16)} Coloris de la case · ${casePals(caseList)} / ${BASE_PALS}</button>`}
+        ${fromSheet?"":`<button class="btn btn-ghost" data-action="sheet" data-type="${s.type}" data-fam="${s.family}">${ic("layers",16)} Tous ses coloris · ${casePals(caseList)} / ${BASE_PALS}</button>`}
       </div>
       ${sib.length>1 && keepOf(sib).id===s.id?`<p class="meta">C'est l'exemplaire que tu gardes : les autres sont proposés comme doubles à la Confiserie.</p>`:""}
       ${S.active!==s.id && sib.length===1 && isBasePal(s.pal)?`<p class="warn-note">C'est ton seul exemplaire de cette bille : l'échanger la retirera de ton album.</p>`:""}
@@ -6800,7 +6800,7 @@ function openSheet(t,f){
   el.innerHTML = `<div class="modal sheet drawer" role="dialog" aria-modal="true" aria-label="${F.name} ${T.label}" style="${tstyle(t)}">
     <button class="close-x" data-action="close-modal" aria-label="Fermer">×</button>
     <div class="sheet-head">
-      <div class="pills">${typePill(t,true)}<span class="dec-pill" style="--dc:${DECOR_RAR[F.rar].c}">${DECOR_RAR[F.rar].name}</span>${full?`<span class="full-tag static">${ic("star",11,2.6)} Case complète</span>`:""}</div>
+      <div class="pills">${typePill(t,true)}<span class="dec-pill" style="--dc:${DECOR_RAR[F.rar].c}">${DECOR_RAR[F.rar].name}</span>${full?`<span class="full-tag static">${ic("star",11,2.6)} Décor complet</span>`:""}</div>
       <h2>${F.name} <small>· ${T.label}</small></h2>
       <div class="sheet-prog"><span class="bar"><i class="${full?"done":""}" style="width:${got/BASE_PALS*100}%"></i></span><b>${got} / ${BASE_PALS} coloris</b></div>
       <p class="meta">${got?`Touche une bille pour l'ouvrir, ou un coloris manquant pour l'ajouter à ta liste de souhaits (★). ${cov&&list.length>1?`Dans l'album, c'est ${esc(PALETTES[cov.pal][0])} qui s'affiche : touche l'étoile d'un autre coloris pour le mettre à sa place.`:""}`:`Tu n'as pas encore de ${T.label.toLowerCase()} ${F.name}. Elle se cache peut-être dans ton prochain sachet !`}</p>
@@ -10857,7 +10857,7 @@ function scoreGoals(){
   SERIES.forEach(se=>{ const n = seriesFill(se).filter(Boolean).length; if(n>=se.items.length/2 && n<se.items.length)
     g.push({titre:`La série « ${se.name} »`, n, of:se.items.length, pts:seriePts(se), manque:`Il te manque : ${se.items.filter((it,i)=>!seriesFill(se)[i]).map(seriesLabel).join(", ")}`}) });
   g.sort((a,b)=>(a.of-a.n)-(b.of-b.n) || b.pts-a.pts);
-  if(g.length<3) g.push({titre:"Une nouvelle case dans l'album", n:cases.size, of:TOTAL_SLOTS, pts:SCORE.taille[0], manque:"Chaque nouvelle taille ou nouveau décor rapporte des points (et bien plus s'il est rare)"});
+  if(g.length<3) g.push({titre:"Un nouveau décor dans l'album", n:cases.size, of:TOTAL_SLOTS, pts:SCORE.taille[0], manque:"Chaque nouvelle taille ou nouveau décor rapporte des points (et bien plus s'il est rare)"});
   return g.slice(0,3);
 }
 function courClassement(){
@@ -10871,7 +10871,7 @@ function courClassement(){
   const voir = x => !x.moi ? ` data-action="ami-voir" data-id="${x.id}" role="button" tabindex="0" title="Voir sa collection"` : "";
   const top = C.liste.slice(0,3), podium = [top[1], top[0], top[2]].filter(Boolean);
   const row = x => `<div class="cl-row${x.moi?" me":""}"${voir(x)}><span class="cl-rank">${x.rang}</span><span class="cl-face">${face(x,40)}</span>
-      <span class="who">${esc(x.pseudo)}${x.moi?` <em>toi</em>`:""}<small>${x.titre ? `${ic("trophy",11,2.4)} ${esc(x.titre)} · ` : ""}${fmt(x.cases)} case${x.cases>1?"s":""}</small></span>
+      <span class="who">${esc(x.pseudo)}${x.moi?` <em>toi</em>`:""}<small>${x.titre ? `${ic("trophy",11,2.4)} ${esc(x.titre)} · ` : ""}${fmt(x.cases)} décor${x.cases>1?"s":""}</small></span>
       <span class="cl-pts">${fmt(x.total)}<small>pts</small></span></div>`;
   const tile = (icon, lbl, pts, sub) => `<div class="cl-tile">${ic(icon,18,2.2)}<b>${fmt(pts)}</b><small>${lbl}</small>${sub?`<i>${sub}</i>`:""}</div>`;
   return `<div class="cour-grid">
@@ -10880,7 +10880,7 @@ function courClassement(){
         <div class="cl-score"><small>Ton score</small><b>${fmt(M.total)}<span> pts</span></b>
           ${M.rang>1 && C.liste[M.rang-2] ? `<p>Plus que <b>${fmt(C.liste[M.rang-2].total - M.total + 1)} pts</b> pour passer devant ${esc(C.liste[M.rang-2].pseudo)} !</p>` : M.rang===1 && C.nb>1 ? `<p>Tu es en tête ! Garde ta place.</p>` : ""}</div>
         <div class="chips">${chip("tous","Tout le monde")}${chip("copains","Mes copains")}</div></div>
-      <div class="cl-tiles">${tile("layers","Cases",M.pts_cases,`${fmt(M.cases)} case${M.cases>1?"s":""}`)}${tile("book","Coloris en plus",M.pts_coloris)}${tile("star","Shiny",M.pts_shiny)}${tile("trophy","Séries et collections",M.pts_series,`${M.nb_series} complétée${M.nb_series>1?"s":""}`)}</div>
+      <div class="cl-tiles">${tile("layers","Décors",M.pts_cases,`${fmt(M.cases)} décor${M.cases>1?"s":""}`)}${tile("book","Coloris en plus",M.pts_coloris)}${tile("star","Shiny",M.pts_shiny)}${tile("trophy","Séries et collections",M.pts_series,`${M.nb_series} complétée${M.nb_series>1?"s":""}`)}</div>
     </section>
     ${podium.length ? `<section class="panel cl-podium-wrap"><div class="cl-podium">${podium.map(x=>`<div class="cl-pod p${x.rang<=3?x.rang:3}${x.moi?" me":""}"${voir(x)}>
         <span class="cl-face">${face(x, x.rang===1?84:66)}</span><b>${esc(x.pseudo)}</b><span class="cl-pts">${fmt(x.total)}<small>pts</small></span>
@@ -10894,11 +10894,11 @@ function courClassement(){
           <div class="bar"><i style="width:${Math.round(100*g.n/g.of)}%"></i></div><small>${g.n} / ${g.of} · ${esc(g.manque)}</small></div>`).join("")}</div></section>
       <section class="panel"><div class="panel-head"><h3>${ic("quest",18)} Comment gagner des points</h3></div>
         <ul class="cl-rules">
-          <li><b>Chaque case de l'album</b><span>${TK.map(t=>`${TYPES[t].label} ${SCORE.taille[TIDX[t]]}`).join(" · ")}</span><small>× la rareté du décor : ${DECOR_RAR.map((r,i)=>`${r.name.toLowerCase()} ×${String(SCORE.decor[i]).replace(".",",")}`).join(", ")}</small></li>
+          <li><b>Chaque décor de l'album, dans chaque taille</b><span>${TK.map(t=>`${TYPES[t].label} ${SCORE.taille[TIDX[t]]}`).join(" · ")}</span><small>× la rareté du décor : ${DECOR_RAR.map((r,i)=>`${r.name.toLowerCase()} ×${String(SCORE.decor[i]).replace(".",",")}`).join(", ")}</small></li>
           <li><b>Chaque coloris en plus</b><span>un cinquième des points de la taille</span><small>Les doubles (même coloris) ne comptent pas.</small></li>
           <li><b>Chaque shiny différente</b><span>${SHINIES.slice(1).map((x,i)=>`${x.name} ${SCORE.shiny[i]}`).join(" · ")}</span></li>
           <li><b>Les séries à thème</b><span>${SERIES.map(se=>`${se.name} ${seriePts(se)}`).join(" · ")}</span><small>Celles de l'onglet Séries de ta boîte à billes.</small></li>
-          <li><b>Les grandes collections</b><span>un décor dans les 6 tailles : ${SCORE.serieDecor} × la rareté du décor</span><small>Une taille dans tous les décors, ou une case avec ses ${BASE_PALS} coloris : ${SCORE.serie} × les points de la taille.</small></li>
+          <li><b>Les grandes collections</b><span>un décor dans les 6 tailles : ${SCORE.serieDecor} × la rareté du décor</span><small>Une taille dans tous les décors, ou un décor complet (ses ${BASE_PALS} coloris) : ${SCORE.serie} × les points de la taille.</small></li>
         </ul><p class="meta">Seules les billes des sachets, des fusions et du passe comptent (pas les billes de départ ni les secrètes, qui ont leur succès à elles). Une bille vendue ou échangée compte pour son nouveau propriétaire.</p></section>
     </div>
   </div>`;
@@ -11017,7 +11017,7 @@ async function openProfil(id){
     <div class="pf2-body">
       <div class="pf2-stats">
         ${stat(`${fmt(P.album||0)}<span>/ ${fmt(ALBUM_TOTAL)}</span>`, "Billes différentes", `${(100*(P.album||0)/ALBUM_TOTAL).toFixed(1).replace(".",",")} % de l'album`)}
-        ${stat(`${fmt(P.cases||0)}<span>/ ${TOTAL_SLOTS}</span>`, "Cases commencées", P.completes ? `${P.completes} complète${P.completes>1?"s":""}` : "")}
+        ${stat(`${fmt(P.cases||0)}<span>/ ${TOTAL_SLOTS}</span>`, "Décors trouvés", P.completes ? `${P.completes} complet${P.completes>1?"s":""}` : "")}
         ${stat(fmt(P.shiny||0), "Shiny", shTxt)}
         ${stat(fmt(P.billes||0), "Billes en tout")}
       </div>

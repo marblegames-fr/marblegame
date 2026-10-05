@@ -477,6 +477,11 @@ main{padding:22px 24px 40px;min-width:0}
 .bag-spark{transform-box:fill-box;transform-origin:center;animation:twinkle 2.4s ease-in-out infinite}
 @keyframes twinkle{0%,100%{opacity:.25;transform:scale(.6)}50%{opacity:1;transform:scale(1.1) rotate(20deg)}}
 .bag-peek{transform-box:fill-box;transform-origin:50% 100%}
+.bag-lid{transform-box:fill-box;transform-origin:50% 100%;transition:transform .5s cubic-bezier(.3,1.4,.5,1)}
+.bag-zone.charging .bag-lid{transform:translateY(-18px) rotate(-7deg)}
+.bag-glow{opacity:0;transition:opacity .4s}
+.bag-zone.charging .bag-glow{opacity:.95;filter:blur(2px)}
+.bag-card:hover .bag-lid{transform:translateY(-4px) rotate(-2deg)}
 .bag-card:hover .bag-peek,.bag-stage.jiggle .bag-peek,.bag-stage.dragging .bag-peek,.bag-zone.charging .bag-peek{animation:rattle .16s ease-in-out infinite alternate}
 @keyframes rattle{from{transform:translate(-1.5px,0) rotate(-3deg)}to{transform:translate(1.5px,-3px) rotate(3deg)}}
 .bag-visual .tag{position:absolute;top:10px;left:10px;font-size:11px;font-weight:900;letter-spacing:.05em;text-transform:uppercase;padding:3px 10px;border-radius:999px;background:var(--ink);color:var(--on-ink)}
@@ -4937,129 +4942,158 @@ function dotMarble(x,y,r,col,id,cls=""){
 }
 const DOT_COLS = ["#E0533D","#3C8DDE","#F2C230","#38B37A"];
 // bagSVG(sac, {loose:true} pour quelques billes posées par terre à côté)
-// Les sachets réalistes (5 octobre 2026) : le Gratuit est un sachet en papier kraft replié et scellé d'une gommette ;
-// les autres sont des sacs en tissu (jute pour le Classique, velours pour le Premium, satin brodé d'or pour le Collector)
-// qui s'affaissent sous le poids des billes (on devine leurs bosses), froncés sous une cordelette torsadée nouée devant.
+// Les sachets (5 octobre 2026), de vrais emballages de billes, chacun différent :
+// Gratuit = sachet en papier kraft à fenêtre (3 billes), Classique = filet de billes à carte en carton (5 billes),
+// Premium = bourse en velours avec étiquette, Collector = coffret en acajou aux coins dorés (le couvercle s'entrouvre à l'ouverture).
+const SAC_MC = ["#E0533D","#3C8DDE","#F2C230","#38B37A","#9B5DE5","#F28AB2"];
+function sacMarble(id,x,y,r,col,k){
+  return `<g><circle cx="${x}" cy="${y}" r="${r}" fill="url(#${id}-g${k})"/>
+  <path d="M${x-r*.75} ${y+r*.15}C${x-r*.25} ${y-r*.7},${x+r*.25} ${y+r*.7},${x+r*.75} ${y-r*.15}" stroke="${shade(col,.55)}" stroke-width="${r*.3}" fill="none" stroke-linecap="round" opacity=".85"/>
+  <ellipse cx="${x-r*.35}" cy="${y-r*.42}" rx="${r*.3}" ry="${r*.2}" fill="#fff" opacity=".85"/></g>`;
+}
+const MC = SAC_MC;
+const mDefs = id => SAC_MC.map((c,k)=>`<radialGradient id="${id}-g${k}" cx="36%" cy="32%" r="72%"><stop offset="0" stop-color="${shade(c,.5)}"/><stop offset=".55" stop-color="${c}"/><stop offset="1" stop-color="${shade(c,-.5)}"/></radialGradient>`).join("");
+const shadowEl = (id,cx=100,cy=228,rx=70) => `<ellipse cx="${cx}" cy="${cy}" rx="${rx}" ry="9" fill="url(#${id}-sh)"/>`;
+const shDef = id => `<radialGradient id="${id}-sh"><stop offset="0" stop-color="#000" stop-opacity=".45"/><stop offset="1" stop-color="#000" stop-opacity="0"/></radialGradient>`;
+// deux billes posées par terre à côté du sachet (page Sachets, accueil)
+const bagLoose = (id,o) => o.loose ? `<ellipse cx="-4" cy="232" rx="12" ry="3" fill="rgba(40,25,10,.25)"/><ellipse cx="207" cy="233" rx="10" ry="2.6" fill="rgba(40,25,10,.25)"/>
+  <g class="loose l1">${sacMarble(id,-4,221,11,SAC_MC[1],1)}</g><g class="loose l2">${sacMarble(id,207,224,9,SAC_MC[3],3)}</g>` : "";
+function bagTag(id,x,y,rot,txt,col,sub){
+  return `<g transform="rotate(${rot} ${x} ${y})">
+    <path d="M${x-30} ${y}L${x+24} ${y}L${x+34} ${y+11}L${x+24} ${y+22}L${x-30} ${y+22}Z" fill="rgba(0,0,0,.25)" transform="translate(2 3)"/>
+    <path d="M${x-30} ${y}L${x+24} ${y}L${x+34} ${y+11}L${x+24} ${y+22}L${x-30} ${y+22}Z" fill="#F6EBD3" stroke="#C9B48C" stroke-width="1"/>
+    <circle cx="${x+25}" cy="${y+11}" r="2.6" fill="#8B7650"/>
+    <text x="${x-3}" y="${y+(sub?11:15)}" text-anchor="middle" font-family="Caveat" font-weight="700" font-size="${sub?14:17}" fill="${col}">${txt}</text>
+    ${sub?`<text x="${x-3}" y="${y+19}" text-anchor="middle" font-family="Nunito" font-weight="900" font-size="6" fill="#8B7650" letter-spacing=".6">${sub}</text>`:""}
+  </g>`;
+}
+function bagFree(b,o){
+  const id="b"+(++uid), c=b.color||"#C98E4E";
+  return `<svg viewBox="${o.loose?"-26 0 252 240":"0 0 200 240"}" aria-hidden="true"><defs>${mDefs(id)}${shDef(id)}
+    <linearGradient id="${id}-p" x1="0" x2="1"><stop offset="0" stop-color="${shade(c,-.25)}"/><stop offset=".3" stop-color="${shade(c,.12)}"/><stop offset=".7" stop-color="${c}"/><stop offset="1" stop-color="${shade(c,-.35)}"/></linearGradient>
+    <linearGradient id="${id}-gl" x1="0" y1="0" x2="1" y2="1"><stop offset=".2" stop-color="#fff" stop-opacity=".0"/><stop offset=".35" stop-color="#fff" stop-opacity=".45"/><stop offset=".45" stop-color="#fff" stop-opacity="0"/></linearGradient>
+    <pattern id="${id}-f" width="9" height="7" patternUnits="userSpaceOnUse"><path d="M1 2l3 .6M5 5l3-.5" stroke="#5a3a1a" stroke-opacity=".18" stroke-width=".7"/></pattern>
+    <clipPath id="${id}-w"><rect x="70" y="128" width="60" height="62" rx="22"/></clipPath></defs>
+    ${shadowEl(id,100,226,66)}
+    <path d="M52 70L148 70L156 214Q100 222 44 214Z" fill="url(#${id}-p)"/>
+    <path d="M52 70L148 70L156 214Q100 222 44 214Z" fill="url(#${id}-f)"/>
+    <path d="M66 70L62 216M134 70L138 216" stroke="#000" stroke-opacity=".12" stroke-width="2"/>
+    <path d="M44 214Q100 222 156 214L154 200Q100 208 46 200Z" fill="#000" opacity=".12"/>
+    <!-- la fenêtre transparente : on voit les billes -->
+    <rect x="70" y="128" width="60" height="62" rx="22" fill="#2a1d12"/>
+    <g clip-path="url(#${id}-w)">${sacMarble(id,87,176,14,MC[1],1)}${sacMarble(id,114,176,14,MC[0],0)}${sacMarble(id,100,152,14,MC[2],2)}
+      <rect x="70" y="128" width="60" height="62" fill="url(#${id}-gl)"/></g>
+    <rect x="70" y="128" width="60" height="62" rx="22" fill="none" stroke="${shade(c,-.45)}" stroke-width="2"/>
+    <!-- le haut replié deux fois -->
+    <path d="M50 52L150 52L149 74L51 74Z" fill="${shade(c,-.15)}"/>
+    <path d="M50 52L150 52L150 60L50 60Z" fill="${shade(c,.1)}"/>
+    <path d="M50 74L150 74" stroke="#000" stroke-opacity=".3" stroke-width="2"/>
+    <path d="M49 40L151 40L150 54L50 54Z" fill="${shade(c,-.05)}"/><path d="M49 40L151 40" stroke="${shade(c,.3)}" stroke-width="2"/>
+    <!-- la gommette -->
+    <g transform="rotate(-8 100 58)"><circle cx="101.5" cy="60" r="15" fill="rgba(0,0,0,.25)"/><circle cx="100" cy="58" r="15" fill="#E5484D"/><circle cx="100" cy="58" r="11.5" fill="none" stroke="#fff" stroke-width="1.4" stroke-dasharray="2.6 2"/>
+      <text x="100" y="65" text-anchor="middle" font-family="Lilita One" font-size="19" fill="#fff">B</text></g>
+    <text x="100" y="112" text-anchor="middle" font-family="Caveat" font-weight="700" font-size="22" fill="${shade(c,-.55)}" opacity=".8">offert !</text>
+    ${bagLoose(id,o)}
+  </svg>`;
+}
+function bagNet(b,o){
+  const id="b"+(++uid), net=b.id==="classique"?"#2FA35A":(b.color||"#2FA35A");
+  const body="M60 74C44 98 38 140 46 182C54 214 146 214 154 182C162 140 156 98 140 74Z";
+  return `<svg viewBox="${o.loose?"-26 0 252 240":"0 0 200 240"}" aria-hidden="true"><defs>${mDefs(id)}${shDef(id)}
+    <clipPath id="${id}-c"><path d="${body}"/></clipPath>
+    <pattern id="${id}-n" width="12" height="12" patternUnits="userSpaceOnUse" patternTransform="rotate(45)"><path d="M0 0h12M0 0v12" stroke="${net}" stroke-width="2.2"/><path d="M0 1h12M1 0v12" stroke="${shade(net,.45)}" stroke-width=".7" opacity=".7"/></pattern></defs>
+    ${shadowEl(id,100,224,62)}
+    <g clip-path="url(#${id}-c)">
+      <path d="${body}" fill="rgba(20,40,25,.35)"/>
+      <g class="bag-peek">${sacMarble(id,70,188,18,MC[0],0)}${sacMarble(id,104,193,19,MC[1],1)}${sacMarble(id,137,186,18,MC[2],2)}${sacMarble(id,87,158,17,MC[3],3)}${sacMarble(id,121,158,17,MC[4],4)}</g>
+      <rect x="20" y="60" width="160" height="170" fill="url(#${id}-n)"/>
+      <rect x="20" y="60" width="160" height="170" fill="url(#${id}-n)" opacity=".5" transform="translate(3 2)"/>
+    </g>
+    <path d="${body}" fill="none" stroke="${shade(net,-.25)}" stroke-width="2"/>
+    <!-- le filet froncé sous la carte -->
+    <path d="M62 76C70 70 80 66 86 60M138 76C130 70 120 66 114 60M100 60V78" stroke="${net}" stroke-width="2.4" fill="none"/>
+    <path d="M78 74C84 68 90 64 94 60M122 74C116 68 110 64 106 60" stroke="${net}" stroke-width="1.6" fill="none"/>
+    <!-- la carte en carton pliée et agrafée -->
+    <path d="M56 24L144 24L146 64L54 64Z" fill="rgba(0,0,0,.3)" transform="translate(2 3)"/>
+    <path d="M56 24L144 24L146 64L54 64Z" fill="#F4E6C8"/>
+    <path d="M56 24L144 24L144 34L56 34Z" fill="${net}"/>
+    <path d="M54 64L146 64" stroke="#C9B48C" stroke-width="2"/>
+    <ellipse cx="100" cy="29" rx="9" ry="3.4" fill="#16130F"/>
+    <text x="100" y="53" text-anchor="middle" font-family="Lilita One" font-size="17" fill="#24253D">Billy</text>
+    <text x="100" y="61" text-anchor="middle" font-family="Nunito" font-weight="900" font-size="6.5" fill="${shade(net,-.3)}" letter-spacing="1">CLASSIQUE · 5 BILLES</text>
+    <path d="M66 58l6 0M128 58l6 0" stroke="#9aa0a6" stroke-width="2.2" stroke-linecap="round"/>
+    ${bagLoose(id,o)}
+  </svg>`;
+}
+function bagVelvet(b,o){
+  const id="b"+(++uid), c=b.color||"#34469C", nm=(b.name||"Premium").replace("Sachet ","");
+  const body="M66 92C36 104 20 146 26 184C32 214 168 214 174 184C180 146 164 104 134 92Z";
+  const top=[[48,40],[58,52],[64,34],[74,50],[82,30],[92,48],[100,28],[108,48],[118,30],[126,50],[136,34],[142,52],[152,40]];
+  const neck=x=>82+(x-48)/104*36;
+  const collar=`M66 92C60 76 52 60 48 40L${top.slice(1,-1).map(p=>p.join(" ")).join(" L")} L152 40C148 60 140 76 134 92Z`;
+  const pleats=top.slice(0,-1).map((p,k)=>{const q=top[k+1];return `<path d="M${p[0]} ${p[1]}L${q[0]} ${q[1]}L${neck(q[0])} 92L${neck(p[0])} 92Z" fill="${k%2?"rgba(0,0,0,.32)":"rgba(255,255,255,.12)"}"/>`}).join("");
+  return `<svg viewBox="${o.loose?"-26 0 252 240":"0 0 200 240"}" aria-hidden="true"><defs>${mDefs(id)}${shDef(id)}
+    <radialGradient id="${id}-v" cx="30%" cy="38%" r="85%"><stop offset="0" stop-color="${shade(c,.45)}"/><stop offset=".35" stop-color="${c}"/><stop offset=".8" stop-color="${shade(c,-.55)}"/><stop offset="1" stop-color="${shade(c,-.75)}"/></radialGradient>
+    <radialGradient id="${id}-bp" cx="35%" cy="30%" r="70%"><stop offset="0" stop-color="#fff" stop-opacity=".22"/><stop offset=".6" stop-color="#fff" stop-opacity="0"/><stop offset="1" stop-color="#000" stop-opacity=".3"/></radialGradient>
+    <linearGradient id="${id}-cl" x1="0" x2="1"><stop offset="0" stop-color="${shade(c,.25)}"/><stop offset=".5" stop-color="${c}"/><stop offset="1" stop-color="${shade(c,-.5)}"/></linearGradient>
+    <clipPath id="${id}-c"><path d="${body}"/></clipPath></defs>
+    ${shadowEl(id,100,222,80)}
+    
+    <path d="${body}" fill="url(#${id}-v)"/>
+    <g clip-path="url(#${id}-c)">
+      
+      <path d="M44 150C52 122 72 108 96 106" stroke="#fff" stroke-opacity=".18" stroke-width="18" fill="none" stroke-linecap="round"/>
+      <path d="M86 96C74 128 66 160 64 196M114 96C124 128 132 160 136 196" stroke="#000" stroke-opacity=".18" stroke-width="5" fill="none" stroke-linecap="round"/>
+      <path d="M150 120C166 144 168 172 160 196" stroke="#000" stroke-opacity=".25" stroke-width="16" fill="none" stroke-linecap="round"/>
+    </g>
+    <path d="${collar}" fill="url(#${id}-cl)"/>${pleats}
+    <path d="${collar}" fill="none" stroke="${shade(c,-.6)}" stroke-width="1.5" stroke-linejoin="round"/>
+    <path d="M66 88Q100 102 134 88L134 98Q100 112 66 98Z" fill="rgba(0,0,0,.35)"/>
+    <path d="M64 91Q100 106 136 91" stroke="#9E7A1C" stroke-width="6" fill="none" stroke-linecap="round"/>
+    <path d="M64 91Q100 106 136 91" stroke="#F2C94C" stroke-width="3.6" stroke-dasharray="2 2.6" fill="none" stroke-linecap="round"/>
+    <circle cx="116" cy="100" r="6.5" fill="#E8B53A" stroke="#9E7A1C" stroke-width="1.4"/>
+    <path d="M116 104C118 116 124 124 130 130" stroke="#C9A24A" stroke-width="1.6" fill="none"/>
+    ${bagTag(id,146,128,14,nm,shade(c,-.1),(b.n||5)+" BILLES")}
+    ${bagLoose(id,o)}
+  </svg>`;
+}
+function bagBox(b,o){
+  const id="b"+(++uid);
+  const spark=(x,y,s)=>`<path class="bag-spark" d="M${x} ${y-s}Q${x} ${y} ${x+s} ${y}Q${x} ${y} ${x} ${y+s}Q${x} ${y} ${x-s} ${y}Q${x} ${y} ${x} ${y-s}z" fill="#FFE9A8"/>`;
+  return `<svg viewBox="${o.loose?"-26 0 252 240":"0 0 200 240"}" aria-hidden="true"><defs>${mDefs(id)}${shDef(id)}
+    <linearGradient id="${id}-wf" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#8A4A26"/><stop offset=".5" stop-color="#6A3418"/><stop offset="1" stop-color="#4A220E"/></linearGradient>
+    <linearGradient id="${id}-wt" x1="0" y1="0" x2="1" y2="0"><stop offset="0" stop-color="#7A3E1E"/><stop offset=".5" stop-color="#A2602F"/><stop offset="1" stop-color="#6A3418"/></linearGradient>
+    <pattern id="${id}-gr" width="60" height="8" patternUnits="userSpaceOnUse"><path d="M0 3Q15 1 30 3T60 3M0 6.5Q20 5 40 6.5T60 6" stroke="#2a1206" stroke-opacity=".25" stroke-width=".8" fill="none"/></pattern>
+    <linearGradient id="${id}-g" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#FFF1B0"/><stop offset=".45" stop-color="#E8B53A"/><stop offset="1" stop-color="#8A5E0C"/></linearGradient>
+    <radialGradient id="${id}-vel" cx="50%" cy="40%" r="70%"><stop offset="0" stop-color="#B0202E"/><stop offset="1" stop-color="#5a0a14"/></radialGradient>
+    <linearGradient id="${id}-gl" x1="0" y1="0" x2="1" y2="1"><stop offset=".15" stop-color="#fff" stop-opacity="0"/><stop offset=".3" stop-color="#fff" stop-opacity=".5"/><stop offset=".4" stop-color="#fff" stop-opacity="0"/><stop offset=".7" stop-color="#fff" stop-opacity="0"/><stop offset=".78" stop-color="#fff" stop-opacity=".28"/><stop offset=".85" stop-color="#fff" stop-opacity="0"/></linearGradient></defs>
+    ${shadowEl(id,100,212,88)}
+    <path d="M18 124L182 124L182 196Q100 202 18 196Z" fill="url(#${id}-wf)"/>
+    <path d="M18 124L182 124L182 196Q100 202 18 196Z" fill="url(#${id}-gr)"/>
+    <path d="M18 160L182 160" stroke="#2a1206" stroke-opacity=".5" stroke-width="1.5"/><path d="M18 162L182 162" stroke="#C9864A" stroke-opacity=".35" stroke-width="1"/>
+    <path d="M40 80L160 80L182 124L18 124Z" fill="#3a0a10"/><path d="M46 84L154 84L174 122L26 122Z" fill="#FFD86B" opacity=".9" class="bag-glow"/>
+    <g class="bag-lid"><path d="M40 80L160 80L182 124L18 124Z" fill="url(#${id}-wt)"/>
+    <path d="M40 80L160 80L182 124L18 124Z" fill="url(#${id}-gr)" opacity=".8"/>
+    <path d="M52 87L148 87L164 118L36 118Z" fill="none" stroke="url(#${id}-g)" stroke-width="2.2"/>
+    <path d="M58 91L142 91L155 114L45 114Z" fill="none" stroke="#E8B53A" stroke-opacity=".55" stroke-width="1" stroke-dasharray="3 2"/>
+    <ellipse cx="100" cy="102.5" rx="17" ry="8.5" fill="url(#${id}-g)" stroke="#8A5E0C" stroke-width="1"/>
+    <path d="M100 96.5l1.8 3.6 4 .5-2.9 2.7.7 3.9-3.6-1.9-3.6 1.9.7-3.9-2.9-2.7 4-.5z" fill="#8A5E0C"/>
+    <path d="M40 80L160 80L182 124L18 124Z" fill="url(#${id}-gl)" opacity=".5"/>
+    <path d="M40 80L160 80L182 124L18 124Z" fill="none" stroke="#2a1206" stroke-width="1.6"/></g>
+    <path d="M18 124h14v10h-4v-6h-10ZM182 124h-14v10h4v-6h10ZM18 196v-14h6v10h8v4.5Q24 196.5 18 196ZM182 196v-14h-6v10h-8v4.5Q176 196.5 182 196Z" fill="url(#${id}-g)"/>
+    <path d="M86 132L114 132L114 158Q100 166 86 158Z" fill="rgba(0,0,0,.35)" transform="translate(1.5 2)"/>
+    <path d="M86 132L114 132L114 158Q100 166 86 158Z" fill="url(#${id}-g)" stroke="#8A5E0C" stroke-width="1"/>
+    <text x="100" y="152" text-anchor="middle" font-family="Lilita One" font-size="17" fill="#7A4F08">B</text>
+    <rect x="66" y="172" width="68" height="14" rx="2" fill="url(#${id}-g)" stroke="#8A5E0C" stroke-width=".8"/>
+    <text x="100" y="182.5" text-anchor="middle" font-family="Nunito" font-weight="900" font-size="8" fill="#6A4306" letter-spacing="1.6">COLLECTOR</text>
+    ${spark(26,70,7)}${spark(176,64,6)}${spark(190,150,5)}${spark(10,150,4)}
+    ${bagLoose(id,o)}
+  </svg>`;
+}
 function bagSVG(b, o={}){
   if(typeof b==="string") b = BAGS.find(x=>x.color===b) || {id:"classique", color:b};
-  const L = BAG_LOOK[b.id] || BAG_LOOK.classique, c = b.color;
-  const id="bg"+(++uid), d=shade(c,-.38), dd=shade(c,-.6), l=shade(c,.35), ll=shade(c,.6);
-  const mgrads = DOT_COLS.map(m=>`<radialGradient id="${id}-m${m.slice(1)}" cx="38%" cy="34%" r="70%"><stop offset="0" stop-color="${shade(m,.45)}"/><stop offset=".55" stop-color="${m}"/><stop offset="1" stop-color="${shade(m,-.45)}"/></radialGradient>`).join("");
-  const spark = (x,y,s) => `<path class="bag-spark" d="M${x} ${y-s}Q${x} ${y} ${x+s} ${y}Q${x} ${y} ${x} ${y+s}Q${x} ${y} ${x-s} ${y}Q${x} ${y} ${x} ${y-s}z" fill="#fff"/>`;
-  const shadow = `<ellipse cx="100" cy="213" rx="78" ry="10" fill="url(#${id}-sh)"/>`;
-  const loose = o.loose ? `<ellipse cx="-4" cy="219" rx="12" ry="3" fill="rgba(40,25,10,.2)"/><ellipse cx="207" cy="220" rx="10" ry="2.6" fill="rgba(40,25,10,.2)"/>` : "";
-  const looseM = o.loose ? dotMarble(-4,208,11,DOT_COLS[1],id,"loose l1")+dotMarble(207,211,9,DOT_COLS[3],id,"loose l2") : "";
-  const defs = `<radialGradient id="${id}" cx="34%" cy="36%" r="80%"><stop offset="0" stop-color="${l}"/><stop offset=".5" stop-color="${c}"/><stop offset="1" stop-color="${dd}"/></radialGradient>
-    <radialGradient id="${id}-sh" cx="50%" cy="50%" r="50%"><stop offset="0" stop-color="rgba(30,18,8,.4)"/><stop offset="1" stop-color="rgba(30,18,8,0)"/></radialGradient>
-    <radialGradient id="${id}-bump" cx="38%" cy="32%" r="65%"><stop offset="0" stop-color="#fff" stop-opacity=".3"/><stop offset=".55" stop-color="#fff" stop-opacity="0"/><stop offset="1" stop-color="#000" stop-opacity=".22"/></radialGradient>
-    <linearGradient id="${id}-ao" x1="0" y1="0" x2="0" y2="1"><stop offset=".62" stop-color="#000" stop-opacity="0"/><stop offset="1" stop-color="#000" stop-opacity=".38"/></linearGradient>
-    <linearGradient id="${id}-rim" x1="0" y1="0" x2="1" y2="0"><stop offset=".6" stop-color="#fff" stop-opacity="0"/><stop offset="1" stop-color="#fff" stop-opacity=".4"/></linearGradient>${mgrads}`;
-  const B = t => `<text x="100" y="${t.y}" text-anchor="middle" font-family="Lilita One, sans-serif" font-size="${t.s}" fill="${t.c}">B</text>`;
-
-  // ---------- le sachet gratuit : papier kraft, le haut replié, une gommette ----------
-  if(b.id==="gratuit"){
-    const body = "M48 66L152 66L163 198Q164 213 149 214L51 214Q36 213 37 198Z";
-    return `<svg viewBox="${o.loose?"-26 0 252 230":"0 0 200 230"}" aria-hidden="true">
-    <defs>${defs}<clipPath id="${id}-c"><path d="${body}"/></clipPath>
-      <pattern id="${id}-t" width="14" height="11" patternUnits="userSpaceOnUse"><path d="M1 2l4 1M8 7l5-1M3 9l3 1M10 2l2 2" stroke="${dd}" stroke-opacity=".22" stroke-width=".8" fill="none"/><path d="M6 5l2 .5M12 9l1.5-1" stroke="#fff" stroke-opacity=".25" stroke-width=".7"/></pattern></defs>
-    ${shadow}${loose}
-    <path d="${body}" fill="url(#${id})"/>
-    <g clip-path="url(#${id}-c)">
-      <rect x="30" y="60" width="140" height="160" fill="url(#${id}-t)"/>
-      <path d="M60 66L54 214" stroke="${dd}" stroke-opacity=".28" stroke-width="2"/><path d="M63 66L58 214" stroke="#fff" stroke-opacity=".2" stroke-width="1.5"/>
-      <path d="M140 66L146 214" stroke="${dd}" stroke-opacity=".32" stroke-width="2"/><path d="M137 66L142 214" stroke="#fff" stroke-opacity=".14" stroke-width="1.5"/>
-      <path d="M58 120L84 112L96 136L122 128L140 142M66 170L88 160L104 178L132 168L152 180M74 92L92 98L118 90" stroke="${dd}" stroke-opacity=".22" stroke-width="1.6" fill="none" stroke-linejoin="round"/>
-      <path d="M58 122L84 114L96 138L122 130M66 172L88 162L104 180L132 170" stroke="#fff" stroke-opacity=".22" stroke-width="1.2" fill="none" stroke-linejoin="round"/>
-      <path d="M36 196Q100 206 164 196L170 230L30 230Z" fill="url(#${id}-ao)"/>
-      <rect x="100" y="60" width="70" height="160" fill="url(#${id}-rim)"/>
-    </g>
-    <path d="${body}" fill="none" stroke="${dd}" stroke-opacity=".5" stroke-width="1.6"/>
-    <path d="M44 44L156 44L153 70L47 70Z" fill="${d}"/>
-    <path d="M44 44L156 44L156 52Q100 58 44 52Z" fill="${shade(c,-.18)}"/>
-    <path d="M44 44L50 39L56 44L62 39L68 44L74 39L80 44L86 39L92 44L98 39L104 44L110 39L116 44L122 39L128 44L134 39L140 44L146 39L152 44L156 41L156 46L44 46Z" fill="${shade(c,-.1)}"/>
-    <path d="M47 70L153 70" stroke="${dd}" stroke-width="2.2"/><path d="M48 72L152 72" stroke="#fff" stroke-opacity=".25" stroke-width="1.2"/>
-    <g transform="rotate(-6 100 74)"><circle cx="100" cy="76" r="19" fill="rgba(0,0,0,.18)" transform="translate(1.5 2)"/>
-      <circle cx="100" cy="76" r="19" fill="${L.paper}"/><circle cx="100" cy="76" r="15" fill="none" stroke="${d}" stroke-width="1.4" stroke-dasharray="3 2.2"/>
-      <path d="M86 66Q94 60 104 61" stroke="#fff" stroke-width="3" stroke-linecap="round" opacity=".7"/>
-      ${B({y:85,s:22,c:d})}</g>
-    ${looseM}
-  </svg>`;
-  }
-
-  // ---------- les sacs en tissu ----------
-  const body = "M72 94C42 108 20 146 24 182C27 206 58 216 100 216C142 216 173 206 176 182C180 146 158 108 128 94Z";
-  // le haut froncé au-dessus de la cordelette : un bord ondulé, et des plis qui se resserrent vers le cou
-  const top = [[56,42],[64,48],[72,40],[80,47],[89,39],[98,46],[107,38],[116,46],[125,39],[134,47],[144,41]];
-  const neck = x => 84+(x-56)/88*32;   // où chaque pli arrive sur la cordelette
-  const lip = `M72 94C66 78 60 60 56 42L${top.slice(1,-1).map(p=>p.join(" ")).join(" L")} L144 41C140 60 134 78 128 94Z`;
-  const pleats = top.slice(0,-1).map((p,k)=>{ const q = top[k+1];
-    return `<path d="M${p[0]} ${p[1]}L${q[0]} ${q[1]}L${neck(q[0])} 94L${neck(p[0])} 94Z" fill="${k%2 ? "rgba(0,0,0,.2)" : "rgba(255,255,255,.14)"}"/>` }).join("");
-  const tex = {
-    coton:`<pattern id="${id}-t" width="4" height="4" patternUnits="userSpaceOnUse" patternTransform="rotate(-4)"><path d="M0 1h4M0 3h4" stroke="${dd}" stroke-opacity=".13" stroke-width="1"/><path d="M1 0v4M3 0v4" stroke="#fff" stroke-opacity=".07" stroke-width=".9"/><path d="M0 1h1.6M2 3h1.6" stroke="#fff" stroke-opacity=".12" stroke-width="1"/></pattern>`,
-    jute:`<pattern id="${id}-t" width="5" height="5" patternUnits="userSpaceOnUse" patternTransform="rotate(-4)"><path d="M0 1.2h5M0 3.7h5" stroke="${dd}" stroke-opacity=".24" stroke-width="1.2"/><path d="M1.2 0v5M3.7 0v5" stroke="#fff" stroke-opacity=".13" stroke-width="1"/></pattern>`,
-    velours:`<radialGradient id="${id}-t" cx="40%" cy="44%" r="64%"><stop offset=".45" stop-color="${dd}" stop-opacity="0"/><stop offset="1" stop-color="${dd}" stop-opacity=".8"/></radialGradient>`,
-    satin:`<linearGradient id="${id}-t" x1="0" y1="0" x2="1" y2=".4"><stop offset=".15" stop-color="#fff" stop-opacity="0"/><stop offset=".27" stop-color="#fff" stop-opacity=".6"/><stop offset=".36" stop-color="#fff" stop-opacity="0"/><stop offset=".6" stop-color="#fff" stop-opacity="0"/><stop offset=".68" stop-color="#fff" stop-opacity=".35"/><stop offset=".76" stop-color="#fff" stop-opacity="0"/></linearGradient>`,
-  }[L.tex] || "";
-  // les plis qui partent du cou, en ombre douce (plusieurs traits de plus en plus fins)
-  const fold = (dpath, dark) => [10,6,3].map((w,k)=>`<path d="${dpath}" stroke="${dark?"#000":"#fff"}" stroke-opacity="${dark?[.06,.08,.12][k]:[.05,.07,.1][k]}" stroke-width="${w}" fill="none" stroke-linecap="round"/>`).join("");
-  const folds = fold("M88 98C76 124 66 156 62 196",1)+fold("M93 98C88 128 86 160 88 200",0)+fold("M108 98C114 128 118 160 116 202",1)+fold("M113 98C126 124 136 156 140 194",0)+fold("M100 99C100 112 99 124 97 134",1);
-  // les billes qu'on devine à travers le tissu
-  const bumps = [[64,186,20],[98,192,22],[136,186,20],[80,160,17],[118,160,18],[100,134,15]].map(([x,y,r])=>`<circle cx="${x}" cy="${y}" r="${r}" fill="url(#${id}-bump)"/>`).join("");
-  const velvet = L.tex==="velours" ? `<path d="M46 140C56 120 80 112 100 116" stroke="#fff" stroke-opacity=".16" stroke-width="16" fill="none" stroke-linecap="round"/>` : "";
-  const satin = L.tex==="satin" ? `<path d="M42 150C52 120 74 106 92 104" stroke="#fff" stroke-opacity=".45" stroke-width="5" fill="none" stroke-linecap="round"/><path d="M150 132C160 150 162 170 156 188" stroke="#fff" stroke-opacity=".3" stroke-width="4" fill="none" stroke-linecap="round"/>` : "";
-  // la couture : points visibles sur les côtés (fil doré et ourlet brodé pour le Collector)
-  const thread = L.tex==="satin" ? "#FFD86B" : L.tex==="velours" ? shade(c,.5) : shade(c,.55);
-  const seams = `<path d="M40 128C30 150 30 176 36 192M160 128C170 150 170 176 164 192" stroke="${thread}" stroke-opacity=".7" stroke-width="1.4" stroke-dasharray="4 3.2" fill="none"/>
-    <path d="M38 200C66 212 134 212 162 200" stroke="${thread}" stroke-opacity=".75" stroke-width="1.4" stroke-dasharray="4 3.2" fill="none"/>
-    ${L.tex==="satin" ? `<path d="M40 205L48 199L56 206L64 200L72 207L80 201L88 208L96 202L104 208L112 202L120 208L128 201L136 207L144 200L152 206L160 199" stroke="#FFD86B" stroke-width="1.6" fill="none" stroke-linejoin="round"/>` : ""}`;
-  // les fibres de jute qui dépassent
-  const fibres = L.tex==="coton" || L.tex==="jute" ? `<path d="M29 160c-5 1-7 4-6 7M172 152c5 0 7 3 7 6M60 210c-1 5 1 8 4 9M150 208c2 4 1 7-2 8" stroke="${shade(c,.25)}" stroke-width="1.1" fill="none" stroke-linecap="round" opacity=".8"/>` : "";
-  // la cordelette torsadée : un brin de base, une torsade plus claire, une ombre dessous
-  const rope = (dpath, w) => `<path d="${dpath}" stroke="rgba(0,0,0,.3)" stroke-width="${w+1}" fill="none" stroke-linecap="round" transform="translate(0 1.8)"/>
-    <path d="${dpath}" stroke="${shade(L.cord,-.25)}" stroke-width="${w}" fill="none" stroke-linecap="round"/>
-    <path d="${dpath}" stroke="${shade(L.cord,.25)}" stroke-width="${w*.62}" stroke-dasharray="1.6 2.4" fill="none" stroke-linecap="round"/>`;
-  const W = L.cordW;
-  const end = (x,y) => L.tassel
-    ? `<path d="M${x} ${y-1}l-6 17h12z" fill="${L.cord}"/><path d="M${x-4} ${y+3}l-1 13M${x-1} ${y+3}v14M${x+2} ${y+3}v14M${x+4} ${y+3}l1 13" stroke="${shade(L.cord,-.35)}" stroke-width=".9"/>
-       <circle cx="${x}" cy="${y-1}" r="4.5" fill="${L.bead}" stroke="${shade(L.bead,-.4)}" stroke-width="1"/><circle cx="${x-1.5}" cy="${y-2.5}" r="1.3" fill="#fff" opacity=".8"/>`
-    : `<circle cx="${x}" cy="${y}" r="5.5" fill="${L.bead}" stroke="${shade(L.bead,-.45)}" stroke-width="1.2"/><circle cx="${x-1.8}" cy="${y-1.8}" r="1.6" fill="#fff" opacity=".75"/>`;
-  const patch = L.patch==="star"
-    ? `<path d="M101.5 124.5l8.2 16.6 18.3 2.7-13.2 12.9 3.1 18.2-16.4-8.6-16.4 8.6 3.1-18.2-13.2-12.9 18.3-2.7z" fill="rgba(0,0,0,.22)"/>
-       <path d="M100 122l8.2 16.6 18.3 2.7-13.2 12.9 3.1 18.2L100 163.8l-16.4 8.6 3.1-18.2-13.2-12.9 18.3-2.7z" fill="${L.paper}"/>
-       <path d="M100 128l6.5 13.2 14.5 2.1-10.5 10.2 2.5 14.5-13-6.8-13 6.8 2.5-14.5-10.5-10.2 14.5-2.1z" fill="none" stroke="#D9A020" stroke-width="1.5" stroke-dasharray="3 2"/>`
-    : `<circle cx="101.5" cy="152" r="22" fill="rgba(0,0,0,.22)"/><circle cx="100" cy="150" r="22" fill="${L.paper}"/>
-       <circle cx="100" cy="150" r="18.5" fill="none" stroke="${L.ring || d}" stroke-width="1.6" stroke-dasharray="3 2.2"/>
-       <path d="M84 140Q90 132 100 131" stroke="#fff" stroke-width="3" stroke-linecap="round" opacity=".6"/>`;
-  return `<svg viewBox="${o.loose?"-26 0 252 230":"0 0 200 230"}" aria-hidden="true">
-  <defs>${defs}<clipPath id="${id}-c"><path d="${body}"/></clipPath><clipPath id="${id}-lc"><path d="${lip}"/></clipPath>${tex}</defs>
-  ${shadow}${loose}
-  <ellipse cx="100" cy="43" rx="42" ry="9" fill="${dd}"/>
-  <g class="bag-peek">${dotMarble(82,38,12,DOT_COLS[0],id)}${dotMarble(122,39,11,DOT_COLS[2],id)}${dotMarble(102,32,13,DOT_COLS[1],id)}</g>
-  <path d="${body}" fill="url(#${id})"/>
-  <g clip-path="url(#${id}-c)">
-    ${tex ? `<rect x="0" y="80" width="200" height="150" fill="url(#${id}-t)"/>` : ""}
-    ${bumps}${folds}${velvet}${satin}
-    <path d="M20 190Q100 214 180 190L180 230L20 230Z" fill="url(#${id}-ao)"/>
-    <rect x="100" y="80" width="80" height="150" fill="url(#${id}-rim)"/>
-    ${seams}
-  </g>
-  <path d="${body}" fill="none" stroke="${dd}" stroke-opacity=".55" stroke-width="1.6"/>
-  ${fibres}
-  <path d="${lip}" fill="${c}"/>
-  <g clip-path="url(#${id}-lc)">${tex ? `<rect x="40" y="30" width="120" height="70" fill="url(#${id}-t)"/>` : ""}${pleats}
-    <path d="M56 42L144 41" stroke="#fff" stroke-opacity=".3" stroke-width="3"/></g>
-  <path d="${lip}" fill="none" stroke="${d}" stroke-width="1.8" stroke-linejoin="round"/>
-  <path d="M70 88Q100 100 130 88L130 98Q100 110 70 98Z" fill="rgba(0,0,0,.28)"/>
-  ${rope("M68 92Q100 106 132 92", W)}
-  ${rope("M112 100C120 108 117 116 123 122", W-1)}${rope("M112 100C106 110 109 118 103 124", W-1)}
-  <ellipse cx="112" cy="100" rx="7.5" ry="6" fill="${L.cord}" stroke="${shade(L.cord,-.35)}" stroke-width="1.3"/>
-  <path d="M107 98Q112 95 117 99" stroke="${shade(L.cord,.4)}" stroke-width="1.6" fill="none" stroke-linecap="round"/>
-  ${end(123,124)}${end(103,126)}
-  ${patch}
-  ${B({y: L.patch==="star"?159:161, s: L.patch==="star"?21:26, c:d})}
-  ${L.sparks?spark(38,72,7)+spark(170,118,6)+spark(160,58,5)+spark(44,168,4):""}
-  ${looseM}
-</svg>`;
+  const draw = {gratuit:bagFree, classique:bagNet, premium:bagVelvet, collector:bagBox}[b.id] || bagVelvet;
+  return draw(b, o);
 }
 
 /* =====================================================================

@@ -1850,11 +1850,14 @@ button.gh-cell:hover{transform:translateY(-2px)}
 .slot.is-open .nb-spark i + i{animation-delay:.68s;animation-duration:.7s}
 @keyframes nbspark{0%{opacity:0;scale:0;rotate:-30deg}35%{opacity:1;scale:1.15}100%{opacity:0;scale:.2;rotate:60deg}}
 @media (prefers-reduced-motion:reduce){.slot.is-open .nb-spark i{animation:none}}
-.nb-leg .nb-dot{display:inline-block;width:13px;height:13px;filter:drop-shadow(0 0 4px #FFE08A)}
-.nb-leg .nb-dot{color:#FFE08A}
-.nb-leg .nb-dot svg{display:block;width:100%;height:100%}
-.nb-leg .nb-dot.col{filter:drop-shadow(0 0 4px #A8E8FF)}
-.nb-leg .nb-dot.col{color:#A8E8FF}
+.nb-dot{display:inline-block;width:13px;height:13px;flex:none;filter:drop-shadow(0 0 4px #FFE08A)}
+.slot-info b .nb-dot,.m-card b .nb-dot{width:.8em;height:.8em;margin-right:.3em;vertical-align:.02em}
+.nb-dot{color:#FFE08A}
+.nb-dot svg{display:block;width:100%;height:100%}
+.nb-dot.col{filter:drop-shadow(0 0 4px #A8E8FF)}
+.nb-dot.col{color:#A8E8FF}
+.m-card b .nb-dot{color:#E8A21E;filter:drop-shadow(0 0 2px rgba(232,162,30,.6))}
+.m-card b .nb-dot.col{color:#2A9FD6;filter:drop-shadow(0 0 2px rgba(42,159,214,.6))}
 /* un doublon : rien à dire, la bille est juste un peu plus discrète */
 .slot.dupe.is-open .slot-info b{color:#D9CBBB;font-weight:800}
 .nb-leg{flex-basis:100%;display:flex;justify-content:center;gap:16px;flex-wrap:wrap;font-size:13px;font-weight:800;color:#E8D6C2}
@@ -7298,6 +7301,8 @@ const decorRar = s => extraFam(s.family) ? -1 : FAMILIES[s.family].rar;
 // le suspense tient compte des deux : un décor épique compte une taille de plus, un légendaire deux (un Calot Galaxie tremble comme un Mammouth)
 const dramaOf = s => Math.max(pullScore(s), Math.min(5, tierOf(s) + (decorRar(s)===4 ? 2 : decorRar(s)===3 ? 1 : 0)));
 // ce qui est nouveau : un éclat scintille une fois sur le reflet de la bille quand elle apparaît (doré = nouveau décor dans cette taille, bleu = nouveau coloris), rien pour un doublon
+// et la même petite étoile devant le nom, pour savoir après coup laquelle était nouvelle
+const nbDot = ({isNew, newColor, evNew}) => isNew||evNew ? `<span class="nb-dot" title="Nouveau décor dans cette taille">${SPARK}</span>` : newColor ? `<span class="nb-dot col" title="Nouveau coloris">${SPARK}</span>` : "";
 const nbSpark = (decor, sz) => `<span class="nb-spark${decor?"":" col"}" style="--bs:${sz}px" aria-label="${decor?"Nouveau décor":"Nouveau coloris"}"><i>${SPARK}</i><i>${SPARK}</i></span>`;
 const decStamp = s => { const r = decorRar(s); return r>=3 ? `<span class="dec-stamp${r===4?" leg":""}" style="--dc:${DECOR_RAR[r].c}">${ic("star",12,2.6)} <span class="ds-w">Décor </span>${DECOR_RAR[r].name.toLowerCase()}</span>` : "" };
 const scoreCol = k => k>=6 ? "#FFD27A" : RARITY[k].c;
@@ -7472,7 +7477,7 @@ function showReveal(){
         return `<button class="slot${wish?" wished":""} ${big?"big":""} ${s.shiny?"shiny":""}${nb?"":" dupe"}" style="--d:${i*130}ms;--tc:${shade(ovState.bag.color,.2)};${tstyle(s.type)}" data-tc="${scoreCol(k)}" data-action="reveal" data-i="${i}" aria-label="Découvrir la bille ${i+1}">
         ${wish?`<span class="slot-banner">Ta liste !</span>`:s.secret?`<span class="slot-banner">Secrète !</span>`:BANNER[k]?`<span class="slot-banner${k<2?" low":""}">${BANNER[k]}</span>`:""}
         <div class="slot-ball"><span class="rays"></span><span class="ball-shadow"></span><span class="orb"><span class="orb-spin">${candySVG(i)}</span></span>${mImg(s,300,sz,"")}${nb?nbSpark(isNew||evNew,sz):""}</div>
-        <div class="slot-info"><b>${esc(specName(s))}</b><span style="display:flex;gap:4px;flex-wrap:wrap;justify-content:center">${wish||s.secret?typePill(s.type,true):""}${shinyPill(s)}${edPill(s)}</span>${tierTag(s)}${decStamp(s)}</div>
+        <div class="slot-info"><b>${nbDot({isNew,newColor,evNew})}${esc(specName(s))}</b><span style="display:flex;gap:4px;flex-wrap:wrap;justify-content:center">${wish||s.secret?typePill(s.type,true):""}${shinyPill(s)}${edPill(s)}</span>${tierTag(s)}${decStamp(s)}</div>
       </button>`}).join("")}
     </div>
     <div class="ov-actions" id="ov-actions">
@@ -7649,7 +7654,7 @@ function showBagSummary({bag, results, left}){
     <button class="close-x" data-action="close-modal" aria-label="Fermer">×</button>
     <h2 id="bag-sum-t">${esc(bag.name)} : ${results.length} billes reçues</h2>
     <p class="meta">${left ? "Tu as quitté la page avant d'avoir ouvert tout ton sachet" : "Tu as fermé le sachet avant la fin"} : pas de panique, tout est déjà rangé dans ta boîte à billes.</p>
-    <div class="bag-sum-grid">${results.map(({s})=>`<button class="m-card" data-action="spec" data-id="${s.id}"><span class="ball">${mImg(s,160,Math.round(58*scaleOf(s.type)+8))}</span><b>${esc(specName(s))}</b>${typePill(s.type)}${shinyPill(s)}</button>`).join("")}</div>
+    <div class="bag-sum-grid">${results.map(r=>{ const {s} = r; return `<button class="m-card" data-action="spec" data-id="${s.id}"><span class="ball">${mImg(s,160,Math.round(58*scaleOf(s.type)+8))}</span><b>${nbDot(r)}${esc(specName(s))}</b>${typePill(s.type)}${shinyPill(s)}</button>` }).join("")}</div>
   </div>`;
   el.hidden = false;
   el.querySelector(".close-x").focus();

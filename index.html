@@ -1206,6 +1206,26 @@ body.vit-dragging,body.vit-dragging *{cursor:grabbing!important;user-select:none
 .gm-gc-st{font-size:13px;font-weight:800;opacity:.92;max-width:34ch}
 .gm-gc-st.ok{display:inline-flex;align-items:center;gap:6px;padding:4px 12px;border-radius:999px;background:rgba(47,163,90,.9)}
 @media (max-width:760px){ .gm-duo{grid-template-columns:1fr} }
+/* la Grande Course seule, sur toute la largeur : en bandeau (titre à gauche, compte à rebours au milieu, bouton à droite) */
+.gm-duo.solo{grid-template-columns:1fr}
+@media (min-width:761px){
+  .gm-duo.solo .gm-gc{grid-template-columns:minmax(0,1.4fr) auto auto;grid-template-areas:"k clock btn" "t clock btn" "st ball btn";justify-items:start;align-items:center;column-gap:28px;row-gap:6px;text-align:left;padding:22px 30px}
+  .gm-duo.solo .gm-kick{grid-area:k}
+  .gm-duo.solo .gm-gc-t{grid-area:t;font-size:34px}
+  .gm-duo.solo .gm-gc-clock{grid-area:clock;justify-self:center;text-align:center}
+  .gm-duo.solo .gm-gc-ball{grid-area:ball;justify-self:center}
+  .gm-duo.solo .gm-gc-st{grid-area:st}
+  .gm-duo.solo .gm-gc > .btn{grid-area:btn}
+}
+/* la fenêtre « Avec quelle bille tu joues ? » */
+.ball-go .bg-cur{display:flex;align-items:center;gap:14px;width:100%;margin:14px 0 4px;padding:12px 16px;border-radius:18px;border:2px solid var(--rc,var(--line-2));background:color-mix(in srgb,var(--rc,#888) 10%,var(--panel));text-align:left;transition:transform .15s}
+.ball-go .bg-cur:hover{transform:translateY(-2px)}
+.ball-go .bg-cur .ball{display:grid;place-items:center;width:84px;height:84px;flex:none}
+.ball-go .bg-cur > span:nth-child(2){flex:1;display:grid;gap:3px;justify-items:start}
+.ball-go .bg-cur small{font-size:11px;font-weight:900;letter-spacing:.06em;text-transform:uppercase;color:var(--muted)}
+.ball-go .bg-cur b{font-size:17px;font-weight:900}
+.ball-go .bg-or{margin:16px 0 8px;font-size:14px;font-weight:900;color:var(--ink-2)}
+@media (max-width:560px){ .ball-go .bg-cur{flex-wrap:wrap} .ball-go .bg-cur .btn{width:100%;justify-content:center} }
 .craft-filters{display:grid;gap:4px;margin:4px 0 8px}
 .craft-filters .chips{gap:6px}
 .craft-filters .chip{height:32px;padding:0 12px;font-size:12.5px}
@@ -5634,7 +5654,7 @@ document.addEventListener("keydown", e=>{ if(e.key==="Escape") toggleProfPop(fal
 let lastResync = 0;
 function confResync(){ if(!srvOn() || Date.now()-lastResync<30000) return; lastResync = Date.now();
   resyncBilles().then(()=>{ if(ui.view==="confiserie" && document.getElementById("ov").hidden) renderView() }, ()=>{}) }
-function go(view){ toggleProfPop(false); if(view==="confiserie") confResync(); if(view==="atelier"){ view="confiserie"; ui.confTab="fusion" } if(view==="billepedia"){ view="collection"; ui.tab="pedia" } ui.view=view; renderNav(); renderView(); window.scrollTo({top:0}); }
+function go(view){ toggleProfPop(false); if(view!==ui.view) ui.ballPicked = null; if(view==="confiserie") confResync(); if(view==="atelier"){ view="confiserie"; ui.confTab="fusion" } if(view==="billepedia"){ view="collection"; ui.tab="pedia" } ui.view=view; renderNav(); renderView(); window.scrollTo({top:0}); }
 function renderView(){
   if(ui.view==="course") ui.view = "jeux";   // la Course sur la plage a été retirée (2 octobre 2026) : un vieux lien ramène aux jeux
   const v = document.getElementById("view");
@@ -5644,7 +5664,7 @@ function renderView(){
   if(ui.view==="grandecourse") gcAfterRender();
   document.querySelector(".layout")?.classList.toggle("on-home", ui.view==="accueil");   // avant hcInit : la largeur de l'accueil en dépend
   if(ui.view==="accueil") hcInit();
-  if(ui.view==="tir") initGame();
+  if(ui.view==="tir"){ initGame(); needBall(null) }
   if(ARENA[ui.view]) initArena(ui.view);
   if(ui.view==="casse") initCasse();
   if(ui.view==="pachinko") pachiInit();
@@ -7479,7 +7499,6 @@ function viewGame(){
       <div class="g-help"><span>${ic("target",16)} Clique, tire en arrière, relâche.</span><span>Le sable freine, les champignons rouges font rebondir, l'eau te ramène en arrière (+1 coup).</span></div>
     </section>
     <aside style="display:grid;gap:20px">
-      ${gameBallPanel(act)}
       <section class="panel">
         <div class="panel-head"><h3>Le trou du jour</h3></div>
         <div id="g-holes"></div>
@@ -7909,7 +7928,6 @@ function viewPachinko(){
       </div>
     </section>
     <aside style="display:grid;gap:20px">
-      ${gameBallPanel(act)}
       <section class="panel"><div class="panel-head"><h3>Les cases</h3><span class="sample-tag">Chances</span></div>
         <ul class="rewards-list">${kinds.map(c=>({c, p:PACHI.filter(x=>x.lbl===c.lbl).reduce((a,x)=>a+x.w,0)/tot})).sort((a,b)=>a.p-b.p).map(({c,p})=>{
           return `<li><span><i class="pachi-dot" style="background:${c.c}"></i>${c.roue?`Un Mammouth : la roulette choisit son décor ${oddsBtn("pachinko")}`:c.sac?BAG_BY[c.sac].name+" offert":c.j?`${fmt(c.j)} ${CUR.many}`:"Rien du tout"}</span><b>${pct(+(p*100).toFixed(p<.1?1:0))}</b></li>` }).join("")}</ul>
@@ -8268,17 +8286,7 @@ function viewGames(){
         <i class="gp-bar"><i style="width:${doneN/keys.length*100}%"></i></i></div>
     </div>
   </section>
-  <div class="gm-duo">
-    ${act?`<section class="panel gm-ball-card" style="${tstyle(act.type)}">
-      <span class="gm-kick">${ic("target",14)} Ta bille pour les mini-jeux</span>
-      <div class="gm-main">
-        <button class="gm-big" data-action="spec" data-id="${act.id}" aria-label="Voir ta bille">${mImg(act,260,Math.round(60*scaleOf(act.type)+50),"")}</button>
-      </div>
-      <b class="gm-name">${esc(specName(act))}</b>
-      <span class="pills">${typePill(act.type,true)}${shinyPill(act)}</span>
-      <small class="meta">Elle roule dans tous les mini-jeux. Plus elle est grosse, plus elle frappe fort. Pour la Grande Course, tu choisis ta bille à part.</small>
-      <button class="btn btn-ghost" data-action="pick-active">${ic("layers",16)} Choisir une autre bille</button>
-    </section>`:""}
+  <div class="gm-duo solo">
     <button class="panel gm-gc" data-action="nav" data-view="grandecourse">
       <span class="gm-kick">${ic("flag",14)} ${gcWhen(gcNext(), true)}</span>
       <b class="gm-gc-t">La Grande Course</b>
@@ -8291,9 +8299,24 @@ function viewGames(){
   <section class="games-sec"><div class="gs-head"><h2>Les jeux de la cour</h2><p>Une partie du jour par jeu, avec des bonbecs à la clé. Ensuite, tu peux rejouer pour le plaisir. Les parties reviennent à minuit.</p></div>
     <div class="games-grid">${[...solo, ...multi].map(tile).join("")}</div></section>`;
 }
-// « Ta bille » en haut de la colonne de chaque mini-jeu : on voit tout de suite avec quelle bille on joue, et on la change
-const gameBallPanel = act => `<section class="panel" id="game-ball-panel"><div class="panel-head"><h3>Ta bille</h3><button class="see-all" data-action="pick-active">Changer ${ic("chev",14)}</button></div>
-        ${act?`<div class="my-ball">${mImg(act,120,48,"")}<div><b>${esc(specName(act))}</b><small>${TYPES[act.type].label} · ${TYPES[act.type].mm} mm</small></div></div>`:""}</section>`;
+// Avant de jouer (5 octobre 2026) : une fenêtre « Avec quelle bille tu joues ? », une fois par visite d'un mini-jeu.
+// On garde sa bille d'un clic, ou on en touche une autre, et la partie part tout de suite. Fermer la fenêtre garde la bille actuelle.
+const BALL_TIP = {tir:"Au Tir, une petite bille se faufile plus facilement entre les obstacles.",
+  pachinko:"Au Plinko, ta bille ne change que le look : les chances sont les mêmes pour toutes.",
+  casse:"Au Casse-briques, un Boulet ou un Mammouth tape deux fois plus fort sur les briques."};
+function openBallPick(next){
+  const el = document.getElementById("modal"), act = activeSpec(), list = [...S.specs].sort(tierSort);
+  ui.ballPicked = ui.view; ui.pickNext = next || null;
+  el.innerHTML = `<div class="modal bag-sum pick-modal ball-go" role="dialog" aria-modal="true" aria-label="Avec quelle bille tu joues ?"><button class="close-x" data-action="close-modal" aria-label="Fermer">×</button>
+    <h2>Avec quelle bille tu joues ?</h2><p class="meta">${BALL_TIP[ui.view] || "Plus elle est grosse, plus elle frappe fort."}</p>
+    ${act ? `<button class="bg-cur" data-action="ball-go" style="${tstyle(act.type)}"><span class="ball">${mImg(act,160,Math.round(30*scaleOf(act.type)+34),"")}</span>
+      <span><small>Ta bille actuelle</small><b>${esc(specName(act))}</b>${typePill(act.type)}</span><span class="btn btn-yellow">${ic("play",16)} Jouer avec elle</span></button>` : ""}
+    <h3 class="bg-or">ou choisis-en une autre</h3>
+    ${pickFilter(list)}<div class="pick-grid">${list.filter(x=>x.id!==S.active).map(x=>`<button class="m-card" data-action="ball-go" data-id="${x.id}" ${pickData(x)} style="${tstyle(x.type)}"><span class="ball">${mImg(x,120,Math.round(40*scaleOf(x.type)+14),"")}</span><b>${esc(specName(x))}</b>${typePill(x.type)}</button>`).join("")}</div></div>`;
+  el.hidden = false; el.querySelector(".bg-cur")?.focus();
+}
+// la fenêtre s'ouvre une fois par visite du jeu ; renvoie true si elle vient de s'ouvrir (l'action attend le choix)
+const needBall = next => { if(ui.ballPicked===ui.view || !S.specs.length) return false; openBallPick(next); return true };
 // Changer de bille en pleine partie : la nouvelle bille prend la place de l'ancienne tout de suite, sans recharger le jeu
 // (on ne perd ni un coup ni sa partie). Renvoie false si on n'est pas dans un mini-jeu (la page est alors redessinée).
 function swapGameBall(spec){
@@ -8308,7 +8331,6 @@ function swapGameBall(spec){
     cb.spec = spec; cb.R = cbClamp(radOf(spec.type)*.7, 7, 15); cb.power = TYPES[spec.type].mm>=35 ? 2 : 1;
     (cb.balls||[]).forEach(b=>{ b.spec = spec; b.dirty = true });
   } else if(v!=="pachinko") return false;   // au Plinko, la bille est prise au moment de la lâcher
-  const p = document.getElementById("game-ball-panel"); if(p) p.outerHTML = gameBallPanel(spec);
   return true;
 }
 function viewArena(){
@@ -8321,7 +8343,6 @@ function viewArena(){
       <div class="g-help"><span>${ic("target",16)} Clique, tire en arrière, relâche.</span><span>Plus tu tires loin, plus le lancer est fort.</span></div>
     </section>
     <aside style="display:grid;gap:20px">
-      ${gameBallPanel(act)}
       <section class="panel"><div class="panel-head"><h3>Règles</h3></div><ul class="soon-list">${G.rules.map(r=>`<li>${r}</li>`).join("")}</ul></section>
       ${dayRewards(ui.view)}
     </aside>
@@ -9038,7 +9059,6 @@ function viewCasse(){
       <div class="g-help"><span>${ic("target",16)} Souris, doigt ou flèches pour bouger la règle.</span><span>Clic ou Espace pour lancer · P pour la pause · Échap pour libérer la souris.</span></div>
     </section>
     <aside style="display:grid;gap:20px">
-      ${gameBallPanel(act)}
       <section class="panel"><div class="panel-head"><h3>Règles</h3></div><ul class="soon-list">${G.rules.map(r=>`<li>${r}</li>`).join("")}</ul></section>
       ${dayRewards(ui.view)}
     </aside>
@@ -11480,7 +11500,11 @@ document.addEventListener("click", e=>{
     case "evf-f": ui.evfF = t.dataset.f || ""; renderView(); break;
     case "craft-f": ui.craftF = {...(ui.craftF||{}), rar:t.dataset.v}; renderView(); break;
     case "craft-ev": ui.confTab = "evenement"; renderView(); break;
-    case "pachi-go": pachiGo(t.dataset.pay==="1"); break;
+    case "pachi-go": if(needBall(()=>t.click())) break; pachiGo(t.dataset.pay==="1"); break;
+    case "ball-go": {
+      if(t.dataset.id && t.dataset.id!==S.active){ S.active = t.dataset.id; save(); renderTop(); renderNav(); swapGameBall(activeSpec()) }
+      closeModal(); const n = ui.pickNext; ui.pickNext = null; Sound.tap(0,.6); if(n) setTimeout(n, 60); break;
+    }
     case "conf-filter": ui.confF=t.dataset.f; renderView(); break;
     case "conf-size": ui.confSize=t.dataset.v; renderView(); break;
     case "conf-cat": ui.confCat=t.dataset.v; renderView(); break;
@@ -11697,6 +11721,7 @@ document.addEventListener("click", e=>{
     // rejouer pour le plaisir, une fois la partie du jour finie : un terrain neuf, sans bonbecs ni sauvegarde de la partie
     case "game-fun": {
       const k = t.dataset.g; if(!dayGame(k)?.done) break;
+      if(needBall(()=>t.click())) break;
       if(k==="casse"){ initCasse(); document.getElementById("c-result").hidden = true; cb.done = false; cb.live = true }
       else { initArena(k); document.getElementById("a-result").hidden = true; arena.done = false; updArenaHud(); if(arena.turn==="opp") setTimeout(aiShot, 900) }
       Sound.tap(0,.6); toast("Partie pour le plaisir : elle ne rapporte rien, mais elle compte pour la gloire !");
@@ -11704,6 +11729,7 @@ document.addEventListener("click", e=>{
     }
     case "game-go": {
       const k = t.dataset.g;
+      if(needBall(()=>t.click())) break;
       if(!gameBegin(k) && !gameLive(k)){ renderView(); break }
       if(k==="casse"){ document.getElementById("c-result").hidden = true; cb.done = false; cb.live = true; cbSnap(false) }
       else { document.getElementById("a-result").hidden = true; arena.done = false; updArenaHud(); snapSave(null) }

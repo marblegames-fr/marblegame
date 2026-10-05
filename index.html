@@ -1200,7 +1200,7 @@ body.vit-dragging,body.vit-dragging *{cursor:grabbing!important;user-select:none
 .gm-gc-clock{display:grid;gap:2px;padding:10px 22px;border-radius:16px;background:rgba(0,0,0,.25)}
 .gm-gc-clock small{font-size:11px;font-weight:900;letter-spacing:.08em;text-transform:uppercase;opacity:.8}
 .gm-gc-clock b{font-family:var(--display);font-weight:400;font-size:34px;color:#FFE14D}
-.gm-gc-ball{display:flex;align-items:center;gap:10px;padding:6px 14px 6px 8px;border-radius:999px;background:rgba(0,0,0,.25);text-align:left}
+.gm-gc-ball{display:flex;align-items:center;justify-content:center;gap:10px;padding:6px 14px 6px 8px;border-radius:999px;background:rgba(0,0,0,.25);text-align:left}
 .gm-gc-ball small{display:block;font-size:10.5px;font-weight:900;letter-spacing:.06em;text-transform:uppercase;opacity:.8}
 .gm-gc-ball b{font-size:14px;font-weight:900}
 .gm-gc-st{font-size:13px;font-weight:800;opacity:.92;max-width:34ch}
@@ -1209,13 +1209,16 @@ body.vit-dragging,body.vit-dragging *{cursor:grabbing!important;user-select:none
 /* la Grande Course seule, sur toute la largeur : en bandeau (titre à gauche, compte à rebours au milieu, bouton à droite) */
 .gm-duo.solo{grid-template-columns:1fr}
 @media (min-width:761px){
-  .gm-duo.solo .gm-gc{grid-template-columns:minmax(0,1.4fr) auto auto;grid-template-areas:"k clock btn" "t clock btn" "st ball btn";justify-items:start;align-items:center;column-gap:28px;row-gap:6px;text-align:left;padding:22px 30px}
+  .gm-duo.solo .gm-gc{grid-template-columns:minmax(200px,1fr) auto auto;grid-template-areas:"k ball clock" "t ball clock" "st ball btn";justify-items:start;align-items:center;column-gap:28px;row-gap:6px;text-align:left;padding:22px 30px}
   .gm-duo.solo .gm-kick{grid-area:k}
   .gm-duo.solo .gm-gc-t{grid-area:t;font-size:34px}
-  .gm-duo.solo .gm-gc-clock{grid-area:clock;justify-self:center;text-align:center}
-  .gm-duo.solo .gm-gc-ball{grid-area:ball;justify-self:center}
+  .gm-duo.solo .gm-gc-clock{grid-area:clock;justify-self:center;text-align:center;padding:10px 16px}
+.gm-duo.solo .gm-gc-clock b{font-size:28px;white-space:nowrap}
+.gm-duo.solo .gm-gc-st{font-size:12.5px}
+  .gm-duo.solo .gm-gc-ball{grid-area:ball;justify-self:center;flex-direction:column;gap:6px;width:180px;padding:12px 14px;border-radius:20px;text-align:center}
+.gm-duo.solo .gm-gc-ball img{flex:none;max-width:none;filter:drop-shadow(0 8px 8px rgba(0,0,0,.4))}
   .gm-duo.solo .gm-gc-st{grid-area:st}
-  .gm-duo.solo .gm-gc > .btn{grid-area:btn}
+  .gm-duo.solo .gm-gc > .btn{grid-area:btn;justify-self:center;align-self:start}
 }
 /* la fenêtre « Avec quelle bille tu joues ? » */
 .ball-go .bg-cur{display:flex;align-items:center;gap:14px;width:100%;margin:14px 0 4px;padding:12px 16px;border-radius:18px;border:2px solid var(--rc,var(--line-2));background:color-mix(in srgb,var(--rc,#888) 10%,var(--panel));text-align:left;transition:transform .15s}
@@ -8291,7 +8294,7 @@ function viewGames(){
       <span class="gm-kick">${ic("flag",14)} ${gcWhen(gcNext(), true)}</span>
       <b class="gm-gc-t">La Grande Course</b>
       <span class="gm-gc-clock"><small>Départ dans</small><b data-gc-timer>${gcLeft(gcNext().depart-Date.now())}</b></span>
-      ${(()=>{ const b = gcMine() || gcDefault(); return b ? `<span class="gm-gc-ball">${mImg(b,96,40,"")}<span><small>${gc.etat?.inscrit ? "Tu cours avec" : "Ta bille pour la course"}</small><b>${esc(specName(b))}</b></span></span>` : "" })()}
+      ${(()=>{ const b = gcMine() || gcDefault(); return b ? `<span class="gm-gc-ball">${mImg(b,200,Math.round(30*scaleOf(b.type)+58),"")}<span><small>${gc.etat?.inscrit ? "Tu cours avec" : "Ta bille pour la course"}</small><b>${esc(specName(b))}</b></span></span>` : "" })()}
       <span class="gm-gc-st${gc.etat?.inscrit?" ok":""}">${gc.etat?.inscrit ? `${ic("check",14,3)} Tu es inscrit` : "À 12 h et à 20 h. Inscription gratuite : 500 bonbecs et un Sachet Collector pour le gagnant"}</span>
       <span class="btn btn-yellow">${gc.etat?.inscrit ? "Voir la course" : "M'inscrire"}</span>
     </button>

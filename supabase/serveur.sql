@@ -537,18 +537,19 @@ create or replace function public.gagner(source text, cle text, montant int, sac
 returns jsonb language plpgsql security definer set search_path = public as $$
 declare qui uuid := interne.moi(); today text := interne.aujourdhui()::text; k text; maxi int; nq int; ev record;
         quetes jsonb := '{"open_bag":80,"open_free":100,"hole":90,"par":70,"twoshots":90,"find_bille":90,"find_calot":120,
-                          "new_slot":100,"new_color":100,"open_paid":120,"craft":120,"shake":60,"recycle":60}';
+                          "new_slot":100,"new_color":100,"open_paid":120,"craft":120,"shake":60,"recycle":60,
+                          "find_many":80,"find_rare":100,"find_event":120,"day_games":80,"stars2":90,"plinko":50}';
 begin
   if montant < 0 then raise exception 'montant_invalide'; end if;
   if sac is not null and sac not in ('classique','premium','collector','pirate') then raise exception 'sac_inconnu'; end if;
   perform 1 from portefeuilles where joueur = qui for update;
   case source
-    when 'quete' then   -- 3 quêtes par jour, au tarif de la quête
+    when 'quete' then   -- 4 quêtes par jour (QUESTS_N dans index.html), au tarif de la quête
       if not quetes ? cle or montant <> (quetes->>cle)::int or sac is not null then raise exception 'montant_invalide'; end if;
       select count(*) into nq from gains g where g.joueur = qui and g.source = 'quete' and g.cle like today || '|%';
-      if nq >= 3 then raise exception 'deja'; end if;
+      if nq >= 4 then raise exception 'deja'; end if;
       k := today || '|' || cle;
-    when 'quetes-bonus' then   -- les 3 quêtes : un Sac Classique offert
+    when 'quetes-bonus' then   -- les 4 quêtes : un Sac Classique offert
       if montant <> 0 or sac is distinct from 'classique' then raise exception 'montant_invalide'; end if;
       k := today;
     when 'jeu' then     -- une récompense par jour et par jeu (au Tir : par trou)

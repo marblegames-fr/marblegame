@@ -874,7 +874,9 @@ button.rw:hover{transform:translateY(-2px)}
 .filt-it small{font-size:12px;font-weight:900;color:var(--muted)}
 .filt-it:hover{background:var(--panel-2)}
 .filt-it[aria-pressed="true"]{background:color-mix(in srgb,var(--tc) 30%,#fff)}
-.filt-hide{display:flex;margin:6px 4px 2px;padding-top:10px;border-top:1.5px dashed var(--line-2)}
+.bx-hide{display:inline-flex;align-items:center;gap:8px;height:42px;padding:0 14px 0 12px;border-radius:999px;border:2px solid rgba(43,34,51,.2);background:var(--card);font-weight:800;font-size:13px;color:var(--ink);cursor:pointer;white-space:nowrap}
+.bx-hide input{width:17px;height:17px;accent-color:var(--tc);margin:0}
+.bx-hide:has(input:checked){border-color:var(--ol,#2B2233)}
 .bx-bar .seen-all{flex-basis:100%;margin:0;height:36px}
 .se-filt{display:flex;gap:6px;flex-wrap:wrap;margin:0 0 16px}
 .se-filt .bx-dot.all{display:inline-flex;align-items:center;gap:5px;height:42px}
@@ -903,7 +905,8 @@ button.rw:hover{transform:translateY(-2px)}
   .bx-dots{width:100%;justify-content:space-between;flex-wrap:nowrap;gap:0}
   .bx-dot{width:36px;height:36px;flex:none}
   .bx-dot.all{padding:0 9px;font-size:18px}
-  .bx-tools{width:100%}
+  .bx-tools{width:100%;flex-wrap:wrap}
+  .bx-hide{order:3;width:100%;justify-content:center}
   .filt-menu{left:auto;right:0}
   .bx-q{flex:1}
   .bx-q input,.bx-q input:focus,.bx-q.on input{width:100%;cursor:text}
@@ -6106,12 +6109,12 @@ function viewCollection(){
   const filters = ui.tab==="defis"||ui.tab==="series"||ui.tab==="pedia" ? "" : `<div class="bx-bar">
     <div class="bx-dots" role="group" aria-label="Filtrer par taille"><button class="bx-dot all" data-action="ftype" data-type="all" aria-pressed="${ui.type==="all"}">Toutes</button>${TK.map(sizeDot).join("")}</div>
     <div class="bx-tools">
+      ${ui.tab==="album" && show==="all" ? `<label class="bx-hide"><input type="checkbox" id="f-hide" ${ui.hideMissing?"checked":""}> Masquer les billes à trouver</label>` : ""}
       <label class="bx-q${ui.q?" on":""}"><span class="cs-ic">${ic("search",17)}</span><input type="search" id="col-q" placeholder="${ui.tab==="billes"?"Galaxie, Azur…":"Galaxie, Opaline…"}" value="${esc(ui.q||"")}" aria-label="Chercher un décor" autocomplete="off" spellcheck="false">${ui.q?`<button class="cs-x" data-action="col-q-clear" aria-label="Effacer la recherche">×</button>`:""}</label>
       ${ui.tab==="billes"&&show!=="secret"&&show!=="dups"&&show!=="beta"?`<select id="f-sort" class="bx-sel" aria-label="Trier">${[["recent","Plus récentes"],["size","Plus grosses"],["decor","Par décor"],["rar","Décors rares"],["color","Par coloris"]].map(([k,l])=>`<option value="${k}"${(ui.sort||"recent")===k?" selected":""}>${l}</option>`).join("")}</select>`:""}
       <details class="bx-filt"><summary class="${show!=="all"?"on":""}">${ic("layers",15)} ${show==="all" ? "Filtrer" : esc(curShow[1])}</summary>
         <div class="filt-menu">
           ${SHOW.map(([k,label,icon,f])=>`<button class="filt-it" data-action="show" data-show="${k}" aria-pressed="${show===k}">${k==="shiny"?SPARK:icon?ic(icon,15):ic("check",15)}<span>${k==="all"?"Tout afficher":label}</span>${f?`<small>${k==="secret"?`${S.specs.filter(x=>SECRETS[x.secret]&&inType(x)).length}/${Object.values(SECRETS).filter(X=>ui.type==="all"||X.type===ui.type).length}`:count(f)}</small>`:""}</button>`).join("")}
-          ${ui.tab==="album"?`<label class="check filt-hide"><input type="checkbox" id="f-hide" ${ui.hideMissing?"checked":""}> Masquer les billes à trouver</label>`:""}
         </div></details>
     </div>
     ${show==="new" && nUnseen ? `<button class="btn btn-ghost seen-all" data-action="seen-all">${ic("check",16)} Tout marquer comme vu (${nUnseen})</button>` : ""}

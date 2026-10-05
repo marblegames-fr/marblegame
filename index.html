@@ -897,7 +897,10 @@ button.rw:hover{transform:translateY(-2px)}
 .cahier-page .m-card .new{top:8px;right:8px;width:12px;height:12px;padding:0;font-size:0;border:2px solid #fff;box-shadow:0 0 0 1.5px #E5484D}
 .cahier-page .m-card.missing{opacity:.78;transform:scale(.94);box-shadow:none}
 .cahier-page .m-card.missing:hover{opacity:1;transform:scale(.97)}
-.cahier-page .m-card.missing small{display:none}
+.cahier-page .m-card.missing:not(.secret-card) small{display:none}
+/* les billes secrètes pas encore trouvées gardent leur indice, bien lisible */
+.cahier-page .m-card.secret-card{opacity:1;transform:none;background:var(--card);border-style:dashed}
+.cahier-page .m-card.secret-card small{color:var(--ink-2);font-size:12px}
 .cahier-page .m-card b{font-size:13px}
 .cahier-page .type-block{margin-bottom:22px}
 @media (max-width:560px){

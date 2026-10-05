@@ -3469,6 +3469,12 @@ const Sound = (()=>{
       }
       const n=2+Math.round(Math.random()*3*k);
       for(let i=0;i<n;i++) clack(t+Math.random()*.13,(.35+Math.random()*.4)*k,.9+Math.random()*.6,muffle); },
+    // une page de cahier qu'on tourne : un froissement de papier qui balaie, quelques craquements, puis la page qui retombe
+    page(){ if(!init()) return; const t=now(), v=.55;
+      env(noise(t,.26,[{type:"bandpass",f:700,f2:3400,Q:.7}]),t,.16*v,.07,.19);
+      env(noise(t+.03,.2,[{type:"highpass",f:2500}]),t+.03,.05*v,.04,.15);
+      for(let i=0;i<4;i++){ const c=t+.03+Math.random()*.18; env(noise(c,.012,[{type:"highpass",f:4000}]),c,(.05+Math.random()*.05)*v,.001,.01) }
+      env(noise(t+.22,.09,[{type:"lowpass",f:1400,f2:350}]),t+.22,.13*v,.004,.08); },
     whoosh(){ if(!init()) return; const t=now();
       env(noise(t,.4,[{type:"bandpass",f:300,f2:3500,Q:1.2}]),t,.5,.12,.28);
       osc(t+.3,"sine",220,.35,.002,.12,null,70); },
@@ -11523,6 +11529,7 @@ document.addEventListener("click", e=>{
     case "jr-filt": ui.jf = t.dataset.f; renderView(); break;
     case "cl-portee": ui.clPortee = t.dataset.p; cour.classement = null; courRefresh("classement"); renderView(); break;
     case "tab": if(t.dataset.tab==="defis"){ closeModal(); go("succes"); break }
+      if(ui.view==="collection" && ui.tab!==t.dataset.tab) Sound.page();
       ui.tab=t.dataset.tab; closeModal(); if(ui.view!=="collection") go("collection"); else renderView(); break;
     case "ftype": ui.type=t.dataset.type; renderView(); break;
     case "show": ui.show=t.dataset.show; renderView(); break;

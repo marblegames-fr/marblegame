@@ -1239,6 +1239,7 @@ body.vit-dragging,body.vit-dragging *{cursor:grabbing!important;user-select:none
 .game-stage.pachi-stage canvas{width:100%;height:auto;aspect-ratio:540/700;border-radius:22px;display:block;box-shadow:0 24px 50px -18px rgba(120,40,200,.55)}
 .pachi-panel ~ aside .rewards-list b{white-space:nowrap}
 .pachi-btns{display:flex;gap:10px;flex-wrap:wrap;justify-content:center;margin-top:14px}
+.pachi-ball{flex-basis:100%;display:flex;align-items:center;justify-content:center;gap:6px;font-size:12.5px;font-weight:700;color:var(--ink-2)}
 .pachi-n{flex-basis:100%;text-align:center;font-size:12.5px;font-weight:700;color:var(--ink-2)}
 .pachi-win{position:absolute;left:50%;top:20%;translate:-50% -50%;display:grid;justify-items:center;gap:4px;padding:16px 26px;border-radius:18px;background:rgba(20,12,30,.86);color:#fff;text-align:center;box-shadow:0 20px 40px -10px rgba(0,0,0,.6);animation:ask-in .25s ease-out}
 .pachi-win b{font-family:var(--display);font-weight:400;font-size:34px;color:#FFE14D}
@@ -4597,19 +4598,56 @@ function draw2D(s,size){
   return c;
 }
 const urlCache = new Map();
+const urlKey = (s,size) => `${s.seed}|${s.type}|${s.family}|${s.pal}|${s.shiny}@${size}`;
 function marbleURL(s,size=160){
-  const k=`${s.seed}|${s.type}|${s.family}|${s.pal}|${s.shiny}@${size}`;
+  const k=urlKey(s,size);
   if(urlCache.has(k)) return urlCache.get(k);
   let u;
   try{ mainGL.draw(s,size); u=mainGL.cv.toDataURL("image/png") }catch(e){ u=draw2D(s,size).toDataURL("image/png") }
+  // (5 octobre 2026) une adresse blob: courte plutôt que l'image entière en base64 : le HTML des grandes grilles reste léger
+  try{ const bin=atob(u.slice(u.indexOf(",")+1)), a=new Uint8Array(bin.length); for(let i=0;i<bin.length;i++) a[i]=bin.charCodeAt(i);
+    u=URL.createObjectURL(new Blob([a],{type:"image/png"})) }catch(e){}
   urlCache.set(k,u); return u;
+}
+// b) les billes pas encore dessinées le sont seulement quand elles arrivent à l'écran, quelques-unes par image (la page reste fluide)
+const LAZY_PX = "data:image/gif;base64,R0lGODlhAQABAAAAACH5BAEKAAEALAAAAAABAAEAAAICTAEAOw==";
+const lazyTodo = new Map(); let lazyN = 0, lazyQ = [], lazyBusy = false, lazyTok = 0;
+// (un jeton plutôt que l'identifiant de requestAnimationFrame : ailleurs, un cancelAnimationFrame d'un vieil identifiant pouvait l'annuler par erreur)
+function lazyRun(){
+  if(lazyBusy || !lazyQ.length) return;
+  lazyBusy = true; const tok = ++lazyTok;
+  const step = () => { if(tok!==lazyTok) return; lazyTok++; lazyBusy = false; const t0 = performance.now();
+    while(lazyQ.length && performance.now()-t0 < 12){ const im = lazyQ.shift(), j = lazyTodo.get(im.dataset.mq); lazyTodo.delete(im.dataset.mq);
+      if(j && im.isConnected){ im.src = marbleURL(j.s, j.size); im.removeAttribute("data-mq") } }
+    lazyRun() };
+  requestAnimationFrame(step); setTimeout(step, 120);
+}
+// les images en attente qui sont à l'écran (ou presque) : on les regarde après chaque changement de la page et à chaque défilement
+// (un simple balayage plutôt qu'IntersectionObserver, qui ratait des images avec le zoom de la page)
+let lazyScanTok = 0;
+function lazyScan(){
+  const H = innerHeight, W = innerWidth;
+  document.querySelectorAll("img[data-mq]:not([data-mqq])").forEach(im=>{ const r = im.getBoundingClientRect();
+    if(r.width && r.bottom>-400 && r.top<H+400 && r.right>-200 && r.left<W+200){ im.setAttribute("data-mqq",""); lazyQ.push(im) } });
+  lazyRun();
+}
+const lazySoon = () => { const tok = ++lazyScanTok; setTimeout(()=>{ if(tok===lazyScanTok) lazyScan() }, 60) };
+setInterval(()=>{ if(lazyTodo.size) lazyScan() }, 1000);   // filet de sécurité
+new MutationObserver(lazySoon).observe(document.documentElement, {childList:true, subtree:true});
+addEventListener("scroll", lazySoon, {passive:true, capture:true});
+addEventListener("resize", lazySoon);
+function lazySrc(s,size){
+  const k = urlKey(s,size);
+  if(urlCache.has(k)) return `src="${marbleURL(s,size)}"`;
+  const id = "m"+(++lazyN); lazyTodo.set(id, {s:{...s}, size}); if(lazyTodo.size>4000) lazyTodo.delete(lazyTodo.keys().next().value);
+  return `src="${LAZY_PX}" data-mq="${id}"`;
 }
 // les Lumineuses rayonnent : lueur CSS qui suit la forme ronde de la bille
 const lumAttr = s => s.shiny===3 ? ` data-lum style="--lc:${PALETTES[s.pal][2]}"` : s.shiny===2 ? " data-gold" : "";
 function mImg(s,size=160,px,alt){
   const w = Math.round(px ?? size/2), lum = s.shiny===3;
   // hauteur automatique : si la case est plus étroite que prévu, la bille rétrécit sans devenir ovale
-  return `<img src="${marbleURL(s,size)}" alt="${alt===undefined?esc(specName(s)):alt}" width="${w}" height="${w}"${lum?" data-lum":s.shiny===2?" data-gold":""} style="width:${w}px;height:auto;aspect-ratio:1${lum?`;--lc:${PALETTES[s.pal][2]}`:""}">`;
+  return `<img ${lazySrc(s,size)} alt="${alt===undefined?esc(specName(s)):alt}" width="${w}" height="${w}"${lum?" data-lum":s.shiny===2?" data-gold":""} style="width:${w}px;height:auto;aspect-ratio:1${lum?`;--lc:${PALETTES[s.pal][2]}`:""}">`;
 }
 // bille "fantôme" pour les emplacements vides
 // La bille d'exemple : partout où on illustre une bille qui n'est pas dans ta boîte, c'est un Œil-de-chat Azur
@@ -7908,6 +7946,8 @@ const MAMM_SHINY = SHINY_RATE*10;
 // 20 billes achetées par jour au plus (5 octobre 2026, même limite dans public.pachinko) : on joue, mais on ne farme pas les Mammouths
 const PACHI_MAX = 20;
 const pachiBought = () => playedToday().pachiN || 0;
+// la bille du Plinko se choisit une fois par jour (bille du jour et billes achetées) : la fenêtre ne revient pas avant minuit
+const pachiBall = () => { const id = playedToday().pachiBall; return (id && specById(id)) || null };
 const PACHI_PRICE = 150, PACHI_ROWS = PACHI.length-1, PW = 540, PH = 700, PACHI_GAP = 47;
 // les cases : leur haut et leur hauteur (elles s'arrêtent avant le cadre doré et ses ampoules)
 const PACHI_Y = PH-114, PACHI_H = 92;
@@ -7927,6 +7967,7 @@ function viewPachinko(){
         <button class="btn btn-yellow btn-xl" data-action="pachi-go" data-pay="0" ${free?"":"disabled"}>${ic("gift",18)} ${free?"Lâcher ma bille du jour":"Bille du jour lâchée"}</button>
         ${pachiBought()>=PACHI_MAX ? `<button class="btn btn-ghost btn-xl" disabled>${ic("clock",18)} Reviens demain !</button>`
           : `<button class="btn ${free?"btn-ghost":"btn-yellow btn-xl"}" data-action="pachi-go" data-pay="1" ${S.jetons<PACHI_PRICE?"disabled":""}>Une bille de plus · <span class="price">${COIN}${PACHI_PRICE}</span></button>`}
+        ${pachiBall() ? `<small class="pachi-ball">${mImg(pachiBall(),96,26,"")} Ta bille du jour : <b>${esc(specName(pachiBall()))}</b></small>` : ""}
         <small class="pachi-n">${pachiBought()>=PACHI_MAX ? `Tu as lâché tes ${PACHI_MAX} billes du jour · de nouvelles dans <b data-quest-timer>${untilMidnight()}</b>` : `Billes achetées aujourd'hui : <b>${pachiBought()} / ${PACHI_MAX}</b>`}</small>
       </div>
     </section>
@@ -8224,7 +8265,7 @@ async function pachiGo(pay){
   document.querySelectorAll('[data-action="pachi-go"]').forEach(b=>b.disabled = true);
   const w0 = document.getElementById("p-win"); if(w0) w0.hidden = true;
   pachi.land = null;
-  pachi.ball = {spec:activeSpec(), path:pachiPath(slot), t0:performance.now()+150, seg:-1, onEnd:()=>{
+  pachi.ball = {spec:pachiBall() || activeSpec(), path:pachiPath(slot), t0:performance.now()+150, seg:-1, onEnd:()=>{
     pachi.land = slot; pachi.landT = performance.now(); pachi.busy = false;
     give();
     pachiSparks(pachiSlotX(slot), PACHI_Y-4, cs.j===0 ? 10 : 50, cs.j===0 ? ["#8E8898"] : ["#FFE14D","#FF4FD8","#39E6FF","#7CE59A", cs.c], cs.j!==0);
@@ -8304,8 +8345,7 @@ function viewGames(){
 }
 // Avant de jouer (5 octobre 2026) : une fenêtre « Avec quelle bille tu joues ? », une fois par visite d'un mini-jeu.
 // On garde sa bille d'un clic, ou on en touche une autre, et la partie part tout de suite. Fermer la fenêtre garde la bille actuelle.
-const BALL_TIP = {tir:"Au Tir, une petite bille se faufile plus facilement entre les obstacles.",
-  pachinko:"Au Plinko, ta bille ne change que le look : les chances sont les mêmes pour toutes.",
+const BALL_TIP = {pachinko:"Au Plinko, tu choisis ta bille pour toute la journée : bille du jour et billes achetées. Elle ne change que le look, les chances sont les mêmes pour toutes.", tir:"Au Tir, une petite bille se faufile plus facilement entre les obstacles.",
   casse:"Au Casse-briques, un Boulet ou un Mammouth tape deux fois plus fort sur les briques."};
 function openBallPick(next){
   const el = document.getElementById("modal"), act = activeSpec(), list = [...S.specs].sort(tierSort);
@@ -8319,7 +8359,7 @@ function openBallPick(next){
   el.hidden = false; el.querySelector(".bg-cur")?.focus();
 }
 // la fenêtre s'ouvre une fois par visite du jeu ; renvoie true si elle vient de s'ouvrir (l'action attend le choix)
-const needBall = next => { if(ui.ballPicked===ui.view || !S.specs.length) return false; openBallPick(next); return true };
+const needBall = (next, force) => { if((!force && ui.ballPicked===ui.view) || !S.specs.length) return false; openBallPick(next); return true };
 // Changer de bille en pleine partie : la nouvelle bille prend la place de l'ancienne tout de suite, sans recharger le jeu
 // (on ne perd ni un coup ni sa partie). Renvoie false si on n'est pas dans un mini-jeu (la page est alors redessinée).
 function swapGameBall(spec){
@@ -11503,9 +11543,10 @@ document.addEventListener("click", e=>{
     case "evf-f": ui.evfF = t.dataset.f || ""; renderView(); break;
     case "craft-f": ui.craftF = {...(ui.craftF||{}), rar:t.dataset.v}; renderView(); break;
     case "craft-ev": ui.confTab = "evenement"; renderView(); break;
-    case "pachi-go": { const pay = t.dataset.pay==="1"; if(needBall(()=>pachiGo(pay))) break; } pachiGo(t.dataset.pay==="1"); break;
+    case "pachi-go": { const pay = t.dataset.pay==="1"; if(!pachiBall() && needBall(()=>pachiGo(pay), true)) break; } pachiGo(t.dataset.pay==="1"); break;
     case "ball-go": {
-      if(t.dataset.id && t.dataset.id!==S.active){ S.active = t.dataset.id; save(); renderTop(); renderNav(); swapGameBall(activeSpec()) }
+      if(ui.view==="pachinko"){ playedToday().pachiBall = t.dataset.id || S.active; save() }   // au Plinko : la bille du jour, sans changer la bille des autres jeux
+      else if(t.dataset.id && t.dataset.id!==S.active){ S.active = t.dataset.id; save(); renderTop(); renderNav(); swapGameBall(activeSpec()) }
       closeModal(); const n = ui.pickNext; ui.pickNext = null; Sound.tap(0,.6); if(n) setTimeout(n, 60); break;
     }
     case "conf-filter": ui.confF=t.dataset.f; renderView(); break;

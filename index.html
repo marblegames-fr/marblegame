@@ -6013,7 +6013,7 @@ function viewCollection(){
       }).join("") + EVENT_FAMS.map(f=>evCard(t,f)).join("") + SEASON_FAMS.map(f=>seCard(t,f)).join("");
       return `<section class="type-block">
         <div class="type-head">${typePill(t,true)}<h2>${TYPES[t].label}</h2><span class="mm">${TYPES[t].mm} mm</span>
-          <span class="prog">${have} / ${N_DECORS} cases<span class="bar"><i class="${have===N_DECORS?"done":""}" style="width:${have/N_DECORS*100}%"></i></span></span>
+          <span class="prog">${have} / ${N_DECORS} décors<span class="bar"><i class="${have===N_DECORS?"done":""}" style="width:${have/N_DECORS*100}%"></i></span></span>
           <p class="desc">${TYPES[t].desc}</p></div>
         ${cards.trim()?`<div class="card-grid">${cards}</div>`:`<p class="empty">${qw.length?"Aucun décor ne correspond à ta recherche dans cette taille.":show==="all"?`Aucune ${TYPES[t].label.toLowerCase()} pour l'instant.`:"Rien avec ce filtre dans cette taille."}</p>`}
       </section>`;
@@ -6922,8 +6922,8 @@ const pullScore = s => s.shiny || s.secret ? 6 : tierOf(s);
 const decorRar = s => extraFam(s.family) ? -1 : FAMILIES[s.family].rar;
 // le suspense tient compte des deux : un décor épique compte une taille de plus, un légendaire deux (un Calot Galaxie tremble comme un Mammouth)
 const dramaOf = s => Math.max(pullScore(s), Math.min(5, tierOf(s) + (decorRar(s)===4 ? 2 : decorRar(s)===3 ? 1 : 0)));
-// ce qui est nouveau se voit d'un coup d'œil : une pastille sur la bille (étoile dorée = nouvelle case, goutte = nouveau coloris), rien pour un doublon
-const newBadge = ({isNew, newColor, evNew}) => isNew||evNew ? `<span class="nbadge case" title="Nouvelle case dans ta boîte" aria-label="Nouvelle case">${ic("star",15,2.6)}</span>`
+// ce qui est nouveau se voit d'un coup d'œil : une pastille sur la bille (étoile dorée = nouveau décor dans cette taille, goutte = nouveau coloris), rien pour un doublon
+const newBadge = ({isNew, newColor, evNew}) => isNew||evNew ? `<span class="nbadge case" title="Nouveau décor dans cette taille" aria-label="Nouveau décor">${ic("star",15,2.6)}</span>`
   : newColor ? `<span class="nbadge col" title="Nouveau coloris" aria-label="Nouveau coloris">${ic("drop",14,2.6)}</span>` : "";
 const decStamp = s => { const r = decorRar(s); return r>=3 ? `<span class="dec-stamp${r===4?" leg":""}" style="--dc:${DECOR_RAR[r].c}">${ic("star",12,2.6)} <span class="ds-w">Décor </span>${DECOR_RAR[r].name.toLowerCase()}</span>` : "" };
 const scoreCol = k => k>=6 ? "#FFD27A" : RARITY[k].c;
@@ -7231,7 +7231,7 @@ function finishReveal(){
     again = freeReady() ? `<button class="btn btn-yellow" data-action="open-next-free">Ouvrir le suivant (${freeStock()} en stock)</button>` : `<button class="btn btn-yellow" data-action="to-bags">Voir les sachets payants</button>`;
   }
   const nc = results.filter(r=>r.isNew||r.evNew).length, ncol = results.filter(r=>!r.isNew&&!r.evNew&&r.newColor).length;
-  const nbLeg = nc||ncol ? `<span class="nb-leg">${nc?`<span><span class="nbadge case">${ic("star",12,2.6)}</span>${nc} nouvelle${nc>1?"s":""} case${nc>1?"s":""}</span>`:""}${ncol?`<span><span class="nbadge col">${ic("drop",11,2.6)}</span>${ncol} nouveau${ncol>1?"x":""} coloris</span>`:""}</span>` : "";
+  const nbLeg = nc||ncol ? `<span class="nb-leg">${nc?`<span><span class="nbadge case">${ic("star",12,2.6)}</span>${nc} nouveau${nc>1?"x":""} décor${nc>1?"s":""}</span>`:""}${ncol?`<span><span class="nbadge col">${ic("drop",11,2.6)}</span>${ncol} nouveau${ncol>1?"x":""} coloris</span>`:""}</span>` : "";
   document.getElementById("ov-actions").innerHTML = `${nbLeg}<span class="ov-xp" style="flex-basis:100%;justify-content:center">${ic("ticket",18)} +${ovState.pxp} XP de saison</span>${again}<button class="btn btn-ghost" data-action="to-collection">Voir ma boîte à billes</button>`;
 }
 function closeOv(quiet){

@@ -11503,7 +11503,7 @@ document.addEventListener("click", e=>{
     case "evf-f": ui.evfF = t.dataset.f || ""; renderView(); break;
     case "craft-f": ui.craftF = {...(ui.craftF||{}), rar:t.dataset.v}; renderView(); break;
     case "craft-ev": ui.confTab = "evenement"; renderView(); break;
-    case "pachi-go": if(needBall(()=>t.click())) break; pachiGo(t.dataset.pay==="1"); break;
+    case "pachi-go": { const pay = t.dataset.pay==="1"; if(needBall(()=>pachiGo(pay))) break; } pachiGo(t.dataset.pay==="1"); break;
     case "ball-go": {
       if(t.dataset.id && t.dataset.id!==S.active){ S.active = t.dataset.id; save(); renderTop(); renderNav(); swapGameBall(activeSpec()) }
       closeModal(); const n = ui.pickNext; ui.pickNext = null; Sound.tap(0,.6); if(n) setTimeout(n, 60); break;
@@ -11724,7 +11724,7 @@ document.addEventListener("click", e=>{
     // rejouer pour le plaisir, une fois la partie du jour finie : un terrain neuf, sans bonbecs ni sauvegarde de la partie
     case "game-fun": {
       const k = t.dataset.g; if(!dayGame(k)?.done) break;
-      if(needBall(()=>t.click())) break;
+      if(needBall(()=>document.querySelector(`[data-action="${t.dataset.action}"][data-g="${k}"]`)?.click())) break;
       if(k==="casse"){ initCasse(); document.getElementById("c-result").hidden = true; cb.done = false; cb.live = true }
       else { initArena(k); document.getElementById("a-result").hidden = true; arena.done = false; updArenaHud(); if(arena.turn==="opp") setTimeout(aiShot, 900) }
       Sound.tap(0,.6); toast("Partie pour le plaisir : elle ne rapporte rien, mais elle compte pour la gloire !");
@@ -11732,7 +11732,7 @@ document.addEventListener("click", e=>{
     }
     case "game-go": {
       const k = t.dataset.g;
-      if(needBall(()=>t.click())) break;
+      if(needBall(()=>document.querySelector(`[data-action="${t.dataset.action}"][data-g="${k}"]`)?.click())) break;
       if(!gameBegin(k) && !gameLive(k)){ renderView(); break }
       if(k==="casse"){ document.getElementById("c-result").hidden = true; cb.done = false; cb.live = true; cbSnap(false) }
       else { document.getElementById("a-result").hidden = true; arena.done = false; updArenaHud(); snapSave(null) }

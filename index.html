@@ -799,7 +799,7 @@ button.rw:hover{transform:translateY(-2px)}
     repeating-linear-gradient(180deg,transparent 0 31px,#A9C8EC 31px 32px),repeating-linear-gradient(180deg,transparent 0 7px,#DCE8F6 7px 8px),var(--paper);
   border:3px solid var(--ol);border-radius:6px 20px 20px 6px;
   box-shadow:7px 7px 0 -3px #F4ECD9,7px 7px 0 0 var(--ol),14px 14px 0 -3px #EBE0C6,14px 14px 0 0 var(--ol),20px 26px 34px -18px rgba(0,0,0,.55)}
-.cahier-page :is(.pill,.type-box){--rbg:var(--rb);--rtx:var(--rc)}
+.cahier-page :is(.pill,.type-box):not(#_){--rbg:var(--rb);--rtx:var(--rc)}
 .cp-title{position:relative;display:flex;align-items:baseline;gap:10px 16px;flex-wrap:wrap;margin:-4px 0 14px}
 .cp-title h2{margin:0;font-family:var(--hand);font-size:44px;font-weight:700;line-height:1;color:var(--ol);
   background:linear-gradient(transparent 58%,color-mix(in srgb,var(--tc) 45%,transparent) 58% 88%,transparent 88%);padding:0 6px;transform:rotate(-1.5deg)}
@@ -807,6 +807,71 @@ button.rw:hover{transform:translateY(-2px)}
 /* le bout de scotch en haut de la page */
 .cahier-page::before{content:"";position:absolute;top:-15px;right:56px;width:96px;height:28px;background:color-mix(in srgb,var(--tc) 40%,rgba(255,255,255,.55));border:1.5px dashed rgba(43,34,51,.25);transform:rotate(4deg);opacity:.9}
 .cahier-page .m-card{border:2px solid rgba(43,34,51,.16);box-shadow:0 3px 0 rgba(43,34,51,.12)}
+.sr-only{position:absolute;width:1px;height:1px;overflow:hidden;clip-path:inset(50%);white-space:nowrap}
+/* la barre d'outils : les tailles en petites billes, la loupe, « Filtrer ▾ » (et le tri dans Mes billes) */
+.bx-bar{display:flex;align-items:center;justify-content:space-between;gap:10px 14px;flex-wrap:wrap;margin:0 0 18px}
+.bx-dots{display:flex;align-items:center;gap:4px;flex-wrap:wrap}
+.bx-dot{display:grid;place-items:center;width:44px;height:44px;border-radius:50%;border:2.5px solid transparent;background:transparent;transition:transform .15s}
+.bx-dot:hover{transform:translateY(-2px)}
+.bx-dot[aria-pressed="true"]{border-color:var(--ol,#2B2233);background:#fff;box-shadow:0 3px 0 rgba(43,34,51,.2)}
+.bx-dot.all{width:auto;padding:0 14px;border-radius:999px;font-family:var(--hand);font-size:22px;font-weight:700;color:var(--ol,#2B2233);border-color:rgba(43,34,51,.2);background:#fff}
+.bx-dot.all[aria-pressed="true"]{background:var(--tc);border-color:var(--ol,#2B2233)}
+.bx-tools{display:flex;align-items:center;gap:8px}
+.bx-q{position:relative;display:flex;align-items:center}
+.bx-q .cs-ic{position:absolute;left:12px;color:var(--ink-2);display:grid;pointer-events:none}
+.bx-q input{width:42px;height:42px;padding:0 0 0 40px;border-radius:999px;border:2px solid rgba(43,34,51,.2);background:#fff;color:var(--ink);font:inherit;font-weight:700;cursor:pointer;transition:width .25s}
+.bx-q input::placeholder{color:transparent}
+.bx-q input:focus,.bx-q.on input{width:min(230px,52vw);padding-right:30px;cursor:text;outline:none;border-color:var(--ol,#2B2233)}
+.bx-q input:focus::placeholder{color:var(--muted)}
+.bx-q input::-webkit-search-cancel-button{display:none}
+.bx-q .cs-x{position:absolute;right:6px;width:26px;height:26px;border-radius:50%;font-size:17px;font-weight:900;color:var(--ink-2);background:var(--panel-2)}
+.bx-sel{height:42px;padding:0 10px;border-radius:999px;border:2px solid rgba(43,34,51,.2);background:#fff;color:var(--ink);font:inherit;font-weight:800;font-size:13px}
+.bx-filt{position:relative}
+.bx-filt summary{list-style:none;display:flex;align-items:center;gap:6px;height:42px;padding:0 14px;border-radius:999px;border:2px solid rgba(43,34,51,.2);background:#fff;font-weight:800;font-size:13.5px;cursor:pointer;user-select:none;white-space:nowrap}
+.bx-filt summary::-webkit-details-marker{display:none}
+.bx-filt summary::after{content:"";width:7px;height:7px;margin-left:2px;border-right:2px solid currentColor;border-bottom:2px solid currentColor;transform:translateY(-2px) rotate(45deg)}
+.bx-filt summary.on{background:var(--tc);border-color:var(--ol,#2B2233)}
+.bx-filt summary .n{display:grid;place-items:center;min-width:19px;height:19px;border-radius:999px;background:var(--ol,#2B2233);color:#fff;font-size:11px}
+.filt-menu{position:absolute;left:0;top:calc(100% + 8px);z-index:20;width:250px;padding:8px;border-radius:16px;background:#fff;border:2.5px solid var(--ol,#2B2233);box-shadow:5px 6px 0 rgba(43,34,51,.25)}
+.filt-it{display:flex;align-items:center;gap:10px;width:100%;padding:9px 10px;border-radius:10px;font-weight:800;font-size:14px;text-align:left;color:var(--ink)}
+.filt-it span{flex:1}
+.filt-it svg{width:15px;height:15px;flex:none}
+.filt-it small{font-size:12px;font-weight:900;color:var(--muted)}
+.filt-it:hover{background:var(--panel-2)}
+.filt-it[aria-pressed="true"]{background:color-mix(in srgb,var(--tc) 30%,#fff)}
+.filt-hide{display:flex;margin:6px 4px 2px;padding-top:10px;border-top:1.5px dashed var(--line-2)}
+.bx-bar .seen-all{flex-basis:100%;margin:0;height:36px}
+/* les en-têtes de taille : une ligne écrite à la main */
+.th-line{display:flex;align-items:center;gap:12px;margin:4px 0 12px}
+.th-line h2{font-family:var(--hand);font-size:32px;font-weight:700;line-height:1;color:var(--ol,#2B2233);white-space:nowrap}
+.th-line .th-n{font-family:var(--hand);font-size:22px;color:#5B5470;white-space:nowrap}
+.th-line .bar{flex:1;max-width:220px;height:6px}
+.th-line .bar i{background:var(--rc)}
+/* les cartes allégées : la rareté en pastille, les coloris en barre fine, « Nouveau » en point rouge */
+.cahier-page .m-card .rar{position:absolute;top:10px;left:10px}
+.cahier-page .m-card .rar-t{display:none}
+.cahier-page .m-card .rar i{width:10px;height:10px}
+.cahier-page .m-card .shiny-mark{left:auto;right:9px;top:9px}
+.cahier-page .m-card .case-prog small{display:none}
+.cahier-page .m-card .case-prog .bar{height:4px}
+.cahier-page .m-card .new{top:8px;right:8px;width:12px;height:12px;padding:0;font-size:0;border:2px solid #fff;box-shadow:0 0 0 1.5px #E5484D}
+.cahier-page .m-card.missing{opacity:.6;transform:scale(.94);box-shadow:none}
+.cahier-page .m-card.missing:hover{opacity:1;transform:scale(.97)}
+.cahier-page .m-card.missing small{display:none}
+.cahier-page .m-card b{font-size:13px}
+.cahier-page .type-block{margin-bottom:22px}
+@media (max-width:560px){
+  .bx-bar{gap:10px}
+  .bx-dots{width:100%;justify-content:space-between;flex-wrap:nowrap;gap:0}
+  .bx-dot{width:36px;height:36px;flex:none}
+  .bx-dot.all{padding:0 9px;font-size:18px}
+  .bx-tools{width:100%}
+  .filt-menu{left:auto;right:0}
+  .bx-q{flex:1}
+  .bx-q input,.bx-q input:focus,.bx-q.on input{width:100%;cursor:text}
+  .bx-q input::placeholder{color:var(--muted)}
+  .th-line h2{font-size:27px}
+}
 .cahier-page .m-card:not(.missing){background:#fff}
 .cahier-page .bx-size{background:#fff;border-width:2px}
 @media (max-width:760px){
@@ -4655,7 +4720,7 @@ function partWarn(s){
    ===================================================================== */
 function typePill(t,solid){const r=TYPES[t];return `<span class="pill${solid?" solid":""}" style="--rc:${r.rc};--rb:${r.rb}">${r.label}</span>`}
 const SPARK = `<svg viewBox="0 0 12 12" aria-hidden="true"><path d="M6 0c.4 3 1.2 4.4 6 6-4.8 1.6-5.6 3-6 6-.4-3-1.2-4.4-6-6 4.8-1.6 5.6-3 6-6z" fill="currentColor"/></svg>`;
-const rarTag = f => { const R=DECOR_RAR[FAMILIES[f].rar]; return `<span class="rar" style="--rar:${R.c}"><i></i>${R.name}</span>` };
+const rarTag = f => { const R=DECOR_RAR[FAMILIES[f].rar]; return `<span class="rar" style="--rar:${R.c}" title="Décor ${R.name.toLowerCase()}"><i></i><span class="rar-t">${R.name}</span></span>` };
 // probabilité d'obtenir exactement ce format + décor + coloris (+ shiny) sur une bille d'un sachet
 function chanceOf(s, bag=FREE_BAG){
   if(!isBasePal(s.pal)) return 0;   // saison ou secrète : ne se tire pas dans les sachets
@@ -5913,13 +5978,13 @@ function viewSucces(){
    COLLECTION
    ===================================================================== */
 // la boîte à billes est un cahier : chaque page a son intercalaire de couleur, sur le côté (en haut sur téléphone)
-const CAHIER = [["album","#8A63D2","book","Album"],["billes","#5BAA4A","layers","Mes billes"],["series","#E8664F","trophy","Séries"],
-  ["beta","#D9A21B","star","Bêta"],["events","#D9548E","flag","Événements"],["pedia","#4C93C9","search","Billepedia"]];
+const CAHIER = [["album","#8A63D2","book","Album"],["billes","#5BAA4A","layers","Mes billes"],["series","#E8664F","trophy","Séries"],["pedia","#4C93C9","search","Billepedia"]];
 function viewCollection(){
   const slots = slotsOwned(), found = albumFound();
-  const shinyCount = S.specs.filter(s=>s.shiny).length;
-  const nFull = [...slots.values()].filter(l=>casePals(l)===BASE_PALS).length;
   if(ui.tab==="defis") ui.tab = "album";   // les défis ont leur propre page (Succès)
+  // Événements et Bêta ne sont plus des pages du cahier, mais des filtres (de l'Album et de Mes billes)
+  if(ui.tab==="events"){ ui.tab = "album"; ui.show = "event" }
+  if(ui.tab==="beta"){ ui.tab = "billes"; ui.show = "beta" }
   const types = TK.filter(t=>ui.type==="all"||ui.type===t);
   // « Afficher » : le même filtre pour l'Album (par case) et pour Mes billes (bille par bille)
   const show = ui.show || "all";
@@ -5936,21 +6001,29 @@ function viewCollection(){
     ["season","Passe de saison","ticket",isSeason],
     ["event","Événement","flag",x=>!!eventOf(x)],
     ["secret","Secrètes","lock",x=>SECRETS[x.secret]],
+    ...(BETA.open || betaOwned().length ? [["beta","Bêta","star",isBeta]] : []),
   ];
   const showFn = (SHOW.find(o=>o[0]===show)||SHOW[0])[3];
   // recherche d'un décor (et d'un coloris dans « Mes billes ») en texte, sans accents ni majuscules
   const qw = fold(ui.q||"").trim().split(/\s+/).filter(Boolean);
   const qOK = txt => !qw.length || qw.every(w=>fold(txt).includes(w));
-  const filters = ui.tab==="defis"||ui.tab==="series" ? "" : `<div class="col-search"><span class="cs-ic">${ic("search",17)}</span>
-    <input type="search" id="col-q" placeholder="${ui.tab==="billes"?"Chercher un décor ou un coloris : Galaxie, Azur…":"Chercher un décor : Galaxie, Opaline…"}" value="${esc(ui.q||"")}" aria-label="Chercher un décor" autocomplete="off" spellcheck="false">
-    ${ui.q?`<button class="cs-x" data-action="col-q-clear" aria-label="Effacer la recherche">×</button>`:""}</div>
-  <div class="col-filters">
-    <div class="seg" role="group" aria-label="Afficher"><span class="f-lbl">Afficher</span>
-      ${SHOW.map(([k,label,icon,f])=>`<button class="chip" data-action="show" data-show="${k}" aria-pressed="${show===k}">${k==="shiny"?SPARK:icon?ic(icon,14):""}${label}${f?` <span class="n">${k==="secret"?`${S.specs.filter(x=>SECRETS[x.secret]&&inType(x)).length}/${Object.values(SECRETS).filter(X=>ui.type==="all"||X.type===ui.type).length}`:count(f)}</span>`:""}</button>`).join("")}
+  // la barre d'outils (allégée le 5 octobre 2026) : tout sur une ligne
+  const nUnseen = S.unseen.filter(id=>specById(id)).length, curShow = SHOW.find(o=>o[0]===show) || SHOW[0];
+  const sizeDot = t => { const n = ui.tab==="billes" ? S.specs.filter(s=>s.type===t).length : DECOR_IDS.filter(f=>slots.has(t+"|"+f)).length;
+    const lbl = `${TYPES[t].label} · ${ui.tab==="billes" ? `${n} bille${n>1?"s":""}` : `${n} / ${N_DECORS} décors`}`;
+    return `<button class="bx-dot" style="${tstyle(t)}" data-action="ftype" data-type="${ui.type===t?"all":t}" aria-pressed="${ui.type===t}" title="${lbl}" aria-label="${lbl}">${mImg({seed:hash("pedia-fmt"+t), type:t, family:0, pal:PEDIA_PAL, shiny:0},96,Math.round(16*scaleOf(t)+14),"")}</button>` };
+  const filters = ui.tab==="defis"||ui.tab==="series"||ui.tab==="pedia" ? "" : `<div class="bx-bar">
+    <div class="bx-dots" role="group" aria-label="Filtrer par taille"><button class="bx-dot all" data-action="ftype" data-type="all" aria-pressed="${ui.type==="all"}">Toutes</button>${TK.map(sizeDot).join("")}</div>
+    <div class="bx-tools">
+      <label class="bx-q${ui.q?" on":""}"><span class="cs-ic">${ic("search",17)}</span><input type="search" id="col-q" placeholder="${ui.tab==="billes"?"Galaxie, Azur…":"Galaxie, Opaline…"}" value="${esc(ui.q||"")}" aria-label="Chercher un décor" autocomplete="off" spellcheck="false">${ui.q?`<button class="cs-x" data-action="col-q-clear" aria-label="Effacer la recherche">×</button>`:""}</label>
+      ${ui.tab==="billes"&&show!=="secret"&&show!=="dups"&&show!=="beta"?`<select id="f-sort" class="bx-sel" aria-label="Trier">${[["recent","Plus récentes"],["size","Plus grosses"],["decor","Par décor"],["rar","Décors rares"],["color","Par coloris"]].map(([k,l])=>`<option value="${k}"${(ui.sort||"recent")===k?" selected":""}>${l}</option>`).join("")}</select>`:""}
+      <details class="bx-filt"><summary class="${show!=="all"?"on":""}">${ic("layers",15)} ${show==="all" ? "Filtrer" : esc(curShow[1])}</summary>
+        <div class="filt-menu">
+          ${SHOW.map(([k,label,icon,f])=>`<button class="filt-it" data-action="show" data-show="${k}" aria-pressed="${show===k}">${k==="shiny"?SPARK:icon?ic(icon,15):ic("check",15)}<span>${k==="all"?"Tout afficher":label}</span>${f?`<small>${k==="secret"?`${S.specs.filter(x=>SECRETS[x.secret]&&inType(x)).length}/${Object.values(SECRETS).filter(X=>ui.type==="all"||X.type===ui.type).length}`:count(f)}</small>`:""}</button>`).join("")}
+          ${ui.tab==="album"?`<label class="check filt-hide"><input type="checkbox" id="f-hide" ${ui.hideMissing?"checked":""}> Masquer les billes à trouver</label>`:""}
+        </div></details>
     </div>
-    ${(()=>{ const t = `${ui.tab==="album"&&show==="all"?`<label class="check"><input type="checkbox" id="f-hide" ${ui.hideMissing?"checked":""}> Masquer les billes à trouver</label>`:""}
-      ${ui.tab==="billes"&&show!=="secret"&&show!=="dups"?`<label class="sort">Trier <select id="f-sort">${[["recent","Plus récentes"],["size","Plus grosses"],["decor","Par décor"],["rar","Décors les plus rares"],["color","Par coloris"]].map(([k,l])=>`<option value="${k}"${(ui.sort||"recent")===k?" selected":""}>${l}</option>`).join("")}</select></label>`:""}
-      ${S.unseen.some(id=>specById(id))?`<button class="btn btn-ghost seen-all" data-action="seen-all">${ic("check",16)} Tout marquer comme vu (${S.unseen.filter(id=>specById(id)).length})</button>`:""}`.trim(); return t ? `<div class="f-right">${t}</div>` : "" })()}
+    ${show==="new" && nUnseen ? `<button class="btn btn-ghost seen-all" data-action="seen-all">${ic("check",16)} Tout marquer comme vu (${nUnseen})</button>` : ""}
   </div>`;
   const dupsBar = () => { const d = recyclableDups(), v = d.reduce((a,x)=>a+recycleValue(x),0);
     return `<section class="panel recycle-bar">
@@ -5972,7 +6045,7 @@ function viewCollection(){
     if(!qOK(F.name)) return "";
     if(showFn && show!=="event" && !list.some(showFn)) return "";
     if(!list.length){ if(show!=="event") return "";
-      return `<button class="m-card missing" data-action="tab" data-tab="events" aria-label="${TYPES[t].label} ${F.name} : pas encore trouvée"><span class="ball">${mImg(ghost(t,f),160,Math.round(84*scaleOf(t)+6),"")}</span><b>${F.name}</b><span class="rar" style="--rar:${E.color}"><i></i>Événement</span><small>${eventLive(E)?"À trouver":"Événement terminé"}</small></button>` }
+      return `<button class="m-card missing" data-action="show" data-show="event" aria-label="${TYPES[t].label} ${F.name} : pas encore trouvée"><span class="ball">${mImg(ghost(t,f),160,Math.round(84*scaleOf(t)+6),"")}</span><b>${F.name}</b><span class="rar" style="--rar:${E.color}"><i></i>Événement</span><small>${eventLive(E)?"À trouver":"Événement terminé"}</small></button>` }
     const best = [...list].sort(tierSort)[0], nP = E.palIdx.length, got = new Set(list.map(x=>x.pal)).size;
     const isNew = list.some(s=>S.unseen.includes(s.id));
     return `<button class="m-card case ev-case${best.shiny?" is-shiny":""}" data-action="spec" data-id="${best.id}" aria-label="${TYPES[t].label} ${F.name} : ${got} coloris sur ${nP}"${isNew?` data-unseen="${list.filter(s=>S.unseen.includes(s.id)).map(s=>s.id).join(",")}"`:""}>
@@ -6012,9 +6085,7 @@ function viewCollection(){
           <span class="case-prog"><span class="bar"><i style="width:${got/BASE_PALS*100}%"></i></span><small>${got} / ${BASE_PALS} coloris</small></span></button>`;
       }).join("") + EVENT_FAMS.map(f=>evCard(t,f)).join("") + SEASON_FAMS.map(f=>seCard(t,f)).join("");
       return `<section class="type-block">
-        <div class="type-head">${typePill(t,true)}<h2>${TYPES[t].label}</h2><span class="mm">${TYPES[t].mm} mm</span>
-          <span class="prog">${have} / ${N_DECORS} décors<span class="bar"><i class="${have===N_DECORS?"done":""}" style="width:${have/N_DECORS*100}%"></i></span></span>
-          <p class="desc">${TYPES[t].desc}</p></div>
+        <div class="th-line" style="${tstyle(t)}"><h2>${TYPES[t].label}</h2><span class="th-n">${have} / ${N_DECORS}</span><span class="bar"><i class="${have===N_DECORS?"done":""}" style="width:${have/N_DECORS*100}%"></i></span></div>
         ${cards.trim()?`<div class="card-grid">${cards}</div>`:`<p class="empty">${qw.length?"Aucun décor ne correspond à ta recherche dans cette taille.":show==="all"?`Aucune ${TYPES[t].label.toLowerCase()} pour l'instant.`:"Rien avec ce filtre dans cette taille."}</p>`}
       </section>`;
     }).join("");
@@ -6022,6 +6093,10 @@ function viewCollection(){
   }
   if(ui.tab==="series"){
     body = seriesView();
+  } else if(ui.tab==="album" && show==="event"){
+    body = eventsView();
+  } else if(show==="beta" && (ui.tab==="album"||ui.tab==="billes")){
+    body = betaView();
   } else if(ui.tab!=="defis" && show==="secret"){
     body = secretGrid();
   } else if(ui.tab==="billes"){
@@ -6039,28 +6114,19 @@ function viewCollection(){
     body = (show==="dups" && recyclableDups().length ? dupsBar() : "") + (list.length ? `<div class="card-grid">${list.map(x=>ballCard(x, grps.get(x.id))).join("")}</div>` : `<p class="empty">${qw.length?"Aucune bille ne correspond à ta recherche.":EMPTY[show]||EMPTY.all}</p>`);
   }
 
-  const sizeBtn = (t,i) => { const h = DECOR_IDS.filter(f=>slots.has(t+"|"+f)).length, own = S.specs.filter(s=>s.type===t).sort(tierSort)[0];
-    return `<button class="bx-size" style="${tstyle(t)}" data-action="ftype" data-type="${ui.type===t?"all":t}" aria-pressed="${ui.type===t}">
-      <span class="ball">${mImg({seed:hash("pedia-fmt"+t), type:t, family:0, pal:PEDIA_PAL, shiny:0},120,Math.round(40*scaleOf(t)+10),"")}</span><b>${TYPES[t].label.replace("Mini bille","Mini").replace("Bille chinoise","Chinoise")}</b><small>${ui.tab==="billes" ? `${fmt(S.specs.filter(s=>s.type===t).length)} bille${S.specs.filter(s=>s.type===t).length>1?"s":""}` : `${h} / ${N_DECORS}`}</small></button>` };
   const nSeries = SERIES.filter(se=>(S.seriesDone||[]).includes(se.id)).length;
-  return `<div class="page-head">
-    <div><h1>Ma boîte à billes</h1><p>Tout ce que tu as trouvé, et tout ce qui reste à trouver. Chaque bille est unique : son motif et son numéro de série sont tirés au moment où tu l'ouvres.</p></div>
-    <span class="hand-note">${fmt(found.size)} / ${fmt(ALBUM_TOTAL)}</span>
-  </div>
+  return `<h1 class="sr-only">Ma boîte à billes</h1>
   <div class="cahier" style="--tc:${(CAHIER.find(c=>c[0]===ui.tab)||CAHIER[0])[1]}">
     <div class="cahier-tabs" role="tablist" aria-label="Les pages de ta boîte à billes">
-      ${CAHIER.filter(([k])=>k!=="beta" || BETA.open || betaOwned().length).filter(([k])=>k!=="events" || EVENT_FAMS.length).map(([k,c,icon,lbl])=>{
-        const n = {album:`${slots.size} / ${TOTAL_SLOTS}`, billes:S.specs.length, series:`${nSeries} / ${SERIES.length}`, beta:`${betaOwned().length} / ${TK.length}`, events:S.specs.filter(x=>eventOf(x)).length}[k];
+      ${CAHIER.map(([k,c,icon,lbl])=>{
+        const n = {album:`${slots.size} / ${TOTAL_SLOTS}`, billes:S.specs.length, series:`${nSeries} / ${SERIES.length}`}[k];
         return `<button class="ctab" role="tab" style="--c:${c}" data-action="tab" data-tab="${k}" aria-selected="${ui.tab===k}">${ic(icon,16,2.4)}<b>${lbl}</b>${n!=null?`<small>${n}</small>`:""}${k==="series"&&seriesClaimable()?`<span class="tab-dot">${seriesClaimable()}</span>`:""}</button>` }).join("")}
     </div>
     <div class="cahier-page">
-    ${(()=>{ const T = {album:["Mon album", `${slots.size} / ${TOTAL_SLOTS} décors trouvés`], billes:["Mes billes", `${S.specs.length} bille${S.specs.length>1?"s":""}`], series:["Mes séries", `${nSeries} / ${SERIES.length} complétées`],
+    ${(()=>{ const T = {album:["Mon album", `${slots.size} / ${TOTAL_SLOTS} décors trouvés`], billes:["Mes billes", `${S.specs.length} bille${S.specs.length>1?"s":""} · ${fmt(found.size)} / ${fmt(ALBUM_TOTAL)} modèles`], series:["Mes séries", `${nSeries} / ${SERIES.length} complétées`],
         beta:["Billes Bêta", `${betaOwned().length} / ${TK.length}`], events:["Événements", ""], pedia:["Billepedia", "toutes les billes du jeu"]}[ui.tab] || ["", ""];
       return T[0] ? `<div class="cp-title"><h2>${T[0]}</h2>${T[1]?`<span>${T[1]}</span>`:""}</div>` : "" })()}
-  ${ui.tab==="pedia" ? viewPedia().replace(/^<div class="page-head">[\s\S]*?(?=<section class="pedia-sec">)/, "") : ui.tab==="events" ? eventsView() : ui.tab==="beta" ? betaView() : `
-  ${ui.tab==="album"||ui.tab==="billes" ? `<div class="bx-sizes" role="group" aria-label="Filtrer par taille">
-    <button class="bx-size all" data-action="ftype" data-type="all" aria-pressed="${ui.type==="all"}"><b>Toutes</b><small>${ui.tab==="billes" ? `${fmt(S.specs.length)} bille${S.specs.length>1?"s":""}` : `${nFull} complet${nFull>1?"s":""} · ${shinyCount} shiny`}</small></button>
-    ${TK.map(sizeBtn).join("")}</div>` : ""}
+  ${ui.tab==="pedia" ? viewPedia().replace(/^<div class="page-head">[\s\S]*?(?=<section class="pedia-sec">)/, "") : `
   ${filters}
   ${body}`}
     </div>
@@ -6596,6 +6662,7 @@ function applyPick(){
   box.querySelector(".pick-none")?.toggleAttribute("hidden", n>0);
 }
 document.addEventListener("input", e=>{ if(e.target.classList?.contains("pick-q")) applyPick() });
+document.addEventListener("click", e=>{ document.querySelectorAll("details.bx-filt[open]").forEach(d=>{ if(!d.contains(e.target)) d.open = false }) });
 let colQT = 0;
 document.addEventListener("input", e=>{
   if(e.target.id!=="craft-q") return;
@@ -11322,7 +11389,7 @@ document.addEventListener("click", e=>{
     }
     case "ami-voir": openProfil(t.dataset.id); break;
     case "ev-bag": ui.bag = t.dataset.bag; go("sacs"); break;
-    case "ev-album": ui.tab = "events"; go("collection"); break;
+    case "ev-album": ui.tab = "album"; ui.show = "event"; go("collection"); break;
     case "ev-opt": S.evOpt = t.checked; save(); t.closest(".ev-opt")?.classList.toggle("on", t.checked); toast(t.checked ? "Billes d'événement activées pour tes sachets." : "Billes d'événement désactivées : tes sachets ne donnent que des billes normales."); break;
     case "draw-how": { const el = document.getElementById("modal");
       el.innerHTML = `<div class="modal bag-sum how-modal" role="dialog" aria-modal="true" aria-label="Comment chaque bille est tirée ?"><button class="close-x" data-action="close-modal" aria-label="Fermer">×</button>

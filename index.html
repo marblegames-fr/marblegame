@@ -795,10 +795,45 @@ button.rw:hover{transform:translateY(-2px)}
   --yellow-soft:#FFE5A0;--blue:#2E6BE6;--blue-2:#1F4FB8;--blue-soft:#D6E4FC;--purple-soft:#E9DCFB;--green:#2FA35A;--green-soft:#D6F1D4;
   --gold-line:#F4CF6A;--gold-bg:#FFF6DC;--blue-line:#B7CEF6;--purple-line:#D3BEF3;--green-line:#B3E1AE;--warn:#B4462B;
   --shadow:0 1px 0 rgba(120,90,40,.06),0 6px 18px -10px rgba(120,90,40,.25);
-  background:linear-gradient(90deg,transparent 40px,#F2A3A3 40px 42px,transparent 42px 45px,#F2A3A3 45px 46px,transparent 46px),
-    repeating-linear-gradient(180deg,transparent 0 31px,#A9C8EC 31px 32px),repeating-linear-gradient(180deg,transparent 0 7px,#DCE8F6 7px 8px),var(--paper);
-  border:3px solid var(--ol);border-radius:6px 20px 20px 6px;
+  --m:40px;--pm:linear-gradient(90deg,transparent var(--m),#F2A3A3 var(--m) calc(var(--m) + 2px),transparent calc(var(--m) + 2px) calc(var(--m) + 5px),#F2A3A3 calc(var(--m) + 5px) calc(var(--m) + 6px),transparent calc(var(--m) + 6px));
+  --pl:repeating-linear-gradient(180deg,transparent 0 31px,#B5CFEC 31px 32px),repeating-linear-gradient(180deg,transparent 0 7px,#EAF0F8 7px 8px);
+  --pb:var(--paper);
+  background:var(--pm),var(--pl),var(--pb);isolation:isolate;
+  border:3px solid var(--ol);border-radius:6px 20px 0 6px;
   box-shadow:7px 7px 0 -3px #F4ECD9,7px 7px 0 0 var(--ol),14px 14px 0 -3px #EBE0C6,14px 14px 0 0 var(--ol),20px 26px 34px -18px rgba(0,0,0,.55)}
+/* un papier par intercalaire : Seyès (Album), petits carreaux (Mes billes), kraft (Séries), vieux livre (Billepedia) */
+.cahier-page[data-paper="billes"]{--pl:repeating-linear-gradient(180deg,transparent 0 19px,#D3E2F3 19px 20px),repeating-linear-gradient(90deg,transparent 0 19px,#D3E2F3 19px 20px)}
+.cahier-page[data-paper="series"]{--pm:linear-gradient(transparent,transparent);--pl:radial-gradient(circle at 20% 30%,rgba(255,255,255,.12) 0 2px,transparent 3px) 0 0/23px 29px,radial-gradient(circle at 70% 60%,rgba(90,55,20,.12) 0 1.5px,transparent 2.5px) 0 0/31px 19px;
+  --pb:linear-gradient(170deg,#DCBF94,#CFAE7E);--muted:#6E5A3E;--ink-2:#4D3F2C}
+.cahier-page[data-paper="pedia"]{--pm:linear-gradient(transparent,transparent);--pl:radial-gradient(ellipse at 50% 40%,transparent 55%,rgba(130,85,30,.2) 100%);--pb:#F4E7C5}
+.cahier-page[data-paper="pedia"] .cp-title h2{font-family:Georgia,"Times New Roman",serif;font-style:italic;font-weight:700;font-size:38px;background:none;border-bottom:3px double rgba(90,60,25,.5);padding:0 4px 4px;transform:none}
+.cahier-page[data-paper="pedia"] .cp-title span{font-family:Georgia,"Times New Roman",serif;font-style:italic;font-size:17px;color:#6B5434}
+.cahier-page[data-paper="series"] .cp-title span{color:#4D3F2C}
+/* le coin corné, en bas à droite */
+.cahier-page::after{content:"";position:absolute;right:-3px;bottom:-3px;width:46px;height:46px;border-top:2.5px solid var(--ol);border-left:2.5px solid var(--ol);
+  background:linear-gradient(135deg,#FFFBEF 0%,#E8DAB4 46%,var(--ol) 46% 50%,#F4ECD9 50%);filter:drop-shadow(-2px -2px 3px rgba(0,0,0,.12))}
+.cahier-page[data-paper="series"]::after{background:linear-gradient(135deg,#E6CDA6 0%,#BF9B68 46%,var(--ol) 46% 50%,#F4ECD9 50%)}
+.cahier-page[data-paper="pedia"]::after{background:linear-gradient(135deg,#FBF1D6 0%,#E0CB98 46%,var(--ol) 46% 50%,#F4ECD9 50%)}
+/* la page qui se tourne quand on change d'intercalaire */
+.cahier-page.turn{animation:pageturn .38s cubic-bezier(.2,1.25,.4,1) both;transform-origin:0 50%}
+@keyframes pageturn{from{opacity:0;transform:perspective(1200px) rotateY(14deg) translateX(-14px)}to{opacity:1;transform:none}}
+/* les gribouillis d'écolier, au stylo bleu, derrière les billes */
+.cp-doodles{position:absolute;inset:0;z-index:-1;pointer-events:none;color:#3558A8}
+.cp-doodles svg{position:absolute;fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round;opacity:.42}
+.cp-doodles .dd-ball{left:7px;top:150px;width:28px;transform:rotate(-8deg)}
+.cp-doodles .dd-star{left:9px;top:46%;width:24px;transform:rotate(12deg)}
+.cp-doodles .dd-spiral{left:8px;top:72%;width:26px}
+.cp-doodles .dd-blot{left:-6px;bottom:26px;width:54px;opacity:.3}
+.cp-doodles .dd-blot path{fill:currentColor;stroke:none}
+.cp-doodles .dd-heart{right:14px;top:16px;width:30px;transform:rotate(10deg);color:#D9465F}
+.cahier-page[data-paper="series"] .cp-doodles{color:#5A3A18}
+.cahier-page[data-paper="pedia"] .cp-doodles{color:#7A5524}
+/* l'album : chaque bille trouvée est scotchée sur sa carte ; une bille à trouver est juste dessinée au crayon */
+.cahier-page[data-paper="album"] .m-card.case::before{content:"";position:absolute;top:-9px;left:50%;z-index:2;width:50px;height:17px;margin-left:-25px;background:rgba(241,224,170,.88);border-left:2px dotted rgba(255,255,255,.7);border-right:2px dotted rgba(255,255,255,.7);box-shadow:0 1px 2px rgba(0,0,0,.12);transform:rotate(-4deg)}
+.cahier-page[data-paper="album"] .m-card.case:nth-child(even)::before{transform:rotate(3deg)}
+.cahier-page[data-paper="album"] .card-grid{row-gap:20px;padding-top:6px}
+.cahier-page .m-card.missing{background:transparent;border:2px dashed rgba(60,60,75,.32)}
+.cahier-page .m-card.missing img{filter:brightness(0) invert(1) drop-shadow(1.5px 0 0 #7A7888) drop-shadow(-1.5px 0 0 #7A7888) drop-shadow(0 1.5px 0 #7A7888) drop-shadow(0 -1.5px 0 #7A7888) opacity(.6)}
 .cahier-page :is(.pill,.type-box):not(#_){--rbg:var(--rb);--rtx:var(--rc)}
 .cp-title{position:relative;display:flex;align-items:baseline;gap:10px 16px;flex-wrap:wrap;margin:-4px 0 14px}
 .cp-title h2{margin:0;font-family:var(--hand);font-size:44px;font-weight:700;line-height:1;color:var(--ol);
@@ -884,11 +919,11 @@ button.rw:hover{transform:translateY(-2px)}
   .ctab:hover,.ctab:nth-child(even):hover{transform:translateY(2px)}
   .ctab[aria-selected="true"]{transform:none}
   .ctab .tab-dot{top:-7px;left:auto;right:-7px}
-  .cahier-page{padding:18px 12px 26px 30px;border-radius:4px 4px 16px 16px;
-    background:linear-gradient(90deg,transparent 18px,#F2A3A3 18px 20px,transparent 20px),
-      repeating-linear-gradient(180deg,transparent 0 31px,#A9C8EC 31px 32px),repeating-linear-gradient(180deg,transparent 0 7px,#DCE8F6 7px 8px),var(--paper);
+  .cahier-page{--m:14px;padding:18px 12px 26px 30px;border-radius:4px 4px 0 16px;
     box-shadow:5px 5px 0 -2px #F4ECD9,5px 5px 0 0 var(--ol),14px 20px 26px -16px rgba(0,0,0,.55)}
   .cahier-page::before{right:22px;width:70px;height:22px;top:-12px}
+  .cahier-page::after{width:32px;height:32px}
+  .cp-doodles .dd-m{display:none}
   .cp-title h2{font-size:36px}
   .cp-title span{font-size:20px}
 }
@@ -5979,6 +6014,14 @@ function viewSucces(){
    ===================================================================== */
 // la boîte à billes est un cahier : chaque page a son intercalaire de couleur, sur le côté (en haut sur téléphone)
 const CAHIER = [["album","#8A63D2","book","Album"],["billes","#5BAA4A","layers","Mes billes"],["series","#E8664F","trophy","Séries"],["pedia","#4C93C9","search","Billepedia"]];
+let cahierLast = null;   // l'intercalaire affiché la dernière fois (pour tourner la page quand on en change)
+const DOODLES = `<div class="cp-doodles" aria-hidden="true">
+  <svg class="dd-ball dd-m" viewBox="0 0 30 62"><path d="M9 26l-3-12M15 25V9M21 26l3-12"/><circle cx="15" cy="45" r="11"/><path d="M8 44c3-5 10-6 14 0M11 50c3 2 7 2 9-1"/><path d="M4 59c8 2 16 2 24 0"/></svg>
+  <svg class="dd-star dd-m" viewBox="0 0 30 30"><path d="M15 3l3.2 8.4 9 .6-7 5.8 2.3 8.8L15 21.8l-7.6 4.8 2.4-8.8-7-5.8 9-.6z"/></svg>
+  <svg class="dd-spiral dd-m" viewBox="0 0 30 30"><path d="M15 15c0-2 3-2 3 0s-2 4-5 4-5-3-5-6 3-7 8-7 8 4 8 9-4 10-10 10"/></svg>
+  <svg class="dd-blot" viewBox="0 0 60 40"><path d="M20 10c6-6 18-4 20 4 8-1 12 7 6 12 4 6-4 12-11 8-6 5-16 3-17-4-8 0-11-9-4-12-2-4 2-9 6-8z"/><path d="M50 8a2.5 2.5 0 1 0 .1 0zM8 30a2 2 0 1 0 .1 0zM54 30a1.5 1.5 0 1 0 .1 0z"/></svg>
+  <svg class="dd-heart" viewBox="0 0 30 28"><path d="M15 25C6 18 2 13 3 8s7-7 12-1c5-6 11-4 12 1s-3 10-12 17z"/><path d="M9 9c1-2 3-2 4-1"/></svg>
+</div>`;
 function viewCollection(){
   const slots = slotsOwned(), found = albumFound();
   if(ui.tab==="defis") ui.tab = "album";   // les défis ont leur propre page (Succès)
@@ -6115,6 +6158,7 @@ function viewCollection(){
   }
 
   const nSeries = SERIES.filter(se=>(S.seriesDone||[]).includes(se.id)).length;
+  const turn = cahierLast!=null && cahierLast!==ui.tab; cahierLast = ui.tab;
   return `<h1 class="sr-only">Ma boîte à billes</h1>
   <div class="cahier" style="--tc:${(CAHIER.find(c=>c[0]===ui.tab)||CAHIER[0])[1]}">
     <div class="cahier-tabs" role="tablist" aria-label="Les pages de ta boîte à billes">
@@ -6122,7 +6166,7 @@ function viewCollection(){
         const n = {album:`${slots.size} / ${TOTAL_SLOTS}`, billes:S.specs.length, series:`${nSeries} / ${SERIES.length}`}[k];
         return `<button class="ctab" role="tab" style="--c:${c}" data-action="tab" data-tab="${k}" aria-selected="${ui.tab===k}">${ic(icon,16,2.4)}<b>${lbl}</b>${n!=null?`<small>${n}</small>`:""}${k==="series"&&seriesClaimable()?`<span class="tab-dot">${seriesClaimable()}</span>`:""}</button>` }).join("")}
     </div>
-    <div class="cahier-page">
+    <div class="cahier-page${turn?" turn":""}" data-paper="${ui.tab}">${DOODLES}
     ${(()=>{ const T = {album:["Mon album", `${slots.size} / ${TOTAL_SLOTS} décors trouvés`], billes:["Mes billes", `${S.specs.length} bille${S.specs.length>1?"s":""} · ${fmt(found.size)} / ${fmt(ALBUM_TOTAL)} modèles`], series:["Mes séries", `${nSeries} / ${SERIES.length} complétées`],
         beta:["Billes Bêta", `${betaOwned().length} / ${TK.length}`], events:["Événements", ""], pedia:["Billepedia", "toutes les billes du jeu"]}[ui.tab] || ["", ""];
       return T[0] ? `<div class="cp-title"><h2>${T[0]}</h2>${T[1]?`<span>${T[1]}</span>`:""}</div>` : "" })()}

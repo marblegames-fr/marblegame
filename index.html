@@ -774,6 +774,38 @@ button.rw:hover{transform:translateY(-2px)}
 .tr-name{font-size:17px;font-weight:900}
 .treasure .pills{display:flex;gap:6px;flex-wrap:wrap;justify-content:center}
 .col-toolbar{display:flex;align-items:center;gap:16px;flex-wrap:wrap;margin-bottom:18px}
+/* ---------- la boîte à billes en cahier : intercalaires de couleur à gauche, page à petits carreaux (Seyès) ---------- */
+.cahier{--paper:var(--panel);--seyes:color-mix(in srgb,#5A8FD6 13%,transparent);--seyes-2:color-mix(in srgb,#5A8FD6 26%,transparent);--marge:color-mix(in srgb,#E5484D 50%,transparent);
+  display:grid;grid-template-columns:150px minmax(0,1fr);align-items:start;margin-top:4px}
+.cahier-tabs{position:sticky;top:calc(84px + var(--rib,0px));display:flex;flex-direction:column;gap:10px;padding-top:26px;z-index:1}
+.ctab{position:relative;display:grid;grid-template-columns:auto 1fr;align-items:center;column-gap:8px;margin-right:-2px;min-height:58px;padding:8px 12px 8px 14px;text-align:left;
+  border-radius:14px 0 0 14px;background:color-mix(in srgb,var(--c) 22%,var(--panel));color:color-mix(in srgb,var(--c) 70%,var(--ink));
+  border:1.5px solid color-mix(in srgb,var(--c) 45%,transparent);border-right:0;transform:translateX(14px);transition:transform .18s,background .18s}
+.ctab svg{grid-row:span 2;color:var(--c)}
+.ctab b{font-size:13.5px;font-weight:900;line-height:1.1}
+.ctab small{font-size:11px;font-weight:800;opacity:.7}
+.ctab:hover{transform:translateX(6px)}
+.ctab[aria-selected="true"]{transform:none;background:var(--c);color:#fff;border-color:var(--c);box-shadow:-6px 6px 16px -10px rgba(0,0,0,.5)}
+.ctab[aria-selected="true"] svg{color:#fff}
+.ctab .tab-dot{position:absolute;top:-6px;left:-6px;margin:0}
+.cahier-page{position:relative;min-width:0;min-height:70vh;padding:22px 24px 30px 52px;border-radius:4px 18px 18px 18px;
+  background:linear-gradient(90deg,transparent 33px,var(--marge) 33px 35px,transparent 35px),
+    repeating-linear-gradient(180deg,transparent 0 31px,var(--seyes-2) 31px 32px),repeating-linear-gradient(180deg,transparent 0 7px,var(--seyes) 7px 8px),var(--paper);
+  border:1.5px solid var(--line-2);border-left:6px solid var(--tc);box-shadow:0 18px 40px -26px rgba(60,35,10,.55)}
+.cahier-page > .bx-sizes:first-child{margin-top:0}
+@media (max-width:760px){
+  .cahier{grid-template-columns:minmax(0,1fr)}
+  .cahier-tabs{position:static;flex-direction:row;gap:6px;padding:0 4px;overflow-x:auto;scrollbar-width:none}
+  .ctab{flex:none;min-height:0;grid-template-columns:auto auto;padding:9px 12px 12px;margin:0 0 -4px;border-radius:12px 12px 0 0;border:1.5px solid color-mix(in srgb,var(--c) 45%,transparent);border-bottom:0;transform:translateY(6px)}
+  .ctab svg{grid-row:auto}
+  .ctab small{display:none}
+  .ctab:hover{transform:translateY(3px)}
+  .ctab[aria-selected="true"]{transform:none}
+  .ctab .tab-dot{top:-4px;left:auto;right:-4px}
+  .cahier-page{padding:16px 12px 24px 26px;border-radius:0 0 16px 16px;border-left-width:1.5px;border-top:5px solid var(--tc);
+    background:linear-gradient(90deg,transparent 15px,var(--marge) 15px 17px,transparent 17px),
+      repeating-linear-gradient(180deg,transparent 0 31px,var(--seyes-2) 31px 32px),repeating-linear-gradient(180deg,transparent 0 7px,var(--seyes) 7px 8px),var(--paper)}
+}
 .col-toolbar .tabs{margin-bottom:0}
 .col-filters{display:grid;gap:10px;margin:-4px 0 18px;padding:12px 14px;border-radius:var(--r-lg);background:var(--panel);border:1px solid var(--line)}
 .col-filters .seg{display:flex;flex-wrap:wrap;align-items:center;gap:6px;padding:0;background:none;border:0;border-radius:0}
@@ -1635,8 +1667,19 @@ button.gh-cell:hover{transform:translateY(-2px)}
 .dec-stamp{display:inline-flex;align-items:center;gap:5px;font-size:11px;font-weight:900;text-transform:uppercase;letter-spacing:.05em;color:#fff;background:var(--dc);padding:3px 10px;border-radius:999px;box-shadow:0 0 16px -3px var(--dc)}
 .dec-stamp.leg{animation:decglow 1.6s ease-in-out infinite}
 @keyframes decglow{50%{box-shadow:0 0 28px 3px var(--dc)}}
-.slot-info .new{font-family:var(--hand);font-size:20px;color:#FFD98A;line-height:1}
-.slot-info .dup{font-family:var(--hand);font-size:20px;color:#C9B8A6;line-height:1}
+.nbadge{position:absolute;z-index:2;display:grid;place-items:center;width:30px;height:30px;border-radius:50%;color:#3A2400;background:radial-gradient(circle at 35% 30%,#FFF1C2,#FFC94A 60%,#E09A12);box-shadow:0 0 0 2px rgba(0,0,0,.35),0 0 18px -2px #FFC94A}
+.nbadge.col{color:#fff;background:radial-gradient(circle at 35% 30%,#B9F3FF,#3FB6E8 60%,#1F7FB8);box-shadow:0 0 0 2px rgba(0,0,0,.35),0 0 16px -3px #3FB6E8}
+.slot-ball .nbadge{top:8%;right:6%;opacity:0;transform:scale(.2)}
+.slot.is-open .slot-ball .nbadge{animation:nbpop .45s .35s cubic-bezier(.2,1.8,.4,1) forwards}
+@keyframes nbpop{to{opacity:1;transform:none}}
+/* un doublon : rien à dire, la bille est juste un peu plus discrète */
+.slot.dupe.is-open .slot-info b{color:#D9CBBB;font-weight:800}
+.nb-leg{flex-basis:100%;display:flex;justify-content:center;gap:16px;flex-wrap:wrap;font-size:13px;font-weight:800;color:#E8D6C2}
+.nb-leg > span{display:inline-flex;align-items:center;gap:6px}
+.nb-leg .nbadge{position:static;width:20px;height:20px}
+.bag-sum-grid .ball{position:relative}
+.bag-sum-grid .nbadge{top:-2px;right:-6px;width:22px;height:22px}
+.bag-sum-grid .nbadge svg{width:12px;height:12px}
 .slot.is-open .orb{opacity:0;transform:scale(1.4)}
 .slot.is-open .slot-ball img{opacity:1;transform:none}
 .slot.is-open .slot-info{animation:infoin .35s .2s both}
@@ -1657,13 +1700,13 @@ button.gh-cell:hover{transform:translateY(-2px)}
 .hud-stat b{font-size:22px;font-weight:900;font-variant-numeric:tabular-nums;line-height:1.1}
 .game-stage{position:relative;border-radius:16px;overflow:hidden;box-shadow:0 14px 30px -14px rgba(60,35,10,.55)}
 .game-stage canvas{display:block;width:100%;aspect-ratio:900/520;touch-action:none;cursor:crosshair;background:#3E9A4A}
-/* les jeux en grand : pendant une partie, le rail « Ma journée » se replie (il reste le bouton en haut) et le terrain prend la place,
+/* les jeux en grand : pendant une partie, « Ma journée » disparaît (ni rail, ni bouton en haut) et le terrain prend la place,
    sans jamais dépasser la hauteur de l'écran (--ar : largeur / hauteur du terrain) */
 @media (min-width:1340px){
   .layout:has(#view .game-wrap){grid-template-columns:216px minmax(0,1fr)}
   .layout:has(#view .game-wrap) .mj-rail{display:none}
-  body:has(#view .game-wrap) .mj-btn{display:flex}
 }
+body:has(#view .game-wrap) .mj-btn{display:none}
 .game-wrap{grid-template-columns:minmax(0,1fr) 260px}
 .game-stage{--ar:900/520;width:100%;max-width:max(340px,calc((100vh / var(--vz,1) - 190px) * var(--ar)));margin-inline:auto}
 .game-stage:has(canvas.bricks){--ar:3/2}
@@ -2227,6 +2270,9 @@ button.cp-who:hover b{text-decoration:underline}
 .pick .ball{height:54px;display:grid;place-items:center}
 .pick .ball img{filter:drop-shadow(0 4px 3px rgba(0,0,0,.3))}
 .pick-filters{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:10px}
+.pick-srch{margin-bottom:10px}
+.pick-srch input{width:100%}
+.pick[hidden]{display:none}
 .chip{height:30px;padding:0 12px;border-radius:999px;border:1px solid var(--line);background:var(--panel);font-weight:800;font-size:12.5px;color:var(--ink-2)}
 .chip[aria-pressed="true"]{background:var(--ink);color:var(--on-ink);border-color:var(--ink)}
 .cour-form{display:flex;gap:10px;flex-wrap:wrap;align-items:center}
@@ -2559,9 +2605,25 @@ button.cp-who:hover b{text-decoration:underline}
   .game-card svg{height:120px}
   .type-grid{grid-template-columns:repeat(2,minmax(0,1fr))}
   .page-head h1{font-size:32px}
-  .slot{width:146px}
-  .slot-ball{width:126px;height:126px}
-  .ball-shadow{top:106px;width:80px;margin-left:-40px}
+  .ov{padding:12px}
+  .ov-body{gap:12px}
+  .reveal-row{gap:10px 4px;width:100%}
+  .slot{--bw:min(96px,calc((100vw - 48px) / 3 - 8px));width:calc((100vw - 40px) / 3);gap:4px;padding:24px 0 6px}
+  .slot-ball{width:var(--bw);height:var(--bw)}
+  .slot-ball img{max-width:100%}
+  .orb{inset:8px;font-size:34px}
+  .rays{inset:-16px}
+  .ball-shadow{top:calc(var(--bw) * .84);width:60px;margin-left:-30px;height:12px}
+  .slot-banner,.slot-banner.low{font-size:16px}
+  .slot-info{gap:4px}
+  .slot-info b{font-size:12.5px}
+  .slot-info .shiny-pill,.slot-info .ed-pill,.slot-info .pill{font-size:10px;padding:2px 6px}
+  .slot-info .dec-stamp{font-size:9.5px;padding:2px 7px;letter-spacing:.03em;white-space:nowrap}
+  .slot-info .dec-stamp .ds-w{display:none}
+  .slot-ball .nbadge{width:24px;height:24px;top:2%;right:0}
+  .slot-ball .nbadge svg{width:12px;height:12px}
+  .ov-title{font-size:26px}
+  .ov-sub{font-size:13.5px;margin:-4px 0 0}
   .type-head .prog{margin-left:0}
 }
 @media (prefers-reduced-motion:reduce){
@@ -4619,6 +4681,7 @@ const ICON = {
   tic:'<circle cx="7.5" cy="15.5" r="4"/><circle cx="17" cy="8" r="3.5"/><path d="M11 12.5l2.6-2"/><path d="M14 16l1.5 1.5M16.5 13.5l2 .5M12.5 18.5l.5 2"/>',
   users:'<circle cx="9" cy="8.5" r="3.5"/><path d="M2.5 20a6.5 6.5 0 0 1 13 0"/><circle cx="17" cy="9.5" r="2.8"/><path d="M16 14.2a5.5 5.5 0 0 1 6 5.8"/>',
   cour:'<path d="M4 21V10l8-6 8 6v11"/><path d="M9 21v-6h6v6"/><circle cx="7" cy="18.5" r="1"/><circle cx="17" cy="18.5" r="1"/>',
+  drop:'<path d="M12 3.5c3.2 4.2 5.8 7.3 5.8 10.4a5.8 5.8 0 0 1-11.6 0c0-3.1 2.6-6.2 5.8-10.4z"/>',
   search:'<circle cx="11" cy="11" r="6.5"/><path d="M16 16l4.5 4.5"/>',
   ticket:'<path d="M3 7.5A1.5 1.5 0 0 1 4.5 6h15A1.5 1.5 0 0 1 21 7.5V10a2 2 0 0 0 0 4v2.5a1.5 1.5 0 0 1-1.5 1.5h-15A1.5 1.5 0 0 1 3 16.5V14a2 2 0 0 0 0-4z"/><path d="M15 6v2.5M15 11v2M15 15.5V18"/>',
   lock:'<rect x="5" y="11" width="14" height="9" rx="2"/><path d="M8 11V8a4 4 0 0 1 8 0v3"/>',
@@ -5828,6 +5891,9 @@ function viewSucces(){
 /* =====================================================================
    COLLECTION
    ===================================================================== */
+// la boîte à billes est un cahier : chaque page a son intercalaire de couleur, sur le côté (en haut sur téléphone)
+const CAHIER = [["album","#8A63D2","book","Album"],["billes","#5BAA4A","layers","Mes billes"],["series","#E8664F","trophy","Séries"],
+  ["beta","#D9A21B","star","Bêta"],["events","#D9548E","flag","Événements"],["pedia","#4C93C9","search","Billepedia"]];
 function viewCollection(){
   const slots = slotsOwned(), found = albumFound();
   const shinyCount = S.specs.filter(s=>s.shiny).length;
@@ -5960,22 +6026,21 @@ function viewCollection(){
     <div><h1>Ma boîte à billes</h1><p>Tout ce que tu as trouvé, et tout ce qui reste à trouver. Chaque bille est unique : son motif et son numéro de série sont tirés au moment où tu l'ouvres.</p></div>
     <span class="hand-note">${fmt(found.size)} / ${fmt(ALBUM_TOTAL)}</span>
   </div>
-  <div class="col-toolbar">
-    <div class="tabs" role="tablist">
-      <button class="tab" role="tab" data-action="tab" data-tab="album" aria-selected="${ui.tab==="album"}">Album <small>${slots.size} / ${TOTAL_SLOTS} cases</small></button>
-      <button class="tab" role="tab" data-action="tab" data-tab="billes" aria-selected="${ui.tab==="billes"}">Mes billes <small>${S.specs.length}</small></button>
-      <button class="tab" role="tab" data-action="tab" data-tab="series" aria-selected="${ui.tab==="series"}">Séries <small>${nSeries} / ${SERIES.length}</small>${seriesClaimable()?` <span class="tab-dot">${seriesClaimable()}</span>`:""}</button>
-      ${BETA.open || betaOwned().length ? `<button class="tab" role="tab" data-action="tab" data-tab="beta" aria-selected="${ui.tab==="beta"}">Bêta <small>${betaOwned().length} / ${TK.length}</small></button>` : ""}
-      ${EVENT_FAMS.length ? `<button class="tab" role="tab" data-action="tab" data-tab="events" aria-selected="${ui.tab==="events"}">Événements <small>${S.specs.filter(x=>eventOf(x)).length}</small></button>` : ""}
-      <button class="tab" role="tab" data-action="tab" data-tab="pedia" aria-selected="${ui.tab==="pedia"}">Billepedia</button>
+  <div class="cahier" style="--tc:${(CAHIER.find(c=>c[0]===ui.tab)||CAHIER[0])[1]}">
+    <div class="cahier-tabs" role="tablist" aria-label="Les pages de ta boîte à billes">
+      ${CAHIER.filter(([k])=>k!=="beta" || BETA.open || betaOwned().length).filter(([k])=>k!=="events" || EVENT_FAMS.length).map(([k,c,icon,lbl])=>{
+        const n = {album:`${slots.size} / ${TOTAL_SLOTS}`, billes:S.specs.length, series:`${nSeries} / ${SERIES.length}`, beta:`${betaOwned().length} / ${TK.length}`, events:S.specs.filter(x=>eventOf(x)).length}[k];
+        return `<button class="ctab" role="tab" style="--c:${c}" data-action="tab" data-tab="${k}" aria-selected="${ui.tab===k}">${ic(icon,16,2.4)}<b>${lbl}</b>${n!=null?`<small>${n}</small>`:""}${k==="series"&&seriesClaimable()?`<span class="tab-dot">${seriesClaimable()}</span>`:""}</button>` }).join("")}
     </div>
-  </div>
+    <div class="cahier-page">
   ${ui.tab==="pedia" ? viewPedia().replace(/^<div class="page-head">[\s\S]*?(?=<section class="pedia-sec">)/, "") : ui.tab==="events" ? eventsView() : ui.tab==="beta" ? betaView() : `
   ${ui.tab==="album"||ui.tab==="billes" ? `<div class="bx-sizes" role="group" aria-label="Filtrer par taille">
     <button class="bx-size all" data-action="ftype" data-type="all" aria-pressed="${ui.type==="all"}"><b>Toutes</b><small>${ui.tab==="billes" ? `${fmt(S.specs.length)} bille${S.specs.length>1?"s":""}` : `${nFull} complète${nFull>1?"s":""} · ${shinyCount} shiny`}</small></button>
     ${TK.map(sizeBtn).join("")}</div>` : ""}
   ${filters}
-  ${body}`}`;
+  ${body}`}
+    </div>
+  </div>`;
 }
 
 // Les billes d'événement : un petit album par événement (ses coloris × les 6 tailles), à part de l'album principal
@@ -6833,7 +6898,10 @@ const pullScore = s => s.shiny || s.secret ? 6 : tierOf(s);
 const decorRar = s => extraFam(s.family) ? -1 : FAMILIES[s.family].rar;
 // le suspense tient compte des deux : un décor épique compte une taille de plus, un légendaire deux (un Calot Galaxie tremble comme un Mammouth)
 const dramaOf = s => Math.max(pullScore(s), Math.min(5, tierOf(s) + (decorRar(s)===4 ? 2 : decorRar(s)===3 ? 1 : 0)));
-const decStamp = s => { const r = decorRar(s); return r>=3 ? `<span class="dec-stamp${r===4?" leg":""}" style="--dc:${DECOR_RAR[r].c}">${ic("star",12,2.6)} Décor ${DECOR_RAR[r].name.toLowerCase()}</span>` : "" };
+// ce qui est nouveau se voit d'un coup d'œil : une pastille sur la bille (étoile dorée = nouvelle case, goutte = nouveau coloris), rien pour un doublon
+const newBadge = ({isNew, newColor, evNew}) => isNew||evNew ? `<span class="nbadge case" title="Nouvelle case dans ta boîte" aria-label="Nouvelle case">${ic("star",15,2.6)}</span>`
+  : newColor ? `<span class="nbadge col" title="Nouveau coloris" aria-label="Nouveau coloris">${ic("drop",14,2.6)}</span>` : "";
+const decStamp = s => { const r = decorRar(s); return r>=3 ? `<span class="dec-stamp${r===4?" leg":""}" style="--dc:${DECOR_RAR[r].c}">${ic("star",12,2.6)} <span class="ds-w">Décor </span>${DECOR_RAR[r].name.toLowerCase()}</span>` : "" };
 const scoreCol = k => k>=6 ? "#FFD27A" : RARITY[k].c;
 const scoreCols = k => k>=6 ? SHINY_COLS : [RARITY[k].c, shade(RARITY[k].c,.45), "#FFF3D6"];
 const BANNER = ["Mini","Bille","Chinoise !","Calot !","Boulet !","Mammouth !","Shiny !"];   // les petites tailles ont une étiquette plus discrète
@@ -7001,11 +7069,12 @@ function showReveal(){
     <div class="reveal-row${results.length>5?" six":""}">
 
       ${results.map(({s,isNew,newColor,evNew,wish},i)=>{
+        const nb = newBadge({isNew,newColor,evNew});
         const k = pullScore(s), big = k>=BIG;
-        return `<button class="slot${wish?" wished":""} ${big?"big":""} ${s.shiny?"shiny":""}" style="--d:${i*130}ms;--tc:${shade(ovState.bag.color,.2)};${tstyle(s.type)}" data-tc="${scoreCol(k)}" data-action="reveal" data-i="${i}" aria-label="Découvrir la bille ${i+1}">
+        return `<button class="slot${wish?" wished":""} ${big?"big":""} ${s.shiny?"shiny":""}${nb?"":" dupe"}" style="--d:${i*130}ms;--tc:${shade(ovState.bag.color,.2)};${tstyle(s.type)}" data-tc="${scoreCol(k)}" data-action="reveal" data-i="${i}" aria-label="Découvrir la bille ${i+1}">
         ${wish?`<span class="slot-banner">Ta liste !</span>`:s.secret?`<span class="slot-banner">Secrète !</span>`:BANNER[k]?`<span class="slot-banner${k<2?" low":""}">${BANNER[k]}</span>`:""}
-        <div class="slot-ball"><span class="rays"></span><span class="ball-shadow"></span><span class="orb"><span class="orb-spin"><i>?</i></span></span>${mImg(s,300,Math.round(150*scaleOf(s.type)),"")}</div>
-        <div class="slot-info"><b>${esc(specName(s))}</b><span style="display:flex;gap:4px;flex-wrap:wrap;justify-content:center">${wish||s.secret?typePill(s.type,true):""}${shinyPill(s)}${edPill(s)}</span>${tierTag(s)}${k>=BIG&&editionOf(s)>1?`<span class="ed-no">${edLabel(editionOf(s))}</span>`:""}${eventOf(s)?`<span class="new">${evNew?`Nouvelle bille ${esc(FAMILIES[s.family].name)} !`:`${esc(FAMILIES[s.family].name)} · déjà dans ta boîte`}</span>`:isNew?`<span class="new">Nouvelle case !</span>`:newColor?`<span class="new">Nouveau coloris</span>`:`<span class="dup">Déjà dans ta boîte</span>`}${decStamp(s)}</div>
+        <div class="slot-ball"><span class="rays"></span><span class="ball-shadow"></span><span class="orb"><span class="orb-spin"><i>?</i></span></span>${mImg(s,300,Math.round(150*scaleOf(s.type)),"")}${nb}</div>
+        <div class="slot-info"><b>${esc(specName(s))}</b><span style="display:flex;gap:4px;flex-wrap:wrap;justify-content:center">${wish||s.secret?typePill(s.type,true):""}${shinyPill(s)}${edPill(s)}</span>${tierTag(s)}${k>=BIG&&editionOf(s)>1?`<span class="ed-no">${edLabel(editionOf(s))}</span>`:""}${decStamp(s)}</div>
       </button>`}).join("")}
     </div>
     <div class="ov-actions" id="ov-actions">
@@ -7137,7 +7206,9 @@ function finishReveal(){
   } else {
     again = freeReady() ? `<button class="btn btn-yellow" data-action="open-next-free">Ouvrir le suivant (${freeStock()} en stock)</button>` : `<button class="btn btn-yellow" data-action="to-bags">Voir les sachets payants</button>`;
   }
-  document.getElementById("ov-actions").innerHTML = `<span class="ov-xp" style="flex-basis:100%;justify-content:center">${ic("ticket",18)} +${ovState.pxp} XP de saison</span>${again}<button class="btn btn-ghost" data-action="to-collection">Voir ma boîte à billes</button>`;
+  const nc = results.filter(r=>r.isNew||r.evNew).length, ncol = results.filter(r=>!r.isNew&&!r.evNew&&r.newColor).length;
+  const nbLeg = nc||ncol ? `<span class="nb-leg">${nc?`<span><span class="nbadge case">${ic("star",12,2.6)}</span>${nc} nouvelle${nc>1?"s":""} case${nc>1?"s":""}</span>`:""}${ncol?`<span><span class="nbadge col">${ic("drop",11,2.6)}</span>${ncol} nouveau${ncol>1?"x":""} coloris</span>`:""}</span>` : "";
+  document.getElementById("ov-actions").innerHTML = `${nbLeg}<span class="ov-xp" style="flex-basis:100%;justify-content:center">${ic("ticket",18)} +${ovState.pxp} XP de saison</span>${again}<button class="btn btn-ghost" data-action="to-collection">Voir ma boîte à billes</button>`;
 }
 function closeOv(quiet){
   // fermé avant d'avoir tout découvert : les billes sont déjà rangées, on montre quand même ce qu'il y avait
@@ -7159,7 +7230,7 @@ function showBagSummary({bag, results, left}){
     <button class="close-x" data-action="close-modal" aria-label="Fermer">×</button>
     <h2 id="bag-sum-t">${esc(bag.name)} : ${results.length} billes reçues</h2>
     <p class="meta">${left ? "Tu as quitté la page avant d'avoir ouvert tout ton sachet" : "Tu as fermé le sachet avant la fin"} : pas de panique, tout est déjà rangé dans ta boîte à billes.</p>
-    <div class="bag-sum-grid">${results.map(({s,isNew,newColor,evNew})=>`<button class="m-card" data-action="spec" data-id="${s.id}"><span class="ball">${mImg(s,160,Math.round(58*scaleOf(s.type)+8))}</span><b>${esc(specName(s))}</b>${typePill(s.type)}${shinyPill(s)}${evNew?`<span class="new">Nouvelle ${esc(FAMILIES[s.family].name)} !</span>`:isNew?`<span class="new">Nouvelle case !</span>`:newColor?`<span class="new">Nouveau coloris</span>`:""}</button>`).join("")}</div>
+    <div class="bag-sum-grid">${results.map(({s,isNew,newColor,evNew})=>`<button class="m-card" data-action="spec" data-id="${s.id}"><span class="ball">${mImg(s,160,Math.round(58*scaleOf(s.type)+8))}${newBadge({isNew,newColor,evNew})}</span><b>${esc(specName(s))}</b>${typePill(s.type)}${shinyPill(s)}</button>`).join("")}</div>
   </div>`;
   el.hidden = false;
   el.querySelector(".close-x").focus();
@@ -10478,7 +10549,7 @@ function viewSoon(){
    LA COUR DE RÉCRÉ : copains, troc, marché (supabase/cour.sql)
    Tout se décide sur le serveur ; ici on affiche et on envoie les demandes.
    ===================================================================== */
-var cour = {ok:null, moi:null, fil:null, trocs:null, marche:null, annonces:null, encheres:null, classement:null, absent:{}, loading:{}, f:{taille:"", shiny:"", tri:"recent", genre:""},
+var cour = {ok:null, moi:null, fil:null, trocs:null, marche:null, annonces:null, encheres:null, classement:null, absent:{}, loading:{}, at:{}, f:{taille:"", shiny:"", tri:"recent", genre:""},
   compose:null, sell:null, specs:[]};
 const COUR_ERR = {inconnu:"Personne ne s'appelle comme ça dans la cour.", soi_meme:"C'est toi ! Donne plutôt ton pseudo à tes copains.",
   deja_ami:"Vous êtes déjà copains.", trop_amis:"Tu as déjà 200 copains !", trop_demandes:"Tu as déjà beaucoup de demandes en attente.",
@@ -10492,9 +10563,11 @@ const COUR_ERR = {inconnu:"Personne ne s'appelle comme ça dans la cour.", soi_m
 function courFail(e){ console.warn("Cour :", e); toast(COUR_ERR[e?.code] || "Oups, ça n'a pas marché. Réessaie dans un instant.") }
 const courCount = () => cour.moi ? (cour.moi.trocs||0) + (cour.moi.recues||[]).length + (cour.unread||0) : 0;
 // charge une partie de la cour, puis réaffiche si on y est toujours
+// le classement bouge tout seul (les autres ouvrent des sachets) : au-delà de 20 s, on le redemande au prochain affichage
+const COUR_FRAIS = {classement:20000};
 function courLoad(kind, force){
-  if(!srvOn() || cour.loading[kind] || (cour[kind] && !force)) return;
-  cour.loading[kind] = true;
+  if(!srvOn() || cour.loading[kind] || (cour[kind] && !force && !(COUR_FRAIS[kind] && Date.now()-(cour.at[kind]||0) > COUR_FRAIS[kind]))) return;
+  cour.loading[kind] = true; cour.at[kind] = Date.now();
   const f = {moi:()=>Cloud.cour.moi(), fil:()=>Cloud.cour.fil(), trocs:()=>Cloud.cour.trocs(),
     marche:()=>Cloud.cour.marche(cour.f), annonces:()=>Cloud.cour.annonces(), journal:()=>Cloud.cour.journal(0, 120),
     encheres:()=>Cloud.cour.encheres(), classement:()=>Cloud.cour.classement(ui.clPortee)}[kind];
@@ -10558,6 +10631,8 @@ async function syncMarbles(quiet){
 setTimeout(eventGifts, 2500);
 setInterval(eventGifts, 60000);
 setInterval(()=>{ if(srvOn() && document.visibilityState==="visible"){ courLoad("moi", true); ecoRefresh(); syncMarbles(true); courNews(false) } }, 60000);
+// sur l'onglet Classement, il se met à jour tout seul (sans F5)
+setInterval(()=>{ if(srvOn() && document.visibilityState==="visible" && ui.view==="cour" && ui.courTab==="classement" && !cour.absent.classement) courLoad("classement") }, 25000);
 
 // ---------- le journal : l'historique du troc et du marché, et les nouvelles ----------
 // ce qui mérite d'être annoncé : ce que les autres ont fait (pas ce qu'on a fait soi-même)
@@ -10860,9 +10935,9 @@ function courCopains(){
   courLoad("fil");
   const rec = M.recues||[], env = M.envoyees||[], amis = M.amis||[];
   const face = a => a.active ? mImg(a.active,96,Math.round(14*scaleOf(a.active.type)+26),"") : avatarIni(a.pseudo,36);
-  const row = a => `<div class="cp-row" data-q="${esc(fold(a.pseudo+" "+(a.titre||"")))}"${a.active?` style="${tstyle(a.active.type)}"`:""}>
+  const row = a => `<div class="cp-row" data-q="${esc(fold(a.pseudo))}"${a.active?` style="${tstyle(a.active.type)}"`:""}>
       <button class="cp-face" data-action="ami-voir" data-id="${a.id}" aria-label="Voir la fiche de ${esc(a.pseudo)}">${face(a)}</button>
-      <button class="cp-who" data-action="ami-voir" data-id="${a.id}"><b>${esc(a.pseudo)}</b><small>${a.titre ? `${ic("trophy",12,2.4)} ${esc(a.titre)}` : a.active ? esc(specName(a.active)) : "Pas encore de titre"}</small></button>
+      <button class="cp-who" data-action="ami-voir" data-id="${a.id}"><b>${esc(a.pseudo)}</b>${a.active ? `<small>${esc(specName(a.active))}</small>` : ""}</button>
       <button class="btn btn-yellow btn-sm" data-action="troc-new" data-id="${a.id}">${ic("swap",15)} <span>Troquer</span></button></div>`;
   const wait = r => `<div class="cp-row wait"><span class="cp-face">${avatarIni(r.pseudo,36)}</span><span class="cp-who"><b>${esc(r.pseudo)}</b><small>${ic("clock",12,2.4)} N'a pas encore répondu</small></span>
       <button class="btn btn-ghost btn-sm" data-action="ami-retirer" data-id="${r.id}">Annuler</button></div>`;
@@ -10979,12 +11054,18 @@ function courTroc(){
     <section class="panel">${list.length ? list.map(t=>trocCard(t,kind)).join("") : `<p class="empty">${vide}</p>`}</section>
   </div>`;
 }
-const pickCard = (x, side, on) => `<button class="pick" data-action="troc-pick" data-side="${side}" data-id="${x.id}" aria-pressed="${on}"><span class="ball">${mImg(x,120,Math.round(28*scaleOf(x.type)+18),"")}</span>${esc(specName(x))}<small class="meta">${TYPES[x.type].label}</small></button>`;
+const pickTxt = x => { try{ return pickText(x) }catch(e){ return fold(specName(x)) } };
+const pickCard = (x, side, on, hid) => `<button class="pick" data-action="troc-pick" data-q="${esc(pickTxt(x))}"${hid?" hidden":""} data-side="${side}" data-id="${x.id}" aria-pressed="${on}"><span class="ball">${mImg(x,120,Math.round(28*scaleOf(x.type)+18),"")}</span>${esc(specName(x))}<small class="meta">${TYPES[x.type].label}</small></button>`;
+// la recherche (par nom, shiny, rareté…) cache les billes sans tout redessiner ; elle est gardée dans PQ pour les redessins
+const PQ = {};
+const pqWords = side => fold(PQ[side]||"").trim().split(/s+/).filter(Boolean);
 function pickList(list, side, sel, filt){
   if(!list) return courWait();
-  const shown = list.filter(x=>!filt || x.type===filt);
+  const shown = list.filter(x=>!filt || x.type===filt), q = pqWords(side);
+  const hid = x => !q.every(w=>pickTxt(x).includes(w)), none = shown.every(hid);
+  const search = list.length<6 ? "" : `<div class="cp-search pick-srch">${ic("search",15)}<input type="search" class="troc-q" data-side="${side}" value="${esc(PQ[side]||"")}" placeholder="Chercher : Galaxie, Rubis, shiny…" aria-label="Chercher une bille" autocomplete="off" spellcheck="false"></div>`;
   const chips = `<div class="pick-filters"><button class="chip" data-action="troc-filt" data-side="${side}" data-t="" aria-pressed="${!filt}">Toutes</button>${TK.filter(t=>list.some(x=>x.type===t)).map(t=>`<button class="chip" data-action="troc-filt" data-side="${side}" data-t="${t}" aria-pressed="${filt===t}">${TYPES[t].pl}</button>`).join("")}</div>`;
-  return list.length ? chips + `<div class="pick-grid">${shown.map(x=>pickCard(x, side, sel.includes(x.id))).join("")}</div>` : `<p class="empty">Aucune bille à troquer.</p>`;
+  return list.length ? search + chips + `<div class="pick-grid" data-side="${side}">${shown.map(x=>pickCard(x, side, sel.includes(x.id), hid(x))).join("")}</div><p class="meta pick-none" data-side="${side}"${none?"":" hidden"}>Aucune bille ne correspond.</p>` : `<p class="empty">Aucune bille à troquer.</p>`;
 }
 function trocCompose(){
   const C = cour.compose;
@@ -11006,7 +11087,15 @@ function trocCompose(){
       <button class="btn btn-yellow" type="submit" ${C.give.length+C.want.length?"":"disabled"}>${ic("swap",18)} ${C.remplace?"Envoyer la contre-proposition":"Envoyer la proposition"}</button></form></section>
   </div>`;
 }
+document.addEventListener("input", e=>{
+  if(!e.target.classList?.contains("troc-q")) return;
+  const side = e.target.dataset.side; PQ[side] = e.target.value;
+  const q = pqWords(side); let n = 0;
+  document.querySelectorAll(`.pick-grid[data-side="${side}"] .pick`).forEach(c=>{ const ok = q.every(w=>c.dataset.q.includes(w)); c.hidden = !ok; n += ok });
+  document.querySelector(`.pick-none[data-side="${side}"]`)?.toggleAttribute("hidden", n>0);
+});
 function trocStart(id, pre){
+  PQ.give = PQ.want = "";
   const a = (cour.moi?.amis||[]).find(x=>x.id===id); if(!a) return;
   cour.compose = {id, pseudo:a.pseudo, mine:null, theirs:null, give:[...(pre?.give||[])], want:[...(pre?.want||[])], mot:"", remplace:pre?.remplace||null, gb:pre?.gb||0, wb:pre?.wb||0};
   ui.courTab = "troc"; closeModal(); if(ui.view!=="cour") go("cour"); else renderView();
@@ -11098,7 +11187,7 @@ function bidAsk(id){
 }
 function sellStart(pick){
   if(!document.getElementById("ov").hidden) closeOv(true);   // depuis l'ouverture d'un sachet : on la referme, sinon elle cache le marché
-  cour.sell = {list:null, pick:pick||null, prix:"", mode:"fixe"};
+  cour.sell = {list:null, pick:pick||null, prix:"", mode:"fixe"}; PQ.sell = "";
   ui.courTab = "marche"; closeModal(); if(ui.view!=="cour") go("cour"); else renderView();
   const X = cour.sell;
   Cloud.cour.echangeables(sync.uid).then(l=>{ if(cour.sell===X){ X.list = l.filter(x=>x.id!==S.active); renderView() } }, courFail);

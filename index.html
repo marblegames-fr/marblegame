@@ -6035,7 +6035,7 @@ function viewCollection(){
   const ballCard = (x, grp=[x]) => { const nw = grp.filter(y=>unseenIds.has(y.id)).map(y=>y.id);
     return `<button class="m-card${x.shiny?" is-shiny":""}" data-action="spec" data-id="${x.id}"${nw.length?` data-unseen="${nw.join(",")}"`:""}>
       <span class="m-tags">${x.shiny?shinyPill(x):""}${show==="dups"?(keep.has(x.id)?`<span class="keep-tag">Gardée</span>`:`<span class="dup-tag">Double</span>`):""}<i class="m-tags-sp"></i>${nw.length&&show!=="dups"?`<span class="new">Nouveau</span>`:""}${grp.length>1?`<span class="x-n" title="Tu as ${grp.length} exemplaires de cette bille">×${grp.length}</span>`:""}</span>
-      <span class="ball">${mImg(x,160,Math.round(84*scaleOf(x.type)+6))}</span><b>${esc(specName(x))}</b>${typePill(x.type)}</button>` };
+      <span class="ball">${mImg(x,160,Math.round(84*scaleOf(x.type)+6))}</span><b>${esc(specName(x))}</b>${ui.type==="all"?typePill(x.type):""}</button>` };
   const EMPTY = {new:"Aucune nouveauté : tu as tout regardé !", dups:"Aucun doublon pour l'instant. Ouvre des sachets pour en trouver.", shiny:"Pas encore de shiny ici. Elles sont très rares : bonne chance !", season:"Pas encore de bille de saison ici. Le passe de saison en donne à certains paliers.", all:"Aucune bille dans ce format."};
 
   // les billes d'événement ont aussi leur case dans l'album (à la fin de chaque taille), sans compter dans les cases à remplir ;

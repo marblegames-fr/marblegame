@@ -488,14 +488,19 @@ $$;
 create or replace function interne.pachinko_roue() returns numeric[] language sql immutable as $$ select array[10,15,20,25,20,10]::numeric[] $$;   -- Mini → Mammouth
 create or replace function public.pachinko(payer boolean default false)
 returns jsonb language plpgsql security definer set search_path = public as $$
-declare qui uuid := interne.moi(); today text := interne.aujourdhui()::text; c record; b jsonb := null; x numeric; acc numeric := 0; t text := null; lie boolean := false;
+declare qui uuid := interne.moi(); today text := interne.aujourdhui()::text; c record; b jsonb := null; x numeric; acc numeric := 0; t text := null; lie boolean := false; n int := null;
 begin
   perform 1 from portefeuilles where joueur = qui for update;
   if not payer then   -- la bille du jour (une seule)
     begin insert into gains (joueur, source, cle, montant) values (qui, 'jeu', today || '|pachinko', 0);
     exception when unique_violation then raise exception 'deja'; end;
   else
+    -- 5 octobre 2026 : 20 billes achetées par jour au plus (PACHI_MAX dans index.html), la bille du jour en plus
+    select count(*) into n from gains g where g.joueur = qui and g.source = 'plinko' and g.cle like today || '|%';
+    if n >= 20 then raise exception 'limite_plinko'; end if;
     lie := interne.payer(qui, 150);   -- la bille de plus : 150 (PACHI_PRICE) ; payée avec des bonbecs de départ, le lot reste lié
+    n := n + 1;
+    insert into gains (joueur, source, cle) values (qui, 'plinko', today || '|' || n);
   end if;
   x := random() * (select sum(poids) from interne.pachinko_cases());
   for c in select * from interne.pachinko_cases() order by k loop
@@ -507,7 +512,7 @@ begin
     t := 'mammouth';
     b := interne.nouvelle_bille(qui, t, shiny => interne.tirer_shiny(interne.taux_shiny() * 10), src => 'pachinko', liee => lie);
   end if;
-  return jsonb_build_object('eco', interne.etat(qui), 'case', c.k, 'bonbecs', c.bonbecs, 'sac', c.sac, 'taille', t, 'bille', b);
+  return jsonb_build_object('eco', interne.etat(qui), 'case', c.k, 'bonbecs', c.bonbecs, 'sac', c.sac, 'taille', t, 'bille', b, 'achetees', n);
 end $$;
 
 -- Le bonbec du jour : calendrier de 4 semaines, calculé par le serveur

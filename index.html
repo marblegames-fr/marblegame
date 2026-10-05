@@ -1216,6 +1216,7 @@ body.vit-dragging,body.vit-dragging *{cursor:grabbing!important;user-select:none
 .game-stage.pachi-stage canvas{width:100%;height:auto;aspect-ratio:540/700;border-radius:22px;display:block;box-shadow:0 24px 50px -18px rgba(120,40,200,.55)}
 .pachi-panel ~ aside .rewards-list b{white-space:nowrap}
 .pachi-btns{display:flex;gap:10px;flex-wrap:wrap;justify-content:center;margin-top:14px}
+.pachi-n{flex-basis:100%;text-align:center;font-size:12.5px;font-weight:700;color:var(--ink-2)}
 .pachi-win{position:absolute;left:50%;top:20%;translate:-50% -50%;display:grid;justify-items:center;gap:4px;padding:16px 26px;border-radius:18px;background:rgba(20,12,30,.86);color:#fff;text-align:center;box-shadow:0 20px 40px -10px rgba(0,0,0,.6);animation:ask-in .25s ease-out}
 .pachi-win b{font-family:var(--display);font-weight:400;font-size:34px;color:#FFE14D}
 .pachi-win span{font-weight:800}
@@ -7882,6 +7883,9 @@ const PACHI = [
 ];
 // le Mammouth gagné (Plinko, Château rasé en un tir) : shiny avec les chances du Sachet Collector
 const MAMM_SHINY = SHINY_RATE*10;
+// 20 billes achetées par jour au plus (5 octobre 2026, même limite dans public.pachinko) : on joue, mais on ne farme pas les Mammouths
+const PACHI_MAX = 20;
+const pachiBought = () => playedToday().pachiN || 0;
 const PACHI_PRICE = 150, PACHI_ROWS = PACHI.length-1, PW = 540, PH = 700, PACHI_GAP = 47;
 // les cases : leur haut et leur hauteur (elles s'arrêtent avant le cadre doré et ses ampoules)
 const PACHI_Y = PH-114, PACHI_H = 92;
@@ -7899,7 +7903,9 @@ function viewPachinko(){
       <div class="game-stage pachi-stage"><canvas id="p-canvas" aria-label="Plateau du Plinko"></canvas><div class="pachi-win" id="p-win" hidden></div></div>
       <div class="pachi-btns">
         <button class="btn btn-yellow btn-xl" data-action="pachi-go" data-pay="0" ${free?"":"disabled"}>${ic("gift",18)} ${free?"Lâcher ma bille du jour":"Bille du jour lâchée"}</button>
-        <button class="btn ${free?"btn-ghost":"btn-yellow btn-xl"}" data-action="pachi-go" data-pay="1" ${S.jetons<PACHI_PRICE?"disabled":""}>Une bille de plus · <span class="price">${COIN}${PACHI_PRICE}</span></button>
+        ${pachiBought()>=PACHI_MAX ? `<button class="btn btn-ghost btn-xl" disabled>${ic("clock",18)} Reviens demain !</button>`
+          : `<button class="btn ${free?"btn-ghost":"btn-yellow btn-xl"}" data-action="pachi-go" data-pay="1" ${S.jetons<PACHI_PRICE?"disabled":""}>Une bille de plus · <span class="price">${COIN}${PACHI_PRICE}</span></button>`}
+        <small class="pachi-n">${pachiBought()>=PACHI_MAX ? `Tu as lâché tes ${PACHI_MAX} billes du jour · de nouvelles dans <b data-quest-timer>${untilMidnight()}</b>` : `Billes achetées aujourd'hui : <b>${pachiBought()} / ${PACHI_MAX}</b>`}</small>
       </div>
     </section>
     <aside style="display:grid;gap:20px">
@@ -8172,18 +8178,20 @@ async function pachiGo(pay){
   if(pachi.busy) return;
   if(!pay && !pachiFree()) return;
   if(pay && S.jetons<PACHI_PRICE){ toast(`Il te manque ${fmt(PACHI_PRICE-S.jetons)} ${CUR.many}.`); return }
+  if(pay && pachiBought()>=PACHI_MAX){ toast(`Tu as déjà lâché tes ${PACHI_MAX} billes du jour : reviens demain !`); return }
   pachi.busy = true;
   // Pas de spoiler : pendant la chute, le solde ne montre que la mise payée ; le gain (bonbecs, sachet, Mammouth)
   // n'apparaît qu'une fois la bille dans sa case (gain() est appelé à l'arrivée).
   let slot, bille = null, gain;
   try{
     if(srvOn()){ const r = await srv(()=>Cloud.eco.pachinko(!!pay)); slot = r.case; if(r.bille) bille = srvAdopt([r.bille])[0];
+      if(pay && r.achetees!=null) playedToday().pachiN = r.achetees;
       gain = () => applyEco(r.eco) }
     else { slot = pickW(Math.random(), PACHI.map(c=>c.w)); const c0 = PACHI[slot];
       if(c0.roue) bille = makeSpec("mammouth", {shiny:Math.random()<MAMM_SHINY ? rollShiny() : 0, src:"pachinko"});
       gain = () => { if(c0.j) S.jetons += c0.j; if(c0.sac) S.bagInv[c0.sac] = (S.bagInv[c0.sac]||0)+1; save() } }
-  }catch(e){ pachi.busy = false; srvFail(e); return }
-  if(pay){ S.jetons -= PACHI_PRICE; renderTop() }   // la mise part tout de suite (le serveur l'a déjà prise)
+  }catch(e){ pachi.busy = false; if(e?.code==="limite_plinko"){ playedToday().pachiN = PACHI_MAX; save(); renderView() } srvFail(e); return }
+  if(pay){ S.jetons -= PACHI_PRICE; renderTop(); if(!srvOn()) playedToday().pachiN = pachiBought()+1 }   // la mise part tout de suite (le serveur l'a déjà prise)
   let given = false;
   const give = () => { if(given) return; given = true; gain(); if(bille){ S.specs.push(bille); S.unseen.push(bille.id); logFind(bille); save() } };
   // si on quitte le plateau pendant la chute, le gain arrive quand même, à l'heure où la bille serait tombée
@@ -11980,7 +11988,7 @@ const lieeJusqu = s => s.lie===true ? Infinity : +s.lie||0;
 const estLiee = s => lieeJusqu(s) > Date.now();
 const libres = () => Math.max(0, S.jetons - Math.min(S.depart||0, S.jetons));
 const departTxt = () => S.depart ? ` (tes ${fmt(Math.min(S.depart, S.jetons))} ${CUR.many} de départ servent seulement à jouer)` : "";
-const ECO_ERR = {bonbecs_depart:`Les ${CUR.many} de ton cadeau de départ servent à ouvrir des sachets et à jouer, pas aux trocs ni au marché.`, evenement_fini:"L'événement est terminé : ce sachet n'est plus en vente.", pas_assez:`Il te manque des ${CUR.many}.`, pas_encore:"Ton sachet gratuit n'est pas encore prêt.", plus_de_sac:"Tu n'as plus de sachet offert de ce type.",
+const ECO_ERR = {limite_plinko:`Tu as déjà lâché tes ${PACHI_MAX} billes du jour au Plinko : reviens demain !`, bonbecs_depart:`Les ${CUR.many} de ton cadeau de départ servent à ouvrir des sachets et à jouer, pas aux trocs ni au marché.`, evenement_fini:"L'événement est terminé : ce sachet n'est plus en vente.", pas_assez:`Il te manque des ${CUR.many}.`, pas_encore:"Ton sachet gratuit n'est pas encore prêt.", plus_de_sac:"Tu n'as plus de sachet offert de ce type.",
   reseau:"Pas de connexion : réessaie dans un instant.", fusion_invalide:"Cette fusion n'est pas possible.", reserve_aux_testeurs:"Ces outils sont réservés aux comptes de test."};
 function srvFail(e){
   console.warn("Serveur :", e);

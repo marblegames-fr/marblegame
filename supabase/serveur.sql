@@ -521,15 +521,15 @@ create or replace function public.bonbec_du_jour()
 returns jsonb language plpgsql security definer set search_path = public as $$
 declare qui uuid := interne.moi(); p portefeuilles; today date := interne.aujourdhui(); s int; i int;
         -- 6 octobre 2026 : ÷10 et presque 2 fois plus généreux (DAILY_CAL dans index.html)
-        -- plus de Sachet Collector : la 4e semaine qui recommence en donnait un chaque semaine
+        -- un seul Sachet Collector par tour de 28 jours (avant, la 4e semaine recommençait et en donnait un chaque semaine)
         j int[] := array[10,15,20,10,25,30,0, 15,20,25,15,30,35,20, 20,25,30,0,35,40,20, 25,30,35,25,40,50,50];
         sac text[] := array[null,null,null,'classique',null,null,'premium', null,null,null,'classique',null,null,'premium',
-                            null,null,null,'premium',null,null,'premium', null,null,null,'premium',null,null,'premium'];
+                            null,null,null,'premium',null,null,'premium', null,null,null,'premium',null,null,'collector'];
 begin
   select * into p from portefeuilles where joueur = qui for update;
   if p.serie_jour = today then raise exception 'deja'; end if;
   s := case when p.serie_jour = today - 1 then p.serie + 1 else 1 end;
-  i := case when s <= 28 then s else 22 + (s - 29) % 7 end;   -- après 28 jours, la 4e semaine recommence
+  i := 1 + (s - 1) % 28;   -- après 28 jours, le calendrier repart au jour 1
   update portefeuilles set serie = s, serie_jour = today where joueur = qui;
   perform interne.crediter(qui, j[i], sac[i]);
   return jsonb_build_object('eco', interne.etat(qui), 'j', j[i], 'sac', sac[i], 'jour', i, 'serie', s);

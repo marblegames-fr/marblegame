@@ -5471,7 +5471,7 @@ const CHALLENGES = [
   {id:"t-roi", icon:"trophy", cat:"jeux", title:"Roi de la cour", desc:"Fais 3 étoiles au Pot et au Château, et gagne une partie de Tic.", goal:3, prog:()=>["pot","chateau","tic"].filter(k=>S.stats.best3[k]).length, rew:{j:80, title:"Roi de la cour"}},
   // --- les habitudes
   {id:"streak7", cat:"habitudes", icon:"clock", title:"Fidèle au poste", desc:"Récupère le bonbec du jour 7 jours d'affilée.", goal:7, prog:()=>bestStreak(), rew:{j:50}},
-  {id:"streak28", cat:"habitudes", icon:"clock", title:"Un mois sans rater", desc:"Récupère le bonbec du jour 28 jours d'affilée.", goal:28, prog:()=>bestStreak(), rew:{j:200, bag:"collector", title:"Toujours là"}},
+  {id:"streak28", cat:"habitudes", icon:"clock", title:"Un mois sans rater", desc:"Récupère le bonbec du jour 28 jours d'affilée.", goal:28, prog:()=>bestStreak(), rew:{j:200, bag:"premium", title:"Toujours là"}},
   {id:"bags50", cat:"habitudes", icon:"bag", title:"Habitué du préau", desc:"Ouvre 50 sachets.", goal:50, prog:()=>S.bags||0, rew:{j:50, bag:"premium"}},
   {id:"bags250", cat:"habitudes", icon:"bag", title:"Sac sans fond", desc:"Ouvre 250 sachets.", goal:250, prog:()=>S.bags||0, rew:{j:150, bag:"premium", title:"Sac sans fond"}},
   {id:"craft10", cat:"habitudes", icon:"flask", title:"Apprenti confiseur", desc:"Réussis 10 fusions à la Confiserie.", goal:10, prog:()=>S.crafts||0, rew:{j:80, title:"Apprenti confiseur"}},
@@ -5910,17 +5910,17 @@ function claimAll(){
 }
 // Le bonbec du jour : un cadeau à la première visite de chaque jour, sur un calendrier de 4 semaines.
 // Chaque semaine rapporte plus que la précédente, avec un sachet au milieu (jour 4) et un plus beau à la fin (jour 7).
-// Après le 28ᵉ jour, la 4ᵉ semaine recommence tant qu'on ne rate pas de jour. Un jour sauté : retour au jour 1.
+// Après le 28ᵉ jour, le calendrier repart au jour 1 (un Sachet Collector par tour de 28 jours). Un jour sauté : retour au jour 1.
 // 6 octobre 2026 : montants divisés par 10, et calendrier presque 2 fois plus généreux (même tableau dans serveur.sql, bonbec_du_jour)
-// Plus de Sachet Collector dans le calendrier (la 4ᵉ semaine qui recommence en donnait un chaque semaine) : le mois complet le donne une fois, par le succès « Un mois sans rater ».
+// (6 octobre 2026) avant, la 4ᵉ semaine recommençait en boucle et donnait un Collector chaque semaine : maintenant un seul, le 28ᵉ jour.
 const DAILY_CAL = [
   {j:10}, {j:15}, {j:20}, {bag:"classique", j:10}, {j:25}, {j:30}, {bag:"premium"},
   {j:15}, {j:20}, {j:25}, {bag:"classique", j:15}, {j:30}, {j:35}, {bag:"premium", j:20},
   {j:20}, {j:25}, {j:30}, {bag:"premium"},         {j:35}, {j:40}, {bag:"premium", j:20},
-  {j:25}, {j:30}, {j:35}, {bag:"premium", j:25},   {j:40}, {j:50}, {bag:"premium", j:50},
+  {j:25}, {j:30}, {j:35}, {bag:"premium", j:25},   {j:40}, {j:50}, {bag:"collector", j:50},
 ];
 const DAILY_N = DAILY_CAL.length;
-const dailyDay = streak => streak<=DAILY_N ? streak-1 : DAILY_N-7 + (streak-DAILY_N-1)%7;   // 0 à 27
+const dailyDay = streak => (streak-1)%DAILY_N;   // 0 à 27, puis on recommence au jour 1
 const dailyRew = i => ({j:DAILY_CAL[i].j||0, bag:DAILY_CAL[i].bag});
 const dailyText = r => [r.j?`${fmt(r.j)} ${CUR.many}`:"", r.bag?`un ${BAG_BY[r.bag].name}`:""].filter(Boolean).join(" et ");
 const dailyReady = () => !S.daily || S.daily.last!==dayKey();
@@ -5939,7 +5939,7 @@ function openDaily(){
     <div class="daily-body">
       <span class="daily-kicker">${ic("gift",16)} Le bonbec du jour</span>
       <h2>${ready ? (streak>1?`${streak} jours de suite !`:"Coucou, te revoilà !") : "C'est dans la poche !"}</h2>
-      <p>Un jour raté, et ça repart au jour 1.${looped?" La dernière semaine recommence tant que tu reviens.":""}</p>
+      <p>Un jour raté, et ça repart au jour 1.${looped?" Après le jour 28, le calendrier recommence au jour 1.":""}</p>
       <div class="daily-cal">${[0,1,2,3].map(w=>`<div class="daily-wk"><span class="wk-lbl">Semaine ${w+1}</span><div class="daily-row">${DAILY_CAL.slice(w*7,w*7+7).map((d,k)=>cell(d,w*7+k)).join("")}</div></div>`).join("")}</div>
       ${ready ? `<button class="btn btn-yellow" data-action="daily-claim">${ic("gift",18)} Récupérer ${esc(dailyText(r))}</button>`
         : `<span class="daily-done">${ic("check",18,2.5)} Bonbec du jour récupéré</span>

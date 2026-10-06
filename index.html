@@ -1377,6 +1377,9 @@ body.vit-dragging,body.vit-dragging *{cursor:grabbing!important;user-select:none
 .lt-last h3{font-size:16px;font-weight:900;margin-bottom:8px}
 .lt-draw{display:flex;gap:10px;margin-bottom:10px}
 .lt-draw .lt-ball{width:52px;height:52px;font-size:22px}
+.lt-pop .lt-draw{justify-content:center;margin:14px 0 6px}
+.lt-pop .lt-mine{text-align:left}
+.lt-pop .btns{gap:8px}
 .pachi-dot{display:inline-block;width:10px;height:10px;border-radius:3px;margin-right:7px;vertical-align:0}
 .modal.roue-modal{display:grid;grid-template-columns:minmax(0,1fr);justify-items:center;gap:12px;overflow:visible;width:min(460px,100%);padding:26px 22px;text-align:center}
 .roue-modal h2{font-family:var(--display);font-weight:400;font-size:30px}
@@ -9023,12 +9026,13 @@ const lotBall = (n, on) => `<span class="lt-ball${on?" on":""}">${n}</span>`;
 function lotLoad(force){
   if(!srvOn() || lot.loading || (lot.data && !force)) return;
   lot.loading = true;
-  srv(()=>Cloud.eco.loterie()).then(r=>{ lot.loading = false; lot.data = r; applyEco(r.eco); lotWins(r.gagne); if(ui.view==="loterie" || ui.view==="jeux") renderView() },
+  srv(()=>Cloud.eco.loterie()).then(r=>{ lot.loading = false; lot.data = r; applyEco(r.eco); lotWins(r.gagne); if(ui.view==="loterie" || ui.view==="jeux") renderView(); renderBell() },
     e=>{ lot.loading = false; srvFail(e) });
 }
 function lotWins(g){
   (g||[]).forEach(w=>{ if(w.bille){ const s = srvAdopt([w.bille])[0]; S.specs.push(s); S.unseen.push(s.id); logFind(s) } });
   if(g?.length){ save(); const best = Math.max(...g.map(w=>w.bons));
+    if(lotDue()) return;   // la fenêtre des résultats va s'ouvrir : c'est elle qui fête les lots
     toast(best===3 ? "Loterie : 3 bons numéros, un Mammouth est à toi !" : `Loterie : tu as gagné ${g.length} lot${g.length>1?"s":""} !`);
     Sound.ding(); FX.fireworks(SHINY_COLS, best===3 ? 8 : 3) }
 }
@@ -9056,6 +9060,24 @@ function viewLoterie(){
     </section></aside>
   </div>`;
 }
+// Les résultats du tirage : à la première visite après le dimanche 20 h (lundi par exemple), une fenêtre montre
+// les numéros tirés et mes tickets, une seule fois par tirage (S.lotPop) ; la cloche le garde ensuite en notification.
+const lotDraw = () => { const L = srvOn() && lot.data?.dernier; return L && L.mes?.length ? L : null };
+const lotDue = () => { const L = lotDraw(); return !!L && S.lotPop!==L.tirage };
+function lotResultPopup(){
+  const L = lotDraw(); S.lotPop = L.tirage; save();
+  const win = new Set(L.numeros), best = Math.max(...L.mes.map(t=>t.bons||0));
+  const el = document.getElementById("modal");
+  el.innerHTML = `<div class="modal gc-pop lt-pop" role="dialog" aria-modal="true" aria-label="Les résultats de la Loterie"><button class="close-x" data-action="close-modal" aria-label="Fermer">×</button>
+    <span class="gh-kick">${ic("ticket",14)} Tirage du ${new Date(L.tirage+"T12:00:00").toLocaleDateString("fr-FR",{weekday:"long", day:"numeric", month:"long"})}</span>
+    <h2>${best===3 ? "3 bons numéros : le Mammouth est à toi !" : best ? "Tu as gagné à la Loterie !" : "Les numéros de la Loterie sont tombés"}</h2>
+    <div class="lt-draw">${L.numeros.map(n=>lotBall(n,true)).join("")}</div>
+    <div class="lt-mine">${L.mes.map(t=>`<div class="lt-ticket${t.bons?" won":""}">${t.numeros.map(n=>lotBall(n, win.has(n))).join("")}<small>${t.bons ? LOT_PRIX.find(x=>x.bons===t.bons).txt : "Aucun bon numéro"}</small></div>`).join("")}</div>
+    <p class="meta">${best ? "Tes lots sont déjà dans ta collection." : "Pas de chance cette fois. Nouveau tirage dimanche prochain !"}</p>
+    <div class="btns"><button class="btn btn-ghost" data-action="nav" data-view="loterie">Voir la loterie</button><button class="btn btn-yellow" data-action="close-modal">${best ? "Super !" : "Dommage !"}</button></div></div>`;
+  el.hidden = false;
+  if(best){ Sound.ding(); FX.fireworks(SHINY_COLS, best===3 ? 8 : 3) }
+}
 // le prochain tirage (dimanche 20 h) quand on n'a pas encore la réponse du serveur
 const lotNext = () => { const d = new Date(); d.setHours(20,0,0,0); d.setDate(d.getDate()+(7-d.getDay())%7); if(d<=Date.now()) d.setDate(d.getDate()+7); return +d };
 // la Loterie sur la page des jeux : pas vraiment un jeu, alors un bandeau comme la Grande Course (6 octobre 2026)
@@ -9076,7 +9098,11 @@ function lotBanner(){
     </div>`;
 }
 const lotLeft = h => { const ms = Math.max(0, h-Date.now()), d = Math.floor(ms/864e5), hh = Math.floor(ms/36e5)%24, mm = Math.floor(ms/6e4)%60; return d ? `${d} j ${hh} h` : `${hh} h ${String(mm).padStart(2,"0")}` };
-setInterval(()=>{ document.querySelectorAll("[data-lot-timer]").forEach(el=>{ if(!lot.data){ el.textContent = lotLeft(lotNext()); return } if(lot.data){ el.textContent = lotLeft(lot.data.heure); if(lot.data.heure<=Date.now() && ui.view==="loterie" && !lot.loading){ lot.data.heure = Date.now()+6e4; lotLoad(true) } } }) }, 1000);
+setInterval(()=>{
+  document.querySelectorAll("[data-lot-timer]").forEach(el=>el.textContent = lotLeft(lot.data?.heure || lotNext()));
+  // dimanche 20 h : on redemande l'état au serveur, quelle que soit la page (les résultats s'affichent tout seuls)
+  if(lot.data && srvOn() && lot.data.heure<=Date.now() && !lot.loading){ lot.data.heure = Date.now()+6e4; lotLoad(true) }
+}, 1000);
 async function lotGo(){
   if(lot.busy) return; lot.busy = true;
   try{ const r = await srv(()=>Cloud.eco.loterieTicket()); lot.data = r; lot.fresh = r.nouveau; applyEco(r.eco); lotWins(r.gagne); Sound.ding() }
@@ -11876,6 +11902,9 @@ function notifList(){
       : e.k==="gagnee" ? {bille:e.bille?.id} : {tab:"journal"};
     out.push({le:e.le, ic:J.ic, txt:J.txt, ball:e.bille || (e.recu||[])[0] || null, go}) });
   gcWaiting().forEach(D=>out.push({le:D.depart+GC_DUR*1000, ic:"flag", txt:`La Grande Course ${gcSlotName(D.heure||20)} est finie : <b>tes lots t'attendent</b>`, go:{view:"grandecourse"}}));
+  const L = lotDraw();
+  if(L){ const best = Math.max(...L.mes.map(t=>t.bons||0));
+    out.push({le:+new Date(L.tirage+"T20:00:00"), ic:"ticket", txt:`Tirage de la Loterie : ${best ? `<b>${best} bon${best>1?"s":""} numéro${best>1?"s":""}</b>, ${LOT_PRIX.find(x=>x.bons===best).txt.toLowerCase()}` : "aucun bon numéro cette fois"}`, go:{view:"loterie"}}) }
   return out.sort((a,b)=>b.le-a.le).slice(0,40);
 }
 const notifUnread = () => notifList().filter(n=>n.le > (S.notifVu||0)).length;
@@ -12988,7 +13017,7 @@ async function ecoStart(){
 function eventGifts(){}
 function ecoRefresh(){ if(srvOn()) srv(()=>Cloud.eco.state()).then(applyEco, ()=>{}) }
 // une fois connecté au serveur : les nouvelles de la cour (demandes, trocs) et les billes reçues entre-temps
-function courStart(){ if(!srvOn()) return; if(S.notifVu==null){ S.notifVu = S.courVu || Date.now(); save() } courLoad("moi", true); courLoad("journal"); syncMarbles(true); courNews(true); gcLoad(true); courListen(); renderBell() }
+function courStart(){ if(!srvOn()) return; if(S.notifVu==null){ S.notifVu = S.courVu || Date.now(); save() } courLoad("moi", true); courLoad("journal"); syncMarbles(true); courNews(true); gcLoad(true); lotLoad(true); courListen(); renderBell() }
 const DEVICE = (()=>{ try{ let d = localStorage.getItem("billy-device"); if(!d){ d = newId(); localStorage.setItem("billy-device", d) } return d }catch(e){ return newId() } })();
 const GUEST_FLAG = "billy-guest";   // le joueur a choisi de jouer sans compte sur cet appareil
 const lsGet = k => { try{ return localStorage.getItem(k) }catch(e){ return null } };
@@ -13622,11 +13651,12 @@ function bootPopups(){
   }
   if(dailyDue()){ S.dailySeen = dayKey(); save(); openDaily(); return }
   if(heldNews){ showHeldNews(); return }
-  if(gcDue()) gcResultPopup();
+  if(gcDue()){ gcResultPopup(); return }
+  if(lotDue()) lotResultPopup();
 }
 setTimeout(bootPopups, 800);
 // une fenêtre déjà ouverte (ou un sachet en cours) : on repasse dès qu'elle se ferme ; au retour sur l'onglet après minuit aussi
-setInterval(()=>{ if(document.visibilityState==="visible" && (dailyDue() || heldNews || gcDue()) && popupsFree() && !inGame()) bootPopups() }, 2000);
+setInterval(()=>{ if(document.visibilityState==="visible" && (dailyDue() || heldNews || gcDue() || lotDue()) && popupsFree() && !inGame()) bootPopups() }, 2000);
 // petits secrets
 document.getElementById("logo-marble").addEventListener("click", ()=>{
   S.logo = (S.logo||0)+1; save();

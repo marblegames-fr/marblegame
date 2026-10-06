@@ -98,7 +98,12 @@
       fuse: ids => rpc("fusionner", {ids}),
       fuseEv: ids => rpc("fusion_evenement", {ids}),
       pachinko: payer => rpc("pachinko", {payer:!!payer}),
-      roue: () => rpc("roue"),   // la Roue du jour (6 octobre 2026)
+      // les jeux de hasard (supabase/chance.sql) : payer = false pour la partie offerte du jour
+      roue: payer => rpc("roue", {payer:!!payer}),
+      grattage: payer => rpc("grattage", {payer:!!payer}),
+      distributeur: payer => rpc("distributeur", {payer:!!payer}),
+      loterie: () => rpc("loterie_etat"),
+      loterieTicket: () => rpc("loterie_ticket"),
       daily: () => rpc("bonbec_du_jour"),
       gain: (source, cle, montant, sac) => rpc("gagner", {source, cle, montant, sac:sac||null}),
       marble: (source, cle, graine, bid) => rpc("bille_gagnee", {source, cle, graine:graine??null, bid:bid||null}),

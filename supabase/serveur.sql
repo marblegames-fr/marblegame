@@ -148,7 +148,7 @@ create or replace function interne.nb_coloris() returns int language sql immutab
 -- supabase/reset.sql les garde. Au lancement : remplacer true par false (et BETA.open:false dans index.html).
 create or replace function interne.beta_ouverte() returns boolean language sql immutable as $$ select true $$;
 create or replace function interne.taux_shiny() returns numeric language sql immutable as $$ select 0.0005::numeric $$;   -- sac gratuit et fusions ; Classique ×2, Premium et Pirate ×4, Collector ×10 (interne.sac) ; 1 sur 2 000 (relevé le 2 octobre 2026 : 1 sur 10 000, c'était presque jamais)
-create or replace function interne.revente() returns int[] language sql immutable as $$ select array[1,1,2,5,15,60] $$;   -- 6 octobre 2026 : toute la monnaie divisée par 10 (supabase/division10.sql)
+create or replace function interne.revente() returns int[] language sql immutable as $$ select array[1,2,4,8,20,50] $$;   -- 6 octobre 2026 : toute la monnaie divisée par 10 (supabase/division10.sql)
 create or replace function interne.prime_shiny() returns int[] language sql immutable as $$ select array[200,500,1500] $$;
 create or replace function interne.fusion_n() returns int[] language sql immutable as $$ select array[3,5,5,6,8] $$;
 
@@ -500,7 +500,7 @@ begin
   else
     -- 5 octobre 2026 : 20 billes achetées par jour au plus (PACHI_MAX dans index.html), la bille du jour en plus
     select count(*) into n from gains g where g.joueur = qui and g.source = 'plinko' and g.cle like today || '|%';
-    if n >= 20 then raise exception 'limite_plinko'; end if;
+    if n >= 2 then raise exception 'limite_plinko'; end if;   -- 6 octobre 2026 : une bille offerte + 2 achetées par jour (comme les autres jeux de hasard)
     lie := interne.payer(qui, 15);   -- la bille de plus : 15 (PACHI_PRICE) ; payée avec des bonbecs de départ, le lot reste lié
     n := n + 1;
     insert into gains (joueur, source, cle) values (qui, 'plinko', today || '|' || n);
@@ -526,24 +526,8 @@ create or replace function interne.roue_cases() returns table(k int, poids numer
     (4, 7, 40, null, null), (5, 15.35, 5, null, null), (6, 6, 0, 'premium', null), (7, 16, 20, null, null), (8, 11, 10, null, null),
     (9, 3, 100, null, null), (10, 2, 0, 'collector', null)) v(k, poids, bonbecs, sac, taille)
 $$;
-create or replace function public.roue()
-returns jsonb language plpgsql security definer set search_path = public as $$
-declare qui uuid := interne.moi(); today text := interne.aujourdhui()::text; c record; b jsonb := null; x numeric; acc numeric := 0;
-begin
-  perform 1 from portefeuilles where joueur = qui for update;
-  begin insert into gains (joueur, source, cle, montant) values (qui, 'jeu', today || '|roue', 0);
-  exception when unique_violation then raise exception 'deja'; end;
-  x := random() * (select sum(poids) from interne.roue_cases());
-  for c in select * from interne.roue_cases() order by k loop
-    acc := acc + c.poids; exit when x < acc;
-  end loop;
-  perform interne.crediter(qui, c.bonbecs, c.sac);
-  if c.bonbecs > 0 then update gains set montant = c.bonbecs where joueur = qui and source = 'jeu' and cle = today || '|roue'; end if;
-  if c.taille = 'mammouth' then
-    b := interne.nouvelle_bille(qui, 'mammouth', shiny => interne.tirer_shiny(interne.taux_shiny() * 10), src => 'roue');
-  end if;
-  return jsonb_build_object('eco', interne.etat(qui), 'case', c.k, 'bonbecs', c.bonbecs, 'sac', c.sac, 'bille', b);
-end $$;
+-- public.roue(payer) est dans supabase/chance.sql (6 octobre 2026 : un tour offert + 2 achetés par jour)
+drop function if exists public.roue();
 
 -- Le bonbec du jour : calendrier de 4 semaines, calculé par le serveur
 create or replace function public.bonbec_du_jour()
@@ -710,7 +694,7 @@ end $$;
 -- droits : le site ne peut appeler que ces fonctions-là
 do $$ declare f text; begin
   foreach f in array array['eco_demarrer(int,jsonb,int)','eco_etat()','ouvrir_sac(text,boolean,boolean)','echanger_billes(uuid[])',
-    'fusionner(uuid[])','fusion_evenement(uuid[])','pachinko(boolean)','roue()','bonbec_du_jour()','gagner(text,text,int,text)','bille_gagnee(text,text,bigint,uuid)',
+    'fusionner(uuid[])','fusion_evenement(uuid[])','pachinko(boolean)','bonbec_du_jour()','gagner(text,text,int,text)','bille_gagnee(text,text,bigint,uuid)',
     'miser(text,int)','regler_mise(bigint,int)','outil_test(text)'] loop
     execute format('revoke all on function public.%s from public, anon', f);
     execute format('grant execute on function public.%s to authenticated', f);

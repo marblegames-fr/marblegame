@@ -9041,6 +9041,7 @@ function viewLoterie(){
   lotLoad(); const D = lot.data;
   if(!D) return `<div class="page-head"><div><button class="back-link" data-action="nav" data-view="jeux">${ic("chevl",14)} Tous les jeux</button><h1>La Loterie</h1></div></div><p class="meta">Chargement…</p>`;
   const L = D.dernier, win = new Set(L?.numeros||[]);
+  if(lotDue()){ S.lotPop = L.tirage; save() }   // résultats vus ici : la fenêtre du tirage ne s'ouvrira pas en plus
   return `<div class="page-head"><div><button class="back-link" data-action="nav" data-view="jeux">${ic("chevl",14)} Tous les jeux</button><h1>La Loterie de la semaine</h1>
 </div></div>
   <div class="game-wrap">
@@ -11903,8 +11904,8 @@ function notifList(){
     out.push({le:e.le, ic:J.ic, txt:J.txt, ball:e.bille || (e.recu||[])[0] || null, go}) });
   gcWaiting().forEach(D=>out.push({le:D.depart+GC_DUR*1000, ic:"flag", txt:`La Grande Course ${gcSlotName(D.heure||20)} est finie : <b>tes lots t'attendent</b>`, go:{view:"grandecourse"}}));
   const L = lotDraw();
-  if(L){ const best = Math.max(...L.mes.map(t=>t.bons||0));
-    out.push({le:+new Date(L.tirage+"T20:00:00"), ic:"ticket", txt:`Tirage de la Loterie : ${best ? `<b>${best} bon${best>1?"s":""} numéro${best>1?"s":""}</b>, ${LOT_PRIX.find(x=>x.bons===best).txt.toLowerCase()}` : "aucun bon numéro cette fois"}`, go:{view:"loterie"}}) }
+  // sans rien dévoiler : on découvre ses numéros (et ses lots) dans la fenêtre ou sur la page de la Loterie
+  if(L) out.push({le:+new Date(L.tirage+"T20:00:00"), ic:"ticket", txt:`Le tirage de la Loterie a eu lieu : <b>viens voir tes numéros</b>`, go:{view:"loterie"}});
   return out.sort((a,b)=>b.le-a.le).slice(0,40);
 }
 const notifUnread = () => notifList().filter(n=>n.le > (S.notifVu||0)).length;

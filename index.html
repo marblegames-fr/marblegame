@@ -5427,7 +5427,8 @@ const CHALLENGES = [
   {id:"first-hole", cat:"debut", icon:"target", title:"Premier trou", desc:"Réussis un trou au Tir.", goal:1, prog:()=>S.holes||0, rew:{j:10}},
   {id:"first-craft", cat:"debut", icon:"flask", title:"Première fusion", desc:"Fusionne des billes à la Confiserie.", goal:1, prog:()=>S.crafts||0, rew:{j:15}},
   // --- l'album : combien de billes différentes
-  ...[[25,200],[50,300],[100,500,"premium"],[250,800,"premium"],[500,1200,"collector"],[1000,2000,"collector","Collectionneur fou"],[2000,3500,"collector"],[3000,5000,"collector","Encyclopédie vivante"],[4000,8000,"collector","Grand collectionneur"]]
+  // (6 octobre 2026) ÷10 comme le reste, et le Sachet Collector gardé pour les tout derniers paliers : c'est le plus rare à ouvrir
+  ...[[25,20],[50,30],[100,50,"classique"],[250,80,"premium"],[500,120,"premium"],[1000,200,"premium","Collectionneur fou"],[2000,350,"premium"],[3000,500,"collector","Encyclopédie vivante"],[4000,800,"collector","Grand collectionneur"]]
     .map(([n,j,bag,title])=>({id:"found-"+n, cat:"album", icon:"book", title:`${fmt(n)} billes`, desc:`Trouve ${fmt(n)} billes différentes (taille, motif et coloris).`, goal:n, prog:()=>albumFound(SC()).size, rew:{j, bag, title}})),
   {id:"half", cat:"album", icon:"book", title:"Mi-parcours", desc:`Trouve la moitié des motifs de l'album : ${Math.ceil(TOTAL_SLOTS/2)} sur ${TOTAL_SLOTS}, toutes tailles confondues.`, goal:Math.ceil(TOTAL_SLOTS/2), prog:()=>slotsOwned(SC()).size, rew:{j:60, bag:"premium"}},
   {id:"full", cat:"album", icon:"trophy", title:"Album bien rempli", desc:`Trouve 170 des ${TOTAL_SLOTS} motifs de l'album, toutes tailles confondues.`, goal:170, prog:()=>slotsOwned(SC()).size, rew:{j:300, bag:"collector"}},
@@ -5436,13 +5437,13 @@ const CHALLENGES = [
   {id:"pal10", cat:"coloris", icon:"book", title:"Nuancier", desc:"Un même motif dans 10 coloris différents.", goal:10, prog:()=>Math.max(0,...FAMILIES.map((_,f)=>new Set(SC().filter(s=>s.family===f&&isBasePal(s.pal)).map(s=>s.pal)).size)), rew:{j:40}},
   {id:"pal24", cat:"coloris", icon:"book", title:"Grand nuancier", desc:"Un même motif dans 24 coloris différents.", goal:24, prog:()=>Math.max(0,...FAMILIES.map((_,f)=>new Set(SC().filter(s=>s.family===f&&isBasePal(s.pal)).map(s=>s.pal)).size)), rew:{j:90}},
   {id:"allpals", cat:"coloris", icon:"book", title:"Boîte de peinture", desc:`Trouve les ${BASE_PALS} coloris, tous motifs et tailles confondus.`, goal:BASE_PALS, prog:()=>new Set(SC().filter(s=>isBasePal(s.pal)).map(s=>s.pal)).size, rew:{j:50, title:"Peintre en billes"}},
-  {id:"case1", cat:"coloris", icon:"star", title:"Motif complet", desc:`Un motif dans les ${BASE_PALS} coloris, dans une même taille.`, goal:1, prog:()=>[...slotsOwned(SC()).values()].filter(l=>casePals(l)===BASE_PALS).length, rew:{j:150, bag:"collector", title:"Nuancier vivant"}},
+  {id:"case1", cat:"coloris", icon:"star", title:"Motif complet", desc:`Un motif dans les ${BASE_PALS} coloris, dans une même taille.`, goal:1, prog:()=>[...slotsOwned(SC()).values()].filter(l=>casePals(l)===BASE_PALS).length, rew:{j:150, bag:"premium", title:"Nuancier vivant"}},
   {id:"case5", cat:"coloris", icon:"star", title:"Cinq motifs complets", desc:`Cinq motifs dans les ${BASE_PALS} coloris.`, goal:5, prog:()=>[...slotsOwned(SC()).values()].filter(l=>casePals(l)===BASE_PALS).length, rew:{j:400, bag:"collector"}},
   // --- les tailles : des motifs différents dans chaque format, et les grosses billes
   ...TK.map((t,i)=>({id:"fmt-"+t, cat:"tailles", icon:"layers", title:FMT_GOAL[i]>=N_DECORS?`Tous les motifs en ${TYPES[t].label}`:`${FMT_GOAL[i]} motifs en ${TYPES[t].label}`,
     desc:FMT_GOAL[i]>=N_DECORS?`Trouve les ${N_DECORS} motifs au format ${TYPES[t].label}.`:`Trouve ${FMT_GOAL[i]} motifs différents (sur ${N_DECORS}) au format ${TYPES[t].label}.`, goal:Math.min(FMT_GOAL[i],N_DECORS),
     prog:()=>DECOR_IDS.filter(f=>SC().some(s=>s.type===t&&s.family===f)).length,
-    rew:{j:[400,500,700,900,1200,2500][i], bag:i>=3?"collector":"premium", title:t==="mammouth"?"Maître du Mammouth":null}})),
+    rew:{j:[40,50,70,90,120,250][i], bag:t==="mammouth"?"collector":"premium", title:t==="mammouth"?"Maître du Mammouth":null}})),
   {id:"big5", cat:"tailles", icon:"trophy", title:"La cour des grands", desc:"Possède 5 Boulets ou Mammouths.", goal:5, prog:()=>SC().filter(s=>tierOf(s)>=BIG).length, rew:{j:40, bag:"premium"}},
   {id:"mam3", cat:"tailles", icon:"trophy", title:"Chasseur de mammouths", desc:"Possède 3 Mammouths.", goal:3, prog:()=>SC().filter(s=>s.type==="mammouth").length, rew:{j:80, title:"Chasseur de mammouths"}},
   // --- les motifs : chaque motif dans plusieurs tailles
@@ -5460,7 +5461,7 @@ const CHALLENGES = [
   {id:"secrets", cat:"rare", icon:"lock", title:"Détective de la cour", desc:"Trouve toutes les billes secrètes.", goal:Object.keys(SECRETS).length, prog:()=>S.specs.filter(s=>SECRETS[s.secret]).length, rew:{j:300, title:"Détective"}},
   // --- jeux de la cour
   {id:"t-golf", cat:"jeux", icon:"target", title:"Golfeur du dimanche", desc:"Réussis 20 trous au Tir.", goal:20, prog:()=>S.holes||0, rew:{j:40}},
-  {id:"t-parcours", cat:"jeux", icon:"target", title:"Le grand parcours", desc:`Réussis les ${LEVELS.length} trous différents du Tir (un nouveau chaque jour).`, goal:LEVELS.length, prog:()=>Object.keys(S.best).filter(k=>LEVELS[k]).length, rew:{j:200, bag:"collector", title:"Pro du Tir"}},
+  {id:"t-parcours", cat:"jeux", icon:"target", title:"Le grand parcours", desc:`Réussis les ${LEVELS.length} trous différents du Tir (un nouveau chaque jour).`, goal:LEVELS.length, prog:()=>Object.keys(S.best).filter(k=>LEVELS[k]).length, rew:{j:200, bag:"premium", title:"Pro du Tir"}},
   {id:"t-pot", icon:"pot", cat:"jeux", title:"Champion du pot", desc:"Mets 25 billes dans le pot.", goal:25, prog:()=>S.stats.pot, rew:{j:50, title:"Champion du pot"}},
   {id:"t-castle", icon:"castle", cat:"jeux", title:"Démolisseur de châteaux", desc:"Fais sortir 60 billes du cercle au Château.", goal:60, prog:()=>S.stats.castle, rew:{j:50, title:"Démolisseur"}},
   {id:"t-tic", icon:"tic", cat:"jeux", title:"Terreur du préau", desc:"Gagne 10 parties de Tic.", goal:10, prog:()=>S.stats.tic, rew:{j:60, title:"Terreur du préau"}},
@@ -5470,7 +5471,7 @@ const CHALLENGES = [
   {id:"streak7", cat:"habitudes", icon:"clock", title:"Fidèle au poste", desc:"Récupère le bonbec du jour 7 jours d'affilée.", goal:7, prog:()=>bestStreak(), rew:{j:50}},
   {id:"streak28", cat:"habitudes", icon:"clock", title:"Un mois sans rater", desc:"Récupère le bonbec du jour 28 jours d'affilée.", goal:28, prog:()=>bestStreak(), rew:{j:200, bag:"collector", title:"Toujours là"}},
   {id:"bags50", cat:"habitudes", icon:"bag", title:"Habitué du préau", desc:"Ouvre 50 sachets.", goal:50, prog:()=>S.bags||0, rew:{j:50, bag:"premium"}},
-  {id:"bags250", cat:"habitudes", icon:"bag", title:"Sac sans fond", desc:"Ouvre 250 sachets.", goal:250, prog:()=>S.bags||0, rew:{j:150, bag:"collector", title:"Sac sans fond"}},
+  {id:"bags250", cat:"habitudes", icon:"bag", title:"Sac sans fond", desc:"Ouvre 250 sachets.", goal:250, prog:()=>S.bags||0, rew:{j:150, bag:"premium", title:"Sac sans fond"}},
   {id:"craft10", cat:"habitudes", icon:"flask", title:"Apprenti confiseur", desc:"Réussis 10 fusions à la Confiserie.", goal:10, prog:()=>S.crafts||0, rew:{j:80, title:"Apprenti confiseur"}},
   {id:"t-chouchou", cat:"habitudes", icon:"quest", title:"Chouchou de la maîtresse", desc:"Récupère 5 fois le bonus des quêtes du jour.", goal:5, prog:()=>S.stats.bonus, rew:{j:50, title:"Chouchou de la maîtresse"}},
 ];
@@ -5486,7 +5487,7 @@ const SERIES = [
   {id:"noiretblanc", name:"Noir et blanc", desc:"Pour les amateurs de contrastes, en Bille chinoise ou plus.", items:["Encre","Réglisse","Béton","Brume","Ciel d'orage","Nuit"].map(pal=>({pal, min:"chinoise"})), rew:{j:50, bag:"classique"}},
   {id:"pierres", name:"Les pierres précieuses", desc:"Des pierres dans les coloris des joyaux.", items:[{fam:"Agate",pal:"Rubis"},{fam:"Marbre",pal:"Saphir"},{fam:"Cristal",pal:"Émeraude"},{fam:"Nacrée",pal:"Opale"}], rew:{j:600, bag:"collector", title:"Joaillier"}},
   {id:"feuglace", name:"Le feu et la glace", desc:"Du plus chaud au plus froid.", items:[{fam:"Lave"},{fam:"Givrée",min:"calot"},{fam:"Cristal",min:"calot"},{pal:"Volcan",min:"calot"},{pal:"Glacier",min:"calot"}], rew:{j:100, bag:"premium"}},
-  {id:"cosmos", name:"Le système solaire", desc:"Les motifs venus d'ailleurs.", items:[{fam:"Globe"},{fam:"Planète"},{fam:"Galaxie"},{fam:"Aurore"}], rew:{j:200, bag:"collector", title:"Astronome"}},
+  {id:"cosmos", name:"Le système solaire", desc:"Les motifs venus d'ailleurs.", items:[{fam:"Globe"},{fam:"Planète"},{fam:"Galaxie"},{fam:"Aurore"}], rew:{j:200, bag:"premium", title:"Astronome"}},
   {id:"grenier", name:"Le grenier de papi", desc:"Les billes d'autrefois, retrouvées dans une vieille boîte en fer. Que des Calots ou plus gros.", items:[{fam:"Terre",min:"calot"},{fam:"Oignon",min:"calot"},{fam:"Opaline",min:"calot"},{fam:"Tourbillon",min:"calot"},{fam:"Marbre",min:"calot"}], rew:{j:100, bag:"premium"}},
   {id:"foire", name:"La fête foraine", desc:"Paillettes, rubans et barbe à papa.", items:[{fam:"Arlequin",min:"chinoise"},{fam:"Ruban",min:"chinoise"},{fam:"Pailletée",min:"chinoise"},{pal:"Pop"},{pal:"Sucre d'orge"},{pal:"Néon"},{pal:"Tropical"}], rew:{j:30, bag:"classique"}},
   {id:"atelier", name:"L'atelier du bricoleur", desc:"Des billes solides comme des outils.", items:[{fam:"Acier"},{fam:"Fumée",min:"calot"},{fam:"Craquelée",min:"calot"},{pal:"Cuivre",min:"calot"},{pal:"Pétrole",min:"calot"}], rew:{j:120, bag:"premium", title:"Bricoleur"}},
@@ -5497,7 +5498,7 @@ const SERIES = [
   {id:"cathedrale", name:"La cathédrale", desc:"Des vitraux couleur de joyaux et des fleurs de verre.", items:[{fam:"Vitrail",pal:"Rubis"},{fam:"Vitrail",pal:"Saphir"},{fam:"Millefiori",min:"calot"},{pal:"Opale",min:"calot"}], rew:{j:400, bag:"collector", title:"Maître verrier"}},
   {id:"univers", name:"Au bout de l'univers", desc:"Les trois motifs légendaires, et une nuit sans fin.", items:[{fam:"Trou noir"},{fam:"Galaxie",min:"calot"},{fam:"Aurore",min:"calot"},{pal:"Nuit",min:"boulet"}], rew:{j:300, bag:"collector", title:"Explorateur"}},
   // rar : un panier de motifs (0 Commun … 4 Légendaire) ; twin : deux exemplaires identiques de la même bille ; type : la taille exacte
-  {id:"paniers", name:"Du commun au légendaire", desc:"Un Calot ou plus gros dans chaque panier de motifs, du plus courant au plus rare.", items:DECOR_RAR.map((_,rar)=>({rar, min:"calot"})), rew:{j:200, bag:"collector", title:"Connaisseur"}},
+  {id:"paniers", name:"Du commun au légendaire", desc:"Un Calot ou plus gros dans chaque panier de motifs, du plus courant au plus rare.", items:DECOR_RAR.map((_,rar)=>({rar, min:"calot"})), rew:{j:200, bag:"premium", title:"Connaisseur"}},
   {id:"azur", name:"Tout en Azur", desc:"Un motif de chaque panier, jusqu'à l'Épique, mais toujours en Azur.", items:[0,1,2,3].map(rar=>({rar, pal:"Azur"})), rew:{j:100, bag:"premium"}},
   {id:"jumelles", name:"Les jumelles", desc:"Deux exemplaires de la même bille (même taille, même motif, même coloris), dans trois tailles.", items:["mini","bille","chinoise"].map(type=>({type, twin:true})), rew:{j:50, bag:"classique"}},
   {id:"grands", name:"Les grands formats", desc:"De la plus petite à la plus grosse, dans un même motif.", items:TK.map(type=>({type})), same:"family", rew:{j:60, bag:"premium", title:"Toutes tailles"}},
@@ -5909,11 +5910,12 @@ function claimAll(){
 // Chaque semaine rapporte plus que la précédente, avec un sachet au milieu (jour 4) et un plus beau à la fin (jour 7).
 // Après le 28ᵉ jour, la 4ᵉ semaine recommence tant qu'on ne rate pas de jour. Un jour sauté : retour au jour 1.
 // 6 octobre 2026 : montants divisés par 10, et calendrier presque 2 fois plus généreux (même tableau dans serveur.sql, bonbec_du_jour)
+// Plus de Sachet Collector dans le calendrier (la 4ᵉ semaine qui recommence en donnait un chaque semaine) : le mois complet le donne une fois, par le succès « Un mois sans rater ».
 const DAILY_CAL = [
   {j:10}, {j:15}, {j:20}, {bag:"classique", j:10}, {j:25}, {j:30}, {bag:"premium"},
   {j:15}, {j:20}, {j:25}, {bag:"classique", j:15}, {j:30}, {j:35}, {bag:"premium", j:20},
-  {j:20}, {j:25}, {j:30}, {bag:"premium"},         {j:35}, {j:40}, {bag:"collector"},
-  {j:25}, {j:30}, {j:35}, {bag:"premium", j:25},   {j:40}, {j:50}, {bag:"collector", j:50},
+  {j:20}, {j:25}, {j:30}, {bag:"premium"},         {j:35}, {j:40}, {bag:"premium", j:20},
+  {j:25}, {j:30}, {j:35}, {bag:"premium", j:25},   {j:40}, {j:50}, {bag:"premium", j:50},
 ];
 const DAILY_N = DAILY_CAL.length;
 const dailyDay = streak => streak<=DAILY_N ? streak-1 : DAILY_N-7 + (streak-DAILY_N-1)%7;   // 0 à 27

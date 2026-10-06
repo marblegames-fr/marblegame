@@ -9067,7 +9067,7 @@ function viewLoterie(){
         <p class="meta">${L.gagnants ? `${L.gagnants} ticket${L.gagnants>1?"s":""} avec 2 bons numéros ou plus.` : ""}</p></div>` : ""}
     </section>
     <aside><section class="panel"><div class="panel-head"><h3>Les lots</h3></div>
-      <p class="meta" style="margin-bottom:10px">Dimanche à 21 h, 3 numéros sont tirés. Combien en as-tu sur ton ticket ?</p>
+      <p class="meta" style="margin-bottom:10px">Dimanche à 21 h, 3 numéros de 1 à 20 sont tirés. Combien en as-tu sur ton ticket ?</p>
       <ul class="lt-prix">${LOT_PRIX.map(x=>`<li><span class="lt-dots">${[0,1,2].map(i=>`<i class="${i<x.bons?"on":""}"></i>`).join("")}</span><span>${x.txt}</span></li>`).join("")}</ul>
     </section></aside>
   </div>`;

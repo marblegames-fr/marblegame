@@ -5787,6 +5787,14 @@ function dayHTML(inSheet, wide){
   const games = gamesReady();
   const rows3 = [mjRow({icon:"pad", title: games.length ? `${games.length} jeu${games.length>1?"x":""} du jour à jouer` : "Jeux du jour faits",
     text: games.length ? `${games.join(", ")} · ${BAG_BY[GAMES_BONUS].name} à la clé` : "De nouveaux jeux du jour à minuit", done:!games.length, act:'data-action="nav" data-view="jeux"'})];
+  // le ticket de loterie du jour et la prochaine Grande Course (seulement avec la réponse du serveur)
+  if(srvOn() && lot.data){ const L = lot.data, last = (L.mes||[]).at(-1);
+    rows3.push(mjRow({icon:"ticket", title: L.aujourdhui ? "Ticket de loterie pris" : "Ton ticket de loterie du jour", done:L.aujourdhui,
+      text: L.aujourdhui && last ? `Tes numéros : ${last.join(" · ")} · tirage dimanche à 21 h` : "Gratuit · tirage dimanche à 21 h",
+      btn: L.aujourdhui ? "" : `<button class="btn btn-ghost" data-action="lot-go">Prendre</button>`, act:'data-action="nav" data-view="loterie"'})) }
+  if(srvOn() && gc.etat){ const N = gcNext();
+    rows3.push(mjRow({icon:"flag", title: gc.etat.inscrit ? `Inscrit à la Grande Course` : `La Grande Course ${gcWhen(N)}`, done:gc.etat.inscrit,
+      text: gc.etat.inscrit ? `Départ ${gcWhen(N)}` : "Inscription gratuite : un Sachet Collector pour le gagnant", act:'data-action="nav" data-view="grandecourse"'})) }
   // succès et séries terminés
   const nc = chalClaimable(), ns = seriesClaimable(), rows4 = [];
   if(nc) rows4.push(mjRow({icon:"trophy", title:`${nc} succès réussi${nc>1?"s":""}`, text:"Ta récompense t'attend", ready:true, act:'data-action="nav" data-view="succes"'}));
@@ -9035,7 +9043,7 @@ const lotBall = (n, on) => `<span class="lt-ball${on?" on":""}">${n}</span>`;
 function lotLoad(force){
   if(!srvOn() || lot.loading || (lot.data && !force)) return;
   lot.loading = true;
-  srv(()=>Cloud.eco.loterie()).then(r=>{ lot.loading = false; lot.data = r; applyEco(r.eco); lotWins(r.gagne); if(ui.view==="loterie" || ui.view==="jeux") renderView(); renderBell() },
+  srv(()=>Cloud.eco.loterie()).then(r=>{ lot.loading = false; lot.data = r; applyEco(r.eco); lotWins(r.gagne); if(ui.view==="loterie" || ui.view==="jeux") renderView(); renderBell(); renderDay() },
     e=>{ lot.loading = false; srvFail(e) });
 }
 function lotWins(g){
@@ -9121,7 +9129,7 @@ async function lotGo(){
   if(lot.busy) return; lot.busy = true;
   try{ const r = await srv(()=>Cloud.eco.loterieTicket()); lot.data = r; lot.fresh = r.nouveau; applyEco(r.eco); lotWins(r.gagne); Sound.ding() }
   catch(e){ if(e?.code==="deja" && lot.data) lot.data.aujourdhui = true; srvFail(e) }
-  lot.busy = false; renderView(); setTimeout(()=>{ lot.fresh = null }, 2000);
+  lot.busy = false; renderView(); renderDay(); setTimeout(()=>{ lot.fresh = null }, 2000);
 }
 
 /* ---------- les vignettes de la page des jeux ---------- */

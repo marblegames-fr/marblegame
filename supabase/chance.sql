@@ -41,23 +41,23 @@ begin
   return jsonb_build_object('eco', interne.etat(qui), 'case', c.k, 'bonbecs', c.bonbecs, 'sac', c.sac, 'bille', b, 'achetees', j.achetees);
 end $$;
 
--- ---------- Le Ticket à gratter : offert, ou 15 bonbecs ; 3 symboles pareils = le lot ----------
--- 15 bonbecs le ticket (prix unique des jeux de chance) : 40 % rien, 8 → 25 %, 15 → 15 %, 30 → 10 %, Classique 6 %, 75 → 2,5 %, Premium 1 %, 150 → 0,4 %, Collector 0,1 %
-create or replace function interne.grattage_lots() returns table(k int, poids numeric, bonbecs int, sac text) language sql immutable as $$
-  select * from (values (0, 40, 0, null::text), (1, 25, 8, null), (2, 15, 15, null), (3, 10, 30, null), (4, 6, 0, 'classique'),
-    (5, 2.5, 75, null), (6, 1, 0, 'premium'), (7, 0.4, 150, null), (8, 0.1, 0, 'collector')) v(k, poids, bonbecs, sac)
-$$;
+-- ---------- Le Ticket à gratter : offert, ou 15 bonbecs ; 3 dessins pareils = le lot ----------
+-- (6 octobre 2026, le soir) mêmes lots et mêmes chances que la Roue (interne.roue_cases), Mammouth compris : on gagne toujours quelque chose
+drop function if exists interne.grattage_lots();
 create or replace function public.grattage(payer boolean default false)
 returns jsonb language plpgsql security definer set search_path = public as $$
-declare qui uuid := interne.moi(); c record; x numeric; acc numeric := 0; j record;
+declare qui uuid := interne.moi(); c record; x numeric; acc numeric := 0; j record; b jsonb := null;
 begin
   select * into j from interne.jeu_chance(qui, 'grattage', payer, 15);
-  x := random() * (select sum(poids) from interne.grattage_lots());
-  for c in select * from interne.grattage_lots() order by k loop
+  x := random() * (select sum(poids) from interne.roue_cases());
+  for c in select * from interne.roue_cases() order by k loop
     acc := acc + c.poids; exit when x < acc;
   end loop;
   if j.lie then perform interne.crediter_lie(qui, c.bonbecs, c.sac); else perform interne.crediter(qui, c.bonbecs, c.sac); end if;
-  return jsonb_build_object('eco', interne.etat(qui), 'lot', c.k, 'bonbecs', c.bonbecs, 'sac', c.sac, 'achetees', j.achetees);
+  if c.taille = 'mammouth' then
+    b := interne.nouvelle_bille(qui, 'mammouth', shiny => interne.tirer_shiny(interne.taux_shiny() * 10), src => 'grattage', liee => j.lie);
+  end if;
+  return jsonb_build_object('eco', interne.etat(qui), 'case', c.k, 'bonbecs', c.bonbecs, 'sac', c.sac, 'bille', b, 'achetees', j.achetees);
 end $$;
 
 -- ---------- Le Distributeur de billes : offert, ou 15 bonbecs ; toujours une bille ----------

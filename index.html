@@ -8561,7 +8561,7 @@ function mammRoulette(b, from){
   const labels = segs.filter(g=>g.a1-g.a0>28).map(g=>{ const m = (g.a0+g.a1)/2; return `<span class="rw-l" style="transform:rotate(${m}deg) translateY(-104px) rotate(${-m}deg)">${g.R.name}</span>` }).join("");
   const same = DECOR_IDS.filter(f=>FAMILIES[f].rar===F.rar);
   el.innerHTML = `<div class="modal roue-modal mamm-modal" role="dialog" aria-modal="true" aria-label="La roulette du Mammouth">
-    <span class="dc-kick">${ic(from==="chateau"?"castle":from==="roue"?"wheel":from==="grattage"?"star":"pachi",14)} ${from==="chateau"?"Château rasé en un tir":from==="roue"?"La Roue du jour":from==="grattage"?"Ticket à gratter":"Case Mammouth"}</span><h2>Un Mammouth pour toi !</h2>
+    <span class="dc-kick">${ic(from==="chateau"?"castle":from==="roue"?"wheel":from==="grattage"?"star":from==="loterie"?"ticket":"pachi",14)} ${from==="chateau"?"Château rasé en un tir":from==="roue"?"La Roue du jour":from==="grattage"?"Ticket à gratter":from==="loterie"?"3 bons numéros à la Loterie":"Case Mammouth"}</span><h2>Un Mammouth pour toi !</h2>
     <p class="meta" id="mr-step">La roulette choisit la rareté de son motif…</p>
     <div class="roue-wrap"><i class="roue-ptr"></i><div class="roue" id="roue" style="background:conic-gradient(${grad})">${labels}</div></div>
     <ul class="mr-legend">${segs.map(g=>`<li><i style="background:${g.R.c}"></i>${g.R.name} <b>${pct(+(g.p*100).toFixed(g.p<.01?2:1))}</b></li>`).join("")}</ul>
@@ -9030,9 +9030,10 @@ function lotLoad(force){
     e=>{ lot.loading = false; srvFail(e) });
 }
 function lotWins(g){
-  (g||[]).forEach(w=>{ if(w.bille){ const s = srvAdopt([w.bille])[0]; S.specs.push(s); S.unseen.push(s.id); logFind(s) } });
+  (g||[]).forEach(w=>{ if(w.bille){ const s = srvAdopt([w.bille])[0]; S.specs.push(s); S.unseen.push(s.id); logFind(s); lot.mamm = s } });
   if(g?.length){ save(); const best = Math.max(...g.map(w=>w.bons));
-    if(lotDue()) return;   // la fenêtre des résultats va s'ouvrir : c'est elle qui fête les lots
+    if(lotDue() && ui.view!=="loterie") return;   // la fenêtre des résultats va s'ouvrir : c'est elle qui fête les lots (et lance la roulette du Mammouth)
+    if(best===3 && lot.mamm){ const m = lot.mamm; lot.mamm = null; setTimeout(()=>mammRoulette(m, "loterie"), 600); return }
     toast(best===3 ? "Loterie : 3 bons numéros, un Mammouth est à toi !" : `Loterie : tu as gagné ${g.length} lot${g.length>1?"s":""} !`);
     Sound.ding(); FX.fireworks(SHINY_COLS, best===3 ? 8 : 3) }
 }
@@ -9074,8 +9075,9 @@ function lotResultPopup(){
     <h2>${best===3 ? "3 bons numéros : le Mammouth est à toi !" : best ? "Tu as gagné à la Loterie !" : "Les numéros de la Loterie sont tombés"}</h2>
     <div class="lt-draw">${L.numeros.map(n=>lotBall(n,true)).join("")}</div>
     <div class="lt-mine">${L.mes.map(t=>`<div class="lt-ticket${t.bons?" won":""}">${t.numeros.map(n=>lotBall(n, win.has(n))).join("")}<small>${t.bons ? LOT_PRIX.find(x=>x.bons===t.bons).txt : "Aucun bon numéro"}</small></div>`).join("")}</div>
-    <p class="meta">${best ? "Tes lots sont déjà dans ta collection." : "Pas de chance cette fois. Nouveau tirage dimanche prochain !"}</p>
-    <div class="btns"><button class="btn btn-ghost" data-action="nav" data-view="loterie">Voir la loterie</button><button class="btn btn-yellow" data-action="close-modal">${best ? "Super !" : "Dommage !"}</button></div></div>`;
+    <p class="meta">${best===3 && lot.mamm ? "La roulette va choisir le motif de ton Mammouth !" : best ? "Tes lots sont déjà dans ta collection." : "Pas de chance cette fois. Nouveau tirage dimanche prochain !"}</p>
+    <div class="btns">${best===3 && lot.mamm ? `<button class="btn btn-yellow btn-xl" data-action="lot-mamm">${ic("gift",18)} Découvrir mon Mammouth</button>`
+      : `<button class="btn btn-ghost" data-action="nav" data-view="loterie">Voir la loterie</button><button class="btn btn-yellow" data-action="close-modal">${best ? "Super !" : "Dommage !"}</button>`}</div></div>`;
   el.hidden = false;
   if(best){ Sound.ding(); FX.fireworks(SHINY_COLS, best===3 ? 8 : 3) }
 }
@@ -12460,6 +12462,7 @@ document.addEventListener("click", e=>{
     case "ds-go": distGo(t.dataset.pay==="1"); break;
     case "ds-close": document.getElementById("ds-out")?.remove(); break;
     case "lot-go": lotGo(); break;
+    case "lot-mamm": { const m = lot.mamm; lot.mamm = null; if(m) mammRoulette(m, "loterie"); else closeModal(); break; }
     case "pachi-go": { const pay = t.dataset.pay==="1"; if(!pachiBall() && needBall(()=>pachiGo(pay), true)) break; } pachiGo(t.dataset.pay==="1"); break;
     case "ball-go": {
       if(ui.view==="pachinko"){ playedToday().pachiBall = t.dataset.id || S.active; save() }   // au Plinko : la bille du jour, sans changer la bille des autres jeux

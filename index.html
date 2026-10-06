@@ -1356,6 +1356,14 @@ body.vit-dragging,body.vit-dragging *{cursor:grabbing!important;user-select:none
 .lt-dots i{width:14px;height:14px;border-radius:50%;background:var(--line);box-shadow:inset 0 -2px 0 rgba(0,0,0,.12)}
 .lt-dots i.on{background:#FFC93F}
 /* ---------- la Loterie ---------- */
+/* son bandeau sur la page des jeux, sous celui de la Grande Course */
+.gm-gc.gm-lot{background:radial-gradient(circle at 85% 15%,rgba(255,201,63,.3),transparent 42%),linear-gradient(135deg,#1F7A4D,#14506E)}
+.gm-gc.gm-lot:hover{transform:none}
+.gm-lot-balls{display:grid;justify-items:center;gap:6px;padding:12px 14px;border-radius:20px;background:rgba(0,0,0,.22)}
+.gm-lot-balls > span{display:flex;gap:8px}
+.gm-lot-balls small{font-size:10.5px;font-weight:900;letter-spacing:.06em;text-transform:uppercase;opacity:.8}
+.lt-ball.q{color:#6E6478}
+@media (min-width:761px){ .gm-duo.solo .gm-lot-balls{grid-area:ball;justify-self:center;width:180px} }
 .lt-head{display:flex;justify-content:space-between;flex-wrap:wrap;gap:8px;font-weight:800;color:var(--ink-2);margin-bottom:12px}
 .lt-mine{display:grid;gap:8px;margin:8px 0}
 .lt-ticket{display:flex;align-items:center;gap:8px;flex-wrap:wrap;padding:10px 14px;border-radius:14px;background:var(--card);border:2px dashed var(--line-2)}
@@ -9015,7 +9023,7 @@ const lotBall = (n, on) => `<span class="lt-ball${on?" on":""}">${n}</span>`;
 function lotLoad(force){
   if(!srvOn() || lot.loading || (lot.data && !force)) return;
   lot.loading = true;
-  srv(()=>Cloud.eco.loterie()).then(r=>{ lot.loading = false; lot.data = r; applyEco(r.eco); lotWins(r.gagne); if(ui.view==="loterie") renderView() },
+  srv(()=>Cloud.eco.loterie()).then(r=>{ lot.loading = false; lot.data = r; applyEco(r.eco); lotWins(r.gagne); if(ui.view==="loterie" || ui.view==="jeux") renderView() },
     e=>{ lot.loading = false; srvFail(e) });
 }
 function lotWins(g){
@@ -9048,8 +9056,27 @@ function viewLoterie(){
     </section></aside>
   </div>`;
 }
+// le prochain tirage (dimanche 20 h) quand on n'a pas encore la réponse du serveur
+const lotNext = () => { const d = new Date(); d.setHours(20,0,0,0); d.setDate(d.getDate()+(7-d.getDay())%7); if(d<=Date.now()) d.setDate(d.getDate()+7); return +d };
+// la Loterie sur la page des jeux : pas vraiment un jeu, alors un bandeau comme la Grande Course (6 octobre 2026)
+function lotBanner(){
+  if(srvOn()) lotLoad();
+  const D = srvOn() ? lot.data : null, mine = D?.mes||[], last = mine[mine.length-1];
+  const balls = (D?.aujourdhui && last ? last : [0,0,0]).map(n=>n ? lotBall(n) : `<span class="lt-ball q">?</span>`).join("");
+  const st = D?.aujourdhui ? `<span class="gm-gc-st ok">${ic("check",14,3)} Ticket du jour pris · ${mine.length} ticket${mine.length>1?"s":""} pour dimanche</span>`
+    : `<span class="gm-gc-st">Un ticket gratuit par jour. 3 bons numéros sur 3 : un Mammouth !</span>`;
+  const btn = D && !D.aujourdhui ? `<button class="btn btn-yellow" data-action="lot-go">${ic("ticket",16)} Prendre mon ticket</button>`
+    : `<button class="btn btn-yellow" data-action="nav" data-view="loterie">${D ? "Voir mes tickets" : "Voir la loterie"}</button>`;
+  return `<div class="panel gm-gc gm-lot">
+      <span class="gm-kick">${ic("ticket",14)} Tirage dimanche 20 h</span>
+      <b class="gm-gc-t">La Loterie de la semaine</b>
+      <span class="gm-gc-clock"><small>Tirage dans</small><b data-lot-timer>${lotLeft(D?.heure || lotNext())}</b></span>
+      <span class="gm-lot-balls"><span>${balls}</span><small>${D?.aujourdhui ? "Ton ticket du jour" : "Tes 3 numéros de 1 à 20"}</small></span>
+      ${st}${btn}
+    </div>`;
+}
 const lotLeft = h => { const ms = Math.max(0, h-Date.now()), d = Math.floor(ms/864e5), hh = Math.floor(ms/36e5)%24, mm = Math.floor(ms/6e4)%60; return d ? `${d} j ${hh} h` : `${hh} h ${String(mm).padStart(2,"0")}` };
-setInterval(()=>{ document.querySelectorAll("[data-lot-timer]").forEach(el=>{ if(lot.data){ el.textContent = lotLeft(lot.data.heure); if(lot.data.heure<=Date.now() && ui.view==="loterie" && !lot.loading){ lot.data.heure = Date.now()+6e4; lotLoad(true) } } }) }, 1000);
+setInterval(()=>{ document.querySelectorAll("[data-lot-timer]").forEach(el=>{ if(!lot.data){ el.textContent = lotLeft(lotNext()); return } if(lot.data){ el.textContent = lotLeft(lot.data.heure); if(lot.data.heure<=Date.now() && ui.view==="loterie" && !lot.loading){ lot.data.heure = Date.now()+6e4; lotLoad(true) } } }) }, 1000);
 async function lotGo(){
   if(lot.busy) return; lot.busy = true;
   try{ const r = await srv(()=>Cloud.eco.loterieTicket()); lot.data = r; lot.fresh = r.nouveau; applyEco(r.eco); lotWins(r.gagne); Sound.ding() }
@@ -9104,7 +9131,6 @@ function viewGames(){
     {...day("pachinko"), d:"Lâche une bille en haut du plateau : elle rebondit de clou en clou jusqu'à une case. Bonbecs, sachets offerts… et tout au bord, un Mammouth !", art:artPachinko(), stat:`${S.stats.pachi||0} bille${(S.stats.pachi||0)>1?"s":""} lâchée${(S.stats.pachi||0)>1?"s":""}`},
     chanceTile("grattage", "Le Ticket à gratter", "Gratte 6 cases : 3 dessins pareils, et le lot est à toi.", artGrattage(), "un Collector"),
     chanceTile("distributeur", "Le Distributeur", "Tourne la manivelle : une boule tombe avec une bille dedans.", artDistributeur(), "un Mammouth"),
-    {v:"loterie", t:"La Loterie", d:"Un ticket gratuit par jour, tirage dimanche à 20 h.", art:artLoterie(), prize:"un Mammouth", ok:true, state:`${ic("ticket",14)} Tirage dimanche 20 h`, stat:"3 numéros de 1 à 20"},
   ];
   const multi = [
     {...day("tic"), d:ARENA.tic.lead, art:artTic(), stat:`${S.stats.tic} victoire${S.stats.tic>1?"s":""}`},
@@ -9139,6 +9165,7 @@ function viewGames(){
       <span class="gm-gc-st${gc.etat?.inscrit?" ok":""}">${gc.etat?.inscrit ? `${ic("check",14,3)} Tu es inscrit` : "À 12 h et à 20 h. Inscription gratuite : 50 bonbecs et un Sachet Collector pour le gagnant"}</span>
       <span class="btn btn-yellow">${gc.etat?.inscrit ? "Voir la course" : "M'inscrire"}</span>
     </button>
+    ${lotBanner()}
   </div>
   <section class="games-sec"><div class="gs-head"><h2>Les jeux de la cour</h2></div>
     <div class="games-grid">${[...solo, ...multi].map(tile).join("")}</div></section>

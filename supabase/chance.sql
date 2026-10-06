@@ -73,9 +73,9 @@ begin
 end $$;
 
 -- ---------- La Loterie de la semaine ----------
--- Un ticket gratuit par jour (3 numéros différents de 1 à 20, au hasard). Tirage le dimanche à 20 h (heure de Paris) : 3 numéros.
+-- Un ticket gratuit par jour (3 numéros différents de 1 à 20, au hasard). Tirage le dimanche à 21 h (heure de Paris) : 3 numéros.
 -- 3 bons : un Mammouth + 100 bonbecs ; 2 bons : un Sachet Premium ; 1 bon : 5 bonbecs. Le tirage et les lots se font « à la demande » :
--- le premier qui ouvre la page après 20 h fait le tirage, et chacun reçoit ses lots en ouvrant la page.
+-- le premier qui ouvre la page après 21 h fait le tirage, et chacun reçoit ses lots en ouvrant la page.
 create table if not exists public.loterie_tickets (
   id       bigint generated always as identity primary key,
   joueur   uuid not null references auth.users(id) on delete cascade,
@@ -96,8 +96,8 @@ alter table public.loterie_tickets enable row level security;
 alter table public.loterie_tirages enable row level security;
 
 create or replace function interne.loterie_heure(d date) returns timestamptz language sql immutable as
-$$ select (d + time '20:00') at time zone 'Europe/Paris' $$;
--- le prochain tirage : ce dimanche à 20 h, ou le suivant s'il est passé
+$$ select (d + time '21:00') at time zone 'Europe/Paris' $$;
+-- le prochain tirage : ce dimanche à 21 h, ou le suivant s'il est passé
 create or replace function interne.loterie_prochain() returns date language sql stable as $$
   select case when interne.loterie_heure(d) > now() then d else d + 7 end
   from (select l::date + (7 - extract(isodow from l)::int) % 7 d from (select now() at time zone 'Europe/Paris' l) x) y

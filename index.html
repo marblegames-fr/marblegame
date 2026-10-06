@@ -9067,12 +9067,12 @@ function viewLoterie(){
         <p class="meta">${L.gagnants ? `${L.gagnants} ticket${L.gagnants>1?"s":""} avec 2 bons numéros ou plus.` : ""}</p></div>` : ""}
     </section>
     <aside><section class="panel"><div class="panel-head"><h3>Les lots</h3></div>
-      <p class="meta" style="margin-bottom:10px">Dimanche à 20 h, 3 numéros sont tirés. Combien en as-tu sur ton ticket ?</p>
+      <p class="meta" style="margin-bottom:10px">Dimanche à 21 h, 3 numéros sont tirés. Combien en as-tu sur ton ticket ?</p>
       <ul class="lt-prix">${LOT_PRIX.map(x=>`<li><span class="lt-dots">${[0,1,2].map(i=>`<i class="${i<x.bons?"on":""}"></i>`).join("")}</span><span>${x.txt}</span></li>`).join("")}</ul>
     </section></aside>
   </div>`;
 }
-// Les résultats du tirage : à la première visite après le dimanche 20 h (lundi par exemple), une fenêtre montre
+// Les résultats du tirage : à la première visite après le dimanche 21 h (lundi par exemple), une fenêtre montre
 // les numéros tirés et mes tickets, une seule fois par tirage (S.lotPop) ; la cloche le garde ensuite en notification.
 const lotDraw = () => { const L = srvOn() && lot.data?.dernier; return L && L.mes?.length ? L : null };
 const lotDue = () => { const L = lotDraw(); return !!L && S.lotPop!==L.tirage };
@@ -9092,8 +9092,8 @@ function lotResultPopup(){
   el.hidden = false;
   if(best){ Sound.ding(); FX.fireworks(SHINY_COLS, best===3 ? 8 : 3) }
 }
-// le prochain tirage (dimanche 20 h) quand on n'a pas encore la réponse du serveur
-const lotNext = () => { const d = new Date(); d.setHours(20,0,0,0); d.setDate(d.getDate()+(7-d.getDay())%7); if(d<=Date.now()) d.setDate(d.getDate()+7); return +d };
+// le prochain tirage (dimanche 21 h) quand on n'a pas encore la réponse du serveur
+const lotNext = () => { const d = new Date(); d.setHours(21,0,0,0); d.setDate(d.getDate()+(7-d.getDay())%7); if(d<=Date.now()) d.setDate(d.getDate()+7); return +d };
 // la Loterie sur la page des jeux : pas vraiment un jeu, alors un bandeau comme la Grande Course (6 octobre 2026)
 function lotBanner(){
   if(srvOn()) lotLoad();
@@ -9104,7 +9104,7 @@ function lotBanner(){
   const btn = D && !D.aujourdhui ? `<button class="btn btn-yellow" data-action="lot-go">${ic("ticket",16)} Prendre mon ticket</button>`
     : `<button class="btn btn-yellow" data-action="nav" data-view="loterie">${D ? "Voir mes tickets" : "Voir la loterie"}</button>`;
   return `<div class="panel gm-gc gm-lot">
-      <span class="gm-kick">${ic("ticket",14)} Tirage dimanche 20 h</span>
+      <span class="gm-kick">${ic("ticket",14)} Tirage dimanche 21 h</span>
       <b class="gm-gc-t">La Loterie de la semaine</b>
       <span class="gm-gc-clock"><small>Tirage dans</small><b data-lot-timer>${lotLeft(D?.heure || lotNext())}</b></span>
       <span class="gm-lot-balls"><span>${balls}</span><small>${D?.aujourdhui ? "Ton ticket du jour" : "Tes 3 numéros de 1 à 20"}</small></span>
@@ -9114,7 +9114,7 @@ function lotBanner(){
 const lotLeft = h => { const ms = Math.max(0, h-Date.now()), d = Math.floor(ms/864e5), hh = Math.floor(ms/36e5)%24, mm = Math.floor(ms/6e4)%60; return d ? `${d} j ${hh} h` : `${hh} h ${String(mm).padStart(2,"0")}` };
 setInterval(()=>{
   document.querySelectorAll("[data-lot-timer]").forEach(el=>el.textContent = lotLeft(lot.data?.heure || lotNext()));
-  // dimanche 20 h : on redemande l'état au serveur, quelle que soit la page (les résultats s'affichent tout seuls)
+  // dimanche 21 h : on redemande l'état au serveur, quelle que soit la page (les résultats s'affichent tout seuls)
   if(lot.data && srvOn() && lot.data.heure<=Date.now() && !lot.loading){ lot.data.heure = Date.now()+6e4; lotLoad(true) }
 }, 1000);
 async function lotGo(){
@@ -11918,7 +11918,7 @@ function notifList(){
   gcWaiting().forEach(D=>out.push({le:D.depart+GC_DUR*1000, ic:"flag", txt:`La Grande Course ${gcSlotName(D.heure||20)} est finie : <b>tes lots t'attendent</b>`, go:{view:"grandecourse"}}));
   const L = lotDraw();
   // sans rien dévoiler : on découvre ses numéros (et ses lots) dans la fenêtre ou sur la page de la Loterie
-  if(L) out.push({le:+new Date(L.tirage+"T20:00:00"), ic:"ticket", txt:`Le tirage de la Loterie a eu lieu : <b>viens voir tes numéros</b>`, go:{view:"loterie"}});
+  if(L) out.push({le:+new Date(L.tirage+"T21:00:00"), ic:"ticket", txt:`Le tirage de la Loterie a eu lieu : <b>viens voir tes numéros</b>`, go:{view:"loterie"}});
   return out.sort((a,b)=>b.le-a.le).slice(0,40);
 }
 const notifUnread = () => notifList().filter(n=>n.le > (S.notifVu||0)).length;
@@ -13034,7 +13034,6 @@ function ecoRefresh(){ if(srvOn()) srv(()=>Cloud.eco.state()).then(applyEco, ()=
 // une fois connecté au serveur : les nouvelles de la cour (demandes, trocs) et les billes reçues entre-temps
 function courStart(){ if(!srvOn()) return; if(S.notifVu==null){ S.notifVu = S.courVu || Date.now(); save() } courLoad("moi", true); courLoad("journal"); syncMarbles(true); courNews(true); gcLoad(true); lotLoad(true); courListen(); renderBell() }
 const DEVICE = (()=>{ try{ let d = localStorage.getItem("billy-device"); if(!d){ d = newId(); localStorage.setItem("billy-device", d) } return d }catch(e){ return newId() } })();
-const GUEST_FLAG = "billy-guest";   // le joueur a choisi de jouer sans compte sur cet appareil
 const lsGet = k => { try{ return localStorage.getItem(k) }catch(e){ return null } };
 const lsSet = (k,v) => { try{ v==null ? localStorage.removeItem(k) : localStorage.setItem(k,v) }catch(e){} };
 const knownKey = () => "billy-sync-"+sync.uid, dirtyKey = () => "billy-dirty-"+sync.uid;
@@ -13107,7 +13106,6 @@ async function cloudStart(user){
 }
 async function cloudStart0(user){
   sync.uid = user.id; sync.email = user.email||""; STORE_KEY = "billy-u-"+user.id;
-  lsSet(GUEST_FLAG, null);
   let cached = null; try{ cached = JSON.parse(localStorage.getItem(STORE_KEY)) }catch(e){}
   const dirty = lsGet(dirtyKey()) === "1";
   let prevKnown = []; try{ prevKnown = JSON.parse(lsGet(knownKey())) || [] }catch(e){}
@@ -13493,8 +13491,7 @@ function authShow(screen, opts){
       ${cap}${err}<button class="btn btn-yellow" type="submit">Me connecter</button>
     </form>
     <div class="auth-links"><button class="auth-link" data-action="auth-go" data-screen="forgot">Mot de passe oublié ?</button></div>`}
-    ${auth.closable ? "" : `<div class="auth-links"><button class="auth-link" data-action="auth-guest">Jouer sans compte</button></div>
-    <p class="auth-note">Sans compte, ta collection reste sur cet appareil. Tu pourras créer un compte plus tard pour la garder.</p>`}`;
+`;
   else if(screen==="check-mail") body = `${head}<h2>Vérifie ta boîte mail</h2>
     <p>On t'a envoyé un lien à <span class="auth-mail">${esc(auth.email)}</span>. Clique dessus pour activer ton compte : tu reviendras ici tout seul.</p>
     <p class="auth-note">Rien reçu ? Regarde dans les spams, ou renvoie l'e-mail.</p>${cap}${err}
@@ -13564,9 +13561,8 @@ document.addEventListener("click", async e=>{
     case "auth-go": if(t.dataset.tab) auth.tab = t.dataset.tab; authShow(t.dataset.screen); break;
     case "auth-close": authHide(); setTimeout(bootPopups, 300); break;
     case "auth-balls": AuthFx.setOff(!AuthFx.off); t.innerHTML = authBallsLabel(); break;
-    case "auth-guest": lsSet(GUEST_FLAG, "1"); authHide(); setTimeout(bootPopups, 300); break;
     case "auth-import": auth.opts.begin(t.dataset.keep==="1"); break;
-    case "auth-retry": { const u = await Cloud.currentUser().catch(()=>null); if(u){ sync.uid = null; cloudStart(u) } else authShow("welcome"); break }
+    case "auth-retry": { if(!window.Cloud?.available){ location.reload(); break } const u = await Cloud.currentUser().catch(()=>null); if(u){ sync.uid = null; cloudStart(u) } else authShow("welcome"); break }
     case "auth-resend": try{ await Cloud.resendConfirm(auth.email, await Captcha.token()); Captcha.reset(); toast("E-mail renvoyé !") }catch(err){ Captcha.reset(); authFail(err) } break;
     case "acct-login": authOpen("login"); break;
     case "acct-signup": authOpen("signup"); break;
@@ -13608,7 +13604,8 @@ document.addEventListener("submit", async e=>{
 
 // au démarrage : session en cours, lien reçu par e-mail, ou écran de bienvenue
 function accountBoot(){
-  if(!window.Cloud?.available){ if(CLOUD_UID) toast("Pas de connexion : ta partie est gardée sur cet appareil."); return }
+  // un compte est obligatoire : sans connexion au serveur, on ne joue que sur la copie d'un compte déjà connecté ici
+  if(!window.Cloud?.available){ if(CLOUD_UID) toast("Pas de connexion : ta partie est gardée sur cet appareil."); else authShow("offline"); return }
   if(CLOUD_UID){ if(lsGet(STORE_KEY)) syncVeil(true); else authShow("loading") }
   const h = new URLSearchParams(location.hash.slice(1));
   if(h.get("error")){   // lien d'e-mail périmé ou déjà utilisé
@@ -13620,7 +13617,7 @@ function accountBoot(){
     if(ev==="PASSWORD_RECOVERY"){ auth.closable = false; authShow("newpass"); return }
     if(auth.screen==="newpass") return;
     if(user && (ev==="INITIAL_SESSION" || ev==="SIGNED_IN")) cloudStart(user);
-    else if(!user && ev==="INITIAL_SESSION" && (auth.err || lsGet(GUEST_FLAG)!=="1")) authShow("welcome");
+    else if(!user && ev==="INITIAL_SESSION") authShow("welcome");
     else if(!user && ev==="SIGNED_OUT" && sync.on){ sync.on = false; location.reload() }
   });
 }

@@ -99,7 +99,7 @@ p{margin:0}
   text-shadow:0 1.5px 0 #F59E0B,0 3px 0 #E07B00,0 5px 0 var(--navy),0 7px 9px rgba(0,0,0,.35)}
 .logo span{-webkit-text-stroke:6px var(--navy);paint-order:stroke fill}
 .logo img{width:36px;height:36px;margin-left:2px;margin-top:4px}
-.topbar a.logo{text-decoration:none;cursor:pointer}
+.topbar .logo a{text-decoration:none;cursor:pointer;color:inherit;display:flex}
 .tagline{font-family:var(--hand);font-size:24px;font-weight:600;color:var(--ink);margin-left:18px;white-space:nowrap}
 .top-spacer{flex:1}
 .icon-btn{position:relative;width:40px;height:40px;display:grid;place-items:center;border-radius:12px}
@@ -3126,7 +3126,7 @@ body.gc-open{overflow:hidden}
 
 <div class="beta-rib" id="beta-rib" hidden></div>
 <header class="topbar">
-  <a class="logo" href="#" data-action="nav" data-view="accueil" aria-label="Billy : retour à l'accueil"><span>Billy</span><img id="logo-marble" alt=""></a>
+  <div class="logo"><a href="#" data-action="nav" data-view="accueil" aria-label="Billy : retour à l'accueil"><span>Billy</span></a><img id="logo-marble" alt=""></div>
   <div class="tagline">Ouvre. Collectionne. Joue.</div>
   <div class="top-spacer"></div>
   <button class="mj-btn" id="mj-btn" data-action="mj-open" aria-label="Ma journée"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3.5" y="8" width="17" height="4" rx="1"/><path d="M5 12v8h14v-8M12 8v12M12 8C10.5 4 7 4 7 6s3 2 5 2c2 0 5 0 5-2s-3.5-2-5 2"/></svg><span class="lbl">Ma journée</span><span class="n" id="mj-n" hidden></span></button>

@@ -3422,7 +3422,7 @@ Object.values(SECRETS).forEach(X=>{ X.palIdx = PALETTES.length; PALETTES.push(X.
 // Événements : un motif à part et ses coloris à lui, qu'on ne trouve que pendant l'événement
 const EVENTS = {
   // dates à l'heure de Paris (mêmes dates dans supabase/serveur.sql : interne.evenement)
-  pirates: {name:"À l'abordage !", fam:"Pirate", color:"#C8322F", bag:"pirate",
+  pirates: {name:"À l'abordage !", fam:"Pirate", color:"#C8322F",
     start:Date.parse("2026-09-30T00:00:00+02:00"), end:Date.parse("2026-10-14T23:59:59+02:00"),
     desc:"Deux semaines de billes Pirate : coche la case sur un sachet payant.",
     pals:[["Pavillon noir","#15151B","#D4A537","#F1E9D2","#2A2A30"],
@@ -3553,16 +3553,6 @@ const BAGS = [FREE_BAG,
   {id:"collector", name:"Sachet Collector", desc:"5 billes, dont au moins un Boulet ou plus gros. 10 fois plus de chances de shiny.", price:150, n:5, guarantee:"boulet", color:"#D9A020", tint:"#FBEBC0", shiny:SHINY_RATE*10,
    slots:[sizeOdds([0,0,85,15,0,0]),sizeOdds([0,0,65,35,0,0]),sizeOdds([0,0,40,50,10,0]),sizeOdds([0,0,0,60,38,2]),sizeOdds([0,0,0,0,87,13])]},
 ];
-// sachets d'événement : en vente seulement pendant l'événement ; toutes leurs billes ont le motif de l'événement et un de ses coloris
-// Le Sachet Pirate (2 octobre 2026, le soir) : 400 bonbecs, 5 billes, des tailles un peu plus grosses. Chacune des 4 premières a 60 % de chances
-// d'être Pirate (sinon c'est une bille classique, dans la même taille), et la vedette (la 5e) est toujours Pirate.
-// Réglé pour qu'un joueur régulier complète l'album Pirate (5 coloris × 6 tailles) en 2 semaines : en simulation, avec ~12 600 bonbecs
-// (32 sachets) il le finit 8 fois sur 10 grâce à la fusion d'événement. Même chose dans serveur.sql (interne.sac, ouvrir_sac).
-BAGS.push({id:"pirate", event:"pirates", name:"Sachet Pirate", desc:"5 billes, dont au moins une Pirate : chaque bille a 60 % de chances d'être Pirate, et la dernière l'est toujours. Seulement pendant l'événement « À l'abordage ! ». 4 fois plus de chances de shiny.",
-  evFill:.6, evStar:1,
-  price:40, n:5, color:"#2E2B36", tint:"#EADFC4", shiny:SHINY_RATE*4,
-  fam:FAMILIES.findIndex(F=>F.event==="pirates"), pals:EVENTS.pirates.palIdx,
-  slots:[sizeOdds([40,35,18,7,0,0]),sizeOdds([30,32,22,12,4,0]),sizeOdds([20,28,26,16,8,2]),sizeOdds([10,22,26,22,15,5]),sizeOdds([0,5,20,30,30,15])]});
 // par bille en moyenne (pour les chances d'une bille précise), et « au moins une » de chaque taille dans un sachet
 BAGS.forEach(b=>{
   b.star = b.slots[b.n-1];
@@ -5151,8 +5141,6 @@ const BAG_LOOK = {
   classique:{tex:"coton",  cord:"#F4E3C2", cordW:5,   bead:"#B9824A", patch:"round",  paper:"#FFF6E2"},
   premium:  {tex:"velours",cord:"#E8B53A", cordW:5,   bead:"#FFD86B", patch:"round",  paper:"#FFF6E2", ring:"#E8B53A"},
   collector:{tex:"satin",  cord:"#B8322A", cordW:5.5, bead:"#FFD86B", patch:"star",   paper:"#FFF3C4", tassel:true, sparks:true},
-  pirate:   {tex:"velours",cord:"#C9A24A", cordW:5.5, bead:"#E8C25A", patch:"skull",  paper:"#F1E9D2", tassel:true},
-  "pirate-premium":{tex:"satin",cord:"#E8B53A", cordW:5.5, bead:"#FFD86B", patch:"skull", paper:"#F6E7C0", tassel:true, sparks:true, ring:"#E8B53A"},
 };
 // petite bille en verre dessinée en SVG (dans le goulot du sachet, ou par terre à côté)
 function dotMarble(x,y,r,col,id,cls=""){
@@ -5362,7 +5350,7 @@ function editionOf(s){
 // d'où vient une bille (affiché dans sa fiche)
 const SRC_LABEL = {gratuit:"Dans un Sachet gratuit", classique:"Dans un Sachet Classique", premium:"Dans un Sachet Premium", collector:"Dans un Sachet Collector",
   fusion:"En fusion, à la Confiserie", chateau:"En gagnant au Château", passe:"Au passe de saison", secrete:"En découvrant un secret", test:"Outil de test",
-  pirate:"Dans un Sachet Pirate", roue:"Gagnée à la Roue du jour", pachinko:"Gagnée au Plinko", grattage:"Gagnée au Ticket à gratter",
+  pirate:"Pendant l'événement Pirate", roue:"Gagnée à la Roue du jour", pachinko:"Gagnée au Plinko", grattage:"Gagnée au Ticket à gratter",
   distributeur:"Sortie du Distributeur", loterie:"Gagnée à la Loterie", beta:"Cadeau des bêta-testeurs"};
 
 // Défis de collection : calculés sur la collection actuelle, récompense à récupérer une fois.

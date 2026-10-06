@@ -161,11 +161,8 @@ language sql immutable as $$
     ('gratuit',     0, 3, null::int, 0.0005, array[[75,25,0,0,0,0],[55,35,10,0,0,0],[30,33,20,12,4,1]]::numeric[]),
     ('classique',  30, 5, null,      0.0010, array[[70,30,0,0,0,0],[50,38,12,0,0,0],[35,40,20,5,0,0],[20,35,30,13,2,0],[10,25,30,20,12,3]]::numeric[]),
     ('premium',    60, 5, 3,         0.0020, array[[0,80,20,0,0,0],[0,60,35,5,0,0],[0,40,45,15,0,0],[0,0,55,38,7,0],[0,0,0,60,34,6]]::numeric[]),
-    ('collector', 150, 5, 4,         0.0050, array[[0,0,85,15,0,0],[0,0,65,35,0,0],[0,0,40,50,10,0],[0,0,0,60,38,2],[0,0,0,0,87,13]]::numeric[]),
-    -- Sac Pirate (2 octobre 2026) : 5 billes, 60 % Pirate et la dernière toujours Pirate (voir ouvrir_sac), tailles un peu plus grosses
-    ('pirate',     40, 5, null,      0.0020, array[[40,35,18,7,0,0],[30,32,22,12,4,0],[20,28,26,16,8,2],[10,22,26,22,15,5],[0,5,20,30,30,15]]::numeric[]),
-    -- Sac Pirate Premium (2 octobre 2026) : tailles du Classique, 15 % de Pirate par bille et 35 % pour la dernière (voir ouvrir_sac)
-    ('pirate-premium', 100, 5, null, 0.0020, array[[70,30,0,0,0,0],[50,38,12,0,0,0],[35,40,20,5,0,0],[20,35,30,13,2,0],[10,25,30,20,12,3]]::numeric[])
+    ('collector', 150, 5, 4,         0.0050, array[[0,0,85,15,0,0],[0,0,65,35,0,0],[0,0,40,50,10,0],[0,0,0,60,38,2],[0,0,0,0,87,13]]::numeric[])
+    -- (le Sachet Pirate et le Sachet Pirate Premium ont été retirés le 6 octobre 2026 : les billes d'événement viennent de la case à cocher)
   ) v(nom, prix, n, garantie, shiny, cotes) where v.nom = sac.nom
 $$;
 
@@ -173,13 +170,13 @@ $$;
 create or replace function interne.evenement(nom text, out debut timestamptz, out fin timestamptz, out sac text, out decor int, out coloris int[])
 language sql immutable as $$
   select v.debut, v.fin, v.sac, v.decor, v.coloris from (values
-    ('pirates', timestamptz '2026-09-30 00:00:00 Europe/Paris', timestamptz '2026-10-14 23:59:59 Europe/Paris', 'pirate', 32, array[65,66,67,68,69]),
+    ('pirates', timestamptz '2026-09-30 00:00:00 Europe/Paris', timestamptz '2026-10-14 23:59:59 Europe/Paris', null, 32, array[65,66,67,68,69]),
     -- novembre 2026 : « Super-héros ! », pas de sachet à lui (on coche la case), décor 48, coloris 79 à 83 (après ceux des joueurs)
     ('superheros', timestamptz '2026-11-01 00:00:00 Europe/Paris', timestamptz '2026-11-14 23:59:59 Europe/Paris', null, 48, array[79,80,81,82,83])
   ) v(nom, debut, fin, sac, decor, coloris) where v.nom = evenement.nom
 $$;
 create or replace function interne.evenement_du_sac(s text) returns text language sql immutable as $$
-  select case when s in ('pirate', 'pirate-premium') then 'pirates' end
+  select null::text   -- plus aucun sachet d'événement (6 octobre 2026)
 $$;
 -- Billes d'événement (3 octobre 2026) : plus de sac d'événement en vente. Pendant l'événement, le joueur coche (ou non) « billes
 -- d'événement » sur les sacs Classique, Premium et Collector : case cochée, chaque bille a 50 % de chances d'être du décor de l'événement
@@ -351,10 +348,6 @@ declare qui uuid := interne.moi(); p portefeuilles; r record; ev record; evc rec
 begin
   select * into r from interne.sac(nom);
   if r.n is null then raise exception 'sac_inconnu'; end if;
-  -- un sac d'événement : on ne l'achète que pendant l'événement (un sac offert s'ouvre quand on veut)
-  select * into ev from interne.evenement(coalesce(interne.evenement_du_sac(nom), ''));   -- aucune ligne : tout à null
-  if ev.sac is not null and not offert and not (now() between ev.debut and ev.fin) then raise exception 'evenement_fini'; end if;
-  if ev.sac is not null and not offert then raise exception 'plus_en_vente'; end if;   -- les sacs d'événement ne se vendent plus (offerts seulement)
   select * into evc from interne.evenement_en_cours();
   select * into p from portefeuilles where joueur = qui for update;
   if offert then
@@ -388,14 +381,7 @@ begin
     pity = case when exists (select 1 from unnest(tirees) x where x >= 4) then 0 else pity + 1 end
     where joueur = qui;
   for i in 1..r.n loop
-    -- sac d'événement : chaque bille a une chance d'être du décor de l'événement (12 %, 30 % pour la dernière,
-    -- garantie pour la dernière d'un sac offert), sinon c'est une bille normale.
-    -- Sac Pirate (2 octobre 2026, le soir) : 60 % par bille, la dernière (la vedette) toujours Pirate.
-    evb := ev.decor is not null and (case when i = r.n and (offert or nom = 'pirate') then true
-             when nom = 'pirate' then random() < 0.6
-             else random() < case when nom = 'pirate-premium' then (case when i = r.n then 0.35 else 0.15 end)
-                                  else (case when i = r.n then 0.3 else 0.12 end) end end);
-    d := case when evb then ev.decor end; c := case when evb then ev.coloris[1 + floor(random()*array_length(ev.coloris,1))::int] end;
+    d := null; c := null;
     -- pendant l'événement, si le joueur l'a choisi : une bille d'un sac Classique, Premium ou Collector peut être une bille
     -- d'événement (50 %), et la vedette l'est toujours
     if d is null and evc.decor is not null and evenement and interne.taux_evenement(nom) > 0 and (i = r.n or random() < interne.taux_evenement(nom)) then
@@ -570,7 +556,7 @@ declare qui uuid := interne.moi(); today text := interne.aujourdhui()::text; k t
                           "find_many":8,"find_rare":10,"find_event":12,"day_games":8,"stars2":9,"plinko":5}';
 begin
   if montant < 0 then raise exception 'montant_invalide'; end if;
-  if sac is not null and sac not in ('classique','premium','collector','pirate') then raise exception 'sac_inconnu'; end if;
+  if sac is not null and sac not in ('classique','premium','collector') then raise exception 'sac_inconnu'; end if;
   perform 1 from portefeuilles where joueur = qui for update;
   case source
     when 'quete' then   -- 4 quêtes par jour (QUESTS_N dans index.html), au tarif de la quête

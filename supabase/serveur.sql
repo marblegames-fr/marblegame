@@ -522,9 +522,10 @@ end $$;
 -- Parts dans l'ordre de la roue (ROUE dans index.html) ; chances proches du Plinko : 5 → 30,7 %, 10 → 22 %, 20 → 16 %, Classique 13 %,
 -- 40 → 7 %, Premium 6 %, 100 → 3 %, Collector 2 %, Mammouth 0,3 % (shiny comme dans le Sachet Collector).
 create or replace function interne.roue_cases() returns table(k int, poids numeric, bonbecs int, sac text, taille text) language sql immutable as $$
-  select * from (values (0, 0.3, 0, null::text, 'mammouth'::text), (1, 15.35, 5, null, null), (2, 13, 0, 'classique', null), (3, 11, 10, null, null),
-    (4, 7, 40, null, null), (5, 15.35, 5, null, null), (6, 6, 0, 'premium', null), (7, 16, 20, null, null), (8, 11, 10, null, null),
-    (9, 3, 100, null, null), (10, 2, 0, 'collector', null)) v(k, poids, bonbecs, sac, taille)
+  -- (6 octobre 2026, le soir) un tour acheté coûte 15 : 5 → 35,8 %, 10 → 25 %, 20 → 16 %, Classique 10 %, 40 → 6 %, Premium 4 %, 100 → 2 %, Collector 1 %, Mammouth 0,2 %
+  select * from (values (0, 0.2, 0, null::text, 'mammouth'::text), (1, 17.9, 5, null, null), (2, 10, 0, 'classique', null), (3, 12.5, 10, null, null),
+    (4, 6, 40, null, null), (5, 17.9, 5, null, null), (6, 4, 0, 'premium', null), (7, 16, 20, null, null), (8, 12.5, 10, null, null),
+    (9, 2, 100, null, null), (10, 1, 0, 'collector', null)) v(k, poids, bonbecs, sac, taille)
 $$;
 -- public.roue(payer) est dans supabase/chance.sql (6 octobre 2026 : un tour offert + 2 achetés par jour)
 drop function if exists public.roue();

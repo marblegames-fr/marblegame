@@ -22,13 +22,13 @@ begin
   end if;
 end $$;
 
--- ---------- La Roue : offerte, ou 25 bonbecs le tour (parts dans interne.roue_cases, serveur.sql) ----------
+-- ---------- La Roue : offerte, ou 15 bonbecs le tour (parts dans interne.roue_cases, serveur.sql) ----------
 drop function if exists public.roue();
 create or replace function public.roue(payer boolean default false)
 returns jsonb language plpgsql security definer set search_path = public as $$
 declare qui uuid := interne.moi(); today text := interne.aujourdhui()::text; c record; b jsonb := null; x numeric; acc numeric := 0; j record;
 begin
-  select * into j from interne.jeu_chance(qui, 'roue', payer, 25);
+  select * into j from interne.jeu_chance(qui, 'roue', payer, 15);
   x := random() * (select sum(poids) from interne.roue_cases());
   for c in select * from interne.roue_cases() order by k loop
     acc := acc + c.poids; exit when x < acc;
@@ -41,17 +41,17 @@ begin
   return jsonb_build_object('eco', interne.etat(qui), 'case', c.k, 'bonbecs', c.bonbecs, 'sac', c.sac, 'bille', b, 'achetees', j.achetees);
 end $$;
 
--- ---------- Le Ticket à gratter : offert, ou 10 bonbecs ; 3 symboles pareils = le lot ----------
--- 40 % rien, 5 → 25 %, 10 → 15 %, 20 → 10 %, Classique 6 %, 50 → 2,5 %, Premium 1 %, 100 → 0,4 %, Collector 0,1 % (~90 % rendus)
+-- ---------- Le Ticket à gratter : offert, ou 15 bonbecs ; 3 symboles pareils = le lot ----------
+-- 15 bonbecs le ticket (prix unique des jeux de chance) : 40 % rien, 8 → 25 %, 15 → 15 %, 30 → 10 %, Classique 6 %, 75 → 2,5 %, Premium 1 %, 150 → 0,4 %, Collector 0,1 %
 create or replace function interne.grattage_lots() returns table(k int, poids numeric, bonbecs int, sac text) language sql immutable as $$
-  select * from (values (0, 40, 0, null::text), (1, 25, 5, null), (2, 15, 10, null), (3, 10, 20, null), (4, 6, 0, 'classique'),
-    (5, 2.5, 50, null), (6, 1, 0, 'premium'), (7, 0.4, 100, null), (8, 0.1, 0, 'collector')) v(k, poids, bonbecs, sac)
+  select * from (values (0, 40, 0, null::text), (1, 25, 8, null), (2, 15, 15, null), (3, 10, 30, null), (4, 6, 0, 'classique'),
+    (5, 2.5, 75, null), (6, 1, 0, 'premium'), (7, 0.4, 150, null), (8, 0.1, 0, 'collector')) v(k, poids, bonbecs, sac)
 $$;
 create or replace function public.grattage(payer boolean default false)
 returns jsonb language plpgsql security definer set search_path = public as $$
 declare qui uuid := interne.moi(); c record; x numeric; acc numeric := 0; j record;
 begin
-  select * into j from interne.jeu_chance(qui, 'grattage', payer, 10);
+  select * into j from interne.jeu_chance(qui, 'grattage', payer, 15);
   x := random() * (select sum(poids) from interne.grattage_lots());
   for c in select * from interne.grattage_lots() order by k loop
     acc := acc + c.poids; exit when x < acc;
@@ -60,13 +60,13 @@ begin
   return jsonb_build_object('eco', interne.etat(qui), 'lot', c.k, 'bonbecs', c.bonbecs, 'sac', c.sac, 'achetees', j.achetees);
 end $$;
 
--- ---------- Le Distributeur de billes : offert, ou 10 bonbecs ; toujours une bille ----------
+-- ---------- Le Distributeur de billes : offert, ou 15 bonbecs ; toujours une bille ----------
 -- sa taille comme la vedette du sachet gratuit (Mini 30, Bille 33, Chinoise 20, Calot 12, Boulet 4, Mammouth 1), shiny au taux de base
 create or replace function public.distributeur(payer boolean default false)
 returns jsonb language plpgsql security definer set search_path = public as $$
 declare qui uuid := interne.moi(); j record; t text; b jsonb;
 begin
-  select * into j from interne.jeu_chance(qui, 'distributeur', payer, 10);
+  select * into j from interne.jeu_chance(qui, 'distributeur', payer, 15);
   t := (interne.tailles())[interne.tirer(array[30,33,20,12,4,1]::numeric[])];
   b := interne.nouvelle_bille(qui, t, shiny => interne.tirer_shiny(interne.taux_shiny()), src => 'distributeur', liee => j.lie);
   return jsonb_build_object('eco', interne.etat(qui), 'bille', b, 'achetees', j.achetees);

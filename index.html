@@ -8304,7 +8304,6 @@ function viewPachinko(){
   const act = activeSpec(), tot = PACHI.reduce((a,c)=>a+c.w,0), free = pachiFree();
   const kinds = [...new Map(PACHI.map(c=>[c.lbl,c])).values()];
   return `<div class="page-head"><div><button class="back-link" data-action="nav" data-view="jeux">${ic("chevl",14)} Tous les jeux</button><h1>Le Plinko</h1>
-    <p>Une bille gratuite par jour, d'autres pour ${PACHI_PRICE} ${CUR.many}.</p>
     <span class="gt-state${free?" ok":""}" id="day-chip">${free ? `${ic("gift",14)} Ta bille du jour t'attend` : `${ic("check",14,3)} Bille du jour lâchée · la prochaine dans <b data-quest-timer>${untilMidnight()}</b>`}</span></div></div>
   <div class="game-wrap">
     <section class="panel pachi-panel">
@@ -8320,9 +8319,8 @@ function viewPachinko(){
     <aside style="display:grid;gap:20px">
       <section class="panel"><div class="panel-head"><h3>Les cases</h3><span class="sample-tag">Chances</span></div>
         <ul class="rewards-list">${kinds.map(c=>({c, p:PACHI.filter(x=>x.lbl===c.lbl).reduce((a,x)=>a+x.w,0)/tot})).sort((a,b)=>a.p-b.p).map(({c,p})=>{
-          return `<li><span><i class="pachi-dot" style="background:${c.c}"></i>${c.roue?`Un Mammouth : la roulette choisit son motif ${oddsBtn("pachinko")}`:c.sac?BAG_BY[c.sac].name+" offert":c.j?`${fmt(c.j)} ${CUR.many}`:"Rien du tout"}</span><b>${pct(+(p*100).toFixed(p<.1?1:0))}</b></li>` }).join("")}</ul>
-        <p class="meta" style="margin-top:8px">Le Mammouth : la roulette tire la rareté de son motif avec les mêmes chances que dans un sachet, le coloris est au hasard, et il peut être shiny comme dans un Sachet Collector.</p>
-        <p class="meta" style="margin-top:8px">Tu retrouves au moins ta mise ${pct(Math.round(100*PACHI.filter(c=>c.roue || (c.j||0)>=PACHI_PRICE || c.sac).reduce((a,c)=>a+c.w,0)/tot))} du temps. La bille du jour, elle, est gratuite et compte dans tes jeux du jour.</p></section>
+          return `<li><span><i class="pachi-dot" style="background:${c.c}"></i>${c.roue?`Un Mammouth ${oddsBtn("pachinko")}`:c.sac?BAG_BY[c.sac].name:c.j?`${fmt(c.j)} ${CUR.many}`:"Rien du tout"}</span><b>${pct(+(p*100).toFixed(p<.1?1:0))}</b></li>` }).join("")}</ul>
+</section>
     </aside>
   </div>`;
 }
@@ -8640,17 +8638,17 @@ async function pachiGo(pay){
    (mêmes valeurs dans supabase/serveur.sql, interne.roue_cases). Toutes les parts ont la même taille : les chances sont à côté.
    ===================================================================== */
 const ROUE = [
-  {w:.3,    roue:true,       lbl:"Mammouth",  c:"#E5484D", c2:"#9E1C2C"},
-  {w:15.35, j:5,             lbl:"5",         c:"#FF7EB6", c2:"#C9407F"},
-  {w:13,    sac:"classique", lbl:"Classique", c:"#2FA889", c2:"#1C6B57"},
-  {w:11,    j:10,            lbl:"10",        c:"#FFC23F", c2:"#C98A12"},
-  {w:7,     j:40,            lbl:"40",        c:"#8C7CFF", c2:"#5240C9"},
-  {w:15.35, j:5,             lbl:"5",         c:"#FF7EB6", c2:"#C9407F"},
-  {w:6,     sac:"premium",   lbl:"Premium",   c:"#4A5FD0", c2:"#28358A"},
+  {w:.2,    roue:true,       lbl:"Mammouth",  c:"#E5484D", c2:"#9E1C2C"},
+  {w:17.9,  j:5,             lbl:"5",         c:"#FF7EB6", c2:"#C9407F"},
+  {w:10,    sac:"classique", lbl:"Classique", c:"#2FA889", c2:"#1C6B57"},
+  {w:12.5,  j:10,            lbl:"10",        c:"#FFC23F", c2:"#C98A12"},
+  {w:6,     j:40,            lbl:"40",        c:"#8C7CFF", c2:"#5240C9"},
+  {w:17.9,  j:5,             lbl:"5",         c:"#FF7EB6", c2:"#C9407F"},
+  {w:4,     sac:"premium",   lbl:"Premium",   c:"#4A5FD0", c2:"#28358A"},
   {w:16,    j:20,            lbl:"20",        c:"#2EC4DE", c2:"#16879C"},
-  {w:11,    j:10,            lbl:"10",        c:"#FFC23F", c2:"#C98A12"},
-  {w:3,     j:100,           lbl:"100",       c:"#FF8A3D", c2:"#C4531A"},
-  {w:2,     sac:"collector", lbl:"Collector", c:"#F2C14E", c2:"#A87A12"},
+  {w:12.5,  j:10,            lbl:"10",        c:"#FFC23F", c2:"#C98A12"},
+  {w:2,     j:100,           lbl:"100",       c:"#FF8A3D", c2:"#C4531A"},
+  {w:1,     sac:"collector", lbl:"Collector", c:"#F2C14E", c2:"#A87A12"},
 ];
 const ROUE_SEG = 360/ROUE.length, ROUE_DUR = 6200;
 const roue = {busy:false, ang:0, win:null};
@@ -8696,7 +8694,6 @@ function viewRoue(){
   const kinds = [...new Map(ROUE.map(c=>[c.lbl,c])).values()].map(c=>({c, p:ROUE.filter(x=>x.lbl===c.lbl).reduce((a,x)=>a+x.w,0)/tot})).sort((a,b)=>a.p-b.p);
   const last = roue.win || (done && g.k!=null ? `<b>Aujourd'hui</b><span>${rouePrize(ROUE[g.k])}</span>` : "");
   return `<div class="page-head"><div><button class="back-link" data-action="nav" data-view="jeux">${ic("chevl",14)} Tous les jeux</button><h1>La Roue du jour</h1>
-    <p>Un tour offert par jour, puis ${CHANCE_MAX} à ${CHANCE_PRIX.roue} ${CUR.many}.</p>
     <span class="gt-state${done?"":" ok"}" id="day-chip">${done ? `${ic("check",14,3)} Roue tournée · la prochaine dans <b data-quest-timer>${untilMidnight()}</b>` : `${ic("gift",14)} Ton tour du jour t'attend`}</span></div></div>
   <div class="game-wrap">
     <section class="panel rq-panel">
@@ -8777,7 +8774,7 @@ function artRoue(){
    Comme la Roue et le Plinko : une partie offerte par jour, puis CHANCE_MAX achetées au plus (supabase/chance.sql).
    ===================================================================== */
 const CHANCE_MAX = 2;
-const CHANCE_PRIX = {roue:25, grattage:10, distributeur:10};
+const CHANCE_PRIX = {roue:15, grattage:15, distributeur:15};   // un seul prix pour tous les jeux de chance, comme le Plinko (PACHI_PRICE)
 const chanceBought = k => playedToday()[k+"N"] || 0;
 const chanceFreeDone = k => !!playedToday()[k]?.done;
 // les boutons d'un jeu de hasard : la partie offerte, puis « encore une » tant qu'il en reste à acheter
@@ -8807,13 +8804,13 @@ const lotTxt = l => l.sac ? `un ${BAG_BY[l.sac].name}` : l.j ? `${fmt(l.j)} ${CU
 // mêmes lots et mêmes chances que interne.grattage_lots (supabase/chance.sql) ; le lot 0 : perdu
 const GRAT = [
   {w:40},
-  {w:25,  j:5,   c:"#FF7EB6"},
-  {w:15,  j:10,  c:"#FFB547"},
-  {w:10,  j:20,  c:"#2EC4DE"},
+  {w:25,  j:8,   c:"#FF7EB6"},
+  {w:15,  j:15,  c:"#FFB547"},
+  {w:10,  j:30,  c:"#2EC4DE"},
   {w:6,   sac:"classique"},
-  {w:2.5, j:50,  c:"#8C7CFF"},
+  {w:2.5, j:75,  c:"#8C7CFF"},
   {w:1,   sac:"premium"},
-  {w:.4,  j:100, c:"#FF8A3D"},
+  {w:.4,  j:150, c:"#FF8A3D"},
   {w:.1,  sac:"collector"},
 ];
 const grat = {lot:null, cells:null, done:false, give:null, cleared:null};
@@ -8933,7 +8930,7 @@ function distMachine(){
 function viewDistributeur(){
   const L = dist.last;
   return `<div class="page-head"><div><button class="back-link" data-action="nav" data-view="jeux">${ic("chevl",14)} Tous les jeux</button><h1>Le Distributeur</h1>
-    <p>Tourne la manivelle : une boule tombe, et dedans, une bille !</p></div></div>
+</div></div>
   <div class="game-wrap">
     <section class="panel ds-panel">
       <div class="ds-stage"><div class="ds-machine" id="ds-machine">${distMachine()}<span class="ds-cap" id="ds-cap"></span></div>
@@ -8942,7 +8939,6 @@ function viewDistributeur(){
     </section>
     <aside><section class="panel"><div class="panel-head"><h3>Dans les boules</h3><span class="sample-tag">Chances</span></div>
       <ul class="rewards-list">${TK.map((t,i)=>[t,[30,33,20,12,4,1][i]]).reverse().map(([t,p])=>`<li><span>${typePill(t)}</span><b>${pct(p)}</b></li>`).join("")}</ul>
-      <p class="meta" style="margin-top:8px">Le motif et le coloris sont tirés comme dans un sachet. Elle peut être shiny.</p>
     </section></aside>
   </div>`;
 }
@@ -8997,7 +8993,7 @@ function viewLoterie(){
   if(!D) return `<div class="page-head"><div><button class="back-link" data-action="nav" data-view="jeux">${ic("chevl",14)} Tous les jeux</button><h1>La Loterie</h1></div></div><p class="meta">Chargement…</p>`;
   const L = D.dernier, win = new Set(L?.numeros||[]);
   return `<div class="page-head"><div><button class="back-link" data-action="nav" data-view="jeux">${ic("chevl",14)} Tous les jeux</button><h1>La Loterie de la semaine</h1>
-    <p>Un ticket gratuit par jour. Tirage dimanche à 20 h.</p></div></div>
+</div></div>
   <div class="game-wrap">
     <section class="panel lt-panel">
       <div class="lt-head"><span>${ic("clock",15)} Tirage dans <b data-lot-timer>${lotLeft(D.heure)}</b></span><span>${fmt(D.en_jeu)} ticket${D.en_jeu>1?"s":""} en jeu</span></div>
@@ -9011,7 +9007,6 @@ function viewLoterie(){
     </section>
     <aside><section class="panel"><div class="panel-head"><h3>Les lots</h3><span class="sample-tag">Par ticket</span></div>
       <ul class="rewards-list">${LOT_PRIX.map(x=>`<li><span>${x.bons} bon${x.bons>1?"s":""} : ${x.txt}</span><b>${x.p}</b></li>`).join("")}</ul>
-      <p class="meta" style="margin-top:8px">3 numéros de 1 à 20 sur chaque ticket, tirés au hasard. Les lots arrivent quand tu ouvres cette page après le tirage.</p>
     </section></aside>
   </div>`;
 }
@@ -9053,7 +9048,7 @@ function viewGames(){
   const maxAll = TIR_MAX + Object.values(DAY_GAMES).reduce((a,g)=>a+g.max, 0);
   const tile = c => `<article class="panel game-tile${c.ok?"":" played"}">
     <button class="gt-art" data-action="nav" data-view="${c.v}" aria-label="${c.ok?"Jouer":"Voir"} : ${c.t}">${c.art}<span class="gt-max">${c.prize ? `jusqu'à ${c.prize}` : `${COIN} jusqu'à ${c.max}`}</span><span class="gt-state ${c.ok?"ok":""}">${c.state}</span></button>
-    <div class="gt-body"><h2>${c.t}</h2><p>${c.d}</p>
+    <div class="gt-body"><h2>${c.t}</h2>
       <div class="gt-foot"><small>${c.stat}</small><button class="btn ${c.ok?"btn-blue":"btn-ghost"}" data-action="nav" data-view="${c.v}">${c.ok?`${ic("play",16)} Jouer`:"Voir"}</button></div></div>
   </article>`;
   const state = k => { const g = dayGame(k);
@@ -9078,7 +9073,7 @@ function viewGames(){
   ];
   const act = activeSpec();
   [solo, multi].forEach(l=>l.sort((a,b)=>b.ok-a.ok));   // ceux qui restent à jouer aujourd'hui d'abord (puis tout est réuni en une seule liste)
-  return `<div class="page-head"><div><h1>Jeux de la cour</h1><p>Une partie par jour à chaque jeu, des ${CUR.many} à la clé.</p></div>
+  return `<div class="page-head"><div><h1>Jeux de la cour</h1></div>
     <span class="hand-note">Qui c'est le plus fort de la cour ?</span></div>
   <section class="panel games-hero${left?"":" all-done"}">
     <div class="gh-txt"><span class="gh-kick">${ic("gift",14)} Tes parties du jour</span>
@@ -9108,9 +9103,9 @@ function viewGames(){
       <span class="btn btn-yellow">${gc.etat?.inscrit ? "Voir la course" : "M'inscrire"}</span>
     </button>
   </div>
-  <section class="games-sec"><div class="gs-head"><h2>Les jeux de la cour</h2><p>Ensuite, tu peux rejouer pour le plaisir.</p></div>
+  <section class="games-sec"><div class="gs-head"><h2>Les jeux de la cour</h2></div>
     <div class="games-grid">${[...solo, ...multi].map(tile).join("")}</div></section>
-  <section class="games-sec"><div class="gs-head"><h2>Les jeux de chance</h2><p>Rien à viser : une partie offerte par jour, puis ${CHANCE_MAX} à acheter.</p></div>
+  <section class="games-sec"><div class="gs-head"><h2>Les jeux de chance</h2></div>
     <div class="games-grid">${chance.map(tile).join("")}</div></section>`;
 }
 // Avant de jouer (5 octobre 2026) : une fenêtre « Avec quelle bille tu joues ? », une fois par visite d'un mini-jeu.

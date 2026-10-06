@@ -9038,7 +9038,7 @@ function lotLoad(force){
 function lotWins(g){
   (g||[]).forEach(w=>{ if(w.bille){ const s = srvAdopt([w.bille])[0]; S.specs.push(s); S.unseen.push(s.id); logFind(s); lot.mamm = s } });
   if(g?.length){ save(); const best = Math.max(...g.map(w=>w.bons));
-    if(lotDue() && ui.view!=="loterie") return;   // la fenêtre des résultats va s'ouvrir : c'est elle qui fête les lots (et lance la roulette du Mammouth)
+    if(lotDue()) return;   // la fenêtre des résultats va s'ouvrir (même sur la page de la Loterie) : c'est elle qui fête les lots et lance la roulette du Mammouth
     if(best===3 && lot.mamm){ const m = lot.mamm; lot.mamm = null; setTimeout(()=>mammRoulette(m, "loterie"), 600); return }
     toast(best===3 ? "Loterie : 3 bons numéros, un Mammouth est à toi !" : `Loterie : tu as gagné ${g.length} lot${g.length>1?"s":""} !`);
     Sound.ding(); FX.fireworks(SHINY_COLS, best===3 ? 8 : 3) }
@@ -9048,7 +9048,8 @@ function viewLoterie(){
   lotLoad(); const D = lot.data;
   if(!D) return `<div class="page-head"><div><button class="back-link" data-action="nav" data-view="jeux">${ic("chevl",14)} Tous les jeux</button><h1>La Loterie</h1></div></div><p class="meta">Chargement…</p>`;
   const L = D.dernier, win = new Set(L?.numeros||[]);
-  if(lotDue()){ S.lotPop = L.tirage; save() }   // résultats vus ici : la fenêtre du tirage ne s'ouvrira pas en plus
+  // un tirage pas encore vu : la page ne le montre pas, c'est la fenêtre des résultats qui le dévoile (elle s'ouvre tout de suite)
+  const due = lotDue(); if(due) setTimeout(()=>{ if(lotDue() && popupsFree()) lotResultPopup() }, 0);
   return `<div class="page-head"><div><button class="back-link" data-action="nav" data-view="jeux">${ic("chevl",14)} Tous les jeux</button><h1>La Loterie de la semaine</h1>
 </div></div>
   <div class="game-wrap">
@@ -9057,7 +9058,7 @@ function viewLoterie(){
       <div class="lt-mine">${D.mes.length ? D.mes.map((t,i)=>`<div class="lt-ticket${lot.fresh && i===D.mes.length-1 ? " fresh" : ""}"><small>Ticket ${i+1}</small>${t.map(n=>lotBall(n)).join("")}</div>`).join("") : `<p class="meta">Pas encore de ticket pour ce tirage.</p>`}</div>
       <div class="pachi-btns">${D.aujourdhui ? `<button class="btn btn-ghost btn-xl" disabled>${ic("check",18)} Ticket du jour pris</button><small class="pachi-n">Le prochain dans <b data-quest-timer>${untilMidnight()}</b></small>`
         : `<button class="btn btn-yellow btn-xl" data-action="lot-go">${ic("ticket",18)} Prendre mon ticket du jour</button>`}</div>
-      ${L ? `<div class="lt-last"><h3>Tirage du ${new Date(L.tirage+"T12:00:00").toLocaleDateString("fr-FR",{day:"numeric",month:"long"})}</h3>
+      ${due ? `<div class="lt-last"><h3>Le tirage a eu lieu !</h3><p class="meta">Les numéros arrivent…</p></div>` : L ? `<div class="lt-last"><h3>Tirage du ${new Date(L.tirage+"T12:00:00").toLocaleDateString("fr-FR",{day:"numeric",month:"long"})}</h3>
         <div class="lt-draw">${L.numeros.map(n=>lotBall(n,true)).join("")}</div>
         ${L.mes.length ? `<div class="lt-mine">${L.mes.map(t=>`<div class="lt-ticket${t.bons?" won":""}">${t.numeros.map(n=>lotBall(n, win.has(n))).join("")}<small>${t.bons ? `${t.bons} bon${t.bons>1?"s":""} : ${LOT_PRIX.find(x=>x.bons===t.bons).txt}` : "Aucun bon numéro"}</small></div>`).join("")}</div>` : `<p class="meta">Tu n'avais pas de ticket pour ce tirage.</p>`}
         <p class="meta">${L.gagnants ? `${L.gagnants} ticket${L.gagnants>1?"s":""} avec 2 bons numéros ou plus.` : ""}</p></div>` : ""}
@@ -9074,6 +9075,7 @@ const lotDraw = () => { const L = srvOn() && lot.data?.dernier; return L && L.me
 const lotDue = () => { const L = lotDraw(); return !!L && S.lotPop!==L.tirage };
 function lotResultPopup(){
   const L = lotDraw(); S.lotPop = L.tirage; save();
+  if(ui.view==="loterie") renderView();   // la page de la Loterie peut maintenant montrer le tirage, derrière la fenêtre
   const win = new Set(L.numeros), best = Math.max(...L.mes.map(t=>t.bons||0));
   const el = document.getElementById("modal");
   el.innerHTML = `<div class="modal gc-pop lt-pop" role="dialog" aria-modal="true" aria-label="Les résultats de la Loterie"><button class="close-x" data-action="close-modal" aria-label="Fermer">×</button>

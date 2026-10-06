@@ -3573,6 +3573,8 @@ BAGS.forEach(b=>{
   b.perBag = Object.fromEntries(TK.map(k=>[k, 100*(1-b.slots.reduce((a,o)=>a*(1-o[k]/100),1))]));
 });
 const BAG_BY = Object.fromEntries(BAGS.map(b=>[b.id,b]));
+// les sachets offerts d'un type qui n'existe plus (ex. le Sachet Pirate, retiré) : on les oublie, sinon l'accueil ne s'affiche plus
+const knownBags = inv => Object.fromEntries(Object.entries(inv||{}).filter(([id])=>BAG_BY[id]));
 // l'étagère des sachets : les sachets d'événement n'y sont que pendant l'événement (ou si on en a un offert)
 const shelfBags = () => BAGS.filter(b=>!b.event || (S.bagInv[b.id]||0)>0);   // un sachet d'événement : seulement s'il est offert
 const eventSpec = b => b.fam!=null ? {family:b.fam, pal:b.pals[Math.floor(Math.random()*b.pals.length)]} : {};
@@ -4910,6 +4912,7 @@ if(!(S.pv>=2)){
 if(!(S.cv>=2)){ S.jetons = Math.round((S.jetons||0)/10); S.cv = 2; save() }
 // ancien minuteur (un seul sachet) -> stock
 if(S.freeT0===undefined){ S.freeT0 = (S.freeAt ?? Date.now()) - FREE_EVERY; delete S.freeAt }
+S.bagInv = knownBags(S.bagInv);
 const RENAMED = {sulfure:"mammouth"};   // le Sulfure s'appelle maintenant Mammouth
 S.specs.forEach(s=>{ s.type = RENAMED[s.type] || (TYPES[s.type] ? s.type : "bille") });
 S.chal = S.chal.map(id=>id==="fmt-sulfure" ? "fmt-mammouth" : id);
@@ -12976,7 +12979,7 @@ function srvOn(){ return !!(sync.on && eco.ready) }
 function srv(fn){ const p = eco.q.then(fn); eco.q = p.catch(()=>{}); return p }
 function applyEco(e){
   if(!e) return;
-  S.jetons = e.bonbecs; S.depart = e.depart||0; S.bagInv = Object.assign({}, e.sacs||{}); S.freeT0 = e.gratuit_t0; S.pity = e.pity;
+  S.jetons = e.bonbecs; S.depart = e.depart||0; S.bagInv = knownBags(e.sacs); S.freeT0 = e.gratuit_t0; S.pity = e.pity;
   if(e.serie_jour){ const [y,m,d] = e.serie_jour.split("-").map(Number); S.daily = {last:`${y}-${m}-${d}`, streak:e.serie} }
   eco.testeur = !!e.testeur;
   save(); renderTop(); renderNav();

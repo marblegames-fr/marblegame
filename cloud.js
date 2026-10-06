@@ -98,6 +98,7 @@
       fuse: ids => rpc("fusionner", {ids}),
       fuseEv: ids => rpc("fusion_evenement", {ids}),
       pachinko: payer => rpc("pachinko", {payer:!!payer}),
+      roue: () => rpc("roue"),   // la Roue du jour (6 octobre 2026)
       daily: () => rpc("bonbec_du_jour"),
       gain: (source, cle, montant, sac) => rpc("gagner", {source, cle, montant, sac:sac||null}),
       marble: (source, cle, graine, bid) => rpc("bille_gagnee", {source, cle, graine:graine??null, bid:bid||null}),

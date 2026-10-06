@@ -34,7 +34,7 @@ create table if not exists public.trocs (
   le        timestamptz not null default now(),
   fini_le   timestamptz
 );
--- des bonbecs en plus des billes, d'un seul côté (au plus TROC_BONBECS_MAX = 5000 ; même valeur dans index.html)
+-- des bonbecs en plus des billes, d'un seul côté : retiré le 6 octobre 2026 (troc_proposer refuse 'troc_bonbecs'), colonnes gardées pour l'historique
 alter table public.trocs add column if not exists donne_bonbecs   int not null default 0 check (donne_bonbecs between 0 and 5000);
 alter table public.trocs add column if not exists demande_bonbecs int not null default 0 check (demande_bonbecs between 0 and 5000);
 create index if not exists trocs_vers on public.trocs (vers) where statut = 'attente';
@@ -268,6 +268,8 @@ returns bigint language plpgsql security definer set search_path = public as $$
 declare moi uuid := interne.moi(); b uuid; tid bigint;
 begin
   donne_bonbecs := coalesce(donne_bonbecs, 0); demande_bonbecs := coalesce(demande_bonbecs, 0);
+  -- 6 octobre 2026 : plus de bonbecs dans les trocs (on pouvait vider un compte secondaire dans le principal), seulement des billes
+  if donne_bonbecs <> 0 or demande_bonbecs <> 0 then raise exception 'troc_bonbecs'; end if;
   if donne_bonbecs not between 0 and 5000 or demande_bonbecs not between 0 and 5000 or (donne_bonbecs > 0 and demande_bonbecs > 0) then raise exception 'troc_invalide'; end if;
   if donne_bonbecs > 0 and not exists (select 1 from portefeuilles p where p.joueur = moi and p.bonbecs >= donne_bonbecs) then raise exception 'pas_assez'; end if;
   if donne_bonbecs > interne.libres(moi) then raise exception 'bonbecs_depart'; end if;   -- les bonbecs de départ ne se donnent pas
@@ -304,7 +306,12 @@ begin
     update trocs set statut = 'impossible', fini_le = now() where id = t.id;
     return jsonb_build_object('statut', 'impossible');
   end if;
-  -- les bonbecs : celui qui les propose doit toujours les avoir, sinon le troc tombe ; celui qui accepte doit avoir ceux qu'on lui demande
+  -- un vieux troc avec des bonbecs (d'avant le 6 octobre 2026) ne peut plus être accepté
+  if t.donne_bonbecs > 0 or t.demande_bonbecs > 0 then
+    update trocs set statut = 'impossible', fini_le = now() where id = t.id;
+    return jsonb_build_object('statut', 'impossible');
+  end if;
+  -- (code d'avant, jamais atteint) les bonbecs : celui qui les propose doit toujours les avoir, sinon le troc tombe
   if t.donne_bonbecs > 0 or t.demande_bonbecs > 0 then
     perform 1 from portefeuilles where joueur in (t.de, t.vers) order by joueur for update;
     if not exists (select 1 from portefeuilles where joueur = t.vers and bonbecs >= t.demande_bonbecs) then raise exception 'pas_assez'; end if;
@@ -378,7 +385,7 @@ create or replace function public.vendre(bille uuid, prix int, jours int default
 declare moi uuid := interne.moi(); aid bigint;
 begin
   perform interne.expirer_annonces();
-  if prix < 1 or prix > 1000000 then raise exception 'prix_invalide'; end if;
+  if prix < 1 or prix > 100000 then raise exception 'prix_invalide'; end if;
   if heures is not null then
     if heures not in (3, 12) then raise exception 'duree_invalide'; end if;
   elsif jours not in (1, 3, 7) then raise exception 'duree_invalide'; end if;
@@ -394,7 +401,7 @@ create or replace function public.mettre_aux_encheres(bille uuid, prix int, heur
 declare moi uuid := interne.moi(); aid bigint;
 begin
   perform interne.expirer_annonces();
-  if prix < 1 or prix > 1000000 then raise exception 'prix_invalide'; end if;
+  if prix < 1 or prix > 100000 then raise exception 'prix_invalide'; end if;
   if heures not in (1, 6, 24, 72) then raise exception 'duree_invalide'; end if;
   if not interne.bille_libre(bille, moi) then raise exception 'bille_indisponible'; end if;
   if (select count(*) from annonces a where a.vendeur = moi and a.vendue_le is null and a.retiree_le is null) >= 30 then raise exception 'trop_annonces'; end if;
@@ -413,7 +420,7 @@ begin
   if a.id is null then raise exception 'enchere_finie'; end if;
   if a.vendeur = moi then raise exception 'ta_bille'; end if;
   if a.encherisseur = moi then raise exception 'deja_en_tete'; end if;
-  if montant is null or montant < interne.offre_min(a.prix, a.offre) or montant > 1000000 then raise exception 'offre_trop_basse'; end if;
+  if montant is null or montant < interne.offre_min(a.prix, a.offre) or montant > 100000 then raise exception 'offre_trop_basse'; end if;
   perform 1 from portefeuilles where joueur in (moi, coalesce(a.encherisseur, moi)) order by joueur for update;
   perform interne.payer_libre(moi, montant);   -- les bonbecs de départ ne servent pas aux enchères
   if a.encherisseur is not null then perform interne.crediter(a.encherisseur, a.offre); end if;

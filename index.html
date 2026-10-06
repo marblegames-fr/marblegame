@@ -99,6 +99,7 @@ p{margin:0}
   text-shadow:0 1.5px 0 #F59E0B,0 3px 0 #E07B00,0 5px 0 var(--navy),0 7px 9px rgba(0,0,0,.35)}
 .logo span{-webkit-text-stroke:6px var(--navy);paint-order:stroke fill}
 .logo img{width:36px;height:36px;margin-left:2px;margin-top:4px}
+.topbar a.logo{text-decoration:none;cursor:pointer}
 .tagline{font-family:var(--hand);font-size:24px;font-weight:600;color:var(--ink);margin-left:18px;white-space:nowrap}
 .top-spacer{flex:1}
 .icon-btn{position:relative;width:40px;height:40px;display:grid;place-items:center;border-radius:12px}
@@ -636,6 +637,11 @@ main{padding:22px 24px 40px;min-width:0}
 .pedia-sec{margin-bottom:26px}
 .pedia-sec > h2{font-size:21px;font-weight:900;margin-bottom:4px}
 .pedia-sec > p{color:var(--ink-2);font-weight:600;margin-bottom:14px;max-width:70ch}
+.pedia-sec > h2{display:flex;align-items:center;gap:8px}
+.pinfo-b{width:22px;height:22px;border-radius:50%;border:1.5px solid var(--line);background:var(--panel);color:var(--muted);font-size:13px;font-weight:900;line-height:1;cursor:pointer;display:grid;place-items:center;padding:0}
+.pinfo-b:hover,.pinfo-b[aria-expanded="true"]{color:var(--ink);border-color:var(--ink-2)}
+.pedia-sec > p.pinfo{font-size:14px;background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:10px 14px;animation:pinfo-in .18s ease-out}
+@keyframes pinfo-in{from{opacity:0;transform:translateY(-4px)}}
 .shiny-show{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:12px}
 .pal-row{display:grid;grid-template-columns:repeat(var(--n),minmax(0,1fr));gap:10px}
 .pal-row .sh-tile small{font-size:11.5px;font-weight:800;color:var(--muted)}
@@ -853,9 +859,13 @@ button.rw:hover{transform:translateY(-2px)}
 .bx-dots{display:flex;align-items:center;gap:4px;flex-wrap:wrap}
 .bx-dot{display:grid;place-items:center;width:44px;height:44px;border-radius:50%;border:2.5px solid transparent;background:transparent;transition:transform .15s}
 .bx-dot:hover{transform:translateY(-2px)}
+.bx-dot{position:relative}
+.bx-n{position:absolute;right:-5px;bottom:-4px;min-width:19px;height:17px;padding:0 4px;border-radius:999px;background:var(--ol,#2B2233);color:#fff;font-style:normal;font-size:10.5px;font-weight:900;line-height:17px;text-align:center;font-variant-numeric:tabular-nums;pointer-events:none}
 .bx-dot[aria-pressed="true"]{border-color:var(--ol,#2B2233);background:var(--card);box-shadow:0 3px 0 rgba(43,34,51,.2)}
 .bx-dot.all{width:auto;padding:0 14px;border-radius:999px;font-family:var(--hand);font-size:22px;font-weight:700;color:var(--ol,#2B2233);border-color:rgba(43,34,51,.2);background:var(--card)}
 .bx-dot.all[aria-pressed="true"]{background:var(--tc);border-color:var(--ol,#2B2233)}
+.bx-dot.all{display:inline-flex;align-items:center;gap:5px}
+.bx-all-n{font-family:var(--body);font-size:12px;font-weight:900;opacity:.6}
 .bx-tools{display:flex;align-items:center;gap:8px}
 .bx-q{position:relative;display:flex;align-items:center}
 .bx-q .cs-ic{position:absolute;left:12px;color:var(--ink-2);display:grid;pointer-events:none}
@@ -1249,6 +1259,30 @@ body.vit-dragging,body.vit-dragging *{cursor:grabbing!important;user-select:none
 .pachi-win{position:absolute;left:50%;top:20%;translate:-50% -50%;display:grid;justify-items:center;gap:4px;padding:16px 26px;border-radius:18px;background:rgba(20,12,30,.86);color:#fff;text-align:center;box-shadow:0 20px 40px -10px rgba(0,0,0,.6);animation:ask-in .25s ease-out}
 .pachi-win b{font-family:var(--display);font-weight:400;font-size:34px;color:#FFE14D}
 .pachi-win span{font-weight:800}
+/* ---------- la Roue du jour (6 octobre 2026) ---------- */
+.rq-stage{position:relative;display:grid;place-items:center;padding:28px 12px 22px;border-radius:var(--r-md);overflow:hidden;
+  background:radial-gradient(circle at 50% 45%,#7A2A8F 0%,#3B1150 45%,#170622 80%)}
+.rq-stage::before{content:"";position:absolute;inset:0;background:repeating-conic-gradient(from 0deg at 50% 47%,rgba(255,255,255,.07) 0 6deg,transparent 6deg 12deg);pointer-events:none}
+.rq-wheel{position:relative;width:min(440px,84vw);aspect-ratio:1}
+.rq-disc{position:absolute;inset:7.6%;border-radius:50%;will-change:transform;filter:drop-shadow(0 0 0 transparent)}
+.rq-disc svg{width:100%;height:100%;display:block}
+.rq-disc .rq-lines line{stroke:rgba(255,255,255,.75);stroke-width:1.6}
+.rq-disc text{text-anchor:middle;fill:#fff;paint-order:stroke;stroke:rgba(40,10,40,.55);stroke-width:2.4px;stroke-linejoin:round}
+.rq-disc .rq-n{font-family:"Lilita One",var(--display);font-size:17px}
+.rq-disc .rq-n.big{font-size:19px}
+.rq-disc .rq-s{font-family:Nunito,var(--body);font-weight:900;font-size:4.4px;letter-spacing:.2px;stroke-width:1.4px}
+.rq-frame{position:absolute;inset:0;width:100%;height:100%;overflow:visible;filter:drop-shadow(0 14px 18px rgba(0,0,0,.5))}
+.rq-bulb{fill:#FFF2B0;animation:rq-blink 1.1s steps(1) infinite}
+.rq-bulb.b{animation-delay:.55s}
+@keyframes rq-blink{0%{fill:#FFF6C8;filter:drop-shadow(0 0 3px #FFE14D)}50%{fill:#FF6FC1;filter:none}}
+.rq-ptr{transform-origin:0 -122px}
+.rq-ptr.tk{animation:rq-tk .16s ease-out}
+@keyframes rq-tk{40%{transform:rotate(-14deg)}}
+.rq-win{position:absolute;left:50%;top:50%;translate:-50% -50%;z-index:2;display:grid;justify-items:center;gap:2px;padding:14px 24px;border-radius:18px;background:rgba(20,8,30,.88);color:#fff;text-align:center;box-shadow:0 20px 40px -10px rgba(0,0,0,.6);animation:rq-pop .45s cubic-bezier(.2,1.6,.4,1) both}
+.rq-win b{font-family:var(--display);font-weight:400;font-size:30px;color:#FFE14D}
+.rq-win span{font-weight:800}
+@keyframes rq-pop{from{scale:.4;opacity:0}}
+@media (prefers-reduced-motion:reduce){ .rq-bulb{animation:none} }
 .pachi-dot{display:inline-block;width:10px;height:10px;border-radius:3px;margin-right:7px;vertical-align:0}
 .modal.roue-modal{display:grid;grid-template-columns:minmax(0,1fr);justify-items:center;gap:12px;overflow:visible;width:min(460px,100%);padding:26px 22px;text-align:center}
 .roue-modal h2{font-family:var(--display);font-weight:400;font-size:30px}
@@ -1960,10 +1994,10 @@ body:has(#view .game-wrap) .mj-btn{display:none}
 .hs-m.big{animation:hs-bob 5s ease-in-out infinite}
 @keyframes hs-bob{50%{transform:translateY(-8px)}}
 /* diapos aux couleurs de la saison (passe, événement, bientôt) */
-.hc .hc-slide.hs-passe,.hc .hc-slide.hs-saison,.hc .hc-slide.hs-bientot,.hc .hc-slide.hs-event,.hc .hc-slide.hs-tresor{background:radial-gradient(ellipse 60% 90% at 85% 40%,color-mix(in srgb,var(--s2) 55%,transparent),transparent 70%),linear-gradient(120deg,color-mix(in srgb,var(--s1) 75%,#000),var(--s1))}
-.hs-passe .hm-k,.hs-saison .hm-k,.hs-bientot .hm-k,.hs-cour .hm-k,.hs-event .hm-k,.hs-tresor .hm-k{color:rgba(255,255,255,.8)}
-.hs-passe .hm-txt p,.hs-saison .hm-txt p,.hs-bientot .hm-txt p,.hs-event .hm-txt p,.hs-tresor .hm-txt p,.hs-passe .hm-foot,.hs-saison .hm-foot{color:rgba(255,255,255,.82)}
-.hs-bientot .hs-m.veil{filter:blur(7px) brightness(.8) drop-shadow(0 12px 12px rgba(0,0,0,.5))}
+.hc .hc-slide.hs-passe,.hc .hc-slide.hs-saison,.hc .hc-slide.hs-bientot,.hc .hc-slide.hs-bientot-ev,.hc .hc-slide.hs-event,.hc .hc-slide.hs-tresor{background:radial-gradient(ellipse 60% 90% at 85% 40%,color-mix(in srgb,var(--s2) 55%,transparent),transparent 70%),linear-gradient(120deg,color-mix(in srgb,var(--s1) 75%,#000),var(--s1))}
+.hs-passe .hm-k,.hs-saison .hm-k,.hs-bientot .hm-k,.hs-bientot-ev .hm-k,.hs-cour .hm-k,.hs-event .hm-k,.hs-tresor .hm-k{color:rgba(255,255,255,.8)}
+.hs-passe .hm-txt p,.hs-saison .hm-txt p,.hs-bientot .hm-txt p,.hs-bientot-ev .hm-txt p,.hs-event .hm-txt p,.hs-tresor .hm-txt p,.hs-passe .hm-foot,.hs-saison .hm-foot{color:rgba(255,255,255,.82)}
+.hs-bientot .hs-m.veil,.hs-bientot-ev .hs-m.veil{filter:blur(7px) brightness(.8) drop-shadow(0 12px 12px rgba(0,0,0,.5))}
 .hs-soon{position:absolute;right:13%;top:50%;translate:0 -50%;font-family:var(--hand);font-size:44px;font-weight:700;color:#fff;transform:rotate(-8deg);text-shadow:0 3px 12px rgba(0,0,0,.5)}
 .hc .hc-slide.hs-bonbec{background:radial-gradient(ellipse 60% 90% at 85% 50%,rgba(255,95,168,.45),transparent 70%),linear-gradient(120deg,#3A1330,#6B1F4F)}
 .hs-bonbec .hm-k{color:#FFC6E0}.hs-bonbec .hm-txt p{color:#F6D5E6}
@@ -3092,7 +3126,7 @@ body.gc-open{overflow:hidden}
 
 <div class="beta-rib" id="beta-rib" hidden></div>
 <header class="topbar">
-  <div class="logo" aria-label="Billy"><span>Billy</span><img id="logo-marble" alt=""></div>
+  <a class="logo" href="#" data-action="nav" data-view="accueil" aria-label="Billy : retour à l'accueil"><span>Billy</span><img id="logo-marble" alt=""></a>
   <div class="tagline">Ouvre. Collectionne. Joue.</div>
   <div class="top-spacer"></div>
   <button class="mj-btn" id="mj-btn" data-action="mj-open" aria-label="Ma journée"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3.5" y="8" width="17" height="4" rx="1"/><path d="M5 12v8h14v-8M12 8v12M12 8C10.5 4 7 4 7 6s3 2 5 2c2 0 5 0 5-2s-3.5-2-5 2"/></svg><span class="lbl">Ma journée</span><span class="n" id="mj-n" hidden></span></button>
@@ -3218,6 +3252,8 @@ const FAMILIES = [
   {name:"Boule à neige", rar:4, season:11, desc:"Un sapin sur un tapis de neige, une étoile au sommet, et des flocons qui flottent tout autour."},
   // la bille des bêta-testeurs : jamais dans les sachets ni dans l'album
   {name:"Bêta",          rar:4, beta:true, desc:"Un β d'or qui brille au cœur d'un verre précieux (une pierre différente pour chaque taille), cerclé d'un anneau d'or : la bille de ceux qui ont testé Billy avant tout le monde."},
+  // événement de novembre 2026 « Super-héros ! » (numéro 48 : toujours à la fin, les numéros ne bougent jamais)
+  {name:"Super-héros",   rar:4, event:"superheros", desc:"Le blason d'un héros de la cour, frappé d'un éclair, et les rayons d'une case de bande dessinée. Chaque coloris est un héros différent."},
 ];
 const FAM_W = FAMILIES.map(f=>f.event || f.season!=null || f.beta ? 0 : DECOR_RAR[f.rar].w);
 // motifs hors album : ceux des événements et ceux des saisons
@@ -3307,8 +3343,17 @@ const EVENTS = {
           ["Coffre au trésor","#4A2A12","#F2C230","#FFF4D6","#5A3A1E"],
           ["Caraïbes","#0E6E78","#E9D8A6","#FFFFFF","#1A7A84"],
           ["Rhum ambré","#7A3B0C","#1D1410","#F6E3C0","#8A4A18"]]},
+  // novembre 2026 : un héros par coloris (des héros de la cour, inventés pour Billy). late : coloris rangés après ceux des joueurs (79 à 83)
+  superheros: {name:"Super-héros !", fam:"Super-héros", color:"#2E5BFF", late:true,
+    start:Date.parse("2026-11-01T00:00:00+01:00"), end:Date.parse("2026-11-14T23:59:59+01:00"),
+    desc:"Cinq héros débarquent dans la cour : pendant deux semaines, des billes Super-héros dans les sachets Classique, Premium et Collector, pour ceux qui cochent la case.",
+    pals:[["Capitaine Éclair","#1E4FD8","#E5303A","#FFD23F","#1A3FA8"],
+          ["Fulgura","#1A1A22","#FFD23F","#E5303A","#24242C"],
+          ["Ombre violette","#2B1450","#8E3FE0","#F1ECFF","#341A5E"],
+          ["Titan vert","#0E5E35","#7B2FC0","#9BF26A","#14703F"],
+          ["Flamme écarlate","#B5121B","#FF8A1F","#FFF0B0","#C21E24"]]},
 };
-Object.values(EVENTS).forEach(E=>{ E.palIdx = E.pals.map(P=>{ PALETTES.push(P); return PALETTES.length-1 }) });
+Object.values(EVENTS).filter(E=>!E.late).forEach(E=>{ E.palIdx = E.pals.map(P=>{ PALETTES.push(P); return PALETTES.length-1 }) });
 // La bille Bêta : un cadeau pour ceux qui testent Billy avant sa sortie, une de chaque taille, gardée à la remise à zéro du lancement.
 // Le serveur la range avec les billes secrètes (secret « beta ») : elle ne s'échange pas, ne se vend pas et ne compte pas au classement.
 // Au lancement : open:false ici et interne.beta_ouverte() à false dans supabase/serveur.sql.
@@ -3330,6 +3375,8 @@ const PLAYER_PALS = [
   ["uwu","#C10BA9","#FFFFFF","#F99AEC","#FFFFFF"],
   ["Poups","#FFFFFF","#000000","#E48B25","#CCCCCC"],   // 3 octobre 2026 : version C de la maquette (base blanche, vedette noire, détails orange)
 ].map(P=>PALETTES.push(P)-1);
+// les coloris des événements arrivés après les coloris des joueurs (Super-héros : 79 à 83, mêmes numéros dans supabase/serveur.sql)
+Object.values(EVENTS).filter(E=>E.late).forEach(E=>{ E.palIdx = E.pals.map(P=>{ PALETTES.push(P); return PALETTES.length-1 }) });
 // les coloris qu'on peut tirer : les 48 d'origine et ceux des joueurs
 const BASE_PAL_IDS = [...Array(SEASON_PAL0).keys(), ...PLAYER_PALS], BASE_PALS = BASE_PAL_IDS.length, BASE_SET = new Set(BASE_PAL_IDS);
 const isBasePal = p => BASE_SET.has(p);
@@ -3364,9 +3411,9 @@ const SHINY_RATE = .0005;
 
 // Recyclage : ce que rapporte une bille échangée. Proportionnel à sa rareté dans le sachet gratuit
 // (chaque taille rapporte donc autant en moyenne), et toujours bien moins que ce qu'elle coûte à trouver.
-const RECYCLE = {mini:5, bille:8, chinoise:20, calot:50, boulet:150, mammouth:600};
+const RECYCLE = {mini:1, bille:1, chinoise:2, calot:5, boulet:15, mammouth:60};   // 6 octobre 2026 : tous les montants divisés par 10 (Mini et Bille arrondies à 1)
 // une shiny (tirée dans un sachet ou une fusion) vaut 10 fois sa taille, plus une prime selon son éclat ; celles du passe, non
-const SHINY_RECYCLE_MULT = 10, SHINY_BONUS = [0, 2000, 5000, 15000];
+const SHINY_RECYCLE_MULT = 10, SHINY_BONUS = [0, 200, 500, 1500];
 // avec un compte, seules les billes tirées par le serveur rapportent (pas les billes de départ ni celles d'une partie sans compte)
 const recycleValue = s => srvOn() && !s.srv ? 0 : s.shiny && !isSeason(s) ? RECYCLE[s.type]*SHINY_RECYCLE_MULT + SHINY_BONUS[s.shiny] : RECYCLE[s.type];
 
@@ -3375,30 +3422,30 @@ const recycleValue = s => srvOn() && !s.srv ? 0 : s.shiny && !isSeason(s) ? RECY
 const QUESTS_N = 4;
 const QUESTS = {
   // ouvrir des sachets
-  open_bag:      {kind:"sachet", title:"Ouvre 2 sachets", goal:2, reward:80, icon:"bag", desc:"Gratuits ou payants, tous les sachets comptent.", go:"sacs"},
-  open_free:     {kind:"sachet", title:"Ouvre 2 sachets gratuits", goal:2, reward:100, icon:"clock", desc:"Un nouveau sachet gratuit arrive toutes les 10 minutes.", go:"sacs"},
-  open_paid:     {kind:"sachet", title:"Ouvre un sachet payant", goal:1, reward:120, icon:"bag", desc:"Classique, Premium ou Collector, acheté ou offert.", go:"sacs"},
-  shake:         {kind:"sachet", title:"Secoue bien les sachets", goal:20, reward:60, icon:"bag", desc:"Secoue les sachets avant de les ouvrir : 20 secousses en tout.", go:"sacs"},
+  open_bag:      {kind:"sachet", title:"Ouvre 2 sachets", goal:2, reward:8, icon:"bag", desc:"Gratuits ou payants, tous les sachets comptent.", go:"sacs"},
+  open_free:     {kind:"sachet", title:"Ouvre 2 sachets gratuits", goal:2, reward:10, icon:"clock", desc:"Un nouveau sachet gratuit arrive toutes les 10 minutes.", go:"sacs"},
+  open_paid:     {kind:"sachet", title:"Ouvre un sachet payant", goal:1, reward:12, icon:"bag", desc:"Classique, Premium ou Collector, acheté ou offert.", go:"sacs"},
+  shake:         {kind:"sachet", title:"Secoue bien les sachets", goal:20, reward:6, icon:"bag", desc:"Secoue les sachets avant de les ouvrir : 20 secousses en tout.", go:"sacs"},
   // ce qu'on trouve dedans
-  find_bille:    {kind:"trouve", title:"Trouve 2 Billes ou plus grosses", goal:2, reward:90, icon:"layers", desc:"Bille, Bille chinoise, Calot, Boulet ou Mammouth : les Mini billes ne comptent pas.", go:"sacs"},
-  find_calot:    {kind:"trouve", title:"Trouve un Calot ou mieux", goal:1, reward:120, icon:"layers", desc:"Calot, Boulet ou Mammouth.", go:"sacs"},
-  find_many:     {kind:"trouve", title:"Trouve 10 billes", goal:10, reward:80, icon:"layers", desc:"N'importe lesquelles, dans n'importe quel sachet.", go:"sacs"},
-  find_rare:     {kind:"trouve", title:"Trouve une bille au motif rare", goal:1, reward:100, icon:"star", desc:"Un motif Rare, Épique ou Légendaire (la rareté de chaque motif est dans la Billepedia).", go:"sacs"},
-  find_event:    {kind:"trouve", title:"Trouve une bille d'événement", goal:1, reward:120, icon:"flag", desc:"Coche « billes d'événement » sur un sachet payant, ou ouvre un sachet de l'événement.", go:"sacs"},
+  find_bille:    {kind:"trouve", title:"Trouve 2 Billes ou plus grosses", goal:2, reward:9, icon:"layers", desc:"Bille, Bille chinoise, Calot, Boulet ou Mammouth : les Mini billes ne comptent pas.", go:"sacs"},
+  find_calot:    {kind:"trouve", title:"Trouve un Calot ou mieux", goal:1, reward:12, icon:"layers", desc:"Calot, Boulet ou Mammouth.", go:"sacs"},
+  find_many:     {kind:"trouve", title:"Trouve 10 billes", goal:10, reward:8, icon:"layers", desc:"N'importe lesquelles, dans n'importe quel sachet.", go:"sacs"},
+  find_rare:     {kind:"trouve", title:"Trouve une bille au motif rare", goal:1, reward:10, icon:"star", desc:"Un motif Rare, Épique ou Légendaire (la rareté de chaque motif est dans la Billepedia).", go:"sacs"},
+  find_event:    {kind:"trouve", title:"Trouve une bille d'événement", goal:1, reward:12, icon:"flag", desc:"Coche « billes d'événement » sur un sachet payant, ou ouvre un sachet de l'événement.", go:"sacs"},
   // l'album
-  new_slot:      {kind:"album", title:"Trouve un nouveau motif", goal:1, reward:100, icon:"book", desc:"Un motif que tu n'avais pas encore dans cette taille.", go:"sacs"},
-  new_color:     {kind:"album", title:"Trouve 3 nouvelles billes", goal:3, reward:100, icon:"star", desc:"Des billes que tu n'avais pas encore : nouveau motif ou nouveau coloris.", go:"sacs"},
+  new_slot:      {kind:"album", title:"Trouve un nouveau motif", goal:1, reward:10, icon:"book", desc:"Un motif que tu n'avais pas encore dans cette taille.", go:"sacs"},
+  new_color:     {kind:"album", title:"Trouve 3 nouvelles billes", goal:3, reward:10, icon:"star", desc:"Des billes que tu n'avais pas encore : nouveau motif ou nouveau coloris.", go:"sacs"},
   // le Tir
-  hole:          {kind:"tir", title:"Réussis le trou du jour au Tir", goal:1, reward:90, icon:"target", desc:"Un nouveau trou chaque jour, le même pour toute la cour.", go:"tir"},
-  par:           {kind:"tir", title:"Fais un trou au par ou mieux", goal:1, reward:70, icon:"target", desc:"Trois étoiles sur le trou du jour du Tir.", go:"tir"},
-  twoshots:      {kind:"tir", title:"Mets ta bille dans le trou en 2 tirs", goal:1, reward:90, icon:"target", desc:"Ou moins, sur le trou du jour du Tir (les plongeons dans l'eau ne comptent pas comme des tirs). Tu peux réessayer autant que tu veux.", go:"tir"},
+  hole:          {kind:"tir", title:"Réussis le trou du jour au Tir", goal:1, reward:9, icon:"target", desc:"Un nouveau trou chaque jour, le même pour toute la cour.", go:"tir"},
+  par:           {kind:"tir", title:"Fais un trou au par ou mieux", goal:1, reward:7, icon:"target", desc:"Trois étoiles sur le trou du jour du Tir.", go:"tir"},
+  twoshots:      {kind:"tir", title:"Mets ta bille dans le trou en 2 tirs", goal:1, reward:9, icon:"target", desc:"Ou moins, sur le trou du jour du Tir (les plongeons dans l'eau ne comptent pas comme des tirs). Tu peux réessayer autant que tu veux.", go:"tir"},
   // les autres jeux du jour
-  day_games:     {kind:"jeux", title:"Joue 2 parties du jour", goal:2, reward:80, icon:"play", desc:"Le Tir, le Pot, le Château, le Casse-briques, la Tic ou le Plinko : chaque partie du jour finie compte.", go:"jeux"},
-  stars2:        {kind:"jeux", title:"Décroche 2 étoiles à un jeu", goal:1, reward:90, icon:"star", desc:"Au Pot, au Château, au Casse-briques ou à la Tic, sur ta partie du jour.", go:"jeux"},
-  plinko:        {kind:"jeux", title:"Lâche ta bille gratuite au Plinko", goal:1, reward:50, icon:"gift", desc:"Une bille offerte chaque jour : elle peut tomber sur des bonbecs, un sachet, ou même un Mammouth !", go:"pachinko"},
+  day_games:     {kind:"jeux", title:"Joue 2 parties du jour", goal:2, reward:8, icon:"play", desc:"Le Tir, le Pot, le Château, la Roue, la Tic ou le Plinko : chaque partie du jour compte.", go:"jeux"},
+  stars2:        {kind:"jeux", title:"Décroche 2 étoiles à un jeu", goal:1, reward:9, icon:"star", desc:"Au Pot, au Château ou à la Tic, sur ta partie du jour.", go:"jeux"},
+  plinko:        {kind:"jeux", title:"Lâche ta bille gratuite au Plinko", goal:1, reward:5, icon:"gift", desc:"Une bille offerte chaque jour : elle peut tomber sur des bonbecs, un sachet, ou même un Mammouth !", go:"pachinko"},
   // la Confiserie
-  craft:         {kind:"confiserie", title:"Réussis une fusion", goal:1, reward:120, icon:"flask", desc:"Des billes d'une même taille contre une plus grosse, à la Confiserie.", go:"confiserie|fusion"},
-  recycle:       {kind:"confiserie", title:"Échange 3 billes à la Confiserie", goal:3, reward:60, icon:"candy", desc:"Depuis la fiche d'une bille ou avec le bouton des doubles.", go:"confiserie|echange"},
+  craft:         {kind:"confiserie", title:"Réussis une fusion", goal:1, reward:12, icon:"flask", desc:"Des billes d'une même taille contre une plus grosse, à la Confiserie.", go:"confiserie|fusion"},
+  recycle:       {kind:"confiserie", title:"Échange 3 billes à la Confiserie", goal:3, reward:6, icon:"candy", desc:"Depuis la fiche d'une bille ou avec le bouton des doubles.", go:"confiserie|echange"},
 };
 // go : la page où se fait la quête (« vue|onglet » pour la Confiserie) ; un clic sur la quête y emmène
 const questGo = q => { const [v,tab] = (QUESTS[q.id].go||"quetes").split("|"); return `data-action="nav" data-view="${v}"${tab?` data-conftab="${tab}"`:""}` };
@@ -3412,11 +3459,11 @@ const sizeOdds = a => Object.fromEntries(TK.map((k,i)=>[k,a[i]]));
 const FREE_BAG = {id:"gratuit", name:"Sachet gratuit", desc:"3 billes offertes. Un nouveau sachet toutes les 10 minutes, jusqu'à 10 en stock.", price:0, n:3, color:"#C98E4E", tint:"#F6E3C8", shiny:SHINY_RATE,
   slots:[sizeOdds([75,25,0,0,0,0]),sizeOdds([55,35,10,0,0,0]),sizeOdds([30,33,20,12,4,1])]};
 const BAGS = [FREE_BAG,
-  {id:"classique", name:"Sachet Classique", desc:"5 billes, avec de meilleures chances que le sachet gratuit. 2 fois plus de chances de shiny.", price:300, n:5, color:"#2A8A74", tint:"#D5EFE7", shiny:SHINY_RATE*2,
+  {id:"classique", name:"Sachet Classique", desc:"5 billes, avec de meilleures chances que le sachet gratuit. 2 fois plus de chances de shiny.", price:30, n:5, color:"#2A8A74", tint:"#D5EFE7", shiny:SHINY_RATE*2,
    slots:[sizeOdds([70,30,0,0,0,0]),sizeOdds([50,38,12,0,0,0]),sizeOdds([35,40,20,5,0,0]),sizeOdds([20,35,30,13,2,0]),sizeOdds([10,25,30,20,12,3])]},
-  {id:"premium", name:"Sachet Premium", desc:"5 billes, dont au moins un Calot ou mieux. 4 fois plus de chances de shiny.", price:600, n:5, guarantee:"calot", color:"#34469C", tint:"#DCE0F6", shiny:SHINY_RATE*4,
+  {id:"premium", name:"Sachet Premium", desc:"5 billes, dont au moins un Calot ou mieux. 4 fois plus de chances de shiny.", price:60, n:5, guarantee:"calot", color:"#34469C", tint:"#DCE0F6", shiny:SHINY_RATE*4,
    slots:[sizeOdds([0,80,20,0,0,0]),sizeOdds([0,60,35,5,0,0]),sizeOdds([0,40,45,15,0,0]),sizeOdds([0,0,55,38,7,0]),sizeOdds([0,0,0,60,34,6])]},
-  {id:"collector", name:"Sachet Collector", desc:"5 billes, dont au moins un Boulet ou plus gros. 10 fois plus de chances de shiny.", price:1500, n:5, guarantee:"boulet", color:"#D9A020", tint:"#FBEBC0", shiny:SHINY_RATE*10,
+  {id:"collector", name:"Sachet Collector", desc:"5 billes, dont au moins un Boulet ou plus gros. 10 fois plus de chances de shiny.", price:150, n:5, guarantee:"boulet", color:"#D9A020", tint:"#FBEBC0", shiny:SHINY_RATE*10,
    slots:[sizeOdds([0,0,85,15,0,0]),sizeOdds([0,0,65,35,0,0]),sizeOdds([0,0,40,50,10,0]),sizeOdds([0,0,0,60,38,2]),sizeOdds([0,0,0,0,87,13])]},
 ];
 // sachets d'événement : en vente seulement pendant l'événement ; toutes leurs billes ont le motif de l'événement et un de ses coloris
@@ -3426,7 +3473,7 @@ const BAGS = [FREE_BAG,
 // (32 sachets) il le finit 8 fois sur 10 grâce à la fusion d'événement. Même chose dans serveur.sql (interne.sac, ouvrir_sac).
 BAGS.push({id:"pirate", event:"pirates", name:"Sachet Pirate", desc:"5 billes, dont au moins une Pirate : chaque bille a 60 % de chances d'être Pirate, et la dernière l'est toujours. Seulement pendant l'événement « À l'abordage ! ». 4 fois plus de chances de shiny.",
   evFill:.6, evStar:1,
-  price:400, n:5, color:"#2E2B36", tint:"#EADFC4", shiny:SHINY_RATE*4,
+  price:40, n:5, color:"#2E2B36", tint:"#EADFC4", shiny:SHINY_RATE*4,
   fam:FAMILIES.findIndex(F=>F.event==="pirates"), pals:EVENTS.pirates.palIdx,
   slots:[sizeOdds([40,35,18,7,0,0]),sizeOdds([30,32,22,12,4,0]),sizeOdds([20,28,26,16,8,2]),sizeOdds([10,22,26,22,15,5]),sizeOdds([0,5,20,30,30,15])]});
 // par bille en moyenne (pour les chances d'une bille précise), et « au moins une » de chaque taille dans un sachet
@@ -3727,7 +3774,7 @@ function specParams(s){
     seed:[r(),r(),r(),r()],
     par:[(r()-.5)*5, [3,4,4,5,6][Math.floor(r()*5)], .05+r()*.07, 2+Math.floor(r()*4)],
     // les motifs de saison ont un haut et un bas (la neige au sol, le visage de la citrouille) : posés droits, à peine inclinés
-    srot: FAMILIES[s.family]?.season!=null || FAMILIES[s.family]?.beta ? rotAxis(1,0,0,-.22) : rotAxis(r()-.5,r()-.5,r()-.5,r()*TAU),
+    srot: FAMILIES[s.family]?.season!=null || FAMILIES[s.family]?.beta || FAMILIES[s.family]?.event==="superheros" ? rotAxis(1,0,0,-.22) : rotAxis(r()-.5,r()-.5,r()-.5,r()*TAU),
     c1:hex01(P[1]), c2:hex01(P[2]), c3:hex01(P[3]), tint,
     mode:s.family, opaque:opaque?1:0, porc:0, sulf:0, fig:s.family%4, shiny:s.shiny||0, asp:s.type==="chinoise"?1.45:1,
   };
@@ -3763,7 +3810,7 @@ float fig(vec2 p){ int f=int(uFig+0.5);
   float d=min(min(length(p-vec2(0.0,0.4)),length(p-vec2(0.0,-0.4))),min(length(p-vec2(0.4,0.0)),length(p-vec2(-0.4,0.0))))-0.3;
   return min(d,length(p)-0.25); }
 
-#if MODE==47
+#if MODE==47 || MODE==48
 float sdSeg2(vec2 p, vec2 a, vec2 b){ vec2 pa=p-a, ba=b-a; return length(pa-ba*clamp(dot(pa,ba)/dot(ba,ba),0.0,1.0)); }
 float sdBeta(vec2 p){   // la lettre β : une hampe et deux panses
   float d=sdSeg2(p,vec2(-0.2,-0.66),vec2(-0.2,0.27));
@@ -4367,6 +4414,29 @@ vec4 fam(vec3 q, out vec3 e){
     e=vec3(1.0)*fl*1.2;
     return vec4(vec3(1.0), 0.12+fl*60.0);
   }
+#elif MODE==48
+  { // super-héros (événement de novembre 2026) : un verre teinté de la couleur du héros ; au cœur, comme une bille sulfure,
+    // son blason (un écusson frappé d'un éclair, cerclé d'un liseré) ; derrière, les rayons d'une case de bande dessinée
+    float n=fbm(q*4.0+so), r=length(q);
+    vec3 glass=mix(uC1, uC2, 0.12)*(0.6+0.3*n);
+    float dens=0.26+0.2*n;
+    // la bille chinoise se regarde par le dessus : le blason y est couché à plat (comme le β de la Bêta)
+    bool couche=uAsp>1.2; vec2 p=(couche?vec2(-q.x,q.z):q.xy)*1.7; float bz=couche?q.y:q.z;
+    float hw=p.y>-0.12 ? 0.5 : 0.5*clamp((p.y+0.8)/0.68,0.0,1.0);   // l'écusson : le haut droit, le bas en pointe
+    float shield=max(abs(p.x)-hw, abs(p.y+0.13)-0.67);
+    float bolt=min(min(sdSeg2(p,vec2(0.18,0.42),vec2(-0.1,0.0)), sdSeg2(p,vec2(-0.1,0.0),vec2(0.11,0.0))), sdSeg2(p,vec2(0.11,0.0),vec2(-0.15,-0.52)))-0.07;
+    float rim=abs(shield+0.06)-0.03;
+    float sh=smoothstep(0.02,-0.02,shield)*smoothstep(0.13,0.06,abs(bz));
+    if(sh>0.01){
+      vec3 c=uC2*(0.82+0.25*n);
+      c=mix(c, uC3*(0.95+0.1*n), smoothstep(0.015,-0.015,min(bolt,rim)));
+      return vec4(mix(glass,c,sh), mix(dens,90.0,sh));
+    }
+    float ang=atan(p.y,p.x), rx=length(p)/1.7;
+    float ray=smoothstep(0.55,0.85,abs(sin(ang*8.0)))*smoothstep(0.4,0.6,rx)*smoothstep(0.9,0.72,r)*smoothstep(0.0,-0.15,bz);
+    if(ray>0.02) return vec4(mix(glass, uC3, 0.55*ray), mix(dens, 4.0, ray));
+    return vec4(glass, dens);
+  }
 #elif MODE==47
   { // bêta : un β d'or qui brille au cœur d'un verre rubis, un anneau d'or qui le cercle, et des étincelles
     // la bille chinoise se regarde par le dessus : le β y est couché à plat
@@ -4516,7 +4586,7 @@ void main(){
     if(pep()){ float e1; vec3 oP=toO(P), dP=toO(d);
       tEx=min(halfHit(oP,dP,CTT,1.0,true,e1), halfHit(oP,dP,CTB,-1.0,true,e1)); if(tEx>1e8) tEx=0.3; }
     // le Pirate a une figure fine au cœur du verre : plus de pas pour qu'elle reste nette (les autres motifs gardent 30 pas)
-#if MODE==32
+#if MODE==32 || MODE==48
     const int GSTEPS=64;
     float jit=fract(sin(dot(gl_FragCoord.xy,vec2(12.9898,78.233)))*43758.5453);   // pas décalés d'un pixel à l'autre : pas de stries
 #else
@@ -4717,10 +4787,10 @@ const ghost = (type,family) => ({seed:hash(type+family), type, family, pal:EX_PA
 const GUEST_KEY = "billy-proto-v2";                                // sauvegarde sans compte (dans ce navigateur)
 const CLOUD_UID = window.Cloud ? Cloud.cachedUserId() : null;       // joueur connecté (session gardée par le navigateur)
 let STORE_KEY = CLOUD_UID ? "billy-u-"+CLOUD_UID : GUEST_KEY;       // avec un compte : copie locale de la sauvegarde en ligne
-// une nouvelle partie part vraiment de zéro : aucune bille, 1 000 bonbecs et 5 sachets gratuits à ouvrir
+// une nouvelle partie part vraiment de zéro : aucune bille, 100 bonbecs et 5 sachets gratuits à ouvrir
 function starterState(){
   const now = Date.now();
-  return {v:2, fv:2, pv:2, cover:{}, wish:[], seriesDone:[], jetons:1000, holes:0, specs:[], active:null, unseen:[], freeT0:now-5*FREE_EVERY, best:{}, bagInv:{}, title:"Petit Boulet", titles:["Petit Boulet"], name:"AlexBilleur", vitrine:[null,null,null,null,null], chal:[], pity:0, bags:0, log:[]};
+  return {v:2, fv:2, pv:2, cv:2, cover:{}, wish:[], seriesDone:[], jetons:100, holes:0, specs:[], active:null, unseen:[], freeT0:now-5*FREE_EVERY, best:{}, bagInv:{}, title:"Petit Boulet", titles:["Petit Boulet"], name:"AlexBilleur", vitrine:[null,null,null,null,null], chal:[], pity:0, bags:0, log:[]};
 }
 let S;
 // charge une sauvegarde (ou en crée une neuve) et la met à jour si elle vient d'une ancienne version du jeu
@@ -4745,6 +4815,8 @@ if(!(S.pv>=2)){
   S.specs.forEach(rePal); (S.log||[]).forEach(l=>rePal(l.s));
   S.pv = 2; save();
 }
+// 6 octobre 2026 : la monnaie est divisée par 10 (le serveur a fait pareil sur les comptes ; ici, pour une partie sans compte)
+if(!(S.cv>=2)){ S.jetons = Math.round((S.jetons||0)/10); S.cv = 2; save() }
 // ancien minuteur (un seul sachet) -> stock
 if(S.freeT0===undefined){ S.freeT0 = (S.freeAt ?? Date.now()) - FREE_EVERY; delete S.freeAt }
 const RENAMED = {sulfure:"mammouth"};   // le Sulfure s'appelle maintenant Mammouth
@@ -4899,7 +4971,7 @@ function ask({title, text="", extra="", balls=[], ok="Confirmer", no="Annuler", 
   });
 }
 const nbBilles = l => { const n = (l||[]).length; return n ? `${n} bille${n>1?"s":""}` : "rien" };
-const TROC_BONBECS_MAX = 5000;   // bonbecs qu'on peut ajouter à un troc (même valeur dans supabase/cour.sql)
+// (6 octobre 2026) les trocs n'ont plus de bonbecs : seulement des billes (troc_proposer refuse 'troc_bonbecs')
 const bbChip = n => n>0 ? `<span class="bb-chip">${COIN}${fmt(n)}</span>` : "";
 // « 2 billes et 300 bonbecs »
 const nbTroc = (l, n) => n>0 ? ((l||[]).length ? `${nbBilles(l)} et ${fmt(n)} ${CUR.many}` : `${fmt(n)} ${CUR.many}`) : nbBilles(l);
@@ -4962,6 +5034,7 @@ const ICON = {
   flag:'<path d="M5 21V4"/><path d="M5 4h12l-2.5 4L17 12H5"/>',
   pot:'<ellipse cx="12" cy="16" rx="8.5" ry="3.8"/><ellipse cx="12" cy="16" rx="4" ry="1.6"/><circle cx="7" cy="7.5" r="2.4"/><circle cx="15.5" cy="6" r="2"/>',
   castle:'<circle cx="12" cy="6" r="2.2"/><circle cx="9.5" cy="10.3" r="2.2"/><circle cx="14.5" cy="10.3" r="2.2"/><circle cx="7" cy="14.6" r="2.2"/><circle cx="12" cy="14.6" r="2.2"/><circle cx="17" cy="14.6" r="2.2"/><path d="M3 20.5h18"/>',
+  wheel:'<circle cx="12" cy="12" r="8.5"/><circle cx="12" cy="12" r="2"/><path d="M12 3.5v6.5M12 14v6.5M3.5 12H10M14 12h6.5M6 6l4.6 4.6M13.4 13.4L18 18M18 6l-4.6 4.6M10.6 13.4L6 18"/>',
   pachi:'<circle cx="6" cy="5" r="1.2" fill="currentColor"/><circle cx="12" cy="5" r="1.2" fill="currentColor"/><circle cx="18" cy="5" r="1.2" fill="currentColor"/><circle cx="9" cy="10" r="1.2" fill="currentColor"/><circle cx="15" cy="10" r="1.2" fill="currentColor"/><circle cx="12" cy="14.5" r="2.4"/><path d="M3 21h18M7 21v-3M12 21v-3M17 21v-3"/>',
   tic:'<circle cx="7.5" cy="15.5" r="4"/><circle cx="17" cy="8" r="3.5"/><path d="M11 12.5l2.6-2"/><path d="M14 16l1.5 1.5M16.5 13.5l2 .5M12.5 18.5l.5 2"/>',
   users:'<circle cx="9" cy="8.5" r="3.5"/><path d="M2.5 20a6.5 6.5 0 0 1 13 0"/><circle cx="17" cy="9.5" r="2.8"/><path d="M16 14.2a5.5 5.5 0 0 1 6 5.8"/>',
@@ -5208,7 +5281,7 @@ const SRC_LABEL = {gratuit:"Dans un Sachet gratuit", classique:"Dans un Sachet C
 // motifs à trouver dans chaque taille (les gros formats dans un motif légendaire sont quasi introuvables)
 const FMT_GOAL = [N_DECORS,N_DECORS,30,28,24,20];   // Mini et Bille : tous les motifs
 // tailles à réunir pour un motif, selon sa rareté (de la Mini bille jusqu'à…)
-const FAM_SIZES = [6,6,5,4,2], FAM_REW = [450,750,550,850,500];
+const FAM_SIZES = [6,6,5,4,2], FAM_REW = [45,75,55,85,50];
 const upTo = n => ({bille:"à la Bille", chinoise:"à la Bille chinoise", calot:"au Calot", boulet:"au Boulet", mammouth:"au Mammouth"})[TK[n-1]];
 // les succès ne comptent pas les billes secrètes (trop faciles à avoir : elles ont leur succès à elles, « Détective de la cour »)
 // ni celles des événements (hors album)
@@ -5257,88 +5330,88 @@ LEVELS.forEach(L=>{ L.water = L.water||[] });
 const bestStreak = () => Math.max(S.daily?.best||0, S.daily?.streak||0);
 const CHALLENGES = [
   // --- premiers pas : des objectifs simples pour bien démarrer
-  {id:"first-chinoise", cat:"debut", icon:"layers", title:"Bille chinoise", desc:"Trouve ta première Bille chinoise.", goal:1, prog:()=>SC().filter(s=>s.type==="chinoise").length, rew:{j:100}},
-  {id:"first-calot", cat:"debut", icon:"layers", title:"Mon premier Calot", desc:"Trouve ton premier Calot.", goal:1, prog:()=>SC().filter(s=>s.type==="calot").length, rew:{j:200}},
-  {id:"first-boulet", cat:"debut", icon:"layers", title:"Mon premier Boulet", desc:"Trouve ton premier Boulet.", goal:1, prog:()=>SC().filter(s=>s.type==="boulet").length, rew:{j:300, bag:"classique"}},
-  {id:"first-mammouth", cat:"debut", icon:"trophy", title:"Mon premier Mammouth", desc:"Trouve ton premier Mammouth, la plus grosse des billes.", goal:1, prog:()=>SC().filter(s=>s.type==="mammouth").length, rew:{j:500, bag:"premium"}},
-  {id:"first-vitrine", cat:"debut", icon:"layers", title:"Jolie vitrine", desc:"Mets une bille dans ta vitrine.", goal:1, prog:()=>S.vitrine.filter(Boolean).length, rew:{j:100}},
-  {id:"first-hole", cat:"debut", icon:"target", title:"Premier trou", desc:"Réussis un trou au Tir.", goal:1, prog:()=>S.holes||0, rew:{j:100}},
-  {id:"first-craft", cat:"debut", icon:"flask", title:"Première fusion", desc:"Fusionne des billes à la Confiserie.", goal:1, prog:()=>S.crafts||0, rew:{j:150}},
+  {id:"first-chinoise", cat:"debut", icon:"layers", title:"Bille chinoise", desc:"Trouve ta première Bille chinoise.", goal:1, prog:()=>SC().filter(s=>s.type==="chinoise").length, rew:{j:10}},
+  {id:"first-calot", cat:"debut", icon:"layers", title:"Mon premier Calot", desc:"Trouve ton premier Calot.", goal:1, prog:()=>SC().filter(s=>s.type==="calot").length, rew:{j:20}},
+  {id:"first-boulet", cat:"debut", icon:"layers", title:"Mon premier Boulet", desc:"Trouve ton premier Boulet.", goal:1, prog:()=>SC().filter(s=>s.type==="boulet").length, rew:{j:30, bag:"classique"}},
+  {id:"first-mammouth", cat:"debut", icon:"trophy", title:"Mon premier Mammouth", desc:"Trouve ton premier Mammouth, la plus grosse des billes.", goal:1, prog:()=>SC().filter(s=>s.type==="mammouth").length, rew:{j:50, bag:"premium"}},
+  {id:"first-vitrine", cat:"debut", icon:"layers", title:"Jolie vitrine", desc:"Mets une bille dans ta vitrine.", goal:1, prog:()=>S.vitrine.filter(Boolean).length, rew:{j:10}},
+  {id:"first-hole", cat:"debut", icon:"target", title:"Premier trou", desc:"Réussis un trou au Tir.", goal:1, prog:()=>S.holes||0, rew:{j:10}},
+  {id:"first-craft", cat:"debut", icon:"flask", title:"Première fusion", desc:"Fusionne des billes à la Confiserie.", goal:1, prog:()=>S.crafts||0, rew:{j:15}},
   // --- l'album : combien de billes différentes
   ...[[25,200],[50,300],[100,500,"premium"],[250,800,"premium"],[500,1200,"collector"],[1000,2000,"collector","Collectionneur fou"],[2000,3500,"collector"],[3000,5000,"collector","Encyclopédie vivante"],[4000,8000,"collector","Grand collectionneur"]]
     .map(([n,j,bag,title])=>({id:"found-"+n, cat:"album", icon:"book", title:`${fmt(n)} billes`, desc:`Trouve ${fmt(n)} billes différentes (taille, motif et coloris).`, goal:n, prog:()=>albumFound(SC()).size, rew:{j, bag, title}})),
-  {id:"half", cat:"album", icon:"book", title:"Mi-parcours", desc:`Trouve la moitié des motifs de l'album : ${Math.ceil(TOTAL_SLOTS/2)} sur ${TOTAL_SLOTS}, toutes tailles confondues.`, goal:Math.ceil(TOTAL_SLOTS/2), prog:()=>slotsOwned(SC()).size, rew:{j:600, bag:"premium"}},
-  {id:"full", cat:"album", icon:"trophy", title:"Album bien rempli", desc:`Trouve 170 des ${TOTAL_SLOTS} motifs de l'album, toutes tailles confondues.`, goal:170, prog:()=>slotsOwned(SC()).size, rew:{j:3000, bag:"collector"}},
-  {id:"t-caid", cat:"album", icon:"layers", title:"Caïd des billes", desc:"Possède 100 billes en même temps.", goal:100, prog:()=>SC().length, rew:{j:700, title:"Caïd des billes"}},
+  {id:"half", cat:"album", icon:"book", title:"Mi-parcours", desc:`Trouve la moitié des motifs de l'album : ${Math.ceil(TOTAL_SLOTS/2)} sur ${TOTAL_SLOTS}, toutes tailles confondues.`, goal:Math.ceil(TOTAL_SLOTS/2), prog:()=>slotsOwned(SC()).size, rew:{j:60, bag:"premium"}},
+  {id:"full", cat:"album", icon:"trophy", title:"Album bien rempli", desc:`Trouve 170 des ${TOTAL_SLOTS} motifs de l'album, toutes tailles confondues.`, goal:170, prog:()=>slotsOwned(SC()).size, rew:{j:300, bag:"collector"}},
+  {id:"t-caid", cat:"album", icon:"layers", title:"Caïd des billes", desc:"Possède 100 billes en même temps.", goal:100, prog:()=>SC().length, rew:{j:70, title:"Caïd des billes"}},
   // --- les coloris
-  {id:"pal10", cat:"coloris", icon:"book", title:"Nuancier", desc:"Un même motif dans 10 coloris différents.", goal:10, prog:()=>Math.max(0,...FAMILIES.map((_,f)=>new Set(SC().filter(s=>s.family===f&&isBasePal(s.pal)).map(s=>s.pal)).size)), rew:{j:400}},
-  {id:"pal24", cat:"coloris", icon:"book", title:"Grand nuancier", desc:"Un même motif dans 24 coloris différents.", goal:24, prog:()=>Math.max(0,...FAMILIES.map((_,f)=>new Set(SC().filter(s=>s.family===f&&isBasePal(s.pal)).map(s=>s.pal)).size)), rew:{j:900}},
-  {id:"allpals", cat:"coloris", icon:"book", title:"Boîte de peinture", desc:`Trouve les ${BASE_PALS} coloris, tous motifs et tailles confondus.`, goal:BASE_PALS, prog:()=>new Set(SC().filter(s=>isBasePal(s.pal)).map(s=>s.pal)).size, rew:{j:500, title:"Peintre en billes"}},
-  {id:"case1", cat:"coloris", icon:"star", title:"Motif complet", desc:`Un motif dans les ${BASE_PALS} coloris, dans une même taille.`, goal:1, prog:()=>[...slotsOwned(SC()).values()].filter(l=>casePals(l)===BASE_PALS).length, rew:{j:1500, bag:"collector", title:"Nuancier vivant"}},
-  {id:"case5", cat:"coloris", icon:"star", title:"Cinq motifs complets", desc:`Cinq motifs dans les ${BASE_PALS} coloris.`, goal:5, prog:()=>[...slotsOwned(SC()).values()].filter(l=>casePals(l)===BASE_PALS).length, rew:{j:4000, bag:"collector"}},
+  {id:"pal10", cat:"coloris", icon:"book", title:"Nuancier", desc:"Un même motif dans 10 coloris différents.", goal:10, prog:()=>Math.max(0,...FAMILIES.map((_,f)=>new Set(SC().filter(s=>s.family===f&&isBasePal(s.pal)).map(s=>s.pal)).size)), rew:{j:40}},
+  {id:"pal24", cat:"coloris", icon:"book", title:"Grand nuancier", desc:"Un même motif dans 24 coloris différents.", goal:24, prog:()=>Math.max(0,...FAMILIES.map((_,f)=>new Set(SC().filter(s=>s.family===f&&isBasePal(s.pal)).map(s=>s.pal)).size)), rew:{j:90}},
+  {id:"allpals", cat:"coloris", icon:"book", title:"Boîte de peinture", desc:`Trouve les ${BASE_PALS} coloris, tous motifs et tailles confondus.`, goal:BASE_PALS, prog:()=>new Set(SC().filter(s=>isBasePal(s.pal)).map(s=>s.pal)).size, rew:{j:50, title:"Peintre en billes"}},
+  {id:"case1", cat:"coloris", icon:"star", title:"Motif complet", desc:`Un motif dans les ${BASE_PALS} coloris, dans une même taille.`, goal:1, prog:()=>[...slotsOwned(SC()).values()].filter(l=>casePals(l)===BASE_PALS).length, rew:{j:150, bag:"collector", title:"Nuancier vivant"}},
+  {id:"case5", cat:"coloris", icon:"star", title:"Cinq motifs complets", desc:`Cinq motifs dans les ${BASE_PALS} coloris.`, goal:5, prog:()=>[...slotsOwned(SC()).values()].filter(l=>casePals(l)===BASE_PALS).length, rew:{j:400, bag:"collector"}},
   // --- les tailles : des motifs différents dans chaque format, et les grosses billes
   ...TK.map((t,i)=>({id:"fmt-"+t, cat:"tailles", icon:"layers", title:FMT_GOAL[i]>=N_DECORS?`Tous les motifs en ${TYPES[t].label}`:`${FMT_GOAL[i]} motifs en ${TYPES[t].label}`,
     desc:FMT_GOAL[i]>=N_DECORS?`Trouve les ${N_DECORS} motifs au format ${TYPES[t].label}.`:`Trouve ${FMT_GOAL[i]} motifs différents (sur ${N_DECORS}) au format ${TYPES[t].label}.`, goal:Math.min(FMT_GOAL[i],N_DECORS),
     prog:()=>DECOR_IDS.filter(f=>SC().some(s=>s.type===t&&s.family===f)).length,
     rew:{j:[400,500,700,900,1200,2500][i], bag:i>=3?"collector":"premium", title:t==="mammouth"?"Maître du Mammouth":null}})),
-  {id:"big5", cat:"tailles", icon:"trophy", title:"La cour des grands", desc:"Possède 5 Boulets ou Mammouths.", goal:5, prog:()=>SC().filter(s=>tierOf(s)>=BIG).length, rew:{j:400, bag:"premium"}},
-  {id:"mam3", cat:"tailles", icon:"trophy", title:"Chasseur de mammouths", desc:"Possède 3 Mammouths.", goal:3, prog:()=>SC().filter(s=>s.type==="mammouth").length, rew:{j:800, title:"Chasseur de mammouths"}},
+  {id:"big5", cat:"tailles", icon:"trophy", title:"La cour des grands", desc:"Possède 5 Boulets ou Mammouths.", goal:5, prog:()=>SC().filter(s=>tierOf(s)>=BIG).length, rew:{j:40, bag:"premium"}},
+  {id:"mam3", cat:"tailles", icon:"trophy", title:"Chasseur de mammouths", desc:"Possède 3 Mammouths.", goal:3, prog:()=>SC().filter(s=>s.type==="mammouth").length, rew:{j:80, title:"Chasseur de mammouths"}},
   // --- les motifs : chaque motif dans plusieurs tailles
   ...DECOR_IDS.map(f=>{ const F = FAMILIES[f], n = FAM_SIZES[F.rar];
     return {id:"fam-"+f, cat:"decors", icon:"star", title:n>=TK.length?`${F.name} dans tous les formats`:`${F.name} en ${n} tailles`,
     desc:n>=TK.length?`Un motif ${F.name} dans les ${TK.length} tailles, de la Mini bille au Mammouth.`:`Un motif ${F.name} dans ${n} tailles, de la Mini bille jusqu'${upTo(n)}.`, goal:n,
     prog:()=>TK.slice(0,n).filter(t=>SC().some(s=>s.type===t&&s.family===f)).length,
-    rew:{j:FAM_REW[F.rar], bag:FAM_REW[F.rar]>=700?"premium":"classique"}} }),
+    rew:{j:FAM_REW[F.rar], bag:FAM_REW[F.rar]>=70?"premium":"classique"}} }),
   // --- les grandes trouvailles : motifs rares et shiny (une échelle chacun)
-  {id:"epic1", cat:"rare", icon:"star", title:"Trésor épique", desc:"Trouve une bille au motif épique (Acier, Nacrée, Lave, Vitrail…).", goal:1, prog:()=>SC().filter(s=>FAMILIES[s.family].rar===3).length, rew:{j:300}},
-  {id:"leg1", cat:"rare", icon:"star", title:"Légende de poche", desc:"Trouve une bille au motif légendaire (Galaxie, Aurore ou Trou noir).", goal:1, prog:()=>SC().filter(s=>FAMILIES[s.family].rar===4).length, rew:{j:500}},
-  {id:"legmam", cat:"rare", icon:"trophy", title:"Légende de la cour", desc:"Un Mammouth au motif légendaire : la bille la plus rare de la cour.", goal:1, prog:()=>SC().filter(s=>s.type==="mammouth"&&FAMILIES[s.family].rar===4).length, rew:{j:5000, title:"Légende de la cour"}},
-  {id:"shiny1", cat:"rare", icon:"star", title:"Premier éclat", desc:"Trouve ta première bille shiny dans un sachet ou une fusion.", goal:1, prog:()=>SC().filter(s=>s.shiny&&!isSeason(s)).length, rew:{j:1000}},
-  {id:"shiny3", cat:"rare", icon:"star", title:"Double éclat", desc:"Possède 2 billes shiny trouvées dans les sachets ou les fusions.", goal:2, prog:()=>SC().filter(s=>s.shiny&&!isSeason(s)).length, rew:{j:3000, title:"Chasseur d'éclats"}},
-  {id:"secrets", cat:"rare", icon:"lock", title:"Détective de la cour", desc:"Trouve toutes les billes secrètes.", goal:Object.keys(SECRETS).length, prog:()=>S.specs.filter(s=>SECRETS[s.secret]).length, rew:{j:3000, title:"Détective"}},
+  {id:"epic1", cat:"rare", icon:"star", title:"Trésor épique", desc:"Trouve une bille au motif épique (Acier, Nacrée, Lave, Vitrail…).", goal:1, prog:()=>SC().filter(s=>FAMILIES[s.family].rar===3).length, rew:{j:30}},
+  {id:"leg1", cat:"rare", icon:"star", title:"Légende de poche", desc:"Trouve une bille au motif légendaire (Galaxie, Aurore ou Trou noir).", goal:1, prog:()=>SC().filter(s=>FAMILIES[s.family].rar===4).length, rew:{j:50}},
+  {id:"legmam", cat:"rare", icon:"trophy", title:"Légende de la cour", desc:"Un Mammouth au motif légendaire : la bille la plus rare de la cour.", goal:1, prog:()=>SC().filter(s=>s.type==="mammouth"&&FAMILIES[s.family].rar===4).length, rew:{j:500, title:"Légende de la cour"}},
+  {id:"shiny1", cat:"rare", icon:"star", title:"Premier éclat", desc:"Trouve ta première bille shiny dans un sachet ou une fusion.", goal:1, prog:()=>SC().filter(s=>s.shiny&&!isSeason(s)).length, rew:{j:100}},
+  {id:"shiny3", cat:"rare", icon:"star", title:"Double éclat", desc:"Possède 2 billes shiny trouvées dans les sachets ou les fusions.", goal:2, prog:()=>SC().filter(s=>s.shiny&&!isSeason(s)).length, rew:{j:300, title:"Chasseur d'éclats"}},
+  {id:"secrets", cat:"rare", icon:"lock", title:"Détective de la cour", desc:"Trouve toutes les billes secrètes.", goal:Object.keys(SECRETS).length, prog:()=>S.specs.filter(s=>SECRETS[s.secret]).length, rew:{j:300, title:"Détective"}},
   // --- jeux de la cour
-  {id:"t-golf", cat:"jeux", icon:"target", title:"Golfeur du dimanche", desc:"Réussis 20 trous au Tir.", goal:20, prog:()=>S.holes||0, rew:{j:400}},
-  {id:"t-parcours", cat:"jeux", icon:"target", title:"Le grand parcours", desc:`Réussis les ${LEVELS.length} trous différents du Tir (un nouveau chaque jour).`, goal:LEVELS.length, prog:()=>Object.keys(S.best).filter(k=>LEVELS[k]).length, rew:{j:2000, bag:"collector", title:"Pro du Tir"}},
-  {id:"t-pot", icon:"pot", cat:"jeux", title:"Champion du pot", desc:"Mets 25 billes dans le pot.", goal:25, prog:()=>S.stats.pot, rew:{j:500, title:"Champion du pot"}},
-  {id:"t-castle", icon:"castle", cat:"jeux", title:"Démolisseur de châteaux", desc:"Fais sortir 60 billes du cercle au Château.", goal:60, prog:()=>S.stats.castle, rew:{j:500, title:"Démolisseur"}},
-  {id:"t-tic", icon:"tic", cat:"jeux", title:"Terreur du préau", desc:"Gagne 10 parties de Tic.", goal:10, prog:()=>S.stats.tic, rew:{j:600, title:"Terreur du préau"}},
-  {id:"t-race", icon:"flag", cat:"jeux", title:"Maillot jaune", desc:"Gagne 5 courses sur la plage.", goal:5, prog:()=>S.stats.race, rew:{j:600, title:"Maillot jaune"}},
-  {id:"t-roi", icon:"trophy", cat:"jeux", title:"Roi de la cour", desc:"Fais 3 étoiles au Pot et au Château, et gagne une partie de Tic.", goal:3, prog:()=>["pot","chateau","tic"].filter(k=>S.stats.best3[k]).length, rew:{j:800, title:"Roi de la cour"}},
+  {id:"t-golf", cat:"jeux", icon:"target", title:"Golfeur du dimanche", desc:"Réussis 20 trous au Tir.", goal:20, prog:()=>S.holes||0, rew:{j:40}},
+  {id:"t-parcours", cat:"jeux", icon:"target", title:"Le grand parcours", desc:`Réussis les ${LEVELS.length} trous différents du Tir (un nouveau chaque jour).`, goal:LEVELS.length, prog:()=>Object.keys(S.best).filter(k=>LEVELS[k]).length, rew:{j:200, bag:"collector", title:"Pro du Tir"}},
+  {id:"t-pot", icon:"pot", cat:"jeux", title:"Champion du pot", desc:"Mets 25 billes dans le pot.", goal:25, prog:()=>S.stats.pot, rew:{j:50, title:"Champion du pot"}},
+  {id:"t-castle", icon:"castle", cat:"jeux", title:"Démolisseur de châteaux", desc:"Fais sortir 60 billes du cercle au Château.", goal:60, prog:()=>S.stats.castle, rew:{j:50, title:"Démolisseur"}},
+  {id:"t-tic", icon:"tic", cat:"jeux", title:"Terreur du préau", desc:"Gagne 10 parties de Tic.", goal:10, prog:()=>S.stats.tic, rew:{j:60, title:"Terreur du préau"}},
+  {id:"t-race", icon:"flag", cat:"jeux", title:"Maillot jaune", desc:"Gagne 5 courses sur la plage.", goal:5, prog:()=>S.stats.race, rew:{j:60, title:"Maillot jaune"}},
+  {id:"t-roi", icon:"trophy", cat:"jeux", title:"Roi de la cour", desc:"Fais 3 étoiles au Pot et au Château, et gagne une partie de Tic.", goal:3, prog:()=>["pot","chateau","tic"].filter(k=>S.stats.best3[k]).length, rew:{j:80, title:"Roi de la cour"}},
   // --- les habitudes
-  {id:"streak7", cat:"habitudes", icon:"clock", title:"Fidèle au poste", desc:"Récupère le bonbec du jour 7 jours d'affilée.", goal:7, prog:()=>bestStreak(), rew:{j:500}},
-  {id:"streak28", cat:"habitudes", icon:"clock", title:"Un mois sans rater", desc:"Récupère le bonbec du jour 28 jours d'affilée.", goal:28, prog:()=>bestStreak(), rew:{j:2000, bag:"collector", title:"Toujours là"}},
-  {id:"bags50", cat:"habitudes", icon:"bag", title:"Habitué du préau", desc:"Ouvre 50 sachets.", goal:50, prog:()=>S.bags||0, rew:{j:500, bag:"premium"}},
-  {id:"bags250", cat:"habitudes", icon:"bag", title:"Sac sans fond", desc:"Ouvre 250 sachets.", goal:250, prog:()=>S.bags||0, rew:{j:1500, bag:"collector", title:"Sac sans fond"}},
-  {id:"craft10", cat:"habitudes", icon:"flask", title:"Apprenti confiseur", desc:"Réussis 10 fusions à la Confiserie.", goal:10, prog:()=>S.crafts||0, rew:{j:800, title:"Apprenti confiseur"}},
-  {id:"t-chouchou", cat:"habitudes", icon:"quest", title:"Chouchou de la maîtresse", desc:"Récupère 5 fois le bonus des quêtes du jour.", goal:5, prog:()=>S.stats.bonus, rew:{j:500, title:"Chouchou de la maîtresse"}},
+  {id:"streak7", cat:"habitudes", icon:"clock", title:"Fidèle au poste", desc:"Récupère le bonbec du jour 7 jours d'affilée.", goal:7, prog:()=>bestStreak(), rew:{j:50}},
+  {id:"streak28", cat:"habitudes", icon:"clock", title:"Un mois sans rater", desc:"Récupère le bonbec du jour 28 jours d'affilée.", goal:28, prog:()=>bestStreak(), rew:{j:200, bag:"collector", title:"Toujours là"}},
+  {id:"bags50", cat:"habitudes", icon:"bag", title:"Habitué du préau", desc:"Ouvre 50 sachets.", goal:50, prog:()=>S.bags||0, rew:{j:50, bag:"premium"}},
+  {id:"bags250", cat:"habitudes", icon:"bag", title:"Sac sans fond", desc:"Ouvre 250 sachets.", goal:250, prog:()=>S.bags||0, rew:{j:150, bag:"collector", title:"Sac sans fond"}},
+  {id:"craft10", cat:"habitudes", icon:"flask", title:"Apprenti confiseur", desc:"Réussis 10 fusions à la Confiserie.", goal:10, prog:()=>S.crafts||0, rew:{j:80, title:"Apprenti confiseur"}},
+  {id:"t-chouchou", cat:"habitudes", icon:"quest", title:"Chouchou de la maîtresse", desc:"Récupère 5 fois le bonus des quêtes du jour.", goal:5, prog:()=>S.stats.bonus, rew:{j:50, title:"Chouchou de la maîtresse"}},
 ];
 // Séries : de petits albums à thème, chacun avec sa récompense (une case = un motif et/ou un coloris, n'importe quelle taille)
 const FAM_ID = n => FAMILIES.findIndex(F=>F.name===n), PAL_ID = n => PALETTES.findIndex(P=>P[0]===n);
-// les récompenses suivent la difficulté (nombre moyen de sachets pour finir la série) : facile 300, moyenne 500-600, difficile 1 000-1 200, très difficile 2 000, le Graal 6 000
+// les récompenses suivent la difficulté (nombre moyen de sachets pour finir la série) : facile 30, moyenne 50-60, difficile 100-120, très difficile 200, le Graal 600 (÷10 le 6 octobre 2026)
 const SERIES = [
   // min : la taille minimum de la bille qui remplit la case (sinon n'importe laquelle)
-  {id:"trousse", name:"La trousse d'écolier", desc:"Les motifs du cahier de classe, en Bille chinoise ou plus.", items:[{fam:"Damier",min:"chinoise"},{fam:"Écossais",min:"chinoise"},{fam:"Pixel",min:"chinoise"},{fam:"Cible",min:"chinoise"},{pal:"Encre",min:"chinoise"},{pal:"Citron",min:"chinoise"}], rew:{j:300, bag:"classique"}},
-  {id:"bonbons", name:"La boulangerie du coin", desc:"Des billes qui donnent faim.", items:[{fam:"Berlingot",min:"calot"},{fam:"Millefiori",min:"chinoise"},{fam:"À pois",min:"calot"},{fam:"Nid d'abeille",min:"chinoise"},{pal:"Barbe à papa"},{pal:"Chocolat menthe"},{pal:"Framboise"},{pal:"Sorbet"}], rew:{j:1000, bag:"premium"}},
-  {id:"nature", name:"Au fond du jardin", desc:"Ce qu'on trouve en rentrant de l'école.", items:[{fam:"Bois",min:"calot"},{fam:"Écailles",min:"chinoise"},{fam:"Tigrée",min:"chinoise"},{fam:"Œil-de-chat",min:"calot"},{pal:"Forêt"},{pal:"Sauge"},{pal:"Kiwi"},{pal:"Menthe"}], rew:{j:500, bag:"classique"}},
-  {id:"arcenciel", name:"L'arc-en-ciel", desc:"Une Bille chinoise ou plus de chaque couleur, peu importe le motif.", items:["Cerise","Ambre","Citron","Émeraude","Azur","Saphir","Lavande"].map(pal=>({pal, min:"chinoise"})), rew:{j:500, bag:"classique"}},
-  {id:"noiretblanc", name:"Noir et blanc", desc:"Pour les amateurs de contrastes, en Bille chinoise ou plus.", items:["Encre","Réglisse","Béton","Brume","Ciel d'orage","Nuit"].map(pal=>({pal, min:"chinoise"})), rew:{j:500, bag:"classique"}},
-  {id:"pierres", name:"Les pierres précieuses", desc:"Des pierres dans les coloris des joyaux.", items:[{fam:"Agate",pal:"Rubis"},{fam:"Marbre",pal:"Saphir"},{fam:"Cristal",pal:"Émeraude"},{fam:"Nacrée",pal:"Opale"}], rew:{j:6000, bag:"collector", title:"Joaillier"}},
-  {id:"feuglace", name:"Le feu et la glace", desc:"Du plus chaud au plus froid.", items:[{fam:"Lave"},{fam:"Givrée",min:"calot"},{fam:"Cristal",min:"calot"},{pal:"Volcan",min:"calot"},{pal:"Glacier",min:"calot"}], rew:{j:1000, bag:"premium"}},
-  {id:"cosmos", name:"Le système solaire", desc:"Les motifs venus d'ailleurs.", items:[{fam:"Globe"},{fam:"Planète"},{fam:"Galaxie"},{fam:"Aurore"}], rew:{j:2000, bag:"collector", title:"Astronome"}},
-  {id:"grenier", name:"Le grenier de papi", desc:"Les billes d'autrefois, retrouvées dans une vieille boîte en fer. Que des Calots ou plus gros.", items:[{fam:"Terre",min:"calot"},{fam:"Oignon",min:"calot"},{fam:"Opaline",min:"calot"},{fam:"Tourbillon",min:"calot"},{fam:"Marbre",min:"calot"}], rew:{j:1000, bag:"premium"}},
-  {id:"foire", name:"La fête foraine", desc:"Paillettes, rubans et barbe à papa.", items:[{fam:"Arlequin",min:"chinoise"},{fam:"Ruban",min:"chinoise"},{fam:"Pailletée",min:"chinoise"},{pal:"Pop"},{pal:"Sucre d'orge"},{pal:"Néon"},{pal:"Tropical"}], rew:{j:300, bag:"classique"}},
-  {id:"atelier", name:"L'atelier du bricoleur", desc:"Des billes solides comme des outils.", items:[{fam:"Acier"},{fam:"Fumée",min:"calot"},{fam:"Craquelée",min:"calot"},{pal:"Cuivre",min:"calot"},{pal:"Pétrole",min:"calot"}], rew:{j:1200, bag:"premium", title:"Bricoleur"}},
-  {id:"zoo", name:"Le zoo", desc:"Des fauves, des écailles et des plumes de toutes les couleurs.", items:[{fam:"Tigrée",min:"chinoise"},{fam:"Écailles",min:"chinoise"},{fam:"Nid d'abeille",min:"chinoise"},{pal:"Toucan"},{pal:"Paon"},{pal:"Kaki"}], rew:{j:600, bag:"classique"}},
-  {id:"pastels", name:"Les pastels", desc:"Des couleurs toutes douces, en Bille chinoise ou plus.", items:["Lilas","Opale","Menthe","Or rose","Sorbet","Barbe à papa"].map(pal=>({pal, min:"chinoise"})), rew:{j:500, bag:"classique"}},
-  {id:"piquenique", name:"Le pique-nique", desc:"La nappe à carreaux, le panier et tout ce qu'il y a dedans.", items:[{fam:"Écossais",min:"calot"},{fam:"Damier",min:"calot"},{fam:"À pois",min:"calot"},{pal:"Cerise"},{pal:"Kiwi"},{pal:"Citron"}], rew:{j:500, bag:"classique"}},
-  {id:"mer", name:"Au bord de la mer", desc:"Le sable, les vagues et les coquillages, en Calot ou plus.", items:[{fam:"Nacrée"},{fam:"Écailles",min:"calot"},{pal:"Lagon",min:"calot"},{pal:"Corail",min:"calot"},{pal:"Sable",min:"calot"},{pal:"Tropical",min:"calot"}], rew:{j:1000, bag:"premium"}},
-  {id:"cathedrale", name:"La cathédrale", desc:"Des vitraux couleur de joyaux et des fleurs de verre.", items:[{fam:"Vitrail",pal:"Rubis"},{fam:"Vitrail",pal:"Saphir"},{fam:"Millefiori",min:"calot"},{pal:"Opale",min:"calot"}], rew:{j:4000, bag:"collector", title:"Maître verrier"}},
-  {id:"univers", name:"Au bout de l'univers", desc:"Les trois motifs légendaires, et une nuit sans fin.", items:[{fam:"Trou noir"},{fam:"Galaxie",min:"calot"},{fam:"Aurore",min:"calot"},{pal:"Nuit",min:"boulet"}], rew:{j:3000, bag:"collector", title:"Explorateur"}},
+  {id:"trousse", name:"La trousse d'écolier", desc:"Les motifs du cahier de classe, en Bille chinoise ou plus.", items:[{fam:"Damier",min:"chinoise"},{fam:"Écossais",min:"chinoise"},{fam:"Pixel",min:"chinoise"},{fam:"Cible",min:"chinoise"},{pal:"Encre",min:"chinoise"},{pal:"Citron",min:"chinoise"}], rew:{j:30, bag:"classique"}},
+  {id:"bonbons", name:"La boulangerie du coin", desc:"Des billes qui donnent faim.", items:[{fam:"Berlingot",min:"calot"},{fam:"Millefiori",min:"chinoise"},{fam:"À pois",min:"calot"},{fam:"Nid d'abeille",min:"chinoise"},{pal:"Barbe à papa"},{pal:"Chocolat menthe"},{pal:"Framboise"},{pal:"Sorbet"}], rew:{j:100, bag:"premium"}},
+  {id:"nature", name:"Au fond du jardin", desc:"Ce qu'on trouve en rentrant de l'école.", items:[{fam:"Bois",min:"calot"},{fam:"Écailles",min:"chinoise"},{fam:"Tigrée",min:"chinoise"},{fam:"Œil-de-chat",min:"calot"},{pal:"Forêt"},{pal:"Sauge"},{pal:"Kiwi"},{pal:"Menthe"}], rew:{j:50, bag:"classique"}},
+  {id:"arcenciel", name:"L'arc-en-ciel", desc:"Une Bille chinoise ou plus de chaque couleur, peu importe le motif.", items:["Cerise","Ambre","Citron","Émeraude","Azur","Saphir","Lavande"].map(pal=>({pal, min:"chinoise"})), rew:{j:50, bag:"classique"}},
+  {id:"noiretblanc", name:"Noir et blanc", desc:"Pour les amateurs de contrastes, en Bille chinoise ou plus.", items:["Encre","Réglisse","Béton","Brume","Ciel d'orage","Nuit"].map(pal=>({pal, min:"chinoise"})), rew:{j:50, bag:"classique"}},
+  {id:"pierres", name:"Les pierres précieuses", desc:"Des pierres dans les coloris des joyaux.", items:[{fam:"Agate",pal:"Rubis"},{fam:"Marbre",pal:"Saphir"},{fam:"Cristal",pal:"Émeraude"},{fam:"Nacrée",pal:"Opale"}], rew:{j:600, bag:"collector", title:"Joaillier"}},
+  {id:"feuglace", name:"Le feu et la glace", desc:"Du plus chaud au plus froid.", items:[{fam:"Lave"},{fam:"Givrée",min:"calot"},{fam:"Cristal",min:"calot"},{pal:"Volcan",min:"calot"},{pal:"Glacier",min:"calot"}], rew:{j:100, bag:"premium"}},
+  {id:"cosmos", name:"Le système solaire", desc:"Les motifs venus d'ailleurs.", items:[{fam:"Globe"},{fam:"Planète"},{fam:"Galaxie"},{fam:"Aurore"}], rew:{j:200, bag:"collector", title:"Astronome"}},
+  {id:"grenier", name:"Le grenier de papi", desc:"Les billes d'autrefois, retrouvées dans une vieille boîte en fer. Que des Calots ou plus gros.", items:[{fam:"Terre",min:"calot"},{fam:"Oignon",min:"calot"},{fam:"Opaline",min:"calot"},{fam:"Tourbillon",min:"calot"},{fam:"Marbre",min:"calot"}], rew:{j:100, bag:"premium"}},
+  {id:"foire", name:"La fête foraine", desc:"Paillettes, rubans et barbe à papa.", items:[{fam:"Arlequin",min:"chinoise"},{fam:"Ruban",min:"chinoise"},{fam:"Pailletée",min:"chinoise"},{pal:"Pop"},{pal:"Sucre d'orge"},{pal:"Néon"},{pal:"Tropical"}], rew:{j:30, bag:"classique"}},
+  {id:"atelier", name:"L'atelier du bricoleur", desc:"Des billes solides comme des outils.", items:[{fam:"Acier"},{fam:"Fumée",min:"calot"},{fam:"Craquelée",min:"calot"},{pal:"Cuivre",min:"calot"},{pal:"Pétrole",min:"calot"}], rew:{j:120, bag:"premium", title:"Bricoleur"}},
+  {id:"zoo", name:"Le zoo", desc:"Des fauves, des écailles et des plumes de toutes les couleurs.", items:[{fam:"Tigrée",min:"chinoise"},{fam:"Écailles",min:"chinoise"},{fam:"Nid d'abeille",min:"chinoise"},{pal:"Toucan"},{pal:"Paon"},{pal:"Kaki"}], rew:{j:60, bag:"classique"}},
+  {id:"pastels", name:"Les pastels", desc:"Des couleurs toutes douces, en Bille chinoise ou plus.", items:["Lilas","Opale","Menthe","Or rose","Sorbet","Barbe à papa"].map(pal=>({pal, min:"chinoise"})), rew:{j:50, bag:"classique"}},
+  {id:"piquenique", name:"Le pique-nique", desc:"La nappe à carreaux, le panier et tout ce qu'il y a dedans.", items:[{fam:"Écossais",min:"calot"},{fam:"Damier",min:"calot"},{fam:"À pois",min:"calot"},{pal:"Cerise"},{pal:"Kiwi"},{pal:"Citron"}], rew:{j:50, bag:"classique"}},
+  {id:"mer", name:"Au bord de la mer", desc:"Le sable, les vagues et les coquillages, en Calot ou plus.", items:[{fam:"Nacrée"},{fam:"Écailles",min:"calot"},{pal:"Lagon",min:"calot"},{pal:"Corail",min:"calot"},{pal:"Sable",min:"calot"},{pal:"Tropical",min:"calot"}], rew:{j:100, bag:"premium"}},
+  {id:"cathedrale", name:"La cathédrale", desc:"Des vitraux couleur de joyaux et des fleurs de verre.", items:[{fam:"Vitrail",pal:"Rubis"},{fam:"Vitrail",pal:"Saphir"},{fam:"Millefiori",min:"calot"},{pal:"Opale",min:"calot"}], rew:{j:400, bag:"collector", title:"Maître verrier"}},
+  {id:"univers", name:"Au bout de l'univers", desc:"Les trois motifs légendaires, et une nuit sans fin.", items:[{fam:"Trou noir"},{fam:"Galaxie",min:"calot"},{fam:"Aurore",min:"calot"},{pal:"Nuit",min:"boulet"}], rew:{j:300, bag:"collector", title:"Explorateur"}},
   // rar : un panier de motifs (0 Commun … 4 Légendaire) ; twin : deux exemplaires identiques de la même bille ; type : la taille exacte
-  {id:"paniers", name:"Du commun au légendaire", desc:"Un Calot ou plus gros dans chaque panier de motifs, du plus courant au plus rare.", items:DECOR_RAR.map((_,rar)=>({rar, min:"calot"})), rew:{j:2000, bag:"collector", title:"Connaisseur"}},
-  {id:"azur", name:"Tout en Azur", desc:"Un motif de chaque panier, jusqu'à l'Épique, mais toujours en Azur.", items:[0,1,2,3].map(rar=>({rar, pal:"Azur"})), rew:{j:1000, bag:"premium"}},
-  {id:"jumelles", name:"Les jumelles", desc:"Deux exemplaires de la même bille (même taille, même motif, même coloris), dans trois tailles.", items:["mini","bille","chinoise"].map(type=>({type, twin:true})), rew:{j:500, bag:"classique"}},
-  {id:"grands", name:"Les grands formats", desc:"De la plus petite à la plus grosse, dans un même motif.", items:TK.map(type=>({type})), same:"family", rew:{j:600, bag:"premium", title:"Toutes tailles"}},
+  {id:"paniers", name:"Du commun au légendaire", desc:"Un Calot ou plus gros dans chaque panier de motifs, du plus courant au plus rare.", items:DECOR_RAR.map((_,rar)=>({rar, min:"calot"})), rew:{j:200, bag:"collector", title:"Connaisseur"}},
+  {id:"azur", name:"Tout en Azur", desc:"Un motif de chaque panier, jusqu'à l'Épique, mais toujours en Azur.", items:[0,1,2,3].map(rar=>({rar, pal:"Azur"})), rew:{j:100, bag:"premium"}},
+  {id:"jumelles", name:"Les jumelles", desc:"Deux exemplaires de la même bille (même taille, même motif, même coloris), dans trois tailles.", items:["mini","bille","chinoise"].map(type=>({type, twin:true})), rew:{j:50, bag:"classique"}},
+  {id:"grands", name:"Les grands formats", desc:"De la plus petite à la plus grosse, dans un même motif.", items:TK.map(type=>({type})), same:"family", rew:{j:60, bag:"premium", title:"Toutes tailles"}},
 ];
 const seriesMatch = (it,x) => (!it.fam || x.family===FAM_ID(it.fam)) && (!it.pal || x.pal===PAL_ID(it.pal)) && (!it.type || x.type===it.type) && (!it.min || TIDX[x.type]>=TIDX[it.min])
   && (it.rar==null || (!extraFam(x.family) && FAMILIES[x.family].rar===it.rar)) && (!it.twin || SC().filter(y=>colorKey(y)===colorKey(x)).length>=2);
@@ -5490,7 +5563,7 @@ const seasonStyle = se => { const P=PALETTES[se.pal]; return `--s1:${P[1]};--s2:
 // Récompenses d'un palier (1 à 30) sur la piste gratuite ("free") ou premium ("prem").
 // Trois étapes de 10 paliers : les bonbecs montent d'une étape à l'autre, un sachet tous les 5 paliers,
 // et les billes de la saison aux paliers ronds (10, 20, 30). Palier 1 : une Mini de saison pour bien démarrer.
-const PASS_J = {free:[100,150,200], prem:[200,300,400]};
+const PASS_J = {free:[10,15,20], prem:[20,30,40]};
 function passReward(track,t,se=seasonNow()){
   const fam = se.def.fam, stage = Math.floor((t-1)/10);
   const M = (type,shiny=0) => ({k:"marble", type, fam, shiny});
@@ -5560,8 +5633,8 @@ const giftCount = () => Object.values(S.bagInv).reduce((a,b)=>a+b,0);
    ===================================================================== */
 const NAV = [["accueil","Accueil","home"],["sacs","Ouvrir des sachets","bag"],["collection","Boîte à billes","layers"],["jeux","Jeux de la cour","pad"],["confiserie","La Confiserie","candy"],["cour","La cour de récré","cour"]];
 // les pages qui ne sont pas dans le menu allument leur « parent »
-const NAV_PARENT = {billepedia:"collection", tir:"jeux", pot:"jeux", chateau:"jeux", casse:"jeux", tic:"jeux", pachinko:"jeux", course:"jeux", grandecourse:"jeux", atelier:"confiserie"};
-const SOLO_GAMES = [["pot","Le Pot"],["chateau","Le Château"],["casse","Le Casse-briques"],["pachinko","Le Plinko"],["tic","La Tic"]];
+const NAV_PARENT = {billepedia:"collection", tir:"jeux", pot:"jeux", chateau:"jeux", casse:"jeux", roue:"jeux", tic:"jeux", pachinko:"jeux", course:"jeux", grandecourse:"jeux", atelier:"confiserie"};
+const SOLO_GAMES = [["pot","Le Pot"],["chateau","Le Château"],["roue","La Roue"],["pachinko","Le Plinko"],["tic","La Tic"]];   // la Roue remplace le Casse-briques (6 octobre 2026)
 function gamesReady(){
   const out = SOLO_GAMES.filter(g=>soloReady(g[0]) || gameLive(g[0])).map(g=>g[1]);
   if(!playedToday().tir[0]) out.unshift("Le Tir");
@@ -5750,11 +5823,12 @@ function claimAll(){
 // Le bonbec du jour : un cadeau à la première visite de chaque jour, sur un calendrier de 4 semaines.
 // Chaque semaine rapporte plus que la précédente, avec un sachet au milieu (jour 4) et un plus beau à la fin (jour 7).
 // Après le 28ᵉ jour, la 4ᵉ semaine recommence tant qu'on ne rate pas de jour. Un jour sauté : retour au jour 1.
+// 6 octobre 2026 : montants divisés par 10, et calendrier presque 2 fois plus généreux (même tableau dans serveur.sql, bonbec_du_jour)
 const DAILY_CAL = [
-  {j:60},  {j:80},  {j:100}, {bag:"classique"}, {j:120}, {j:150}, {bag:"classique"},
-  {j:100}, {j:120}, {j:150}, {bag:"classique"}, {j:180}, {j:200}, {bag:"premium"},
-  {j:120}, {j:150}, {j:180}, {bag:"classique"}, {j:200}, {j:250}, {bag:"premium"},  
-  {j:150}, {j:180}, {j:200}, {bag:"premium"},   {j:250}, {j:300}, {bag:"collector"},
+  {j:10}, {j:15}, {j:20}, {bag:"classique", j:10}, {j:25}, {j:30}, {bag:"premium"},
+  {j:15}, {j:20}, {j:25}, {bag:"classique", j:15}, {j:30}, {j:35}, {bag:"premium", j:20},
+  {j:20}, {j:25}, {j:30}, {bag:"premium"},         {j:35}, {j:40}, {bag:"collector"},
+  {j:25}, {j:30}, {j:35}, {bag:"premium", j:25},   {j:40}, {j:50}, {bag:"collector", j:50},
 ];
 const DAILY_N = DAILY_CAL.length;
 const dailyDay = streak => streak<=DAILY_N ? streak-1 : DAILY_N-7 + (streak-DAILY_N-1)%7;   // 0 à 27
@@ -5768,7 +5842,7 @@ function openDaily(){
   const next = dailyDay(streak+1), looped = streak>DAILY_N;
   const cell = (d,i) => { const got = i<idx || (!ready && i===idx), today = ready && i===idx, B = d.bag && BAG_BY[d.bag];
     return `<div class="day ${got?"got":today?"today":""}${B?" has-bag":""}${i%7===6?" wk-end":""}" ${B?`style="--bc:${B.color}"`:""} title="Jour ${i+1} : ${esc(dailyText(dailyRew(i)))}">
-      <small>${i+1}</small>${B?`<span class="day-bag">${ic("bag",20,2.2)}</span><em>${B.name.replace("Sachet ","")}</em>`:`${COIN}`}${d.j?`<b>${fmt(d.j)}</b>`:""}
+      <small>${i+1}</small>${B?`<span class="day-bag">${ic("bag",20,2.2)}</span><em>${B.name.replace("Sachet ","")}</em>`:`${COIN}`}${d.j?`<b>${B?"+":""}${fmt(d.j)}</b>`:""}
       ${got?`<span class="day-ok">${ic("check",11,3)}</span>`:""}</div>` };
   const el = document.getElementById("modal");
   el.innerHTML = `<div class="modal daily" role="dialog" aria-modal="true" aria-label="Le bonbec du jour">
@@ -5836,7 +5910,8 @@ function renderGcBtn(){
 }
 function renderTop(){
   renderBeta(); renderGcBtn(); renderBell();
-  document.getElementById("jetons").textContent = fmt(S.jetons);
+  // pendant la chute d'une bille du Plinko, le solde reste figé (sinon un rafraîchissement du serveur dévoile le gain avant l'arrivée)
+  document.getElementById("jetons").textContent = fmt(walletFreeze ?? S.jetons);
   document.getElementById("jetons").title = S.depart ? `Dont ${fmt(Math.min(S.depart, S.jetons))} ${CUR.many} de départ : pour les sachets et les jeux, pas pour les trocs ni le marché` : "";
   const db = document.getElementById("daily-btn");
   if(!db.querySelector("svg")) db.insertAdjacentHTML("afterbegin", ic("gift",21));
@@ -5886,7 +5961,7 @@ function go(view){ toggleProfPop(false); if(view!==ui.view) ui.ballPicked = null
 function renderView(){
   if(ui.view==="course") ui.view = "jeux";   // la Course sur la plage a été retirée (2 octobre 2026) : un vieux lien ramène aux jeux
   const v = document.getElementById("view");
-  const map = {cour:viewCour, succes:viewSucces, accueil:viewHome, sacs:viewBags, collection:viewCollection, jeux:viewGames, tir:viewGame, pot:viewArena, chateau:viewArena, casse:viewCasse, tic:viewArena, pachinko:viewPachinko, course:viewArena, grandecourse:viewGrandeCourse, quetes:viewQuests, billepedia:viewPedia, passe:viewPass, profil:viewProfile, atelier:viewCraft, confiserie:viewConfiserie};
+  const map = {cour:viewCour, succes:viewSucces, accueil:viewHome, sacs:viewBags, collection:viewCollection, jeux:viewGames, tir:viewGame, pot:viewArena, chateau:viewArena, casse:viewCasse, roue:viewRoue, tic:viewArena, pachinko:viewPachinko, course:viewArena, grandecourse:viewGrandeCourse, quetes:viewQuests, billepedia:viewPedia, passe:viewPass, profil:viewProfile, atelier:viewCraft, confiserie:viewConfiserie};
   v.innerHTML = (map[ui.view] || viewSoon)();
   if(ui.view==="passe") focusTrack();
   if(ui.view==="grandecourse") gcAfterRender();
@@ -5896,6 +5971,7 @@ function renderView(){
   if(ARENA[ui.view]) initArena(ui.view);
   if(ui.view==="casse") initCasse();
   if(ui.view==="pachinko") pachiInit();
+  if(ui.view==="roue") roueInit();
   if(ui.view==="cour" && cour.focus) setTimeout(courFocus, 60);
 }
 
@@ -5940,7 +6016,7 @@ function heroSlides(){
   // le bonbec du jour : la semaine en cours du calendrier
   const streak = dReady ? dailyStreak() : (S.daily?.streak||1), idx = dailyDay(streak), w = Math.floor(idx/7), today = dailyRew(idx), nxt = dailyDay(streak+1);
   const cell = (d, k) => { const state = k<idx || (k===idx && !dReady) ? "done" : k===idx ? "today" : "";
-    return `<span class="hs-day ${state}${d.bag?" bag":""}"><small>J${k+1}</small>${d.bag ? bagSVG(BAG_BY[d.bag]) : `${COIN}<b>${d.j}</b>`}${state==="done"?`<i>${ic("check",14,3.2)}</i>`:""}</span>` };
+    return `<span class="hs-day ${state}${d.bag?" bag":""}"><small>J${k+1}</small>${d.bag ? bagSVG(BAG_BY[d.bag]) + (d.j ? `<b>+${d.j}</b>` : "") : `${COIN}<b>${d.j}</b>`}${state==="done"?`<i>${ic("check",14,3.2)}</i>`:""}</span>` };
   out.push({id:"bonbec", label:"Bonbec du jour", score: dReady ? 90 : 5, html:`
     <div class="hm-txt">
       <span class="hm-k">${ic("gift",15)} Le bonbec du jour · semaine ${w+1} sur 4</span>
@@ -5988,16 +6064,26 @@ function heroSlides(){
       </div>`});
   }
   // l'événement en cours
-  liveEvents().forEach(k=>{ const E = EVENTS[k], b = BAG_BY[E.bag], f = FAMILIES.findIndex(F=>F.event===k), n = S.bagInv[b.id]||0;
+  liveEvents().forEach(k=>{ const E = EVENTS[k], b = BAG_BY[E.bag], f = FAMILIES.findIndex(F=>F.event===k), n = b ? S.bagInv[b.id]||0 : 0;
     const ex = (t,j) => ({seed:hash("ev-une"+k+t), type:t, family:f, pal:E.palIdx[j], shiny:0});
     out.push({id:"event", label:"Événement", score: n ? 98 : 70, style:`--s1:${PALETTES[E.palIdx[0]][1]};--s2:${E.color};--s3:${PALETTES[E.palIdx[0]][2]}`, html:`
       ${art("", img(ex("mammouth",0),150,"right:16%;top:46%;translate:0 -50%","big") + img(ex("calot",1),78,"right:4%;top:14%") + img(ex("boulet",3),92,"right:5%;bottom:10%") + img(ex("chinoise",2),58,"right:38%;bottom:12%"))}
       <div class="hm-txt">
         <span class="hm-k">${ic("flag",15)} Événement · jusqu'au ${dayMonth(E.end)}</span>
-        <h1>${esc(E.name)} Les billes Pirate débarquent !</h1>
-        <p>Un motif inédit et ${E.pals.length} coloris, pendant encore <b>${eventLeft(E)}</b> : coche « Billes Pirate » sur les sachets Classique, Premium et Collector pour en trouver. La fusion d'événement t'aide à finir ta collection.</p>
+        <h1>${esc(E.name)} Les billes ${esc(FAMILIES[f].name)} débarquent !</h1>
+        <p>${E.pals.length} coloris, encore <b>${eventLeft(E)}</b> : coche « Billes ${esc(FAMILIES[f].name)} » sur un sachet payant.</p>
         ${n ? `<button class="btn btn-yellow btn-xl" data-action="open-gift" data-bag="${b.id}">${ic("gift",22)} Ouvrir mon ${b.name} offert</button>`
             : `<button class="btn btn-yellow btn-xl" data-action="ev-album">${ic("flag",22)} Ma collection ${esc(FAMILIES[f].name)}</button>`}
+      </div>`}) });
+  // un événement qui arrive dans moins de 7 jours : on l'annonce (billes floutées, comme la saison suivante)
+  Object.keys(EVENTS).filter(k=>{ const d = EVENTS[k].start - Date.now(); return d>0 && d<7*864e5 }).forEach(k=>{ const E = EVENTS[k], f = FAMILIES.findIndex(F=>F.event===k);
+    const ex = (t,j) => ({seed:hash("ev-une"+k+t), type:t, family:f, pal:E.palIdx[j], shiny:0});
+    out.push({id:"bientot-ev", label:"Bientôt", score:40, style:`--s1:${PALETTES[E.palIdx[0]][1]};--s2:${E.color};--s3:${PALETTES[E.palIdx[0]][2]}`, html:`
+      ${art("", img(ex("mammouth",0),150,"right:16%;top:46%;translate:0 -50%","big veil") + img(ex("calot",1),78,"right:4%;top:14%","veil") + img(ex("boulet",3),92,"right:5%;bottom:10%","veil"))}
+      <div class="hm-txt">
+        <span class="hm-k">${ic("flag",15)} Bientôt · le ${dayMonth(E.start)}</span>
+        <h1>${esc(E.name)}</h1>
+        <p>Un nouvel événement du ${dayMonth(E.start)} au ${dayMonth(E.end)} : ${E.pals.length} coloris de billes ${esc(FAMILIES[f].name)} à trouver.</p>
       </div>`}) });
   // la cour : seulement s'il y a du nouveau
   const C = hcCourInfo();
@@ -6186,7 +6272,7 @@ function viewQuests(){
   ensureQuests();
   const Q = S.quests, all = Q.items.every(q=>q.claimed), n = Q.items.filter(q=>q.claimed).length;
   return `<div class="page-head">
-    <div><h1>Quêtes du jour</h1><p>Quatre défis par jour pour gagner des ${CUR.many}, jamais deux du même genre. Ils avancent tout seuls pendant que tu ouvres des sachets, joues aux jeux du jour ou passes à la Confiserie.</p></div>
+    <div><h1>Quêtes du jour</h1><p>Quatre défis par jour, des ${CUR.many} à la clé.</p></div>
     <span class="hand-note">Nouvelles quêtes dans <span data-quest-timer>${untilMidnight()}</span></span>
   </div>
   <div class="soon-page" style="max-width:820px">
@@ -6293,7 +6379,7 @@ function viewSucces(){
   const STATES = [["all","Tous"],["claim","À récupérer"],["todo","En cours"],["done","Réussis"]];
   let st = ui.chalState || "all"; if(st==="claim" && !claim) st = "all";
   const inCat = c => cat==="all" || c.cat===cat, nSt = k => CHALLENGES.filter(c=>inCat(c) && (k==="all" || stOf(c)===k)).length;
-  return `<div class="page-head"><div><h1>Succès</h1><p>Des défis pour toute la vie de ta boîte à billes : ils avancent tout seuls et chacun se récupère une fois, avec des ${CUR.many}, des sachets et des titres à afficher sur ton profil.</p></div>
+  return `<div class="page-head"><div><h1>Succès</h1><p>Des défis pour gagner des ${CUR.many}, des sachets et des titres.</p></div>
     <span class="hand-note">${n} / ${CHALLENGES.length} réussis</span></div>
   ${claim?`<section class="panel pity"><span class="q-ic">${ic("gift",24)}</span><div><b>${claim} succès à récupérer</b><p>Ils sont en haut de chaque catégorie.</p></div></section>`:""}
   <div class="col-filters"><div class="seg"><span class="f-lbl">Catégorie</span>
@@ -6354,9 +6440,9 @@ function viewCollection(){
   const nUnseen = S.unseen.filter(id=>specById(id)).length, curShow = SHOW.find(o=>o[0]===show) || SHOW[0];
   const sizeDot = t => { const n = ui.tab==="billes" ? S.specs.filter(s=>s.type===t).length : DECOR_IDS.filter(f=>slots.has(t+"|"+f)).length;
     const lbl = `${TYPES[t].label} · ${ui.tab==="billes" ? `${n} bille${n>1?"s":""}` : `${n} / ${N_DECORS} motifs`}`;
-    return `<button class="bx-dot" style="${tstyle(t)}" data-action="ftype" data-type="${ui.type===t?"all":t}" aria-pressed="${ui.type===t}" title="${lbl}" aria-label="${lbl}">${mImg({seed:hash("pedia-fmt"+t), type:t, family:0, pal:PEDIA_PAL, shiny:0},96,Math.round(16*scaleOf(t)+14),"")}</button>` };
+    return `<button class="bx-dot" style="${tstyle(t)}" data-action="ftype" data-type="${ui.type===t?"all":t}" aria-pressed="${ui.type===t}" title="${lbl}" aria-label="${lbl}">${mImg({seed:hash("pedia-fmt"+t), type:t, family:0, pal:PEDIA_PAL, shiny:0},96,Math.round(16*scaleOf(t)+14),"")}${ui.tab==="billes"?`<i class="bx-n">${n>999?Math.floor(n/1000)+"k":n}</i>`:""}</button>` };
   const filters = ui.tab==="defis"||ui.tab==="series"||ui.tab==="pedia" ? "" : `<div class="bx-bar">
-    <div class="bx-dots" role="group" aria-label="Filtrer par taille"><button class="bx-dot all" data-action="ftype" data-type="all" aria-pressed="${ui.type==="all"}">Toutes</button>${TK.map(sizeDot).join("")}</div>
+    <div class="bx-dots" role="group" aria-label="Filtrer par taille"><button class="bx-dot all" data-action="ftype" data-type="all" aria-pressed="${ui.type==="all"}">Toutes${ui.tab==="billes"?` <small class="bx-all-n">${fmt(S.specs.length)}</small>`:""}</button>${TK.map(sizeDot).join("")}</div>
     <div class="bx-tools">
       ${ui.tab==="album" && show==="all" ? `<label class="bx-hide"><input type="checkbox" id="f-hide" ${ui.hideMissing?"checked":""}> Masquer les billes à trouver</label>` : ""}
       <label class="bx-q${ui.q?" on":""}"><span class="cs-ic">${ic("search",17)}</span><input type="search" id="col-q" placeholder="${ui.tab==="billes"?"Galaxie, Azur…":"Galaxie, Opaline…"}" value="${esc(ui.q||"")}" aria-label="Chercher un motif" autocomplete="off" spellcheck="false">${ui.q?`<button class="cs-x" data-action="col-q-clear" aria-label="Effacer la recherche">×</button>`:""}</label>
@@ -6480,7 +6566,7 @@ function viewCollection(){
 // Les billes d'événement : un petit album par événement (ses coloris × les 6 tailles), à part de l'album principal
 function betaView(){
   const got = betaOwned();
-  return `<p class="conf-intro">Les billes Bêta sont réservées à ceux qui testent Billy avant sa sortie : une de chaque taille. Elles ne s'échangent pas, ne comptent pas dans l'album, et resteront dans ta boîte quand tous les comptes repartiront à zéro.</p>
+  return `<p class="conf-intro">Une de chaque taille pour les testeurs. Elles restent dans ta boîte au lancement.</p>
   <section class="panel ev-album" style="--ec:#D7263D">
     <div class="ev-head"><div><h3>Bêta <small>· ${esc(BETA.ed)}</small></h3><p class="meta">${BETA.open ? "À récupérer pendant toute la bêta." : "La bêta est terminée."}</p></div>
       <span class="serie-n">${got.length} / ${TK.length}</span>${BETA.open && got.length<TK.length ? `<button class="btn btn-yellow" data-action="beta-claim">${ic("gift",18)} Claim</button>` : ""}</div>
@@ -6490,7 +6576,7 @@ function betaView(){
   </section>`;
 }
 function eventsView(){
-  return `<p class="conf-intro">Les motifs d'événement ne tombent que pendant leur événement, et ne comptent ni dans l'album ni dans les succès : c'est ta collection d'événements, rien que pour le plaisir (et pour frimer dans la cour).</p>
+  return `<p class="conf-intro">Seulement pendant leur événement. Hors album et hors succès.</p>
   ${EVENT_FAMS.map(f=>{ const F = FAMILIES[f], E = EVENTS[F.event], live = eventLive(E), mine = S.specs.filter(x=>x.family===f);
     const cells = E.palIdx.map(pl=>`<div class="ev-row"><b>${esc(PALETTES[pl][0])}</b>${TK.map(t=>{ const l = mine.filter(x=>x.pal===pl && x.type===t).sort(tierSort);
       return l.length ? `<button class="ev-cell got" data-action="spec" data-id="${l[0].id}" style="${tstyle(t)}" aria-label="${TYPES[t].label} ${esc(PALETTES[pl][0])}">${mImg(l[0],100,Math.round(20+22*scaleOf(t)),"")}${l.length>1?`<i>×${l.length}</i>`:""}</button>`
@@ -6536,7 +6622,7 @@ function viewPass(){
   let pm=0, pj=0, pb=0;
   for(let t=1;t<=PASS_TIERS;t++){ const r=passReward("prem",t); if(r.k==="marble") pm++; else if(r.k==="jetons") pj+=r.n; else if(r.k==="bag") pb++ }
   return `<div class="page-head">
-    <div><h1>Passe de saison</h1><p>Chaque mois, une nouvelle saison de ${PASS_TIERS} paliers. Tout ce que tu fais rapporte de l'XP de saison : ouvrir des sachets, finir tes quêtes, jouer au Tir, recycler.</p></div>
+    <div><h1>Passe de saison</h1><p>${PASS_TIERS} paliers, une nouvelle saison chaque mois. Tout ce que tu fais rapporte de l'XP.</p></div>
     <span class="hand-note">Fin dans <span data-pass-timer>${passLeft()}</span></span>
   </div>
   <section class="pass-hero" style="${seasonStyle(se)}">
@@ -6568,7 +6654,7 @@ function viewPass(){
         <li>${ic("gift",20)}<span>Récupérer le bonbec du jour</span><b>+${PASS_XP.daily}</b></li>
         <li>${ic("quest",20)}<span>Récupérer une quête du jour</span><b>+${PASS_XP.quest}</b></li>
         <li>${ic("trophy",20)}<span>Bonus des ${QUESTS_N} quêtes</span><b>+${PASS_XP.bonus}</b></li>
-        <li>${ic("target",20)}<span>Jeux de la cour (Tir, Pot, Château, Casse-briques)</span><b>+${PASS_XP.star} par étoile</b></li>
+        <li>${ic("target",20)}<span>Jeux de la cour (Tir, Pot, Château, Tic)</span><b>+${PASS_XP.star} par étoile</b></li>
         <li>${ic("tic",20)}<span>Gagner une partie de Tic</span><b>+60</b></li>
         <li>${ic("candy",20)}<span>Échanger une bille à la Confiserie</span><b>+${PASS_XP.recycle}</b></li>
         <li>${ic("flask",20)}<span>Fusionner à la Confiserie</span><b>+${PASS_XP.craft}</b></li>
@@ -6645,7 +6731,7 @@ function viewCraft(){
   const groups = byModel(pool.filter(craftFilt)).sort((a,b)=>cnt[b[0]]-cnt[a[0]]), F = ui.craftF||{}, nEv = evPool().length;
   const fChip = (v,l) => `<button class="chip" data-action="craft-f" data-v="${v}" aria-pressed="${String(F.rar??"")===String(v)}">${l}</button>`;
   const craftBar = `<div class="craft-filters"><div class="chips">${fChip("","Tous les motifs")}${DECOR_RAR.map((R,k)=>fChip(k, R.name)).join("")}
-      ${nEv?`<button class="chip ev" data-action="craft-ev">${ic("flag",13)} Billes Pirate (${nEv})</button>`:""}</div>
+      ${nEv?`<button class="chip ev" data-action="craft-ev">${ic("flag",13)} Billes d'événement (${nEv})</button>`:""}</div>
     <div class="col-search"><span class="cs-ic">${ic("search",17)}</span><input type="search" id="craft-q" placeholder="Chercher : Galaxie, Azur…" value="${esc(F.q||"")}" aria-label="Chercher une bille à fusionner" autocomplete="off" spellcheck="false"></div></div>`;
   return `<p class="conf-intro">Mets des billes d'une même taille dans le chaudron pour obtenir une bille de la taille au-dessus. Son motif et son coloris sont tirés au hasard, et elle peut même sortir shiny.</p>
   <div class="recipes">${recipes}</div>
@@ -6775,7 +6861,7 @@ function showCraft(inputs, out, pxp){
     document.getElementById("ov-body").innerHTML = `<div class="ov-title">${out.shiny?"Une shiny !":"Fusion réussie !"}</div>
       <p class="ov-sub">${esc(specName(out))} rejoint ta boîte à billes.</p>
       <div class="reveal-row"><button class="slot is-open ${k>=BIG?"big":""} ${out.shiny?"shiny":""}" data-action="zoom" data-id="${out.id}" aria-label="Agrandir ${esc(specName(out))}" style="--tc:${scoreCol(k)};${tstyle(out.type)}">
-        ${BANNER[k]?`<span class="slot-banner">${BANNER[k]}</span>`:""}
+        ${bannerOf(out,k)?`<span class="slot-banner">${bannerOf(out,k)}</span>`:""}
         <div class="slot-ball"><span class="rays"></span>${mImg(out,300,Math.round(150*scaleOf(out.type)),"")}</div>
         <div class="slot-info"><b>${esc(specName(out))}</b><span style="display:flex;gap:4px;flex-wrap:wrap;justify-content:center">${typePill(out.type,true)}${shinyPill(out)}</span>${tierTag(out)}${decStamp(out)}</div>
       </button></div>
@@ -6805,13 +6891,13 @@ function viewConfiserie(){
   const evN = (()=>{ const g = new Map(); evPool().forEach(s=>{ const k = `${s.type}|${s.pal}`; g.set(k,(g.get(k)||0)+1) }); return [...g].filter(([k,n])=>TIDX[k.split("|")[0]]<TK.length-1 && n>=FUSION_EV[TIDX[k.split("|")[0]]]).length })();
   const dups = recyclableDups(), dupVal = dups.reduce((a,s)=>a+recycleValue(s),0);
   const fusions = TK.slice(0,-1).reduce((a,_,t)=>a+Math.floor(craftPool(t).length/craftN(t)),0);
-  return `<div class="page-head"><div><h1>La Confiserie</h1><p>Comme à la boulangerie du coin après l'école. Tes billes en trop, deux façons d'en profiter : les échanger contre des ${CUR.many}, ou tenter la fusion pour une plus grosse.</p></div>
+  return `<div class="page-head"><div><h1>La Confiserie</h1><p>Échange tes billes en trop contre des ${CUR.many}, ou fusionne-les pour une plus grosse.</p></div>
     <span class="hand-note">Rien ne se perd, tout se transforme !</span></div>
   <div class="cf-shop">
     <div class="cf-awning" aria-hidden="true"></div>
     <div class="conf-choices">
       <button class="conf-choice cc-echange" data-action="conf-tab" data-tab="echange" aria-pressed="${tab==="echange"}"><span class="cc-ic">${ic("candy",26)}</span>
-        <div><b>Échanger contre des ${CUR.many}</b><small>${dups.length?`${dups.length} double${dups.length>1?"s":""} · +${fmt(dupVal)} ${CUR.many}`:"De 5 (Mini) à 400 (Mammouth) par bille"}</small></div></button>
+        <div><b>Échanger contre des ${CUR.many}</b><small>${dups.length?`${dups.length} double${dups.length>1?"s":""} · +${fmt(dupVal)} ${CUR.many}`:`De ${RECYCLE.mini} (Mini) à ${RECYCLE.mammouth} (Mammouth) par bille`}</small></div></button>
       <button class="conf-choice cc-fusion" data-action="conf-tab" data-tab="fusion" aria-pressed="${tab==="fusion"}"><span class="cc-ic">${ic("flask",26)}</span>
         <div><b>Fusionner des billes</b><small>${fusions?`${fusions} fusion${fusions>1?"s":""} possible${fusions>1?"s":""}`:`${CRAFT_NS[0]} à ${CRAFT_NS[4]} billes d'une taille → 1 de la taille au-dessus`}</small></div></button>
       ${evPool().length || liveEvents().length ? `<button class="conf-choice cc-event" data-action="conf-tab" data-tab="evenement" aria-pressed="${tab==="evenement"}"><span class="cc-ic">${ic("flag",26)}</span>
@@ -6852,7 +6938,7 @@ function confEchange(dups, dupVal){
       <div class="cf-receipt"><div class="rc-head">Ticket de la Confiserie</div>
         ${lines || `<div class="rc-row"><span>Aucun double pour l'instant</span><i></i><b>0</b></div>`}
         <div class="rc-total"><span>Total</span><b>+ ${fmt(dupVal)} ${COIN}</b></div></div>
-      <div class="cf-side"><p class="meta">Pour chaque modèle (taille, motif, coloris), ton plus bel exemplaire reste toujours dans ta boîte : celui que tu as choisi dans sa fiche, sinon le plus récent. Les shiny, les billes secrètes, ta bille active et ta vitrine ne partent jamais.</p>
+      <div class="cf-side"><p class="meta">Tu gardes toujours un exemplaire de chaque bille. Les shiny, les secrètes, ta bille active et ta vitrine ne partent jamais.</p>
         <button class="btn btn-yellow btn-xl" data-action="recycle-dups" ${dups.length?"":"disabled"}>${ic("candy",20)} Tout échanger · +${fmt(dupVal)}</button></div>
     </section>`}
   ${base.length ? filters : ""}
@@ -6888,7 +6974,7 @@ function viewProfile(){
   const act = activeSpec(), slots = slotsOwned();
   const best = [...S.specs].sort((a,b)=>rareKey(a)-rareKey(b))[0];
   const vit = S.vitrine.map(id=>id&&specById(id));
-  return `<div class="page-head"><div><h1>Mon profil</h1><p>Ton pseudo, ton titre et ta vitrine : c'est ce que les autres collectionneurs verront de toi.</p></div></div>
+  return `<div class="page-head"><div><h1>Mon profil</h1><p>Ce que les autres voient de toi.</p></div></div>
   <section class="panel prof-card">
     <div class="prof-av-wrap"><div class="avatar prof-av">${avatarHTML(act,220,104)}</div>
       <label class="btn btn-ghost" for="photo-in">${ic("plus",14)} ${S.photo?"Changer de photo":"Mettre une photo"}</label><input type="file" id="photo-in" accept="image/*" hidden>
@@ -6972,7 +7058,7 @@ function statsPanel(){
     ${group("Sachets", "bag", [cell("Sachets ouverts", n(S.bags)), cell("Billes tirées", n(ST.pulled ?? S.specs.length)), cell("Shiny trouvées", n(ST.shinyFound ?? S.specs.filter(x=>x.shiny).length)), cell("Boulets trouvés", n(ST.bouletFound ?? S.specs.filter(x=>x.type==="boulet").length)), cell("Mammouths trouvés", n(ST.mammFound ?? S.specs.filter(x=>x.type==="mammouth").length))])}
     ${group("Confiserie", "candy", [cell("Fusions réussies", n(S.crafts)), cell("Billes dans ta boîte", n(S.specs.length))])}
     ${group("Jeux de la cour", "pad", [cell("Trous réussis au Tir", n(S.holes)), cell("Billes dans le Pot", n(ST.pot)), cell("Sorties du Château", n(ST.castle)),
-      cell("Record au Casse-briques", ST.casse ? `${n(ST.casseScore)} pts` : "–"), cell("Courses gagnées", n(ST.race)), cell("Parties de Tic gagnées", n(ST.tic))])}
+      cell("Tours de roue", n(ST.roue||0)), cell("Courses gagnées", n(ST.race)), cell("Parties de Tic gagnées", n(ST.tic))])}
     ${group("Habitudes", "clock", [cell("Plus longue série de jours", `${bestStreak()} j`), cell(`Bonus des ${QUESTS_N} quêtes`, n(ST.bonus))])}
     ${srvOn() ? group("La cour de récré", "cour", [cell("Trocs réussis", n(C.trocs)), cell("Billes vendues", n(C.vendues)), cell("Billes achetées", n(C.achetees)), cell("Enchères gagnées", n(C.encheres)), cell("Copains", n(C.copains))]) : ""}
   </section>`;
@@ -7044,7 +7130,7 @@ function viewPedia(){
     // les exemples sont tous dans le même coloris (Azur) : on compare les motifs, pas les couleurs
     // (tes billes à toi restent dans leur vrai coloris, dans la rangée des tailles)
     const sample = {seed:hash("pedia"+f), type:"calot", family:f, pal:PEDIA_PAL, shiny:0};
-    const hero = `<button class="fam-hero" data-action="preview" data-k="${pv(sample)}" aria-label="Aperçu du motif ${esc(F.name)}">${mImg(sample,200,86,"")}</button>`;
+    const hero = `<button class="fam-hero" data-action="preview" data-k="${pv({...sample, cour:F.desc})}" aria-label="Aperçu du motif ${esc(F.name)}">${mImg(sample,200,86,"")}</button>`;
     let got = 0;
     const sizes = TK.map(t=>{
       const list = (owned.get(t+"|"+f)||[]).slice().sort(tierSort), px = Math.round(24+26*(scaleOf(t)-.5)*2);
@@ -7056,9 +7142,8 @@ function viewPedia(){
     const cols = new Set(mine.filter(x=>isBasePal(x.pal)).map(x=>x.pal)).size;
     return `<section class="panel fam-card" style="--dc:${dc}">
       <div class="fam-top">${hero}<div><h3>${F.name}</h3><span class="dec-pill">${DECOR_RAR[F.rar].name}</span><span class="fam-odds">${oneIn(FAM_W[f]/fw)} billes</span></div></div>
-      <p>${F.desc}</p>
       <div class="fam-sizes">${sizes}</div>
-      <div class="foot"><span class="${got===TK.length?"done":""}">${got} / ${TK.length} tailles</span><span class="bar"><i style="width:${got/TK.length*100}%"></i></span><span>${cols} / ${BASE_PALS} coloris</span></div>
+      <div class="foot"><span class="${got===TK.length?"done":""}">${got} / ${TK.length} tailles</span><span class="bar" title="Coloris trouvés"><i style="width:${cols/BASE_PALS*100}%"></i></span><span class="${cols>=BASE_PALS?"done":""}">${cols} / ${BASE_PALS} coloris</span></div>
     </section>`;
   };
   const famGroups = DECOR_RAR.map((R,k)=>({R,k,fams:DECOR_IDS.filter(i=>FAMILIES[i].rar===k)})).reverse().filter(g=>g.fams.length)
@@ -7072,20 +7157,22 @@ function viewPedia(){
   const events = EVENT_FAMS.map(f=>{ const F=FAMILIES[f], E=EVENTS[F.event];
     const tiles = E.palIdx.map((pal,j)=>{ const x={seed:hash("event"+f+j), type:"calot", family:f, pal, shiny:0}, i=pv({...x, cour:`Motif d'événement · ${E.name}. ${eventLive(E)?`Dans les Sachets Classique, Premium et Collector (case de l'événement cochée) jusqu'au ${dayMonth(E.end)}.`:Date.now()<E.start?`À partir du ${dayMonth(E.start)}.`:"L'événement est terminé."}`});
       return `<button class="sh-tile" data-action="preview" data-k="${i}" style="${tstyle(x.type)}">${mImg(x,200,70)}<b>${esc(PALETTES[pal][0])}</b></button>` }).join("");
-    return `<div class="rar-group" style="--dc:${E.color}"><h3><i></i>${F.name}<small>Événement « ${esc(E.name)} » · ${E.pals.length} coloris exclusifs${eventLive(E)?` · jusqu'au ${dayMonth(E.end)}`:""}</small></h3><p class="meta" style="margin:-4px 0 12px">${F.desc} ${esc(E.desc)}</p><div class="pal-row" style="--n:${E.pals.length}">${tiles}</div></div>` }).join("");
+    return `<div class="rar-group" style="--dc:${E.color}"><h3><i></i>${F.name}<small>Événement « ${esc(E.name)} » · ${E.pals.length} coloris exclusifs${eventLive(E)?` · jusqu'au ${dayMonth(E.end)}`:""}</small></h3><div class="pal-row" style="--n:${E.pals.length}">${tiles}</div></div>` }).join("");
   // les motifs de saison : un par mois, dans le passe de saison
   const MOIS = ["Janvier","Février","Mars","Avril","Mai","Juin","Juillet","Août","Septembre","Octobre","Novembre","Décembre"];
   const seasons = SEASON_FAMS.map(f=>{ const F=FAMILIES[f];
     if(!seasonSeen(F.season)) return `<div class="sh-tile secret"><span class="sec-ball">?</span><b>Surprise</b><small>${MOIS[F.season]}</small></div>`;
     const x={seed:hash("season"+f), type:"calot", family:f, pal:SEASON_PAL0+F.season, shiny:0}, i=pv({...x, cour:`Motif de saison · ${MOIS[F.season]}. Seulement dans le passe de saison de ce mois-là.`});
     return `<button class="sh-tile${seasonNow().m===F.season?" now":""}" data-action="preview" data-k="${i}">${mImg(x,200,70)}<b>${F.name}</b><small>${MOIS[F.season]}</small></button>` }).join("");
-  return `<div class="page-head"><div><h1>Billepedia</h1><p>Tout ce qui existe dans Billy. Chaque bille ouverte est unique : son empreinte est tirée au hasard au moment de l'ouverture, il n'y en aura jamais deux pareilles. ${TK.length} formats × ${N_DECORS} motifs × ${BASE_PALS} coloris = ${fmt(combos)} combinaisons, ×4 avec les shiny.</p></div></div>
-  <section class="pedia-sec"><h2>Les shiny</h2><p>Un effet spécial qui peut tomber sur n'importe quelle bille, quel que soit son format. Sous chaque shiny : ses chances pour chaque bille, selon le sachet d'où elle sort. Touche une bille pour la voir tourner.</p><div class="shiny-show">${shinyTiles}</div></section>
-  <section class="pedia-sec"><h2>Les motifs</h2><p>Chaque motif existe dans les ${TK.length} tailles, de la Mini au Mammouth : la rangée sous chaque motif te montre celles que tu as déjà (en couleur) et celles qui te manquent (grisées). Certains motifs tombent souvent, d'autres une bille sur plusieurs centaines. Un Mammouth avec un motif légendaire, en shiny, c'est le graal.</p>${famGroups}</section>
-  <section class="pedia-sec"><h2>Les motifs de saison</h2><p>Un motif en édition limitée chaque mois, qu'on ne gagne que dans le passe de saison. Ils ne tombent jamais dans les sachets et ne comptent pas dans l'album.</p><div class="pal-row" style="--n:6">${seasons}</div></section>
-  ${events?`<section class="pedia-sec"><h2>Les motifs d'événement</h2><p>Des motifs à part, avec leurs propres coloris. On ne les trouve que pendant leur événement, en cochant la case de l'événement sur un Sachet Classique, Premium ou Collector (ou en fusionnant des billes d'événement). Ces billes peuvent être shiny, avec les mêmes chances que les autres billes du sachet, mais ne comptent pas dans l'album.</p>${events}</section>`:""}
-  <section class="pedia-sec"><h2>Les tailles</h2><p>Du plus petit au plus gros : plus une bille est grosse, plus elle est rare. Chaque taille a sa couleur, partout sur le site.</p><div class="fmt-grid">${fmts}</div></section>
-  <section class="pedia-sec"><h2>Les coloris</h2><p>${BASE_PALS} coloris, tous aussi fréquents les uns que les autres.</p><div class="pal-grid">${pals}</div><p class="meta" style="margin-top:10px">Et chaque mois, un motif en édition limitée qu'on ne trouve que dans le passe de saison.</p></section>`;
+  // allégé le 6 octobre 2026 : les explications se déplient sur le petit « ? » à côté du titre
+  const sec = (title, info, body) => `<section class="pedia-sec"><h2>${title}<button class="pinfo-b" data-action="pinfo" aria-expanded="false" aria-label="Explications : ${title}">?</button></h2><p class="pinfo" hidden>${info}</p>${body}</section>`;
+  return `<div class="page-head"><div><h1>Billepedia</h1><p>${fmt(combos)} combinaisons, ×4 avec les shiny.</p></div></div>
+  ${sec("Les shiny", "Un effet qui peut tomber sur n'importe quelle bille. Sous chacun : ses chances par bille, selon le sachet.", `<div class="shiny-show">${shinyTiles}</div>`)}
+  ${sec("Les motifs", `Chaque motif existe dans les ${TK.length} tailles : en couleur celles que tu as, grisées celles qui te manquent. Touche une bille pour lire son histoire.`, famGroups)}
+  ${sec("Les motifs de saison", "Un par mois, seulement dans le passe de saison. Ils ne comptent pas dans l'album.", `<div class="pal-row" style="--n:6">${seasons}</div>`)}
+  ${events?sec("Les motifs d'événement", "Seulement pendant leur événement : coche la case sur un Sachet Classique, Premium ou Collector, ou fusionne des billes d'événement. Elles peuvent être shiny mais ne comptent pas dans l'album.", events):""}
+  ${sec("Les tailles", "Plus une bille est grosse, plus elle est rare.", `<div class="fmt-grid">${fmts}</div>`)}
+  ${sec("Les coloris", `${BASE_PALS} coloris, tous aussi fréquents.`, `<div class="pal-grid">${pals}</div>`)}`;
 }
 
 /* =====================================================================
@@ -7344,6 +7431,8 @@ const decStamp = s => { const r = decorRar(s); return r>=3 ? `<span class="dec-s
 const scoreCol = k => k>=6 ? "#FFD27A" : RARITY[k].c;
 const scoreCols = k => k>=6 ? SHINY_COLS : [RARITY[k].c, shade(RARITY[k].c,.45), "#FFF3D6"];
 const BANNER = ["Mini","Bille","Chinoise !","Calot !","Boulet !","Mammouth !","Shiny !"];   // les petites tailles ont une étiquette plus discrète
+// une shiny garde le nom de sa taille (en arc-en-ciel, voir .slot.shiny .slot-banner)
+const bannerOf = (s,k) => s.shiny ? BANNER[TK.indexOf(s.type)] : BANNER[k];
 
 // petites particules plein écran pendant l'ouverture
 const FX = {
@@ -7511,7 +7600,7 @@ function showReveal(){
         const nb = isNew||newColor||evNew, sz = Math.round(150*scaleOf(s.type));
         const k = pullScore(s), big = k>=BIG;
         return `<button class="slot${wish?" wished":""} ${big?"big":""} ${s.shiny?"shiny":""}${nb?"":" dupe"}" style="--d:${i*130}ms;--tc:${shade(ovState.bag.color,.2)};${tstyle(s.type)}" data-tc="${scoreCol(k)}" data-action="reveal" data-i="${i}" aria-label="Découvrir la bille ${i+1}">
-        ${wish?`<span class="slot-banner">Ta liste !</span>`:s.secret?`<span class="slot-banner">Secrète !</span>`:BANNER[k]?`<span class="slot-banner${k<2?" low":""}">${BANNER[k]}</span>`:""}
+        ${wish?`<span class="slot-banner">Ta liste !</span>`:s.secret?`<span class="slot-banner">Secrète !</span>`:bannerOf(s,k)?`<span class="slot-banner${k<2?" low":""}">${bannerOf(s,k)}</span>`:""}
         <div class="slot-ball"><span class="rays"></span><span class="ball-shadow"></span><span class="orb"><span class="orb-spin">${candySVG(i)}</span></span>${mImg(s,300,sz,"")}${nb?nbSpark(isNew||evNew,sz):""}</div>
         <div class="slot-info"><b>${nbDot({isNew,newColor,evNew})}${esc(specName(s))}</b><span style="display:flex;gap:4px;flex-wrap:wrap;justify-content:center">${wish||s.secret?typePill(s.type,true):""}${shinyPill(s)}${edPill(s)}</span>${tierTag(s)}${decStamp(s)}</div>
       </button>`}).join("")}
@@ -7714,13 +7803,13 @@ let feltCanvas = null;
 
 function starsFor(strokes,par){ return strokes<=par?3:strokes===par+1?2:1 }
 // le trou du jour rapporte autant que les autres jeux : 60, 120 ou 200 selon les étoiles, +50 pour un trou en un (TIR_MAX = 250 ; même plafond dans serveur.sql)
-const TIR_REW = [0,60,120,200], TIR_ACE = 50, TIR_MAX = TIR_REW[3]+TIR_ACE;
+const TIR_REW = [0,6,12,20], TIR_ACE = 5, TIR_MAX = TIR_REW[3]+TIR_ACE;
 function rewardFor(strokes,par){ const st=starsFor(strokes,par); return TIR_REW[st] + (strokes===1?TIR_ACE:0) }
 
 function viewGame(){
   const act = activeSpec();
   return `<div class="page-head">
-    <div><button class="back-link" data-action="nav" data-view="jeux">${ic("chevl",14)} Tous les jeux</button><h1>Le Tir</h1><p>Chaque jour, un nouveau trou (le même pour toute la cour). Vise-le avec ta bille active : plus tu tires loin en arrière, plus le tir est fort.</p></div>
+    <div><button class="back-link" data-action="nav" data-view="jeux">${ic("chevl",14)} Tous les jeux</button><h1>Le Tir</h1><p>Un nouveau trou chaque jour. Tire en arrière pour viser : plus loin, plus fort.</p></div>
     <span class="hand-note">Pas plus de 10 coups !</span>
   </div>
   <div class="game-wrap">
@@ -8014,16 +8103,16 @@ const AW=900, AH=520, AB=22, AMAXV=21;
 const ARENA = {
   pot:{title:"Le Pot", icon:"pot",
     lead:"Le grand classique : envoie tes billes dans le trou creusé dans la terre. Mais le pot change de place à chaque lancer, et des cailloux le gardent : il faudra viser les rebonds !",
-    rules:["5 lancers, toujours depuis le milieu de la ligne de craie : ta bille ne bouge pas, à toi de trouver le bon angle.","Avant chaque lancer, le pot et les cailloux changent de place !","Chaque bille dans le pot rapporte 30 bonbecs.","Une bille qui ne rentre pas disparaît. Des cailloux gardent le pot : vise les rebonds !","1 bille dans le pot : 1 étoile (+20), 3 billes : 2 étoiles (+50), 5 billes : 3 étoiles (+100).","Une partie par jour : si tu quittes en route, tu la reprends là où tu en étais."]},
+    rules:["5 lancers, toujours depuis le milieu de la ligne de craie : ta bille ne bouge pas, à toi de trouver le bon angle.","Avant chaque lancer, le pot et les cailloux changent de place !","Chaque bille dans le pot rapporte 3 bonbecs.","Une bille qui ne rentre pas disparaît. Des cailloux gardent le pot : vise les rebonds !","1 bille dans le pot : 1 étoile (+20), 3 billes : 2 étoiles (+50), 5 billes : 3 étoiles (+100).","Une partie par jour : si tu quittes en route, tu la reprends là où tu en étais."]},
   chateau:{title:"Le Château", icon:"castle",
     lead:"Dix billes rangées au milieu d'un cercle de craie, dans une forme différente chaque jour. Fais-les toutes sortir, et le plus vite possible !",
-    rules:["3 tirs depuis la ligne de craie, d'un endroit différent à chaque fois.","Chaque jour, une nouvelle forme (triangle, carré, ligne, cercle ou croix), tournée dans un sens différent. Les 3 Calots sont plus lourds, plus durs à sortir.","Chaque bille sortie du cercle rapporte 10 bonbecs.","3 billes sorties : 1 étoile, 6 : 2 étoiles, les 10 : 3 étoiles.","Les 10 sorties : +60 bonbecs, et +60 de plus si c'est en 2 tirs.","Château rasé en un seul tir : +160 bonbecs et un Mammouth garanti, dont la roulette choisit le motif !","Plus ta bille active est grosse, plus elle tape fort.","Une partie par jour : si tu quittes en route, tu la reprends là où tu en étais."]},
+    rules:["3 tirs depuis la ligne de craie, d'un endroit différent à chaque fois.","Chaque jour, une nouvelle forme (triangle, carré, ligne, cercle ou croix), tournée dans un sens différent. Les 3 Calots sont plus lourds, plus durs à sortir.","Chaque bille sortie du cercle rapporte 1 bonbec.","3 billes sorties : 1 étoile, 6 : 2 étoiles, les 10 : 3 étoiles.","Les 10 sorties : +6 bonbecs, et +6 de plus si c'est en 2 tirs.","Château rasé en un seul tir : +16 bonbecs et un Mammouth garanti, dont la roulette choisit le motif !","Plus ta bille active est grosse, plus elle tape fort.","Une partie par jour : si tu quittes en route, tu la reprends là où tu en étais."]},
   course:{title:"La Course sur la plage", icon:"flag",
     lead:"Le Tour de France des billes des vacances : une piste creusée dans le sable, trois adversaires, et chacun sa pichenette à son tour. Le premier qui passe la ligne a gagné !",
-    rules:["Chacun joue une pichenette à son tour : toi, puis tes trois adversaires.","Si ta bille sort de la piste, elle revient là où elle était. Pas de raccourci !","Tu peux bousculer les autres billes : c'est de bonne guerre.","1re place : 200 bonbecs, 2e : 120, 3e : 70, 4e : 30. 30 pichenettes au maximum.","Une partie par jour : si tu quittes en route, tu la reprends là où tu en étais."]},
+    rules:["Chacun joue une pichenette à son tour : toi, puis tes trois adversaires.","Si ta bille sort de la piste, elle revient là où elle était. Pas de raccourci !","Tu peux bousculer les autres billes : c'est de bonne guerre.","1re place : 20 bonbecs, 2e : 12, 3e : 7, 4e : 3. 30 pichenettes au maximum.","Une partie par jour : si tu quittes en route, tu la reprends là où tu en étais."]},
   tic:{title:"La Tic", icon:"tic",
     lead:"Chacun son tour, on essaie de toucher la bille de l'autre. Mais il y a des cachettes : il faudra parfois viser les bords et faire des rebonds !",
-    rules:["Tu tires en premier, puis ton adversaire.","Touche sa bille pour gagner la partie.","Des gros cailloux cachent les billes : vise les bords pour faire un rebond, ou approche-toi.","Ton adversaire vise bien, et il se cache s'il ne te voit pas.","Les billes restent là où elles s'arrêtent : attention à ne pas finir à sa portée.","5 tirs chacun au maximum. Victoire : 200 bonbecs, match nul : 80, défaite : 40.","Une partie par jour : si tu quittes en route, tu la reprends là où tu en étais."]},
+    rules:["Tu tires en premier, puis ton adversaire.","Touche sa bille pour gagner la partie.","Des gros cailloux cachent les billes : vise les bords pour faire un rebond, ou approche-toi.","Ton adversaire vise bien, et il se cache s'il ne te voit pas.","Les billes restent là où elles s'arrêtent : attention à ne pas finir à sa portée.","5 tirs chacun au maximum. Victoire : 20 bonbecs, match nul : 8, défaite : 4.","Une partie par jour : si tu quittes en route, tu la reprends là où tu en étais."]},
 };
 /* ---------- les aperçus des jeux (cartes de la page des jeux) : de petites illustrations en SVG, au format des cartes ---------- */
 // une bille en relief : reflet, couleur, ombre portée (id : unique dans la page)
@@ -8118,6 +8207,7 @@ function artCourse(){ return `<svg viewBox="0 0 240 130" preserveAspectRatio="xM
   <path d="M205 20v42" stroke="#5A3A20" stroke-width="2.5"/><path d="M205 20h24v14h-24z" fill="#fff"/><path d="M205 20h6v7h-6zM217 20h6v7h-6zM211 27h6v7h-6zM223 27h6v7h-6z" fill="#24253D"/></svg>` }
 /* ---------- le Plinko : une bille tombe de clou en clou jusqu'à une case ---------- */
 // Cases de gauche à droite : mêmes valeurs que interne.pachinko_cases() dans serveur.sql. Le serveur tire la case, le jeu anime la chute.
+// 6 octobre 2026 : tous les montants divisés par 10 (bille 15, cases 5/20/40/100). Ci-dessous, les anciens montants.
 // Plus un lot vaut cher, plus il est rare (sachets comptés à leur prix : Classique 300, Premium 600, Collector 1 500) :
 // 50 > 200 > Classique > 400 > Premium > 1000 > Collector > Bille. Les lots les plus rares sont au bord, comme sur un vrai plateau.
 // La bille coûte 150 (3 octobre 2026). En moyenne une bille rend ~157, sachets comptés à leur prix (Classique 300, Premium 600,
@@ -8128,13 +8218,13 @@ function artCourse(){ return `<svg viewBox="0 0 240 130" preserveAspectRatio="xM
 // 400 → 4 %, Premium 3 %, 1000 → 2 %, Collector 1 %, Mammouth 0,1 %. Les cases en double (50, 200) se partagent leurs chances.
 const PACHI = [
   {w:.1,   roue:true,       lbl:"Mammouth",  c:"#E5484D"},
-  {w:2,    j:1000,          lbl:"1000",      c:"#E8743B"},
-  {w:4,    j:400,           lbl:"400",       c:"#7B6CF6"},
-  {w:9,    j:200,           lbl:"200",       c:"#C98E4E"},
-  {w:13,   j:50,            lbl:"50",        c:"#8E8898"},
+  {w:2,    j:100,           lbl:"100",       c:"#E8743B"},
+  {w:4,    j:40,            lbl:"40",        c:"#7B6CF6"},
+  {w:9,    j:20,            lbl:"20",        c:"#C98E4E"},
+  {w:13,   j:5,             lbl:"5",         c:"#8E8898"},
   {w:32.9, j:0,             lbl:"0",         c:"#4A3F5C"},   // 32,9 : le total fait juste 100 % avec le Mammouth à 0,1 %
-  {w:13,   j:50,            lbl:"50",        c:"#8E8898"},
-  {w:9,    j:200,           lbl:"200",       c:"#C98E4E"},
+  {w:13,   j:5,             lbl:"5",         c:"#8E8898"},
+  {w:9,    j:20,            lbl:"20",        c:"#C98E4E"},
   {w:13,   sac:"classique", lbl:"Classique", c:"#2A8A74"},
   {w:3,    sac:"premium",   lbl:"Premium",   c:"#34469C"},
   {w:1,    sac:"collector", lbl:"Collector", c:"#D9A020"},
@@ -8146,7 +8236,7 @@ const PACHI_MAX = 20;
 const pachiBought = () => playedToday().pachiN || 0;
 // la bille du Plinko se choisit une fois par jour (bille du jour et billes achetées) : la fenêtre ne revient pas avant minuit
 const pachiBall = () => { const id = playedToday().pachiBall; return (id && specById(id)) || null };
-const PACHI_PRICE = 150, PACHI_ROWS = PACHI.length-1, PW = 540, PH = 700, PACHI_GAP = 47;
+const PACHI_PRICE = 15, PACHI_ROWS = PACHI.length-1, PW = 540, PH = 700, PACHI_GAP = 47;
 // les cases : leur haut et leur hauteur (elles s'arrêtent avant le cadre doré et ses ampoules)
 const PACHI_Y = PH-114, PACHI_H = 92;
 const pachi = {raf:0, busy:false};
@@ -8156,7 +8246,7 @@ function viewPachinko(){
   const act = activeSpec(), tot = PACHI.reduce((a,c)=>a+c.w,0), free = pachiFree();
   const kinds = [...new Map(PACHI.map(c=>[c.lbl,c])).values()];
   return `<div class="page-head"><div><button class="back-link" data-action="nav" data-view="jeux">${ic("chevl",14)} Tous les jeux</button><h1>Le Plinko</h1>
-    <p>Lâche ta bille en haut du plateau : elle rebondit de clou en clou et tombe dans une case. Une bille gratuite par jour, et d'autres pour ${PACHI_PRICE} ${CUR.many}.</p>
+    <p>Une bille gratuite par jour, d'autres pour ${PACHI_PRICE} ${CUR.many}.</p>
     <span class="gt-state${free?" ok":""}" id="day-chip">${free ? `${ic("gift",14)} Ta bille du jour t'attend` : `${ic("check",14,3)} Bille du jour lâchée · la prochaine dans <b data-quest-timer>${untilMidnight()}</b>`}</span></div></div>
   <div class="game-wrap">
     <section class="panel pachi-panel">
@@ -8362,7 +8452,7 @@ function billeOdds(from){
   const rows = (l) => `<ul class="rewards-list">${l.map(([a,b])=>`<li><span>${a}</span><b>${b}</b></li>`).join("")}</ul>`;
   const el = document.getElementById("modal");
   el.innerHTML = `<div class="modal odds-pop" role="dialog" aria-modal="true" aria-label="Les chances du Mammouth"><button class="close-x" data-action="close-modal" aria-label="Fermer">×</button>
-    <span class="dc-kick">${ic(from==="chateau"?"castle":"pachi",14)} ${from==="chateau"?"Le Château · rasé en un tir":"Le Plinko · case Mammouth"}</span>
+    <span class="dc-kick">${ic(from==="chateau"?"castle":from==="roue"?"wheel":"pachi",14)} ${from==="chateau"?"Le Château · rasé en un tir":from==="roue"?"La Roue du jour · part Mammouth":"Le Plinko · case Mammouth"}</span>
     <h2>Les chances du Mammouth</h2>
     <p class="meta">C'est toujours un Mammouth. La roulette tire la rareté de son motif, avec les mêmes chances que dans un sachet. Le coloris est au hasard, et il peut être shiny comme dans un Sachet Collector.</p>
     <h3>1. Le motif (la roulette)</h3>${rows(DECOR_RAR.map((R,k)=>({R, n:DECOR_IDS.filter(f=>FAMILIES[f].rar===k).length})).filter(x=>x.n).map(({R,n})=>
@@ -8386,7 +8476,7 @@ function mammRoulette(b, from){
   const labels = segs.filter(g=>g.a1-g.a0>28).map(g=>{ const m = (g.a0+g.a1)/2; return `<span class="rw-l" style="transform:rotate(${m}deg) translateY(-104px) rotate(${-m}deg)">${g.R.name}</span>` }).join("");
   const same = DECOR_IDS.filter(f=>FAMILIES[f].rar===F.rar);
   el.innerHTML = `<div class="modal roue-modal mamm-modal" role="dialog" aria-modal="true" aria-label="La roulette du Mammouth">
-    <span class="dc-kick">${ic(from==="chateau"?"castle":"pachi",14)} ${from==="chateau"?"Château rasé en un tir":"Case Mammouth"}</span><h2>Un Mammouth pour toi !</h2>
+    <span class="dc-kick">${ic(from==="chateau"?"castle":from==="roue"?"wheel":"pachi",14)} ${from==="chateau"?"Château rasé en un tir":from==="roue"?"La Roue du jour":"Case Mammouth"}</span><h2>Un Mammouth pour toi !</h2>
     <p class="meta" id="mr-step">La roulette choisit la rareté de son motif…</p>
     <div class="roue-wrap"><i class="roue-ptr"></i><div class="roue" id="roue" style="background:conic-gradient(${grad})">${labels}</div></div>
     <ul class="mr-legend">${segs.map(g=>`<li><i style="background:${g.R.c}"></i>${g.R.name} <b>${pct(+(g.p*100).toFixed(g.p<.01?2:1))}</b></li>`).join("")}</ul>
@@ -8439,6 +8529,7 @@ function pachiPos(B, now){
   const hop = n===0 || n===pts.length-2 ? 0 : 20;
   return {x:a.x+(b.x-a.x)*f, y:a.y+(b.y-a.y)*f*f - hop*4*f*(1-f)};
 }
+var walletFreeze = null;   // var : renderTop peut passer avant cette ligne au démarrage
 async function pachiGo(pay){
   if(pachi.busy) return;
   if(!pay && !pachiFree()) return;
@@ -8456,9 +8547,10 @@ async function pachiGo(pay){
       if(c0.roue) bille = makeSpec("mammouth", {shiny:Math.random()<MAMM_SHINY ? rollShiny() : 0, src:"pachinko"});
       gain = () => { if(c0.j) S.jetons += c0.j; if(c0.sac) S.bagInv[c0.sac] = (S.bagInv[c0.sac]||0)+1; save() } }
   }catch(e){ pachi.busy = false; if(e?.code==="limite_plinko"){ playedToday().pachiN = PACHI_MAX; save(); renderView() } srvFail(e); return }
-  if(pay){ S.jetons -= PACHI_PRICE; renderTop(); if(!srvOn()) playedToday().pachiN = pachiBought()+1 }   // la mise part tout de suite (le serveur l'a déjà prise)
+  if(pay){ S.jetons -= PACHI_PRICE; if(!srvOn()) playedToday().pachiN = pachiBought()+1 }   // la mise part tout de suite (le serveur l'a déjà prise)
+  walletFreeze = S.jetons; renderTop();
   let given = false;
-  const give = () => { if(given) return; given = true; gain(); if(bille){ S.specs.push(bille); S.unseen.push(bille.id); logFind(bille); save() } };
+  const give = () => { if(given) return; given = true; walletFreeze = null; gain(); renderTop(); if(bille){ S.specs.push(bille); S.unseen.push(bille.id); logFind(bille); save() } };
   // si on quitte le plateau pendant la chute, le gain arrive quand même, à l'heure où la bille serait tombée
   setTimeout(give, (PACHI_ROWS+1)*PACHI_HOP*1000 + 600);
   const cs = PACHI[slot];
@@ -8484,7 +8576,144 @@ async function pachiGo(pay){
       const w2 = document.getElementById("p-win"); if(w2){ w2.innerHTML = w?.innerHTML||""; w2.hidden = false } } }, 1400);
   }};
 }
-const GAME_ICON = {tir:"target", pot:"pot", chateau:"castle", casse:"layers", course:"flag", tic:"tic", pachinko:"pachi"};
+/* =====================================================================
+   LA ROUE DU JOUR (6 octobre 2026) : elle remplace le Casse-briques. Un tour gratuit par jour, sans rien à viser :
+   le serveur tire la case (public.roue), la roue tourne jusqu'à elle. Lots et chances proches du Plinko
+   (mêmes valeurs dans supabase/serveur.sql, interne.roue_cases). Toutes les parts ont la même taille : les chances sont à côté.
+   ===================================================================== */
+const ROUE = [
+  {w:.3,    roue:true,       lbl:"Mammouth",  c:"#E5484D", c2:"#9E1C2C"},
+  {w:15.35, j:5,             lbl:"5",         c:"#FF7EB6", c2:"#C9407F"},
+  {w:13,    sac:"classique", lbl:"Classique", c:"#2FA889", c2:"#1C6B57"},
+  {w:11,    j:10,            lbl:"10",        c:"#FFC23F", c2:"#C98A12"},
+  {w:7,     j:40,            lbl:"40",        c:"#8C7CFF", c2:"#5240C9"},
+  {w:15.35, j:5,             lbl:"5",         c:"#FF7EB6", c2:"#C9407F"},
+  {w:6,     sac:"premium",   lbl:"Premium",   c:"#4A5FD0", c2:"#28358A"},
+  {w:16,    j:20,            lbl:"20",        c:"#2EC4DE", c2:"#16879C"},
+  {w:11,    j:10,            lbl:"10",        c:"#FFC23F", c2:"#C98A12"},
+  {w:3,     j:100,           lbl:"100",       c:"#FF8A3D", c2:"#C4531A"},
+  {w:2,     sac:"collector", lbl:"Collector", c:"#F2C14E", c2:"#A87A12"},
+];
+const ROUE_SEG = 360/ROUE.length, ROUE_DUR = 6200;
+const roue = {busy:false, ang:0, win:null};
+const roueDone = () => !!dayGame("roue")?.done;
+const rouePrize = c => c.roue ? "un Mammouth !" : c.sac ? `un ${BAG_BY[c.sac].name}` : `${fmt(c.j)} ${CUR.many}`;
+// un point du cercle : angle en degrés depuis le haut, dans le sens des aiguilles d'une montre
+const rouePt = (deg, r) => { const a = deg*Math.PI/180; return [(r*Math.sin(a)).toFixed(2), (-r*Math.cos(a)).toFixed(2)] };
+// un petit bonbon emballé sous le nombre de bonbecs
+const ROUE_CANDY = `<path d="M-9 -4 L-5 0 L-9 4 Z M9 -4 L5 0 L9 4 Z" fill="#fff" stroke="rgba(40,10,40,.5)" stroke-width=".8"/><ellipse rx="5.5" ry="4" fill="#fff" stroke="rgba(40,10,40,.5)" stroke-width=".8"/><path d="M-2.5 -3.4 L1 3.6 M1.5 -3.6 L4 2" stroke="#FF6FB5" stroke-width="1.3"/>`;
+// un petit sachet dessiné (couleur du sachet), pour les parts « sachet offert »
+const bagMini = c => { const B = BAG_BY[c.sac];
+  return `<path d="M-9 -6 Q-11 10 -8 12 L8 12 Q11 10 9 -6 Z" fill="${B.tint}" stroke="#2B2233" stroke-width="1.4"/><path d="M-9 -6 L-5 -11 L5 -11 L9 -6" fill="${B.color}" stroke="#2B2233" stroke-width="1.4"/><rect x="-6" y="0" width="12" height="5" rx="1.5" fill="${B.color}"/>` };
+function roueDisc(){
+  const R = 100, h = ROUE_SEG/2;
+  const segs = ROUE.map((c,i)=>{ const a = i*ROUE_SEG, [x0,y0] = rouePt(a-h, R), [x1,y1] = rouePt(a+h, R);
+    const lab = c.roue ? `<image href="${marbleURL(exSpec("mammouth", 30), 96)}" x="-14" y="-93" width="28" height="28"/><text y="-57" class="rq-s">MAMMOUTH</text>`
+      : c.sac ? `<g transform="translate(0 -79)">${bagMini(c)}</g><text y="-57" class="rq-s">${c.lbl.toUpperCase()}</text>`
+      : `<text y="-70" class="rq-n${c.j>=100?" big":""}">${c.lbl}</text><g transform="translate(0 -58)">${ROUE_CANDY}</g>`;
+    return `<path d="M0 0L${x0} ${y0}A${R} ${R} 0 0 1 ${x1} ${y1}Z" fill="url(#rqg${i})"/>
+      <g transform="rotate(${a.toFixed(2)})">${lab}</g>` }).join("");
+  const grads = ROUE.map((c,i)=>`<radialGradient id="rqg${i}" cx="0" cy="0" r="100" gradientUnits="userSpaceOnUse"><stop offset=".25" stop-color="${c.c2}"/><stop offset=".7" stop-color="${c.c}"/><stop offset="1" stop-color="${shade(c.c,.25)}"/></radialGradient>`).join("");
+  const lines = ROUE.map((_,i)=>{ const [x,y] = rouePt(i*ROUE_SEG+h, R); return `<line x1="0" y1="0" x2="${x}" y2="${y}"/>` }).join("");
+  return `<svg viewBox="-104 -104 208 208" aria-hidden="true"><defs>${grads}</defs>${segs}<g class="rq-lines">${lines}</g>
+    <circle r="100" fill="none" stroke="rgba(0,0,0,.25)" stroke-width="3"/><circle r="34" fill="rgba(0,0,0,.18)"/></svg>`;
+}
+function roueFrame(){
+  // la jante dorée et ses ampoules, l'aiguille et le moyeu : ils ne tournent pas
+  const bulbs = Array.from({length:22},(_,i)=>{ const [x,y] = rouePt(i*360/22, 111); return `<circle class="rq-bulb${i%2?" b":""}" cx="${x}" cy="${y}" r="3.3"/>` }).join("");
+  return `<svg class="rq-frame" viewBox="-124 -124 248 248" aria-hidden="true"><defs>
+      <linearGradient id="rqRim" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#FFF0B3"/><stop offset=".45" stop-color="#E9B23A"/><stop offset="1" stop-color="#8A5A0E"/></linearGradient>
+      <radialGradient id="rqHub" cx=".4" cy=".35" r=".8"><stop offset="0" stop-color="#FFF6CF"/><stop offset=".5" stop-color="#E9B23A"/><stop offset="1" stop-color="#7A4C08"/></radialGradient>
+      <linearGradient id="rqPtr" x1="0" x2="1"><stop offset="0" stop-color="#FF6B7A"/><stop offset=".5" stop-color="#E5484D"/><stop offset="1" stop-color="#9E1C2C"/></linearGradient></defs>
+    <circle r="111" fill="none" stroke="url(#rqRim)" stroke-width="16"/>
+    <circle r="119" fill="none" stroke="#5A3A08" stroke-width="2"/><circle r="103" fill="none" stroke="#5A3A08" stroke-width="2"/>
+    ${bulbs}
+    <circle r="27" fill="url(#rqHub)" stroke="#5A3A08" stroke-width="2"/>
+    <image href="${marbleURL(LOGO_SPEC, 128)}" x="-19" y="-19" width="38" height="38"/>
+    <g class="rq-ptr"><path d="M0 -94 L-13 -121 Q0 -131 13 -121 Z" fill="url(#rqPtr)" stroke="#5A0E18" stroke-width="2" stroke-linejoin="round"/><circle cy="-120" r="4" fill="#FFE9A8"/></g>
+  </svg>`;
+}
+function viewRoue(){
+  const done = roueDone(), g = dayGame("roue"), tot = ROUE.reduce((a,c)=>a+c.w,0);
+  const kinds = [...new Map(ROUE.map(c=>[c.lbl,c])).values()].map(c=>({c, p:ROUE.filter(x=>x.lbl===c.lbl).reduce((a,x)=>a+x.w,0)/tot})).sort((a,b)=>a.p-b.p);
+  const last = roue.win || (done && g.k!=null ? `<b>Aujourd'hui</b><span>${rouePrize(ROUE[g.k])}</span>` : "");
+  return `<div class="page-head"><div><button class="back-link" data-action="nav" data-view="jeux">${ic("chevl",14)} Tous les jeux</button><h1>La Roue du jour</h1>
+    <p>Un tour gratuit par jour : bonbecs, sachets… ou un Mammouth !</p>
+    <span class="gt-state${done?"":" ok"}" id="day-chip">${done ? `${ic("check",14,3)} Roue tournée · la prochaine dans <b data-quest-timer>${untilMidnight()}</b>` : `${ic("gift",14)} Ton tour du jour t'attend`}</span></div></div>
+  <div class="game-wrap">
+    <section class="panel rq-panel">
+      <div class="rq-stage">
+        <div class="rq-wheel"><div class="rq-disc" id="rq-disc">${roueDisc()}</div>${roueFrame()}</div>
+        <div class="rq-win" id="rq-win" ${last ? "" : "hidden"}>${last}</div>
+      </div>
+      <div class="pachi-btns"><button class="btn btn-yellow btn-xl" data-action="roue-go" ${done||roue.busy?"disabled":""}>${ic("wheel",18)} ${done?"Reviens demain !":"Tourner la roue"}</button></div>
+    </section>
+    <aside><section class="panel"><div class="panel-head"><h3>Les lots</h3><span class="sample-tag">Chances</span></div>
+      <ul class="rewards-list">${kinds.map(({c,p})=>`<li><span><i class="pachi-dot" style="background:${c.c}"></i>${c.roue?`Un Mammouth ${oddsBtn("roue")}`:c.sac?BAG_BY[c.sac].name:`${fmt(c.j)} ${CUR.many}`}</span><b>${pct(+(p*100).toFixed(p<.01?1:0))}</b></li>`).join("")}</ul>
+    </section></aside>
+  </div>`;
+}
+function roueInit(){
+  const d = document.getElementById("rq-disc"); if(!d) return;
+  d.style.transition = "none"; d.style.transform = `rotate(${roue.ang}deg)`;
+}
+async function roueGo(){
+  if(roue.busy || roueDone()) return;
+  roue.busy = true; roue.win = null;
+  document.querySelectorAll('[data-action="roue-go"]').forEach(b=>b.disabled = true);
+  let k, bille = null, gain;
+  try{
+    if(srvOn()){ const r = await srv(()=>Cloud.eco.roue()); k = r.case; if(r.bille) bille = srvAdopt([r.bille])[0]; gain = () => applyEco(r.eco) }
+    else { k = pickW(Math.random(), ROUE.map(c=>c.w)); const c0 = ROUE[k];
+      if(c0.roue) bille = makeSpec("mammouth", {shiny:Math.random()<MAMM_SHINY ? rollShiny() : 0, src:"roue"});
+      gain = () => { if(c0.j) S.jetons += c0.j; if(c0.sac) S.bagInv[c0.sac] = (S.bagInv[c0.sac]||0)+1; save() } }
+  }catch(e){ roue.busy = false; if(e?.code==="deja"){ playedToday().roue = {done:1, rew:0}; save() } renderView(); srvFail(e); return }
+  const c = ROUE[k];
+  playedToday().roue = {done:1, rew:c.j||0, k}; S.stats.roue = (S.stats.roue||0)+1; save();
+  walletFreeze = S.jetons; renderTop();   // pas de spoiler pendant que la roue tourne
+  let given = false;
+  const give = () => { if(given) return; given = true; walletFreeze = null; gain();
+    if(bille){ S.specs.push(bille); S.unseen.push(bille.id); logFind(bille); save() }
+    renderTop(); renderNav(); questEvent("day_games"); gamesBonus() };
+  const reduce = matchMedia("(prefers-reduced-motion: reduce)").matches, dur = reduce ? 700 : ROUE_DUR;
+  setTimeout(give, dur+500);   // si on quitte la page pendant que la roue tourne, le lot arrive quand même
+  // l'angle final : 6 tours, puis la part tirée sous l'aiguille (un peu décalée au hasard dans sa part)
+  const target = -k*ROUE_SEG + (Math.random()-.5)*ROUE_SEG*.6, cur = roue.ang;
+  roue.ang = cur + 360*6 + (((target-cur)%360)+360)%360;
+  const d = document.getElementById("rq-disc"), w0 = document.getElementById("rq-win"); if(w0) w0.hidden = true;
+  if(d){ d.getBoundingClientRect(); d.style.transition = `transform ${dur}ms cubic-bezier(.1,.68,.12,1)`; d.style.transform = `rotate(${roue.ang}deg)` }
+  // le tic-tic de l'aiguille à chaque part qui passe
+  let last = null; const t0 = performance.now();
+  const tick = () => { const el = document.getElementById("rq-disc"); if(!el || performance.now()-t0 > dur) return;
+    const m = getComputedStyle(el).transform; if(m && m!=="none"){ const v = m.match(/-?[\d.e]+/g).map(Number), a = Math.atan2(v[1], v[0])*180/Math.PI;
+      const n = Math.floor((((a+ROUE_SEG/2)%360)+360)%360/ROUE_SEG);
+      if(last!=null && n!==last){ Sound.hit?.(.06); const p = document.querySelector(".rq-ptr"); if(p){ p.classList.remove("tk"); void p.getBoundingClientRect(); p.classList.add("tk") } }
+      last = n }
+    requestAnimationFrame(tick) };
+  if(!reduce) requestAnimationFrame(tick);
+  setTimeout(()=>{
+    roue.busy = false; give();
+    const big = c.roue || c.sac==="collector" || c.sac==="premium" || c.j>=100;
+    roue.win = `<b>${c.roue ? "MAMMOUTH !" : big ? "Jackpot !" : "Gagné !"}</b><span>${rouePrize(c)}</span>`;
+    const w = document.getElementById("rq-win"); if(w){ w.innerHTML = roue.win; w.hidden = false }
+    if(big){ Sound.ding(); FX.fireworks([c.c, "#FFE14D", "#FFFFFF"], 6) } else Sound.coin();
+    const wh = document.querySelector(".rq-wheel"); if(wh){ const [x,y] = FX.at(wh); FX.burst(x, y, [c.c, "#FFE14D", "#FFF2B0"], big ? 80 : 40, 1.2) }
+    if(c.roue && bille) setTimeout(()=>mammRoulette(bille, "roue"), 900);
+    setTimeout(()=>{ if(ui.view==="roue" && !roue.busy) renderView() }, 1600);
+  }, dur+60);
+}
+// la vignette de la page des jeux : la moitié haute de la roue, ses ampoules et l'aiguille
+function artRoue(){
+  const h = ROUE_SEG/2, R = 118;
+  const segs = ROUE.map((c,i)=>{ const a = i*ROUE_SEG - 90, p0 = (a-h)*Math.PI/180, p1 = (a+h)*Math.PI/180;
+    return `<path d="M160 128L${(160+R*Math.cos(p0)).toFixed(1)} ${(128+R*Math.sin(p0)).toFixed(1)}A${R} ${R} 0 0 1 ${(160+R*Math.cos(p1)).toFixed(1)} ${(128+R*Math.sin(p1)).toFixed(1)}Z" fill="${c.c}" stroke="rgba(255,255,255,.55)" stroke-width="1"/>` }).join("");
+  let bulbs = ""; for(let i=0;i<26;i++){ const a = (-180 + i*180/25)*Math.PI/180; bulbs += `<circle cx="${(160+126*Math.cos(a)).toFixed(1)}" cy="${(128+126*Math.sin(a)).toFixed(1)}" r="2.2" fill="${i%2?"#FFE9A8":"#FF4FD8"}"/>` }
+  return ART_SVG(`<defs><radialGradient id="arqB" cx=".5" cy=".9" r=".9"><stop offset="0" stop-color="#6B1F7F"/><stop offset="1" stop-color="#1A0A2A"/></radialGradient></defs>
+    <rect width="320" height="100" fill="url(#arqB)"/>${segs}<circle cx="160" cy="128" r="${R}" fill="none" stroke="#E9B23A" stroke-width="6"/>${bulbs}
+    <circle cx="160" cy="128" r="22" fill="#E9B23A" stroke="#7A4C08" stroke-width="2"/>
+    <path d="M160 26 L151 6 Q160 0 169 6 Z" fill="#E5484D" stroke="#5A0E18" stroke-width="1.5"/>`);
+}
+const GAME_ICON = {tir:"target", pot:"pot", chateau:"castle", casse:"layers", course:"flag", tic:"tic", pachinko:"pachi", roue:"wheel"};
 function viewGames(){
   gcLoad();
   const P = playedToday(), tirDone = !!P.tir[0], tirL = LEVELS[tirOfDay()];
@@ -8505,7 +8734,7 @@ function viewGames(){
       stat:`${S.holes} trou${S.holes>1?"s":""} réussi${S.holes>1?"s":""}`, ok:!tirDone, state:tirDone?`${ic("check",14,3)} Trou du jour réussi`:`${ic("gift",14)} Trou du jour à réussir`},
     {...day("pot"), d:ARENA.pot.lead, art:artPot(), stat:`${S.stats.pot} bille${S.stats.pot>1?"s":""} dans le pot`},
     {...day("chateau"), d:ARENA.chateau.lead, art:artChateau(), stat:`${S.stats.castle} bille${S.stats.castle>1?"s":""} sortie${S.stats.castle>1?"s":""} du cercle`},
-    {...day("casse"), d:CB_INFO.lead, art:artCasse(), stat:S.stats.casse?`Record : ${S.stats.casse} niveau${S.stats.casse>1?"x":""}, ${fmt(S.stats.casseScore)} points`:"Pas encore de record"},
+    {...day("roue"), d:"Un tour de roue gratuit chaque jour : bonbecs, sachets offerts… et peut-être un Mammouth !", art:artRoue(), stat:`${S.stats.roue||0} tour${(S.stats.roue||0)>1?"s":""} de roue`},
     {...day("pachinko"), d:"Lâche une bille en haut du plateau : elle rebondit de clou en clou jusqu'à une case. Bonbecs, sachets offerts… et tout au bord, un Mammouth !", art:artPachinko(), stat:`${S.stats.pachi||0} bille${(S.stats.pachi||0)>1?"s":""} lâchée${(S.stats.pachi||0)>1?"s":""}`},
   ];
   const multi = [
@@ -8513,7 +8742,7 @@ function viewGames(){
   ];
   const act = activeSpec();
   [solo, multi].forEach(l=>l.sort((a,b)=>b.ok-a.ok));   // ceux qui restent à jouer aujourd'hui d'abord (puis tout est réuni en une seule liste)
-  return `<div class="page-head"><div><h1>Jeux de la cour</h1><p>Les jeux de billes de la récré : une partie par jour à chaque jeu, et des ${CUR.many} à la clé. Tu ne perds jamais tes billes.</p></div>
+  return `<div class="page-head"><div><h1>Jeux de la cour</h1><p>Une partie par jour à chaque jeu, des ${CUR.many} à la clé.</p></div>
     <span class="hand-note">Qui c'est le plus fort de la cour ?</span></div>
   <section class="panel games-hero${left?"":" all-done"}">
     <div class="gh-txt"><span class="gh-kick">${ic("gift",14)} Tes parties du jour</span>
@@ -8539,17 +8768,17 @@ function viewGames(){
       <b class="gm-gc-t">La Grande Course</b>
       <span class="gm-gc-clock"><small>Départ dans</small><b data-gc-timer>${gcLeft(gcNext().depart-Date.now())}</b></span>
       ${(()=>{ const b = gcMine() || gcDefault(); return b ? `<span class="gm-gc-ball">${mImg(b,200,Math.round(30*scaleOf(b.type)+58),"")}<span><small>${gc.etat?.inscrit ? "Tu cours avec" : "Ta bille pour la course"}</small><b>${esc(specName(b))}</b></span></span>` : "" })()}
-      <span class="gm-gc-st${gc.etat?.inscrit?" ok":""}">${gc.etat?.inscrit ? `${ic("check",14,3)} Tu es inscrit` : "À 12 h et à 20 h. Inscription gratuite : 500 bonbecs et un Sachet Collector pour le gagnant"}</span>
+      <span class="gm-gc-st${gc.etat?.inscrit?" ok":""}">${gc.etat?.inscrit ? `${ic("check",14,3)} Tu es inscrit` : "À 12 h et à 20 h. Inscription gratuite : 50 bonbecs et un Sachet Collector pour le gagnant"}</span>
       <span class="btn btn-yellow">${gc.etat?.inscrit ? "Voir la course" : "M'inscrire"}</span>
     </button>
   </div>
-  <section class="games-sec"><div class="gs-head"><h2>Les jeux de la cour</h2><p>Une partie du jour par jeu, avec des bonbecs à la clé. Ensuite, tu peux rejouer pour le plaisir. Les parties reviennent à minuit.</p></div>
+  <section class="games-sec"><div class="gs-head"><h2>Les jeux de la cour</h2><p>Ensuite, tu peux rejouer pour le plaisir.</p></div>
     <div class="games-grid">${[...solo, ...multi].map(tile).join("")}</div></section>`;
 }
 // Avant de jouer (5 octobre 2026) : une fenêtre « Avec quelle bille tu joues ? », une fois par visite d'un mini-jeu.
 // On garde sa bille d'un clic, ou on en touche une autre, et la partie part tout de suite. Fermer la fenêtre garde la bille actuelle.
 const BALL_TIP = {pachinko:"Au Plinko, tu choisis ta bille pour toute la journée : bille du jour et billes achetées. Elle ne change que le look, les chances sont les mêmes pour toutes.", tir:"Au Tir, une petite bille se faufile plus facilement entre les obstacles.",
-  casse:"Au Casse-briques, un Boulet ou un Mammouth tape deux fois plus fort sur les briques."};
+};
 function openBallPick(next){
   const el = document.getElementById("modal"), act = activeSpec(), list = [...S.specs].sort(tierSort);
   ui.ballPicked = ui.view; ui.pickNext = next || null;
@@ -8924,11 +9153,11 @@ function fxDraw(c){
 // la page la reprend là où elle en était (snapSave / cbSnap) ; si la reprise est impossible, on peut la recommencer.
 // Gains maximum (mêmes plafonds dans supabase/serveur.sql, public.gagner, source 'jeu').
 const DAY_GAMES = {
-  pot:     {title:"Le Pot", max:250},
-  chateau: {title:"Le Château", max:340},
-  casse:   {title:"Le Casse-briques", max:450},
+  pot:     {title:"Le Pot", max:25},
+  chateau: {title:"Le Château", max:34},
+  roue:    {title:"La Roue", max:0, prize:"un Mammouth"},   // le tour gratuit du jour (supabase/serveur.sql, public.roue) ; le Casse-briques est retiré
   pachinko:{title:"Le Plinko", max:0, prize:"une bille"},   // la bille gratuite du jour (supabase/serveur.sql, public.pachinko)
-  tic:     {title:"La Tic", max:200},
+  tic:     {title:"La Tic", max:20},
 };
 // les 6 jeux du jour joués (Tir compris) : un Sachet Premium offert (le serveur vérifie les 6 parties : source 'jeux-bonus')
 const GAMES_BONUS = "premium";
@@ -8939,11 +9168,11 @@ function gamesBonus(){
   setTimeout(()=>{ toast(`Les 6 jeux du jour sont faits : un ${BAG_BY[GAMES_BONUS].name} t'est offert !`); Sound.ding() }, 1400);
 }
 const DAY_INFO = {
-  pot:     {goal:"Envoie un maximum de billes dans le pot en 5 lancers, toujours depuis le milieu de la ligne de craie. Le pot et les cailloux changent de place à chaque lancer, et une bille ratée disparaît !", rew:[["Chaque bille dans le pot","30"],["1, 3 ou 5 billes : 1, 2 ou 3 étoiles","+20 · +50 · +100"]]},
-  chateau: {goal:"Fais sortir les 10 billes du cercle de craie en 3 tirs au plus. Le château change de forme chaque jour !", rew:[["Chaque bille sortie du cercle","10"],["3, 6 ou 10 billes : 1, 2 ou 3 étoiles","+20 · +40 · +80"],["Les 10 sorties / en 2 tirs","+60 · +120"],["Rasé en un seul tir","+160 et un Mammouth !"]]},
-  casse:   {goal:"Casse les murs de briques de 3 niveaux, sans laisser tomber ta bille. 3 vies pour toute la partie, et des niveaux nouveaux chaque jour, de plus en plus durs.", rew:[["Chaque niveau réussi (3 niveaux)","100"],["1, 2 ou 3 niveaux : 1, 2 ou 3 étoiles","+30 · +80 · +150"]]},
-  course:  {goal:"Une course contre 3 joueurs de la cour, une pichenette chacun son tour. Le premier qui passe la ligne a gagné !", rew:[["1re place","200"],["2e place","120"],["3e place","70"],["4e place","30"]]},
-  tic:     {goal:"Touche la bille de ton adversaire avant qu'il touche la tienne. 5 tirs chacun, et des cachettes partout : fais des rebonds sur les bords !", rew:[["Victoire","200"],["Match nul","80"],["Défaite","40"]]},
+  pot:     {goal:"Envoie un maximum de billes dans le pot en 5 lancers, toujours depuis le milieu de la ligne de craie. Le pot et les cailloux changent de place à chaque lancer, et une bille ratée disparaît !", rew:[["Chaque bille dans le pot","3"],["1, 3 ou 5 billes : 1, 2 ou 3 étoiles","+2 · +5 · +10"]]},
+  chateau: {goal:"Fais sortir les 10 billes du cercle de craie en 3 tirs au plus. Le château change de forme chaque jour !", rew:[["Chaque bille sortie du cercle","1"],["3, 6 ou 10 billes : 1, 2 ou 3 étoiles","+2 · +4 · +8"],["Les 10 sorties / en 2 tirs","+6 · +12"],["Rasé en un seul tir","+16 et un Mammouth !"]]},
+  casse:   {goal:"Casse les murs de briques de 3 niveaux, sans laisser tomber ta bille. 3 vies pour toute la partie, et des niveaux nouveaux chaque jour, de plus en plus durs.", rew:[["Chaque niveau réussi (3 niveaux)","10"],["1, 2 ou 3 niveaux : 1, 2 ou 3 étoiles","+3 · +8 · +15"]]},
+  course:  {goal:"Une course contre 3 joueurs de la cour, une pichenette chacun son tour. Le premier qui passe la ligne a gagné !", rew:[["1re place","20"],["2e place","12"],["3e place","7"],["4e place","3"]]},
+  tic:     {goal:"Touche la bille de ton adversaire avant qu'il touche la tienne. 5 tirs chacun, et des cachettes partout : fais des rebonds sur les bords !", rew:[["Victoire","20"],["Match nul","8"],["Défaite","4"]]},
 };
 function playedToday(){ if(!S.played || S.played.day!==dayKey()) S.played = {day:dayKey(), tir:{}}; return S.played }
 const soloReady = key => !playedToday()[key];
@@ -9055,7 +9284,7 @@ const SETUP = {
       if(A.shots>0){ A.shuffle(); fxText(AW/2, 40, "Le pot a bougé !", "#FFE14D");
         spawnMine(A.start.x, A.start.y); updArenaHud(); return }
       // 30 par bille + 20 / 50 / 100 pour les étoiles : 250 au plus (même plafond dans serveur.sql)
-      const n=A.potted, st = n>=5?3:n>=3?2:n>=1?1:0, rew = n*30+[0,20,50,100][st];
+      const n=A.potted, st = n>=5?3:n>=3?2:n>=1?1:0, rew = n*3+[0,2,5,10][st];
       S.stats.pot += n;
       dayFinish("pot", st, rew, n>=5?"Le grand chelem !":n?"Dans le pot !":"Raté !", `${n} bille${n>1?"s":""} dans le pot sur 5 lancers.`);
     };
@@ -9091,7 +9320,7 @@ const SETUP = {
       A.out = A.castle.filter(b=>b.won).length;
       if(A.shots>0 && A.out<10){ next(); updArenaHud(); return }
       // les 10 sorties : +60 en 3 tirs, +120 en 2 tirs ; rasé en un seul tir : +160 et un Mammouth (plafond 340, même valeur dans serveur.sql)
-      const n=A.out, used = 3-A.shots, st = n>=10?3:n>=6?2:n>=3?1:0, fast = n>=10 ? [0,160,120,60][used] : 0, rew = n*10+[0,20,40,80][st]+fast;
+      const n=A.out, used = 3-A.shots, st = n>=10?3:n>=6?2:n>=3?1:0, fast = n>=10 ? [0,16,12,6][used] : 0, rew = n+[0,2,4,8][st]+fast;
       S.stats.castle += n;
       let prize = "";
       if(st===3 && used===1 && gameLive("chateau")){
@@ -9221,7 +9450,7 @@ function aiCourse(){
 }
 function endCourse(){
   const A = arena, me = A.racers[0];
-  const pos = me.done ? A.rank.indexOf(me)+1 : 4, st = [3,2,1,0][pos-1], rew = [200,120,70,30][pos-1];
+  const pos = me.done ? A.rank.indexOf(me)+1 : 4, st = [3,2,1,0][pos-1], rew = [20,12,7,3][pos-1];
   if(pos===1) S.stats.race++;
   dayFinish("course", st, rew, pos===1?"Maillot jaune !":pos===2?"Deuxième !":pos===3?"Sur le podium !":me.done?"Quatrième":"Pas fini…",
     me.done ? `Tu passes la ligne en ${pos}${pos===1?"re":"e"} position, en ${A.flicks} pichenette${A.flicks>1?"s":""}.` : "Les autres sont arrivés avant toi : retente ta chance demain !");
@@ -9246,9 +9475,9 @@ function aiShot(){
 }
 function endTic(res){
   const A = arena, foe = esc(A.foe.name);
-  if(res==="win"){ S.stats.tic++; dayFinish("tic", 3, 200, "Tic !", `Tu as touché la bille de ${foe} en premier : bien visé !`) }
-  else if(res==="lose") dayFinish("tic", 0, 40, "Tic… pour lui !", `${foe} a touché ta bille en premier. Tu gardes ta bille, et quelques bonbecs pour la peine.`);
-  else dayFinish("tic", 1, 80, "Match nul", "Personne n'a fait tic en 5 tirs.");
+  if(res==="win"){ S.stats.tic++; dayFinish("tic", 3, 20, "Tic !", `Tu as touché la bille de ${foe} en premier : bien visé !`) }
+  else if(res==="lose") dayFinish("tic", 0, 4, "Tic… pour lui !", `${foe} a touché ta bille en premier. Tu gardes ta bille, et quelques bonbecs pour la peine.`);
+  else dayFinish("tic", 1, 8, "Match nul", "Personne n'a fait tic en 5 tirs.");
 }
 
 /* =====================================================================
@@ -9291,7 +9520,7 @@ function cbDayMap(n){
 const cbPadW = n => Math.max(84, 124-4*(n-1));   // la règle raccourcit un peu à chaque niveau
 const CB_INFO = {title:"Le Casse-briques",
   lead:"Le mur du préau est couvert de briques de couleur. Ta bille les casse une à une, et toi tu la renvoies avec ta règle. Ne la laisse pas tomber !",
-  rules:["3 vies pour toute la partie : elles ne reviennent pas au niveau suivant. Une bille qui tombe sous la règle, c'est une vie perdue.","Là où la bille touche la règle, elle repart plus ou moins en biais.","Les briques à bord foncé tiennent 2 coups, les dorées 3. L'acier ne casse jamais.","Attrape les bonus qui tombent : règle géante, trois billes, bille ralentie, vie en plus.","Chaque niveau a son chrono : s'il tombe à zéro, la partie est finie. Il s'arrête quand tu perds ta bille et repart quand tu la relances.","De nouveaux niveaux chaque jour, de plus en plus durs : plus de briques, plus solides, de l'acier, une bille plus rapide et une règle plus courte.","3 niveaux à réussir. Chaque niveau réussi rapporte 100 bonbecs. 1 niveau : 1 étoile (+30), 2 niveaux : 2 étoiles (+80), 3 niveaux : 3 étoiles (+150).","Un Boulet ou un Mammouth casse 2 épaisseurs d'un coup.","Une partie par jour : si tu quittes en route, tu la reprends là où tu en étais."]};
+  rules:["3 vies pour toute la partie : elles ne reviennent pas au niveau suivant. Une bille qui tombe sous la règle, c'est une vie perdue.","Là où la bille touche la règle, elle repart plus ou moins en biais.","Les briques à bord foncé tiennent 2 coups, les dorées 3. L'acier ne casse jamais.","Attrape les bonus qui tombent : règle géante, trois billes, bille ralentie, vie en plus.","Chaque niveau a son chrono : s'il tombe à zéro, la partie est finie. Il s'arrête quand tu perds ta bille et repart quand tu la relances.","De nouveaux niveaux chaque jour, de plus en plus durs : plus de briques, plus solides, de l'acier, une bille plus rapide et une règle plus courte.","3 niveaux à réussir. Chaque niveau réussi rapporte 10 bonbecs. 1 niveau : 1 étoile (+3), 2 niveaux : 2 étoiles (+8), 3 niveaux : 3 étoiles (+15).","Un Boulet ou un Mammouth casse 2 épaisseurs d'un coup.","Une partie par jour : si tu quittes en route, tu la reprends là où tu en étais."]};
 const cb = {raf:0, keys:{}};
 const CB_LEVELS = 3;   // 3 octobre 2026 : la partie s'arrête après 3 niveaux (elle était trop longue)
 const cbClamp = (v,a,b) => Math.max(a, Math.min(b, v));
@@ -9508,7 +9737,7 @@ function cbUpdate(dt){
 function cbFinish(why){
   cb.state = "over"; cb.done = true;
   // 100 par niveau (3 niveaux) + 30 / 80 / 150 pour les étoiles (1, 2 ou 3 niveaux) : 450 au plus (même plafond dans serveur.sql)
-  const n = cb.cleared, st = Math.min(3, n), rew = Math.min(n,CB_LEVELS)*100+[0,30,80,150][st];
+  const n = cb.cleared, st = Math.min(3, n), rew = Math.min(n,CB_LEVELS)*10+[0,3,8,15][st];
   S.stats.casse = Math.max(S.stats.casse||0, n);
   S.stats.casseScore = Math.max(S.stats.casseScore||0, cb.score);
   dayFinish("casse", st, rew, why==="time" ? "Temps écoulé !" : n>=CB_LEVELS?"Le mur est tombé !":n?"Bien joué !":"Raté !", `${why==="time"?"Le chrono est tombé à zéro. ":""}${n} niveau${n>1?"x":""} réussi${n>1?"s":""} et ${fmt(cb.score)} points.`, "c-result");
@@ -9617,7 +9846,7 @@ function cbLoop(t){
    Le site ne garde que la dernière course de midi et la dernière du soir (les rediffusions).
    Ici on ne fait que mettre la course en scène à partir de la graine et de l'ordre d'arrivée : tout le monde voit la même course.
    ===================================================================== */
-const COURSE_PRIX = [{j:500, sac:"collector"}, {j:300, sac:"premium"}, {j:200, sac:"classique"}], COURSE_PART = 50;   // mêmes valeurs que interne.course_prix
+const COURSE_PRIX = [{j:50, sac:"collector"}, {j:30, sac:"premium"}, {j:20, sac:"classique"}], COURSE_PART = 5;   // mêmes valeurs que interne.course_prix
 const gc = {etat:null, busy:false, pick:null, live:null};
 function gcLoad(force){
   if(!srvOn() || gc.busy || (gc.etat && !force)) return;
@@ -10280,6 +10509,18 @@ const G3C = {
       return {...z, ...g3ZigStart(k, o, n, r), cam:g3ZigCam} }},
 };
 
+// l'aura d'une shiny dans la Grande Course : un halo (anneau arc-en-ciel pour l'Irisée, or pour la Dorée, la couleur de la bille pour la Lumineuse)
+function g3Aura(s){
+  const c = document.createElement("canvas"); c.width = c.height = 128; const x = c.getContext("2d");
+  if(s.shiny===1 && x.createConicGradient){ const g = x.createConicGradient(0, 64, 64); [...SHINY_COLS, SHINY_COLS[0]].forEach((col,j,a)=>g.addColorStop(j/(a.length-1), col)); x.fillStyle = g }
+  else x.fillStyle = s.shiny===2 ? "#FFC93F" : s.shiny===3 ? (PALETTES[s.pal]?.[2] || "#FFFFFF") : "#FF6FB5";
+  x.fillRect(0, 0, 128, 128);
+  // seulement un anneau doux autour de la bille (le centre reste vide : la bille est dessinée par-dessus)
+  const m = x.createRadialGradient(64, 64, 0, 64, 64, 64);
+  m.addColorStop(0, "rgba(0,0,0,0)"); m.addColorStop(.36, "rgba(0,0,0,0)"); m.addColorStop(.46, "rgba(0,0,0,.95)"); m.addColorStop(.62, "rgba(0,0,0,.45)"); m.addColorStop(1, "rgba(0,0,0,0)");
+  x.globalCompositeOperation = "destination-in"; x.fillStyle = m; x.fillRect(0, 0, 128, 128);
+  return c;
+}
 // la piste d'une course : les pièces du circuit, les billes au départ et leur barrière
 function g3World(CANNON, seed, n, cid="lacets"){
   const r = rng(seed), C = G3C[cid] || G3C.lacets;
@@ -10400,7 +10641,7 @@ async function gcWatch3D(race){
   // Les billes : la vraie bille de chaque joueur, dessinée par le même moteur que partout sur le site (motif, coloris, shiny),
   // tournée selon la physique et vue depuis la caméra. Une sphère invisible garde l'ombre portée sur la piste.
   // (sans le moteur de billes, on retombe sur une sphère aux couleurs du coloris)
-  const SPR = 128, sprites = [], useSpr = !!ballGL && !ballGL.gl.isContextLost();
+  const SPR = 128, sprites = [], auras = [], useSpr = !!ballGL && !ballGL.gl.isContextLost();
   const meshes = who.map((o,i)=>{
     const m = new THREE.Mesh(new THREE.SphereGeometry(G3.R, 32, 24), useSpr ? new THREE.MeshBasicMaterial({colorWrite:false, depthWrite:false})
       : new THREE.MeshPhysicalMaterial({map:g3Texture(THREE, o.spec, i), roughness:.08, clearcoat:1, clearcoatRoughness:.05}));
@@ -10408,6 +10649,10 @@ async function gcWatch3D(race){
     if(useSpr){ const c = document.createElement("canvas"); c.width = c.height = SPR; const tx = new THREE.CanvasTexture(c); tx.colorSpace = THREE.SRGBColorSpace;
       const sp = new THREE.Sprite(new THREE.SpriteMaterial({map:tx, transparent:true, depthWrite:false})), k = 2*G3.R/.9; sp.scale.set(k,k,1); scene.add(sp);
       sprites[i] = {c, x:c.getContext("2d"), tx, sp, last:-99} }
+    // (6 octobre 2026) une shiny garde son aura pendant la course : arc-en-ciel (Irisée), or (Dorée), sa couleur (Lumineuse)
+    if(o.spec?.shiny){ const tx = new THREE.CanvasTexture(g3Aura(o.spec)); tx.colorSpace = THREE.SRGBColorSpace;
+      const au = new THREE.Sprite(new THREE.SpriteMaterial({map:tx, transparent:true, depthWrite:false, blending:THREE.AdditiveBlending})), k = 2*G3.R/.9*2.1;
+      au.scale.set(k,k,1); au.renderOrder = -1; scene.add(au); auras.push({au, i}) }
     return m });
   const labels = document.getElementById("g3-labels");
   labels.innerHTML = who.map((o,i)=>`<span class="g3-lbl${o.me?" me":""}" id="g3l${i}">${esc(nm(o))}</span>`).join("");
@@ -10434,6 +10679,7 @@ async function gcWatch3D(race){
     const cd = t<1 ? "3" : t<2 ? "2" : t<3 ? "1" : "go";
     if(cd!==G3V.cd){ G3V.cd = cd; big(cd==="go" ? "Partez !" : cd); if(cd==="go") Sound.ding(); else Sound.tap?.(0,.5) }
     for(let i=0;i<n;i++){ meshes[i].position.set(F[i*7],F[i*7+1],F[i*7+2]); meshes[i].quaternion.set(F[i*7+3],F[i*7+4],F[i*7+5],F[i*7+6]) }
+    auras.forEach(({au, i})=>{ au.position.copy(meshes[i].position); au.material.opacity = .7 + .3*Math.sin(now/260 + i*1.7); au.material.rotation = now/900 });
     if(kinM.length){ const K = sim.kf[f]; kinM.forEach((m,j)=>m.quaternion.set(K[j*4],K[j*4+1],K[j*4+2],K[j*4+3])) }
     const tt = f*G3.DT, rank = who.map((o,i)=>({o, i, done:sim.fin[i]<=tt, pr:g3Where(W, F[i*7],F[i*7+1],F[i*7+2]).s}))
       .sort((a,b)=> (a.done&&b.done) ? sim.fin[a.i]-sim.fin[b.i] : a.done ? -1 : b.done ? 1 : b.pr-a.pr);
@@ -10988,7 +11234,7 @@ function viewSoon(){
       ${devTools() ? `<section class="panel"><div class="panel-head"><h3>Outils de test</h3></div>
         <p>Pour tester sans attendre : ajoute des ${CUR.many}, recharge tout de suite le sachet gratuit ou reçois une bille shiny.</p>
         <div style="display:flex;gap:10px;flex-wrap:wrap;margin-top:14px">
-          <button class="btn btn-ghost" data-action="add-jetons">+ 1 000 ${CUR.many}</button>
+          <button class="btn btn-ghost" data-action="add-jetons">+ 100 ${CUR.many}</button>
           <button class="btn btn-ghost" data-action="refill-free">Remplir le stock de sachets gratuits</button>
           <button class="btn btn-ghost" data-action="give-shiny">Recevoir une bille shiny</button>
           <button class="btn btn-ghost" data-action="pass-xp">+ 3 paliers de passe</button>
@@ -11030,7 +11276,8 @@ const COUR_ERR = {inconnu:"Personne ne s'appelle comme ça dans la cour.", soi_m
   deja_ami:"Vous êtes déjà copains.", trop_amis:"Tu as déjà 200 copains !", trop_demandes:"Tu as déjà beaucoup de demandes en attente.",
   plus_de_demande:"Cette demande n'existe plus.", pas_ami:"Vous n'êtes pas (ou plus) copains.", bille_indisponible:"Une de ces billes n'est plus disponible.",
   troc_invalide:"Ce troc n'est pas possible.", trop_trocs:"Tu as déjà 20 trocs en attente.", plus_de_troc:"Ce troc n'existe plus.",
-  prix_invalide:"Choisis un prix entre 1 et 1 000 000.", duree_invalide:"Choisis une durée dans la liste.", trop_annonces:"Tu as déjà 30 billes en vente.", plus_en_vente:"Cette bille n'est plus en vente.",
+  prix_invalide:"Choisis un prix entre 1 et 100 000.", duree_invalide:"Choisis une durée dans la liste.", trop_annonces:"Tu as déjà 30 billes en vente.", plus_en_vente:"Cette bille n'est plus en vente.",
+  troc_bonbecs:`Les trocs se font seulement avec des billes.`,
   bonbecs_depart:`Les ${CUR.many} de ton cadeau de départ servent à ouvrir des sachets et à jouer, pas aux trocs ni au marché.`,
   ta_bille:"C'est ta propre bille !", pas_assez:`Il te manque des ${CUR.many}.`, reseau:"Pas de connexion : réessaie dans un instant.",
   enchere_finie:"Cette enchère est terminée.", deja_en_tete:"Tu as déjà la meilleure offre !", offre_trop_basse:"Quelqu'un a déjà proposé plus : regarde la nouvelle offre minimum.",
@@ -11292,7 +11539,7 @@ function buyAnnonce(id){
 // mêmes valeurs que dans supabase/cour.sql (pts_taille, mult_decor, pts_shiny, séries)
 const SCORE = {taille:[10,15,20,30,60,120], decor:[1,1.5,2,3,5], shiny:[150,300,600], serieDecor:200, serie:20};
 // une série à thème terminée : un quart de sa récompense en bonbecs (même table dans supabase/cour.sql : interne.series)
-const seriePts = se => Math.round(se.rew.j/4);
+const seriePts = se => Math.round(se.rew.j*10/4);   // (récompenses divisées par 10 le 6 octobre 2026, les points ne changent pas)
 const rangTxt = r => r===1 ? "1er" : `${r}e`;
 // les séries presque finies : de quoi viser le prochain palier (d'après les billes de la boîte qui comptent)
 function scoreGoals(){
@@ -11350,7 +11597,7 @@ function courClassement(){
           <li><b>Chaque shiny différente</b><span>${SHINIES.slice(1).map((x,i)=>`${x.name} ${SCORE.shiny[i]}`).join(" · ")}</span></li>
           <li><b>Les séries à thème</b><span>${SERIES.map(se=>`${se.name} ${seriePts(se)}`).join(" · ")}</span><small>Celles de l'onglet Séries de ta boîte à billes.</small></li>
           <li><b>Les grandes collections</b><span>un motif dans les 6 tailles : ${SCORE.serieDecor} × la rareté du motif</span><small>Une taille dans tous les motifs, ou un motif complet (ses ${BASE_PALS} coloris) : ${SCORE.serie} × les points de la taille.</small></li>
-        </ul><p class="meta">Seules les billes des sachets, des fusions et du passe comptent (pas les billes de départ ni les secrètes, qui ont leur succès à elles). Une bille vendue ou échangée compte pour son nouveau propriétaire.</p></section>
+        </ul><p class="meta">Les billes de départ et les secrètes ne comptent pas.</p></section>
     </div>
   </div>`;
 }
@@ -11564,14 +11811,12 @@ function trocCompose(){
   return `<div class="cour-grid">
     <section class="panel"><div class="cmp-head">${avatarIni(C.pseudo,40)}<h3>${C.remplace?"Contre-proposition à":"Troc avec"} ${esc(C.pseudo)}</h3><button class="see-all" data-action="troc-close">${ic("chevl",14)} Retour</button></div>
       ${C.remplace ? `<p class="cour-lead" style="margin:0 0 8px">On est reparti de son troc, à l'envers : change les billes comme tu veux. Ta proposition remplacera la sienne.</p>` : ""}
-      <p class="cour-info">${ic("quest",16)}<span>Jusqu'à 6 billes de chaque côté, et si tu veux jusqu'à ${fmt(TROC_BONBECS_MAX)} ${CUR.many} en plus (d'un seul côté : tu en ajoutes ou tu en demandes). Seules les billes tirées dans les sachets, les fusions ou le passe peuvent être troquées (pas les billes de départ ni les billes secrètes).</span></p></section>
+      <p class="cour-info">${ic("quest",16)}<span>Jusqu'à 6 billes de chaque côté. Pas les billes de départ ni les secrètes.</span></p></section>
     <div class="compose">
       <section class="panel cmp give"><div class="panel-head"><h3>${ic("swap",18)} Tu donnes</h3>${dots(C.give.length)}</div>${C.mine?.length ? `<label class="tr-dbl"><input type="checkbox" data-action="troc-dbl"${C.dbl?" checked":""}> Seulement mes doubles <small class="meta">(les billes que j'ai en plusieurs exemplaires, sans celui que je garde)</small></label>` : ""}
-        <div style="--tc:#E8743B">${C.dbl && C.mine && !C.mine.some(x=>trocDups().has(x.id)) ? `<p class="empty">Tu n'as aucun double à troquer.</p>` : pickList(C.dbl && C.mine ? C.mine.filter(x=>trocDups().has(x.id)) : C.mine, "give", C.give, C.fg)}</div>
-        <label class="bb-in">${ic("plus",16)} Ajouter <input type="number" id="troc-gb" min="0" max="${TROC_BONBECS_MAX}" step="1" placeholder="0" value="${C.gb||""}"> ${CUR.many} ${COIN}</label></section>
+        <div style="--tc:#E8743B">${C.dbl && C.mine && !C.mine.some(x=>trocDups().has(x.id)) ? `<p class="empty">Tu n'as aucun double à troquer.</p>` : pickList(C.dbl && C.mine ? C.mine.filter(x=>trocDups().has(x.id)) : C.mine, "give", C.give, C.fg)}</div></section>
       <section class="panel cmp want"><div class="panel-head"><h3>${ic("arrow",18)} Tu demandes à ${esc(C.pseudo)}</h3>${dots(C.want.length)}</div>${C.theirs?.length ? `<label class="tr-dbl"><input type="checkbox" data-action="troc-manque"${C.manque?" checked":""}> Seulement celles qui me manquent <small class="meta">(un motif ou un coloris que je n'ai pas encore)</small></label>` : ""}
-        <div style="--tc:var(--green)">${C.manque && C.theirs && !C.theirs.some(missOf()) ? `<p class="empty">${esc(C.pseudo)} n'a aucune bille qui te manque.</p>` : pickList(C.manque && C.theirs ? C.theirs.filter(missOf()) : C.theirs, "want", C.want, C.fw)}</div>
-        <label class="bb-in">${ic("plus",16)} Demander <input type="number" id="troc-wb" min="0" max="${TROC_BONBECS_MAX}" step="1" placeholder="0" value="${C.wb||""}"> ${CUR.many} ${COIN}</label></section>
+        <div style="--tc:var(--green)">${C.manque && C.theirs && !C.theirs.some(missOf()) ? `<p class="empty">${esc(C.pseudo)} n'a aucune bille qui te manque.</p>` : pickList(C.manque && C.theirs ? C.theirs.filter(missOf()) : C.theirs, "want", C.want, C.fw)}</div></section>
     </div>
     <section class="panel cmp-send"><div class="cmp-sum">${sd("give","Tu donnes",C.mine,C.give)}${ic("swap",18)}${sd("get","Tu reçois",C.theirs,C.want)}</div>
       <form class="cour-form" id="troc-form"><input type="text" id="troc-mot" maxlength="140" placeholder="Un petit mot pour ${esc(C.pseudo)} (facultatif)" value="${esc(C.mot||"")}" aria-label="Petit mot">
@@ -11666,7 +11911,7 @@ function bidAsk(id){
   const min = a.min;
   ask({title:`Enchérir sur ${specName(a.bille)} ?`, balls:[a.bille], ok:"Enchérir",
        text:`${a.offre ? `Meilleure offre : <b>${fmt(a.offre)} ${CUR.many}</b> (${esc(a.meilleur||"?")}).` : `Mise à prix : <b>${fmt(a.prix)} ${CUR.many}</b>.`} Tes ${CUR.many} sont mis de côté tout de suite. Si quelqu'un propose plus, ils te sont rendus.`,
-       extra:`<label class="price-in ask-in">${COIN}<input type="number" id="ask-val" min="${min}" max="1000000" step="1" value="${min}" aria-label="Ton offre en ${CUR.many}"><small>${CUR.many}</small></label>
+       extra:`<label class="price-in ask-in">${COIN}<input type="number" id="ask-val" min="${min}" max="100000" step="1" value="${min}" aria-label="Ton offre en ${CUR.many}"><small>${CUR.many}</small></label>
          <small class="meta">Au moins ${fmt(min)} · tu as ${fmt(libres())} ${CUR.many}${departTxt()}</small>`})
   .then(ok=>{ if(!ok) return;
     const v = Math.round(+ask.val);
@@ -11699,7 +11944,7 @@ function sellView(){
         ${cour.absent.encheres ? "" : `<div class="sell-mode" role="group" aria-label="Façon de vendre">${mode("fixe","Prix fixe","candy","Le premier qui paie l'emporte")}${mode("enchere","Aux enchères","gavel","Elle part au plus offrant")}</div>`}
         <form class="sell-form" id="sell-form">
           <span class="sf-lbl">${E ? "Mise à prix" : "Ton prix"}</span>
-          <label class="price-in">${COIN}<input type="number" id="sell-prix" min="1" max="1000000" step="1" placeholder="0" value="${X.prix||""}" aria-label="${E?"Mise à prix":"Prix"} en ${CUR.many}" required><small>${CUR.many}</small></label>
+          <label class="price-in">${COIN}<input type="number" id="sell-prix" min="1" max="100000" step="1" placeholder="0" value="${X.prix||""}" aria-label="${E?"Mise à prix":"Prix"} en ${CUR.many}" required><small>${CUR.many}</small></label>
           <span class="sf-lbl">Durée de la vente</span>
           <div class="seg" role="radiogroup" aria-label="Durée">${durees.map(([v,l])=>`<label><input type="radio" name="sell-duree" value="${v}"${v===(E?24:72)?" checked":""}><span>${l}</span></label>`).join("")}</div>
           <button class="btn btn-xl ${E?"btn-orange":"btn-yellow"}" type="submit">${E ? `${ic("gavel",18)} Mettre aux enchères` : `${ic("candy",18)} Mettre en vente`}</button></form></div></div>
@@ -11755,14 +12000,18 @@ document.addEventListener("click", e=>{
   if(e.target.id==="modal"){ closeModal(); return }
   if(e.target.id==="mj-sheet"){ openDay(false); return }
   const t = e.target.closest("[data-action]"); if(!t) return;
+  if(t.tagName==="A" && t.getAttribute("href")==="#") e.preventDefault();
   if(DEV_ACTIONS.includes(t.dataset.action) && !devTools()) return;
   switch(t.dataset.action){
-    case "nav": closeModal(); openDay(false); if(t.dataset.conftab) ui.confTab=t.dataset.conftab; go(t.dataset.view); break;
+    case "nav": closeModal(); openDay(false); if(t.dataset.conftab) ui.confTab=t.dataset.conftab;
+      if(t.dataset.view==="collection" && ui.view!=="collection") ui.show = "all";   // le filtre « Événement » du bouton de l'accueil ne reste pas collé
+      go(t.dataset.view); break;
     case "conf-tab": ui.confTab=t.dataset.tab; renderView(); break;
     case "evf-go": evFuse(t.dataset.k); break;
     case "evf-f": ui.evfF = t.dataset.f || ""; renderView(); break;
     case "craft-f": ui.craftF = {...(ui.craftF||{}), rar:t.dataset.v}; renderView(); break;
     case "craft-ev": ui.confTab = "evenement"; renderView(); break;
+    case "roue-go": roueGo(); break;
     case "pachi-go": { const pay = t.dataset.pay==="1"; if(!pachiBall() && needBall(()=>pachiGo(pay), true)) break; } pachiGo(t.dataset.pay==="1"); break;
     case "ball-go": {
       if(ui.view==="pachinko"){ playedToday().pachiBall = t.dataset.id || S.active; save() }   // au Plinko : la bille du jour, sans changer la bille des autres jeux
@@ -11891,6 +12140,7 @@ document.addEventListener("click", e=>{
     case "ftype": ui.type=t.dataset.type; renderView(); break;
     case "serie-f": ui.serieF=t.dataset.f; renderView(); break;
     case "show": ui.show=t.dataset.show; renderView(); break;
+    case "pinfo": { const p = t.closest("h2")?.nextElementSibling; if(p){ p.hidden = !p.hidden; t.setAttribute("aria-expanded", String(!p.hidden)) } break }
     case "col-q-clear": ui.q = ""; renderView(); document.getElementById("col-q")?.focus(); break;
     case "album-type": ui.tab="album"; ui.type=t.dataset.type; go("collection"); break;
     case "spec": ui.fromSheet = !!t.dataset.fromSheet; openModal(t.dataset.id); break;
@@ -12134,8 +12384,8 @@ document.addEventListener("click", e=>{
     case "g-restart": loadLevel(game.lvl); break;
     case "g-level": loadLevel(+t.dataset.l); break;
     case "pass-xp": passXP(3*TIER_COST(PASS_TIERS)); renderNav(); toast("+3 paliers de passe (démo)."); break;
-    case "add-jetons": if(sync.on && eco.ready){ srv(()=>Cloud.eco.test("bonbecs")).then(r=>{ applyEco(r.eco); toast(`+1 000 ${CUR.many} (test).`) }, srvFail); break }
-      S.jetons+=1000; save(); renderTop(); toast(`+1 000 ${CUR.many} ajoutés (démo).`); break;
+    case "add-jetons": if(sync.on && eco.ready){ srv(()=>Cloud.eco.test("bonbecs")).then(r=>{ applyEco(r.eco); toast(`+100 ${CUR.many} (test).`) }, srvFail); break }
+      S.jetons+=100; save(); renderTop(); toast(`+100 ${CUR.many} ajoutés (démo).`); break;
     case "refill-free": if(sync.on && eco.ready){ srv(()=>Cloud.eco.test("gratuit")).then(r=>{ applyEco(r.eco); renderView(); toast(`${FREE_MAX} sachets gratuits en stock (test).`) }, srvFail); break }
       S.freeT0=Date.now()-FREE_MAX*FREE_EVERY; save(); renderTop(); renderNav(); renderView(); toast(`${FREE_MAX} sachets gratuits en stock (démo).`); break;
     case "reset":
@@ -12171,10 +12421,7 @@ document.addEventListener("submit", e=>{
     const C = cour.compose; if(!C) return;
     const mot = document.getElementById("troc-mot").value; C.mot = mot;
     const give = (C.mine||[]).filter(x=>C.give.includes(x.id)), want = (C.theirs||[]).filter(x=>C.want.includes(x.id));
-    const gb = Math.round(+document.getElementById("troc-gb").value||0), wb = Math.round(+document.getElementById("troc-wb").value||0);
-    if(gb<0 || wb<0 || gb>TROC_BONBECS_MAX || wb>TROC_BONBECS_MAX){ toast(`Entre 0 et ${fmt(TROC_BONBECS_MAX)} ${CUR.many} dans un troc.`); return }
-    if(gb>0 && wb>0){ toast(`Des ${CUR.many} d'un seul côté : tu en ajoutes, ou tu en demandes.`); return }
-    if(gb>libres()){ toast(`Tu n'as que ${fmt(libres())} ${CUR.many} à donner${departTxt()}.`); return }
+    const gb = 0, wb = 0;   // 6 octobre 2026 : plus de bonbecs dans les trocs, seulement des billes
     C.gb = gb; C.wb = wb;
     ask({title: C.remplace ? `Envoyer ta contre-proposition à ${C.pseudo} ?` : `Envoyer ce troc à ${C.pseudo} ?`, extra:trocSummary(want, give, wb, gb),
          text:`${C.remplace?"Son troc sera remplacé par le tien. ":""}Si ${esc(C.pseudo)} accepte, l'échange se fait tout de suite. Tu peux l'annuler tant qu'il n'a pas répondu.${gb?` Tes ${CUR.many} ne partent que s'il accepte.`:""}${give.map(partWarn).join("")}`, ok:"Envoyer"})

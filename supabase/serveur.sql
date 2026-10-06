@@ -62,7 +62,7 @@ grant select (edition) on public.billes to authenticated;
 -- ---------- Portefeuille : bonbecs, sacs offerts, sac gratuit, bonbec du jour ----------
 create table if not exists public.portefeuilles (
   joueur       uuid primary key references auth.users(id) on delete cascade,
-  bonbecs      int  not null default 1000 check (bonbecs >= 0),
+  bonbecs      int  not null default 100 check (bonbecs >= 0),
   sacs         jsonb not null default '{}',                 -- sacs offerts en réserve : {"premium": 2, …}
   gratuit_t0   timestamptz not null default now() - interval '50 minutes',
   pity         int  not null default 0,                     -- sacs ouverts depuis le dernier Boulet ou Mammouth
@@ -132,7 +132,7 @@ $$ select array_position(interne.tailles(), t) - 1 $$;   -- 0 (Mini) à 5 (Mammo
 
 -- rareté de chaque décor (dans l'ordre de FAMILIES) et poids de chaque rareté
 create or replace function interne.decor_rarete() returns int[] language sql immutable as
-$$ select array[0,0,4,2,0,1,0,1,2,3,3,0,2,1,3,0,1,3,2,2,0,0,1,1,0,1,3,3,1,2,4,2, 5, 3,4, 5,5,5,5,5,5,5,5,5,5,5,5, 5] $$;   -- 32 : Pirate (événement, 5 = jamais dans les sacs) ; 33 Vitrail ; 34 Trou noir ; 35 à 46 : décors de saison (passe seulement) ; 47 : Bêta
+$$ select array[0,0,4,2,0,1,0,1,2,3,3,0,2,1,3,0,1,3,2,2,0,0,1,1,0,1,3,3,1,2,4,2, 5, 3,4, 5,5,5,5,5,5,5,5,5,5,5,5, 5, 5] $$;   -- 32 : Pirate (événement, 5 = jamais dans les sacs) ; 33 Vitrail ; 34 Trou noir ; 35 à 46 : décors de saison (passe seulement) ; 47 : Bêta ; 48 : Super-héros (événement de novembre 2026)
 create or replace function interne.poids_rarete() returns numeric[] language sql immutable as
 $$ select array[10,5,2.5,0.8,0.2,0]::numeric[] $$;   -- la 6e : décors d'événement, jamais tirés
 
@@ -148,8 +148,8 @@ create or replace function interne.nb_coloris() returns int language sql immutab
 -- supabase/reset.sql les garde. Au lancement : remplacer true par false (et BETA.open:false dans index.html).
 create or replace function interne.beta_ouverte() returns boolean language sql immutable as $$ select true $$;
 create or replace function interne.taux_shiny() returns numeric language sql immutable as $$ select 0.0005::numeric $$;   -- sac gratuit et fusions ; Classique ×2, Premium et Pirate ×4, Collector ×10 (interne.sac) ; 1 sur 2 000 (relevé le 2 octobre 2026 : 1 sur 10 000, c'était presque jamais)
-create or replace function interne.revente() returns int[] language sql immutable as $$ select array[5,8,20,50,150,600] $$;
-create or replace function interne.prime_shiny() returns int[] language sql immutable as $$ select array[2000,5000,15000] $$;
+create or replace function interne.revente() returns int[] language sql immutable as $$ select array[1,1,2,5,15,60] $$;   -- 6 octobre 2026 : toute la monnaie divisée par 10 (supabase/division10.sql)
+create or replace function interne.prime_shiny() returns int[] language sql immutable as $$ select array[200,500,1500] $$;
 create or replace function interne.fusion_n() returns int[] language sql immutable as $$ select array[3,5,5,6,8] $$;
 
 -- les sacs : prix, nombre de billes, taille garantie (rang), chances de shiny, et chances de chaque taille position par position
@@ -159,13 +159,13 @@ create or replace function interne.sac(nom text, out prix int, out n int, out ga
 language sql immutable as $$
   select v.prix, v.n, v.garantie, v.shiny, v.cotes from (values
     ('gratuit',     0, 3, null::int, 0.0005, array[[75,25,0,0,0,0],[55,35,10,0,0,0],[30,33,20,12,4,1]]::numeric[]),
-    ('classique', 300, 5, null,      0.0010, array[[70,30,0,0,0,0],[50,38,12,0,0,0],[35,40,20,5,0,0],[20,35,30,13,2,0],[10,25,30,20,12,3]]::numeric[]),
-    ('premium',   600, 5, 3,         0.0020, array[[0,80,20,0,0,0],[0,60,35,5,0,0],[0,40,45,15,0,0],[0,0,55,38,7,0],[0,0,0,60,34,6]]::numeric[]),
-    ('collector',1500, 5, 4,         0.0050, array[[0,0,85,15,0,0],[0,0,65,35,0,0],[0,0,40,50,10,0],[0,0,0,60,38,2],[0,0,0,0,87,13]]::numeric[]),
+    ('classique',  30, 5, null,      0.0010, array[[70,30,0,0,0,0],[50,38,12,0,0,0],[35,40,20,5,0,0],[20,35,30,13,2,0],[10,25,30,20,12,3]]::numeric[]),
+    ('premium',    60, 5, 3,         0.0020, array[[0,80,20,0,0,0],[0,60,35,5,0,0],[0,40,45,15,0,0],[0,0,55,38,7,0],[0,0,0,60,34,6]]::numeric[]),
+    ('collector', 150, 5, 4,         0.0050, array[[0,0,85,15,0,0],[0,0,65,35,0,0],[0,0,40,50,10,0],[0,0,0,60,38,2],[0,0,0,0,87,13]]::numeric[]),
     -- Sac Pirate (2 octobre 2026) : 5 billes, 60 % Pirate et la dernière toujours Pirate (voir ouvrir_sac), tailles un peu plus grosses
-    ('pirate',    400, 5, null,      0.0020, array[[40,35,18,7,0,0],[30,32,22,12,4,0],[20,28,26,16,8,2],[10,22,26,22,15,5],[0,5,20,30,30,15]]::numeric[]),
+    ('pirate',     40, 5, null,      0.0020, array[[40,35,18,7,0,0],[30,32,22,12,4,0],[20,28,26,16,8,2],[10,22,26,22,15,5],[0,5,20,30,30,15]]::numeric[]),
     -- Sac Pirate Premium (2 octobre 2026) : tailles du Classique, 15 % de Pirate par bille et 35 % pour la dernière (voir ouvrir_sac)
-    ('pirate-premium', 1000, 5, null, 0.0020, array[[70,30,0,0,0,0],[50,38,12,0,0,0],[35,40,20,5,0,0],[20,35,30,13,2,0],[10,25,30,20,12,3]]::numeric[])
+    ('pirate-premium', 100, 5, null, 0.0020, array[[70,30,0,0,0,0],[50,38,12,0,0,0],[35,40,20,5,0,0],[20,35,30,13,2,0],[10,25,30,20,12,3]]::numeric[])
   ) v(nom, prix, n, garantie, shiny, cotes) where v.nom = sac.nom
 $$;
 
@@ -173,7 +173,9 @@ $$;
 create or replace function interne.evenement(nom text, out debut timestamptz, out fin timestamptz, out sac text, out decor int, out coloris int[])
 language sql immutable as $$
   select v.debut, v.fin, v.sac, v.decor, v.coloris from (values
-    ('pirates', timestamptz '2026-09-30 00:00:00 Europe/Paris', timestamptz '2026-10-14 23:59:59 Europe/Paris', 'pirate', 32, array[65,66,67,68,69])
+    ('pirates', timestamptz '2026-09-30 00:00:00 Europe/Paris', timestamptz '2026-10-14 23:59:59 Europe/Paris', 'pirate', 32, array[65,66,67,68,69]),
+    -- novembre 2026 : « Super-héros ! », pas de sachet à lui (on coche la case), décor 48, coloris 79 à 83 (après ceux des joueurs)
+    ('superheros', timestamptz '2026-11-01 00:00:00 Europe/Paris', timestamptz '2026-11-14 23:59:59 Europe/Paris', null, 48, array[79,80,81,82,83])
   ) v(nom, debut, fin, sac, decor, coloris) where v.nom = evenement.nom
 $$;
 create or replace function interne.evenement_du_sac(s text) returns text language sql immutable as $$
@@ -190,7 +192,7 @@ drop function if exists interne.doublons_du_sac(text);
 drop function if exists interne.prix_doublons();
 create or replace function interne.evenement_en_cours(out nom text, out debut timestamptz, out fin timestamptz, out decor int, out coloris int[])
 language sql stable as $$
-  select e.nom, v.debut, v.fin, v.decor, v.coloris from unnest(array['pirates']) e(nom), interne.evenement(e.nom) v
+  select e.nom, v.debut, v.fin, v.decor, v.coloris from unnest(array['pirates','superheros']) e(nom), interne.evenement(e.nom) v
   where now() between v.debut and v.fin limit 1
 $$;
 create or replace function interne.taux_evenement(s text) returns numeric language sql immutable as $$
@@ -324,13 +326,13 @@ $$ select coalesce((select bonbecs - least(depart, bonbecs) from public.portefeu
 -- Première connexion d'un compte : le cadeau de bienvenue, toujours le même (1000 bonbecs de départ et 5 sachets gratuits liés).
 -- (4 octobre 2026 : on ne reprend plus les bonbecs ni les sacs annoncés par la page, qu'un tricheur pouvait gonfler.
 --  Les paramètres restent pour les pages déjà ouvertes, mais sont ignorés.)
-create or replace function public.eco_demarrer(bonbecs int default 1000, sacs jsonb default '{}', pity int default 0)
+create or replace function public.eco_demarrer(bonbecs int default 100, sacs jsonb default '{}', pity int default 0)
 returns jsonb language plpgsql security definer set search_path = public as $$
 declare qui uuid := auth.uid();
 begin
   if qui is null then raise exception 'connexion_requise'; end if;
   if not exists (select 1 from portefeuilles where joueur = qui) then
-    insert into portefeuilles (joueur, bonbecs, depart, gratuits_lies) values (qui, 1000, 1000, 5)
+    insert into portefeuilles (joueur, bonbecs, depart, gratuits_lies) values (qui, 100, 100, 5)
       on conflict (joueur) do nothing;
   end if;
   return interne.etat(qui);
@@ -450,7 +452,7 @@ end $$;
 -- Pas de shiny en entrée ; la shiny peut sortir comme pour une fusion normale. Les billes en vente ou dans un troc ne peuvent pas fusionner.
 create or replace function interne.fusion_ev_n() returns int[] language sql immutable as $$ select array[3,3,2,2,2] $$;
 create or replace function interne.decor_evenement(d int) returns boolean language sql immutable as $$
-  select exists (select 1 from unnest(array['pirates']) e(nom), interne.evenement(e.nom) v where v.decor = d)
+  select exists (select 1 from unnest(array['pirates','superheros']) e(nom), interne.evenement(e.nom) v where v.decor = d)
 $$;
 create or replace function public.fusion_evenement(ids uuid[])
 returns jsonb language plpgsql security definer set search_path = public as $$
@@ -481,9 +483,10 @@ end $$;
 -- Case Mammouth : 0,05 %, un Mammouth garanti (décor tiré comme dans un sachet, coloris au hasard, shiny comme dans le Sachet Collector).
 create or replace function interne.pachinko_cases() returns table(k int, poids numeric, bonbecs int, sac text, taille text) language sql immutable as $$
   -- 3 octobre 2026 : bille à 150, et 0 → 32,9 %, 50 → 26 %, 200 → 18 %, Classique 13 %, 400 → 4 %, Premium 3 %, 1000 → 2 %, Collector 1 %, Mammouth 0,1 % (PACHI dans index.html)
-  select * from (values (0, 0.1, 0, null::text, 'mammouth'::text), (1, 2, 1000, null, null), (2, 4, 400, null, null),
-    (3, 9, 200, null, null), (4, 13, 50, null, null), (5, 32.9, 0, null, null), (6, 13, 50, null, null),
-    (7, 9, 200, null, null), (8, 13, 0, 'classique', null), (9, 3, 0, 'premium', null), (10, 1, 0, 'collector', null)) v(k, poids, bonbecs, sac, taille)
+  -- 6 octobre 2026 : montants divisés par 10 (bille 15 ; cases 100, 40, 20, 5)
+  select * from (values (0, 0.1, 0, null::text, 'mammouth'::text), (1, 2, 100, null, null), (2, 4, 40, null, null),
+    (3, 9, 20, null, null), (4, 13, 5, null, null), (5, 32.9, 0, null, null), (6, 13, 5, null, null),
+    (7, 9, 20, null, null), (8, 13, 0, 'classique', null), (9, 3, 0, 'premium', null), (10, 1, 0, 'collector', null)) v(k, poids, bonbecs, sac, taille)
 $$;
 create or replace function interne.pachinko_roue() returns numeric[] language sql immutable as $$ select array[10,15,20,25,20,10]::numeric[] $$;   -- Mini → Mammouth
 create or replace function public.pachinko(payer boolean default false)
@@ -498,7 +501,7 @@ begin
     -- 5 octobre 2026 : 20 billes achetées par jour au plus (PACHI_MAX dans index.html), la bille du jour en plus
     select count(*) into n from gains g where g.joueur = qui and g.source = 'plinko' and g.cle like today || '|%';
     if n >= 20 then raise exception 'limite_plinko'; end if;
-    lie := interne.payer(qui, 150);   -- la bille de plus : 150 (PACHI_PRICE) ; payée avec des bonbecs de départ, le lot reste lié
+    lie := interne.payer(qui, 15);   -- la bille de plus : 15 (PACHI_PRICE) ; payée avec des bonbecs de départ, le lot reste lié
     n := n + 1;
     insert into gains (joueur, source, cle) values (qui, 'plinko', today || '|' || n);
   end if;
@@ -515,13 +518,41 @@ begin
   return jsonb_build_object('eco', interne.etat(qui), 'case', c.k, 'bonbecs', c.bonbecs, 'sac', c.sac, 'taille', t, 'bille', b, 'achetees', n);
 end $$;
 
+-- La Roue du jour (6 octobre 2026) : un tour gratuit par jour, à la place du Casse-briques. Compte dans les 6 jeux du jour (gains 'jeu' today|roue).
+-- Parts dans l'ordre de la roue (ROUE dans index.html) ; chances proches du Plinko : 5 → 30,7 %, 10 → 22 %, 20 → 16 %, Classique 13 %,
+-- 40 → 7 %, Premium 6 %, 100 → 3 %, Collector 2 %, Mammouth 0,3 % (shiny comme dans le Sachet Collector).
+create or replace function interne.roue_cases() returns table(k int, poids numeric, bonbecs int, sac text, taille text) language sql immutable as $$
+  select * from (values (0, 0.3, 0, null::text, 'mammouth'::text), (1, 15.35, 5, null, null), (2, 13, 0, 'classique', null), (3, 11, 10, null, null),
+    (4, 7, 40, null, null), (5, 15.35, 5, null, null), (6, 6, 0, 'premium', null), (7, 16, 20, null, null), (8, 11, 10, null, null),
+    (9, 3, 100, null, null), (10, 2, 0, 'collector', null)) v(k, poids, bonbecs, sac, taille)
+$$;
+create or replace function public.roue()
+returns jsonb language plpgsql security definer set search_path = public as $$
+declare qui uuid := interne.moi(); today text := interne.aujourdhui()::text; c record; b jsonb := null; x numeric; acc numeric := 0;
+begin
+  perform 1 from portefeuilles where joueur = qui for update;
+  begin insert into gains (joueur, source, cle, montant) values (qui, 'jeu', today || '|roue', 0);
+  exception when unique_violation then raise exception 'deja'; end;
+  x := random() * (select sum(poids) from interne.roue_cases());
+  for c in select * from interne.roue_cases() order by k loop
+    acc := acc + c.poids; exit when x < acc;
+  end loop;
+  perform interne.crediter(qui, c.bonbecs, c.sac);
+  if c.bonbecs > 0 then update gains set montant = c.bonbecs where joueur = qui and source = 'jeu' and cle = today || '|roue'; end if;
+  if c.taille = 'mammouth' then
+    b := interne.nouvelle_bille(qui, 'mammouth', shiny => interne.tirer_shiny(interne.taux_shiny() * 10), src => 'roue');
+  end if;
+  return jsonb_build_object('eco', interne.etat(qui), 'case', c.k, 'bonbecs', c.bonbecs, 'sac', c.sac, 'bille', b);
+end $$;
+
 -- Le bonbec du jour : calendrier de 4 semaines, calculé par le serveur
 create or replace function public.bonbec_du_jour()
 returns jsonb language plpgsql security definer set search_path = public as $$
 declare qui uuid := interne.moi(); p portefeuilles; today date := interne.aujourdhui(); s int; i int;
-        j int[] := array[60,80,100,0,120,150,0, 100,120,150,0,180,200,0, 120,150,180,0,200,250,0, 150,180,200,0,250,300,0];
-        sac text[] := array[null,null,null,'classique',null,null,'classique', null,null,null,'classique',null,null,'premium',
-                            null,null,null,'classique',null,null,'premium', null,null,null,'premium',null,null,'collector'];
+        -- 6 octobre 2026 : ÷10 et presque 2 fois plus généreux (DAILY_CAL dans index.html)
+        j int[] := array[10,15,20,10,25,30,0, 15,20,25,15,30,35,20, 20,25,30,0,35,40,0, 25,30,35,25,40,50,50];
+        sac text[] := array[null,null,null,'classique',null,null,'premium', null,null,null,'classique',null,null,'premium',
+                            null,null,null,'premium',null,null,'collector', null,null,null,'premium',null,null,'collector'];
 begin
   select * into p from portefeuilles where joueur = qui for update;
   if p.serie_jour = today then raise exception 'deja'; end if;
@@ -536,9 +567,9 @@ end $$;
 create or replace function public.gagner(source text, cle text, montant int, sac text default null)
 returns jsonb language plpgsql security definer set search_path = public as $$
 declare qui uuid := interne.moi(); today text := interne.aujourdhui()::text; k text; maxi int; nq int; ev record;
-        quetes jsonb := '{"open_bag":80,"open_free":100,"hole":90,"par":70,"twoshots":90,"find_bille":90,"find_calot":120,
-                          "new_slot":100,"new_color":100,"open_paid":120,"craft":120,"shake":60,"recycle":60,
-                          "find_many":80,"find_rare":100,"find_event":120,"day_games":80,"stars2":90,"plinko":50}';
+        quetes jsonb := '{"open_bag":8,"open_free":10,"hole":9,"par":7,"twoshots":9,"find_bille":9,"find_calot":12,
+                          "new_slot":10,"new_color":10,"open_paid":12,"craft":12,"shake":6,"recycle":6,
+                          "find_many":8,"find_rare":10,"find_event":12,"day_games":8,"stars2":9,"plinko":5}';
 begin
   if montant < 0 then raise exception 'montant_invalide'; end if;
   if sac is not null and sac not in ('classique','premium','collector','pirate') then raise exception 'sac_inconnu'; end if;
@@ -553,26 +584,26 @@ begin
       if montant <> 0 or sac is distinct from 'classique' then raise exception 'montant_invalide'; end if;
       k := today;
     when 'jeu' then     -- une récompense par jour et par jeu (au Tir : par trou)
-      maxi := case when cle ~ '^tir\|[0-5]$' then 250 when cle = 'pot' then 250 when cle = 'chateau' then 340 when cle = 'casse' then 450
-                   when cle in ('course','tic') then 200 end;   -- une partie par jour et par jeu (DAY_GAMES dans index.html)
+      maxi := case when cle ~ '^tir\|[0-5]$' then 25 when cle = 'pot' then 25 when cle = 'chateau' then 34
+                   when cle in ('course','tic') then 20 end;   -- une partie par jour et par jeu (DAY_GAMES dans index.html)
       if maxi is null or montant > maxi or sac is not null then raise exception 'montant_invalide'; end if;
       k := today || '|' || cle;
     when 'jeux-bonus' then   -- les 6 jeux du jour joués (le Tir et les 5 autres) : un Sac Premium
       if montant <> 0 or sac is distinct from 'premium' then raise exception 'montant_invalide'; end if;
       if (select count(*) from gains g where g.joueur = qui and g.source = 'jeu'
-            and g.cle in (today||'|tir|0', today||'|pot', today||'|chateau', today||'|casse', today||'|pachinko', today||'|tic')) < 6
+            and g.cle in (today||'|tir|0', today||'|pot', today||'|chateau', today||'|roue', today||'|pachinko', today||'|tic')) < 6   -- la Roue remplace le Casse-briques (6 octobre 2026)
         then raise exception 'pas_encore'; end if;
       k := today;
     when 'succes' then
-      if montant > 10000 then raise exception 'montant_invalide'; end if;
+      if montant > 1000 then raise exception 'montant_invalide'; end if;
       k := cle;
     when 'serie' then
-      if montant > 6000 then raise exception 'montant_invalide'; end if;
+      if montant > 600 then raise exception 'montant_invalide'; end if;
       k := cle;
     when 'evenement' then   -- (4 octobre 2026) plus de sachet d'événement offert : on coche « billes d'événement » sur les sachets.
       raise exception 'deja';   -- 'deja' : les anciens clients ne montrent pas d'erreur, et le serveur corrige leur compte de sachets
     when 'passe' then   -- paliers de la saison en cours seulement
-      if not interne.saison_valide(split_part(cle, '|', 1)) or montant > 400 then raise exception 'montant_invalide'; end if;
+      if not interne.saison_valide(split_part(cle, '|', 1)) or montant > 40 then raise exception 'montant_invalide'; end if;
       k := cle;
     else raise exception 'source_inconnue';
   end case;
@@ -638,6 +669,7 @@ create or replace function public.miser(jeu text, montant int)
 returns jsonb language plpgsql security definer set search_path = public as $$
 declare qui uuid := interne.moi(); mid bigint;
 begin
+  raise exception 'mise_invalide';   -- 6 octobre 2026 : fermé (plus utilisé depuis début octobre, et les montants ont été divisés par 10)
   if jeu not in ('course','tic') or montant not in (10,25,50,100) then raise exception 'mise_invalide'; end if;
   perform interne.payer_libre(qui, montant);
   insert into mises (joueur, jeu, montant) values (qui, jeu, montant) returning mises.id into mid;
@@ -666,7 +698,7 @@ declare qui uuid := interne.moi(); b jsonb;
 begin
   if not exists (select 1 from testeurs where joueur = qui) then raise exception 'reserve_aux_testeurs'; end if;
   case action
-    when 'bonbecs' then perform interne.crediter(qui, 1000);
+    when 'bonbecs' then perform interne.crediter(qui, 100);
     when 'gratuit' then update portefeuilles set gratuit_t0 = now() - interval '100 minutes' where joueur = qui;
     -- une shiny de test, dans n'importe quelle taille
     when 'shiny' then b := interne.nouvelle_bille(qui, (interne.tailles())[1 + floor(random()*6)::int], shiny => 1 + floor(random()*3)::int, src => 'test');
@@ -678,7 +710,7 @@ end $$;
 -- droits : le site ne peut appeler que ces fonctions-là
 do $$ declare f text; begin
   foreach f in array array['eco_demarrer(int,jsonb,int)','eco_etat()','ouvrir_sac(text,boolean,boolean)','echanger_billes(uuid[])',
-    'fusionner(uuid[])','fusion_evenement(uuid[])','pachinko(boolean)','bonbec_du_jour()','gagner(text,text,int,text)','bille_gagnee(text,text,bigint,uuid)',
+    'fusionner(uuid[])','fusion_evenement(uuid[])','pachinko(boolean)','roue()','bonbec_du_jour()','gagner(text,text,int,text)','bille_gagnee(text,text,bigint,uuid)',
     'miser(text,int)','regler_mise(bigint,int)','outil_test(text)'] loop
     execute format('revoke all on function public.%s from public, anon', f);
     execute format('grant execute on function public.%s to authenticated', f);

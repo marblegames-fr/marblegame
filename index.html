@@ -1666,7 +1666,8 @@ body.vit-dragging,body.vit-dragging *{cursor:grabbing!important;user-select:none
 .games-hero .gh-txt{flex:1 1 320px}
 .gh-time{display:inline-flex;align-items:center;gap:5px;font-weight:800;color:var(--muted);font-size:12px;align-self:flex-start}
 .gh-time b{color:var(--ink)}
-.gh-board{flex:1 1 100%;display:grid;grid-template-columns:repeat(6,minmax(0,1fr)) auto minmax(0,1.25fr);gap:8px;align-items:stretch}
+.gh-board{flex:1 1 100%;display:grid;grid-template-columns:repeat(3,minmax(0,1fr)) auto minmax(0,1.25fr);gap:8px;align-items:stretch}
+.gt-jdj{position:absolute;left:10px;top:10px;display:inline-flex;align-items:center;gap:4px;padding:4px 10px;border-radius:999px;background:#FFC93F;color:#2B2233;font-size:12px;font-weight:900;box-shadow:0 2px 0 rgba(43,34,51,.35)}
 .gh-cell{position:relative;display:grid;justify-items:center;align-content:center;gap:3px;padding:10px 6px;border-radius:14px;text-align:center;
   border:2px dashed color-mix(in srgb,var(--ink) 22%,transparent);background:var(--panel);color:var(--ink-2);cursor:pointer;transition:transform .15s}
 button.gh-cell:hover{transform:translateY(-2px)}
@@ -5691,11 +5692,7 @@ const NAV = [["accueil","Accueil","home"],["sacs","Ouvrir des sachets","bag"],["
 // les pages qui ne sont pas dans le menu allument leur « parent »
 const NAV_PARENT = {billepedia:"collection", tir:"jeux", pot:"jeux", chateau:"jeux", casse:"jeux", roue:"jeux", grattage:"jeux", distributeur:"jeux", loterie:"jeux", tic:"jeux", pachinko:"jeux", course:"jeux", grandecourse:"jeux", atelier:"confiserie"};
 const SOLO_GAMES = [["pot","Le Pot"],["chateau","Le Château"],["roue","La Roue"],["pachinko","Le Plinko"],["tic","La Tic"]];   // la Roue remplace le Casse-briques (6 octobre 2026)
-function gamesReady(){
-  const out = SOLO_GAMES.filter(g=>soloReady(g[0]) || gameLive(g[0])).map(g=>g[1]);
-  if(!playedToday().tir[0]) out.unshift("Le Tir");
-  return out;
-}
+function gamesReady(){ return playedToday().bonus ? [] : jeuxDuJour().filter(k=>!jeuFait(k)).map(k=>JEUX_NOM[k]) }
 function renderNav(){
   const cur = NAV_PARENT[ui.view] || ui.view, bags = freeStock()+giftCount(), games = gamesReady().length;
   document.getElementById("nav").innerHTML = NAV.map(n=>
@@ -5750,8 +5747,8 @@ function dayHTML(inSheet, wide){
     rwHtml:bonusTag(), done:Q.bonus, ready:all&&!Q.bonus, btn: all&&!Q.bonus ? `<button class="btn btn-yellow" data-action="q-bonus">${bonusTag()}</button>` : ""}));
   // les jeux de la cour
   const games = gamesReady();
-  const rows3 = [mjRow({icon:"pad", title: games.length ? `${games.length} jeu${games.length>1?"x ont":" a"} une récompense` : "Récompenses des jeux prises",
-    text: games.length ? games.join(", ") : "Rejoue pour le plaisir, ça repart à minuit", done:!games.length, act:'data-action="nav" data-view="jeux"'})];
+  const rows3 = [mjRow({icon:"pad", title: games.length ? `${games.length} jeu${games.length>1?"x":""} du jour à jouer` : "Jeux du jour faits",
+    text: games.length ? `${games.join(", ")} · ${BAG_BY[GAMES_BONUS].name} à la clé` : "De nouveaux jeux du jour à minuit", done:!games.length, act:'data-action="nav" data-view="jeux"'})];
   // succès et séries terminés
   const nc = chalClaimable(), ns = seriesClaimable(), rows4 = [];
   if(nc) rows4.push(mjRow({icon:"trophy", title:`${nc} succès réussi${nc>1?"s":""}`, text:"Ta récompense t'attend", ready:true, act:'data-action="nav" data-view="succes"'}));
@@ -8856,7 +8853,7 @@ async function gratGo(pay){
   grat.busy = false;
   walletFreeze = S.jetons; renderTop();   // le lot n'apparaît qu'une fois le ticket gratté
   let given = false;
-  grat.give = () => { if(given) return; given = true; walletFreeze = null; gain(); renderTop(); renderNav() };
+  grat.give = () => { if(given) return; given = true; walletFreeze = null; gain(); renderTop(); renderNav(); if(!pay) gamesBonus() };
   grat.lot = lot; grat.cells = gratCells(lot); grat.done = false;
   renderView();
 }
@@ -8955,7 +8952,7 @@ async function distGo(pay){
   }catch(e){ dist.busy = false; chanceFail("distributeur", e); return }
   const isNew = !S.specs.some(x=>colorKey(x)===colorKey(s));
   let given = false;
-  const give = () => { if(given) return; given = true; gain(); S.specs.push(s); S.unseen.push(s.id); logFind(s); save(); renderTop(); renderNav() };
+  const give = () => { if(given) return; given = true; gain(); S.specs.push(s); S.unseen.push(s.id); logFind(s); save(); renderTop(); renderNav(); if(!pay) gamesBonus() };
   setTimeout(give, 3500);
   const m = document.getElementById("ds-machine"), cap = document.getElementById("ds-cap");
   const col = PALETTES[s.pal][2];
@@ -9042,12 +9039,12 @@ const GAME_ICON = {tir:"target", pot:"pot", chateau:"castle", casse:"layers", co
 function viewGames(){
   gcLoad();
   const P = playedToday(), tirDone = !!P.tir[0], tirL = LEVELS[tirOfDay()];
-  const keys = ["tir", ...Object.keys(DAY_GAMES)], isDone = k => k==="tir" ? tirDone : !!dayGame(k)?.done;
+  const keys = jeuxDuJour(), isDone = jeuFait, jdj = new Set(keys);
   const doneN = keys.filter(isDone).length, left = keys.length-doneN;
   const won = Object.keys(DAY_GAMES).reduce((a,k)=>a+(dayGame(k)?.rew||0), 0);
   const maxAll = TIR_MAX + Object.values(DAY_GAMES).reduce((a,g)=>a+g.max, 0);
   const tile = c => `<article class="panel game-tile${c.ok?"":" played"}">
-    <button class="gt-art" data-action="nav" data-view="${c.v}" aria-label="${c.ok?"Jouer":"Voir"} : ${c.t}">${c.art}<span class="gt-max">${c.prize ? `jusqu'à ${c.prize}` : `${COIN} jusqu'à ${c.max}`}</span><span class="gt-state ${c.ok?"ok":""}">${c.state}</span></button>
+    <button class="gt-art" data-action="nav" data-view="${c.v}" aria-label="${c.ok?"Jouer":"Voir"} : ${c.t}">${c.art}${jdj.has(c.v)?`<span class="gt-jdj">${ic("star",12,2.6)} Jeu du jour</span>`:""}<span class="gt-max">${c.prize ? `jusqu'à ${c.prize}` : `${COIN} jusqu'à ${c.max}`}</span><span class="gt-state ${c.ok?"ok":""}">${c.state}</span></button>
     <div class="gt-body"><h2>${c.t}</h2>
       <div class="gt-foot"><small>${c.stat}</small><button class="btn ${c.ok?"btn-blue":"btn-ghost"}" data-action="nav" data-view="${c.v}">${c.ok?`${ic("play",16)} Jouer`:"Voir"}</button></div></div>
   </article>`;
@@ -9072,18 +9069,17 @@ function viewGames(){
     {...day("tic"), d:ARENA.tic.lead, art:artTic(), stat:`${S.stats.tic} victoire${S.stats.tic>1?"s":""}`},
   ];
   const act = activeSpec();
-  [solo, multi].forEach(l=>l.sort((a,b)=>b.ok-a.ok));   // ceux qui restent à jouer aujourd'hui d'abord (puis tout est réuni en une seule liste)
+  [solo, multi, chance].forEach(l=>l.sort((a,b)=>(jdj.has(b.v)-jdj.has(a.v)) || (b.ok-a.ok)));   // ceux qui restent à jouer aujourd'hui d'abord (puis tout est réuni en une seule liste)
   return `<div class="page-head"><div><h1>Jeux de la cour</h1></div>
     <span class="hand-note">Qui c'est le plus fort de la cour ?</span></div>
   <section class="panel games-hero${left?"":" all-done"}">
-    <div class="gh-txt"><span class="gh-kick">${ic("gift",14)} Tes parties du jour</span>
-      <h2>${left ? `${left} partie${left>1?"s":""} à jouer aujourd'hui` : "Tout est joué : bravo !"}</h2>
-      <p>${won ? `Déjà <b>${fmt(won)} ${CUR.many}</b> gagnés aux jeux aujourd'hui.` : `Jusqu'à <b>${fmt(maxAll)} ${CUR.many}</b> à gagner chaque jour.`} ${left ? "" : "Reviens demain !"}</p>
+    <div class="gh-txt"><span class="gh-kick">${ic("star",14)} Les 3 jeux du jour</span>
+      <h2>${left ? `${left} jeu${left>1?"x":""} pour gagner un ${BAG_BY[GAMES_BONUS].name}` : P.bonus ? "Sachet gagné : bravo !" : "Tout est joué : bravo !"}</h2>
 </div>
-    <small class="gh-time">${ic("clock",13)} Nouvelles parties dans <b data-quest-timer>${untilMidnight()}</b></small>
+    <small class="gh-time">${ic("clock",13)} Nouveaux jeux dans <b data-quest-timer>${untilMidnight()}</b></small>
     <div class="gh-board" role="list">
-      ${keys.map(k=>{ const d = isDone(k), g = k==="tir" ? null : dayGame(k), live = g && !g.done, name = k==="tir" ? "Le Tir" : DAY_GAMES[k].title.replace(/^La Course sur la plage$/,"La Course");
-        const gain = k==="tir" ? (d ? "Réussi" : `${COIN}jusqu'à ${TIR_MAX}`) : d ? (DAY_GAMES[k].prize ? "Joué" : `${COIN}+${fmt(g.rew||0)}`) : DAY_GAMES[k].prize ? `Jusqu'à ${DAY_GAMES[k].prize}` : `${COIN}jusqu'à ${DAY_GAMES[k].max}`;
+      ${keys.map(k=>{ const d = isDone(k), g = k==="tir" ? null : dayGame(k), live = g && !g.done, name = JEUX_NOM[k], DG = DAY_GAMES[k];
+        const gain = k==="tir" ? (d ? "Réussi" : `${COIN}jusqu'à ${TIR_MAX}`) : !DG ? (d ? "Joué" : "Partie offerte") : d ? (DG.prize ? "Joué" : `${COIN}+${fmt(g.rew||0)}`) : DG.prize ? `Jusqu'à ${DG.prize}` : `${COIN}jusqu'à ${DG.max}`;
         return `<button class="gh-cell${d?" done":live?" live":""}" role="listitem" data-action="nav" data-view="${k}" title="${name}">
           ${d?`<span class="ok">${ic("check",11,3.4)}</span>`:""}<span class="gc-ic">${ic(GAME_ICON[k],22)}</span><b>${name}</b><small>${live?"À finir":gain}</small></button>` }).join("")}
       <span class="gh-plus" aria-hidden="true">${ic("chev",18)}</span>
@@ -9492,13 +9488,23 @@ const DAY_GAMES = {
   pachinko:{title:"Le Plinko", max:0, prize:"une bille"},   // la bille gratuite du jour (supabase/serveur.sql, public.pachinko)
   tic:     {title:"La Tic", max:20},
 };
-// les 6 jeux du jour joués (Tir compris) : un Sachet Premium offert (le serveur vérifie les 6 parties : source 'jeux-bonus')
+// (6 octobre 2026) les 3 jeux du jour, tirés chaque jour parmi 8 et les mêmes pour tout le monde : un Sachet Premium quand ils sont faits
+// (seule la partie offerte compte). Même calcul que interne.jeux_du_jour dans supabase/serveur.sql : toujours un jeu d'adresse en premier.
 const GAMES_BONUS = "premium";
-const allGamesDone = () => !!playedToday().tir[0] && Object.keys(DAY_GAMES).every(k=>dayGame(k)?.done);
+const JEUX_TOUS = ["tir","pot","chateau","tic","roue","pachinko","grattage","distributeur"];
+const JEUX_NOM = {tir:"Le Tir", pot:"Le Pot", chateau:"Le Château", tic:"La Tic", roue:"La Roue", pachinko:"Le Plinko", grattage:"Le Ticket", distributeur:"Le Distributeur"};
+function jeuxDuJour(key=dayKey()){
+  const [y,m,dd] = key.split("-").map(Number), d = Math.round((Date.UTC(y,m-1,dd)-Date.UTC(2026,0,1))/864e5);
+  let x = (d*7919 + 12345) % 65521; const nx = () => (x = (x*x + 7) % 65521);
+  nx(); const a = JEUX_TOUS[nx()%4], r1 = JEUX_TOUS.filter(k=>k!==a), b = r1[nx()%7], r2 = r1.filter(k=>k!==b), c = r2[nx()%6];
+  return [a, b, c];
+}
+const jeuFait = k => k==="tir" ? !!playedToday().tir[0] : !!dayGame(k)?.done;
+const allGamesDone = () => jeuxDuJour().every(jeuFait);
 function gamesBonus(){
   const P = playedToday(); if(P.bonus || !allGamesDone()) return;
   P.bonus = 1; earn("jeux-bonus", dayKey(), 0, GAMES_BONUS); save(); renderTop(); renderNav();
-  setTimeout(()=>{ toast(`Les 6 jeux du jour sont faits : un ${BAG_BY[GAMES_BONUS].name} t'est offert !`); Sound.ding() }, 1400);
+  setTimeout(()=>{ toast(`Tes 3 jeux du jour sont faits : un ${BAG_BY[GAMES_BONUS].name} t'est offert !`); Sound.ding() }, 1400);
 }
 const DAY_INFO = {
   pot:     {goal:"Un maximum de billes dans le pot en 5 lancers.", rew:[["Chaque bille dans le pot","3"],["1, 3 ou 5 billes : 1, 2 ou 3 étoiles","+2 · +5 · +10"]]},

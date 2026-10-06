@@ -548,6 +548,19 @@ begin
   return jsonb_build_object('eco', interne.etat(qui), 'j', j[i], 'sac', sac[i], 'jour', i, 'serie', s);
 end $$;
 
+-- Les 3 jeux du jour (6 octobre 2026) : les mêmes pour tout le monde, calculés à partir de la date (même calcul que jeuxDuJour dans index.html).
+-- Toujours un jeu d'adresse (Tir, Pot, Château ou Tic) en premier, puis 2 autres parmi les 7 restants.
+-- Hasard : x → (x² + 7) mod 65521 (petits nombres : le même résultat exact en SQL et en JavaScript).
+create or replace function interne.jeux_du_jour(j date) returns text[] language plpgsql immutable as $$
+declare tous text[] := array['tir','pot','chateau','tic','roue','pachinko','grattage','distributeur'];
+        x bigint := ((j - date '2026-01-01') * 7919 + 12345) % 65521; a text; b text; c text; r text[];
+begin
+  x := (x * x + 7) % 65521; x := (x * x + 7) % 65521; a := tous[1 + x % 4];
+  r := array_remove(tous, a);  x := (x * x + 7) % 65521; b := r[1 + x % 7];
+  r := array_remove(r, b);     x := (x * x + 7) % 65521; c := r[1 + x % 6];
+  return array[a, b, c];
+end $$;
+
 -- Tous les autres gains : chacun ne paie qu'une fois, et jamais plus que ce que le jeu peut donner
 create or replace function public.gagner(source text, cle text, montant int, sac text default null)
 returns jsonb language plpgsql security definer set search_path = public as $$
@@ -575,8 +588,9 @@ begin
       k := today || '|' || cle;
     when 'jeux-bonus' then   -- les 6 jeux du jour joués (le Tir et les 5 autres) : un Sac Premium
       if montant <> 0 or sac is distinct from 'premium' then raise exception 'montant_invalide'; end if;
+      -- (6 octobre 2026) les 3 jeux du jour, tirés chaque jour parmi 8 (interne.jeux_du_jour) : seule la partie offerte compte
       if (select count(*) from gains g where g.joueur = qui and g.source = 'jeu'
-            and g.cle in (today||'|tir|0', today||'|pot', today||'|chateau', today||'|roue', today||'|pachinko', today||'|tic')) < 6   -- la Roue remplace le Casse-briques (6 octobre 2026)
+            and g.cle in (select today || '|' || case when x = 'tir' then 'tir|0' else x end from unnest(interne.jeux_du_jour(today::date)) x)) < 3
         then raise exception 'pas_encore'; end if;
       k := today;
     when 'succes' then

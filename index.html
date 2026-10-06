@@ -3488,6 +3488,8 @@ const eventLive = E => !!E && Date.now()>=E.start && Date.now()<=E.end;
 // Mêmes valeurs dans serveur.sql (taux_evenement, ouvrir_sac).
 const EV_DROP = {classique:.5, premium:.5, collector:.5};
 const evOptOn = bagId => !!(S.evOpt && EV_DROP[bagId] && liveEventKey());
+// un événement pas encore commencé reste une surprise (Billepedia, album, Confiserie) : seule l'accueil l'annonce, billes floutées, 7 jours avant
+const evSoon = E => Date.now() < E.start;
 const liveEventKey = () => Object.keys(EVENTS).find(k=>eventLive(EVENTS[k]));
 const liveEvents = () => Object.keys(EVENTS).filter(k=>eventLive(EVENTS[k]));
 function eventLeft(E){ const ms=Math.max(0,E.end-Date.now()), d=Math.floor(ms/864e5), h=Math.floor(ms/36e5)%24; return d ? `${d} j ${h} h` : `${h} h ${Math.floor(ms/6e4)%60} min` }
@@ -6560,7 +6562,7 @@ function viewCollection(){
   // une case pas encore trouvée n'apparaît qu'avec le filtre « Événement »
   const evCard = (t,f) => {
     const F = FAMILIES[f], E = EVENTS[F.event], list = S.specs.filter(x=>x.type===t && x.family===f);
-    if(!qOK(F.name)) return "";
+    if(!qOK(F.name) || (evSoon(E) && !list.length)) return "";
     if(showFn && show!=="event" && !list.some(showFn)) return "";
     if(!list.length){ if(show!=="event") return "";
       return `<button class="m-card missing" data-action="show" data-show="event" aria-label="${TYPES[t].label} ${F.name} : pas encore trouvée"><span class="ball">${mImg(ghost(t,f),160,Math.round(84*scaleOf(t)+6),"")}</span><b>${F.name}</b><span class="rar" style="--rar:${E.color}"><i></i>Événement</span><small>${eventLive(E)?"À trouver":"Événement terminé"}</small></button>` }
@@ -6667,6 +6669,7 @@ function betaView(){
 function eventsView(){
   return `<p class="conf-intro">Seulement pendant leur événement. Hors album et hors succès.</p>
   ${EVENT_FAMS.map(f=>{ const F = FAMILIES[f], E = EVENTS[F.event], live = eventLive(E), mine = S.specs.filter(x=>x.family===f);
+    if(evSoon(E)) return "";
     const cells = E.palIdx.map(pl=>`<div class="ev-row"><b>${esc(PALETTES[pl][0])}</b>${TK.map(t=>{ const l = mine.filter(x=>x.pal===pl && x.type===t).sort(tierSort);
       return l.length ? `<button class="ev-cell got" data-action="spec" data-id="${l[0].id}" style="${tstyle(t)}" aria-label="${TYPES[t].label} ${esc(PALETTES[pl][0])}">${mImg(l[0],100,Math.round(20+22*scaleOf(t)),"")}${l.length>1?`<i>×${l.length}</i>`:""}</button>`
         : `<span class="ev-cell" title="${TYPES[t].label} ${esc(PALETTES[pl][0])} : pas encore trouvée"><span class="sil" style="--c1:${PALETTES[pl][1]};--c2:${PALETTES[pl][2]};width:${Math.round(14+18*scaleOf(t))}px;height:${Math.round(14+18*scaleOf(t))}px"></span></span>` }).join("")}</div>`).join("");
@@ -7244,6 +7247,7 @@ function viewPedia(){
   const pals = BASE_PAL_IDS.map(p=>PALETTES[p]).map(P=>`<div class="pal"><span>${[P[1],P[2],P[3]].map(c=>`<i style="background:${c}"></i>`).join("")}</span>${P[0]}</div>`).join("");
   const combos = TK.length*N_DECORS*BASE_PALS;
   const events = EVENT_FAMS.map(f=>{ const F=FAMILIES[f], E=EVENTS[F.event];
+    if(evSoon(E)) return `<div class="rar-group" style="--dc:var(--muted)"><h3><i></i>Surprise<small>Prochain événement · à partir du ${dayMonth(E.start)}</small></h3><div class="pal-row" style="--n:${E.pals.length}">${E.pals.map(()=>`<div class="sh-tile secret"><span class="sec-ball">?</span><b>Surprise</b></div>`).join("")}</div></div>`;
     const tiles = E.palIdx.map((pal,j)=>{ const x={seed:hash("event"+f+j), type:"calot", family:f, pal, shiny:0}, i=pv({...x, cour:`Motif d'événement · ${E.name}. ${eventLive(E)?`Dans les Sachets Classique, Premium et Collector (case de l'événement cochée) jusqu'au ${dayMonth(E.end)}.`:Date.now()<E.start?`À partir du ${dayMonth(E.start)}.`:"L'événement est terminé."}`});
       return `<button class="sh-tile" data-action="preview" data-k="${i}" style="${tstyle(x.type)}">${mImg(x,200,70)}<b>${esc(PALETTES[pal][0])}</b></button>` }).join("");
     return `<div class="rar-group" style="--dc:${E.color}"><h3><i></i>${F.name}<small>Événement « ${esc(E.name)} » · ${E.pals.length} coloris exclusifs${eventLive(E)?` · jusqu'au ${dayMonth(E.end)}`:""}</small></h3><div class="pal-row" style="--n:${E.pals.length}">${tiles}</div></div>` }).join("");

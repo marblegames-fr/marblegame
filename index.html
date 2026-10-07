@@ -6132,8 +6132,10 @@ function renderGcBtn(){
   const b = document.getElementById("gc-btn"); if(!b) return;
   const reg = !!gc.etat?.inscrit, N = gcNext(), lots = srvOn() && gcWaiting().length>0;   // des lots à récupérer : le raccourci mène à la page de la course (bouton « Récupérer mes lots »)
   b.innerHTML = `${ic(lots?"gift":"flag",21)}<span class="gc-cd" data-gc-short>${gcShort(N.depart-Date.now())}</span><span class="dot"></span><span class="tip">${lots ? "Tes lots de la Grande Course t'attendent !" : reg ? `Inscrit pour la course ${gcWhen(N)}` : `Grande Course ${gcWhen(N)} : inscris-toi !`}</span>`;
-  b.classList.toggle("ready", lots || !reg); b.classList.toggle("ok", reg && !lots);
-  b.setAttribute("aria-label", lots ? "La Grande Course : tes lots t'attendent, viens les récupérer" : reg ? `La Grande Course ${gcWhen(N)} : tu es inscrit` : `La Grande Course ${gcWhen(N)} : pas encore inscrit`);
+  const wait = sync.on && !gc.etat;   // connecté, mais l'état de la course n'est pas encore arrivé : on ne dit pas « pas inscrit »
+  if(wait) b.querySelector(".tip").textContent = `Grande Course ${gcWhen(N)}`;
+  b.classList.toggle("ready", !wait && (lots || !reg)); b.classList.toggle("ok", !wait && reg && !lots);
+  b.setAttribute("aria-label", wait ? `La Grande Course ${gcWhen(N)}` : lots ? "La Grande Course : tes lots t'attendent, viens les récupérer" : reg ? `La Grande Course ${gcWhen(N)} : tu es inscrit` : `La Grande Course ${gcWhen(N)} : pas encore inscrit`);
 }
 function renderTop(){
   renderBeta(); renderGcBtn(); renderBell();
@@ -10507,7 +10509,8 @@ function viewGrandeCourse(){
   const D = E?.derniere, me = D ? gcMeIn(D.resultats) : -1;
   const prize = (k,l) => `<div><b>${l}</b>${COIN} ${COURSE_PRIX[k].j}${COURSE_PRIX[k].sac?` + ${BAG_BY[COURSE_PRIX[k].sac].name}`:""}</div>`;
   let reg;
-  if(!srvOn()) reg = `<div class="gc-reg off">${ic("user",18)} Crée ton compte (c'est gratuit) pour t'inscrire à la Grande Course.</div>
+  if(sync.on && !eco.ready) reg = `<div class="gc-reg off">${ic("flag",18)} Connexion au serveur… ton inscription s'affiche dans un instant.</div>`;
+  else if(!srvOn()) reg = `<div class="gc-reg off">${ic("user",18)} Crée ton compte (c'est gratuit) pour t'inscrire à la Grande Course.</div>
     ${window.Cloud?.available && !sync.on ? `<button class="btn btn-yellow" data-action="acct-signup">Créer mon compte</button>` : ""}`;
   else if(E?.inscrit) reg = `<div class="gc-reg on">${pick?mImg(pick,96,44,""):""}<div><b>Tu es inscrit pour ${when} !</b><small>Tu cours avec ${pick?esc(specName(pick)):"ta bille"}. Rendez-vous à ${N.heure} h.</small></div></div>
     <div class="btns"><button class="btn btn-ghost" data-action="gc-pickopen">Changer de bille</button><button class="btn btn-ghost" data-action="gc-unreg">Me désinscrire</button></div>`;
@@ -13144,7 +13147,7 @@ var sync = {on:false, uid:null, email:"", known:new Set(), timer:0, busy:false, 
    Avec un compte, les bonbecs, les sachets offerts, le sachet gratuit et les billes tirées viennent du serveur :
    le jeu affiche tout de suite, puis se cale sur ce que le serveur répond. Sans compte (ou si serveur.sql
    n'est pas encore installé), tout reste calculé ici comme avant. */
-var eco = {ready:false, q:Promise.resolve(), testeur:false, busy:false};
+var eco = {ready:false, q:Promise.resolve(), testeur:false, busy:false, retry:false, retryT:0, tries:0};
 // outils de test : pour les comptes testeurs, ou quand le jeu tourne sur l'ordinateur (pas en ligne)
 const DEV_HOST = location.protocol==="file:" || /^(localhost|127\.0\.0\.1|)$/.test(location.hostname);
 const devTools = () => sync.on ? eco.testeur : DEV_HOST;
@@ -13155,8 +13158,18 @@ function srvOn(){ return !!(sync.on && eco.ready) }
 function srvNeed(){
   if(srvOn()) return true;
   toast("Le serveur ne répond pas : réessaie dans un instant.");
-  if(sync.on && !eco.retry){ eco.retry = true; ecoStart().finally(()=>{ eco.retry = false; if(eco.ready){ renderTop(); renderNav(); courStart() } }) }
+  ecoRetry(0);
   return false;
+}
+// (7 octobre 2026) le serveur n'a pas répondu au chargement de la page : on retente tout seul (5 s, 15 s, 30 s, puis chaque minute),
+// sinon la page restait « sans serveur » jusqu'au prochain rafraîchissement (Grande Course : « Crée ton compte », drapeau « pas inscrit »)
+// eco.retry : un essai est en cours ; un nouvel appel remplace l'essai prévu (ecoRetry(0) : tout de suite)
+function ecoRetry(delay){
+  if(!sync.on || eco.ready || eco.retry) return;
+  clearTimeout(eco.retryT);
+  eco.retryT = setTimeout(()=>{ if(!sync.on || eco.ready || eco.retry) return; eco.retry = true; ecoStart().finally(()=>{ eco.retry = false;
+    if(eco.ready){ eco.tries = 0; renderTop(); renderNav(); courStart(); if(document.getElementById("ov").hidden) renderView() }
+    else ecoRetry([5e3,15e3,30e3][eco.tries++] ?? 60e3) }) }, delay);
 }
 // les appels partent un par un, dans l'ordre : le dernier état reçu est toujours le bon
 function srv(fn){ const p = eco.q.then(fn); eco.q = p.catch(()=>{}); return p }
@@ -13209,7 +13222,8 @@ function srvAdopt(list){ list.forEach(x=>sync.known.add(x.id)); return list }
 // première connexion avec le serveur : il reprend les bonbecs et les sachets offerts de la partie
 async function ecoStart(){
   try{ applyEco(await Cloud.eco.start(S.jetons, S.bagInv||{}, S.pity||0)); eco.ready = true; eventGifts() }
-  catch(e){ eco.ready = false; if(e.code!=="serveur_absent") console.warn("Serveur indisponible, la partie continue sur l'appareil", e) }
+  catch(e){ eco.ready = false; if(e.code!=="serveur_absent") console.warn("Serveur indisponible, la partie continue sur l'appareil", e);
+    if(!eco.retry) ecoRetry([5e3,15e3,30e3][eco.tries++] ?? 60e3) }   // pendant un nouvel essai, c'est ecoRetry qui prévoit le suivant
 }
 // (4 octobre 2026) plus de sachet d'événement offert à l'arrivée : chacun coche « billes d'événement » sur ses sachets
 function eventGifts(){}
@@ -13355,9 +13369,11 @@ async function logout(){
 }
 
 // si le joueur a joué sur un autre appareil entre-temps, on reprend sa partie à jour
+addEventListener("online", ()=>ecoRetry(0));
 document.addEventListener("visibilitychange", async ()=>{
   if(!sync.on) return;
   if(document.visibilityState==="hidden"){ cloudFlush(); return }
+  if(!eco.ready) ecoRetry(0);
   if(lsGet(dirtyKey())==="1" && !(await cloudFlush())) return;
   try{
     const u = await Cloud.lastUpdate(sync.uid);

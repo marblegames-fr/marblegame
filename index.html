@@ -5637,7 +5637,7 @@ function feedItems(){
 }
 
 function grantSecret(id){
-  if(S.specs.some(s=>s.secret===id)) return null;
+  if(S.specs.some(s=>s.secret===id) || !srvOn()) return null;
   const X = SECRETS[id], s = makeSpec(X.type,{seed:hash("secret-"+id), family:X.family, pal:X.palIdx, shiny:X.shiny, src:"secrete"});
   s.secret = id; srvMint(s, "secrete", id); S.specs.push(s); S.unseen.push(s.id); logFind(s);
   if(id==="folle" && !S.titles.includes("Perd la boule")) S.titles.push("Perd la boule");
@@ -5776,6 +5776,7 @@ function passClaimable(){
   return n;
 }
 function grantReward(track,t){
+  if(!srvNeed()) return null;
   const P = ensurePass();
   if(t>passTier() || (track==="prem" && !P.premium) || P[track].includes(t)) return null;
   return grantPassReward(P, seasonNow(), track, t);
@@ -6991,6 +6992,7 @@ async function resyncBilles(){
   save(); return true;
 }
 function evFuse(key, again){
+  if(!srvNeed()) return;
   const [type, f, pal] = key.split("|"), t = TIDX[type], n = FUSION_EV[t];
   const ids = evPool().filter(s=>s.type===type && s.family===+f && s.pal===+pal).sort((a,b)=>a.at-b.at).slice(0,n).map(s=>s.id);
   if(ids.length<n){ if(again){ toast("Ta boîte a été remise à jour : il n'y a plus assez de billes pour cette fusion."); renderView() } return }
@@ -7523,6 +7525,7 @@ function pullBag(bag, gift){
   return res;   // dans l'ordre des positions : #1 d'abord, la vedette à la fin
 }
 async function openBag(bagId, gift){
+  if(!srvNeed()) return;
   const bag = BAG_BY[bagId];
   if(gift){ if(!(S.bagInv[bagId]>0)){ toast("Tu n'as plus de sachet offert de ce type."); return } }
   else if(bag.price===0){ if(!freeReady()){ toast(`Ton prochain sachet gratuit arrive dans ${freeLeft()}.`); return } }
@@ -8725,6 +8728,7 @@ function pachiPos(B, now){
 }
 var walletFreeze = null;   // var : renderTop peut passer avant cette ligne au démarrage
 async function pachiGo(pay){
+  if(!srvNeed()) return;
   if(pachi.busy) return;
   if(!pay && !pachiFree()) return;
   if(pay && S.jetons<PACHI_PRICE){ toast(`Il te manque ${fmt(PACHI_PRICE-S.jetons)} ${CUR.many}.`); return }
@@ -8851,6 +8855,7 @@ function roueInit(){
   d.style.transition = "none"; d.style.transform = `rotate(${roue.ang}deg)`;
 }
 async function roueGo(pay){
+  if(!srvNeed()) return;
   if(roue.busy || !chanceCanPay("roue", !!pay)) return;
   roue.busy = true; roue.win = null;
   document.querySelectorAll('[data-action="roue-go"]').forEach(b=>b.disabled = true);
@@ -8981,6 +8986,7 @@ function viewGrattage(){
 }
 const gratPrize = c => c.roue ? "un Mammouth !" : c.sac ? `un ${BAG_BY[c.sac].name}` : `${fmt(c.j)} ${CUR.many}`;
 async function gratGo(pay){
+  if(!srvNeed()) return;
   if(grat.busy || (grat.cells && !grat.done) || !chanceCanPay("grattage", pay)) return;
   grat.busy = true;
   let k, gain, bille = null;
@@ -9102,6 +9108,7 @@ const distOut = (s, isNew) => `<div class="ds-out" id="ds-out"><span class="ds-r
     ${isNew ? `<span class="ds-new">${ic("star",12,2.6)} Nouvelle !</span>` : ""}<b>${esc(specName(s))}</b>${typePill(s.type)}</button>
   <button class="ds-close" data-action="ds-close" aria-label="Fermer">×</button></div>`;
 async function distGo(pay){
+  if(!srvNeed()) return;
   if(dist.busy || !chanceCanPay("distributeur", pay)) return;
   dist.busy = true;
   document.querySelectorAll('[data-action="ds-go"]').forEach(b=>b.disabled = true);
@@ -9875,7 +9882,7 @@ const SETUP = {
         prize = " Et un Mammouth pour ta boîte : la roulette choisit son motif…";
         const won = s => { S.specs.push(s); S.unseen.push(s.id); logFind(s); save(); setTimeout(()=>mammRoulette(s, "chateau"), 1600) };
         if(srvOn()) srv(()=>Cloud.eco.marble("chateau","")).then(r=>{ applyEco(r.eco); won(srvAdopt([r.bille])[0]) }, srvFail);
-        else won(makeSpec("mammouth", {shiny:Math.random()<MAMM_SHINY ? rollShiny() : 0, src:"chateau"}));
+        else srvNeed();
       }
       dayFinish("chateau", st, rew, n>=10?(used===1?"En un seul tir !!":"Château rasé !"):n>=6?"Belle démolition !":n?"Quelques briques en moins":"Le château tient bon", `${n} bille${n>1?"s":""} sortie${n>1?"s":""} du cercle sur 10${n>=10?` en ${used} tir${used>1?"s":""} (bonus +${fast})`:""}.${prize}`);
     };
@@ -12548,6 +12555,7 @@ document.getElementById("toast").addEventListener("click", e=>{ e.currentTarget.
 
 // la fusion, une fois confirmée
 function craftGo(C){
+  if(!srvNeed()) return;
   const inputs = C.sel.map(specById), gone = new Set(C.sel);
   const done = out => {
     S.specs.push(out); S.unseen.push(out.id);
@@ -13095,6 +13103,14 @@ const DEV_HOST = location.protocol==="file:" || /^(localhost|127\.0\.0\.1|)$/.te
 const devTools = () => sync.on ? eco.testeur : DEV_HOST;
 const DEV_ACTIONS = ["add-jetons","refill-free","give-shiny","pass-xp","daily-reset","pity-max","reset"];
 function srvOn(){ return !!(sync.on && eco.ready) }
+// (7 octobre 2026) une bille ne vient que du serveur : sans lui, pas de sachet, de fusion, de jeu de chance ni de récompense en bille.
+// On prévient le joueur et on retente la connexion au serveur.
+function srvNeed(){
+  if(srvOn()) return true;
+  toast("Le serveur ne répond pas : réessaie dans un instant.");
+  if(sync.on && !eco.retry){ eco.retry = true; ecoStart().finally(()=>{ eco.retry = false; if(eco.ready){ renderTop(); renderNav(); courStart() } }) }
+  return false;
+}
 // les appels partent un par un, dans l'ordre : le dernier état reçu est toujours le bon
 function srv(fn){ const p = eco.q.then(fn); eco.q = p.catch(()=>{}); return p }
 function applyEco(e){
@@ -13171,13 +13187,8 @@ async function cloudFlush(){
   const edits = sync.edits;
   try{
     const ids = new Set(S.specs.map(s=>s.id));
-    const add = S.specs.filter(s=>!sync.known.has(s.id) && !s.pend);
+    // (7 octobre 2026) plus aucune bille envoyée d'ici : les joueurs n'ont plus le droit d'en créer en base
     const gone = [...sync.known].filter(id=>!ids.has(id));
-    if(add.length){
-      const rows = await Cloud.addBilles(add);
-      add.forEach(s=>sync.known.add(s.id));
-      rows.forEach(r=>{ const s = specById(r.id); if(s){ s.no = r.numero; if(r.edition) s.edn = r.edition } });   // numéro de série et édition donnés par la base
-    }
     if(gone.length){
       const by = {}; gone.forEach(id=>{ const w = sync.why[id]||"retiree"; (by[w] = by[w]||[]).push(id) });
       for(const w in by) await Cloud.destroyBilles(by[w], w);
@@ -13244,6 +13255,7 @@ async function cloudStart0(user){
     const cloudIds = new Set(P.billes.map(s=>s.id));
     if(dirty && cached && P.sauvegarde.appareil===DEVICE){
       adoptState(cached);   // cet appareil a joué après son dernier envoi : sa copie est la plus récente
+      S.specs = S.specs.filter(s=>cloudIds.has(s.id));   // (7 octobre 2026) mais ses billes, seulement celles de la base
       // billes gagnées ailleurs entre-temps
       const mine = new Set(S.specs.map(s=>s.id)), prev = new Set(prevKnown);
       P.billes.forEach(s=>{ if(!mine.has(s.id) && !prev.has(s.id)) S.specs.push(s) });
@@ -13251,9 +13263,7 @@ async function cloudStart0(user){
       S.specs.forEach(s=>{ if(cloudIds.has(s.id)) sync.known.add(s.id) });
     } else {
       const st = P.sauvegarde.donnees; st.specs = P.billes;
-      // billes trouvées hors ligne sur cet appareil et pas encore envoyées
-      if(dirty && cached){ const prev = new Set(prevKnown);
-        (cached.specs||[]).forEach(s=>{ if(isUUID(s.id) && !cloudIds.has(s.id) && !prev.has(s.id)) st.specs.push(s) }) }
+      // (7 octobre 2026) une bille qui n'existe que sur l'appareil n'est plus reprise : seules comptent celles de la base
       sync.known = new Set(cloudIds);
       adoptState(st);
     }

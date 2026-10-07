@@ -30,7 +30,7 @@ create table if not exists public.trocs (
   donne     uuid[] not null default '{}',     -- billes proposées par « de »
   demande   uuid[] not null default '{}',     -- billes demandées à « vers »
   mot       text check (char_length(mot) <= 140),
-  statut    text not null default 'attente',  -- attente, accepte, refuse, annule, impossible, contre
+  statut    text not null default 'attente',  -- attente, accepte, refuse, annule, impossible, contre, expire (48 h sans réponse)
   le        timestamptz not null default now(),
   fini_le   timestamptz
 );
@@ -110,7 +110,13 @@ begin
     end;
   end loop;
   update public.annonces set retiree_le = expire_le where vendue_le is null and retiree_le is null and expire_le <= now();
+  perform interne.expirer_trocs();
 end $$;
+-- (7 octobre 2026) un troc sans réponse au bout de 48 h expire (TROC_HEURES dans index.html)
+create or replace function interne.expirer_trocs() returns void language sql as $$
+  update public.trocs set statut = 'expire', fini_le = le + interval '48 hours'
+  where statut = 'attente' and le <= now() - interval '48 hours'
+$$;
 -- une annonce qui bloque sa bille : en cours, ou enchère terminée qui attend de partir chez le gagnant
 create or replace function interne.en_vente(bid uuid) returns boolean language sql stable as $$
   select exists (select 1 from public.annonces a where a.bille = bid and a.vendue_le is null and a.retiree_le is null
@@ -142,6 +148,7 @@ create or replace function public.cour_moi() returns jsonb language plpgsql secu
 declare qui uuid := auth.uid();
 begin
   if qui is null then raise exception 'connexion_requise'; end if;
+  perform interne.expirer_trocs();
   return jsonb_build_object(
     'amis', coalesce((select jsonb_agg(interne.carte(a.ami) order by lower(interne.pseudo(a.ami))) from amis a where a.joueur = qui), '[]'),
     'recues', coalesce((select jsonb_agg(jsonb_build_object('id', d.de, 'pseudo', interne.pseudo(d.de), 'le', d.le) order by d.le desc) from demandes_amis d where d.vers = qui), '[]'),
@@ -208,6 +215,7 @@ begin
                  join billes b on b.id::text = v.id and b.proprietaire = qui and b.detruite_le is null), '[]'),
     -- sa plus belle bille : la shiny la plus rare, puis la plus grosse, puis le décor le plus rare
     'top', (select interne.bille_json(b) from billes b where b.proprietaire = qui and b.detruite_le is null and coalesce(b.donnees->>'src', '') <> 'test'
+              and b.secrete is null   -- (7 octobre 2026) jamais une bille secrète (ni la Bêta)
               order by b.shiny desc, interne.rang(b.taille) desc, (interne.decor_rarete())[b.decor+1] desc, b.numero limit 1),
     'billes', (select count(*) from billes b where b.proprietaire = qui and b.detruite_le is null),
     -- l'album : les billes différentes (taille, décor, coloris) et les cases (taille, décor), hors événements, saisons et secrètes
@@ -293,6 +301,7 @@ end $$;
 create or replace function public.troc_repondre(troc bigint, oui boolean) returns jsonb language plpgsql security definer set search_path = public as $$
 declare moi uuid := interne.moi(); t trocs; b uuid;
 begin
+  perform interne.expirer_trocs();
   select * into t from trocs where id = troc and vers = moi and statut = 'attente' for update;
   if t.id is null then raise exception 'plus_de_troc'; end if;
   if not oui then
@@ -352,6 +361,7 @@ create or replace function public.mes_trocs() returns jsonb language plpgsql sec
 declare moi uuid := auth.uid();
 begin
   if moi is null then raise exception 'connexion_requise'; end if;
+  perform interne.expirer_trocs();
   return jsonb_build_object(
     'recus', coalesce((select jsonb_agg(interne.troc_json(t) order by t.le desc) from trocs t where t.vers = moi and t.statut = 'attente'), '[]'),
     'envoyes', coalesce((select jsonb_agg(interne.troc_json(t) order by t.le desc) from trocs t where t.de = moi and t.statut = 'attente'), '[]'),

@@ -74,7 +74,8 @@ end $$;
 
 -- ---------- La Loterie de la semaine ----------
 -- Un ticket gratuit par jour (3 numéros différents de 1 à 20, au hasard). Tirage le dimanche à 21 h (heure de Paris) : 3 numéros.
--- 3 bons : un Mammouth + 100 bonbecs ; 2 bons : un Sachet Premium ; 1 bon : 5 bonbecs. Le tirage et les lots se font « à la demande » :
+-- (7 octobre 2026, lots revus à la hausse) 3 bons : un Mammouth + un Sachet Collector + 500 bonbecs ; 2 bons : un Sachet Premium + 50 bonbecs ;
+-- 1 bon : 15 bonbecs (LOT_PRIX dans index.html). Le tirage et les lots se font « à la demande » :
 -- le premier qui ouvre la page après 21 h fait le tirage, et chacun reçoit ses lots en ouvrant la page.
 create table if not exists public.loterie_tickets (
   id       bigint generated always as identity primary key,
@@ -121,10 +122,10 @@ begin
     update loterie_tickets set credite = true where id = t.id;
     b := null;
     if t.bons = 3 then
-      perform interne.crediter(qui, 100, null);
+      perform interne.crediter(qui, 500, 'collector');
       b := interne.nouvelle_bille(qui, 'mammouth', shiny => interne.tirer_shiny(interne.taux_shiny() * 10), src => 'loterie');
-    elsif t.bons = 2 then perform interne.crediter(qui, 0, 'premium');
-    elsif t.bons = 1 then perform interne.crediter(qui, 5, null);
+    elsif t.bons = 2 then perform interne.crediter(qui, 50, 'premium');
+    elsif t.bons = 1 then perform interne.crediter(qui, 15, null);
     end if;
     if t.bons > 0 then out := out || jsonb_build_object('tirage', t.tirage, 'numeros', t.numeros, 'bons', t.bons, 'lot', interne.loterie_lot(t.bons), 'bille', b); end if;
   end loop;

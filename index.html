@@ -789,7 +789,7 @@ button.rw:hover{transform:translateY(-2px)}
    une vraie feuille à carreaux Seyès, toujours claire (c'est un objet posé sur la table), contour d'encre,
    les pages du dessous qui dépassent, un bout de scotch, le titre écrit à la main et surligné ;
    les intercalaires en carton de couleur sur le côté gauche (en haut sur téléphone) ---------- */
-.cahier{--ol:#2B2233;--paper:#FFFDF4;--wood:linear-gradient(180deg,#C99760,#B5814B);--card:#fff;--kraft:linear-gradient(170deg,#DCBF94,#CFAE7E);--old:#F4E7C5;display:grid;grid-template-columns:154px minmax(0,1fr);align-items:start;margin-top:6px}
+.cahier{--ol:#2B2233;--paper:#F9F3E3;--wood:linear-gradient(180deg,#C99760,#B5814B);--card:#FDF9EF;--card-2:#F8F0DF;--under1:#EDE3CB;--under2:#E2D5B6;--corner:#F7EFDB;--kraft:linear-gradient(170deg,#DCBF94,#CFAE7E);--old:#F0E2BE;display:grid;grid-template-columns:154px minmax(0,1fr);align-items:start;margin-top:6px}
 .cahier-tabs{position:sticky;top:calc(84px + var(--rib,0px));z-index:2;display:flex;flex-direction:column;gap:12px;padding-top:34px}
 .ctab{position:relative;display:grid;grid-template-columns:auto 1fr;align-items:center;column-gap:8px;min-height:56px;margin-right:-3px;padding:6px 12px 6px 12px;text-align:left;
   color:var(--ol);background:color-mix(in srgb,var(--c) 45%,#fff);border:3px solid var(--ol);border-right:0;border-radius:16px 0 0 16px;
@@ -802,7 +802,7 @@ button.rw:hover{transform:translateY(-2px)}
 .ctab[aria-selected="true"]{z-index:1;transform:none;background:var(--c);box-shadow:inset 0 5px 0 rgba(255,255,255,.3)}
 .ctab .tab-dot{position:absolute;top:-8px;left:-8px;margin:0;border:2px solid var(--ol)}
 .cahier-page{position:relative;min-width:0;min-height:70vh;padding:26px 26px 34px 62px;color:var(--ink);color-scheme:light;
-  --bg:#FBF4E6;--panel:var(--card);--panel-2:#FFF8EC;--line:#EADFC8;--line-2:#D9C7A5;--ink:#24253D;--ink-2:#45435A;--muted:#66606F;--on-ink:#fff;--track:#EDE6DA;--glow:#fff;
+  --bg:#FBF4E6;--panel:var(--card);--panel-2:var(--card-2);--line:#EADFC8;--line-2:#D9C7A5;--ink:#24253D;--ink-2:#45435A;--muted:#66606F;--on-ink:#fff;--track:#EDE6DA;--glow:#fff;
   --yellow-soft:#FFE5A0;--blue:#2E6BE6;--blue-2:#1F4FB8;--blue-soft:#D6E4FC;--purple-soft:#E9DCFB;--green:#2FA35A;--green-soft:#D6F1D4;
   --gold-line:#F4CF6A;--gold-bg:#FFF6DC;--blue-line:#B7CEF6;--purple-line:#D3BEF3;--green-line:#B3E1AE;--warn:#B4462B;
   --shadow:0 1px 0 rgba(120,90,40,.06),0 6px 18px -10px rgba(120,90,40,.25);
@@ -811,7 +811,7 @@ button.rw:hover{transform:translateY(-2px)}
   --pb:var(--paper);
   background:var(--pm),var(--pl),var(--pb);isolation:isolate;
   border:3px solid var(--ol);border-radius:6px 20px 0 6px;
-  box-shadow:7px 7px 0 -3px #F4ECD9,7px 7px 0 0 var(--ol),14px 14px 0 -3px #EBE0C6,14px 14px 0 0 var(--ol),20px 26px 34px -18px rgba(0,0,0,.55)}
+  box-shadow:7px 7px 0 -3px var(--under1),7px 7px 0 0 var(--ol),14px 14px 0 -3px var(--under2),14px 14px 0 0 var(--ol),20px 26px 34px -18px rgba(0,0,0,.55)}
 /* un papier par intercalaire : Seyès (Album), petits carreaux (Mes billes), kraft (Séries), vieux livre (Billepedia) */
 .cahier-page[data-paper="billes"]{--pl:repeating-linear-gradient(180deg,transparent 0 19px,rgba(60,110,180,.14) 19px 20px),repeating-linear-gradient(90deg,transparent 0 19px,rgba(60,110,180,.14) 19px 20px)}
 .cahier-page[data-paper="series"]{--pm:linear-gradient(transparent,transparent);--pl:radial-gradient(circle at 20% 30%,rgba(255,255,255,.12) 0 2px,transparent 3px) 0 0/23px 29px,radial-gradient(circle at 70% 60%,rgba(90,55,20,.12) 0 1.5px,transparent 2.5px) 0 0/31px 19px;
@@ -822,9 +822,9 @@ button.rw:hover{transform:translateY(-2px)}
 .cahier-page[data-paper="series"] .cp-title span{color:#4D3F2C}
 /* le coin corné, en bas à droite */
 .cahier-page::after{content:"";position:absolute;right:-3px;bottom:-3px;width:46px;height:46px;border-top:2.5px solid var(--ol);border-left:2.5px solid var(--ol);
-  background:linear-gradient(135deg,#FFFBEF 0%,#E8DAB4 46%,var(--ol) 46% 50%,#F4ECD9 50%);filter:drop-shadow(-2px -2px 3px rgba(0,0,0,.12))}
-.cahier-page[data-paper="series"]::after{background:linear-gradient(135deg,#E6CDA6 0%,#BF9B68 46%,var(--ol) 46% 50%,#F4ECD9 50%)}
-.cahier-page[data-paper="pedia"]::after{background:linear-gradient(135deg,#FBF1D6 0%,#E0CB98 46%,var(--ol) 46% 50%,#F4ECD9 50%)}
+  background:linear-gradient(135deg,var(--corner) 0%,#E8DAB4 46%,var(--ol) 46% 50%,var(--under1) 50%);filter:drop-shadow(-2px -2px 3px rgba(0,0,0,.12))}
+.cahier-page[data-paper="series"]::after{background:linear-gradient(135deg,#E6CDA6 0%,#BF9B68 46%,var(--ol) 46% 50%,var(--under1) 50%)}
+.cahier-page[data-paper="pedia"]::after{background:linear-gradient(135deg,var(--old) 0%,#E0CB98 46%,var(--ol) 46% 50%,var(--under1) 50%)}
 /* la page qui se tourne quand on change d'intercalaire */
 .cahier-page.turn{animation:pageturn .38s cubic-bezier(.2,1.25,.4,1) both;transform-origin:0 50%}
 @keyframes pageturn{from{opacity:0;transform:perspective(1200px) rotateY(14deg) translateX(-14px)}to{opacity:1;transform:none}}
@@ -935,9 +935,10 @@ button.rw:hover{transform:translateY(-2px)}
 }
 .cahier-page .m-card:not(.missing){background:var(--card)}
 .cahier-page .bx-size{background:var(--card);border-width:2px}
-/* en mode sombre, le cahier est « sous la lampe » : un papier crème plus doux, qui n'éblouit pas au milieu de l'écran sombre */
-@media (prefers-color-scheme:dark){ :root:not([data-theme="light"]) .cahier{--wood:linear-gradient(180deg,#6E4A2C,#553620);--paper:#E3D9C2;--card:#F1EADA;--kraft:linear-gradient(170deg,#BFA27A,#AF9068);--old:#DED0AC} }
-:root[data-theme="dark"] .cahier{--wood:linear-gradient(180deg,#6E4A2C,#553620);--paper:#E3D9C2;--card:#F1EADA;--kraft:linear-gradient(170deg,#BFA27A,#AF9068);--old:#DED0AC}
+/* en mode sombre, le cahier est « sous la lampe » : un papier crème plus doux, qui n'éblouit pas au milieu de l'écran sombre
+   (7 octobre 2026 : encore un peu plus doux, cartes des billes et pages du dessous comprises) */
+@media (prefers-color-scheme:dark){ :root:not([data-theme="light"]) .cahier{--wood:linear-gradient(180deg,#6E4A2C,#553620);--paper:#D3C8AE;--card:#E1D8C4;--card-2:#D9CFB8;--under1:#BFB398;--under2:#ADA185;--corner:#DDD2B8;--kraft:linear-gradient(170deg,#B39770,#A3865F);--old:#CEC09C} }
+:root[data-theme="dark"] .cahier{--wood:linear-gradient(180deg,#6E4A2C,#553620);--paper:#D3C8AE;--card:#E1D8C4;--card-2:#D9CFB8;--under1:#BFB398;--under2:#ADA185;--corner:#DDD2B8;--kraft:linear-gradient(170deg,#B39770,#A3865F);--old:#CEC09C}
 
 /* le cahier est posé sur un pupitre en bois (bois clair en mode clair, bois foncé en mode sombre) */
 :root .cahier{padding:22px 22px 30px 0;border:3px solid var(--ol);border-radius:22px;box-shadow:inset 0 2px 0 rgba(255,255,255,.25),0 16px 30px -18px rgba(60,35,10,.65);
@@ -954,7 +955,7 @@ button.rw:hover{transform:translateY(-2px)}
   .ctab[aria-selected="true"]{transform:none}
   .ctab .tab-dot{top:-7px;left:auto;right:-7px}
   .cahier-page{--m:14px;padding:18px 12px 26px 30px;border-radius:4px 4px 0 16px;
-    box-shadow:5px 5px 0 -2px #F4ECD9,5px 5px 0 0 var(--ol),14px 20px 26px -16px rgba(0,0,0,.55)}
+    box-shadow:5px 5px 0 -2px var(--under1),5px 5px 0 0 var(--ol),14px 20px 26px -16px rgba(0,0,0,.55)}
   .cahier-page::before{right:22px;width:70px;height:22px;top:-12px}
   .cahier-page::after{width:32px;height:32px}
   .cp-doodles .dd-m{display:none}
@@ -2534,6 +2535,8 @@ button.cp-who:hover b{text-decoration:underline}
 .troc-head .t{flex:1;min-width:0}
 .troc-head b{font-weight:900}
 .troc-head time{color:var(--muted);font-size:12px;font-weight:700}
+.troc-head .fin{font-size:12px;font-weight:800;color:var(--muted)}
+.troc-head .fin.soon{color:var(--warn)}
 .troc-sides{display:grid;grid-template-columns:minmax(0,1fr) auto minmax(0,1fr);align-items:stretch}
 .troc-side{--tc:var(--muted);display:grid;gap:8px;padding:10px 12px 12px;border-radius:12px;background:color-mix(in srgb,var(--tc) 8%,var(--panel));border:1.5px solid color-mix(in srgb,var(--tc) 30%,var(--line));min-height:88px;align-content:start}
 .troc-side.get{--tc:var(--green)}
@@ -2552,7 +2555,7 @@ button.cp-who:hover b{text-decoration:underline}
 .troc.fini .troc-side{min-height:0}
 .troc .st{display:inline-flex;align-items:center;gap:4px;font-size:11.5px;font-weight:900;padding:2px 10px;border-radius:999px;background:var(--panel);border:1px solid var(--line);color:var(--ink-2)}
 .troc .st.accepte{background:var(--green-soft);border-color:var(--green-line);color:var(--green)}
-.troc .st.refuse,.troc .st.impossible{background:color-mix(in srgb,#E5484D 14%,var(--panel));border-color:color-mix(in srgb,#E5484D 35%,var(--line));color:var(--warn)}
+.troc .st.refuse,.troc .st.impossible,.troc .st.expire{background:color-mix(in srgb,#E5484D 14%,var(--panel));border-color:color-mix(in srgb,#E5484D 35%,var(--line));color:var(--warn)}
 .troc .st.contre{background:var(--blue-soft);border-color:var(--blue-line);color:var(--blue-2)}
 /* demande de confirmation */
 .ask-scrim{z-index:78}
@@ -2611,6 +2614,20 @@ button.cp-who:hover b{text-decoration:underline}
 .pick.miss .ball img{position:relative}
 .miss-sp{position:absolute;top:6px;left:6px;width:13px;height:13px;color:var(--mc);filter:drop-shadow(0 0 3px var(--mc))}
 .miss-sp svg{display:block;width:100%;height:100%}
+/* (7 octobre 2026) combien d'exemplaires on a déjà : ×2 = un double à vendre ou troquer */
+.pick-n{position:absolute;top:5px;right:5px;display:inline-flex;align-items:center;gap:2px;font-size:10.5px;font-weight:900;padding:1px 6px;border-radius:999px;background:#E8743B;color:#fff}
+.pick-n.have{background:var(--green)}
+.pick-n svg{width:10px;height:10px}
+/* au marché et dans les trocs : déjà dans ta boîte (vert) ou qui te manque (doré : motif, bleu : coloris) */
+.mk-own{display:inline-flex;align-items:center;gap:4px;font-size:11.5px;font-weight:800;padding:2px 9px;border-radius:999px;background:color-mix(in srgb,var(--green) 16%,transparent);color:var(--green)}
+.mk-own svg{width:12px;height:12px}
+.mk-own.miss{--mc:#C98A12;background:color-mix(in srgb,var(--mc) 16%,transparent);color:var(--mc)}
+.mk-own.miss.col{--mc:#2A93C4}
+.tb-own{position:relative;display:inline-flex}
+.tb-own > i{position:absolute;right:-2px;bottom:-2px;display:grid;place-items:center;min-width:17px;height:17px;padding:0 3px;border-radius:999px;font-style:normal;font-size:9.5px;font-weight:900;color:#fff;background:var(--green);border:2px solid var(--panel);pointer-events:none}
+.tb-own > i svg{width:9px;height:9px}
+.tb-own.dec > i{background:#E0A020}
+.tb-own.col > i{background:#3FB6E8}
 .miss-leg{display:flex;gap:14px;flex-wrap:wrap;margin:0 0 10px;font-size:12.5px;font-weight:800;color:var(--ink-2)}
 .miss-leg span{display:inline-flex;align-items:center;gap:5px}
 .miss-leg svg{width:13px;height:13px}
@@ -3352,6 +3369,9 @@ const FAMILIES = [
   {name:"Bêta",          rar:4, beta:true, desc:"Un β d'or qui brille au cœur d'un verre précieux (une pierre différente pour chaque taille), cerclé d'un anneau d'or : la bille de ceux qui ont testé Billy avant tout le monde."},
   // événement de novembre 2026 « Super-héros ! » (numéro 48 : toujours à la fin, les numéros ne bougent jamais)
   {name:"Super-héros",   rar:4, event:"superheros", desc:"Le blason d'un héros de la cour, frappé d'un éclair, et les rayons d'une case de bande dessinée. Chaque coloris est un héros différent."},
+  // (7 octobre 2026) deux nouveaux motifs : un légendaire (49) et un épique (50)
+  {name:"Œil de dragon", rar:4, face:true, desc:"Au cœur d'un verre sombre, l'œil d'un dragon te regarde : un iris de feu strié de fibres, fendu d'une pupille en lame."},
+  {name:"Orage",         rar:3, desc:"Un ciel d'orage enfermé dans le verre, traversé d'éclairs qui l'illuminent de l'intérieur."},
 ];
 const FAM_W = FAMILIES.map(f=>f.event || f.season!=null || f.beta ? 0 : DECOR_RAR[f.rar].w);
 // motifs hors album : ceux des événements et ceux des saisons
@@ -3471,7 +3491,7 @@ BETA.palOf = t => BETA.pals[TK.indexOf(t)];
 const PLAYER_PALS = [
   ["Zède","#156115","#1DD10D","#000000","#DFF8D8"],
   ["uwu","#C10BA9","#FFFFFF","#F99AEC","#FFFFFF"],
-  ["Poups","#FFFFFF","#000000","#E48B25","#CCCCCC"],   // 3 octobre 2026 : version C de la maquette (base blanche, vedette noire, détails orange)
+  ["Poups","#FFFFFF","#E48B25","#000000","#CCCCCC"],   // 3 octobre 2026 : base blanche ; 7 octobre : vedette orange et détails noirs (l'orange ne se voyait pas sur la plupart des motifs)
 ].map(P=>PALETTES.push(P)-1);
 // les coloris des événements arrivés après les coloris des joueurs (Super-héros : 79 à 83, mêmes numéros dans supabase/serveur.sql)
 Object.values(EVENTS).filter(E=>E.late).forEach(E=>{ E.palIdx = E.pals.map(P=>{ PALETTES.push(P); return PALETTES.length-1 }) });
@@ -3849,7 +3869,7 @@ function makeSpec(type, o={}){
     pal: o.pal ?? randPal(r()),
     shiny: o.shiny ?? 0, at: o.at ?? Date.now(), ...(o.src ? {src:o.src} : {})};
 }
-const specName = s => s.loan ? "Bille prêtée" : s.secret && SECRETS[s.secret] ? SECRETS[s.secret].name : FAMILIES[s.family].season!=null ? FAMILIES[s.family].name : `${FAMILIES[s.family].name} ${PALETTES[s.pal][0]}`;   // un motif de saison n'existe qu'en un coloris : son nom suffit
+const specName = s => s.loan ? "Bille prêtée" : s.secret && SECRETS[s.secret] ? SECRETS[s.secret].name : FAMILIES[s.family].season!=null ? FAMILIES[s.family].name : `${FAMILIES[s.family].name} - ${PALETTES[s.pal][0]}`;   // un motif de saison n'existe qu'en un coloris : son nom suffit
 const serial = s => { const h=(s.seed>>>0).toString(16).toUpperCase().padStart(8,"0"); return h.slice(0,4)+"-"+h.slice(4) };
 const slotKey = s => s.type+"|"+s.family;
 
@@ -3861,12 +3881,12 @@ function specParams(s){
   const P = PALETTES[s.pal];
   let tint = hex01(P[4]);
   const opaque = OPAQUE_FAMS.includes(s.family);
-  if(s.family===2||s.family===30||s.family===34||s.family===42||s.family===44||s.family===47) tint = hex01(shade(P[1],-.1)).map(v=>Math.max(.08,v*.8));
+  if(s.family===2||s.family===30||s.family===34||s.family===42||s.family===44||s.family===47||s.family===49||s.family===50) tint = hex01(shade(P[1],-.1)).map(v=>Math.max(.08,v*.8));
   const p = {
     seed:[r(),r(),r(),r()],
     par:[(r()-.5)*5, [3,4,4,5,6][Math.floor(r()*5)], .05+r()*.07, 2+Math.floor(r()*4)],
     // les motifs de saison ont un haut et un bas (la neige au sol, le visage de la citrouille) : posés droits, à peine inclinés
-    srot: FAMILIES[s.family]?.season!=null || FAMILIES[s.family]?.beta || FAMILIES[s.family]?.event==="superheros" ? rotAxis(1,0,0,-.22) : rotAxis(r()-.5,r()-.5,r()-.5,r()*TAU),
+    srot: FAMILIES[s.family]?.season!=null || FAMILIES[s.family]?.beta || FAMILIES[s.family]?.event==="superheros" || FAMILIES[s.family]?.face ? rotAxis(1,0,0,-.22) : rotAxis(r()-.5,r()-.5,r()-.5,r()*TAU),
     c1:hex01(P[1]), c2:hex01(P[2]), c3:hex01(P[3]), tint,
     mode:s.family, opaque:opaque?1:0, porc:0, sulf:0, fig:s.family%4, shiny:s.shiny||0, asp:s.type==="chinoise"?1.45:1,
   };
@@ -4529,6 +4549,65 @@ vec4 fam(vec3 q, out vec3 e){
     if(ray>0.02) return vec4(mix(glass, uC3, 0.55*ray), mix(dens, 4.0, ray));
     return vec4(glass, dens);
   }
+#elif MODE==49
+  { // œil de dragon : au cœur d'un verre sombre, un iris de feu strié de fibres, fendu d'une pupille en lame ; il brille dans le noir
+    float r=length(q), n=fbm(q*3.0+so);
+    // la bille chinoise se regarde par le dessus : l'œil y est couché à plat (comme le β de la Bêta)
+    bool couche=uAsp>1.2; vec2 p=(couche?vec2(q.x,-q.z):q.xy)*1.25; float bz=couche?q.y:q.z;
+    vec3 glass=uC1*(0.16+0.16*n); float dens=0.35+0.35*n;
+    float rr=length(p);
+    float disk=smoothstep(0.64,0.6,rr)*smoothstep(0.1,0.05,abs(bz));
+    if(disk>0.01){
+      vec2 dir=p/max(rr,0.001);
+      float fib=noise(vec3(dir*13.0, rr*2.5)+so)*0.6+noise(vec3(dir*31.0, rr*5.0)+so)*0.4;   // les fibres de l'iris, du centre vers le bord
+      vec3 c=mix(mix(vec3(1.0,0.95,0.75),uC3,0.35), uC2, smoothstep(0.06,0.38,rr));   // le cœur presque blanc, puis la couleur du coloris
+      c=mix(c, uC2*0.3, smoothstep(0.46,0.61,rr));   // un anneau sombre au bord de l'iris
+      c*=0.5+0.8*fib;
+      // la pupille : une fente verticale, plus large au milieu
+      float pw=0.08*sqrt(max(1.0-p.y*p.y/0.33,0.0));
+      float pupil=smoothstep(0.012,-0.012,abs(p.x)-pw);
+      c=mix(c, vec3(0.01), pupil);
+      e=c*(1.0-pupil)*4.5*disk;
+      return vec4(mix(glass,c,disk), mix(dens,160.0,disk));
+    }
+    // autour : le halo de l'iris, et de fines braises qui flottent dans le verre
+    vec3 g=q*11.0+so; vec3 fc=fract(g)-0.5;
+    float ember=step(0.94,h31(floor(g)))*smoothstep(0.14,0.03,length(fc))*step(0.35,r)*smoothstep(0.95,0.85,r);
+    e=mix(uC2,uC3,0.5)*ember*5.0+uC2*exp(-max(rr-0.6,0.0)*7.0)*exp(-abs(bz)*6.0)*0.7;
+    return vec4(glass, dens);
+  }
+#elif MODE==50
+  { // orage : un ciel d'orage pris dans le verre ; des éclairs ramifiés le traversent et l'illuminent de l'intérieur
+    float r=length(q);
+    float n=fbm(q*2.6+so), n2=fbm(q*5.5+so+7.0);
+    float cloud=smoothstep(0.42,0.72,n+0.25*n2);
+    float core=0.0, glow=0.0;
+    for(int i=0;i<3;i++){ float fi=float(i);
+      // un éclair du haut vers le bas, qui zigzague (deux échelles de bruit), et une branche qui part de son milieu
+      vec3 a=(vec3(h31(so+fi),h31(so+fi+3.1),h31(so+fi+6.2))-0.5)*vec3(0.8,0.2,0.8)+vec3(0.0,0.62,0.0);
+      vec3 b=(vec3(h31(so+fi+9.4),h31(so+fi+12.5),h31(so+fi+15.6))-0.5)*vec3(1.0,0.2,1.0)-vec3(0.0,0.6,0.0);
+      vec3 ba=b-a, pa=q-a; float h=clamp(dot(pa,ba)/dot(ba,ba),0.0,1.0);
+      // des coudes au hasard reliés en lignes droites : la forme cassée d'un vrai éclair
+      float t7=h*7.0, i7=floor(t7), t19=h*19.0, i19=floor(t19);
+      vec3 off=mix(vec3(h31(so+vec3(i7,fi,1.0)),h31(so+vec3(i7,fi,2.0)),h31(so+vec3(i7,fi,3.0))),
+                   vec3(h31(so+vec3(i7+1.0,fi,1.0)),h31(so+vec3(i7+1.0,fi,2.0)),h31(so+vec3(i7+1.0,fi,3.0))),t7-i7)-0.5;
+      vec3 off2=mix(vec3(h31(so+vec3(i19,fi,4.0)),h31(so+vec3(i19,fi,5.0)),h31(so+vec3(i19,fi,6.0))),
+                    vec3(h31(so+vec3(i19+1.0,fi,4.0)),h31(so+vec3(i19+1.0,fi,5.0)),h31(so+vec3(i19+1.0,fi,6.0))),t19-i19)-0.5;
+      float d=length(pa-ba*h-(off*0.3+off2*0.04)*sin(h*3.1416));
+      vec3 m=a+ba*0.42, c2=m+normalize(vec3(h31(so+fi+20.0)-0.5,-0.7,h31(so+fi+21.0)-0.5))*0.45;
+      vec3 bb=c2-m, pb=q-m; float hb=clamp(dot(pb,bb)/dot(bb,bb),0.0,1.0);
+      vec3 ob=(vec3(noise(vec3(hb*18.0,fi+7.0,so.z)),noise(vec3(hb*18.0,fi+9.0,so.x)),noise(vec3(hb*18.0,fi+11.0,so.y)))-0.5)*0.12;
+      float db=length(pb-bb*hb-ob*sin(hb*3.1416))+0.012*hb;
+      float k=i==0?1.0:0.6;
+      core+=k*(exp(-d*45.0)+0.6*exp(-db*55.0));   // une lueur continue (un trait net se perd entre les pas du rayon)
+      glow+=k*(exp(-d*12.0)+0.5*exp(-db*16.0));
+    }
+    float inside=smoothstep(0.95,0.82,r);
+    vec3 boltc=mix(uC2,vec3(1.0),0.7);
+    e=(boltc*core*55.0+mix(uC2,vec3(1.0),0.3)*glow*(1.5+3.0*cloud))*inside;
+    vec3 col=mix(uC1*0.14, mix(uC1,vec3(0.7),0.5)*0.6, cloud)+uC2*glow*0.3;
+    return vec4(col, 0.3+cloud*1.6);
+  }
 #elif MODE==47
   { // bêta : un β d'or qui brille au cœur d'un verre rubis, un anneau d'or qui le cercle, et des étincelles
     // la bille chinoise se regarde par le dessus : le β y est couché à plat
@@ -4679,7 +4758,7 @@ void main(){
     if(pep()){ float e1; vec3 oP=toO(P), dP=toO(d);
       tEx=min(halfHit(oP,dP,CTT,1.0,true,e1), halfHit(oP,dP,CTB,-1.0,true,e1)); if(tEx>1e8) tEx=0.3; }
     // le Pirate a une figure fine au cœur du verre : plus de pas pour qu'elle reste nette (les autres motifs gardent 30 pas)
-#if MODE==32 || MODE==48
+#if MODE==32 || MODE==48 || MODE==49 || MODE==50
     const int GSTEPS=64;
     float jit=fract(sin(dot(gl_FragCoord.xy,vec2(12.9898,78.233)))*43758.5453);   // pas décalés d'un pixel à l'autre : pas de stries
 #else
@@ -7942,7 +8021,7 @@ function viewGame(){
           <li><span>Par + 1 (2 étoiles)</span><b>${TIR_REW[2]} ${CUR.many}</b></li>
           <li><span>Au-delà (1 étoile)</span><b>${TIR_REW[1]} ${CUR.many}</b></li>
           <li><span>Trou en un (bonus)</span><b>+${TIR_ACE} ${CUR.many}</b></li>
-          <li><span>Ta première réussite du jour rapporte</span><b>↻ minuit</b></li>
+          <li><span>Une seule tentative par jour (les coups restent comptés si tu quittes)</span><b>↻ minuit</b></li>
         </ul>
       </section>
     </aside>
@@ -7988,8 +8067,17 @@ function loadLevel(i){
   game.R = I3.slice();
   game.strokes = 0; game.shots = 0; game.moving = false; game.aim = null; game.sink = 0; game.done = false; game.bumpHit = {};
   game.walls = [...BORDER, ...L.walls];
+  // la partie du jour reprend où on l'a laissée : quitter le trou ne remet pas les coups à zéro
+  const P = playedToday(), lv = P.tir.live;
+  if(!P.tir[0] && lv && i===tirOfDay()){ game.ball.x = lv.x; game.ball.y = lv.y; game.from = [lv.x, lv.y]; game.strokes = lv.s; game.shots = lv.n }
   document.getElementById("g-result").hidden = true;
   updHud(); renderHoles();
+  if(!P.tir[0] && game.strokes>=10) finishHole(false);
+}
+// (7 octobre 2026) une seule tentative pour la partie du jour : position et coups gardés après chaque tir
+function tirKeep(x, y){
+  const P = playedToday(); if(P.tir[0] || game.lvl!==tirOfDay()) return;
+  P.tir.live = {x, y, s:game.strokes, n:game.shots}; save();
 }
 function updHud(){
   const L = game.L;
@@ -8025,6 +8113,7 @@ function gUp(){
   game.from = [b.x, b.y];
   [b.vx, b.vy] = wobble(game.spec, dx/len*power*MAXV, dy/len*power*MAXV);
   game.moving = true; game.strokes++; game.shots++; updHud();
+  tirKeep(game.from[0], game.from[1]);
   Sound.rollStart(); Sound.shot(power);
 }
 function inRect(x,y,[rx,ry,rw,rh]){ return x>rx && x<rx+rw && y>ry && y<ry+rh }
@@ -8059,7 +8148,7 @@ function physStep(){
     // plouf : la bille revient d'où elle est partie, avec un coup de pénalité
     if(L.water.some(r=>inRect(b.x,b.y,r))){
       game.splash = {x:b.x, y:b.y, t:performance.now()}; Sound.splash();
-      b.vx = b.vy = 0; [b.x, b.y] = game.from; game.moving = false; game.strokes++; updHud();
+      b.vx = b.vy = 0; [b.x, b.y] = game.from; game.moving = false; game.strokes++; updHud(); tirKeep(b.x, b.y);
       if(game.strokes>=10) finishHole(false);
       return;
     }
@@ -8077,7 +8166,7 @@ function physStep(){
     game.R = mul3(rotAxis(b.vy,b.vx,0,sp/BR), game.R);
     game.rc = (game.rc||0)+1; if(game.rc%60===0) game.R = ortho3(game.R);
   }
-  if(sp<.03){ b.vx=b.vy=0; game.moving=false; if(game.strokes>=10) finishHole(false) }
+  if(sp<.03){ b.vx=b.vy=0; game.moving=false; tirKeep(b.x, b.y); if(game.strokes>=10) finishHole(false) }
 }
 function gLoop(t){
   if(ui.view!=="tir" || !document.body.contains(game.cv)){ Sound.rollStop(); return }
@@ -8101,7 +8190,7 @@ function finishHole(success){
     const rec = !S.best[game.lvl] || game.strokes<S.best[game.lvl];
     if(rec) S.best[game.lvl] = game.strokes;
     const P = playedToday(), paid = !P.tir[0];
-    if(paid){ P.tir[0] = 1; earn("jeu", "tir|0", rew); questEvent("day_games"); gamesBonus() }   // une récompense par jour (le serveur compte « tir|0 »)
+    if(paid){ P.tir[0] = 1; delete P.tir.live; earn("jeu", "tir|0", rew); questEvent("day_games"); gamesBonus() }   // une récompense par jour (le serveur compte « tir|0 »)
     S.holes++; save(); renderTop(); updHud(); renderHoles();
     const pxp = paid ? passXP(PASS_XP.star*st) : 0;
     questEvent("hole");
@@ -8112,9 +8201,12 @@ function finishHole(success){
       <p>${game.strokes} coup${game.strokes>1?"s":""}${game.strokes>game.shots?` (dont ${game.strokes-game.shots} de pénalité dans l'eau)`:""} pour un par de ${L.par}${rec?" · nouveau record":""}</p>
       ${paid ? `<span class="reward">${COIN}+${rew} ${CUR.many} · +${pxp} XP</span>` : `<p class="meta">Le trou du jour a déjà rapporté : celui-ci était pour le plaisir.</p>`}`;
   } else {
-    html = `<h2>Trop de coups</h2><p>10 coups, c'est le maximum. Retente ta chance !</p>`;
+    // raté : la partie du jour compte quand même (avant, « Réessayer » laissait gagner à la 2e tentative)
+    const P = playedToday(), paid = !P.tir[0];
+    if(paid){ P.tir[0] = 1; delete P.tir.live; earn("jeu", "tir|0", 0); questEvent("day_games"); gamesBonus(); save(); renderHoles() }
+    html = `<h2>Trop de coups</h2><p>10 coups, c'est le maximum.${paid ? " Pas de bonbecs pour ce trou : retente ta chance demain !" : ""}</p>`;
   }
-  html += `<p class="meta">Nouveau trou dans ${tirLeftTime()}.</p><div class="row"><button class="btn btn-ghost" data-action="g-restart">${success?"Rejouer pour le plaisir":"Réessayer"}</button><button class="btn btn-yellow" data-action="nav" data-view="jeux">Tous les jeux</button></div>`;
+  html += `<p class="meta">Nouveau trou dans ${tirLeftTime()}.</p><div class="row"><button class="btn btn-ghost" data-action="g-restart">Rejouer pour le plaisir</button><button class="btn btn-yellow" data-action="nav" data-view="jeux">Tous les jeux</button></div>`;
   el.innerHTML = `<div class="g-card">${html}</div>`;
   el.hidden = false;
 }
@@ -8602,7 +8694,7 @@ function mammRoulette(b, from){
   // 3) le Mammouth
   const reveal = () => { const res = document.getElementById("roue-res"); if(!res) return;
     document.querySelector(".mamm-modal .roue-wrap").hidden = true; document.querySelector(".mamm-modal .mr-legend").hidden = true;
-    document.getElementById("mr-step").textContent = `${F.name} · ${PALETTES[b.pal][0]}`; res.hidden = false;
+    document.getElementById("mr-step").textContent = `${F.name} - ${PALETTES[b.pal][0]}`; res.hidden = false;
     Sound.reveal?.(FMT_TIER.mammouth, !!b.shiny); FX.fireworks(b.shiny ? SHINY_COLS : [DECOR_RAR[F.rar].c, "#FFE14D", "#FFFFFF"], b.shiny || F.rar>=3 ? 9 : 5) };
 }
 let pachiSpr = null, pachiMamm = null;
@@ -9038,7 +9130,7 @@ async function distGo(pay){
 
 /* ---------- la Loterie de la semaine ---------- */
 const lot = {data:null, loading:false, fresh:null};
-const LOT_PRIX = [{bons:3, txt:"Un Mammouth + 100 bonbecs"}, {bons:2, txt:"Un Sachet Premium"}, {bons:1, txt:"5 bonbecs"}];
+const LOT_PRIX = [{bons:3, txt:"Un Mammouth + un Sachet Collector + 500 bonbecs"}, {bons:2, txt:"Un Sachet Premium + 50 bonbecs"}, {bons:1, txt:"15 bonbecs"}];   // 7 octobre 2026 : mêmes lots dans supabase/chance.sql
 const lotBall = (n, on) => `<span class="lt-ball${on?" on":""}">${n}</span>`;
 function lotLoad(force){
   if(!srvOn() || lot.loading || (lot.data && !force)) return;
@@ -11819,7 +11911,7 @@ setInterval(()=>{ if(srvOn() && document.visibilityState==="visible" && ui.view=
 
 // ---------- le journal : l'historique du troc et du marché, et les nouvelles ----------
 // ce qui mérite d'être annoncé : ce que les autres ont fait (pas ce qu'on a fait soi-même)
-const isNews = e => e.k==="troc" ? (e.statut==="attente" || e.statut==="impossible" || (e.moi_de ? ["accepte","refuse","contre"] : ["annule"]).includes(e.statut))
+const isNews = e => e.k==="troc" ? (e.statut==="attente" || e.statut==="impossible" || e.statut==="expire" || (e.moi_de ? ["accepte","refuse","contre"] : ["annule"]).includes(e.statut))
   : ["vendue","expiree","gagnee","depasse","offre"].includes(e.k);
 function journalInfo(e){
   const o = `<b>${esc(e.autre||"?")}</b>`, b = e.bille ? `<b>${esc(courName(e.bille))}</b>` : "", pr = `${fmt(e.prix||0)} ${CUR.many}`;
@@ -11829,7 +11921,8 @@ function journalInfo(e){
       refuse: e.moi_de ? `${o} a refusé ton troc` : `Tu as refusé le troc de ${o}`,
       annule: e.moi_de ? `Tu as annulé ton troc avec ${o}` : `${o} a annulé son troc`,
       contre: e.moi_de ? `${o} t'a fait une contre-proposition` : `Tu as fait une contre-proposition à ${o}`,
-      impossible: `Le troc avec ${o} n'est plus possible : une des billes n'est plus disponible`}[e.statut] || `Troc avec ${o}`};
+      impossible: `Le troc avec ${o} n'est plus possible : une des billes n'est plus disponible`,
+      expire: e.moi_de ? `Ton troc avec ${o} a expiré : pas de réponse en ${TROC_HEURES} h` : `Le troc de ${o} a expiré : pas de réponse en ${TROC_HEURES} h`}[e.statut] || `Troc avec ${o}`};
   const E = e.enchere;
   return {
     annonce: {ic:E?"gavel":"candy", txt:E ? `Tu as mis ${b} aux enchères à partir de ${pr}` : `Tu as mis ${b} en vente à ${pr}`},
@@ -12199,17 +12292,20 @@ async function openProfil(id){
 }
 
 // ---------- troc ----------
-const TROC_ST = {accepte:"Accepté", refuse:"Refusé", annule:"Annulé", impossible:"Plus possible", contre:"Contre-proposition"};
+const TROC_ST = {accepte:"Accepté", refuse:"Refusé", annule:"Annulé", impossible:"Plus possible", contre:"Contre-proposition", expire:"Expiré"};
+const TROC_HEURES = 48;   // un troc sans réponse expire au bout de 48 h (supabase/cour.sql, interne.expirer_trocs)
 function trocCard(t, kind){
   const me = kind==="recu" ? "vers" : "de";
   const get = me==="vers" ? t.donne : t.demande, give = me==="vers" ? t.demande : t.donne;
   const getB = me==="vers" ? t.donne_bonbecs : t.demande_bonbecs, giveB = me==="vers" ? t.demande_bonbecs : t.donne_bonbecs;
   const other = me==="vers" ? t.de_pseudo : t.vers_pseudo;
-  const px = kind==="fini" ? 40 : 52;
-  const side = (cls, lbl, list, n) => `<div class="troc-side ${cls}"><small>${lbl}</small><div class="troc-balls">${list.map(x=>courBall(x,px)).join("")}${bbChip(n)}${!list.length && !(n>0) ? `<span class="meta">rien</span>` : ""}</div></div>`;
+  const px = kind==="fini" ? 40 : 52, own = kind==="fini" ? null : ownInfo();
+  const mark = (x, cls) => { if(!own || cls!=="get") return courBall(x,px); const o = own(x);
+    return `<span class="tb-own${o.n?"":o.dec?" dec":" col"}" title="${o.n?`Déjà dans ta boîte${o.n>1?` (×${o.n})`:""}`:o.dec?"Un motif qui te manque":"Un coloris qui te manque"}">${courBall(x,px)}<i>${o.n ? (o.n>1?`×${o.n}`:ic("check",9,3.4)) : SPARK}</i></span>` };
+  const side = (cls, lbl, list, n) => `<div class="troc-side ${cls}"><small>${lbl}</small><div class="troc-balls">${list.map(x=>mark(x,cls)).join("")}${bbChip(n)}${!list.length && !(n>0) ? `<span class="meta">rien</span>` : ""}</div></div>`;
   const who = kind==="fini" ? (t.de_pseudo===S.name ? t.vers_pseudo : t.de_pseudo) : other;
   return `<div class="troc ${kind}" id="troc-${t.id}">
-    <div class="troc-head">${avatarIni(who, kind==="fini"?28:34)}<span class="t">${kind==="recu" ? `<b>${esc(other)}</b> te propose un troc` : kind==="envoye" ? `Ton troc avec <b>${esc(other)}</b>` : `Troc avec <b>${esc(who)}</b>`}</span>${kind==="fini" ? `<span class="st ${t.statut}">${t.statut==="accepte"?ic("check",12,3):""}${TROC_ST[t.statut]||t.statut}</span>` : kind==="envoye" ? `<span class="st">${ic("clock",12,2.6)} En attente</span>` : ""}<time>${timeAgo(t.le)}</time></div>
+    <div class="troc-head">${avatarIni(who, kind==="fini"?28:34)}<span class="t">${kind==="recu" ? `<b>${esc(other)}</b> te propose un troc` : kind==="envoye" ? `Ton troc avec <b>${esc(other)}</b>` : `Troc avec <b>${esc(who)}</b>`}</span>${kind==="fini" ? `<span class="st ${t.statut}">${t.statut==="accepte"?ic("check",12,3):""}${TROC_ST[t.statut]||t.statut}</span>` : kind==="envoye" ? `<span class="st">${ic("clock",12,2.6)} En attente</span>` : ""}${kind==="fini" ? "" : finSpan(t.le + TROC_HEURES*36e5)}<time>${timeAgo(t.le)}</time></div>
     <div class="troc-sides">${side("get", `${ic("arrow",13,2.6)} Tu reçois`, get, getB)}<span class="troc-arrow">${ic("swap",20)}</span>${side("give", `Tu donnes`, give, giveB)}</div>
     ${t.mot ? `<p class="troc-mot">« ${esc(t.mot)} »</p>` : ""}
     ${kind==="recu" ? `<div class="troc-act"><button class="btn btn-yellow btn-sm" data-action="troc-oui" data-id="${t.id}">${ic("check",16)} Accepter</button><button class="btn btn-ghost btn-sm" data-action="troc-contre" data-id="${t.id}">${ic("swap",16)} Contre-proposer</button><button class="btn btn-ghost btn-sm" data-action="troc-non" data-id="${t.id}">Refuser</button></div>`
@@ -12247,13 +12343,21 @@ function trocDups(){
   byColor.forEach(list=>{ if(list.length>1){ const k = keepOf(list); list.forEach(s=>{ if(s.id!==k.id) out.add(s.id) }) } });
   return out;
 }
+// (7 octobre 2026) ce que tu as déjà : combien d'exemplaires de cette bille (même taille, motif et coloris) et si le motif te manque dans cette taille
+function ownInfo(){
+  const n = new Map(), sk = new Set();
+  S.specs.forEach(s=>{ const k = colorKey(s); n.set(k, (n.get(k)||0)+1); sk.add(slotKey(s)) });
+  return x => ({n:n.get(colorKey(x))||0, dec:!sk.has(slotKey(x))});
+}
+const ownTag = o => o.n ? `<span class="mk-own">${ic("check",12,3)} Déjà dans ta boîte${o.n>1?` · ×${o.n}`:""}</span>`
+  : `<span class="mk-own miss${o.dec?"":" col"}">${SPARK} ${o.dec?"Motif qui te manque":"Coloris qui te manque"}</span>`;
 const pickTxt = x => { try{ return pickText(x) }catch(e){ return fold(specName(x)) } };
 // chez un copain, ce qui te manque brille d'un halo : doré = motif que tu n'as pas dans cette taille, bleu = coloris que tu n'as pas (comme l'éclat à l'ouverture)
 function missOf(){
   const sk = new Set(S.specs.map(slotKey)), ck = new Set(S.specs.map(colorKey));
   return x => !sk.has(slotKey(x)) ? "dec" : !ck.has(colorKey(x)) ? "col" : "";
 }
-const pickCard = (x, side, on, hid, nw) => `<button class="pick${nw?` miss ${nw}`:""}" data-action="troc-pick" data-q="${esc(pickTxt(x))}"${hid?" hidden":""} data-side="${side}" data-id="${x.id}" aria-pressed="${on}"><span class="ball">${mImg(x,120,Math.round(28*scaleOf(x.type)+18),"")}</span>${nw?`<span class="miss-sp" title="${nw==="dec"?"Un motif que tu n'as pas dans cette taille":"Un coloris que tu n'as pas"}">${SPARK}</span>`:""}${esc(specName(x))}<small class="meta">${TYPES[x.type].label}</small></button>`;
+const pickCard = (x, side, on, hid, nw, cnt) => `<button class="pick${nw?` miss ${nw}`:""}" data-action="troc-pick" data-q="${esc(pickTxt(x))}"${hid?" hidden":""} data-side="${side}" data-id="${x.id}" aria-pressed="${on}">${cnt||""}<span class="ball">${mImg(x,120,Math.round(28*scaleOf(x.type)+18),"")}</span>${nw?`<span class="miss-sp" title="${nw==="dec"?"Un motif que tu n'as pas dans cette taille":"Un coloris que tu n'as pas"}">${SPARK}</span>`:""}${esc(specName(x))}<small class="meta">${TYPES[x.type].label}</small></button>`;
 // la recherche (par nom, shiny, rareté…) cache les billes sans tout redessiner ; elle est gardée dans PQ pour les redessins
 const PQ = {};
 const pqWords = side => fold(PQ[side]||"").trim().split(/s+/).filter(Boolean);
@@ -12265,7 +12369,11 @@ function pickList(list, side, sel, filt){
   const leg = nd||nc ? `<p class="miss-leg">${nd?`<span class="dec">${SPARK} ${nd} motif${nd>1?"s":""} qui te manque${nd>1?"nt":""}</span>`:""}${nc?`<span class="col">${SPARK} ${nc} coloris qui te manque${nc>1?"nt":""}</span>`:""}</p>` : "";
   const search = list.length<6 ? "" : `<div class="cp-search pick-srch">${ic("search",15)}<input type="search" class="troc-q" data-side="${side}" value="${esc(PQ[side]||"")}" placeholder="Chercher : Galaxie, Rubis, shiny…" aria-label="Chercher une bille" autocomplete="off" spellcheck="false"></div>`;
   const chips = `<div class="pick-filters"><button class="chip" data-action="troc-filt" data-side="${side}" data-t="" aria-pressed="${!filt}">Toutes</button>${TK.filter(t=>list.some(x=>x.type===t)).map(t=>`<button class="chip" data-action="troc-filt" data-side="${side}" data-t="${t}" aria-pressed="${filt===t}">${TYPES[t].pl}</button>`).join("")}</div>`;
-  return list.length ? search + chips + leg + `<div class="pick-grid" data-side="${side}">${shown.map(x=>pickCard(x, side, sel.includes(x.id), hid(x), miss(x))).join("")}</div><p class="meta pick-none" data-side="${side}"${none?"":" hidden"}>Aucune bille ne correspond.</p>` : `<p class="empty">Aucune bille à troquer.</p>`;
+  // le nombre d'exemplaires : chez toi, ×2 et plus = un double ; chez le copain, ce que tu as déjà
+  const own = ownInfo(), cnt = x => { const n = own(x).n;
+    return side==="want" ? (n ? `<span class="pick-n have" title="Tu l'as déjà">${ic("check",10,3)}${n>1?`×${n}`:""}</span>` : "")
+      : n>1 ? `<span class="pick-n" title="Tu en as ${n}">×${n}</span>` : "" };
+  return list.length ? search + chips + leg + `<div class="pick-grid" data-side="${side}">${shown.map(x=>pickCard(x, side, sel.includes(x.id), hid(x), miss(x), cnt(x))).join("")}</div><p class="meta pick-none" data-side="${side}"${none?"":" hidden"}>Aucune bille ne correspond.</p>` : `<p class="empty">Aucune bille à troquer.</p>`;
 }
 function trocCompose(){
   const C = cour.compose;
@@ -12317,6 +12425,7 @@ function decorSel(v){
 function courMarche(){
   if(cour.sell) return sellView();
   courLoad("marche"); courLoad("annonces"); courLoad("encheres");
+  mkCard.own = ownInfo();   // calculé une fois pour toutes les cartes
   const L = cour.marche, A = cour.annonces, f = cour.f, aucOK = !cour.absent.encheres, ME = aucOK ? (cour.encheres||[]) : [];
   const sel = (id, opts, v) => `<select id="${id}" aria-label="${id}">${opts.map(([k,l])=>`<option value="${k}"${v===k?" selected":""}>${l}</option>`).join("")}</select>`;
   const mine = (A||[]).filter(a=>!a.vendue), sold = 0, mkTab = ui.mkTab || "acheter";
@@ -12362,6 +12471,7 @@ function mkCard(a, mesEnch){
   return `<div class="mk${a.moi?" mine":""}${E?" ench":""}" style="${tstyle(x.type)}">${rib}${E?`<span class="mk-tag">${ic("gavel",12,2.4)} Enchère</span>`:`<span class="mk-tag fixe">${ic("candy",12,2.4)} Prix fixe</span>`}
     <span class="mk-vis" data-action="cour-see" data-k="${courSpec(x, a.moi?"Ta bille en vente.":E?`Aux enchères, par ${a.vendeur}.`:`En vente par ${a.vendeur}.`)}">${mImg(x,160,Math.round(44*scaleOf(x.type)+30),"")}</span>
     <div class="mk-info"><b>${esc(specName(x))}</b><span class="pills">${typePill(x.type)}${shinyPill(x)}</span>
+    ${a.moi ? "" : ownTag((mkCard.own||ownInfo())(x))}
     ${E ? `<small class="p-lbl">${a.offre ? "Meilleure offre" : "Mise à prix"}</small>` : ""}
     <span class="price">${COIN}${fmt(E ? (a.offre ?? a.prix) : a.prix)}</span>
     <small class="avg${deal?" good":""}">${E ? (a.offre ? `${a.nb_offres} offre${a.nb_offres>1?"s":""} · ${a.en_tete?"toi":esc(a.meilleur||"?")} en tête` : "Pas encore d'offre")
@@ -12401,7 +12511,8 @@ function sellView(){
   // étape 1 : la bille (en premier tant qu'aucune n'est choisie) ; étape 2 : la façon de vendre, le prix et la durée
   const pick = `<section class="panel">${step(1, p ? "Ta bille" : "Choisis la bille à vendre", !p)}
       <p class="cour-lead" style="margin:0 0 10px">Ta bille active, les billes de départ et les billes secrètes ne peuvent pas être vendues.</p>
-      ${pickList(X.list, "sell", X.pick?[X.pick]:[], X.f)}</section>`;
+      ${X.list?.length ? `<label class="tr-dbl"><input type="checkbox" data-action="sell-dbl"${X.dbl?" checked":""}> Seulement mes doubles</label>` : ""}
+      ${X.dbl && X.list && !X.list.some(x=>trocDups().has(x.id)) ? `<p class="empty">Tu n'as aucun double à vendre.</p>` : pickList(X.dbl && X.list ? X.list.filter(x=>trocDups().has(x.id)) : X.list, "sell", X.pick?[X.pick]:[], X.f)}</section>`;
   const form = p ? `<section class="panel">${step(2, "Comment tu la vends ?", true)}
       <div class="sell-card"><span class="sell-vis" style="${tstyle(p.type)}">${mImg(p,200,Math.round(50*scaleOf(p.type)+50),"")}</span>
         <div><h4>${esc(specName(p))}</h4><span class="pills">${typePill(p.type)}${shinyPill(p)}</span><p class="meta">À la Confiserie, elle vaut ${fmt(recycleValue(p))} ${CUR.many}.</p>
@@ -12544,6 +12655,7 @@ document.addEventListener("click", e=>{
     case "troc-close": cour.compose = null; renderView(); break;
     case "troc-filt": { const X = t.dataset.side==="sell" ? cour.sell : cour.compose; if(!X) break;
       X[{give:"fg", want:"fw", sell:"f"}[t.dataset.side]] = t.dataset.t; renderView(); break }
+    case "sell-dbl": { const X = cour.sell; if(!X) break; X.dbl = t.checked; renderView(); break }
     case "troc-dbl": { const C = cour.compose; if(!C) break; C.dbl = t.checked; C.mot = document.getElementById("troc-mot")?.value || C.mot; renderView(); break }
     case "troc-manque": { const C = cour.compose; if(!C) break; C.manque = t.checked; C.mot = document.getElementById("troc-mot")?.value || C.mot; renderView(); break }
     case "troc-pick": {

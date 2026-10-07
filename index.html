@@ -2996,6 +2996,7 @@ button.cp-who:hover b{text-decoration:underline}
   --ink:#fff;--ink-2:rgba(255,255,255,.74);--muted:rgba(255,255,255,.56);--panel:rgba(255,255,255,.06);--panel-2:rgba(255,255,255,.08);
   --line:rgba(255,255,255,.1);--line-2:rgba(255,255,255,.18);--warn:#FFA48A;--blue:#9DBBFF}
 .auth[hidden]{display:none}
+.auth-boot{min-height:100%;display:grid;place-items:center}
 #auth-fx{position:fixed;inset:0;width:100%;height:100%;display:block;touch-action:none;cursor:grab}
 #auth-fx.aiming{cursor:grabbing}
 #auth-fx.off{cursor:default}
@@ -3278,7 +3279,8 @@ body.gc-open{overflow:hidden}
   <div class="ov-body" id="ov-body"></div>
 </div>
 <div class="toast" id="toast" role="status" aria-live="polite"></div>
-<div class="auth" id="auth" hidden></div>
+<!-- (7 octobre 2026) l'écran de connexion couvre la page dès le premier affichage : jamais de partie par défaut visible avant de savoir qui joue -->
+<div class="auth" id="auth"><div class="auth-boot"><div class="auth-spin" aria-hidden="true"></div></div></div>
 <div class="sync-veil" id="sync-veil" hidden><span class="sv-pill"><span class="sv-spin" aria-hidden="true"></span>Chargement de ta collection…</span></div>
 
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
@@ -3369,9 +3371,10 @@ const FAMILIES = [
   {name:"Bêta",          rar:4, beta:true, desc:"Un β d'or qui brille au cœur d'un verre précieux (une pierre différente pour chaque taille), cerclé d'un anneau d'or : la bille de ceux qui ont testé Billy avant tout le monde."},
   // événement de novembre 2026 « Super-héros ! » (numéro 48 : toujours à la fin, les numéros ne bougent jamais)
   {name:"Super-héros",   rar:4, event:"superheros", desc:"Le blason d'un héros de la cour, frappé d'un éclair, et les rayons d'une case de bande dessinée. Chaque coloris est un héros différent."},
-  // (7 octobre 2026) deux nouveaux motifs : un légendaire (49) et un épique (50)
-  {name:"Œil de dragon", rar:4, face:true, desc:"Au cœur d'un verre sombre, l'œil d'un dragon te regarde : un iris de feu strié de fibres, fendu d'une pupille en lame."},
+  // (7 octobre 2026) nouveaux motifs : un légendaire (49, le Prisme, qui remplace l'Œil de dragon du même jour) et deux épiques (50, 51)
+  {name:"Prisme",        rar:4, face:true, desc:"Un prisme de cristal au cœur d'un verre profond : un rayon de lumière blanche le traverse et ressort en arc-en-ciel."},
   {name:"Orage",         rar:3, desc:"Un ciel d'orage enfermé dans le verre, traversé d'éclairs qui l'illuminent de l'intérieur."},
+  {name:"Méduse",        rar:3, face:true, desc:"Une méduse lumineuse flotte dans un verre d'eau profonde, ses longs filaments qui ondulent sous elle."},
 ];
 const FAM_W = FAMILIES.map(f=>f.event || f.season!=null || f.beta ? 0 : DECOR_RAR[f.rar].w);
 // motifs hors album : ceux des événements et ceux des saisons
@@ -3881,7 +3884,7 @@ function specParams(s){
   const P = PALETTES[s.pal];
   let tint = hex01(P[4]);
   const opaque = OPAQUE_FAMS.includes(s.family);
-  if(s.family===2||s.family===30||s.family===34||s.family===42||s.family===44||s.family===47||s.family===49||s.family===50) tint = hex01(shade(P[1],-.1)).map(v=>Math.max(.08,v*.8));
+  if(s.family===2||s.family===30||s.family===34||s.family===42||s.family===44||s.family===47||s.family===49||s.family===50||s.family===51) tint = hex01(shade(P[1],-.1)).map(v=>Math.max(.08,v*.8));
   const p = {
     seed:[r(),r(),r(),r()],
     par:[(r()-.5)*5, [3,4,4,5,6][Math.floor(r()*5)], .05+r()*.07, 2+Math.floor(r()*4)],
@@ -4550,31 +4553,44 @@ vec4 fam(vec3 q, out vec3 e){
     return vec4(glass, dens);
   }
 #elif MODE==49
-  { // œil de dragon : au cœur d'un verre sombre, un iris de feu strié de fibres, fendu d'une pupille en lame ; il brille dans le noir
-    float r=length(q), n=fbm(q*3.0+so);
-    // la bille chinoise se regarde par le dessus : l'œil y est couché à plat (comme le β de la Bêta)
-    bool couche=uAsp>1.2; vec2 p=(couche?vec2(q.x,-q.z):q.xy)*1.25; float bz=couche?q.y:q.z;
-    vec3 glass=uC1*(0.16+0.16*n); float dens=0.35+0.35*n;
-    float rr=length(p);
-    float disk=smoothstep(0.64,0.6,rr)*smoothstep(0.1,0.05,abs(bz));
-    if(disk>0.01){
-      vec2 dir=p/max(rr,0.001);
-      float fib=noise(vec3(dir*13.0, rr*2.5)+so)*0.6+noise(vec3(dir*31.0, rr*5.0)+so)*0.4;   // les fibres de l'iris, du centre vers le bord
-      vec3 c=mix(mix(vec3(1.0,0.95,0.75),uC3,0.35), uC2, smoothstep(0.06,0.38,rr));   // le cœur presque blanc, puis la couleur du coloris
-      c=mix(c, uC2*0.3, smoothstep(0.46,0.61,rr));   // un anneau sombre au bord de l'iris
-      c*=0.5+0.8*fib;
-      // la pupille : une fente verticale, plus large au milieu
-      float pw=0.08*sqrt(max(1.0-p.y*p.y/0.33,0.0));
-      float pupil=smoothstep(0.012,-0.012,abs(p.x)-pw);
-      c=mix(c, vec3(0.01), pupil);
-      e=c*(1.0-pupil)*4.5*disk;
-      return vec4(mix(glass,c,disk), mix(dens,160.0,disk));
-    }
-    // autour : le halo de l'iris, et de fines braises qui flottent dans le verre
-    vec3 g=q*11.0+so; vec3 fc=fract(g)-0.5;
-    float ember=step(0.94,h31(floor(g)))*smoothstep(0.14,0.03,length(fc))*step(0.35,r)*smoothstep(0.95,0.85,r);
-    e=mix(uC2,uC3,0.5)*ember*5.0+uC2*exp(-max(rr-0.6,0.0)*7.0)*exp(-abs(bz)*6.0)*0.7;
-    return vec4(glass, dens);
+  { // prisme : au cœur d'un verre profond, un prisme de cristal ; un rayon de lumière blanche le traverse
+    // et ressort en un éventail arc-en-ciel qui s'ouvre dans le verre et pique le bord de reflets de toutes les couleurs
+    float r=length(q);
+    float ca=0.85, sa=0.53;   // le prisme est un peu tourné : on voit ses faces
+    vec3 pr=vec3(ca*q.x+sa*q.z, q.y, -sa*q.x+ca*q.z);
+    vec2 t=pr.xy-vec2(0.0,-0.02);
+    float tri=max(abs(t.x)*0.866+t.y*0.5,-t.y)-0.15;
+    float slab=abs(pr.z)-0.24;
+    float inP=step(max(tri,slab),0.0);
+    // ses arêtes : les deux triangles et les trois longues arêtes
+    float dv=min(min(length(t-vec2(-0.26,-0.15)),length(t-vec2(0.26,-0.15))),length(t-vec2(0.0,0.3)));
+    float edges=exp(-(abs(slab)+max(tri,0.0))*70.0)*step(tri,0.012)+exp(-dv*55.0)*step(slab,0.0);
+    // le rayon blanc, de la gauche vers la face d'entrée
+    vec2 A=vec2(-1.0,-0.12), B=vec2(-0.13,0.075); vec2 pa=t-A, ba=B-A; float h=clamp(dot(pa,ba)/dot(ba,ba),0.0,1.0);
+    float db=length(vec3(pa-ba*h, pr.z));
+    float beam=(exp(-db*60.0)*1.6+exp(-db*14.0)*0.35)*(1.0-inP);
+    // l'éventail : il part de la face de sortie, s'ouvre en descendant vers la droite et s'épaissit en avançant
+    vec2 E=vec2(0.13,0.075), pe=t-E; float L=length(pe), an=atan(pe.y,pe.x);
+    float a0=-0.78, a1=-0.05, hue=clamp((an-a0)/(a1-a0),0.0,1.0);
+    float th=0.015+L*0.11;
+    float fan=smoothstep(a0-0.04,a0+0.04,an)*smoothstep(a1+0.04,a1-0.04,an)*smoothstep(th,th*0.3,abs(pr.z))*step(0.0,tri)*smoothstep(0.0,0.08,L);
+    vec3 rb=0.5+0.5*cos(6.2831*(vec3(0.0,0.33,0.67)+0.95-hue*0.8));
+    float lines=0.7+0.3*smoothstep(0.3,1.0,sin(hue*46.0));   // de fines raies dans le spectre
+    // de la poussière de lumière qui scintille dans l'éventail, et l'arc-en-ciel qui s'écrase sur la paroi
+    vec3 g=q*15.0+so; vec3 fc=fract(g)-0.5;
+    float dust=step(0.86,h31(floor(g)))*smoothstep(0.14,0.02,length(fc));
+    float wall=smoothstep(0.8,0.92,r);
+    // dans le prisme, la lumière se sépare déjà : un dégradé arc-en-ciel vers la face de sortie
+    vec3 inside=0.5+0.5*cos(6.2831*(vec3(0.0,0.33,0.67)+t.y*1.6+0.2));
+    e=vec3(1.0,0.98,0.93)*beam*7.0
+     +rb*lines*fan*(10.0/(1.0+L*2.0)+dust*12.0+wall*5.0)
+     +mix(uC3,vec3(1.0),0.65)*edges*7.0
+     +inP*(mix(uC2,vec3(1.0),0.5)*0.35+inside*smoothstep(-0.1,0.13,t.x)*0.9);
+    // quelques éclats blancs dans le verre
+    vec3 gs=q*11.0+so+3.0; vec3 fs=fract(gs)-0.5;
+    e+=vec3(step(0.975,h31(floor(gs)))*smoothstep(0.1,0.0,length(fs)))*4.0*(1.0-inP);
+    if(inP>0.5) return vec4(mix(uC2,vec3(1.0),0.55), 2.5);
+    return vec4(uC1*0.16, 0.32);
   }
 #elif MODE==50
   { // orage : un ciel d'orage pris dans le verre ; des éclairs ramifiés le traversent et l'illuminent de l'intérieur
@@ -4607,6 +4623,34 @@ vec4 fam(vec3 q, out vec3 e){
     e=(boltc*core*55.0+mix(uC2,vec3(1.0),0.3)*glow*(1.5+3.0*cloud))*inside;
     vec3 col=mix(uC1*0.14, mix(uC1,vec3(0.7),0.5)*0.6, cloud)+uC2*glow*0.3;
     return vec4(col, 0.3+cloud*1.6);
+  }
+#elif MODE==51
+  { // méduse : une méduse lumineuse flotte dans un verre d'eau profonde, ses longs filaments qui ondulent sous elle
+    float r=length(q);
+    vec3 b=q-vec3(0.0,0.12,0.0);
+    float bell=length(b*vec3(1.0,1.7,1.0));
+    float shell=smoothstep(0.035,0.0,abs(bell-0.42))*step(-0.02,b.y);
+    float ang=atan(b.z,b.x);
+    float ribs=0.6+0.4*smoothstep(0.6,1.0,abs(sin(ang*8.0)));
+    float inner=smoothstep(0.42,0.2,bell)*step(-0.02,b.y);
+    float tent=0.0;
+    for(int i=0;i<8;i++){ float fi=float(i);
+      float a=fi*0.785+so.x*0.1, t=(0.1-q.y)/0.8;
+      if(t>0.0 && t<1.0){
+        vec2 c=vec2(cos(a),sin(a))*(0.36-0.12*t)+vec2(sin(t*7.0+fi*1.7),cos(t*6.0+fi*2.3))*0.06*t;
+        float d=length(q.xz-c);
+        tent+=exp(-d*45.0)*(1.0-t)*(0.6+0.4*sin(t*30.0+fi));
+      }
+    }
+    for(int i=0;i<3;i++){ float fi=float(i);   // les bras du centre, plus épais
+      float a=fi*2.09+so.y*0.1, t=(0.1-q.y)/0.55;
+      if(t>0.0 && t<1.0){ vec2 c=vec2(cos(a),sin(a))*0.07+vec2(sin(t*5.0+fi),cos(t*4.0+fi))*0.08*t;
+        tent+=exp(-length(q.xz-c)*35.0)*(1.0-t)*0.8; }
+    }
+    vec3 g=q*13.0+so; vec3 fc=fract(g)-0.5;
+    float pl=step(0.96,h31(floor(g)))*smoothstep(0.12,0.03,length(fc));
+    e=(mix(uC2,vec3(1.0),0.3)*shell*ribs*12.0+mix(uC3,uC2,0.3)*inner*2.0+mix(uC2,vec3(1.0),0.4)*tent*9.0+vec3(0.8,0.9,1.0)*pl*1.5)*smoothstep(0.95,0.85,r);
+    return vec4(uC1*0.18, 0.3+shell*3.0+inner*0.4);
   }
 #elif MODE==47
   { // bêta : un β d'or qui brille au cœur d'un verre rubis, un anneau d'or qui le cercle, et des étincelles
@@ -4758,7 +4802,10 @@ void main(){
     if(pep()){ float e1; vec3 oP=toO(P), dP=toO(d);
       tEx=min(halfHit(oP,dP,CTT,1.0,true,e1), halfHit(oP,dP,CTB,-1.0,true,e1)); if(tEx>1e8) tEx=0.3; }
     // le Pirate a une figure fine au cœur du verre : plus de pas pour qu'elle reste nette (les autres motifs gardent 30 pas)
-#if MODE==32 || MODE==48 || MODE==49 || MODE==50
+#if MODE==49
+    const int GSTEPS=96;   // le Prisme : des faces nettes, sans grain (pas réguliers)
+    float jit=0.5;
+#elif MODE==32 || MODE==48 || MODE==50 || MODE==51
     const int GSTEPS=64;
     float jit=fract(sin(dot(gl_FragCoord.xy,vec2(12.9898,78.233)))*43758.5453);   // pas décalés d'un pixel à l'autre : pas de stries
 #else
@@ -4962,14 +5009,14 @@ let STORE_KEY = CLOUD_UID ? "billy-u-"+CLOUD_UID : GUEST_KEY;       // avec un c
 // une nouvelle partie part vraiment de zéro : aucune bille, 100 bonbecs et 5 sachets gratuits à ouvrir
 function starterState(){
   const now = Date.now();
-  return {v:2, fv:2, pv:2, cv:2, cover:{}, wish:[], seriesDone:[], jetons:100, holes:0, specs:[], active:null, unseen:[], freeT0:now-5*FREE_EVERY, best:{}, bagInv:{}, title:"Petit Boulet", titles:["Petit Boulet"], name:"AlexBilleur", vitrine:[null,null,null,null,null], chal:[], pity:0, bags:0, log:[]};
+  return {v:2, fv:2, pv:2, cv:2, cover:{}, wish:[], seriesDone:[], jetons:100, holes:0, specs:[], active:null, unseen:[], freeT0:now-5*FREE_EVERY, best:{}, bagInv:{}, title:"Petit Boulet", titles:["Petit Boulet"], name:"Billeur", vitrine:[null,null,null,null,null], chal:[], pity:0, bags:0, log:[]};
 }
 let S;
 // charge une sauvegarde (ou en crée une neuve) et la met à jour si elle vient d'une ancienne version du jeu
 function adoptState(raw){
 S = raw;
 if(!S || S.v!==2 || !Array.isArray(S.specs)) S = starterState();
-else S = Object.assign({cover:{}, wish:[], seriesDone:[], unseen:[], best:{}, bagInv:{}, title:"Petit Boulet", titles:["Petit Boulet"], name:"AlexBilleur", vitrine:[null,null,null,null,null], chal:[], pity:0, bags:0, log:[]}, S);
+else S = Object.assign({cover:{}, wish:[], seriesDone:[], unseen:[], best:{}, bagInv:{}, title:"Petit Boulet", titles:["Petit Boulet"], name:"Billeur", vitrine:[null,null,null,null,null], chal:[], pity:0, bags:0, log:[]}, S);
 // anciennes sauvegardes : la bille chinoise n'existe plus, le niveau non plus
 // Motif Arc-en-ciel supprimé (trop proche de la shiny Irisée) : les motifs suivants ont remonté d'un cran.
 // Les billes Arc-en-ciel déjà trouvées deviennent Aurore (même rareté), Givrée pour la saison Flocon, Pixel pour L'Arcade.
@@ -13735,8 +13782,10 @@ document.addEventListener("submit", async e=>{
 // au démarrage : session en cours, lien reçu par e-mail, ou écran de bienvenue
 function accountBoot(){
   // un compte est obligatoire : sans connexion au serveur, on ne joue que sur la copie d'un compte déjà connecté ici
-  if(!window.Cloud?.available){ if(CLOUD_UID) toast("Pas de connexion : ta partie est gardée sur cet appareil."); else authShow("offline"); return }
-  if(CLOUD_UID){ if(lsGet(STORE_KEY)) syncVeil(true); else authShow("loading") }
+  const authEl = document.getElementById("auth");
+  if(!window.Cloud?.available){ if(CLOUD_UID){ authEl.hidden = true; toast("Pas de connexion : ta partie est gardée sur cet appareil.") } else authShow("offline"); return }
+  // déjà connecté ici avec une copie de sa partie : le voile de synchronisation ; sinon l'écran de chargement reste jusqu'à la réponse de Supabase
+  if(CLOUD_UID){ if(lsGet(STORE_KEY)){ authEl.hidden = true; syncVeil(true) } else authShow("loading") }
   const h = new URLSearchParams(location.hash.slice(1));
   if(h.get("error")){   // lien d'e-mail périmé ou déjà utilisé
     history.replaceState(null, "", location.pathname + location.search);

@@ -154,6 +154,12 @@
         return () => { try{ db.removeChannel(ch) }catch(e){} };
       },
     },
+    // ---------- « Signaler un bug » (supabase/signalements.sql) ----------
+    bugs: {
+      envoyer: (categorie, texte, details) => rpc("signaler", {categorie, texte, details:details||{}}),
+      liste: tous => rpc("signalements_liste", {tous:!!tous}),
+      regle: (sid, oui) => rpc("signalement_regle", {sid, oui:!!oui}),
+    },
     async setPseudo(uid, pseudo){
       need();
       const {error} = await db.from("profils").update({pseudo}).eq("id", uid);

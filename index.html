@@ -2688,6 +2688,36 @@ button.cp-who:hover b{text-decoration:underline}
 .ann-end{display:flex;align-items:center;gap:10px;flex-wrap:wrap;justify-content:flex-end;font-size:12px;font-weight:800;color:var(--ink-2)}
 .ann-st.hot{background:color-mix(in srgb,#FF8A3D 16%,var(--panel));border-color:color-mix(in srgb,#FF8A3D 40%,var(--line));color:#E0782F}
 .ask .ask-in{margin:4px auto 0}
+.bug-form{width:100%;display:grid;gap:10px;text-align:left}
+.bug-cats{display:flex;flex-wrap:wrap;gap:6px;justify-content:center}
+.bug-cats input{position:absolute;opacity:0;pointer-events:none}
+.bug-cats span{display:inline-block;padding:7px 13px;border-radius:999px;border:1.5px solid var(--line-2);font-size:13px;font-weight:800;color:var(--ink-2);cursor:pointer}
+.bug-cats input:checked + span{background:var(--blue-soft);border-color:var(--blue);color:var(--blue-2)}
+.bug-cats input:focus-visible + span{outline:2px solid var(--blue);outline-offset:2px}
+.bug-form textarea{width:100%;resize:vertical;min-height:110px;padding:12px;border-radius:14px;border:1.5px solid var(--line-2);background:var(--panel-2);color:var(--ink);font:inherit;font-size:14.5px;font-weight:600;line-height:1.4}
+.bug-form textarea:focus{outline:none;border-color:var(--blue)}
+.bug-form .meta{font-size:12px;line-height:1.35}
+.side-bug{display:flex;align-items:center;gap:10px;margin-top:auto;padding:10px 12px;border-radius:14px;border:1.5px dashed var(--line-2);color:var(--ink-2);text-align:left}
+.side-bug:hover{background:var(--panel-2);border-style:solid}
+.side-bug svg{flex:none;color:var(--muted)}
+.side-bug b{display:block;font-size:13.5px;font-weight:900}
+.side-bug small{display:block;font-size:12px;font-weight:700;color:var(--muted)}
+.side-bug + .side-quote{margin-top:6px}
+.pp-links .pp-bug{grid-column:1/-1;flex-direction:row;justify-content:center}
+.bug-tabs{display:inline-flex;gap:4px;padding:3px;border-radius:999px;background:var(--panel-2)}
+.bug-tabs button{padding:5px 12px;border-radius:999px;font-size:12.5px;font-weight:800;color:var(--muted)}
+.bug-tabs button.on{background:var(--panel);color:var(--ink);box-shadow:0 1px 3px rgba(0,0,0,.12)}
+.bug-list{list-style:none;display:grid;gap:10px;margin:0;padding:0}
+.bug-list li{padding:12px 14px;border-radius:14px;border:1px solid var(--line);background:var(--panel-2)}
+.bug-list li.done{opacity:.55}
+.bug-top{display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+.bug-top .btn{margin-left:auto;height:30px;padding:0 12px;font-size:12.5px;display:inline-flex;align-items:center;gap:5px}
+.bug-list p{margin:8px 0 4px;font-size:14px;font-weight:600;line-height:1.4;color:var(--ink);overflow-wrap:anywhere}
+.bug-list details small{display:block;margin-top:6px;font-size:11.5px;line-height:1.45;color:var(--muted);overflow-wrap:anywhere}
+.bug-list summary{cursor:pointer;font-size:12px;font-weight:800;color:var(--muted)}
+.bug-cat{font-size:11px;font-weight:900;padding:2px 9px;border-radius:999px;background:var(--blue-soft);color:var(--blue-2)}
+.bug-cat.k-bug{background:color-mix(in srgb,#E5484D 16%,var(--panel));color:#D93F45}
+.bug-cat.k-idee{background:var(--yellow-soft);color:#B07A00}
 .jr.k-gagnee .jr-ic{--kc:#E0A417}
 .jr.k-offre .jr-ic,.jr.k-mon_offre .jr-ic,.jr.k-depasse .jr-ic{--kc:#FF8A3D}
 /* classement */
@@ -3287,6 +3317,11 @@ body.gc-open{overflow:hidden}
 <script src="cloud.js"></script>
 
 <script>
+// les dernières erreurs du jeu, jointes à un « Signaler un bug » (7 octobre 2026)
+const BUG_LOG = [];
+window.addEventListener("error", e=>{ BUG_LOG.push(((e.message||"erreur")+" @"+String(e.filename||"").split("/").pop()+":"+(e.lineno||"")).slice(0,300)); BUG_LOG.splice(0, BUG_LOG.length-8) });
+window.addEventListener("unhandledrejection", e=>{ const r = e.reason; BUG_LOG.push(("promesse : "+(r?.code||r?.message||r)).slice(0,300)); BUG_LOG.splice(0, BUG_LOG.length-8) });
+
 /* =====================================================================
    DONNÉES DU JEU
    ===================================================================== */
@@ -5183,7 +5218,7 @@ function ask({title, text="", extra="", balls=[], ok="Confirmer", no="Annuler", 
       <h2 id="ask-t">${esc(title)}</h2>${text?`<p>${text}</p>`:""}${extra}
       <div class="ask-btns"><button class="btn btn-ghost" data-ask="0">${esc(no)}</button><button class="btn ${danger?"btn-danger":"btn-yellow"}" data-ask="1">${esc(ok)}</button></div></div>`;
     el.hidden = false;
-    const done = v => { ask.val = el.querySelector("#ask-val")?.value; ask.chk = !!el.querySelector("#ask-chk")?.checked; el.hidden = true; el.innerHTML = ""; el.onclick = null; document.removeEventListener("keydown", key, true); res(v) };
+    const done = v => { ask.val = el.querySelector("#ask-val")?.value; ask.chk = !!el.querySelector("#ask-chk")?.checked; ask.form = {}; el.querySelectorAll("[name]").forEach(i=>{ if(i.type!=="radio" || i.checked) ask.form[i.name] = i.value }); el.hidden = true; el.innerHTML = ""; el.onclick = null; document.removeEventListener("keydown", key, true); res(v) };
     const key = e => { if(e.key==="Escape"){ e.stopPropagation(); done(false) } else if(e.key==="Enter" && e.target.id==="ask-val"){ e.preventDefault(); done(true) } };
     el.onclick = e => { e.stopPropagation(); const b = e.target.closest("[data-ask]"); if(b) done(b.dataset.ask==="1"); else if(e.target===el) done(false) };
     document.addEventListener("keydown", key, true);
@@ -5235,6 +5270,7 @@ const ICON = {
   pad:'<path d="M6.5 8h11A4.5 4.5 0 0 1 22 12.5v.5a4 4 0 0 1-7.2 2.4L14 14.5h-4l-.8.9A4 4 0 0 1 2 13v-.5A4.5 4.5 0 0 1 6.5 8z"/><path d="M7 10.5v3M5.5 12h3"/><circle cx="16" cy="11.5" r=".6" fill="currentColor"/><circle cx="18" cy="13.5" r=".6" fill="currentColor"/>',
   swap:'<path d="M4 8h15l-3.5-3.5"/><path d="M20 16H5l3.5 3.5"/>',
   bell:'<path d="M6 8a6 6 0 0 1 12 0c0 7 3 9 3 9H3s3-2 3-9"/><path d="M10.3 21a1.94 1.94 0 0 0 3.4 0"/>',
+  bug:'<rect x="8" y="6" width="8" height="14" rx="4"/><path d="M9.5 6.5 8 4M14.5 6.5 16 4M12 11v9M8 11H4M16 11h4M8 16H4.5M16 16h3.5M8.5 19.5 6 21.5M15.5 19.5 18 21.5"/>',
   book:'<path d="M12 6.5C10 5 7 4.5 3.5 5v14c3.5-.5 6.5 0 8.5 1.5 2-1.5 5-2 8.5-1.5V5C17 4.5 14 5 12 6.5z"/><path d="M12 6.5v14"/>',
   cal:'<rect x="3.5" y="5" width="17" height="15.5" rx="2"/><path d="M3.5 10h17M8 3v4M16 3v4"/><path d="M8 14h.01M12 14h.01M16 14h.01M8 17h.01M12 17h.01"/>',
   locker:'<rect x="5" y="3" width="14" height="18" rx="2"/><path d="M9 7h2M9 10h2M15 12v2.5M5 17h14"/>',
@@ -5867,6 +5903,7 @@ function renderNav(){
       n[0]==="cour"&&courCount()?`<span class="cnt" aria-label="${courCount()} nouveauté${courCount()>1?"s":""} dans la cour">${courCount()}</span>`:""}</button>`
   ).join("") + (()=>{ const pc = passClaimable();
     return `<button class="nav-btn" data-action="nav" data-view="passe" ${cur==="passe"?'aria-current="page"':""}>${ic("ticket")}<span>Passe de saison</span>${pc?`<span class="cnt gold" aria-label="${pc} récompense${pc>1?"s":""} à prendre">${pc}</span>`:""}</button>` })()
+    + (sync.on && BETA.open ? `<button class="side-bug" data-action="bug-report">${ic("bug",18)}<span><b>Un souci ?</b><small>Signaler un bug</small></span></button>` : "")
     + `<p class="side-quote">Les plus grandes aventures commencent toujours par une petite bille.
     <svg width="40" height="36" viewBox="0 0 40 36" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"><path d="M6 2c-4 12 2 24 26 28"/><path d="M26 24l6 6-8 3"/></svg></p>`;
   const tab = (v,l,i,dot) => `<button class="tb" data-action="nav" data-view="${v}" ${cur===v?'aria-current="page"':""}>${ic(i,24)}${l}${dot?'<span class="dot"></span>':""}</button>`;
@@ -6167,6 +6204,7 @@ function renderProfPop(){
       <button data-action="nav" data-view="succes">${ic("trophy",16)} Succès</button>
       <button data-action="stats">${ic("chart",16)} Mes statistiques</button>
       <button data-action="nav" data-view="parametres">${ic("gear",16)} Paramètres</button>
+      ${sync.on ? `<button class="pp-bug" data-action="bug-report">${ic("bug",16)} Signaler un bug</button>` : ""}
     </div>
     <div class="pp-toggles"><button id="theme-btn" data-action="theme"></button><button id="sound-btn" data-action="sound"></button></div>
     <div class="pp-links pp-acct">
@@ -11832,6 +11870,66 @@ const SOON = {
   casier:["Mon casier","Ton espace à toi : billes favorites, vitrine, badges.",["Expose tes plus belles billes dans une vitrine.","Personnalise ton titre (aujourd'hui : Petit Boulet)."]],
   classement:["Classement","Qui a le plus bel album de la cour ?",["Classement par emplacements remplis.","Classement des meilleurs scores au Tir."]],
 };
+/* ---------- « Signaler un bug » (supabase/signalements.sql) ---------- */
+const BUG_CATS = [["bug","Un bug"],["affichage","L'affichage"],["idee","Une idée"],["autre","Autre"]];
+const BUG_VUES = {accueil:"Accueil", collection:"Ma boîte", sacs:"Sachets", jeux:"Jeux", confiserie:"Confiserie", cour:"Cour de récré", passe:"Passe de saison", grandecourse:"Grande Course", profil:"Profil", succes:"Succès", quetes:"Quêtes", parametres:"Paramètres"};
+// ce que le jeu joint tout seul au message : de quoi retrouver le bug sans poser de questions
+function bugDetails(){
+  return {page: ui.view, appareil: navigator.userAgent.slice(0,300), ecran: `${innerWidth}×${innerHeight} (×${(devicePixelRatio||1).toFixed(2)})`,
+    theme: document.documentElement.dataset.theme || "", serveur: !!eco.ready, billes: S.specs.length, erreurs: BUG_LOG.slice(-8), url: location.pathname + location.search};
+}
+let bugKeep = null;   // un message qui n'est pas parti : il est reproposé au prochain clic
+async function bugReport(prev){
+  if(!sync.on){ toast("Connecte-toi à ton compte pour envoyer un message."); return }
+  prev = prev || bugKeep; bugKeep = null;
+  const cat = prev?.categorie || "bug", lieu = BUG_VUES[ui.view] || ui.view;
+  const asking = ask({title:"Signaler un bug", ok:"Envoyer", no:"Annuler",
+    text:"Raconte ce qui s'est passé : ce que tu faisais, ce que tu attendais, ce qui est arrivé.",
+    extra:`<div class="bug-form">
+      <div class="bug-cats" role="radiogroup" aria-label="C'est à propos de">${BUG_CATS.map(([k,l])=>`<label><input type="radio" name="categorie" value="${k}" ${k===cat?"checked":""}><span>${l}</span></label>`).join("")}</div>
+      <textarea name="texte" rows="5" maxlength="2000" placeholder="Ex. : en ouvrant un sachet Premium, l'écran est resté noir et je n'ai pas eu mes billes.">${esc(prev?.texte||"")}</textarea>
+      <small class="meta">Le jeu joint la page (${esc(lieu)}), ton appareil et les dernières erreurs pour nous aider. Rien d'autre.</small>
+    </div>`});
+  document.querySelector("#ask textarea")?.focus();
+  if(!await asking) return;
+  const f = ask.form || {}, texte = (f.texte||"").trim();
+  if(texte.length<3){ toast("Écris quelques mots pour décrire le problème."); return bugReport(f) }
+  try{ await Cloud.bugs.envoyer(f.categorie||"bug", texte, bugDetails()); toast("Merci ! Ton message est bien arrivé.") }
+  catch(e){
+    if(e.code==="trop"){ toast("Tu as déjà envoyé beaucoup de messages aujourd'hui : réessaie demain."); return }
+    bugKeep = f; toast("Le message n'est pas parti (pas de réponse du serveur). Ton texte est gardé : réessaie dans un instant.");
+  }
+}
+
+// la liste des messages, pour l'admin (public.testeurs), dans Paramètres
+const bugAdm = {list:null, tous:false, busy:false, err:""};
+async function bugLoad(){
+  bugAdm.busy = true; bugAdm.err = ""; if(ui.view==="parametres") renderView();
+  try{ bugAdm.list = await Cloud.bugs.liste(bugAdm.tous) }catch(e){ bugAdm.err = e.code==="reserve_aux_testeurs" ? "Réservé à l'admin." : "Impossible de charger les messages." }
+  bugAdm.busy = false; if(ui.view==="parametres") renderView();
+}
+async function bugRegle(id, oui){
+  try{
+    await Cloud.bugs.regle(id, oui);
+    if(oui && !bugAdm.tous) bugAdm.list = bugAdm.list.filter(b=>b.id!==id);
+    else { const x = bugAdm.list?.find(b=>b.id===id); if(x) x.regle = oui }
+    renderView();
+  }catch(e){ toast("Pas pu enregistrer : réessaie.") }
+}
+function bugAdminHTML(){
+  if(!bugAdm.list && !bugAdm.busy && !bugAdm.err) setTimeout(bugLoad);
+  const L = bugAdm.list || [], cat = Object.fromEntries(BUG_CATS);
+  const when = d => new Date(d).toLocaleString("fr-FR", {day:"numeric", month:"short", hour:"2-digit", minute:"2-digit"});
+  return `<section class="panel bug-adm"><div class="panel-head"><h3>Messages des joueurs${bugAdm.list?` (${L.length})`:""}</h3>
+      <span class="bug-tabs"><button class="${bugAdm.tous?"":"on"}" data-action="bug-list" data-tous="0">À régler</button><button class="${bugAdm.tous?"on":""}" data-action="bug-list" data-tous="1">Tous</button></span></div>
+    ${bugAdm.err ? `<p>${bugAdm.err}</p>` : bugAdm.busy && !bugAdm.list ? `<p class="meta">Chargement…</p>` : !L.length ? `<p class="meta">Aucun message ${bugAdm.tous?"":"à régler "}pour l'instant.</p>` :
+      `<ul class="bug-list">${L.map(b=>{ const d = b.details||{};
+        return `<li class="${b.regle?"done":""}"><div class="bug-top"><span class="bug-cat k-${b.categorie}">${cat[b.categorie]||b.categorie}</span><b>${esc(b.pseudo||"?")}</b><small class="meta">${when(b.le)} · ${esc(BUG_VUES[d.page]||d.page||"?")}</small>
+          <button class="btn btn-ghost" data-action="bug-regle" data-id="${b.id}" data-oui="${b.regle?0:1}">${b.regle?"Rouvrir":ic("check",14)+" Réglé"}</button></div>
+          <p>${esc(b.texte).replace(/\n/g,"<br>")}</p>
+          <details><summary>Détails</summary><small>${esc(d.appareil||"")}<br>Écran ${esc(d.ecran||"?")} · thème ${esc(d.theme||"?")} · serveur ${d.serveur?"oui":"non"} · ${d.billes??"?"} billes · ${esc(d.url||"")}${(d.erreurs||[]).length?`<br><b>Erreurs :</b><br>${d.erreurs.map(esc).join("<br>")}`:""}</small></details></li>` }).join("")}</ul>`}
+  </section>`;
+}
 function viewSoon(){
   if(ui.view==="parametres") return `<div class="page-head"><div><h1>Paramètres</h1><p>${sync.on ? "Ta collection est sauvegardée sur ton compte." : "Sans compte, ta progression est enregistrée dans ce navigateur uniquement."}</p></div></div>
     <div class="soon-page">
@@ -11841,6 +11939,11 @@ function viewSoon(){
         : `<p>Crée un compte pour garder ta collection en sécurité et la retrouver sur tous tes appareils.</p>
         <div style="display:flex;gap:10px;flex-wrap:wrap;margin-top:14px">${window.Cloud?.available ? `<button class="btn btn-yellow" data-action="acct-signup">Créer un compte</button><button class="btn btn-ghost" data-action="acct-login">Se connecter</button>` : `<p>Connexion impossible pour l'instant.</p>`}</div>`}
       </section>
+      ${sync.on ? `<section class="panel"><div class="panel-head"><h3>Un souci ?</h3></div>
+        <p>Un bug, un affichage bizarre, une idée ? Dis-le-nous : ton message arrive directement à l'équipe${BETA.open ? ", et ça nous aide énormément pendant la bêta" : ""}.</p>
+        <div style="margin-top:14px"><button class="btn btn-yellow" data-action="bug-report">${ic("bug",16)} Signaler un bug</button></div>
+      </section>` : ""}
+      ${sync.on && eco.testeur ? bugAdminHTML() : ""}
       ${devTools() ? `<section class="panel"><div class="panel-head"><h3>Outils de test</h3></div>
         <p>Pour tester sans attendre : ajoute des ${CUR.many}, recharge tout de suite le sachet gratuit ou reçois une bille shiny.</p>
         <div style="display:flex;gap:10px;flex-wrap:wrap;margin-top:14px">
@@ -12808,6 +12911,9 @@ document.addEventListener("click", e=>{
         ${pickFilter(list)}<div class="pick-grid">${list.map(x=>`<button class="m-card${x.id===cur?" on":""}" data-action="set-avatar" data-id="${x.id}" ${pickData(x)} style="${tstyle(x.type)}"><span class="ball">${mImg(x,120,Math.round(40*scaleOf(x.type)+14),"")}</span><b>${esc(specName(x))}</b>${typePill(x.type)}</button>`).join("")}</div></div>`;
       el.hidden = false; (el.querySelector(".pick-q")||el.querySelector(".close-x")).focus(); break }
     case "set-avatar": delete S.photo; if(t.dataset.id) S.avatar = t.dataset.id; else delete S.avatar; save(); closeModal(); renderTop(); renderView(); toast("C'est ta nouvelle photo de profil !"); break;
+    case "bug-report": toggleProfPop(false); bugReport(); break;
+    case "bug-list": bugAdm.tous = t.dataset.tous==="1"; bugLoad(); break;
+    case "bug-regle": bugRegle(+t.dataset.id, t.dataset.oui==="1"); break;
     case "stats": toggleProfPop(false); courStats = null; go("profil"); setTimeout(()=>document.getElementById("stats")?.scrollIntoView({behavior:"smooth", block:"start"}), 60); break;
     case "pick-active": { const el = document.getElementById("modal"), list = [...S.specs].sort(tierSort);
       el.innerHTML = `<div class="modal bag-sum pick-modal" role="dialog" aria-modal="true" aria-label="Choisir ta bille"><button class="close-x" data-action="close-modal" aria-label="Fermer">×</button>

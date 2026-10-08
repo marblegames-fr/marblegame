@@ -1,5 +1,5 @@
 -- =====================================================================
---  BILLY : les notifications en temps réel (4 octobre 2026)
+--  BILLEO : les notifications en temps réel (4 octobre 2026)
 --  À installer après cour.sql.
 --
 --  Une toute petite table « pings » : une ligne par joueur, mise à jour dès qu'il se passe quelque chose

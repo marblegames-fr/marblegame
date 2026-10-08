@@ -1,5 +1,5 @@
 -- =====================================================================
---  BILLY : le numéro de remise à zéro
+--  BILLEO : le numéro de remise à zéro
 --  Une page restée ouverte pendant un reset garde l'ancienne partie en mémoire et la renverrait
 --  (succès, séries, passe… ressuscités). Chaque page lit ce numéro au démarrage et le joint à ses
 --  sauvegardes : le serveur refuse une sauvegarde d'un autre numéro, et la page se recharge à zéro.

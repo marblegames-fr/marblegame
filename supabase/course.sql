@@ -1,5 +1,5 @@
 -- =====================================================================
---  BILLY : la Grande Course (12 h et 20 h)
+--  BILLEO : la Grande Course (12 h et 20 h)
 --  À installer après serveur.sql (Supabase > SQL Editor > Run). On peut le relancer sans risque.
 --
 --  - On s'inscrit soi-même, quand on veut dans la journée, avec la bille de son choix (juste pour le look).

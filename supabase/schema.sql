@@ -1,5 +1,5 @@
 -- =====================================================================
---  BILLY : base de données (Supabase / PostgreSQL)
+--  BILLEO : base de données (Supabase / PostgreSQL)
 --  À coller en entier dans Supabase > SQL Editor > New query > Run.
 --  Le script peut être relancé sans danger.
 -- =====================================================================

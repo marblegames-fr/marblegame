@@ -7750,7 +7750,7 @@ function showBagStage(){
   ov.style.removeProperty("--flash");
   document.getElementById("ov-body").classList.remove("six");
   document.getElementById("ov-body").innerHTML = `
-    <span class="ov-kicker">${gift?"Offert par le passe de saison":bag.price?`${fmt(bag.price)} ${CUR.many}`:"Offert toutes les 10 minutes"}</span>
+    <span class="ov-kicker">${ovState.demo?"Démo : rien n'est gagné":gift?"Offert par le passe de saison":bag.price?`${fmt(bag.price)} ${CUR.many}`:"Offert toutes les 10 minutes"}</span>
     <div class="ov-title">${bag.name}</div>
     <div class="bag-zone${forced?" guar":""}" id="bag-zone"><div class="bag-halo"></div>
       <button class="bag-stage" id="bag-stage" aria-label="Ouvrir le sachet">${bagSVG(bag)}</button>
@@ -8030,13 +8030,15 @@ function finishReveal(){
   } else {
     again = freeReady() ? `<button class="btn btn-yellow" data-action="open-next-free">Ouvrir le suivant (${freeStock()} en stock)</button>` : `<button class="btn btn-yellow" data-action="to-bags">Voir les sachets payants</button>`;
   }
+  if(ovState.demo){ document.querySelector(".ov-sub").textContent = "Démo terminée : ces billes ne sont pas dans ta boîte.";
+    document.getElementById("ov-actions").innerHTML = `<button class="btn btn-yellow" data-action="shiny-demo">Revoir la démo</button><button class="btn btn-ghost" data-action="close-ov">Fermer</button>`; return }
   const nc = results.filter(r=>r.isNew||r.evNew).length, ncol = results.filter(r=>!r.isNew&&!r.evNew&&r.newColor).length;
   const nbLeg = nc||ncol ? `<span class="nb-leg">${nc?`<span><span class="nb-dot">${SPARK}</span>${nc} nouveau${nc>1?"x":""} motif${nc>1?"s":""}</span>`:""}${ncol?`<span><span class="nb-dot col">${SPARK}</span>${ncol} nouveau${ncol>1?"x":""} coloris</span>`:""}</span>` : "";
   document.getElementById("ov-actions").innerHTML = `${nbLeg}<span class="ov-xp" style="flex-basis:100%;justify-content:center">${ic("ticket",18)} +${ovState.pxp} XP de saison</span>${again}<button class="btn btn-ghost" data-action="to-home">Revenir à l'accueil</button>`;
 }
 function closeOv(quiet){
   // fermé avant d'avoir tout découvert : les billes sont déjà rangées, on montre quand même ce qu'il y avait
-  const missed = !quiet && ovState && ovState.results && ovState.opened.size < ovState.results.length ? ovState : null;
+  const missed = !quiet && ovState && !ovState.demo && ovState.results && ovState.opened.size < ovState.results.length ? ovState : null;
   FX.stop();
   if(ovState?.rollRaf) cancelAnimationFrame(ovState.rollRaf);
   Sound.rollStop();
@@ -11974,6 +11976,7 @@ function viewSoon(){
           <button class="btn btn-ghost" data-action="bell-test">Écouter la sonnerie de récré</button>
           <button class="btn btn-ghost" data-action="daily-reset">Revoir le bonbec du jour</button>
           <button class="btn btn-ghost" data-action="pity-max">Garantie Boulet au prochain sachet</button>
+          <button class="btn btn-ghost" data-action="shiny-demo">${ic("star",16)} Ouverture shiny (démo)</button>
           ${COLORIS_MAQUETTES.length ? `<button class="btn btn-ghost" data-action="lab-open">${ic("star",16)} Maquettes de coloris</button>` : ""}
         </div>
       </section>
@@ -13095,6 +13098,9 @@ document.addEventListener("click", e=>{
       toast(`Défi « ${c.title} » réussi : +${fmt(r.j||0)} ${CUR.many}${r.bag?", "+BAG_BY[r.bag].name:""}${r.title?", titre « "+r.title+" »":""} !`);
       break;
     }
+    // (8 octobre 2026) pour voir et entendre les 3 ouvertures shiny : un faux sachet (Irisée, Dorée, Lumineuse), rien n'est gagné ni enregistré
+    case "shiny-demo": { const results = [1,2,3].map(sh=>({s:makeSpec("calot",{shiny:sh, src:"test"}), isNew:false, newColor:false}));
+      FX.stop(); ovState = {bag:BAG_BY.premium, results, opened:new Set(), gift:false, forced:false, demo:true, pxp:0}; showBagStage(); break }
     case "pity-max": S.pity = PITY-1; save(); toast("Ton prochain sachet contiendra un Boulet ou un Mammouth (démo)."); if(ui.view==="sacs") renderView(); break;
     case "buy": openBag(t.dataset.bag); break;
     case "tear": tear(); break;
@@ -13269,7 +13275,7 @@ var eco = {ready:false, q:Promise.resolve(), testeur:false, busy:false, retry:fa
 // outils de test : pour les comptes testeurs, ou quand le jeu tourne sur l'ordinateur (pas en ligne)
 const DEV_HOST = location.protocol==="file:" || /^(localhost|127\.0\.0\.1|)$/.test(location.hostname);
 const devTools = () => sync.on ? eco.testeur : DEV_HOST;
-const DEV_ACTIONS = ["add-jetons","refill-free","give-shiny","pass-xp","daily-reset","pity-max","reset"];
+const DEV_ACTIONS = ["add-jetons","refill-free","give-shiny","pass-xp","daily-reset","pity-max","shiny-demo","reset"];
 function srvOn(){ return !!(sync.on && eco.ready) }
 // (7 octobre 2026) une bille ne vient que du serveur : sans lui, pas de sachet, de fusion, de jeu de chance ni de récompense en bille.
 // On prévient le joueur et on retente la connexion au serveur.

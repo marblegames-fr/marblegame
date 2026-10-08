@@ -10,7 +10,7 @@ try{ const ks=[]; for(let i=0;i<localStorage.length;i++){ const k=localStorage.k
 try{ document.documentElement.dataset.theme = localStorage.getItem("billeo-theme") || "dark" }catch(e){ document.documentElement.dataset.theme = "dark" }</script>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Lilita+One&family=Titan+One&family=Nunito:wght@500;600;700;800;900&family=Caveat:wght@600;700&display=swap">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Gluten:wght@900&family=Lilita+One&family=Titan+One&family=Nunito:wght@500;600;700;800;900&family=Caveat:wght@600;700&display=swap">
 <style>
 :root{
   --bg:#FBF4E6;
@@ -96,12 +96,20 @@ p{margin:0}
 
 /* ---------- top bar ---------- */
 .topbar{position:sticky;top:calc(var(--rib,0px) + env(safe-area-inset-top,0px));z-index:30;display:flex;align-items:center;gap:16px;height:68px;padding-inline:24px;background:var(--topbar);backdrop-filter:blur(8px);border-bottom:1px solid var(--line)}
-.logo{display:flex;align-items:center;gap:4px;font-family:var(--display);font-size:38px;line-height:1;color:var(--yellow);text-shadow:0 3px 0 var(--navy);letter-spacing:.5px}
-/* le titre : une police ronde et gourmande, jaune avec une tranche caramel et un petit relief */
-.logo span{font-family:"Titan One",var(--display);font-size:.92em;letter-spacing:.8px;color:#FFC93F;
-  text-shadow:0 1.5px 0 #F59E0B,0 3px 0 #E07B00,0 5px 0 var(--navy),0 7px 9px rgba(0,0,0,.35)}
-.logo span{-webkit-text-stroke:6px var(--navy);paint-order:stroke fill}
-.logo img{width:36px;height:36px;margin-left:2px;margin-top:4px}
+/* le logo « Ça roule » (8 octobre 2026, maquettes/maquette-logo-polices.html) : « Bille » en Gluten, une police gonflée
+   comme écrite à la main, jaune avec une tranche caramel ; les lettres sautillent comme des billes qui rebondissent,
+   et la bille du logo fait le « o » de Billeo. Tout est en em : il suffit de changer font-size. */
+.logo{display:flex;align-items:flex-end;font-family:"Gluten",var(--display);font-weight:900;font-size:38px;line-height:1;letter-spacing:.02em}
+.logo .lw{display:flex;align-items:flex-end}
+.logo .lt{display:inline-block;color:#FFC93F;-webkit-text-stroke:.16em var(--navy);paint-order:stroke fill;
+  text-shadow:0 .04em 0 #F59E0B,0 .08em 0 #E07B00,0 .13em 0 var(--navy),0 .18em .24em rgba(0,0,0,.35)}
+.logo .lt:nth-child(1){transform:translateY(-.02em) rotate(-6deg)}
+.logo .lt:nth-child(2){transform:translateY(-.10em) rotate(4deg)}
+.logo .lt:nth-child(3){transform:translateY(.02em) rotate(-3deg)}
+.logo .lt:nth-child(4){transform:translateY(-.08em) rotate(5deg)}
+.logo .lt:nth-child(5){transform:rotate(-4deg)}
+.logo img{display:block;flex:none;width:.6em;height:.6em;margin:0 0 .06em .06em;border-radius:50%;box-shadow:0 0 0 .065em var(--navy);
+  filter:drop-shadow(0 .06em 0 var(--navy)) drop-shadow(0 .14em .14em rgba(0,0,0,.4))}
 .topbar .logo a{text-decoration:none;cursor:pointer;color:inherit;display:flex}
 .tagline{font-family:var(--hand);font-size:24px;font-weight:600;color:var(--ink);margin-left:18px;white-space:nowrap}
 .top-spacer{flex:1}
@@ -2981,7 +2989,6 @@ button.cp-who:hover b{text-decoration:underline}
 }
 @media (max-width:440px){
   .topbar{padding-inline:10px;gap:5px}
-  .logo img{display:none}
   .prof-wrap{padding-inline:0;border:0}
   .topbar .icon-btn{width:36px}
 }
@@ -3038,9 +3045,8 @@ button.cp-who:hover b{text-decoration:underline}
 .auth-wrap{position:relative;z-index:1;min-height:100%;max-width:1140px;margin:0 auto;padding:32px 32px 40px;align-content:start;padding-top:max(32px,calc(calc(50vh / var(--vz,1)) - 380px));display:grid;grid-template-columns:minmax(0,1fr) minmax(0,430px);gap:64px;align-items:start;pointer-events:none}
 .auth-wrap > *{pointer-events:auto}
 .auth-pitch{pointer-events:none;text-shadow:0 2px 18px rgba(0,0,0,.55);margin-top:60px}   /* fixe : ne bouge pas quand le formulaire change de hauteur */
-.auth-pitch .logo{font-size:80px;gap:10px;animation:auth-in .7s cubic-bezier(.2,.9,.3,1.3) both}
-.auth-pitch .logo span{-webkit-text-stroke:10px var(--navy)}
-.auth-pitch .logo img{width:72px;height:72px;animation:auth-roll 1.1s cubic-bezier(.2,.8,.3,1) .15s both;filter:drop-shadow(0 10px 14px rgba(0,0,0,.5))}
+.auth-pitch .logo{font-size:96px;animation:auth-in .7s cubic-bezier(.2,.9,.3,1.3) both}
+.auth-pitch .logo img{animation:auth-roll 1.1s cubic-bezier(.2,.8,.3,1) .15s both;filter:drop-shadow(0 10px 14px rgba(0,0,0,.5))}
 .auth-pitch h1{margin:22px 0 0;font-family:var(--display);font-weight:400;font-size:clamp(34px,calc(4.4vw / var(--vz,1)),58px);line-height:.96;letter-spacing:.01em;text-transform:uppercase;animation:auth-in .7s .1s both}
 .auth-pitch h1 em{font-style:normal;color:var(--yellow)}
 .auth-hand{margin:14px 0 0;font-family:var(--hand);font-size:27px;line-height:1.1;color:rgba(255,255,255,.82);transform:rotate(-2deg);transform-origin:left;animation:auth-in .7s .2s both}
@@ -3109,9 +3115,7 @@ button.cp-who:hover b{text-decoration:underline}
 @media (max-width:880px){
   .auth-wrap{grid-template-columns:minmax(0,1fr);gap:22px;padding:28px 16px 72px;align-content:start;max-width:460px}
   .auth-pitch{text-align:center;margin-top:0}
-  .auth-pitch .logo{font-size:60px;justify-content:center}
-  .auth-pitch .logo span{-webkit-text-stroke:7px var(--navy)}
-  .auth-pitch .logo img{width:54px;height:54px}
+  .auth-pitch .logo{font-size:70px;justify-content:center}
   .auth-pitch h1{font-size:30px;margin-top:14px}
   .auth-pitch h1 br{display:none}
   .auth-hand{font-size:22px;transform:none}
@@ -3282,7 +3286,7 @@ body.gc-open{overflow:hidden}
 
 <div class="beta-rib" id="beta-rib" hidden></div>
 <header class="topbar">
-  <div class="logo"><a href="#" data-action="nav" data-view="accueil" aria-label="Billeo : retour à l'accueil"><span>Billeo</span></a><img id="logo-marble" alt=""></div>
+  <div class="logo"><a href="#" data-action="nav" data-view="accueil" aria-label="Billeo : retour à l'accueil"><span class="lw" aria-hidden="true"><span class="lt">B</span><span class="lt">i</span><span class="lt">l</span><span class="lt">l</span><span class="lt">e</span></span></a><img id="logo-marble" alt=""></div>
   <div class="tagline">Ouvre. Collectionne. Joue.</div>
   <div class="top-spacer"></div>
   <button class="mj-btn" id="mj-btn" data-action="mj-open" aria-label="Ma journée"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3.5" y="8" width="17" height="4" rx="1"/><path d="M5 12v8h14v-8M12 8v12M12 8C10.5 4 7 4 7 6s3 2 5 2c2 0 5 0 5-2s-3.5-2-5 2"/></svg><span class="lbl">Ma journée</span><span class="n" id="mj-n" hidden></span></button>
@@ -13853,7 +13857,7 @@ const AUTH_SPECS = {
   shiny: {seed:hash("accueil-s"), type:"bille", family:0, pal:4, shiny:2},
 };
 function authPitch(){
-  return `<div class="logo" aria-label="Billeo"><span>Billeo</span><img src="${marbleURL(LOGO_SPEC,192)}" alt=""></div>
+  return `<div class="logo" role="img" aria-label="Billeo"><span class="lw" aria-hidden="true"><span class="lt">B</span><span class="lt">i</span><span class="lt">l</span><span class="lt">l</span><span class="lt">e</span></span><img src="${marbleURL(LOGO_SPEC,192)}" alt=""></div>
     <h1>Ta cour de récré,<br> <em>en billes.</em></h1>
     <p class="auth-hand">Ouvre des sachets, complète ton album, joue avec les copains.</p>
     <ul class="auth-feats">

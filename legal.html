@@ -9,7 +9,7 @@
 try{ document.documentElement.dataset.theme = localStorage.getItem("billeo-theme") || localStorage.getItem("billy-theme") || "dark" }catch(e){ document.documentElement.dataset.theme = "dark" }</script>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Titan+One&family=Nunito:wght@500;700;800;900&display=swap">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Gluten:wght@900&family=Titan+One&family=Nunito:wght@500;700;800;900&display=swap">
 <style>
 /* Les pages légales de Billeo (8 octobre 2026) : mentions légales, données personnelles, règles du jeu (CGU).
    Une page légère, à part du jeu, pour qu'on puisse la lire sans rien charger et la partager par un lien
@@ -22,7 +22,17 @@ body{margin:0;background:var(--bg);color:var(--ink);font:500 16px/1.65 Nunito,sy
 a{color:var(--blue);font-weight:800;text-underline-offset:3px}
 header{position:sticky;top:0;z-index:2;background:color-mix(in srgb,var(--bg) 88%,transparent);backdrop-filter:blur(8px);border-bottom:1px solid var(--line)}
 .bar{max-width:820px;margin:0 auto;padding:10px 16px;display:flex;align-items:center;gap:14px;flex-wrap:wrap}
-.logo{font-family:"Titan One",sans-serif;font-size:28px;line-height:1;color:#FFC93F;-webkit-text-stroke:5px var(--navy);paint-order:stroke fill;text-decoration:none;letter-spacing:.6px}
+.logo{display:flex;align-items:flex-end;font-family:"Gluten",sans-serif;font-weight:900;font-size:32px;line-height:1;letter-spacing:.02em;text-decoration:none;padding-top:4px}
+.logo .lw{display:flex;align-items:flex-end}
+.logo .lt{display:inline-block;color:#FFC93F;-webkit-text-stroke:.16em #24253D;paint-order:stroke fill;
+  text-shadow:0 .04em 0 #F59E0B,0 .08em 0 #E07B00,0 .13em 0 #24253D,0 .18em .24em rgba(0,0,0,.35)}
+.logo .lt:nth-child(1){transform:translateY(-.02em) rotate(-6deg)}
+.logo .lt:nth-child(2){transform:translateY(-.10em) rotate(4deg)}
+.logo .lt:nth-child(3){transform:translateY(.02em) rotate(-3deg)}
+.logo .lt:nth-child(4){transform:translateY(-.08em) rotate(5deg)}
+.logo .lt:nth-child(5){transform:rotate(-4deg)}
+.logo .o{display:block;flex:none;background:radial-gradient(circle at 35% 30%,#fff 0 8%,#7FE3E8 18%,#1F9AA8 55%,#0D4C5C 100%);width:.6em;height:.6em;margin:0 0 .06em .06em;border-radius:50%;box-shadow:0 0 0 .065em #24253D;
+  filter:drop-shadow(0 .06em 0 #24253D) drop-shadow(0 .14em .14em rgba(0,0,0,.4))}
 nav{display:flex;gap:6px;flex-wrap:wrap;margin-left:auto}
 nav a{font-size:14px;text-decoration:none;padding:6px 12px;border-radius:99px;border:1px solid var(--line);color:var(--ink);background:var(--panel)}
 nav a:hover{border-color:var(--yellow)}
@@ -50,7 +60,7 @@ footer{text-align:center;color:var(--muted);font-size:13px;padding:0 16px 40px}
 </head>
 <body>
 <header><div class="bar">
-  <a class="logo" href="./">Billeo</a>
+  <a class="logo" href="./" aria-label="Billeo : retour au jeu"><span class="lw" aria-hidden="true"><span class="lt">B</span><span class="lt">i</span><span class="lt">l</span><span class="lt">l</span><span class="lt">e</span></span><span class="o" aria-hidden="true"></span></a>
   <nav aria-label="Sommaire">
     <a href="#mentions">Mentions légales</a>
     <a href="#confidentialite">Données personnelles</a>

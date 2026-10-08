@@ -10,7 +10,7 @@ try{ const ks=[]; for(let i=0;i<localStorage.length;i++){ const k=localStorage.k
 try{ document.documentElement.dataset.theme = localStorage.getItem("billeo-theme") || "dark" }catch(e){ document.documentElement.dataset.theme = "dark" }</script>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Gluten:wght@900&family=Lilita+One&family=Titan+One&family=Nunito:wght@500;600;700;800;900&family=Caveat:wght@600;700&display=swap">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Gluten:wght@900&family=Lilita+One&family=Nunito:wght@500;600;700;800;900&family=Caveat:wght@600;700&display=swap">
 <style>
 :root{
   --bg:#FBF4E6;
@@ -736,9 +736,9 @@ main{padding:22px 24px 40px;min-width:0}
 .ph-final b{font-size:16px;font-weight:900}
 .pass-track{display:grid;grid-template-columns:84px minmax(0,1fr);padding:16px 0 12px 16px;margin-bottom:20px}
 .track-labels,.tier{display:grid;grid-template-rows:118px 34px 118px;row-gap:8px}
-.track-labels{align-items:center;font-size:12px;font-weight:900;text-transform:uppercase;letter-spacing:.05em;color:var(--ink-2)}
+.track-labels{padding-top:24px;align-items:center;font-size:12px;font-weight:900;text-transform:uppercase;letter-spacing:.05em;color:var(--ink-2)}
 .track-labels .pl{display:inline-flex;align-items:center;gap:4px;color:#C07A0C}
-.track-scroll{display:flex;gap:8px;overflow-x:auto;padding:0 16px 10px 4px;scroll-behavior:smooth;scrollbar-width:thin}
+.track-scroll{display:flex;gap:8px;overflow-x:auto;padding:24px 16px 10px 4px;scroll-behavior:smooth;scrollbar-width:thin}
 .tier{position:relative;flex:none;width:96px}
 .tier::before{content:"";position:absolute;left:-8px;right:0;top:141px;height:4px;background:var(--track)}
 .tier:first-child::before{left:50%}
@@ -753,9 +753,26 @@ main{padding:22px 24px 40px;min-width:0}
 .rw-bag svg{height:54px;width:auto}
 .rw-title{color:#C07A0C}
 .rw.prem{background:color-mix(in srgb,#FFC93F 12%,var(--panel));border-color:color-mix(in srgb,#FFC93F 45%,var(--line))}
-.rw.future{opacity:.6}
+.rw.future{opacity:.5}
+.rw.future.big{opacity:.8}
 .rw.locked .rw-ic{filter:grayscale(.6)}
-.rw.got{opacity:.45}
+.rw.got{background:transparent;border-style:dashed;border-color:color-mix(in srgb,var(--green) 45%,var(--line))}
+.rw.got .rw-ic,.rw.got > b{opacity:.3;filter:grayscale(1)}
+.rw.got .rw-mark.ok{top:30%;right:auto;left:50%;transform:translate(-50%,-50%);width:34px;height:34px;box-shadow:0 4px 10px -4px rgba(0,0,0,.5)}
+.rw-got{position:absolute;bottom:8px;left:0;right:0;font-size:10px;font-weight:900;text-transform:uppercase;letter-spacing:.05em;color:var(--green)}
+.rw.got > b{visibility:hidden}
+.rw.big:not(.got){border-width:2px;border-color:var(--s2,#FFC93F);box-shadow:inset 0 0 0 3px color-mix(in srgb,var(--s2,#FFC93F) 18%,transparent)}
+.tier.next .rw:not(.got){opacity:1;border:2px solid var(--blue);box-shadow:0 8px 20px -10px var(--blue)}
+.tier.next::before{background:linear-gradient(90deg,var(--green) var(--pp,0%),var(--track) var(--pp,0%))}
+.tier-tag{position:absolute;top:-22px;left:50%;transform:translateX(-50%);white-space:nowrap;font-size:10.5px;font-weight:900;color:#fff;background:var(--blue);padding:2px 8px;border-radius:999px;z-index:1}
+.pt-legend{grid-column:1/-1;display:flex;flex-wrap:wrap;gap:6px 14px;align-items:center;margin:0 16px 22px 0;font-size:12px;font-weight:800;color:var(--ink-2)}
+.pt-legend .lg{display:inline-flex;align-items:center;gap:6px}
+.pt-legend .lg::before{content:"";width:12px;height:12px;border-radius:4px;border:1.5px solid var(--line-2);background:var(--panel-2)}
+.pt-legend .lg.got{color:var(--green)}.pt-legend .lg.got::before{border:1.5px dashed var(--green);background:transparent}
+.pt-legend .lg.can{color:#C07A0C}.pt-legend .lg.can::before{border-color:#F2AE12;background:var(--gold-bg)}
+.pt-legend .lg.next{color:var(--blue)}.pt-legend .lg.next::before{border:2px solid var(--blue)}
+.pt-legend .lg.fut::before{opacity:.5}
+.pt-legend svg{display:none}
 button.rw:hover{transform:translateY(-2px)}
 .rw-mark{position:absolute;top:6px;right:6px;width:22px;height:22px;border-radius:50%;display:grid;place-items:center;background:var(--ink);color:var(--on-ink)}
 .rw-mark.ok{background:var(--green);color:#fff}
@@ -873,18 +890,22 @@ button.rw:hover{transform:translateY(-2px)}
 .sr-only{position:absolute;width:1px;height:1px;overflow:hidden;clip-path:inset(50%);white-space:nowrap}
 /* la barre d'outils : les tailles en petites billes, la loupe, « Filtrer ▾ » (et le tri dans Mes billes) */
 .bx-bar{display:flex;align-items:center;justify-content:space-between;gap:10px 14px;flex-wrap:wrap;margin:0 0 18px}
-.bx-dots{display:flex;align-items:center;gap:4px;flex-wrap:wrap}
-.bx-dot{display:grid;justify-items:center;align-content:center;grid-template-rows:24px auto;gap:1px;min-width:44px;height:46px;padding:2px 5px 3px;border-radius:12px;border:2px solid transparent;background:transparent;transition:transform .15s}
+.bx-dots{display:grid;grid-template-columns:auto repeat(6,minmax(0,1fr));align-items:stretch;gap:6px;width:100%}
+.bx-dot{display:grid;justify-items:center;align-content:center;grid-template-rows:26px auto auto;gap:1px;min-width:0;padding:5px 0 7px;border-radius:14px;border:2px solid rgba(43,34,51,.12);background:color-mix(in srgb,var(--rb,#fff) 55%,transparent);transition:transform .15s;overflow:hidden}
+.bx-dot.zero{opacity:.55}
+.bx-lb{font-size:10px;letter-spacing:-.03em;font-weight:900;line-height:1.1;color:var(--rc,var(--ink-2));white-space:nowrap;max-width:100%;overflow:hidden;text-overflow:ellipsis}
+.bx-n small{font-size:9.5px;font-weight:800;opacity:.6}
+.bx-pg{position:absolute;left:6px;right:6px;bottom:3px;height:3px;border-radius:3px;background:rgba(43,34,51,.12)}
+.bx-pg::before{content:"";position:absolute;inset:0 auto 0 0;width:var(--p);border-radius:3px;background:var(--rc)}
 .bx-dot:hover{transform:translateY(-2px)}
 .bx-dot{position:relative}
-.bx-n{font-style:normal;font-size:11px;font-weight:900;line-height:1;color:var(--ink-2);font-variant-numeric:tabular-nums;white-space:nowrap}
+.bx-n{font-style:normal;font-size:13px;font-weight:900;line-height:1.1;color:var(--ink);font-variant-numeric:tabular-nums;white-space:nowrap}
 .bx-dot[aria-pressed="true"] .bx-n{color:var(--ink)}
-.bx-dot[aria-pressed="true"]::after{content:"";position:absolute;left:8px;right:8px;bottom:-5px;height:3px;border-radius:3px;background:var(--tc)}
-.bx-dot[aria-pressed="true"]{border-color:var(--ol,#2B2233);background:var(--card);box-shadow:0 3px 0 rgba(43,34,51,.2)}
+.bx-dot[aria-pressed="true"]{border-color:var(--rc,var(--ol,#2B2233));background:var(--card);box-shadow:0 3px 0 color-mix(in srgb,var(--rc,#2B2233) 45%,transparent)}
 .bx-dot.all{width:auto;padding:0 14px;border-radius:999px;font-family:var(--hand);font-size:22px;font-weight:700;color:var(--ol,#2B2233);border-color:rgba(43,34,51,.2);background:var(--card)}
 .bx-dot.all[aria-pressed="true"]{background:var(--tc);border-color:var(--ol,#2B2233)}
-.bx-dot.all{display:inline-flex;align-items:center;gap:5px}
-.bx-all-n{font-family:var(--body);font-size:12px;font-weight:900;opacity:.6}
+.bx-dot.all{display:grid;grid-template-rows:auto auto;justify-items:center;align-content:center;gap:2px;line-height:1}
+.bx-all-n{font-family:var(--body);font-size:11.5px;font-weight:900;opacity:.65}
 .bx-tools{display:flex;align-items:center;gap:8px}
 .bx-q{position:relative;display:flex;align-items:center}
 .bx-q .cs-ic{position:absolute;left:12px;color:var(--ink-2);display:grid;pointer-events:none}
@@ -911,7 +932,10 @@ button.rw:hover{transform:translateY(-2px)}
 .bx-hide{display:inline-flex;align-items:center;gap:8px;height:42px;padding:0 14px 0 12px;border-radius:999px;border:2px solid rgba(43,34,51,.2);background:var(--card);font-weight:800;font-size:13px;color:var(--ink);cursor:pointer;white-space:nowrap}
 .bx-hide input{width:17px;height:17px;accent-color:var(--tc);margin:0}
 .bx-hide:has(input:checked){border-color:var(--ol,#2B2233)}
-.bx-bar .seen-all{flex-basis:100%;margin:0;height:36px}
+/* « Tout vu » : une petite pastille dans la barre d'outils, pas une grande barre */
+.bx-bar .seen-all{display:inline-flex;align-items:center;gap:6px;height:42px;margin:0;padding:0 12px 0 11px;border-radius:999px;border:2px solid rgba(43,34,51,.2);background:var(--card);font-weight:800;font-size:13px;color:var(--ink);white-space:nowrap}
+.bx-bar .seen-all:hover{border-color:var(--ol,#2B2233)}
+.bx-bar .seen-all small{min-width:20px;height:20px;padding:0 6px;border-radius:999px;display:grid;place-items:center;background:#E5484D;color:#fff;font-size:11px;font-weight:900}
 /* les en-têtes de taille : une ligne écrite à la main */
 .th-line{display:flex;align-items:center;gap:12px;margin:4px 0 12px}
 .th-line h2{font-family:var(--hand);font-size:32px;font-weight:700;line-height:1;color:var(--ol,#2B2233);white-space:nowrap}
@@ -936,9 +960,11 @@ button.rw:hover{transform:translateY(-2px)}
 .cahier-page .type-block{margin-bottom:22px}
 @media (max-width:560px){
   .bx-bar{gap:10px}
-  .bx-dots{width:100%;justify-content:space-between;flex-wrap:nowrap;gap:0}
-  .bx-dot{min-width:0;flex:1 1 0;padding:2px 1px 3px}
-  .bx-dot.all{padding:0 9px;font-size:18px}
+  .bx-dots{gap:3px}
+  .bx-dot{padding:4px 1px 7px;border-radius:11px}
+  .bx-lb{display:none}
+  .bx-n small{display:none}
+  .bx-dot.all{padding:0 8px;font-size:18px}
   .bx-tools{width:100%;flex-wrap:wrap}
   .bx-hide{order:3;width:100%;justify-content:center}
   .filt-menu{left:auto;right:0}
@@ -1024,16 +1050,23 @@ button.rw:hover{transform:translateY(-2px)}
 .sh-cell .nw{position:absolute;bottom:6px;left:6px;width:8px;height:8px;border-radius:50%;background:#E5484D}
 .sh-cell.missing{opacity:.75;border-style:dashed}
 .sh-cell .sil{width:54px;height:54px;border-radius:50%;background:radial-gradient(circle at 35% 30%,color-mix(in srgb,var(--c2) 35%,transparent),color-mix(in srgb,var(--c1) 30%,transparent) 70%);box-shadow:inset 0 0 0 2px color-mix(in srgb,var(--ink) 12%,transparent);filter:grayscale(.55)}
-.guar-stamp{position:absolute;left:50%;top:58%;translate:-50% -50%;z-index:3;display:flex;align-items:center;gap:10px;padding:10px 16px 10px 12px;border-radius:16px;
-  background:linear-gradient(135deg,#FFE38A,#E8A317);color:#3A2400;border:3px solid #FFF3C4;box-shadow:0 0 0 4px rgba(232,163,23,.35),0 18px 40px -10px rgba(0,0,0,.6);
-  pointer-events:none;animation:guarIn .6s .35s cubic-bezier(.2,1.6,.4,1) both, guarGlow 1.6s 1s ease-in-out infinite;white-space:nowrap}
-.guar-stamp b{display:block;font-family:var(--display);font-weight:400;font-size:22px;line-height:1;text-transform:uppercase;letter-spacing:.02em}
-.guar-stamp small{display:block;font-size:12px;font-weight:800}
+ /* la garantie Boulet (8 octobre 2026) : un sceau doré à côté du sachet, avec un Boulet dedans, au lieu d'une étiquette qui le cachait */
+.guar-seal{position:absolute;left:calc(50% + 62px);top:2%;z-index:3;width:116px;height:116px;display:grid;place-items:center;pointer-events:none;animation:sealIn .7s .35s cubic-bezier(.2,1.6,.4,1) both}
+.gs-rays{position:absolute;inset:-34px;border-radius:50%;background:repeating-conic-gradient(rgba(255,211,77,.5) 0 7deg,transparent 7deg 20deg);-webkit-mask:radial-gradient(circle,#000 25%,transparent 70%);mask:radial-gradient(circle,#000 25%,transparent 70%);animation:gsSpin 10s linear infinite}
+.gs-disc{position:relative;width:96px;height:96px;border-radius:50%;display:grid;place-items:center;background:radial-gradient(circle at 35% 30%,#FFF6D2,#FFD34D 45%,#E8A317 82%);border:4px solid #FFF3C4;
+  box-shadow:0 0 0 3px #B97A0C,0 0 34px rgba(255,211,77,.75),0 16px 30px -10px rgba(0,0,0,.65);animation:guarGlow2 1.6s 1.1s ease-in-out infinite}
+.gs-disc::after{content:"";position:absolute;inset:6px;border-radius:50%;border:2px dashed rgba(90,58,8,.4)}
+.gs-disc img{position:relative;z-index:1;filter:drop-shadow(0 5px 4px rgba(0,0,0,.4))}
+.gs-ribbon{position:absolute;bottom:-12px;left:50%;transform:translateX(-50%) rotate(-5deg);display:inline-flex;align-items:center;gap:5px;white-space:nowrap;font-family:var(--display);font-size:16px;line-height:1;text-transform:uppercase;letter-spacing:.02em;color:#fff;background:linear-gradient(#EF5B60,#B3262C);padding:6px 12px 5px;border-radius:7px;border:2px solid #FFD6D6;box-shadow:0 8px 16px -8px rgba(0,0,0,.7)}
+.ov-hint.guar{color:#FFD34D}
+@keyframes sealIn{0%{opacity:0;transform:scale(2.6) rotate(-30deg)}70%{opacity:1;transform:scale(.92) rotate(4deg)}100%{opacity:1;transform:scale(1) rotate(0)}}
+@keyframes gsSpin{to{transform:rotate(1turn)}}
+@keyframes guarGlow2{50%{box-shadow:0 0 0 3px #B97A0C,0 0 0 12px rgba(255,211,77,.14),0 0 46px rgba(255,211,77,.95),0 16px 30px -10px rgba(0,0,0,.65)}}
+@media (max-width:560px){ .guar-seal{left:calc(50% + 34px);scale:.8} }
+@media (prefers-reduced-motion:reduce){ .guar-seal,.gs-rays,.gs-disc{animation:none} }
 .bag-zone.guar .bag-halo{background:radial-gradient(circle,rgba(255,211,77,.75),rgba(255,211,77,0) 65%)!important;animation:guarHalo 1.4s ease-in-out infinite}
-@keyframes guarIn{0%{opacity:0;transform:scale(3) rotate(-18deg)}70%{opacity:1;transform:scale(.92) rotate(-6deg)}100%{opacity:1;transform:scale(1) rotate(-6deg)}}
-@keyframes guarGlow{50%{box-shadow:0 0 0 10px rgba(232,163,23,.12),0 0 34px rgba(255,211,77,.8),0 18px 40px -10px rgba(0,0,0,.6)}}
 @keyframes guarHalo{50%{transform:scale(1.12);opacity:.85}}
-@media (prefers-reduced-motion:reduce){ .guar-stamp{animation:none;transform:rotate(-6deg)} .bag-zone.guar .bag-halo{animation:none} }
+@media (prefers-reduced-motion:reduce){ .bag-zone.guar .bag-halo{animation:none} }
 .odds-i{display:inline-grid;place-items:center;width:20px;height:20px;border-radius:50%;border:1.5px solid currentColor;font-size:12px;font-weight:900;line-height:1;vertical-align:1px;margin-left:4px;color:var(--blue,#2E6FD8);cursor:pointer;background:none;padding:0}
 .odds-i:hover{background:color-mix(in srgb,currentColor 15%,transparent)}
 .modal.odds-pop{display:block;width:min(520px,100%);max-height:calc(100dvh - 32px);overflow:auto;padding:24px 22px 20px}
@@ -1286,7 +1319,7 @@ body.vit-dragging,body.vit-dragging *{cursor:grabbing!important;user-select:none
 .gr-ticket::before,.gr-ticket::after{content:"";position:absolute;top:50%;width:26px;height:26px;margin-top:-13px;border-radius:50%;background:#3B1A4A;box-shadow:inset 0 0 0 3px #B98A2E}
 .gr-ticket::before{left:-13px}.gr-ticket::after{right:-13px}
 .gr-top{display:grid;grid-template-columns:auto 1fr;align-items:center;gap:0 10px;margin-bottom:12px;color:#5A3A08}
-.gr-logo{grid-row:span 2;font-family:"Titan One",var(--display);font-size:30px;color:#FFC93F;-webkit-text-stroke:5px #5A3A08;paint-order:stroke fill;transform:rotate(-6deg)}
+.gr-logo{grid-row:span 2;font-family:var(--display);font-size:30px;color:#FFC93F;-webkit-text-stroke:5px #5A3A08;paint-order:stroke fill;transform:rotate(-6deg)}
 .gr-title{font-family:"Lilita One",var(--display);font-size:22px;letter-spacing:.5px;color:#8A1C2C;text-transform:uppercase}
 .gr-rule{font-size:12px;font-weight:900;letter-spacing:.04em;text-transform:uppercase;color:#8A5A0E}
 .gr-grid{position:relative;display:grid;grid-template-columns:repeat(3,1fr);gap:9px;padding:9px;border-radius:14px;background:rgba(138,90,14,.14);border:2px dashed rgba(138,90,14,.45);touch-action:none}
@@ -1355,6 +1388,25 @@ body.vit-dragging,body.vit-dragging *{cursor:grabbing!important;user-select:none
 .gm-lot-balls small{font-size:10.5px;font-weight:900;letter-spacing:.06em;text-transform:uppercase;opacity:.8}
 .lt-ball.q{color:#6E6478}
 @media (min-width:761px){ .gm-duo.solo .gm-lot-balls{grid-area:ball;justify-self:center;width:180px} }
+/* Grande Course et Loterie côte à côte (8 octobre 2026) : deux blocs compacts, le texte à gauche, l'horloge et le bouton à droite */
+@media (min-width:761px){
+  .gm-duo:not(.solo) .gm-gc{grid-template-columns:minmax(0,1fr) auto;grid-template-areas:"k clock" "t clock" "st st" "ball btn";justify-items:start;align-items:center;align-content:stretch;column-gap:14px;row-gap:8px;text-align:left;padding:18px 20px}
+  .gm-duo:not(.solo) .gm-kick{grid-area:k;letter-spacing:.05em}
+  .gm-duo:not(.solo) .gm-gc-t{grid-area:t;font-size:25px}
+  .gm-duo:not(.solo) .gm-gc-clock{grid-area:clock;justify-self:end;text-align:center;padding:8px 14px}
+  .gm-duo:not(.solo) .gm-gc-clock b{font-size:26px;white-space:nowrap}
+  .gm-duo:not(.solo) .gm-gc-st{grid-area:st;font-size:12.5px;max-width:none;opacity:.85}
+  .gm-duo:not(.solo) .gm-gc-st.ok{opacity:1}
+  .gm-duo:not(.solo) .gm-gc-ball,.gm-duo:not(.solo) .gm-lot-balls{grid-area:ball;justify-self:start;align-self:end}
+  .gm-duo:not(.solo) .gm-gc-ball img{width:auto;height:44px}
+  .gm-duo:not(.solo) .gm-lot-balls{display:flex;align-items:center;gap:10px;padding:6px 12px 6px 8px;border-radius:999px}
+  .gm-duo:not(.solo) .gm-lot-balls small{display:none}
+  .gm-duo:not(.solo) .gm-lot-balls .lt-ball{width:30px;height:30px;font-size:14px}
+  .gm-duo:not(.solo) .gm-gc-ball{min-width:0;max-width:100%;padding:4px 14px 4px 6px}
+  .gm-duo:not(.solo) .gm-gc-ball > span{min-width:0}
+  .gm-duo:not(.solo) .gm-gc-ball small,.gm-duo:not(.solo) .gm-gc-ball b{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .gm-duo:not(.solo) .gm-gc > .btn{grid-area:btn;justify-self:end;align-self:end}
+}
 .lt-head{display:flex;justify-content:space-between;flex-wrap:wrap;gap:8px;font-weight:800;color:var(--ink-2);margin-bottom:12px}
 .lt-mine{display:grid;gap:8px;margin:8px 0}
 .lt-ticket{display:flex;align-items:center;gap:8px;flex-wrap:wrap;padding:10px 14px;border-radius:14px;background:var(--card);border:2px dashed var(--line-2)}
@@ -1629,6 +1681,7 @@ body.vit-dragging,body.vit-dragging *{cursor:grabbing!important;user-select:none
 .gt-body p{color:var(--ink-2);font-weight:600;font-size:13.5px;display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical;overflow:hidden}
 .gt-foot{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-top:auto;padding-top:6px}
 .gt-foot small{font-weight:800;color:var(--muted);font-size:12px}
+.gt-body.gt-foot{flex-direction:row;margin:0;padding:14px 18px}
 .back-link{display:inline-flex;align-items:center;gap:4px;font-size:13px;font-weight:800;color:var(--ink-2);margin-bottom:8px;padding:4px 8px 4px 4px;border-radius:8px}
 .back-link:hover{background:var(--panel-2);color:var(--ink)}
 .game-stage canvas.dirt{background:#B8895A;cursor:crosshair}
@@ -2029,6 +2082,15 @@ body:has(#view .game-wrap) .mj-btn{display:none}
 .stars svg{width:36px;height:36px}
 .g-card .reward{display:inline-flex;align-items:center;gap:8px;font-weight:900;font-size:18px;background:var(--yellow-soft);padding:6px 14px;border-radius:999px}
 .g-card .row{display:flex;gap:10px;flex-wrap:wrap;justify-content:center;margin-top:6px}
+/* fin de partie : la suite en gros, le reste en petit */
+.ge-row{display:grid;justify-items:center;gap:8px;width:100%;margin-top:6px}
+.ge-next{width:100%;justify-content:center;gap:12px}
+.ge-next > span{display:grid;text-align:left;line-height:1.1}
+.ge-next small{font-size:10.5px;font-weight:900;letter-spacing:.06em;text-transform:uppercase;opacity:.7}
+.ge-prog{display:inline-flex;align-items:center;gap:5px;font-size:12.5px;font-weight:700;color:var(--ink-2)}
+.ge-prog.ok{color:var(--green)}
+.ge-sub{display:flex;gap:8px;flex-wrap:wrap;justify-content:center}
+.ge-mini{flex-basis:100%;max-width:max-content;margin:2px auto 0}
 .g-help{margin-top:10px;font-size:13px;font-weight:700;color:var(--ink-2);display:flex;gap:16px;flex-wrap:wrap}
 .hole-list{display:grid;gap:8px}
 .hole-btn{display:grid;grid-template-columns:28px minmax(0,1fr) auto;align-items:center;gap:10px;padding:10px 12px;border-radius:12px;border:1.5px solid var(--line);background:var(--panel);text-align:left}
@@ -3247,7 +3309,8 @@ body.gc-open{overflow:hidden}
 .br-btn:hover{background:#FFE27A}
 .br-btn.done{background:rgba(255,255,255,.16);color:#fff;animation:none;box-shadow:inset 0 0 0 1px rgba(255,255,255,.4)}
 @keyframes brPulse{0%,100%{transform:scale(1)}50%{transform:scale(1.07)}}
-@media (max-width:760px){ .br-long{display:none} .beta-rib{gap:8px;font-size:12px} }
+.br-short{display:none}
+@media (max-width:760px){ .br-long{display:none} .br-short{display:inline} .beta-rib{gap:8px;font-size:12px} }
 @media (prefers-reduced-motion:reduce){ .br-btn{animation:none} }
 .beta-pill{background:linear-gradient(100deg,#7A0E1F,#D7263D)!important;color:#fff!important}
 .modal.beta-modal{display:block;width:min(720px,100%);padding:30px 26px 24px;text-align:center;background:radial-gradient(120% 70% at 50% 0%,color-mix(in srgb,#D7263D 16%,var(--panel)),var(--panel) 70%)}
@@ -3711,10 +3774,11 @@ const Sound = (()=>{
     env(noise(t,.01,[{type:"highpass",f:5000}]),t,a*.25,.001,.008) }
   // mélodies (en demi-tons depuis do5), de la plus commune à la plus rare : [décalage en temps, note, durée]
   const MOTIFS = [
-    [[0,7]],                                                           // mini : un sol
-    [[0,12],[1,16]],                                                   // bille : do-mi
-    [[0,0],[1,4],[2,7]],                                               // chinoise : do-mi-sol
-    [[0,0],[1,4],[2,7],[3.2,12,2]],                                    // calot : do-mi-sol... DO
+    // plus la bille est petite, plus elle sonne aigu et bref ; plus elle est grosse, plus c'est grave et long
+    [[0,19,.4]],                                                       // mini : un petit « ting » aigu
+    [[0,12,.7],[1,16,.8]],                                             // bille : do-mi
+    [[0,4],[1,7],[2,11],[3,12,1.2]],                                   // chinoise : mi-sol-si-do, un peu de travers comme elle
+    [[0,-5],[1,0],[2,4],[3.2,7,2],[3.2,-12,2]],                        // calot : sol-do-mi... SOL, avec une basse
     [[0,7],[1,12],[2,16],[3,19],[4.3,24,2.5],[4.3,16,2.5],[4.3,12,2.5]],   // boulet : montée + accord
     [[0,7],[.8,7],[1.6,7],[2.6,12,1.5],[4.2,11],[5,12],[5.8,16],[7,19,3],[7,12,3],[7,24,3]],  // mammouth : ta-ta-ta-TAAA, fanfare
   ];
@@ -3767,8 +3831,12 @@ const Sound = (()=>{
       for(let k=0;k<6;k++){ thud(t,a*.6,160); clack(t,a,p); t+=dt; dt*=.6; a*=.52 }
       const g=noise(t,.7,[{type:"lowpass",f:500}]); g.gain.setValueAtTime(.0001,t); g.gain.linearRampToValueAtTime(.12,t+.05); g.gain.linearRampToValueAtTime(.0001,t+.7); },
     // révélation : une petite mélodie au métallophone, plus longue et plus grandiose selon la taille
-    reveal(tier,shiny){ if(!init()) return; const t=now(), step=.085, vol=.22, M=MOTIFS[Math.min(tier,5)];
-      M.forEach(([d,n,len])=>glock(t+d*step, NOTE(n), vol*(len?1.1:1), len?1.3*len:undefined));
+    // dr = rareté du motif (0 commun … 4 légendaire) : pour les 4 petites tailles, elle ajoute de l'éclat à la mélodie
+    reveal(tier,shiny,dr=0){ if(!init()) return; const t=now(), step=.085, M=MOTIFS[Math.min(tier,5)], vol=tier<=3 ? .17+.025*tier : .22;
+      M.forEach(([d,n,len])=>glock(t+d*step, NOTE(n), vol*(len>=1?1.1:1), len?1.3*len:undefined));
+      if(tier<=3 && dr>=1){ const [d0,n0]=M[M.length-1], te=t+(d0+1.2)*step;
+        glock(te, NOTE(n0+12), vol*.45, .7);   // peu commun : un écho à l'octave
+        if(dr===2) [n0+16,n0+19,n0+24].forEach((n,i)=>glock(te+(i+1)*.07, NOTE(n), vol*.4, .55)) }   // rare : une petite cascade qui monte (épique et légendaire ont leur propre air juste après)
       if(tier>=4) for(let i=0;i<10;i++) glock(t+step*4+i*.05, 2200+Math.random()*2600, .03, .4);   // paillettes
       if(tier>=5) osc(t+step*7,"sine",110,.35,.01,1.2,null,55);   // le Mammouth fait trembler le sol
       if(shiny){ const tt=t+step*(M.length+1);   // glissando magique vers le haut
@@ -6043,7 +6111,7 @@ function renderBeta(){
   requestAnimationFrame(()=>document.documentElement.style.setProperty("--rib", BETA.open ? el.offsetHeight+"px" : "0px"));
   if(!BETA.open) return;
   const done = betaOwned().length===TK.length;
-  el.innerHTML = `<span class="br-tag">Bêta</span><span class="br-txt"><b>Billeo est en version de test.</b> <span class="br-long">À la sortie, tous les comptes repartiront à zéro… sauf les billes Bêta des testeurs !</span></span>
+  el.innerHTML = `<span class="br-tag">Bêta</span><span class="br-txt"><span class="br-long">Bientôt le lancement : les comptes seront remis à zéro et </span><span class="br-short">Au lancement : </span><b>toutes les billes seront perdues, sauf les billes Bêta !</b></span>
     ${done ? `<button class="br-btn done" data-action="beta-see">${ic("check",14,3)} Mes billes Bêta</button>` : `<button class="br-btn" data-action="beta-claim">${ic("gift",15)} Claim</button>`}`;
 }
 function claimBeta(){
@@ -6563,11 +6631,16 @@ function viewCollection(){
   const qOK = txt => !qw.length || qw.every(w=>fold(txt).includes(w));
   // la barre d'outils (allégée le 5 octobre 2026) : tout sur une ligne
   const nUnseen = S.unseen.filter(id=>specById(id)).length, curShow = SHOW.find(o=>o[0]===show) || SHOW[0];
-  const sizeDot = t => { const n = ui.tab==="billes" ? S.specs.filter(s=>s.type===t).length : DECOR_IDS.filter(f=>slots.has(t+"|"+f)).length;
-    const lbl = `${TYPES[t].label} · ${ui.tab==="billes" ? `${n} bille${n>1?"s":""}` : `${n} / ${N_DECORS} motifs`}`;
-    return `<button class="bx-dot" style="${tstyle(t)}" data-action="ftype" data-type="${ui.type===t?"all":t}" aria-pressed="${ui.type===t}" title="${lbl}" aria-label="${lbl}">${mImg({seed:hash("pedia-fmt"+t), type:t, family:0, pal:PEDIA_PAL, shiny:0},96,Math.round(12*scaleOf(t)+12),"")}<i class="bx-n">${n>9999?Math.floor(n/1000)+"k":fmt(n)}</i></button>` };
+  // le filtre par taille (8 octobre 2026) : chaque taille dit ce qu'on a, le nombre de billes dans « Mes billes »,
+  // les motifs trouvés sur le total (avec une petite barre) dans l'Album
+  const own = ui.tab==="billes", sizeN = t => own ? S.specs.filter(s=>s.type===t).length : DECOR_IDS.filter(f=>slots.has(t+"|"+f)).length;
+  const kN = n => n>9999 ? Math.floor(n/1000)+"k" : fmt(n);
+  const sizeDot = t => { const n = sizeN(t);
+    const lbl = `${TYPES[t].label} · ${own ? `${n} bille${n>1?"s":""}` : `${n} / ${N_DECORS} motifs`}`;
+    return `<button class="bx-dot${n?"":" zero"}" style="${tstyle(t)};--p:${own?0:Math.round(n/N_DECORS*100)}%" data-action="ftype" data-type="${ui.type===t?"all":t}" aria-pressed="${ui.type===t}" title="${lbl}" aria-label="${lbl}">${mImg({seed:hash("pedia-fmt"+t), type:t, family:0, pal:PEDIA_PAL, shiny:0},96,Math.round(12*scaleOf(t)+12),"")}<span class="bx-lb">${t==="mini"?"Mini":TYPES[t].label.replace("Bille chinoise","Chinoise")}</span><i class="bx-n">${kN(n)}${own?"":`<small>/${N_DECORS}</small>`}</i>${own?"":`<i class="bx-pg"></i>`}</button>` };
+  const allN = own ? S.specs.length : TK.reduce((a,t)=>a+sizeN(t),0);
   const filters = ui.tab==="defis"||ui.tab==="pedia" ? "" : `<div class="bx-bar">
-    <div class="bx-dots" role="group" aria-label="Filtrer par taille"><button class="bx-dot all" data-action="ftype" data-type="all" aria-pressed="${ui.type==="all"}">Toutes${ui.tab==="billes"?` <small class="bx-all-n">${fmt(S.specs.length)}</small>`:""}</button>${TK.map(sizeDot).join("")}</div>
+    <div class="bx-dots" role="group" aria-label="Filtrer par taille"><button class="bx-dot all" data-action="ftype" data-type="all" aria-pressed="${ui.type==="all"}"><span>Toutes</span><small class="bx-all-n">${kN(allN)}${own?"":`/${N_DECORS*TK.length}`}</small></button>${TK.map(sizeDot).join("")}</div>
     <div class="bx-tools">
       ${ui.tab==="album" && show==="all" ? `<label class="bx-hide"><input type="checkbox" id="f-hide" ${ui.hideMissing?"checked":""}> Masquer les billes à trouver</label>` : ""}
       <label class="bx-q${ui.q?" on":""}"><span class="cs-ic">${ic("search",17)}</span><input type="search" id="col-q" placeholder="${ui.tab==="billes"?"Galaxie, Azur…":"Galaxie, Opaline…"}" value="${esc(ui.q||"")}" aria-label="Chercher un motif" autocomplete="off" spellcheck="false">${ui.q?`<button class="cs-x" data-action="col-q-clear" aria-label="Effacer la recherche">×</button>`:""}</label>
@@ -6576,8 +6649,8 @@ function viewCollection(){
         <div class="filt-menu">
           ${SHOW.map(([k,label,icon,f])=>`<button class="filt-it" data-action="show" data-show="${k}" aria-pressed="${show===k}">${k==="shiny"?SPARK:icon?ic(icon,15):ic("check",15)}<span>${k==="all"?"Tout afficher":label}</span>${f?`<small>${k==="secret"?`${S.specs.filter(x=>SECRETS[x.secret]&&inType(x)).length}/${Object.values(SECRETS).filter(X=>ui.type==="all"||X.type===ui.type).length}`:count(f)}</small>`:""}</button>`).join("")}
         </div></details>
+      ${nUnseen && (own || show==="new") ? `<button class="seen-all" data-action="seen-all" title="Tout marquer comme vu">${ic("check",15,2.6)}<span>Tout vu</span><small>${nUnseen}</small></button>` : ""}
     </div>
-    ${show==="new" && nUnseen ? `<button class="btn btn-ghost seen-all" data-action="seen-all">${ic("check",16)} Tout marquer comme vu (${nUnseen})</button>` : ""}
   </div>`;
   const dupsBar = () => { const d = recyclableDups(), v = d.reduce((a,x)=>a+recycleValue(x),0);
     return `<section class="panel recycle-bar">
@@ -6732,15 +6805,23 @@ function viewPass(){
     const t = i+1, reached = t<=tier;
     const cell = track=>{
       const r = passReward(track,t), got = P[track].includes(t), locked = track==="prem" && !P.premium, can = reached && !got && !locked;
-      const cls = `rw ${track}${got?" got":""}${can?" can":""}${!reached?" future":""}${locked?" locked":""}`;
+      const big = r.k==="marble" || (r.k==="bag" && r.bag!=="classique");   // les grosses récompenses ressortent
+      const cls = `rw ${track}${got?" got":""}${can?" can":""}${!reached?" future":""}${locked?" locked":""}${big?" big":""}`;
       const inner = rewardInner(track,t,r), label = esc(rewardLabel(r));
       if(can) return `<button class="${cls}" data-action="pass-claim" data-track="${track}" data-t="${t}" aria-label="Récupérer : ${label}">${inner}<span class="rw-cta">Récupérer</span></button>`;
-      const mark = got ? `<span class="rw-mark ok">${ic("check",13,3)}</span>` : locked ? `<span class="rw-mark">${ic("lock",13,2.4)}</span>` : "";
+      const mark = got ? `<span class="rw-mark ok">${ic("check",16,3.2)}</span><span class="rw-got">Récupéré</span>` : locked ? `<span class="rw-mark">${ic("lock",13,2.4)}</span>` : "";
       if(r.k==="marble") return `<button class="${cls}" data-action="preview" data-k="${pv(rewardSpec(track,t,r))}" aria-label="${label}">${inner}${mark}</button>`;
       return `<div class="${cls}" title="${label}">${inner}${mark}</div>`;
     };
-    return `<div class="tier${reached?" reached":""}${t===tier+1?" next":""}" data-tier="${t}">${cell("free")}<span class="tier-n">${t}</span>${cell("prem")}</div>`;
+    const nx = t===tier+1;
+    return `<div class="tier${reached?" reached":""}${nx?" next":""}" data-tier="${t}"${nx?` style="--pp:${Math.round(into/need*50)}%"`:""}>${nx?`<span class="tier-tag">Prochain · ${fmt(need-into)} XP</span>`:""}${cell("free")}<span class="tier-n">${t}</span>${cell("prem")}</div>`;
   }).join("");
+  // la légende : ce qui est pris, à prendre, le prochain palier
+  const gotN = P.free.length + P.prem.length;
+  const legend = `<div class="pt-legend"><span class="lg got">${ic("check",12,3.2)} ${gotN} récupérée${gotN>1?"s":""}</span>
+    ${claim ? `<span class="lg can">${ic("gift",12,2.6)} ${claim} à récupérer</span>` : ""}
+    ${tier<PASS_TIERS ? `<span class="lg next">Palier ${tier+1} dans ${fmt(need-into)} XP</span>` : `<span class="lg got">Passe terminé !</span>`}
+    <span class="lg fut">À venir</span></div>`;
   // ce que contient la piste premium
   let pm=0, pj=0, pb=0;
   for(let t=1;t<=PASS_TIERS;t++){ const r=passReward("prem",t); if(r.k==="marble") pm++; else if(r.k==="jetons") pj+=r.n; else if(r.k==="bag") pb++ }
@@ -6765,7 +6846,8 @@ function viewPass(){
       <span>Récompense finale · premium</span><b>${esc(specName(finalSpec))}</b>${shinyPill(finalSpec)}
     </button>
   </section>
-  <section class="panel pass-track">
+  <section class="panel pass-track" style="${seasonStyle(se)}">
+    ${legend}
     <div class="track-labels"><span>Gratuit</span><span></span><span class="pl">${ic("star",14)} Premium</span></div>
     <div class="track-scroll" id="track">${cols}</div>
   </section>
@@ -7613,10 +7695,11 @@ function showBagStage(){
     <div class="ov-title">${bag.name}</div>
     <div class="bag-zone${forced?" guar":""}" id="bag-zone"><div class="bag-halo"></div>
       <button class="bag-stage" id="bag-stage" aria-label="Ouvrir le sachet">${bagSVG(bag)}</button>
-      ${forced?`<div class="guar-stamp" aria-live="polite">${ic("shield",22)}<span><b>Garantie Boulet</b><small>Au moins un Boulet dans ce sachet !</small></span></div>`:""}
+      ${forced?`<div class="guar-seal" role="status" aria-label="Garantie Boulet : au moins un Boulet dans ce sachet"><span class="gs-rays"></span>
+        <span class="gs-disc">${mImg({seed:hash("garantie"), type:"boulet", family:0, pal:PEDIA_PAL, shiny:0},160,64,"")}</span><span class="gs-ribbon">${ic("shield",15,2.6)} Boulet garanti</span></div>`:""}
     </div>
     <div class="bag-floor" aria-hidden="true"></div>
-    <p class="ov-hint">Touche le sachet pour l'ouvrir, ou secoue-le</p>
+    <p class="ov-hint${forced?" guar":""}">${forced?"Garantie Boulet : au moins un Boulet t'attend dans ce sachet !":"Touche le sachet pour l'ouvrir, ou secoue-le"}</p>
     <div class="bag-tools">
       <button class="btn btn-ghost" data-action="shake-bag">Secouer</button>
       <button class="btn btn-yellow" data-action="tear">Ouvrir le sachet</button>
@@ -7628,7 +7711,7 @@ function showBagStage(){
   bindBag();
   document.getElementById("bag-stage").focus();
   // la garantie Boulet tombe sur ce sachet : le tampon doré s'abat dessus, avec une gerbe d'étincelles
-  if(forced) setTimeout(()=>{ const z = document.querySelector(".guar-stamp"); if(!z || !ovState) return;
+  if(forced) setTimeout(()=>{ const z = document.querySelector(".guar-seal .gs-disc"); if(!z || !ovState) return;
     const [x,y] = FX.at(z); FX.burst(x,y, ["#FFD34D","#FFF3C4","#E8A317"], 70, 1.2); FX.ring(x,y, "#FFD34D"); Sound.ding(); Sound.reveal?.(4,false) }, 650);
 }
 // le sachet se prend en main : on le secoue en le faisant glisser, un simple appui l'ouvre
@@ -7814,7 +7897,7 @@ function reveal(i){
   if(k>=6){ FX.burst(x,y, SHINY_COLS, 70, 1.3); FX.fireworks(SHINY_COLS, 8) }
   else if(k===FMT_TIER.mammouth){ FX.burst(x,y, scoreCols(k), 120, 1.6); setTimeout(()=>FX.ring(x,y, "#FFE3B0"), 180) }
   if(k>=BIG){ const b=document.getElementById("ov-body"); b.classList.remove("quake"); void b.offsetWidth; b.classList.add("quake") }
-  Sound.reveal(TIDX[rs.type], !!rs.shiny);
+  Sound.reveal(TIDX[rs.type], !!rs.shiny, Math.max(0,decorRar(rs)));
   // un motif épique ou légendaire : une deuxième gerbe à sa couleur, et son petit air à lui
   const dr = decorRar(rs);
   if(dr>=3) setTimeout(()=>{ if(!ovState) return; const c = DECOR_RAR[dr].c;
@@ -7871,7 +7954,7 @@ function finishReveal(){
   }
   const nc = results.filter(r=>r.isNew||r.evNew).length, ncol = results.filter(r=>!r.isNew&&!r.evNew&&r.newColor).length;
   const nbLeg = nc||ncol ? `<span class="nb-leg">${nc?`<span><span class="nb-dot">${SPARK}</span>${nc} nouveau${nc>1?"x":""} motif${nc>1?"s":""}</span>`:""}${ncol?`<span><span class="nb-dot col">${SPARK}</span>${ncol} nouveau${ncol>1?"x":""} coloris</span>`:""}</span>` : "";
-  document.getElementById("ov-actions").innerHTML = `${nbLeg}<span class="ov-xp" style="flex-basis:100%;justify-content:center">${ic("ticket",18)} +${ovState.pxp} XP de saison</span>${again}<button class="btn btn-ghost" data-action="to-collection">Voir ma boîte à billes</button>`;
+  document.getElementById("ov-actions").innerHTML = `${nbLeg}<span class="ov-xp" style="flex-basis:100%;justify-content:center">${ic("ticket",18)} +${ovState.pxp} XP de saison</span>${again}<button class="btn btn-ghost" data-action="to-home">Revenir à l'accueil</button>`;
 }
 function closeOv(quiet){
   // fermé avant d'avoir tout découvert : les billes sont déjà rangées, on montre quand même ce qu'il y avait
@@ -8134,7 +8217,7 @@ function finishHole(success){
     if(paid){ P.tir[0] = 1; delete P.tir.live; earn("jeu", "tir|0", 0); gamesBonus(); save(); renderHoles() }
     html = `<h2>Trop de coups</h2><p>10 coups, c'est le maximum.${paid ? " Pas de bonbecs pour ce trou : retente ta chance demain !" : ""}</p>`;
   }
-  html += `<p class="meta">Nouveau trou dans ${tirLeftTime()}.</p><div class="row"><button class="btn btn-ghost" data-action="g-restart">Rejouer pour le plaisir</button><button class="btn btn-yellow" data-action="nav" data-view="jeux">Tous les jeux</button></div>`;
+  html += `<p class="meta">Nouveau trou dans ${tirLeftTime()}.</p>${gameEndRow("tir", `<button class="btn btn-ghost btn-sm" data-action="g-restart">${ic("play",14)} Rejouer pour le plaisir</button>`)}`;
   el.innerHTML = `<div class="g-card">${html}</div>`;
   el.hidden = false;
 }
@@ -8380,6 +8463,7 @@ function viewPachinko(){
           : `<button class="btn ${free?"btn-ghost":"btn-yellow btn-xl"}" data-action="pachi-go" data-pay="1" ${S.jetons<PACHI_PRICE?"disabled":""}>Une bille de plus · <span class="price">${COIN}${PACHI_PRICE}</span></button>`}
         ${pachiBall() ? `<small class="pachi-ball">${mImg(pachiBall(),96,26,"")} Ta bille du jour : <b>${esc(specName(pachiBall()))}</b></small>` : ""}
         <small class="pachi-n">${pachiBought()>=PACHI_MAX ? `Tu as lâché tes ${PACHI_MAX} billes du jour · de nouvelles dans <b data-quest-timer>${untilMidnight()}</b>` : `Billes achetées aujourd'hui : <b>${pachiBought()} / ${PACHI_MAX}</b>`}</small>
+        ${free ? "" : chanceNext("pachinko")}
       </div>
     </section>
     <aside style="display:grid;gap:20px">
@@ -8850,8 +8934,8 @@ const chanceFreeDone = k => !!playedToday()[k]?.done;
 function chanceBtns(k, act, verb){
   const free = !chanceFreeDone(k), n = chanceBought(k), prix = CHANCE_PRIX[k];
   if(free) return `<button class="btn btn-yellow btn-xl" data-action="${act}" data-pay="0">${ic("gift",18)} ${verb} (offert)</button>`;
-  if(n>=CHANCE_MAX) return `<button class="btn btn-ghost btn-xl" disabled>${ic("clock",18)} Reviens demain !</button><small class="pachi-n">Encore ${CHANCE_MAX} parties à acheter demain · dans <b data-quest-timer>${untilMidnight()}</b></small>`;
-  return `<button class="btn btn-yellow btn-xl" data-action="${act}" data-pay="1" ${S.jetons<prix?"disabled":""}>${verb} · <span class="price">${COIN}${prix}</span></button><small class="pachi-n">Parties achetées aujourd'hui : <b>${n} / ${CHANCE_MAX}</b></small>`;
+  if(n>=CHANCE_MAX) return `<button class="btn btn-ghost btn-xl" disabled>${ic("clock",18)} Reviens demain !</button><small class="pachi-n">Encore ${CHANCE_MAX} parties à acheter demain · dans <b data-quest-timer>${untilMidnight()}</b></small>${chanceNext(k)}`;
+  return `<button class="btn btn-yellow btn-xl" data-action="${act}" data-pay="1" ${S.jetons<prix?"disabled":""}>${verb} · <span class="price">${COIN}${prix}</span></button><small class="pachi-n">Parties achetées aujourd'hui : <b>${n} / ${CHANCE_MAX}</b></small>${chanceNext(k)}`;
 }
 // payer une partie : vérifié ici, puis par le serveur ; renvoie false si on ne peut pas
 function chanceCanPay(k, pay){
@@ -9136,7 +9220,7 @@ function lotBanner(){
   const btn = D && !D.aujourdhui ? `<button class="btn btn-yellow" data-action="lot-go">${ic("ticket",16)} Prendre mon ticket</button>`
     : `<button class="btn btn-yellow" data-action="nav" data-view="loterie">${D ? "Voir mes tickets" : "Voir la loterie"}</button>`;
   return `<div class="panel gm-gc gm-lot">
-      <span class="gm-kick">${ic("ticket",14)} Tirage dimanche 21 h</span>
+      <span class="gm-kick">${ic("ticket",14)} Dimanche 21 h</span>
       <b class="gm-gc-t">La Loterie de la semaine</b>
       <span class="gm-gc-clock"><small>Tirage dans</small><b data-lot-timer>${lotLeft(D?.heure || lotNext())}</b></span>
       <span class="gm-lot-balls"><span>${balls}</span><small>${D?.aujourdhui ? "Ton ticket du jour" : "Tes 3 numéros de 1 à 20"}</small></span>
@@ -9185,8 +9269,7 @@ function viewGames(){
   const maxAll = TIR_MAX + Object.values(DAY_GAMES).reduce((a,g)=>a+g.max, 0);
   const tile = c => `<article class="panel game-tile${c.ok?"":" played"}">
     <button class="gt-art" data-action="nav" data-view="${c.v}" aria-label="${c.ok?"Jouer":"Voir"} : ${c.t}">${c.art}${jdj.has(c.v)?`<span class="gt-jdj">${ic("star",12,2.6)} Jeu du jour</span>`:""}<span class="gt-max">${c.prize ? `jusqu'à ${c.prize}` : `${COIN} jusqu'à ${c.max}`}</span><span class="gt-state ${c.ok?"ok":""}">${c.state}</span></button>
-    <div class="gt-body"><h2>${c.t}</h2>
-      <div class="gt-foot"><small>${c.stat}</small><button class="btn ${c.ok?"btn-blue":"btn-ghost"}" data-action="nav" data-view="${c.v}">${c.ok?`${ic("play",16)} Jouer`:"Voir"}</button></div></div>
+    <div class="gt-body gt-foot"><h2>${c.t}</h2><button class="btn ${c.ok?"btn-blue":"btn-ghost"}" data-action="nav" data-view="${c.v}">${c.ok?`${ic("play",16)} Jouer`:"Voir"}</button></div>
   </article>`;
   const state = k => { const g = dayGame(k);
     return !g ? `${ic("gift",14)} Partie du jour à jouer` : !g.done ? `${ic("play",14)} Partie en cours : à finir` : `${ic("check",14,3)} Joué aujourd'hui${g.done&&g.st!=null?` · ${"★".repeat(g.st)}${"☆".repeat(3-g.st)}`:""}${g.rew?` · +${g.rew}`:""}` };
@@ -9227,7 +9310,7 @@ function viewGames(){
         <i class="gp-bar"><i style="width:${doneN/keys.length*100}%"></i></i></div>
     </div>
   </section>
-  <div class="gm-duo solo">
+  <div class="gm-duo">
     <button class="panel gm-gc" data-action="nav" data-view="grandecourse">
       <span class="gm-kick">${ic("flag",14)} ${gcWhen(gcNext(), true)}</span>
       <b class="gm-gc-t">La Grande Course</b>
@@ -9664,11 +9747,23 @@ function gameEnd(key, st, rew){ if(!gameLive(key)) return false; playedToday()[k
 function dayChip(key){ const g = dayGame(key);
   return `<span class="gt-state${g?"":" ok"}" id="day-chip">${!g ? `${ic("gift",14)} Partie du jour · jusqu'à ${DAY_GAMES[key].max} ${CUR.many}`
     : `${ic("check",14,3)} Partie du jour jouée${g.rew?` · +${g.rew} ${CUR.many}`:""} · la prochaine dans <b data-quest-timer>${untilMidnight()}</b>`}</span>` }
-// le jeu suivant qui reste à jouer aujourd'hui
-function nextGameBtn(key){
-  const n = Object.keys(DAY_GAMES).find(k=>k!==key && (soloReady(k) || gameLive(k))) || (!playedToday().tir[0] && key!=="tir" ? "tir" : null);
-  return n ? `<button class="btn btn-yellow" data-action="nav" data-view="${n}">${ic("play",16)} ${n==="tir"?"Le Tir":DAY_GAMES[n].title}</button>` : "";
+// le jeu suivant qui reste à jouer aujourd'hui : d'abord les jeux du jour (ils rapportent le sachet bonus), puis les autres
+const nextGame = key => { const left = k => k!==key && !jeuFait(k); return jeuxDuJour().find(left) || JEUX_TOUS.find(left) || null };
+// la fin de chaque partie (8 octobre 2026) : toujours la même organisation, quel que soit le jeu.
+// En gros, une seule suite logique (le jeu suivant, ou le retour aux jeux quand tout est joué) ; en dessous, où on en est
+// des jeux du jour ; en petit, rejouer pour le plaisir et la liste des jeux.
+function gameEndRow(key, restart){
+  const n = nextGame(key), J = jeuxDuJour(), d = J.filter(jeuFait).length, bag = BAG_BY[GAMES_BONUS].name;
+  const next = n ? `<button class="btn btn-yellow btn-xl ge-next" data-action="nav" data-view="${n}">${ic(GAME_ICON[n],20)}<span><small>${J.includes(n)?"Jeu du jour suivant":"Jeu suivant"}</small>${JEUX_NOM[n]}</span>${ic("chev",18,2.6)}</button>`
+    : `<button class="btn btn-yellow btn-xl ge-next" data-action="nav" data-view="jeux">${ic("check",20,3)}<span><small>Tout est joué aujourd'hui</small>Retour aux jeux</span></button>`;
+  return `<div class="ge-row">${next}
+    <span class="ge-prog${d>=J.length?" ok":""}">${d<J.length ? `Jeux du jour : <b>${d} / ${J.length}</b> · ${bag} à la clé` : `${ic("check",13,3)} Jeux du jour finis : ${bag} gagné`}</span>
+    <div class="ge-sub">${restart}${n?`<button class="btn btn-ghost btn-sm" data-action="nav" data-view="jeux">${ic("pad",14)} Tous les jeux</button>`:""}</div></div>`;
 }
+const funBtn = key => `<button class="btn btn-ghost btn-sm" data-action="game-fun" data-g="${key}">${ic("play",14)} Rejouer pour le plaisir</button>`;
+// sous les boutons des jeux de chance, une fois la partie offerte jouée : un lien discret vers la suite
+const chanceNext = k => { const n = nextGame(k); return n ? `<button class="btn btn-ghost btn-sm ge-mini" data-action="nav" data-view="${n}">${J_NEXT(n)}</button>` : "" };
+const J_NEXT = n => `${jeuxDuJour().includes(n)?"Jeu du jour suivant":"Jeu suivant"} : <b>${JEUX_NOM[n]}</b> ${ic("chev",14,2.6)}`;
 // par-dessus le terrain : « C'est parti ! » (partie du jour pas encore jouée) ou « À demain ! »
 function dayCard(key, el){
   if(!el) return;
@@ -9684,7 +9779,7 @@ function dayCard(key, el){
       ${g.done && g.st!=null ? `<div class="stars">${[1,2,3].map(k=>STAR(k<=g.st)).join("")}</div>` : ""}
       <p>${g.rew ? `Aujourd'hui, ce jeu t'a rapporté <b>${g.rew} ${CUR.many}</b>.` : "Pas de bonbecs cette fois : retente ta chance demain !"}</p>
       <div class="dc-next">${ic("clock",16)} Prochaine partie dans <b data-quest-timer>${untilMidnight()}</b></div>
-      <div class="row"><button class="btn btn-ghost" data-action="game-fun" data-g="${key}">${ic("play",16)} Rejouer pour le plaisir</button><button class="btn btn-ghost" data-action="nav" data-view="jeux">Tous les jeux</button>${nextGameBtn(key)}</div></div>`;
+      ${gameEndRow(key, funBtn(key))}</div>`;
   el.hidden = false;
 }
 // le panneau « Récompenses » à droite de chaque jeu (comme au Tir)
@@ -9702,7 +9797,7 @@ function dayFinish(key, st, rew, title, text, resId="a-result"){
   el.innerHTML = `<div class="g-card res-card">${conf}<h2>${title}</h2>${st==null?"":`<div class="stars pop">${[1,2,3].map(k=>STAR(k<=st)).join("")}</div>`}<p>${text}</p>
     ${paid && rew ? `<span class="reward">${COIN}<b data-count="${rew}">+0</b> ${CUR.many}</span>` : !paid ? `<p class="meta">Partie pour le plaisir : pas de bonbecs, juste l'honneur.</p>` : ""}
     <div class="dc-next">${ic("clock",16)} Prochaine partie du jour dans <b data-quest-timer>${untilMidnight()}</b></div>
-    <div class="row"><button class="btn btn-ghost" data-action="game-fun" data-g="${key}">${ic("play",16)} Rejouer pour le plaisir</button><button class="btn btn-ghost" data-action="nav" data-view="jeux">Tous les jeux</button>${nextGameBtn(key)}</div></div>`;
+    ${gameEndRow(key, funBtn(key))}</div>`;
   el.hidden = false;
   const c = el.querySelector("[data-count]");
   if(c){ const end = +c.dataset.count, t0 = performance.now();
@@ -12953,6 +13048,7 @@ document.addEventListener("click", e=>{
     case "buy-again": openBag(ovState.bag.id, ovState.gift); break;
     case "to-bags": closeOv(); go("sacs"); break;
     case "to-collection": closeOv(); ui.tab="billes"; ui.type="all"; go("collection"); break;
+    case "to-home": closeOv(); go("accueil"); break;
     case "close-ov": closeOv(); break;
     case "bell": toast(freeReady() ? "Ton sachet gratuit est prêt !" : `Prochain sachet gratuit dans ${freeLeft()}.`); break;
     case "g-restart": loadLevel(game.lvl); break;
@@ -13772,7 +13868,7 @@ document.addEventListener("pointerover", e=>{
     S.unseen = S.unseen.filter(id=>!ids.has(id)); save();
     c.querySelector(".new")?.classList.add("bye");
     const b = document.querySelector(".seen-all"), n = S.unseen.filter(id=>specById(id)).length;
-    if(b){ if(n) b.lastChild.textContent = ` Tout marquer comme vu (${n})`; else b.remove() }
+    if(b){ if(n) b.querySelector("small").textContent = n; else b.remove() }
   }, 500);
 });
 document.addEventListener("pointerout", e=>{

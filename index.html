@@ -3373,19 +3373,19 @@ const FAMILIES = [
   {name:"Tourbillon",  rar:0, desc:"De fins filets de couleur qui s'enroulent en spirale sous la surface."},
   {name:"Galaxie",     rar:4, desc:"Une galaxie spirale qui tourne au cœur d'un verre sombre, entourée de nébuleuses et d'étoiles."},
   {name:"Agate",       rar:2, desc:"Une pierre opaque, veinée comme une vraie agate."},
-  {name:"Opaline",     rar:0, desc:"Un verre laiteux qui garde la lumière."},
-  {name:"Pailletée",   rar:1, desc:"Un verre teinté rempli de paillettes qui scintillent à la lumière."},
+  {name:"Opaline",     rar:1, desc:"Un verre laiteux qui garde la lumière."},
+  {name:"Pailletée",   rar:2, desc:"Un verre teinté rempli de paillettes qui scintillent à la lumière."},
   {name:"Oignon",      rar:0, desc:"Une couche colorée étirée juste sous la surface."},
   {name:"Berlingot",   rar:1, desc:"Des rayures de sucre d'orge, opaques et brillantes."},
   {name:"Terre",       rar:2, desc:"La bille des grands-parents : de l'argile cuite, peinte à la main."},
   {name:"Acier",       rar:3, desc:"Une bille de roulement en acier poli, lourde et brillante comme un miroir."},
   {name:"Nacrée",      rar:3, desc:"Un reflet de perle qui change de couleur selon l'angle."},
-  {name:"Cristal",     rar:0, desc:"Un verre clair où sont restées prisonnières de petites bulles d'air."},
+  {name:"Cristal",     rar:1, desc:"Un verre clair où sont restées prisonnières de petites bulles d'air."},
   {name:"Arlequin",    rar:2, desc:"Des taches de couleur opaques cousues comme un patchwork."},
   {name:"Ruban",       rar:1, desc:"Un large ruban blanc torsadé en plein cœur du verre, rayé de fins filets de couleur."},
-  {name:"Millefiori",  rar:3, desc:"Des centaines de petites fleurs de verre, comme à Venise."},
-  {name:"Givrée",      rar:0, desc:"Un verre dépoli, doux comme le givre sur une vitre."},
-  {name:"Fumée",       rar:1, desc:"Des volutes de fumée prisonnières du verre."},
+  {name:"Millefiori",  rar:2, desc:"Des centaines de petites fleurs de verre, comme à Venise."},
+  {name:"Givrée",      rar:1, desc:"Un verre dépoli, doux comme le givre sur une vitre."},
+  {name:"Fumée",       rar:2, desc:"Des volutes de fumée prisonnières du verre."},
   {name:"Lave",        rar:3, desc:"Une roche sombre traversée de fissures brûlantes."},
   {name:"Marbre",      rar:2, desc:"Une pierre blanche veinée, comme un escalier de palais."},
   {name:"Tigrée",      rar:2, desc:"Des rayures sauvages de grand fauve."},
@@ -3404,7 +3404,7 @@ const FAMILIES = [
   // motifs d'événement : jamais dans les sachets ni dans l'album, on ne les trouve que pendant leur événement
   {name:"Pirate",      rar:4, event:"pirates", desc:"Le drapeau noir des flibustiers : une tête de mort et ses deux os, cerclée d'or comme un coffre au trésor."},
   // nouveaux motifs (après le Pirate : les numéros ne bougent jamais)
-  {name:"Vitrail",     rar:3, desc:"Des éclats de verre coloré sertis de plomb, comme les vitraux d'une cathédrale : la lumière passe au travers."},
+  {name:"Vitrail",     rar:2, desc:"Des éclats de verre coloré sertis de plomb, comme les vitraux d'une cathédrale : la lumière passe au travers."},
   {name:"Trou noir",   rar:4, desc:"Un horizon noir d'où rien ne ressort, entouré d'un disque de matière brûlante qui tourne sans fin."},
   // motifs de saison (un par mois, en édition limitée) : seulement dans le passe de saison, jamais dans les sachets ni dans les cases de l'album
   {name:"Givre",         rar:4, season:0,  desc:"Des fougères de glace ont poussé contre la paroi d'un verre glacé."},
@@ -3423,8 +3423,8 @@ const FAMILIES = [
   {name:"Bêta",          rar:4, beta:true, desc:"Un β d'or qui brille au cœur d'un verre précieux (une pierre différente pour chaque taille), cerclé d'un anneau d'or : la bille de ceux qui ont testé Billeo avant tout le monde."},
   // événement de novembre 2026 « Super-héros ! » (numéro 48 : toujours à la fin, les numéros ne bougent jamais)
   {name:"Super-héros",   rar:4, event:"superheros", desc:"Le blason d'un héros de la cour, frappé d'un éclair, et les rayons d'une case de bande dessinée. Chaque coloris est un héros différent."},
-  // (7 octobre 2026) nouveaux motifs : un légendaire (49, le Prisme, qui remplace l'Œil de dragon du même jour) et deux épiques (50, 51)
-  {name:"Prisme",        rar:4, face:true, desc:"Un prisme de cristal au cœur d'un verre profond : un rayon de lumière blanche le traverse et ressort en arc-en-ciel."},
+  // (7 octobre 2026) nouveaux motifs : un légendaire (49, le Prisme, qui remplace l'Œil de dragon du même jour ; épique depuis le 8 octobre) et deux épiques (50, 51)
+  {name:"Prisme",        rar:3, face:true, desc:"Un prisme de cristal au cœur d'un verre profond : un rayon de lumière blanche le traverse et ressort en arc-en-ciel."},
   {name:"Orage",         rar:3, desc:"Un ciel d'orage enfermé dans le verre, traversé d'éclairs qui l'illuminent de l'intérieur."},
   {name:"Méduse",        rar:3, face:true, desc:"Une méduse lumineuse flotte dans un verre d'eau profonde, ses longs filaments qui ondulent sous elle."},
 ];
@@ -4072,7 +4072,7 @@ vec4 fam(vec3 q, out vec3 e){
   float ang=atan(q.z,q.x)+q.y*tw;
   float s=fract(ang/6.2831853*nb);
   vec3 cream=vec3(0.98,0.96,0.93);
-  vec3 c=s<0.33?uC1:(s<0.5?cream:(s<0.83?uC2:cream));
+  vec3 c=s<0.3?uC1:(s<0.4?cream:(s<0.7?uC2:(s<0.79?cream:(s<0.91?uC3:cream))));
   return vec4(c, 200.0);
   }
 #elif MODE==8
@@ -4080,8 +4080,9 @@ vec4 fam(vec3 q, out vec3 e){
     float n=fbm(q*3.0+so);
     vec3 clay=mix(uC1,vec3(0.72,0.55,0.4),0.5)*(0.8+0.35*n)*(0.9+0.2*noise(q*45.0+so));
     float y=q.y+0.07*sin(atan(q.z,q.x)*3.0+so.x);
-    float band=max(smoothstep(0.075,0.045,abs(abs(y)-0.36)),smoothstep(0.06,0.03,abs(y)));
-    return vec4(mix(clay,uC3*0.9,band*0.9), 200.0);
+    float bOut=smoothstep(0.075,0.045,abs(abs(y)-0.36)), bMid=smoothstep(0.06,0.03,abs(y));
+    vec3 c=mix(clay,uC3*0.9,bOut*0.9);
+    return vec4(mix(c,uC2*0.9,bMid*0.9), 200.0);
   }
 #elif MODE==9
   { // acier
@@ -4092,7 +4093,8 @@ vec4 fam(vec3 q, out vec3 e){
     float n=fbm(q*2.5+so);
     float lay=0.5+0.5*sin(fbm(q*1.8+so*0.7)*14.0);
     vec3 c=mix(uC1,uC2,0.35+0.4*lay);
-    return vec4(mix(c,vec3(0.97,0.95,0.93),0.3+0.2*n), 200.0);
+    c=mix(c,uC3,smoothstep(0.5,0.68,fbm(q*2.2+so+11.0))*0.75);
+    return vec4(mix(c,vec3(0.97,0.95,0.93),0.25+0.2*n), 200.0);
   }
 #elif MODE==11
   { // cristal à bulles
@@ -4102,10 +4104,10 @@ vec4 fam(vec3 q, out vec3 e){
     float rb=0.07+0.16*h31(id+1.3);
     float d=length(fc-off*0.35);
     float sh=step(0.5,hb)*smoothstep(0.06,0.0,abs(d-rb))*smoothstep(0.92,0.75,r);
-    e=vec3(1.0)*sh*1.5;
+    e=mix(vec3(1.0),uC3,0.6)*sh*1.5;
     // le verre prend vraiment la couleur du coloris : sombre au cœur, plus clair vers la paroi
     vec3 col=mix(uC1,mix(uC2,vec3(1.0),0.2),smoothstep(0.1,0.9,r));
-    return vec4(col, 0.42+sh*22.0);
+    return vec4(mix(col,uC3,sh), 0.42+sh*22.0);
   }
 #elif MODE==12
   { // arlequin
@@ -4150,14 +4152,16 @@ vec4 fam(vec3 q, out vec3 e){
   { // fumée : volutes dans le verre
     float n=fbm(q*2.4+so+1.5*vec3(fbm(q*1.4+so),fbm(q*1.4+so+3.0),fbm(q*1.4+so+6.0)));
     float dens=smoothstep(0.42,0.72,n)*smoothstep(0.93,0.55,r);
-    return vec4(mix(uC1*0.5,vec3(0.9),smoothstep(0.5,0.9,n)), dens*16.0);
+    float m=fbm(q*1.3+so+23.0);
+    vec3 vc=mix(mix(uC1,uC2,smoothstep(0.4,0.47,m)),uC3,smoothstep(0.53,0.6,m));
+    return vec4(mix(vc*0.75,mix(vc,vec3(0.95),0.45),smoothstep(0.5,0.9,n)), dens*16.0);
   }
 #elif MODE==17
   { // lave : roche sombre et fissures incandescentes
     float n=fbm(q*3.0+so);
     float k2=abs(fbm(q*3.6+so*1.3)-0.5);
     float crack=smoothstep(0.045,0.0,k2);
-    vec3 glow=mix(uC2,vec3(1.0,0.85,0.4),crack*0.6);
+    vec3 glow=mix(uC2,mix(uC3,vec3(1.0),0.25),crack*0.7);
     e=glow*crack*2.2;
     return vec4(mix(vec3(0.07,0.06,0.06)+uC1*0.12*n, glow, crack), 200.0);
   }
@@ -4172,13 +4176,14 @@ vec4 fam(vec3 q, out vec3 e){
 #elif MODE==19
   { // tigrée : rayures de fauve
     float s=sin(q.y*nb*3.2+fbm(q*2.4+so)*5.5+q.x*1.6);
-    return vec4(mix(uC2, uC1*0.22, smoothstep(0.35,0.55,s)), 200.0);
+    vec3 fur=mix(uC2,uC3,smoothstep(-0.15,-0.6,q.y+0.15*fbm(q*3.0+so)));
+    return vec4(mix(fur, uC1*0.22, smoothstep(0.35,0.55,s)), 200.0);
   }
 #elif MODE==21
   { // damier : cases qui s'enroulent comme sur un ballon de plage
     vec3 u=normalize(q); vec2 s=sph(u); float n=4.0+nb;
     vec2 c=floor(vec2((s.x+s.y*tw*0.04)*n*2.0, s.y*n));
-    return vec4(mod(c.x+c.y,2.0)<0.5?uC1:uC3, 200.0);   // toujours les mêmes couleurs pour un même coloris
+    return vec4(mod(c.x+c.y,2.0)<0.5?uC1:(mod(c.y,2.0)<0.5?uC2:uC3), 200.0);   // toujours les mêmes couleurs pour un même coloris
   }
 #elif MODE==22
   { // écossais : deux trames qui se croisent, avec le petit sergé du tissu
@@ -4247,7 +4252,7 @@ vec4 fam(vec3 q, out vec3 e){
   { // bois : cernes et fil du bois, verni
     vec3 u=normalize(q);
     float rr=length(u.yz-vec2((uSeed.x-0.5)*0.8,1.2+uSeed.y*0.6))*(2.2+nb*0.7)+fbm(u*vec3(1.0,3.0,3.0)+so)*1.2;
-    vec3 wood=mix(vec3(0.78,0.56,0.33),uC1,0.3);
+    vec3 wood=mix(vec3(0.78,0.56,0.33),pal3(floor(rr)),0.45);
     float ring=fract(rr);
     vec3 col=mix(wood,wood*0.5,smoothstep(0.6,0.92,ring)*smoothstep(1.0,0.95,ring));
     col*=0.8+0.3*noise(vec3(u.x*3.0,u.y*45.0,u.z*45.0)+so);
@@ -4264,7 +4269,7 @@ vec4 fam(vec3 q, out vec3 e){
       float d=length(vec2(p.x-cx,(p.y-rr)*1.1));
       if(found<0.5 && d<0.75){ found=1.0; t=d/0.75; hk=h31(vec3(cx,rr,so.x)); }
     }
-    vec3 col=mix(uC1,uC2,hk*0.7)*(0.45+0.75*t);
+    vec3 col=mix(mix(uC1,uC2,hk*0.7),uC3,step(0.72,hk)*0.85)*(0.45+0.75*t);
     col=mix(col,uC1*0.2,smoothstep(0.86,0.98,t));
     col+=(0.5+0.5*cos(6.2831*(vec3(0.0,0.33,0.67)+hk+t*0.7)))*0.16;
     return vec4(col, 200.0);
@@ -4649,7 +4654,7 @@ vec4 fam(vec3 q, out vec3 e){
     float r=length(q);
     float n=fbm(q*2.6+so), n2=fbm(q*5.5+so+7.0);
     float cloud=smoothstep(0.42,0.72,n+0.25*n2);
-    float core=0.0, glow=0.0;
+    float core=0.0, coreB=0.0, glow=0.0;
     for(int i=0;i<3;i++){ float fi=float(i);
       // un éclair du haut vers le bas, qui zigzague (deux échelles de bruit), et une branche qui part de son milieu
       vec3 a=(vec3(h31(so+fi),h31(so+fi+3.1),h31(so+fi+6.2))-0.5)*vec3(0.8,0.2,0.8)+vec3(0.0,0.62,0.0);
@@ -4667,13 +4672,13 @@ vec4 fam(vec3 q, out vec3 e){
       vec3 ob=(vec3(noise(vec3(hb*18.0,fi+7.0,so.z)),noise(vec3(hb*18.0,fi+9.0,so.x)),noise(vec3(hb*18.0,fi+11.0,so.y)))-0.5)*0.12;
       float db=length(pb-bb*hb-ob*sin(hb*3.1416))+0.012*hb;
       float k=i==0?1.0:0.6;
-      core+=k*(exp(-d*45.0)+0.6*exp(-db*55.0));   // une lueur continue (un trait net se perd entre les pas du rayon)
+      core+=k*exp(-d*45.0); coreB+=k*0.6*exp(-db*55.0);   // une lueur continue (un trait net se perd entre les pas du rayon)
       glow+=k*(exp(-d*12.0)+0.5*exp(-db*16.0));
     }
     float inside=smoothstep(0.95,0.82,r);
     vec3 boltc=mix(uC2,vec3(1.0),0.7);
-    e=(boltc*core*55.0+mix(uC2,vec3(1.0),0.3)*glow*(1.5+3.0*cloud))*inside;
-    vec3 col=mix(uC1*0.14, mix(uC1,vec3(0.7),0.5)*0.6, cloud)+uC2*glow*0.3;
+    e=(boltc*core*55.0+mix(uC3,vec3(1.0),0.25)*coreB*70.0+mix(uC2,vec3(1.0),0.3)*glow*(1.5+3.0*cloud))*inside;
+    vec3 col=mix(uC1*0.14, mix(mix(uC1,uC3,0.85*smoothstep(0.4,0.65,n2)),vec3(0.7),0.3)*0.75, cloud)+uC3*glow*0.15+uC2*glow*0.3;
     return vec4(col, 0.3+cloud*1.6);
   }
 #elif MODE==51
@@ -5637,7 +5642,7 @@ const CHALLENGES = [
     prog:()=>TK.slice(0,n).filter(t=>SC().some(s=>s.type===t&&s.family===f)).length,
     rew:{j:FAM_REW[F.rar], bag:FAM_REW[F.rar]>=70?"premium":"classique"}} }),
   // --- les grandes trouvailles : motifs rares et shiny (une échelle chacun)
-  {id:"epic1", cat:"rare", icon:"star", title:"Trésor épique", desc:"Trouve une bille au motif épique (Acier, Nacrée, Lave, Vitrail…).", goal:1, prog:()=>SC().filter(s=>FAMILIES[s.family].rar===3).length, rew:{j:30}},
+  {id:"epic1", cat:"rare", icon:"star", title:"Trésor épique", desc:"Trouve une bille au motif épique (Acier, Nacrée, Lave, Prisme…).", goal:1, prog:()=>SC().filter(s=>FAMILIES[s.family].rar===3).length, rew:{j:30}},
   {id:"leg1", cat:"rare", icon:"star", title:"Légende de poche", desc:"Trouve une bille au motif légendaire (Galaxie, Aurore ou Trou noir).", goal:1, prog:()=>SC().filter(s=>FAMILIES[s.family].rar===4).length, rew:{j:50}},
   {id:"legmam", cat:"rare", icon:"trophy", title:"Légende de la cour", desc:"Un Mammouth au motif légendaire : la bille la plus rare de la cour.", goal:1, prog:()=>SC().filter(s=>s.type==="mammouth"&&FAMILIES[s.family].rar===4).length, rew:{j:500, title:"Légende de la cour"}},
   {id:"shiny1", cat:"rare", icon:"star", title:"Premier éclat", desc:"Trouve ta première bille shiny dans un sachet ou une fusion.", goal:1, prog:()=>SC().filter(s=>s.shiny&&!isSeason(s)).length, rew:{j:100}},

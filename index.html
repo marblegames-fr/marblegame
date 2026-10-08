@@ -98,7 +98,8 @@ p{margin:0}
 .topbar{position:sticky;top:calc(var(--rib,0px) + env(safe-area-inset-top,0px));z-index:30;display:flex;align-items:center;gap:16px;height:68px;padding-inline:24px;background:var(--topbar);backdrop-filter:blur(8px);border-bottom:1px solid var(--line)}
 /* le logo « Ça roule » (8 octobre 2026, maquettes/maquette-logo-polices.html) : « Bille » en Gluten, une police gonflée
    comme écrite à la main, jaune avec une tranche caramel ; les lettres sautillent comme des billes qui rebondissent,
-   et la bille du logo fait le « o » de Billeo. Tout est en em : il suffit de changer font-size. */
+   et la bille du logo fait le point du « i » (le « o » est écrit, sinon on lisait « Bille » : maquettes/maquette-logo-o.html).
+   « ı » = i sans point. Tout est en em : il suffit de changer font-size. */
 .logo{display:flex;align-items:flex-end;font-family:"Gluten",var(--display);font-weight:900;font-size:38px;line-height:1;letter-spacing:.02em}
 .logo .lw{display:flex;align-items:flex-end}
 .logo .lt{display:inline-block;color:#FFC93F;-webkit-text-stroke:.16em var(--navy);paint-order:stroke fill;
@@ -108,7 +109,8 @@ p{margin:0}
 .logo .lt:nth-child(3){transform:translateY(.02em) rotate(-3deg)}
 .logo .lt:nth-child(4){transform:translateY(-.08em) rotate(5deg)}
 .logo .lt:nth-child(5){transform:rotate(-4deg)}
-.logo img{display:block;flex:none;width:.6em;height:.6em;margin:0 0 .06em .06em;border-radius:50%;box-shadow:0 0 0 .065em var(--navy);
+.logo .lt.i{position:relative}
+.logo .i img{position:absolute;left:50%;top:-.2em;width:.27em;height:.27em;margin-left:-.12em;border-radius:50%;box-shadow:0 0 0 .05em var(--navy);
   filter:drop-shadow(0 .06em 0 var(--navy)) drop-shadow(0 .14em .14em rgba(0,0,0,.4))}
 .topbar .logo a{text-decoration:none;cursor:pointer;color:inherit;display:flex}
 .tagline{font-family:var(--hand);font-size:24px;font-weight:600;color:var(--ink);margin-left:18px;white-space:nowrap}
@@ -3046,7 +3048,7 @@ button.cp-who:hover b{text-decoration:underline}
 .auth-wrap > *{pointer-events:auto}
 .auth-pitch{pointer-events:none;text-shadow:0 2px 18px rgba(0,0,0,.55);margin-top:60px}   /* fixe : ne bouge pas quand le formulaire change de hauteur */
 .auth-pitch .logo{font-size:96px;animation:auth-in .7s cubic-bezier(.2,.9,.3,1.3) both}
-.auth-pitch .logo img{animation:auth-roll 1.1s cubic-bezier(.2,.8,.3,1) .15s both;filter:drop-shadow(0 10px 14px rgba(0,0,0,.5))}
+.auth-pitch .logo img{animation:auth-roll 1.1s cubic-bezier(.2,.8,.3,1) .15s both;filter:drop-shadow(0 .06em 0 var(--navy)) drop-shadow(0 4px 6px rgba(0,0,0,.5))}
 .auth-pitch h1{margin:22px 0 0;font-family:var(--display);font-weight:400;font-size:clamp(34px,calc(4.4vw / var(--vz,1)),58px);line-height:.96;letter-spacing:.01em;text-transform:uppercase;animation:auth-in .7s .1s both}
 .auth-pitch h1 em{font-style:normal;color:var(--yellow)}
 .auth-hand{margin:14px 0 0;font-family:var(--hand);font-size:27px;line-height:1.1;color:rgba(255,255,255,.82);transform:rotate(-2deg);transform-origin:left;animation:auth-in .7s .2s both}
@@ -3286,7 +3288,7 @@ body.gc-open{overflow:hidden}
 
 <div class="beta-rib" id="beta-rib" hidden></div>
 <header class="topbar">
-  <div class="logo"><a href="#" data-action="nav" data-view="accueil" aria-label="Billeo : retour à l'accueil"><span class="lw" aria-hidden="true"><span class="lt">B</span><span class="lt">i</span><span class="lt">l</span><span class="lt">l</span><span class="lt">e</span></span></a><img id="logo-marble" alt=""></div>
+  <div class="logo"><a href="#" data-action="nav" data-view="accueil" aria-label="Billeo : retour à l'accueil"><span class="lw" aria-hidden="true"><span class="lt">B</span><span class="lt i">ı<img id="logo-marble" alt=""></span><span class="lt">l</span><span class="lt">l</span><span class="lt">e</span><span class="lt">o</span></span></a></div>
   <div class="tagline">Ouvre. Collectionne. Joue.</div>
   <div class="top-spacer"></div>
   <button class="mj-btn" id="mj-btn" data-action="mj-open" aria-label="Ma journée"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3.5" y="8" width="17" height="4" rx="1"/><path d="M5 12v8h14v-8M12 8v12M12 8C10.5 4 7 4 7 6s3 2 5 2c2 0 5 0 5-2s-3.5-2-5 2"/></svg><span class="lbl">Ma journée</span><span class="n" id="mj-n" hidden></span></button>
@@ -13857,7 +13859,7 @@ const AUTH_SPECS = {
   shiny: {seed:hash("accueil-s"), type:"bille", family:0, pal:4, shiny:2},
 };
 function authPitch(){
-  return `<div class="logo" role="img" aria-label="Billeo"><span class="lw" aria-hidden="true"><span class="lt">B</span><span class="lt">i</span><span class="lt">l</span><span class="lt">l</span><span class="lt">e</span></span><img src="${marbleURL(LOGO_SPEC,192)}" alt=""></div>
+  return `<div class="logo" role="img" aria-label="Billeo"><span class="lw" aria-hidden="true"><span class="lt">B</span><span class="lt i">ı<img src="${marbleURL(LOGO_SPEC,96)}" alt=""></span><span class="lt">l</span><span class="lt">l</span><span class="lt">e</span><span class="lt">o</span></span></div>
     <h1>Ta cour de récré,<br> <em>en billes.</em></h1>
     <p class="auth-hand">Ouvre des sachets, complète ton album, joue avec les copains.</p>
     <ul class="auth-feats">
@@ -13995,7 +13997,8 @@ setTimeout(bootPopups, 800);
 // une fenêtre déjà ouverte (ou un sachet en cours) : on repasse dès qu'elle se ferme ; au retour sur l'onglet après minuit aussi
 setInterval(()=>{ if(document.visibilityState==="visible" && (dailyDue() || heldNews || gcDue() || lotDue()) && popupsFree() && !inGame()) bootPopups() }, 2000);
 // petits secrets
-document.getElementById("logo-marble").addEventListener("click", ()=>{
+document.getElementById("logo-marble").addEventListener("click", e=>{
+  e.preventDefault(); e.stopPropagation();   // la bille est dans le lien du logo : la chatouiller ne ramène pas à l'accueil
   S.logo = (S.logo||0)+1; save();
   const im = document.getElementById("logo-marble");
   im.classList.remove("l-spin","l-roll"); void im.offsetWidth;

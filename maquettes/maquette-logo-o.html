@@ -1,0 +1,125 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Billeo · le « o » du logo</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Titan+One&family=Gluten:wght@900&family=Nunito:wght@500;700;800;900&display=swap">
+<style>
+/* Maquette (8 octobre 2026) : comment garder la bille dans le logo sans qu'on lise seulement « Bille ».
+   Même style que le logo du jeu (Gluten, jaune, tranche caramel, lettres qui sautillent). Billes rendues par billeo-rendu.js. */
+:root{--navy:#24253D;--y:#FFC93F;--display:"Titan One",sans-serif}
+*{box-sizing:border-box}
+body{margin:0;background:#100E0B;color:#F5EEE2;font:600 15px/1.5 Nunito,system-ui,sans-serif}
+main{max-width:1180px;margin:0 auto;padding:28px 16px 60px}
+h1{font-family:"Titan One";font-weight:400;font-size:30px;margin:0 0 4px}
+.lead{color:#C8BDAD;margin:0 0 26px;max-width:760px}
+.card{border:1px solid #352E26;border-radius:22px;background:#1A1713;margin:0 0 22px;overflow:hidden}
+.card.ref{border-style:dashed;opacity:.85}
+.card-h{display:flex;align-items:baseline;gap:12px;padding:16px 22px 0;flex-wrap:wrap}
+.card-h b{font-family:"Titan One";font-weight:400;font-size:22px;color:var(--y)}
+.card-h span{color:#C8BDAD}
+.row{display:grid;grid-template-columns:1.6fr 1fr 1fr .7fr;gap:14px;padding:16px 22px 22px}
+.cell{border-radius:16px;display:grid;place-items:center;min-height:170px;padding:18px;position:relative;overflow:hidden}
+.cell small{position:absolute;left:12px;top:8px;font-size:11px;font-weight:800;text-transform:uppercase;letter-spacing:.08em;opacity:.55}
+.dark{background:radial-gradient(120% 120% at 30% 20%,#2A231B,#16130F)}
+.light{background:#FBF4E6;color:#24253D}
+.side{background:#211D18}
+.side .wrap{display:flex;flex-direction:column;gap:10px;align-items:flex-start;width:100%}
+.side .nav{display:flex;flex-direction:column;gap:6px;width:100%}
+.side .nav i{display:block;height:12px;border-radius:6px;background:#352E26}
+.side .nav i:nth-child(2){width:70%}.side .nav i:nth-child(3){width:82%}
+.tiny{background:#211D18}
+.pro{padding:0 22px 18px;color:#C8BDAD;display:grid;grid-template-columns:1fr 1fr;gap:6px 20px}
+.pro p{margin:0}.pro p::first-letter{font-weight:900}
+@media (max-width:900px){ .row{grid-template-columns:1fr 1fr} .pro{grid-template-columns:1fr} }
+@media (max-width:560px){ .row{grid-template-columns:1fr} }
+
+/* --- base commune : le logo du jeu --- */
+.L{display:inline-flex;flex-direction:column;align-items:center;line-height:1}
+.L .w{display:flex;align-items:flex-end;font-family:"Gluten";font-weight:900;letter-spacing:.02em;white-space:nowrap}
+.L .t{display:inline-block;color:var(--y);-webkit-text-stroke:.16em var(--navy);paint-order:stroke fill;
+  text-shadow:0 .04em 0 #F59E0B,0 .08em 0 #E07B00,0 .13em 0 var(--navy),0 .18em .24em rgba(0,0,0,.35)}
+.L .w>.t:nth-child(1){transform:translateY(-.02em) rotate(-6deg)}
+.L .w>.t:nth-child(2){transform:translateY(-.10em) rotate(4deg)}
+.L .w>.t:nth-child(3){transform:translateY(.02em) rotate(-3deg)}
+.L .w>.t:nth-child(4){transform:translateY(-.08em) rotate(5deg)}
+.L .w>.t:nth-child(5){transform:rotate(-4deg)}
+.L img{display:block;border-radius:50%;filter:drop-shadow(0 .06em 0 var(--navy)) drop-shadow(0 .14em .14em rgba(0,0,0,.4))}
+
+/* 0 · actuel : la bille, plus grosse que les lettres, fait le « o » */
+.V0 img{width:.6em;height:.6em;margin:0 0 .06em .06em;box-shadow:0 0 0 .065em var(--navy)}
+
+/* 1 · un vrai « o » jaune, comme les autres lettres, avec la bille dans le trou */
+.V1 .o{position:relative;width:.56em;height:.56em;margin:0 0 .05em .05em;border-radius:50%;flex:none;transform:translateY(-.06em) rotate(6deg);
+  background:var(--y);box-shadow:0 0 0 .075em var(--navy),0 .04em 0 .075em #E07B00,0 .1em 0 .075em var(--navy),0 .17em .22em .06em rgba(0,0,0,.35)}
+.V1 .o img{position:absolute;inset:.1em;width:auto;height:auto;filter:none;box-shadow:0 0 0 .035em var(--navy)}
+
+/* 2 · « o » écrit normalement, les points des « i » sont des billes */
+.V2 .i{position:relative}
+.V2 .i img{position:absolute;left:50%;top:-.2em;width:.27em;height:.27em;margin-left:-.12em;box-shadow:0 0 0 .05em var(--navy)}
+
+/* 3 · la bille fait le « o » mais à la taille des lettres, posée sur la ligne, et elle sautille avec elles */
+.V3 .w>.t,.V3 .w>img{animation:hop 1.6s ease-in-out infinite}
+.V3 .w>:nth-child(2){animation-delay:.1s}.V3 .w>:nth-child(3){animation-delay:.2s}.V3 .w>:nth-child(4){animation-delay:.3s}
+.V3 .w>:nth-child(5){animation-delay:.4s}.V3 .w>:nth-child(6){animation-delay:.5s}
+.V3 img{width:.47em;height:.47em;margin:0 0 .09em .04em;box-shadow:0 0 0 .065em var(--navy)}
+@keyframes hop{0%,60%,100%{translate:0 0}30%{translate:0 -.12em}}
+
+/* 4 · « Bill » + « eo » d'une autre couleur : « eo » fait bloc, on ne lit plus « Bille » */
+.V4 .e{color:#5BD3FF;text-shadow:0 .04em 0 #1E9BD6,0 .08em 0 #11709F,0 .13em 0 var(--navy),0 .18em .24em rgba(0,0,0,.35)}
+.V4 .o{position:relative;width:.56em;height:.56em;margin:0 0 .05em .05em;border-radius:50%;flex:none;transform:translateY(-.04em) rotate(6deg);
+  background:#5BD3FF;box-shadow:0 0 0 .075em var(--navy),0 .04em 0 .075em #11709F,0 .1em 0 .075em var(--navy),0 .17em .22em .06em rgba(0,0,0,.35)}
+.V4 .o img{position:absolute;inset:.1em;width:auto;height:auto;filter:none;box-shadow:0 0 0 .035em var(--navy)}
+
+/* 5 · l'actuel + le nom écrit en clair dessous */
+.V5 img{width:.6em;height:.6em;margin:0 0 .06em .06em;box-shadow:0 0 0 .065em var(--navy)}
+.V5 .sub{margin-top:.2em;font:400 .2em/1 "Titan One";letter-spacing:.42em;padding-left:.42em;color:var(--y);-webkit-text-stroke:.09em var(--navy);paint-order:stroke fill}
+</style>
+</head>
+<body>
+<main>
+  <h1>Billeo : le « o » du logo</h1>
+  <p class="lead">Le problème : avec la bille à la place du « o », on risque de lire seulement « Bille ». Voici l'actuel et 5 pistes, en grand, sur fond clair, dans la colonne du jeu et en tout petit (pour l'icône ou une pub vue en passant). Le test : regarde chaque logo une demi-seconde et demande-toi ce que tu lis.</p>
+  <div id="list"></div>
+</main>
+<script src="billeo-rendu.js"></script>
+<script>
+const LOGO = {seed:hash("vitrine"+TK[1]), type:TK[1], family:0, pal:0, shiny:0};   // la bille du logo du jeu
+const src = (s,px=192) => marbleURL(s,px);
+const T = (s,cls="") => [...s].map(c=>`<span class="t${cls?" "+cls:""}">${c}</span>`).join("");
+const B = () => `<img src="${src(LOGO)}" alt="">`;
+const I = () => `<span class="t i">ı${B()}</span>`;        // « ı » = i sans point : la bille fait le point
+const V = [
+  {ref:1, name:"Actuel", note:"La bille fait le « o », un peu plus grosse que les lettres.",
+   html:()=>`<span class="L V0"><span class="w">${T("Bille")}${B()}</span></span>`,
+   pro:["+ La bille est bien visible.", "− « Bille » est un mot entier : la bille passe pour un dessin à côté."]},
+  {name:"1 · Un vrai « o » avec la bille dedans", note:"Le « o » est jaune comme les autres lettres et la bille est dans le trou.",
+   html:()=>`<span class="L V1"><span class="w">${T("Bille")}<span class="o">${B()}</span></span></span>`,
+   pro:["+ On lit « Billeo » : le « o » ressemble à une lettre.", "− La bille est plus petite, on la voit moins bien en tout petit."]},
+  {name:"2 · Les points des « i » en billes", note:"Le « o » est écrit normalement. Les deux points des « i » sont des billes.",
+   html:()=>`<span class="L V2"><span class="w">${T("B")}${I()}${T("lle")}${T("o")}</span></span>`,
+   pro:["+ Le plus lisible : le nom s'écrit en entier.", "− La bille est discrète. En petit, on voit à peine que ce sont des billes."]},
+  {name:"3 · La bille-« o » à la taille des lettres, qui sautille", note:"Même hauteur que les minuscules, posée sur la ligne, elle sautille avec les autres lettres.",
+   html:()=>`<span class="L V3"><span class="w">${T("Bille")}${B()}</span></span>`,
+   pro:["+ La bille fait partie du mot, elle bouge avec lui.", "− Sans l'animation (icône, image fixe), on risque encore de lire « Bille »."]},
+  {name:"4 · « Bill » + « eo » en bleu", note:"Le « e » et le « o » sont d'une autre couleur : ils font bloc, et « Bille » n'est plus un mot qu'on voit d'un coup.",
+   html:()=>`<span class="L V4"><span class="w">${T("Bill")}${T("e","e")}<span class="o">${B()}</span></span></span>`,
+   pro:["+ Ça casse « Bille » à l'œil, même en petit. « Billeo » saute aux yeux.", "− Deux couleurs au lieu d'une : le logo est un peu plus chargé."]},
+  {name:"5 · L'actuel + « BILLEO » écrit dessous", note:"On garde le logo tel quel et on écrit le nom en clair juste en dessous.",
+   html:()=>`<span class="L V5"><span class="w">${T("Bille")}${B()}</span><span class="sub">BILLEO</span></span>`,
+   pro:["+ Aucun doute possible sur le nom.", "− Le sous-titre devient illisible en petit et prend de la place dans la barre du haut."]},
+];
+document.getElementById("list").innerHTML = V.map(v=>`<section class="card${v.ref?" ref":""}"><div class="card-h"><b>${v.name}</b><span>${v.note}</span></div>
+  <div class="row">
+    <div class="cell dark"><small>Grand</small><div style="font-size:96px">${v.html()}</div></div>
+    <div class="cell light"><small>Fond clair</small><div style="font-size:56px">${v.html()}</div></div>
+    <div class="cell side"><small>Colonne du jeu</small><div class="wrap"><div style="font-size:38px">${v.html()}</div><div class="nav"><i></i><i></i><i></i></div></div></div>
+    <div class="cell tiny"><small>Tout petit</small><div style="font-size:20px">${v.html()}</div></div>
+  </div>
+  <div class="pro">${v.pro.map(p=>`<p>${p}</p>`).join("")}</div></section>`).join("");
+</script>
+</body>
+</html>

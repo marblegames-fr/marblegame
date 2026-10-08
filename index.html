@@ -3067,6 +3067,13 @@ button.cp-who:hover b{text-decoration:underline}
 .auth-form input:focus{outline:none;border-color:var(--yellow);background:rgba(0,0,0,.4);box-shadow:0 0 0 4px rgba(255,201,63,.2)}
 .auth-form small{display:block;margin-top:6px;color:var(--muted);font-size:12px}
 .auth-captcha{margin-top:14px}
+/* la case des règles du jeu (8 octobre 2026) : âge (15 ans ou un parent d'accord) + CGU et données personnelles, voir legal.html */
+.auth-form label.auth-ok{display:flex;gap:10px;align-items:flex-start;margin:16px 0 0;font-size:13px;font-weight:700;text-transform:none;letter-spacing:0;line-height:1.45;color:var(--ink-2);cursor:pointer}
+.auth-form .auth-ok input{flex:none;width:20px;height:20px;margin:1px 0 0;padding:0;accent-color:var(--yellow);cursor:pointer}
+.auth-ok a,.auth-legal a{color:var(--blue);font-weight:800;text-underline-offset:3px}
+.auth-legal{margin-top:18px;text-align:center;font-size:12px;color:var(--muted)}
+.auth-legal a{color:var(--muted);font-weight:700}
+.legal-links{display:flex;gap:10px;flex-wrap:wrap;margin-top:14px}
 .auth-captcha:empty{display:none}
 .auth-card .btn{width:100%;height:52px;margin-top:22px;font-size:16px}
 .auth-card .btn + .btn{margin-top:10px}
@@ -3328,6 +3335,7 @@ window.addEventListener("unhandledrejection", e=>{ const r = e.reason; BUG_LOG.p
 /* =====================================================================
    DONNÉES DU JEU
    ===================================================================== */
+const CGU_VERSION = "2026-10-08";   // version des règles du jeu (legal.html#cgu), gardée dans le compte à l'inscription
 const CUR = {one:"bonbec", many:"bonbecs"};         // la monnaie de la cour : des bonbecs !
 const FREE_EVERY = 10*60*1000;                        // un sachet gratuit toutes les 10 minutes
 
@@ -11948,6 +11956,10 @@ function viewSoon(){
         <p>Un bug, un affichage bizarre, une idée ? Dis-le-nous : ton message arrive directement à l'équipe${BETA.open ? ", et ça nous aide énormément pendant la bêta" : ""}.</p>
         <div style="margin-top:14px"><button class="btn btn-yellow" data-action="bug-report">${ic("bug",16)} Signaler un bug</button></div>
       </section>` : ""}
+      <section class="panel"><div class="panel-head"><h3>Informations légales</h3></div>
+        <p>Pour consulter, récupérer ou supprimer tes données (ou ton compte), écris-nous à <a href="mailto:marblegamesfr@gmail.com">marblegamesfr@gmail.com</a>${sync.on ? " depuis l'adresse de ton compte" : ""}.</p>
+        <div class="legal-links"><a class="btn btn-ghost" href="legal.html#cgu" target="_blank" rel="noopener">Règles du jeu</a><a class="btn btn-ghost" href="legal.html#confidentialite" target="_blank" rel="noopener">Données personnelles</a><a class="btn btn-ghost" href="legal.html#mentions" target="_blank" rel="noopener">Mentions légales</a></div>
+      </section>
       ${sync.on && eco.testeur ? bugAdminHTML() : ""}
       ${devTools() ? `<section class="panel"><div class="panel-head"><h3>Outils de test</h3></div>
         <p>Pour tester sans attendre : ajoute des ${CUR.many}, recharge tout de suite le sachet gratuit ou reçois une bille shiny.</p>
@@ -13788,6 +13800,7 @@ function authShow(screen, opts){
       ${field("a-pseudo","Pseudo","text",`maxlength="20" autocomplete="nickname" spellcheck="false" required`)}<small>3 à 20 caractères. C'est le nom que les autres joueurs verront.</small>
       ${field("a-email","E-mail","email",`autocomplete="email" value="${esc(auth.email)}" required`)}
       ${field("a-pass","Mot de passe","password",`minlength="8" autocomplete="new-password" required`)}<small>8 caractères minimum.</small>
+      <label class="auth-ok"><input type="checkbox" id="a-ok" name="a-ok" required><span>J'ai 15 ans ou plus, ou un parent est d'accord. J'accepte les <a href="legal.html#cgu" target="_blank" rel="noopener">règles du jeu</a> et j'ai lu comment sont utilisées <a href="legal.html#confidentialite" target="_blank" rel="noopener">mes données</a>.</span></label>
       ${cap}${err}<button class="btn btn-yellow" type="submit">Créer mon compte</button>
     </form>` : `<form class="auth-form" id="auth-login" novalidate>
       ${field("a-email","E-mail","email",`autocomplete="email" value="${esc(auth.email)}" required`)}
@@ -13795,6 +13808,7 @@ function authShow(screen, opts){
       ${cap}${err}<button class="btn btn-yellow" type="submit">Me connecter</button>
     </form>
     <div class="auth-links"><button class="auth-link" data-action="auth-go" data-screen="forgot">Mot de passe oublié ?</button></div>`}
+    <p class="auth-legal"><a href="legal.html#mentions" target="_blank" rel="noopener">Mentions légales</a> · <a href="legal.html#confidentialite" target="_blank" rel="noopener">Données personnelles</a> · <a href="legal.html#cgu" target="_blank" rel="noopener">Règles du jeu</a></p>
 `;
   else if(screen==="check-mail") body = `${head}<h2>Vérifie ta boîte mail</h2>
     <p>On t'a envoyé un lien à <span class="auth-mail">${esc(auth.email)}</span>. Clique dessus pour activer ton compte : tu reviendras ici tout seul.</p>
@@ -13885,8 +13899,9 @@ document.addEventListener("submit", async e=>{
       const pseudo = f["a-pseudo"].value.trim().replace(/\s+/g," ");
       if(!/^[\p{L}\p{N}_\- ]{3,20}$/u.test(pseudo)) return authFail("Ton pseudo doit faire 3 à 20 caractères : lettres, chiffres, espaces, - et _.");
       if(pass.length<8) return authFail("Ton mot de passe doit faire au moins 8 caractères.");
+      if(!f["a-ok"].checked) return authFail("Coche la case pour accepter les règles du jeu (avec l'accord d'un parent si tu as moins de 15 ans).");
       btn.disabled = true;
-      const r = await Cloud.signUp(email, pass, pseudo, await Captcha.token());
+      const r = await Cloud.signUp(email, pass, pseudo, await Captcha.token(), {cgu:CGU_VERSION});
       if(r.needsConfirm) authShow("check-mail");   // sinon, la connexion lance cloudStart toute seule
     }
     else if(f.id==="auth-login"){

@@ -42,9 +42,10 @@
     onAuth(cb){ if(db) db.auth.onAuthStateChange((ev, session)=>setTimeout(()=>cb(ev, session?.user||null))); },
     async currentUser(){ need(); return ok(await db.auth.getSession()).session?.user || null; },
 
-    async signUp(email, password, pseudo, captchaToken){
+    async signUp(email, password, pseudo, captchaToken, extra){
       need();
-      const d = ok(await db.auth.signUp({email, password, options:{data:{pseudo}, emailRedirectTo:back(), captchaToken}}));
+      // extra : ce que le joueur a accepté à l'inscription (version des règles du jeu), gardé avec le compte
+      const d = ok(await db.auth.signUp({email, password, options:{data:{pseudo, ...extra}, emailRedirectTo:back(), captchaToken}}));
       // e-mail déjà utilisé : Supabase répond sans erreur mais sans identité
       if(d.user && Array.isArray(d.user.identities) && !d.user.identities.length) throw Object.assign(new Error("deja"), {code:"user_already_exists"});
       return {needsConfirm: !d.session};

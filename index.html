@@ -201,15 +201,12 @@ button.wallet:hover{background:var(--panel-2)}
 .sa-row{display:flex;align-items:center;gap:6px}
 .sa-ball{display:grid;place-items:center;width:76px;height:76px}
 .side-act .btn{margin-top:2px}
-.side-quote{margin-top:auto;padding:18px 10px 4px;font-family:var(--hand);font-size:19px;line-height:1.15;color:var(--ink-2);transform:rotate(-6deg)}
-.side-quote svg{display:block;margin:6px 0 0 40px}
 .nav-btn .cnt{margin-left:auto;min-width:22px;text-align:center;font-size:11px;font-weight:900;padding:1px 7px;border-radius:999px;background:var(--green-soft);color:var(--green)}
 .nav-apart{margin-top:26px;position:relative}
 .nav-apart::before{content:"";position:absolute;top:-14px;left:12px;right:12px;height:1px;background:var(--line)}
 .nav-btn .cnt.gold{background:var(--gold-bg);color:#C07A0C;border:1px solid var(--gold-line)}
 .side-friends{margin-top:auto;padding:12px;border-radius:14px;border:1.5px dashed var(--line-2);color:var(--muted);font-size:12.5px;font-weight:700;line-height:1.35}
 .side-friends b{display:flex;align-items:center;gap:8px;color:var(--ink-2);font-size:13.5px;margin-bottom:3px}
-.side-friends + .side-quote{margin-top:6px}
 
 /* ---------- Ma journée : tout ce qui revient chaque jour, au même endroit ---------- */
 .mj-btn{position:relative;display:none;align-items:center;gap:8px;height:38px;padding:0 14px 0 11px;border-radius:999px;background:var(--gold-bg);border:1.5px solid var(--gold-line);font-weight:900;font-size:13px;color:var(--ink)}
@@ -2684,7 +2681,6 @@ button.cp-who:hover b{text-decoration:underline}
 .side-bug svg{flex:none;color:var(--muted)}
 .side-bug b{display:block;font-size:13.5px;font-weight:900}
 .side-bug small{display:block;font-size:12px;font-weight:700;color:var(--muted)}
-.side-bug + .side-quote{margin-top:6px}
 .pp-links .pp-bug{grid-column:1/-1;flex-direction:row;justify-content:center}
 .bug-tabs{display:inline-flex;gap:4px;padding:3px;border-radius:999px;background:var(--panel-2)}
 .bug-tabs button{padding:5px 12px;border-radius:999px;font-size:12.5px;font-weight:800;color:var(--muted)}
@@ -5816,9 +5812,7 @@ function renderNav(){
       n[0]==="cour"&&courCount()?`<span class="cnt" aria-label="${courCount()} nouveauté${courCount()>1?"s":""} dans la cour">${courCount()}</span>`:""}</button>`
   ).join("") + (()=>{ const pc = passClaimable();
     return `<button class="nav-btn" data-action="nav" data-view="passe" ${cur==="passe"?'aria-current="page"':""}>${ic("ticket")}<span>Passe de saison</span>${pc?`<span class="cnt gold" aria-label="${pc} récompense${pc>1?"s":""} à prendre">${pc}</span>`:""}</button>` })()
-    + (sync.on ? `<button class="side-bug" data-action="bug-report">${ic("bug",18)}<span><b>Un souci ?</b><small>Signaler un bug</small></span></button>` : "")
-    + `<p class="side-quote">Les plus grandes aventures commencent toujours par une petite bille.
-    <svg width="40" height="36" viewBox="0 0 40 36" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"><path d="M6 2c-4 12 2 24 26 28"/><path d="M26 24l6 6-8 3"/></svg></p>`;
+    + (sync.on ? `<button class="side-bug" data-action="bug-report">${ic("bug",18)}<span><b>Un souci ?</b><small>Signaler un bug</small></span></button>` : "");
   const tab = (v,l,i,dot) => `<button class="tb" data-action="nav" data-view="${v}" ${cur===v?'aria-current="page"':""}>${ic(i,24)}${l}${dot?'<span class="dot"></span>':""}</button>`;
   // 7 onglets : le sachet au milieu
   document.getElementById("tabbar").innerHTML = tab("accueil","Accueil","home") + tab("collection","Boîte","layers") + tab("jeux","Jeux","pad",games)
@@ -6317,7 +6311,7 @@ function viewHome(){
   return `<div class="hm">
   ${homeHero()}
   <section class="hm-day" id="hm-day">${dayHTML(false, true)}</section>
-  ${goalsPanel()}
+  ${wishPanel()}
 </div>`;
 }
 // l'accueil : ce qui t'attend dans la cour de récré (trocs, copains, enchères, classement)
@@ -6397,7 +6391,6 @@ function viewBags(){
   const shelf = shelfBags(), evBags = shelf.filter(x=>x.event);
   return `<div class="page-head">
     <div><h1>Ouvrir des sachets</h1><button class="btn btn-ghost btn-sm bg-how-btn" data-action="draw-how">${ic("book",16)} Comment chaque bille est tirée ?</button></div>
-    <span class="hand-note">Ce sera laquelle, cette fois ?</span>
   </div>
   <div class="bg-shelf" role="group" aria-label="Choisir un sachet">${shelf.filter(x=>!x.event).map(pick).join("")}</div>
   ${evBags.length?`<h2 class="bg-row-h">${ic("gift",16)} Sachets offerts</h2>
@@ -6463,37 +6456,16 @@ function viewQuests(){
 }
 
 /* =====================================================================
-   PROCHAINS OBJECTIFS : de petits buts à portée de main, calculés sur ta boîte
+   LISTE DE SOUHAITS (accueil) : seulement si tu en as
    ===================================================================== */
-function nextGoals(){
-  const goals = [];
-  // une case presque complète
-  const cases = [...slotsOwned()].map(([k,l])=>({k,l,got:casePals(l)})).filter(c=>c.got<BASE_PALS).sort((a,b)=>b.got-a.got);
-  if(cases[0] && cases[0].got>=2){ const c=cases[0], x=coverOf(c.l);
-    goals.push({icon:"layers", img:exSpec(x.type, x.family, "objectif"), title:`Complète ton motif ${FAMILIES[x.family].name} · ${TYPES[x.type].label}`, text:`Plus que ${BASE_PALS-c.got} coloris pour le motif complet.`, p:c.got, goal:BASE_PALS, act:`data-action="sheet" data-type="${x.type}" data-fam="${x.family}"`, cta:"Voir les coloris"}) }
-  // le succès le plus proche
-  const ch = CHALLENGES.filter(c=>!S.chal.includes(c.id)).map(c=>({c,p:chalProg(c)})).filter(o=>o.p>0||o.c.goal<=3).sort((a,b)=>(b.p>=b.c.goal)-(a.p>=a.c.goal) || b.p/b.c.goal-a.p/a.c.goal)[0];
-  if(ch){ const done=ch.p>=ch.c.goal;
-    goals.push({icon:ch.c.icon, title:ch.c.title, text:done?"Succès réussi : récupère ta récompense !":ch.c.desc, p:ch.p, goal:ch.c.goal, act:`data-action="nav" data-view="succes"`, cta:done?"Récupérer":"Voir les succès", ready:done}) }
-  // le prochain palier de l'album
-  const f = albumFound().size, pal = CHALLENGES.find(c=>c.id.startsWith("found-") && !S.chal.includes(c.id) && c.goal>f);
-  if(pal && goals.length<3) goals.push({icon:"book", title:`Palier : ${pal.title}`, text:`Encore ${fmt(pal.goal-f)} billes différentes à trouver.`, p:f, goal:pal.goal, act:`data-action="nav" data-view="collection"`, cta:"Ma boîte à billes"});
-  return goals.slice(0,3);
-}
-function goalsPanel(){
-  const goals = nextGoals(), wish = [...(S.wish||[]), ...(S.wishGot||[]).filter(k=>!(S.wish||[]).includes(k))];
+function wishPanel(){
+  const wish = [...(S.wish||[]), ...(S.wishGot||[]).filter(k=>!(S.wish||[]).includes(k))];
+  if(!wish.length) return "";
   return `<section class="panel goals">
-    <div class="panel-head"><h2>Tes prochains objectifs</h2><button class="see-all" data-action="nav" data-view="succes">Tous les succès ${ic("chev",14)}</button></div>
-    <div class="goal-grid">${goals.map(g=>`<button class="goal${g.ready?" ready":""}" ${g.act}>
-      <span class="g-ic">${g.img?mImg(g.img,100,40,""):ic(g.icon,22)}</span>
-      <span class="g-main"><b>${g.title}</b><small>${g.text}</small>
-        <span class="q-prog"><span class="bar"><i class="${g.p>=g.goal?"done":""}" style="width:${Math.min(100,g.p/g.goal*100)}%"></i></span><small>${fmt(Math.min(g.p,g.goal))} / ${fmt(g.goal)}</small></span></span>
-      <span class="g-cta">${g.cta} ${ic("chev",13)}</span></button>`).join("")}</div>
-    ${wish.length ? `<h3 class="sub-h">Ma liste de souhaits <small>${(S.wish||[]).length} / ${WISH_MAX}</small></h3>` : ""}
-    ${wish.length ? `<div class="wish-row">${wish.map(k=>{ const w=wishSpec(k), got=wishFound(k);
+    <h3 class="sub-h" style="margin-top:0">Ma liste de souhaits <small>${(S.wish||[]).length} / ${WISH_MAX}</small></h3>
+    <div class="wish-row">${wish.map(k=>{ const w=wishSpec(k), got=wishFound(k);
         return `<button class="wish${got?" got":""}" data-action="${got?"sheet":"wish-info"}" data-k="${k}" data-type="${w.type}" data-fam="${w.family}">${got?mImg(S.specs.filter(x=>colorKey(x)===k).sort(tierSort)[0],100,44,""):`<span class="sil" style="--c1:${PALETTES[w.pal][1]};--c2:${PALETTES[w.pal][2]}"></span>`}
-          <b>${esc(specName(w))}</b><small>${got?"Trouvée !":TYPES[w.type].label+" · "+oneIn(chanceOf(w))}</small></button>` }).join("")}</div>`
-      : `<p class="wish-empty">${ic("star",14,2.4)} Touche un coloris qui te manque dans l'album : on te prévient s'il tombe.</p>`}
+          <b>${esc(specName(w))}</b><small>${got?"Trouvée !":TYPES[w.type].label+" · "+oneIn(chanceOf(w))}</small></button>` }).join("")}</div>
   </section>`;
 }
 
@@ -7030,8 +7002,7 @@ function viewConfiserie(){
   const evN = (()=>{ const g = new Map(); evPool().forEach(s=>{ const k = `${s.type}|${s.pal}`; g.set(k,(g.get(k)||0)+1) }); return [...g].filter(([k,n])=>TIDX[k.split("|")[0]]<TK.length-1 && n>=FUSION_EV[TIDX[k.split("|")[0]]]).length })();
   const dups = recyclableDups(), dupVal = dups.reduce((a,s)=>a+recycleValue(s),0);
   const fusions = TK.slice(0,-1).reduce((a,_,t)=>a+Math.floor(craftPool(t).length/craftN(t)),0);
-  return `<div class="page-head"><div><h1>La Confiserie</h1></div>
-    <span class="hand-note">Rien ne se perd, tout se transforme !</span></div>
+  return `<div class="page-head"><div><h1>La Confiserie</h1></div></div>
   <div class="cf-shop">
     <div class="cf-awning" aria-hidden="true"></div>
     <div class="conf-choices">
@@ -9225,8 +9196,7 @@ function viewGames(){
   ];
   const act = activeSpec();
   [solo, multi, chance].forEach(l=>l.sort((a,b)=>(jdj.has(b.v)-jdj.has(a.v)) || (b.ok-a.ok)));   // ceux qui restent à jouer aujourd'hui d'abord (puis tout est réuni en une seule liste)
-  return `<div class="page-head"><div><h1>Jeux de la cour</h1></div>
-    <span class="hand-note">Qui c'est le plus fort de la cour ?</span></div>
+  return `<div class="page-head"><div><h1>Jeux de la cour</h1></div></div>
   <section class="panel games-hero${left?"":" all-done"}">
     <div class="gh-txt"><span class="gh-kick">${ic("star",14)} Les 3 jeux du jour</span>
       <h2>${left ? `${left} jeu${left>1?"x":""} pour gagner un ${BAG_BY[GAMES_BONUS].name}` : P.bonus ? "Sachet gagné : bravo !" : "Tout est joué : bravo !"}</h2>
@@ -12175,7 +12145,7 @@ function courClassement(){
 
 function viewCour(){
   cour.specs = [];
-  const head = `<div class="page-head"><div><h1>La cour de récré</h1></div><span class="hand-note">On échange ?</span></div>`;  if(!sync.on) return head + `<section class="panel cour-lock">${ic("cour",40)}<h2>Il te faut un compte</h2>
+  const head = `<div class="page-head"><div><h1>La cour de récré</h1></div></div>`;  if(!sync.on) return head + `<section class="panel cour-lock">${ic("cour",40)}<h2>Il te faut un compte</h2>
     <p class="cour-lead">Pour échanger avec les autres joueurs, il faut un compte.</p>
     ${window.Cloud?.available ? `<div class="btns"><button class="btn btn-yellow" data-action="acct-signup">Créer un compte</button><button class="btn btn-ghost" data-action="acct-login">Se connecter</button></div>` : ""}</section>`;
   if(!eco.ready || cour.ok===false) return head + `<section class="panel cour-lock">${ic("cour",40)}<h2>La cour ouvre bientôt</h2>

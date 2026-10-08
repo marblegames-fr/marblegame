@@ -3180,6 +3180,35 @@ button.cp-who:hover b{text-decoration:underline}
 @media (pointer:coarse){ #auth-fx{pointer-events:none} }
 @media (prefers-reduced-motion:reduce){ .auth *{animation:none!important} }
 .pp-links button.pp-out{color:var(--warn)}
+/* le premier lancement guidé (8 octobre 2026) */
+#tuto{position:fixed;inset:0;z-index:58;pointer-events:none}
+.tu-spot{position:fixed;border-radius:16px;box-shadow:0 0 0 3px var(--yellow),0 0 0 9999px rgba(8,6,4,.62);transition:all .25s;animation:tuspot 1.6s ease-in-out infinite}
+@keyframes tuspot{50%{box-shadow:0 0 0 7px rgba(255,201,63,.5),0 0 0 9999px rgba(8,6,4,.62)}}
+.tu-bub{position:fixed;pointer-events:auto;width:min(340px,calc(100vw - 24px));padding:14px 16px 12px;border-radius:18px;background:#FFF8EC;color:#24253D;box-shadow:0 18px 40px -12px rgba(0,0,0,.7);animation:tupop .35s cubic-bezier(.2,1.5,.4,1)}
+@keyframes tupop{from{transform:scale(.85);opacity:0}}
+.tu-bub::after{content:"";position:absolute;left:var(--ax,50%);width:16px;height:16px;background:#FFF8EC;transform:translateX(-50%) rotate(45deg)}
+.tu-bub.up::after{top:-7px}.tu-bub.down::after{bottom:-7px}.tu-bub:not(.up):not(.down)::after{display:none}
+.tu-who{display:inline-flex;align-items:center;gap:6px;font-family:var(--hand);font-size:19px;color:#8A5A00;line-height:1}
+.tu-bub p{font-weight:700;font-size:14px;margin:6px 0 10px;line-height:1.4}
+.tu-row{display:flex;align-items:center;gap:10px}
+.tu-dots{display:flex;gap:4px}.tu-dots i{width:6px;height:6px;border-radius:50%;background:#D9CCB4}.tu-dots i.on{background:#24253D;width:16px;border-radius:6px}
+.tu-skip{margin-left:auto;font-size:12.5px;font-weight:800;color:#8E8898}
+.modal.tuto-modal{text-align:center;display:flex;flex-direction:column;align-items:center;gap:12px;width:min(460px,100%);padding:28px 24px 22px}
+.tuto-modal h2{font-family:var(--display);font-weight:400;font-size:30px;line-height:1.05}
+.tuto-modal p{color:var(--ink-2);font-weight:700}
+.tuto-modal .linkish{font-size:13px;font-weight:800;color:var(--muted)}
+.tm-trio{display:flex;justify-content:center;gap:4px}.tm-trio img{filter:drop-shadow(0 10px 10px rgba(0,0,0,.4))}
+.tm-gift{display:flex;align-items:center;gap:14px;padding:12px 18px;border-radius:18px;background:var(--panel-2);text-align:left}
+.tm-gift .tm-bag svg{height:70px;width:auto}.tm-gift b{display:block;font-size:16px}.tm-gift small{color:var(--ink-2);font-weight:700}
+.dp-list{display:grid;gap:10px;width:100%}
+.dp-card{display:flex;align-items:center;gap:14px;padding:12px;border-radius:18px;background:var(--panel-2);border:2px solid var(--line);text-align:left;transition:transform .15s,border-color .15s}
+.dp-card:hover{border-color:var(--c);transform:translateY(-2px)}
+.dp-card img{flex:none;filter:drop-shadow(0 8px 8px rgba(0,0,0,.45));transition:transform .3s}.dp-card:hover img{transform:scale(1.1) rotate(-8deg)}
+.dp-card em{display:block;font-style:normal;font-size:10.5px;font-weight:900;letter-spacing:.06em;text-transform:uppercase;color:var(--c)}
+.dp-card b{display:block;font-family:var(--display);font-weight:400;font-size:20px;line-height:1.05}
+.dp-card small{display:block;font-weight:700;color:var(--ink-2);font-size:12.5px}
+.dp-lock{display:flex;align-items:center;gap:6px;font-size:12.5px!important;color:#B7791F!important}
+.depart-pill{background:linear-gradient(90deg,#E0352B,#2E4FA8,#4FB04A)!important;color:#fff!important}
 .prem-gift{display:inline-flex;align-items:center;gap:6px;font-size:12.5px;font-weight:800;color:#FFE38A}
 /* la Grande Course (12 h et 20 h) */
 .gc-banner{display:flex;align-items:center;gap:14px;width:100%;margin-bottom:18px;padding:14px 18px;text-align:left;cursor:pointer;color:#fff;background:linear-gradient(110deg,#C81E32,#7A1FA2);border:0;box-shadow:0 14px 30px -18px rgba(120,20,60,.8)}
@@ -3607,6 +3636,17 @@ const PLAYER_PALS = [
 ].map(P=>PALETTES.push(P)-1);
 // les coloris des événements arrivés après les coloris des joueurs (Super-héros : 79 à 83, mêmes numéros dans supabase/serveur.sql)
 Object.values(EVENTS).filter(E=>E.late).forEach(E=>{ E.palIdx = E.pals.map(P=>{ PALETTES.push(P); return PALETTES.length-1 }) });
+// (8 octobre 2026) la bille de départ : un Calot choisi au premier lancement, dans l'un des 3 coloris réservés (84 à 86, mêmes numéros dans
+// supabase/serveur.sql, bille_gagnee 'depart'). Rangée avec les secrètes (secret « depart ») : ni troc, ni marché, ni Confiserie, ni fusion,
+// et ces coloris ne comptent pas dans l'album (personne n'est bloqué parce qu'il n'a pas les 3).
+const DEPART = [
+  {k:"cartable", name:"Cartable", fam:0, txt:"Rouge vif, comme le premier jour d'école.", pal:["Cartable","#7A1020","#E0352B","#FFD9A0","#FFE3E3"]},
+  {k:"craie",    name:"Craie",    fam:1, txt:"Bleu nuit, comme le tableau de la classe.", pal:["Craie","#13204A","#2E4FA8","#F4F4EE","#DDE6FF"]},
+  {k:"pelouse",  name:"Pelouse",  fam:3, txt:"Vert pelouse, veiné comme une agate.",       pal:["Pelouse","#1F5A2A","#4FB04A","#F2E3A8","#DFF7E9"]},
+];
+DEPART.forEach(D=>{ D.palIdx = PALETTES.push(D.pal)-1 });
+const isDepart = s => s?.secret==="depart";
+const departSpec = D => ({seed:hash("depart-"+D.k), type:"calot", family:D.fam, pal:D.palIdx, shiny:0});
 // les coloris qu'on peut tirer : les 48 d'origine et ceux des joueurs
 const BASE_PAL_IDS = [...Array(SEASON_PAL0).keys(), ...PLAYER_PALS], BASE_PALS = BASE_PAL_IDS.length, BASE_SET = new Set(BASE_PAL_IDS);
 const isBasePal = p => BASE_SET.has(p);
@@ -5191,7 +5231,7 @@ const LOANER = {id:null, seed:hash("pretee"), type:"bille", family:EX_FAM, pal:E
 const ownActive = () => specById(S.active) || [...S.specs].sort(tierSort)[0];
 const activeSpec = () => ownActive() || LOANER;
 // les cases de l'album (une taille × un motif) ; les billes d'événement n'en font pas partie (elles ont leur onglet Événements)
-function slotsOwned(list=S.specs){ const m=new Map(); list.forEach(s=>{ if(extraFam(s.family)) return; const k=slotKey(s); if(!m.has(k)) m.set(k,[]); m.get(k).push(s)}); return m }
+function slotsOwned(list=S.specs){ const m=new Map(); list.forEach(s=>{ if(extraFam(s.family) || isDepart(s)) return; const k=slotKey(s); if(!m.has(k)) m.set(k,[]); m.get(k).push(s)}); return m }
 const TOTAL_SLOTS = TK.length*N_DECORS;              // cases de l'album : une par taille × motif
 // Chaque case se remplit coloris par coloris : l'album compte toutes les billes différentes (taille × motif × coloris)
 const colorKey = s => s.type+"|"+s.family+"|"+s.pal;
@@ -5336,7 +5376,7 @@ function chanceOf(s, bag=FREE_BAG){
   return p * (s.shiny ? bag.shiny*SHINIES[s.shiny].w/sw : 1-bag.shiny);
 }
 const oneIn = p => `1 sur ${fmt(1/p)}`;
-const edPill = s => isBeta(s) ? `<span class="ed-pill beta-pill">${ic("star",12,2.4)}Bêta testeur</span>` : s.secret ? `<span class="ed-pill secret-pill">${ic("lock",12,2.4)}Secrète</span>` : isSeason(s) ? `<span class="ed-pill">${ic("ticket",12,2.4)}Saison ${esc(s.ed||PALETTES[s.pal][0])}</span>` : "";
+const edPill = s => isBeta(s) ? `<span class="ed-pill beta-pill">${ic("star",12,2.4)}Bêta testeur</span>` : isDepart(s) ? `<span class="ed-pill depart-pill">${ic("star",12,2.4)}Bille de départ</span>` : s.secret ? `<span class="ed-pill secret-pill">${ic("lock",12,2.4)}Secrète</span>` : isSeason(s) ? `<span class="ed-pill">${ic("ticket",12,2.4)}Saison ${esc(s.ed||PALETTES[s.pal][0])}</span>` : "";
 const tierTag = s => "";
 // chance qu'une bille ait ce motif (toutes tailles et coloris confondus)
 const famOdds = f => `1 bille sur ${fmt(FAM_W.reduce((a,b)=>a+b,0)/FAM_W[f])}`;
@@ -5607,7 +5647,7 @@ function editionOf(s){
   return 1 + Math.floor(chanceOf(s)*3*bags*(.6+.8*r));
 }
 // d'où vient une bille (affiché dans sa fiche)
-const SRC_LABEL = {gratuit:"Dans un Sachet gratuit", classique:"Dans un Sachet Classique", premium:"Dans un Sachet Premium", collector:"Dans un Sachet Collector",
+const SRC_LABEL = {depart:"Choisie au premier lancement", gratuit:"Dans un Sachet gratuit", classique:"Dans un Sachet Classique", premium:"Dans un Sachet Premium", collector:"Dans un Sachet Collector",
   fusion:"En fusion, à la Confiserie", chateau:"En gagnant au Château", passe:"Au passe de saison", secrete:"En découvrant un secret", test:"Outil de test",
   pirate:"Pendant l'événement Pirate", roue:"Gagnée à la Roue du jour", pachinko:"Gagnée au Plinko", grattage:"Gagnée au Ticket à gratter",
   distributeur:"Sortie du Distributeur", loterie:"Gagnée à la Loterie", beta:"Cadeau des bêta-testeurs"};
@@ -6308,6 +6348,15 @@ function heroSlides(){
       ${st ? `<button class="btn btn-yellow btn-xl" data-action="open-free">${ic("bag",22)} Ouvrir un sachet</button>`
         : `<button class="btn btn-yellow btn-xl" data-action="nav" data-view="sacs">${ic(gifts?"gift":"bag",22)} ${gifts ? "Ouvrir mes sachets" : "Voir les sachets"}</button>`}
       <div class="hm-foot">${stackPips()}<span>${st} / ${FREE_MAX} · ${freeFull()?"stock plein":`prochain dans <span data-free-timer>${freeLeft()}</span>`}</span></div>
+    </div>`});
+  // (8 octobre 2026) la bille de départ, pour ceux qui ne l'ont pas encore choisie (le premier lancement guidé la propose aussi)
+  if(departDue()) out.push({id:"depart", label:"Bille de départ", score:95, html:`
+    ${art("", DEPART.map((D,j)=>img(departSpec(D), 120, `right:${4+j*13}%;top:${j===1?18:44}%`, j===1?"big":"")).join(""))}
+    <div class="hm-txt">
+      <span class="hm-k">${ic("star",15)} Rien que pour toi</span>
+      <h1>Choisis ta bille de départ !</h1>
+      <p>Trois Calots qu'on ne trouve dans aucun sachet. Tu en gardes un, pour toujours.</p>
+      <button class="btn btn-yellow btn-xl" data-action="depart-pick">${ic("star",22)} Choisir ma bille</button>
     </div>`});
   // le bonbec du jour : la semaine en cours du calendrier
   const streak = dReady ? dailyStreak() : (S.daily?.streak||1), idx = dailyDay(streak), w = Math.floor(idx/7), today = dailyRew(idx), nxt = dailyDay(streak+1);
@@ -7475,7 +7524,7 @@ function openModal(id, pv, reveal=false){
         <dt>Format</dt><dd>${T.label} · ${T.mm} mm</dd>
         <dt>Motif</dt><dd>${F.name} · ${F.event?`<b style="color:${EVENTS[F.event].color}">Événement</b>`:`<b style="color:${DECOR_RAR[F.rar].c}">${DECOR_RAR[F.rar].name}</b>`}</dd>
         <dt>Coloris</dt><dd>${PALETTES[s.pal][0]}</dd>
-        ${estLiee(s)?`<dt>Échange</dt><dd>Cadeau de bienvenue : échangeable à partir du ${new Date(lieeJusqu(s)).toLocaleDateString("fr-FR",{day:"numeric", month:"long"})}</dd>`:""}<dt>Chance</dt><dd>${isBeta(s)?"Réservée aux bêta-testeurs : elle reste dans ta boîte après la remise à zéro":s.secret?"Bille secrète : une seule par joueur":eventOf(s)?`Exclusive à l'événement « ${eventOf(s).name} » <small class="meta">· shiny possible, avec les mêmes chances que les autres billes du sachet</small>`:isSeason(s)?"Exclusive au passe de saison":`${oneIn(chanceOf(s))} <small class="meta">par bille du sachet gratuit</small>`}</dd>
+        ${estLiee(s)?`<dt>Échange</dt><dd>Cadeau de bienvenue : échangeable à partir du ${new Date(lieeJusqu(s)).toLocaleDateString("fr-FR",{day:"numeric", month:"long"})}</dd>`:""}<dt>Chance</dt><dd>${isDepart(s)?"Ta bille de départ, choisie au premier lancement : elle reste à toi (ni vente, ni troc, ni Confiserie)":isBeta(s)?"Réservée aux bêta-testeurs : elle reste dans ta boîte après la remise à zéro":s.secret?"Bille secrète : une seule par joueur":eventOf(s)?`Exclusive à l'événement « ${eventOf(s).name} » <small class="meta">· shiny possible, avec les mêmes chances que les autres billes du sachet</small>`:isSeason(s)?"Exclusive au passe de saison":`${oneIn(chanceOf(s))} <small class="meta">par bille du sachet gratuit</small>`}</dd>
         ${pv||!editionOf(s)?"":`<dt>Édition</dt><dd>${editionOf(s)===1?`<span class="first-pill">Première mondiale</span>`:`n° ${fmt(editionOf(s))} <small class="meta">de ce modèle trouvée dans le monde${s.edn?"":" (estimation)"}</small>`}</dd>`}
         ${pv||!s.no?"":`<dt>N° de série</dt><dd><code>#${String(s.no).padStart(7,"0")}</code> <small class="meta">unique, dans l'ordre d'apparition</small></dd>`}
         ${pv||!SRC_LABEL[s.src]?"":`<dt>Trouvée</dt><dd>${SRC_LABEL[s.src]}${s.via&&s.found?` <small class="meta">le ${dateFr(s.found)}</small>`:""}</dd>`}
@@ -8049,6 +8098,8 @@ function closeOv(quiet){
   if(S.pendingBag){ delete S.pendingBag; save() }
   renderView();
   if(missed) showBagSummary(missed);
+  else if(tutoOn() && S.tuto.step===2) setTimeout(tutoNext, 300);   // le premier sachet est ouvert : la suite du premier lancement
+  else if(tutoOn()) setTimeout(tutoShow, 300);
 }
 function showBagSummary({bag, results, left}){
   const el = document.getElementById("modal");
@@ -13101,6 +13152,11 @@ document.addEventListener("click", e=>{
     // (8 octobre 2026) pour voir et entendre les 3 ouvertures shiny : un faux sachet (Irisée, Dorée, Lumineuse), rien n'est gagné ni enregistré
     case "shiny-demo": { const results = [1,2,3].map(sh=>({s:makeSpec("calot",{shiny:sh, src:"test"}), isNew:false, newColor:false}));
       FX.stop(); ovState = {bag:BAG_BY.premium, results, opened:new Set(), gift:false, forced:false, demo:true, pxp:0}; showBagStage(); break }
+    case "tuto-next": { const T = TUTO[S.tuto?.step]; if(T?.act) T.act(); else tutoNext(); break }
+    case "tuto-skip": tutoSkip(); break;
+    case "tuto-gift": tutoEnd(); closeModal(); openBag("premium", true); break;
+    case "depart-pick": departPick(false); break;
+    case "depart-choose": departChoose(t.dataset.k); break;
     case "pity-max": S.pity = PITY-1; save(); toast("Ton prochain sachet contiendra un Boulet ou un Mammouth (démo)."); if(ui.view==="sacs") renderView(); break;
     case "buy": openBag(t.dataset.bag); break;
     case "tear": tear(); break;
@@ -13972,12 +14028,107 @@ document.addEventListener("pointerout", e=>{
 // à l'arrivée (et une fois la partie du compte chargée) : le résumé d'un sachet pas fini d'ouvrir, sinon le bonbec du jour (une fois par jour)
 // le calendrier passe toujours en premier : les nouvelles de la cour attendent qu'il soit fermé
 const dailyDue = () => dailyReady() && S.dailySeen!==dayKey();
+/* =====================================================================
+   LE PREMIER LANCEMENT GUIDÉ (8 octobre 2026, maquettes/maquette-premier-lancement.html)
+   Pour un compte tout neuf : bienvenue, la bille de départ, le premier sachet, la boîte à billes, le Tir, la cour, Ma journée,
+   puis un Sachet Premium offert. Une bulle montre où toucher ; « Passer » mène directement à la fin. L'étape est gardée dans S.tuto.
+   ===================================================================== */
+function departDue(){ return srvOn() && !S.specs.some(isDepart) && !tutoOn() }
+function tutoOn(){ return !!S.tuto && !S.tuto.done }
+// un compte tout neuf : aucune bille (à part les Bêta, gardées à la remise à zéro du lancement)
+function tutoDue(){ return srvOn() && !S.tuto && S.specs.every(isBeta) }
+const TUTO = [
+  {go:"accueil", modal:"hello"},
+  {go:"accueil", modal:"pick"},
+  {go:"sacs", target:'[data-action="open-free"]', txt:"Voici tes sachets gratuits : un nouveau toutes les 10 minutes. <b>Ouvre ton premier sachet</b>, et secoue-le pour entendre les billes !", btn:"Ouvrir", act:()=>{ tutoHide(); openBag("gratuit") }},
+  {go:"collection", target:".bx-bar", txt:"Tes billes sont rangées dans <b>ta boîte à billes</b>. Le point rouge veut dire « nouvelle ». Ta bille de départ y est aussi, avec son étoile. Il reste des centaines de billes à trouver !"},
+  {go:"tir", target:"#g-canvas", txt:"Essaie le Tir avec ta bille : <b>tire en arrière, vise le trou, et relâche</b>. Chaque jeu de la cour te rapporte des bonbecs.", btn:"Suivant"},
+  {go:"cour", target:"#ami-form", txt:"Billeo, c'est mieux à plusieurs ! Tape le <b>pseudo d'un copain</b> pour l'ajouter : vous pourrez troquer vos doubles."},
+  {go:"accueil", target:"#mj-rail,#hm-day", txt:"Chaque jour, de nouvelles choses t'attendent dans <b>Ma journée</b> : le bonbec du jour, des sachets gratuits, des quêtes et des jeux. <b>Reviens demain !</b>", btn:"Terminer"},
+  {go:"accueil", modal:"end"},
+];
+function tutoStart(){ S.tuto = {step:0}; save(); tutoShow() }
+function tutoGo(n){ if(!S.tuto) return; S.tuto.step = Math.min(n, TUTO.length-1); save(); tutoShow() }
+function tutoNext(){ tutoGo((S.tuto?.step||0)+1) }
+function tutoSkip(){ tutoGo(TUTO.length-1) }
+function tutoHide(){ document.getElementById("tuto")?.remove(); clearInterval(tutoHide.t) }
+function tutoEnd(){ tutoHide(); if(S.tuto){ S.tuto.done = true; save() } closeModal(); renderView() }
+function tutoShow(){
+  tutoHide(); if(!tutoOn()) return;
+  const T = TUTO[S.tuto.step];
+  if(T.go && ui.view!==T.go){ if(T.go==="collection"){ ui.tab = "billes"; ui.type = "all"; ui.show = "all" } if(T.go==="cour") ui.courTab = "copains"; go(T.go) }
+  if(T.go==="tir") ui.ballPicked = "tir";   // la bille de départ est déjà la bille de jeu : pas de fenêtre « Avec quelle bille tu joues ? »
+  if(T.modal) return tutoModal(T.modal);
+  closeModal();
+  const el = document.createElement("div"); el.id = "tuto";
+  el.innerHTML = `<div class="tu-spot" hidden></div><div class="tu-bub" role="dialog" aria-label="Le guide"><span class="tu-who">${ic("star",14,2.6)} Le gardien de la cour</span><p>${T.txt}</p>
+    <div class="tu-row"><span class="tu-dots">${TUTO.map((_,j)=>`<i class="${j===S.tuto.step?"on":""}"></i>`).join("")}</span><button class="tu-skip" data-action="tuto-skip">Passer</button>
+    <button class="btn btn-yellow btn-sm" data-action="tuto-next">${T.btn||"Suivant"}</button></div></div>`;
+  document.body.appendChild(el);
+  const place = () => {
+    const bub = el.querySelector(".tu-bub"), spot = el.querySelector(".tu-spot");
+    const tg = [...document.querySelectorAll(T.target||"_")].find(x=>x.offsetParent!==null);
+    if(!tg){ spot.hidden = true; bub.style.cssText = "left:50%;top:50%;transform:translate(-50%,-50%)"; bub.className = "tu-bub"; return }
+    const r = tg.getBoundingClientRect(), pad = 8, W = Math.min(340, innerWidth-24);
+    spot.hidden = false; Object.assign(spot.style, {left:r.left-pad+"px", top:r.top-pad+"px", width:r.width+pad*2+"px", height:r.height+pad*2+"px"});
+    // un grand élément (le terrain du Tir) : la bulle se pose en bas de l'écran, par-dessus
+    if(r.height > innerHeight*.5){ bub.className = "tu-bub"; bub.style.cssText = `width:${W}px;left:${(innerWidth-W)/2}px;top:${innerHeight-bub.offsetHeight-90}px`; return }
+    const below = innerHeight - r.bottom > bub.offsetHeight + 30 || r.top < bub.offsetHeight + 30;
+    const x = Math.max(12, Math.min(innerWidth-W-12, r.left + r.width/2 - W/2));
+    bub.className = "tu-bub " + (below ? "up" : "down");
+    bub.style.cssText = `width:${W}px;left:${x}px;${below ? `top:${Math.min(innerHeight-bub.offsetHeight-12, r.bottom+pad+14)}px` : `top:${Math.max(12, r.top-pad-14-bub.offsetHeight)}px`};--ax:${Math.max(18, Math.min(W-18, r.left+r.width/2-x))}px`;
+  };
+  // le premier passage : on amène l'élément sous les yeux, puis la bulle le suit (défilement, redimensionnement)
+  requestAnimationFrame(()=>{ const tg = [...document.querySelectorAll(T.target||"_")].find(x=>x.offsetParent!==null); tg?.scrollIntoView({block:"center"}); place() });
+  tutoHide.t = setInterval(place, 250);
+}
+function tutoModal(k){
+  const el = document.getElementById("modal"), dep = S.specs.find(isDepart), skip = `<button class="linkish" data-action="tuto-skip">Je connais déjà, passer</button>`;
+  if(k==="hello") el.innerHTML = `<div class="modal tuto-modal" role="dialog" aria-modal="true" aria-label="Bienvenue">
+    <div class="tm-trio">${DEPART.map(D=>mImg(departSpec(D),200,88,"")).join("")}</div>
+    <h2>Bienvenue dans la cour, ${esc(S.name)} !</h2><p>Avant de jouer, choisis ta toute première bille. Elle sera à toi pour toujours.</p>
+    <button class="btn btn-yellow btn-xl" data-action="tuto-next">C'est parti !</button>${skip}</div>`;
+  if(k==="pick") departPick(true);
+  if(k==="end"){
+    // le cadeau : un Sachet Premium, une fois par compte (le serveur le compte avec la clé « depart »)
+    if(!S.tuto.gift){ S.tuto.gift = 1; earn("depart", "depart", 0, "premium"); save(); renderTop(); renderNav() }
+    el.innerHTML = `<div class="modal tuto-modal" role="dialog" aria-modal="true" aria-label="C'est parti">
+    ${dep ? `<div class="tm-trio">${mImg(dep,240,120,"")}</div>` : ""}<h2>Tu es prêt, ${esc(S.name)} !</h2><p>Pour bien commencer, la cour t'offre :</p>
+    <div class="tm-gift"><span class="tm-bag">${bagSVG(BAG_BY.premium)}</span><span><b>1 Sachet Premium</b><small>au moins un Calot dedans</small></span></div>
+    ${dep ? `<p class="meta">${ic("star",14)} Et ton Calot ${esc(PALETTES[dep.pal][0])}, pour toujours.</p>` : `<p class="meta">Ta bille de départ t'attend sur l'accueil, quand tu veux.</p>`}
+    <button class="btn btn-yellow btn-xl" data-action="tuto-gift">${ic("gift",20)} Ouvrir mon Sachet Premium</button></div>`;
+    Sound.ding(); marbleRain(dep || makeSpec("calot"));
+  }
+  el.hidden = false; el.querySelector(".btn-yellow")?.focus();
+}
+// le choix de la bille de départ (pendant le premier lancement, ou plus tard depuis l'accueil)
+function departPick(inTuto){
+  const el = document.getElementById("modal");
+  el.innerHTML = `<div class="modal tuto-modal depart-modal" role="dialog" aria-modal="true" aria-label="Choisis ta bille de départ">
+    ${inTuto ? "" : `<button class="close-x" data-action="close-modal" aria-label="Fermer">×</button>`}
+    <h2>Choisis ta bille de départ</h2><p>Trois coloris qu'on ne trouve dans aucun sachet. Tu en gardes un, pour toujours.</p>
+    <div class="dp-list">${DEPART.map(D=>`<button class="dp-card" data-action="depart-choose" data-k="${D.k}" style="--c:${D.pal[2]}">${mImg(departSpec(D),200,84,"")}
+      <span><em>Bille de départ</em><b>Calot ${D.name}</b><small>${D.txt}</small></span></button>`).join("")}</div>
+    <p class="dp-lock">${ic("lock",14,2.4)} Elle reste à toi : on ne peut ni la vendre, ni l'échanger, ni la recycler.</p>
+    ${inTuto ? `<button class="linkish" data-action="tuto-skip">Choisir plus tard</button>` : ""}</div>`;
+  el.hidden = false;
+}
+function departChoose(k){
+  const D = DEPART.find(x=>x.k===k); if(!D || S.specs.some(isDepart) || !srvNeed()) return;
+  const sp = makeSpec("calot", {...departSpec(D), src:"depart"}); sp.secret = "depart"; sp.ed = "Bille de départ";
+  S.specs.push(sp); S.active = sp.id; save(); srvMint(sp, "depart", D.k);
+  closeModal(); Sound.reveal(3, 0, 2); marbleRain(sp); renderTop(); renderNav();
+  toast(`Le Calot ${D.name} est à toi ! C'est maintenant ta bille de jeu.`);
+  if(tutoOn()) setTimeout(tutoNext, 900); else renderView();
+}
 const popupsFree = () => ["auth","sync-veil","modal","ov","ask","gc-ov"].every(id=>document.getElementById(id)?.hidden!==false);
 const inGame = () => ["tir","pot","chateau","casse","tic","course"].includes(ui.view) && !document.querySelector(".g-result:not([hidden])");
 let heldNews = null;
 function showHeldNews(){ if(!heldNews || !popupsFree()) return; const n = heldNews; heldNews = null; openNews(n) }
 function bootPopups(){
   if(!popupsFree()) return;
+  if(tutoDue()){ tutoStart(); return }
+  if(tutoOn()) return;   // pendant le premier lancement : pas de bonbec du jour ni de nouvelles par-dessus
   const P = S.pendingBag;
   if(P){ delete S.pendingBag; save();
     const results = (P.r||[]).map(x=>({...x, s:specById(x.id)})).filter(x=>x.s);
@@ -13990,7 +14141,9 @@ function bootPopups(){
 }
 setTimeout(bootPopups, 800);
 // une fenêtre déjà ouverte (ou un sachet en cours) : on repasse dès qu'elle se ferme ; au retour sur l'onglet après minuit aussi
-setInterval(()=>{ if(document.visibilityState==="visible" && (dailyDue() || heldNews || gcDue() || lotDue()) && popupsFree() && !inGame()) bootPopups() }, 2000);
+// le premier lancement en cours sans bulle ni fenêtre (fenêtre fermée par erreur, sachet qui n'a pas pu s'ouvrir…) : on la remet
+setInterval(()=>{ if(tutoOn() && document.visibilityState==="visible" && !document.getElementById("tuto") && popupsFree()) tutoShow() }, 2500);
+setInterval(()=>{ if(document.visibilityState==="visible" && (tutoDue() || dailyDue() || heldNews || gcDue() || lotDue()) && popupsFree() && !inGame()) bootPopups() }, 2000);
 // petits secrets
 document.getElementById("logo-marble").addEventListener("click", e=>{
   e.preventDefault(); e.stopPropagation();   // la bille est dans le lien du logo : la chatouiller ne ramène pas à l'accueil

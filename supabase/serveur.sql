@@ -589,6 +589,9 @@ begin
     when 'passe' then   -- paliers de la saison en cours seulement
       if not interne.saison_valide(split_part(cle, '|', 1)) or montant > 40 then raise exception 'montant_invalide'; end if;
       k := cle;
+    when 'depart' then  -- (8 octobre 2026) la fin du premier lancement guidé : un Sachet Premium, une fois par compte
+      if montant <> 0 or sac is distinct from 'premium' then raise exception 'montant_invalide'; end if;
+      k := 'depart';
     else raise exception 'source_inconnue';
   end case;
   begin
@@ -642,6 +645,13 @@ begin
       if exists (select 1 from billes where proprietaire = qui and secrete = 'beta' and taille = cle and origine = 'serveur' and detruite_le is null)
         then raise exception 'deja'; end if;
       b := interne.nouvelle_bille(qui, cle, 47, 70 + interne.rang(cle), 0, 'beta', graine, jsonb_build_object('ed', 'Bêta 2026'), bid, 'beta');
+    when 'depart' then    -- (8 octobre 2026) la bille de départ : un Calot, une seule par joueur, dans l'un des 3 coloris réservés (84 à 86, comme DEPART dans index.html).
+      -- Rangée avec les secrètes (secrete = 'depart') : ni troc, ni marché, ni Confiserie, ni fusion, ni classement.
+      select x.f, x.c into m, c from (values ('cartable', 0, 84), ('craie', 1, 85), ('pelouse', 3, 86)) x(k, f, c) where x.k = cle;
+      if m is null then raise exception 'montant_invalide'; end if;
+      perform 1 from portefeuilles where joueur = qui for update;
+      if exists (select 1 from billes where proprietaire = qui and secrete = 'depart') then raise exception 'deja'; end if;
+      b := interne.nouvelle_bille(qui, 'calot', m, c, 0, 'depart', graine, jsonb_build_object('ed', 'Bille de départ'), bid, 'depart');
     else raise exception 'source_inconnue';
   end case;
   return jsonb_build_object('eco', interne.etat(qui), 'bille', b);

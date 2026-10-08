@@ -3779,9 +3779,11 @@ const Sound = (()=>{
     [[0,12,.7],[1,16,.8]],                                             // bille : do-mi
     [[0,4],[1,7],[2,11],[3,12,1.2]],                                   // chinoise : mi-sol-si-do, un peu de travers comme elle
     [[0,-5],[1,0],[2,4],[3.2,7,2],[3.2,-12,2]],                        // calot : sol-do-mi... SOL, avec une basse
-    [[0,7],[1,12],[2,16],[3,19],[4.3,24,2.5],[4.3,16,2.5],[4.3,12,2.5]],   // boulet : montée + accord
-    [[0,7],[.8,7],[1.6,7],[2.6,12,1.5],[4.2,11],[5,12],[5.8,16],[7,19,3],[7,12,3],[7,24,3]],  // mammouth : ta-ta-ta-TAAA, fanfare
+    [[0,0],[1,4],[2,7],[3,12],[4,16],[5.3,19,2.5],[5.3,12,2.5],[5.3,7,2.5],[5.3,-12,2.5]],   // boulet : grande montée, puis un accord plein avec sa basse
+    [[0,7],[.8,7],[1.6,7],[2.6,12,1.5],[2.6,0,1.5],[4.2,11],[5,12],[5.8,16],[7,19,3.5],[7,12,3.5],[7,24,3.5],[7,7,3.5],[7,-12,3.5],[7,-24,3.5]],  // mammouth : ta-ta-ta-TAAA, fanfare, accord géant jusqu'aux graves
   ];
+  // une nappe chaude qui gonfle doucement sous l'accord (deux voix un peu désaccordées)
+  function pad(t,f,a,dur){ [1,1.004].forEach(k=>osc(t,"triangle",f*k,a,dur*.35,dur*.65)); osc(t,"sine",f/2,a*.8,dur*.3,dur*.7) }
   function chime(t,f,a,dur=1.4){ osc(t,"sine",f,a,.004,dur); osc(t,"sine",f*2.005,a*.25,.004,dur*.6); osc(t,"triangle",f*3.01,a*.06,.004,dur*.3) }
   const api = {
     get on(){ return on },
@@ -3834,11 +3836,19 @@ const Sound = (()=>{
     // dr = rareté du motif (0 commun … 4 légendaire) : pour les 4 petites tailles, elle ajoute de l'éclat à la mélodie
     reveal(tier,shiny,dr=0){ if(!init()) return; const t=now(), step=.085, M=MOTIFS[Math.min(tier,5)], vol=tier<=3 ? .17+.025*tier : .22;
       M.forEach(([d,n,len])=>glock(t+d*step, NOTE(n), vol*(len>=1?1.1:1), len?1.3*len:undefined));
-      if(tier<=3 && dr>=1){ const [d0,n0]=M[M.length-1], te=t+(d0+1.2)*step;
+      if(tier<=4 && dr>=1){ const [d0,n0]=M[M.length-1], te=t+(d0+1.2)*step;
         glock(te, NOTE(n0+12), vol*.45, .7);   // peu commun : un écho à l'octave
         if(dr===2) [n0+16,n0+19,n0+24].forEach((n,i)=>glock(te+(i+1)*.07, NOTE(n), vol*.4, .55)) }   // rare : une petite cascade qui monte (épique et légendaire ont leur propre air juste après)
-      if(tier>=4) for(let i=0;i<10;i++) glock(t+step*4+i*.05, 2200+Math.random()*2600, .03, .4);   // paillettes
-      if(tier>=5) osc(t+step*7,"sine",110,.35,.01,1.2,null,55);   // le Mammouth fait trembler le sol
+      if(tier===4){   // le Boulet : il tombe lourdement, puis l'accord s'ouvre sur une nappe chaude et des paillettes
+        thud(t,.9,95); env(noise(t,.35,[{type:"lowpass",f:500,f2:120}]),t,.28,.004,.3);
+        const ta=t+step*5.3; pad(ta, NOTE(-12), .05, 1.8); osc(ta,"sine",65.4,.22,.01,1,null,55);
+        for(let i=0;i<14;i++) glock(ta+.05+i*.045, 2200+Math.random()*2800, .03, .4) }
+      if(tier>=5){   // le Mammouth : le sol tremble avant la fanfare, un deuxième coup sur l'accord final, puis une pluie d'étincelles
+        osc(t,"sine",70,.5,.01,1.1,null,32); env(noise(t,1,[{type:"lowpass",f:260,f2:60}]),t,.4,.01,.95);
+        const ta=t+step*7; thud(ta,1,80); osc(ta,"sine",82,.45,.01,1.6,null,41);
+        env(noise(ta-.35,.4,[{type:"bandpass",f:400,f2:5000,Q:.8}]),ta-.35,.12,.33,.06);   // le souffle qui monte juste avant le TAAA
+        pad(ta, NOTE(-12), .07, 2.6); pad(ta, NOTE(-5), .04, 2.6);
+        for(let i=0;i<24;i++) glock(ta+.05+i*.05, 1800+Math.random()*3600, .035, .45) }
       if(shiny){ const tt=t+step*(M.length+1);   // glissando magique vers le haut
         [0,2,4,7,9,12,14,16,19,21,24,28].forEach((n,i)=>glock(tt+i*.045, NOTE(n+12), vol*.6, .6)) } },
     // un choc de bille sur le sol, planifié dans le temps (billes qui roulent hors du sachet)

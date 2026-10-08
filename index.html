@@ -115,6 +115,13 @@ p{margin:0}
 .topbar .logo a{text-decoration:none;cursor:pointer;color:inherit;display:flex}
 .tagline{font-family:var(--hand);font-size:24px;font-weight:600;color:var(--ink);margin-left:18px;white-space:nowrap}
 .top-spacer{flex:1}
+/* les raccourcis du jour (Ma journée, Grande Course, bonbec du jour) regroupés dans une même pastille */
+.top-acts{display:flex;align-items:center;gap:2px}
+.top-acts .mj-btn{white-space:nowrap;flex:none}
+@media (max-width:1240px){ .tagline{display:none} }
+@media (max-width:1000px){ .top-acts .mj-btn .lbl{display:none} .top-acts .mj-btn{padding:0 9px} }
+.side{scrollbar-width:none}   /* sans barre de défilement visible : elle rognait le nombre de sachets */
+@media (min-width:821px){ .top-acts{padding:3px;border-radius:15px;background:var(--panel);border:1px solid var(--line)} .top-acts .icon-btn{height:38px} }
 .icon-btn{position:relative;width:40px;height:40px;display:grid;place-items:center;border-radius:12px}
 .icon-btn:hover{background:var(--panel-2)}
 .icon-btn .dot{position:absolute;top:8px;right:9px;width:9px;height:9px;border-radius:50%;background:#E5484D;border:2px solid var(--bg)}
@@ -204,6 +211,10 @@ button.wallet:hover{background:var(--panel-2)}
 .nav-btn .cnt{margin-left:auto;min-width:22px;text-align:center;font-size:11px;font-weight:900;padding:1px 7px;border-radius:999px;background:var(--green-soft);color:var(--green)}
 .nav-apart{margin-top:26px;position:relative}
 .nav-apart::before{content:"";position:absolute;top:-14px;left:12px;right:12px;height:1px;background:var(--line)}
+.nav-btn:has(.n-bags){padding-right:4px}
+.nav-btn .cnt.n-bags{display:grid;place-items:center;flex:none;min-width:22px;height:22px;padding:0 6px;font-size:12px;background:#E5484D;color:#fff;box-shadow:0 0 0 3px color-mix(in srgb,#E5484D 22%,transparent);animation:nbags-pulse 2.2s ease-in-out infinite}
+@keyframes nbags-pulse{50%{box-shadow:0 0 0 6px color-mix(in srgb,#E5484D 0%,transparent)}}
+@media (prefers-reduced-motion:reduce){ .nav-btn .cnt.n-bags{animation:none} }
 .nav-btn .cnt.gold{background:var(--gold-bg);color:#C07A0C;border:1px solid var(--gold-line)}
 .side-friends{margin-top:auto;padding:12px;border-radius:14px;border:1.5px dashed var(--line-2);color:var(--muted);font-size:12.5px;font-weight:700;line-height:1.35}
 .side-friends b{display:flex;align-items:center;gap:8px;color:var(--ink-2);font-size:13.5px;margin-bottom:3px}
@@ -2394,7 +2405,7 @@ body:has(#view .game-wrap) .mj-btn{display:none}
 @keyframes bellring{0%,82%,100%{transform:rotate(0)}85%{transform:rotate(14deg)}89%{transform:rotate(-12deg)}93%{transform:rotate(8deg)}97%{transform:rotate(-4deg)}}
 @media (prefers-reduced-motion:reduce){ #notif-btn.has svg{animation:none} }
 #notif-btn .n{position:absolute;top:3px;right:2px;min-width:18px;height:18px;padding:0 5px;border-radius:999px;background:#E5484D;color:#fff;font-size:10.5px;font-weight:900;display:grid;place-items:center;border:2px solid var(--bg)}
-.notif-pop{position:absolute;top:calc(100% + 8px);right:-60px;z-index:55;width:min(380px,calc(100vw - 24px));max-height:min(520px,calc(100vh - 110px));overflow:auto;padding:12px;border-radius:18px;background:var(--panel);border:1px solid var(--line);box-shadow:0 24px 50px -18px rgba(0,0,0,.55)}
+.notif-pop{position:absolute;top:calc(100% + 8px);right:0;z-index:55;width:min(380px,calc(100vw - 24px));max-height:min(520px,calc(100vh - 110px));overflow:auto;padding:12px;border-radius:18px;background:var(--panel);border:1px solid var(--line);box-shadow:0 24px 50px -18px rgba(0,0,0,.55)}
 .np-head{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:2px 4px 10px}
 .np-head b{display:inline-flex;align-items:center;gap:7px;font-size:15px;font-weight:900}
 .np-head .linkish{font-size:12.5px;font-weight:800;color:var(--blue-2)}
@@ -3256,11 +3267,11 @@ body.gc-open{overflow:hidden}
   <div class="logo"><a href="#" data-action="nav" data-view="accueil" aria-label="Billeo : retour à l'accueil"><span class="lw" aria-hidden="true"><span class="lt">B</span><span class="lt i">ı<img id="logo-marble" alt=""></span><span class="lt">l</span><span class="lt">l</span><span class="lt">e</span><span class="lt">o</span></span></a></div>
   <div class="tagline">Ouvre. Collectionne. Joue.</div>
   <div class="top-spacer"></div>
-  <button class="mj-btn" id="mj-btn" data-action="mj-open" aria-label="Ma journée"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3.5" y="8" width="17" height="4" rx="1"/><path d="M5 12v8h14v-8M12 8v12M12 8C10.5 4 7 4 7 6s3 2 5 2c2 0 5 0 5-2s-3.5-2-5 2"/></svg><span class="lbl">Ma journée</span><span class="n" id="mj-n" hidden></span></button>
-  <div class="notif-wrap" id="notif-wrap" hidden><button class="icon-btn" id="notif-btn" data-action="notif-pop" aria-label="Notifications" aria-expanded="false" aria-haspopup="true"><span class="n" id="notif-n" hidden></span></button>
-    <div class="notif-pop" id="notif-pop" hidden></div></div>
-  <button class="icon-btn" id="gc-btn" data-action="nav" data-view="grandecourse" aria-label="La Grande Course"><span class="dot"></span></button>
-  <button class="icon-btn" id="daily-btn" data-action="daily-open" aria-label="Le bonbec du jour"><span class="dot"></span></button>
+  <div class="top-acts">
+    <button class="mj-btn" id="mj-btn" data-action="mj-open" aria-label="Ma journée"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3.5" y="8" width="17" height="4" rx="1"/><path d="M5 12v8h14v-8M12 8v12M12 8C10.5 4 7 4 7 6s3 2 5 2c2 0 5 0 5-2s-3.5-2-5 2"/></svg><span class="lbl">Ma journée</span><span class="n" id="mj-n" hidden></span></button>
+    <button class="icon-btn" id="gc-btn" data-action="nav" data-view="grandecourse" aria-label="La Grande Course"><span class="dot"></span></button>
+    <button class="icon-btn" id="daily-btn" data-action="daily-open" aria-label="Le bonbec du jour"><span class="dot"></span></button>
+  </div>
   <div class="wallet" aria-label="Mes bonbecs"><span id="coin-slot"></span><span id="jetons">0</span><small>bonbecs</small></div>
   <div class="prof-wrap">
     <button class="profile-mini" data-action="prof-pop" aria-label="Mon profil" aria-expanded="false" aria-haspopup="true">
@@ -3270,6 +3281,8 @@ body.gc-open{overflow:hidden}
     </button>
     <div class="prof-pop" id="prof-pop" hidden></div>
   </div>
+  <div class="notif-wrap" id="notif-wrap" hidden><button class="icon-btn" id="notif-btn" data-action="notif-pop" aria-label="Notifications" aria-expanded="false" aria-haspopup="true"><span class="n" id="notif-n" hidden></span></button>
+    <div class="notif-pop" id="notif-pop" hidden></div></div>
 </header>
 
 <div class="layout">
@@ -5807,7 +5820,7 @@ function renderNav(){
   const cur = NAV_PARENT[ui.view] || ui.view, bags = freeStock()+giftCount(), games = gamesReady().length;
   document.getElementById("nav").innerHTML = NAV.map(n=>
     `<button class="nav-btn" data-action="nav" data-view="${n[0]}" ${cur===n[0]?'aria-current="page"':""}>${ic(n[2])}<span>${n[1]}</span>${
-      n[0]==="sacs"&&bags?`<span class="cnt" aria-label="${bags} sachet${bags>1?"s":""} à ouvrir">${bags}</span>`:""}${
+      n[0]==="sacs"&&bags?`<span class="cnt n-bags" aria-label="${bags} sachet${bags>1?"s":""} à ouvrir">${bags}</span>`:""}${
       n[0]==="jeux"&&games?'<span class="ready" aria-label="Récompense du jour à gagner"></span>':""}${
       n[0]==="cour"&&courCount()?`<span class="cnt" aria-label="${courCount()} nouveauté${courCount()>1?"s":""} dans la cour">${courCount()}</span>`:""}</button>`
   ).join("") + (()=>{ const pc = passClaimable();

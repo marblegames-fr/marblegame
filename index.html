@@ -3463,7 +3463,7 @@ const isSeason = s => s.pal>=SEASON_PAL0 && s.pal<SEASON_PAL0+SEASONS.length;
 // Billes secrètes : une seule par joueur, cachées un peu partout dans Billeo
 const SECRETS = {
   folle:   {name:"La Folle", type:"calot", family:1, shiny:1, pal:["Folle","#FF2E88","#2EE6FF","#FFE600","#FFE3F2"],
-            hint:"La bille du logo n'aime pas qu'on la chatouille… sauf si on insiste vraiment, vraiment beaucoup."},
+            hint:"La bille du logo n'aime pas qu'on la chatouille… sauf si on insiste vraiment beaucoup."},
   arcade:  {name:"L'Arcade", type:"boulet", family:25, shiny:3, pal:["Arcade","#1A0B3D","#39FF14","#FF00E6","#E0D6FF"],
             hint:"↑ ↑ ↓ ↓ … les vrais joueurs de console connaissent la suite."},
   grenier: {name:"Le Trésor du grenier", type:"mammouth", family:8, shiny:2, pal:["Grenier","#6B4A1E","#E8C27A","#FFF1C9","#F6E7C8"],
@@ -13874,7 +13874,7 @@ document.getElementById("logo-marble").addEventListener("click", e=>{
   const im = document.getElementById("logo-marble");
   im.classList.remove("l-spin","l-roll"); void im.offsetWidth;
   if(S.logo%10===0){ im.classList.add("l-roll"); Sound.drop(0,1) } else { im.classList.add("l-spin"); Sound.pop() }
-  if(S.logo>=100) revealSecret("folle");
+  if(S.logo>=30) revealSecret("folle");   // (8 octobre 2026) 30 chatouilles au lieu de 100
 });
 const KONAMI = ["arrowup","arrowup","arrowdown","arrowdown","arrowleft","arrowright","arrowleft","arrowright","b","a"];
 let konami = 0;

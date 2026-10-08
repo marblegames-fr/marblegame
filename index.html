@@ -3561,39 +3561,19 @@ const SHINY_RECYCLE_MULT = 10, SHINY_BONUS = [0, 200, 500, 1500];
 // avec un compte, seules les billes tirées par le serveur rapportent (pas les billes de départ ni celles d'une partie sans compte)
 const recycleValue = s => srvOn() && !s.srv ? 0 : s.shiny && !isSeason(s) ? RECYCLE[s.type]*SHINY_RECYCLE_MULT + SHINY_BONUS[s.shiny] : RECYCLE[s.type];
 
-// Quêtes du jour : QUESTS_N tirées chaque jour dans cette liste, chacune d'un genre (kind) différent.
+// Quêtes du jour : (8 octobre 2026) les 4 mêmes chaque jour, dans cet ordre (avant : 4 tirées au hasard parmi 19, trop faciles).
 // Les récompenses sont aussi dans supabase/serveur.sql (public.gagner, source 'quete') : à garder pareilles.
+// on : les évènements qui la font avancer (questEvent) ; set : sa progression est recalculée (questSet)
 const QUESTS_N = 4;
 const QUESTS = {
-  // ouvrir des sachets
-  open_bag:      {kind:"sachet", title:"Ouvre 2 sachets", goal:2, reward:8, icon:"bag", desc:"Gratuits ou payants, tous les sachets comptent.", go:"sacs"},
-  open_free:     {kind:"sachet", title:"Ouvre 2 sachets gratuits", goal:2, reward:10, icon:"clock", desc:"Un nouveau sachet gratuit arrive toutes les 10 minutes.", go:"sacs"},
-  open_paid:     {kind:"sachet", title:"Ouvre un sachet payant", goal:1, reward:12, icon:"bag", desc:"Classique, Premium ou Collector, acheté ou offert.", go:"sacs"},
-  shake:         {kind:"sachet", title:"Secoue bien les sachets", goal:20, reward:6, icon:"bag", desc:"Secoue les sachets avant de les ouvrir : 20 secousses en tout.", go:"sacs"},
-  // ce qu'on trouve dedans
-  find_bille:    {kind:"trouve", title:"Trouve 2 Billes ou plus grosses", goal:2, reward:9, icon:"layers", desc:"Bille, Bille chinoise, Calot, Boulet ou Mammouth : les Mini billes ne comptent pas.", go:"sacs"},
-  find_calot:    {kind:"trouve", title:"Trouve un Calot ou mieux", goal:1, reward:12, icon:"layers", desc:"Calot, Boulet ou Mammouth.", go:"sacs"},
-  find_many:     {kind:"trouve", title:"Trouve 10 billes", goal:10, reward:8, icon:"layers", desc:"N'importe lesquelles, dans n'importe quel sachet.", go:"sacs"},
-  find_rare:     {kind:"trouve", title:"Trouve une bille au motif rare", goal:1, reward:10, icon:"star", desc:"Un motif Rare, Épique ou Légendaire.", go:"sacs"},
-  find_event:    {kind:"trouve", title:"Trouve une bille d'événement", goal:1, reward:12, icon:"flag", desc:"Coche la case de l'événement sur un sachet payant.", go:"sacs"},
-  // l'album
-  new_slot:      {kind:"album", title:"Trouve un nouveau motif", goal:1, reward:10, icon:"book", desc:"Un motif que tu n'avais pas encore dans cette taille.", go:"sacs"},
-  new_color:     {kind:"album", title:"Trouve 3 nouvelles billes", goal:3, reward:10, icon:"star", desc:"Des billes que tu n'avais pas encore : nouveau motif ou nouveau coloris.", go:"sacs"},
-  // le Tir
-  hole:          {kind:"tir", title:"Réussis le trou du jour au Tir", goal:1, reward:9, icon:"target", desc:"Un nouveau trou chaque jour, le même pour toute la cour.", go:"tir"},
-  par:           {kind:"tir", title:"Fais un trou au par ou mieux", goal:1, reward:7, icon:"target", desc:"Trois étoiles sur le trou du jour du Tir.", go:"tir"},
-  twoshots:      {kind:"tir", title:"Mets ta bille dans le trou en 2 tirs", goal:1, reward:9, icon:"target", desc:"Ou moins, sur le trou du jour du Tir. Réessaie autant que tu veux.", go:"tir"},
-  // les autres jeux du jour
-  day_games:     {kind:"jeux", title:"Joue 2 parties du jour", goal:2, reward:8, icon:"play", desc:"N'importe quels jeux du jour.", go:"jeux"},
-  stars2:        {kind:"jeux", title:"Décroche 2 étoiles à un jeu", goal:1, reward:9, icon:"star", desc:"Au Pot, au Château ou à la Tic, sur ta partie du jour.", go:"jeux"},
-  plinko:        {kind:"jeux", title:"Lâche ta bille gratuite au Plinko", goal:1, reward:5, icon:"gift", desc:"Ta bille offerte du jour.", go:"pachinko"},
-  // la Confiserie
-  craft:         {kind:"confiserie", title:"Réussis une fusion", goal:1, reward:12, icon:"flask", desc:"Des billes d'une même taille contre une plus grosse, à la Confiserie.", go:"confiserie|fusion"},
-  recycle:       {kind:"confiserie", title:"Échange 3 billes à la Confiserie", goal:3, reward:6, icon:"candy", desc:"Depuis la fiche d'une bille ou avec le bouton des doubles.", go:"confiserie|echange"},
+  sachets20: {title:"Ouvre 20 sachets", goal:20, reward:15, icon:"bag", desc:"Gratuits ou payants, tous les sachets comptent.", go:"sacs", on:["open_bag"]},
+  jeux6:     {title:"Joue à 6 jeux différents de la cour", goal:6, reward:15, icon:"play", desc:"Ta partie offerte du jour, au Tir, au Pot, au Château, à la Tic, à la Roue, au Plinko, au Ticket ou au Distributeur.", go:"jeux", set:true},
+  boulets3:  {title:"Trouve 3 Boulets", goal:3, reward:15, icon:"layers", desc:"Dans n'importe quel sachet. Un Mammouth compte aussi.", go:"sacs", on:["find_boulet"]},
+  confiserie:{title:"Fais une fusion ou échange une bille", goal:1, reward:5, icon:"candy", desc:"À la Confiserie : une fusion, ou une bille échangée contre des bonbecs.", go:"confiserie|fusion", on:["craft","recycle"]},
 };
 // go : la page où se fait la quête (« vue|onglet » pour la Confiserie) ; un clic sur la quête y emmène
 const questGo = q => { const [v,tab] = (QUESTS[q.id].go||"quetes").split("|"); return `data-action="nav" data-view="${v}"${tab?` data-conftab="${tab}"`:""}` };
-const QUEST_BONUS = "classique";   // les 4 quêtes du jour récupérées : un Sachet Classique offert (même chose dans serveur.sql)
+const QUEST_BONUS = "premium";   // les 4 quêtes du jour récupérées : un Sachet Premium offert (même chose dans serveur.sql)
 const bonusTag = () => `${ic("bag",16)} ${BAG_BY[QUEST_BONUS].name}`;
 
 // Chances de taille position par position (#1, #2… dans l'ordre d'ouverture) : elles montent au fil du sachet, la dernière bille est
@@ -5070,7 +5050,7 @@ S.specs.forEach(s=>{ s.type = RENAMED[s.type] || (TYPES[s.type] ? s.type : "bill
 S.chal = S.chal.map(id=>id==="fmt-sulfure" ? "fmt-mammouth" : id);
 S.titles = S.titles.map(t=>t==="Maître du Sulfure" ? "Maître du Mammouth" : t);
 if(S.title==="Maître du Sulfure") S.title = "Maître du Mammouth";
-if(S.quests && S.quests.items.some(q=>!QUESTS[q.id])) delete S.quests;
+if(S.quests && S.quests.items.some(q=>!QUESTS[q.id])) delete S.quests;   // (8 octobre 2026) anciennes quêtes tirées au hasard
 // billes Bêta : un coloris par taille (avant le 2 octobre 2026, elles étaient toutes en Rubis)
 S.specs.forEach(s=>{ if(isBeta(s)) s.pal = BETA.palOf(s.type) });
 delete S.level; delete S.xp;
@@ -5114,31 +5094,11 @@ function tierSort(a,b){ return TIDX[b.type]-TIDX[a.type] || (b.shiny?1:0)-(a.shi
 /* ---------- quêtes du jour ---------- */
 function dayKey(d=new Date()){ return `${d.getFullYear()}-${d.getMonth()+1}-${d.getDate()}` }
 function ensureQuests(){
-  const k = dayKey();
-  const r = rng(hash("quetes"+k)), pool = Object.keys(QUESTS).filter(questFits);
-  // une quête d'un genre qu'on n'a pas encore aujourd'hui (s'il en reste), tirée au hasard
-  const pick = items => { const left = pool.filter(id=>!items.some(x=>x.id===id)), fresh = left.filter(id=>!items.some(x=>QUESTS[x.id].kind===QUESTS[id].kind));
-    const L = fresh.length ? fresh : left; return L[Math.floor(r()*L.length)] };
-  if(S.quests && S.quests.day===k){
-    const I = S.quests.items; let ch = false;
-    // une quête impossible aujourd'hui (tirée avant cette règle) : on la remplace par une autre
-    I.forEach(q=>{ if(!questFits(q.id) && !q.p && !q.claimed){ Object.assign(q, {id:pick(I.filter(x=>x!==q)), p:0}); ch = true } });
-    // tirées quand il n'y en avait que 3 par jour : on complète (si le bonus est déjà récupéré, il le reste)
-    while(I.length<QUESTS_N){ I.push({id:pick(I), p:0, claimed:false}); ch = true }
-    if(ch) save();
-    return;
-  }
-  const items = [];
-  while(items.length<QUESTS_N) items.push({id:pick(items), p:0, claimed:false});
-  S.quests = {day:k, items, bonus:false};
+  const k = dayKey(), ids = Object.keys(QUESTS);
+  if(S.quests && S.quests.day===k && S.quests.items.length===ids.length && S.quests.items.every((q,i)=>q.id===ids[i])) return;
+  S.quests = {day:k, items:ids.map(id=>({id, p:0, claimed:false})), bonus:false};
+  try{ questSet("jeux6", jeuxFaits()) }catch(e){}   // les jeux déjà joués aujourd'hui comptent
   save();
-}
-// « en 2 coups » seulement quand le trou du jour a un par de 3 ou moins (en 2 coups sur un par 4 ou 5, c'est quasi impossible) ;
-// « bille d'événement » seulement pendant un événement
-function questFits(id){
-  if(id==="find_event") return Object.values(EVENTS).some(eventLive);
-  if(id!=="twoshots") return true;
-  try{ return LEVELS[tirOfDay()].par<=3 }catch(e){ return true }
 }
 function untilMidnight(){
   const n = new Date(), m = new Date(n.getFullYear(), n.getMonth(), n.getDate()+1);
@@ -5166,11 +5126,17 @@ function releaseNotes(test){
 function questEvent(type, n=1, at){
   ensureQuests();
   S.quests.items.forEach(q=>{
-    if(q.id!==type || questDone(q)) return;
-    q.p = Math.min(QUESTS[type].goal, q.p+n);
-    if(questDone(q)) note(`Quête terminée : ${QUESTS[type].title}. Récupère ta récompense !`, at);
+    if(!(QUESTS[q.id].on||[]).includes(type) || questDone(q)) return;
+    q.p = Math.min(QUESTS[q.id].goal, q.p+n);
+    if(questDone(q)) note(`Quête terminée : ${QUESTS[q.id].title}. Récupère ta récompense !`, at);
   });
   save(); renderNav();
+}
+// une quête dont la progression se recalcule (les jeux de la cour joués aujourd'hui)
+function questSet(id, v){
+  const q = S.quests?.items.find(x=>x.id===id); if(!q || questDone(q) || v<=q.p) return;
+  q.p = Math.min(QUESTS[id].goal, v);
+  if(questDone(q)) note(`Quête terminée : ${QUESTS[id].title}. Récupère ta récompense !`);
 }
 
 /* ---------- recyclage ---------- */
@@ -5919,7 +5885,7 @@ function dayHTML(inSheet, wide){
   <div class="mj-prog"><span>${nDone} / ${tasks.length} faits</span><span class="bar"><i style="width:${nDone/tasks.length*100}%"></i></span></div>
   ${n ? `<button class="btn btn-yellow mj-all" data-action="claim-all">${ic("gift",18)} Tout récupérer (${n})</button>` : `<p class="mj-empty">Tout est récupéré. Reviens demain !</p>`}
   ${wide?'<div class="mj-cols">':""}<div class="mj-group"><div class="mj-gh">Tous les jours</div>${rows1.join("")}</div>
-  <div class="mj-group"><div class="mj-gh">Quêtes du jour <small>nouvelles dans <span data-quest-timer>${untilMidnight()}</span></small></div>${rows2.join("")}</div>
+  <div class="mj-group"><div class="mj-gh">Quêtes du jour <small>remises à zéro dans <span data-quest-timer>${untilMidnight()}</span></small></div>${rows2.join("")}</div>
   <div class="mj-group"><div class="mj-gh">Jeux de la cour</div>${rows3.join("")}</div>
   ${rows4.length?`<div class="mj-group"><div class="mj-gh">Récompenses</div>${rows4.join("")}</div>`:""}${wide?"</div>":""}
   ${wide ? "</div>" : `<div class="mj-group"><div class="mj-gh">Passe de saison</div>
@@ -6481,7 +6447,7 @@ function viewQuests(){
   const Q = S.quests, all = Q.items.every(q=>q.claimed), n = Q.items.filter(q=>q.claimed).length;
   return `<div class="page-head">
     <div><h1>Quêtes du jour</h1></div>
-    <span class="hand-note">Nouvelles quêtes dans <span data-quest-timer>${untilMidnight()}</span></span>
+    <span class="hand-note">Remises à zéro dans <span data-quest-timer>${untilMidnight()}</span></span>
   </div>
   <div class="soon-page" style="max-width:820px">
     <section class="panel">${questRows(false)}</section>
@@ -7578,19 +7544,7 @@ async function openBag(bagId, gift){
   // les quêtes avancent bille par bille : chacune est annoncée quand on découvre la bille qui la termine
   heldNotes = [];
   questEvent("open_bag", 1, 0);
-  if(bag.price===0) questEvent("open_free", 1, 0);
-  if(bag.price>0) questEvent("open_paid", 1, 0);
-  const iCalot = results.findIndex(r=>TIDX[r.s.type]>=TIDX.calot), iSlot = results.findIndex(r=>r.isNew);
-  results.forEach((r,i)=>{
-    if(tierOf(r.s)>=1) questEvent("find_bille", 1, i);
-    if(i===iCalot) questEvent("find_calot", 1, i);
-    if(i===iSlot) questEvent("new_slot", 1, i);
-    if(r.isNew||r.newColor) questEvent("new_color", 1, i);
-    questEvent("find_many", 1, i);
-    const F = FAMILIES[r.s.family];
-    if(FAM_W[r.s.family] && F.rar>=2) questEvent("find_rare", 1, i);
-    if(F.event) questEvent("find_event", 1, i);
-  });
+  results.forEach((r,i)=>{ if(TIDX[r.s.type]>=TIDX.boulet) questEvent("find_boulet", 1, i) });
   ovState = {bag, results, opened:new Set(), gift, forced:!!pulls.forced, pxp:passXP(bagXP(BAG_XP[bag.id]))};
   showBagStage();
 }
@@ -7737,7 +7691,6 @@ function tear(){
   const st = document.getElementById("bag-stage");
   if(!st || st.dataset.busy) return;
   st.dataset.busy = 1;
-  if(ovState.shakes) questEvent("shake", ovState.shakes);
   if((ovState.shakes||0)>=20){ const sp = grantSecret("preau"); if(sp) ovState.results.push({s:sp, isNew:true, newColor:false}) }
   const reduce = FX.reduce();
   const zone = document.getElementById("bag-zone");
@@ -8184,12 +8137,9 @@ function finishHole(success){
     const rec = !S.best[game.lvl] || game.strokes<S.best[game.lvl];
     if(rec) S.best[game.lvl] = game.strokes;
     const P = playedToday(), paid = !P.tir[0];
-    if(paid){ P.tir[0] = 1; delete P.tir.live; earn("jeu", "tir|0", rew); questEvent("day_games"); gamesBonus() }   // une récompense par jour (le serveur compte « tir|0 »)
+    if(paid){ P.tir[0] = 1; delete P.tir.live; earn("jeu", "tir|0", rew); gamesBonus() }   // une récompense par jour (le serveur compte « tir|0 »)
     S.holes++; save(); renderTop(); updHud(); renderHoles();
     const pxp = paid ? passXP(PASS_XP.star*st) : 0;
-    questEvent("hole");
-    if(game.strokes<=L.par) questEvent("par");
-    if(game.shots<=2) questEvent("twoshots");
     const msg = game.strokes===1 ? "Trou en un !" : game.strokes<L.par ? "Sous le par !" : game.strokes===L.par ? "Pile au par !" : "Dans le trou !";
     html = `<h2>${msg}</h2><div class="stars">${[1,2,3].map(k=>STAR(k<=st)).join("")}</div>
       <p>${game.strokes} coup${game.strokes>1?"s":""}${game.strokes>game.shots?` (dont ${game.strokes-game.shots} de pénalité dans l'eau)`:""} pour un par de ${L.par}${rec?" · nouveau record":""}</p>
@@ -8197,7 +8147,7 @@ function finishHole(success){
   } else {
     // raté : la partie du jour compte quand même (avant, « Réessayer » laissait gagner à la 2e tentative)
     const P = playedToday(), paid = !P.tir[0];
-    if(paid){ P.tir[0] = 1; delete P.tir.live; earn("jeu", "tir|0", 0); questEvent("day_games"); gamesBonus(); save(); renderHoles() }
+    if(paid){ P.tir[0] = 1; delete P.tir.live; earn("jeu", "tir|0", 0); gamesBonus(); save(); renderHoles() }
     html = `<h2>Trop de coups</h2><p>10 coups, c'est le maximum.${paid ? " Pas de bonbecs pour ce trou : retente ta chance demain !" : ""}</p>`;
   }
   html += `<p class="meta">Nouveau trou dans ${tirLeftTime()}.</p><div class="row"><button class="btn btn-ghost" data-action="g-restart">Rejouer pour le plaisir</button><button class="btn btn-yellow" data-action="nav" data-view="jeux">Tous les jeux</button></div>`;
@@ -8743,7 +8693,7 @@ async function pachiGo(pay){
   // si on quitte le plateau pendant la chute, le gain arrive quand même, à l'heure où la bille serait tombée
   setTimeout(give, (PACHI_ROWS+1)*PACHI_HOP*1000 + 600);
   const cs = PACHI[slot];
-  if(!pay){ playedToday().pachinko = {done:1, rew:cs.j||0}; questEvent("plinko"); questEvent("day_games") }
+  if(!pay){ playedToday().pachinko = {done:1, rew:cs.j||0}; }
   S.stats.pachi = (S.stats.pachi||0)+1;
   save();
   document.querySelectorAll('[data-action="pachi-go"]').forEach(b=>b.disabled = true);
@@ -8864,7 +8814,7 @@ async function roueGo(pay){
   let given = false;
   const give = () => { if(given) return; given = true; walletFreeze = null; gain();
     if(bille){ S.specs.push(bille); S.unseen.push(bille.id); logFind(bille); save() }
-    renderTop(); renderNav(); questEvent("day_games"); gamesBonus() };
+    renderTop(); renderNav(); gamesBonus() };
   const reduce = matchMedia("(prefers-reduced-motion: reduce)").matches, dur = reduce ? 700 : ROUE_DUR;
   setTimeout(give, dur+500);   // si on quitte la page pendant que la roue tourne, le lot arrive quand même
   // l'angle final : 6 tours, puis la part tirée sous l'aiguille (un peu décalée au hasard dans sa part)
@@ -9707,7 +9657,9 @@ function jeuxDuJour(key=dayKey()){
 }
 const jeuFait = k => k==="tir" ? !!playedToday().tir[0] : !!dayGame(k)?.done;
 const allGamesDone = () => jeuxDuJour().every(jeuFait);
+const jeuxFaits = () => JEUX_TOUS.filter(jeuFait).length;
 function gamesBonus(){
+  ensureQuests(); questSet("jeux6", jeuxFaits()); save(); renderNav();   // la quête des 6 jeux différents
   const P = playedToday(); if(P.bonus || !allGamesDone()) return;
   P.bonus = 1; earn("jeux-bonus", dayKey(), 0, GAMES_BONUS); save(); renderTop(); renderNav();
   setTimeout(()=>{ toast(`Tes 3 jeux du jour sont faits : un ${BAG_BY[GAMES_BONUS].name} t'est offert !`); Sound.ding() }, 1400);
@@ -9760,7 +9712,6 @@ const dayRewards = key => DAY_INFO[key] ? `<section class="panel"><div class="pa
 function dayFinish(key, st, rew, title, text, resId="a-result"){
   const paid = gameEnd(key, st, rew);
   payOut(paid?rew:0, st, key, paid, paid?key:null);
-  if(paid){ questEvent("day_games"); if(st>=2) questEvent("stars2") }
   if(resId==="a-result"){ arena.done = true; updArenaHud() }
   const chip = document.getElementById("day-chip"); if(chip) chip.outerHTML = dayChip(key);
   const el = document.getElementById(resId); if(!el) return paid;

@@ -552,22 +552,21 @@ end $$;
 create or replace function public.gagner(source text, cle text, montant int, sac text default null)
 returns jsonb language plpgsql security definer set search_path = public as $$
 declare qui uuid := interne.moi(); today text := interne.aujourdhui()::text; k text; maxi int; nq int; ev record;
-        quetes jsonb := '{"open_bag":8,"open_free":10,"hole":9,"par":7,"twoshots":9,"find_bille":9,"find_calot":12,
-                          "new_slot":10,"new_color":10,"open_paid":12,"craft":12,"shake":6,"recycle":6,
-                          "find_many":8,"find_rare":10,"find_event":12,"day_games":8,"stars2":9,"plinko":5}';
+        -- (8 octobre 2026) les 4 mêmes quêtes chaque jour (QUESTS dans index.html)
+        quetes jsonb := '{"sachets20":15,"jeux6":15,"boulets3":15,"confiserie":5}';
 begin
   if montant < 0 then raise exception 'montant_invalide'; end if;
   if sac is not null and sac not in ('classique','premium','collector') then raise exception 'sac_inconnu'; end if;
   perform 1 from portefeuilles where joueur = qui for update;
   case source
-    when 'quete' then   -- 4 quêtes par jour (QUESTS_N dans index.html), au tarif de la quête
+    when 'quete' then   -- les 4 quêtes du jour, chacune une fois par jour, au tarif de la quête
       if not quetes ? cle or montant <> (quetes->>cle)::int or sac is not null then raise exception 'montant_invalide'; end if;
-      select count(*) into nq from gains g where g.joueur = qui and g.source = 'quete' and g.cle like today || '|%';
-      if nq >= 4 then raise exception 'deja'; end if;
       k := today || '|' || cle;
-    when 'quetes-bonus' then   -- les 4 quêtes : un Sac Classique offert
-      if montant <> 0 or sac is distinct from 'classique' then raise exception 'montant_invalide'; end if;
-      k := today;
+    when 'quetes-bonus' then   -- les 4 quêtes : un Sac Premium offert (8 octobre 2026 ; avant, un Classique)
+      if montant <> 0 or sac is distinct from 'premium' then raise exception 'montant_invalide'; end if;
+      select count(*) into nq from gains g where g.joueur = qui and g.source = 'quete' and g.cle in (select today || '|' || x from jsonb_object_keys(quetes) x);
+      if nq < 4 then raise exception 'pas_fini'; end if;
+      k := today || '|premium';
     when 'jeu' then     -- une récompense par jour et par jeu (au Tir : par trou)
       maxi := case when cle ~ '^tir\|[0-5]$' then 25 when cle = 'pot' then 25 when cle = 'chateau' then 34
                    when cle in ('course','tic') then 20 end;   -- une partie par jour et par jeu (DAY_GAMES dans index.html)

@@ -3165,6 +3165,7 @@ button.cp-who:hover b{text-decoration:underline}
 @media (pointer:coarse){ #auth-fx{pointer-events:none} }
 @media (prefers-reduced-motion:reduce){ .auth *{animation:none!important} }
 .pp-links button.pp-out{color:var(--warn)}
+.prem-gift{display:inline-flex;align-items:center;gap:6px;font-size:12.5px;font-weight:800;color:#FFE38A}
 /* la Grande Course (12 h et 20 h) */
 .gc-banner{display:flex;align-items:center;gap:14px;width:100%;margin-bottom:18px;padding:14px 18px;text-align:left;cursor:pointer;color:#fff;background:linear-gradient(110deg,#C81E32,#7A1FA2);border:0;box-shadow:0 14px 30px -18px rgba(120,20,60,.8)}
 .gc-banner:hover{filter:brightness(1.06)}
@@ -6848,7 +6849,7 @@ function viewPass(){
       <p>${tier>=PASS_TIERS?"Tu as terminé le passe, chapeau !":`${fmt(into)} / ${fmt(need)} XP avant le palier ${tier+1}`}</p>
       <div class="ph-actions">
         ${claim?`<button class="btn btn-yellow" data-action="pass-all">${ic("gift",18)} Tout récupérer (${claim})</button>`:""}
-        ${P.premium?`<span class="prem-badge">${ic("star",16)} Passe premium actif</span>`:`<button class="btn btn-light" data-action="buy-pass">${ic("star",18)} Débloquer le premium · ${PASS_PRICE}</button>`}
+        ${P.premium?`<span class="prem-badge">${ic("star",16)} Passe premium actif</span>`:`<button class="btn btn-light" data-action="buy-pass">${ic("star",18)} Débloquer le premium · ${PASS_PRICE}</button><span class="prem-gift">${ic("gift",15)} + un Sachet Collector offert tout de suite</span>`}
       </div>
     </div>
     <button class="ph-final" data-action="preview" data-k="${pv(finalSpec)}" aria-label="Voir la récompense finale">
@@ -6879,7 +6880,8 @@ function viewPass(){
       <div class="panel-head"><h2>${P.premium?"Ton passe premium":"Le passe premium"}</h2><span class="sample-tag">${PASS_PRICE} · démo</span></div>
       <ul class="xp-list">
         <li>${ic("star",20)}<span>${pm} billes exclusives au coloris ${esc(PALETTES[se.pal][0])}, dont un Mammouth shiny Lumineuse</span></li>
-        <li>${ic("bag",20)}<span>${pb} sachets offerts, dont un Sachet Collector</span></li>
+        <li>${ic("gift",20)}<span><b>Tout de suite :</b> un Sachet Collector offert</span></li>
+        <li>${ic("bag",20)}<span>${pb} sachets sur la piste, dont un autre Sachet Collector</span></li>
         <li>${COIN}<span>${fmt(pj)} ${CUR.many}</span></li>
         <li>${ic("trophy",20)}<span>2 titres à afficher sur ton profil</span></li>
       </ul>
@@ -10453,6 +10455,8 @@ const gcKey = D => `${D.jour}|${D.heure||20}`;
 const gcSeenIt = D => S.gcSeen===gcKey(D) || ((D.heure||20)===20 && S.gcSeen===D.jour) || (S.gcSeenAll||[]).includes(gcKey(D));
 function gcMarkSeen(D){ S.gcSeen = gcKey(D); S.gcSeenAll = [...new Set([...(S.gcSeenAll||[]), gcKey(D)])].slice(-4) }
 const gcSlotName = h => h===12 ? "de midi" : "du soir";
+const GC_REMIND = 36e5;   // le rappel dans la cloche : 1 h avant le départ
+let gcReminded = null;
 function gcLeft(ms){ ms = Math.max(0,ms); const h = Math.floor(ms/36e5), m = Math.floor(ms/6e4)%60, s = Math.floor(ms/1e3)%60; return h ? `${h} h ${String(m).padStart(2,"0")} min` : `${m} min ${String(s).padStart(2,"0")} s` }
 const gcMine = () => { const E = gc.etat; return E?.inscrit ? (E.bille && specById(E.bille)) || null : null };
 const gcPickable = () => S.specs.filter(s=>sync.known?.has(s.id)).sort(tierSort);
@@ -10609,6 +10613,9 @@ setInterval(()=>{
   document.querySelectorAll("[data-gc-timer]").forEach(el=>el.textContent = N.depart-Date.now()<=0 ? "C'est parti !" : gcLeft(N.depart-Date.now()));
   document.querySelectorAll("[data-gc-short]").forEach(el=>el.textContent = gcShort(N.depart-Date.now()));
   if(N.depart-Date.now()<=0 && !gc.etat) renderGcBtn();
+  // l'heure du rappel arrive : la cloche se met à jour toute seule (et une fois la course partie, le rappel disparaît)
+  const inRem = Date.now()>=N.depart-GC_REMIND && Date.now()<N.depart;
+  if(inRem ? gcReminded!==gcKey(N) : gcReminded){ gcReminded = inRem ? gcKey(N) : null; renderBell() }
   const E = gc.etat;
   // le départ est passé : on redemande l'état au serveur (toutes les 3 s jusqu'à ce qu'il réponde), pour tout le monde.
   // La page passe toute seule à la course en direct (bouton « Regarder ») et à la course suivante, sans rafraîchir.
@@ -12124,6 +12131,10 @@ function notifList(){
       : e.k==="gagnee" ? {bille:e.bille?.id} : {tab:"journal"};
     out.push({le:e.le, ic:J.ic, txt:J.txt, ball:e.bille || (e.recu||[])[0] || null, go}) });
   gcWaiting().forEach(D=>out.push({le:D.depart+GC_DUR*1000, ic:"flag", txt:`La Grande Course ${gcSlotName(D.heure||20)} est finie : <b>tes lots t'attendent</b>`, go:{view:"grandecourse"}}));
+  // (8 octobre 2026) le rappel de la Grande Course, une heure avant le départ
+  const N = gcNext(), rem = N.depart - GC_REMIND;
+  if(Date.now()>=rem && Date.now()<N.depart) out.push({le:rem, ic:"flag", go:{view:"grandecourse"},
+    txt:`La Grande Course ${gcSlotName(N.heure)} part <b>dans moins d'une heure</b> : ${gc.etat?.inscrit ? "tu es inscrit, prépare-toi !" : "inscris-toi, c'est gratuit !"}`});
   const L = lotDraw();
   // sans rien dévoiler : on découvre ses numéros (et ses lots) dans la fenêtre ou sur la page de la Loterie
   if(L) out.push({le:+new Date(L.tirage+"T21:00:00"), ic:"ticket", txt:`Le tirage de la Loterie a eu lieu : <b>viens voir tes numéros</b>`, go:{view:"loterie"}});
@@ -12892,8 +12903,9 @@ document.addEventListener("click", e=>{
     case "buy-pass": {
       const P = ensurePass(); if(P.premium) break;
       ask({title:"Débloquer le passe premium ?", text:"Démo : aucun paiement n'est demandé.", ok:"Débloquer"}).then(ok=>{ if(!ok || P.premium) return;
-      P.premium = true; save(); Sound.ding(); renderNav(); renderView();
-      toast("Passe premium débloqué ! Les récompenses premium déjà atteintes t'attendent.") });
+      // (8 octobre 2026) un Sachet Collector offert tout de suite, une fois par saison (le serveur le compte avec la clé « saison|achat »)
+      P.premium = true; earn("passe", `${seasonNow().id}|achat`, 0, "collector"); save(); Sound.ding(); renderTop(); renderNav(); renderView();
+      toast("Passe premium débloqué ! Ton Sachet Collector t'attend, et les récompenses premium déjà atteintes aussi.") });
       break;
     }
     case "set-title": S.title = t.dataset.title; save(); renderTop(); renderView(); break;

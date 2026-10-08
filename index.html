@@ -1998,6 +1998,21 @@ button.gh-cell:hover{transform:translateY(-2px)}
 .ov .slot{transition:opacity .5s ease}
 .ov.dim .slot:not(.suspense){opacity:.25}
 .ov.dim::before{background:radial-gradient(circle at 50% 50%,transparent 10%,rgba(0,0,0,.55) 60%)}
+/* les ouvertures shiny (8 octobre 2026) */
+.ov.warm::before{background:radial-gradient(circle at 50% 45%,rgba(255,196,70,.3),rgba(70,40,0,.5) 70%)}
+.ov.blackout::before{background:rgba(0,0,0,.9);transition:background .5s}
+.ov.blackout .slot:not(.suspense){opacity:.08}
+.ov.lumnight::before{background:radial-gradient(circle at 50% 45%,rgba(10,20,40,.3),rgba(0,0,8,.75) 70%);transition:background 1.2s}
+.ov-flash{position:fixed;inset:0;z-index:5;background:#fff;pointer-events:none;animation:ovflash .8s ease-out forwards}
+@keyframes ovflash{from{opacity:.95}to{opacity:0}}
+.slot.sh1 .slot-ball::before{content:"";position:absolute;inset:-10px;border-radius:50%;background:conic-gradient(#FF6FB5,#FFB547,#FFE14D,#6FE3A8,#5AB8FF,#B07BFF,#FF6FB5);filter:blur(22px);opacity:.6;animation:spin 4s linear infinite}
+.slot.sh2 .rays{opacity:.9!important;background:repeating-conic-gradient(from 0deg,rgba(255,214,90,.75) 0 6deg,transparent 6deg 18deg)!important;animation:spin 12s linear infinite!important}
+.slot.sh3 .slot-ball::before{content:"";position:absolute;inset:-14px;border-radius:50%;background:radial-gradient(circle,var(--lc,#9FE8FF),transparent 65%);opacity:.85;animation:lumbreathe 2.2s ease-in-out infinite}
+.slot.sh3 .slot-ball img{filter:drop-shadow(0 0 16px var(--lc,#9FE8FF)) drop-shadow(0 0 36px var(--lc,#9FE8FF))}
+.slot.sh2 .slot-banner{background:linear-gradient(90deg,#FFF3C4,#FFC93F,#E8A317,#FFE38A)!important;-webkit-background-clip:text!important;background-clip:text!important}
+.slot.sh3 .slot-banner{background:none!important;color:#F2FCFF!important;text-shadow:0 0 12px var(--lc,#9FE8FF),0 0 24px var(--lc,#9FE8FF)!important;filter:none!important}
+@keyframes lumbreathe{50%{transform:scale(1.22);opacity:.5}}
+@media (prefers-reduced-motion:reduce){ .slot.sh1 .slot-ball::before,.slot.sh2 .rays,.slot.sh3 .slot-ball::before{animation:none!important} .ov-flash{display:none} }
 @keyframes susp-shake{0%{transform:none}10%,30%,50%,70%,90%{transform:translate(-2px,1px) rotate(-3deg)}20%,40%,60%,80%{transform:translate(2px,-1px) rotate(3deg)}95%{transform:translate(-4px,2px) rotate(-6deg) scale(1.08)}100%{transform:scale(1.12)}}
 @keyframes susp-rays{from{opacity:.2;transform:scale(.6)}to{opacity:1;transform:scale(1.15)}}
 @keyframes hintglow{0%,100%{filter:drop-shadow(0 0 6px var(--tc))}50%{filter:drop-shadow(0 0 22px var(--tc)) drop-shadow(0 0 8px var(--tc))}}
@@ -3785,6 +3800,13 @@ const Sound = (()=>{
   ];
   // une nappe chaude qui gonfle doucement sous l'accord (deux voix un peu désaccordées)
   function pad(t,f,a,dur){ [1,1.004].forEach(k=>osc(t,"triangle",f*k,a,dur*.35,dur*.65)); osc(t,"sine",f/2,a*.8,dur*.3,dur*.7) }
+  // une note qui ondule (vibrato) : les reflets de l'Irisée, l'accord doré, le halo de la Lumineuse
+  function vib(t,f,a,att,dec,rate,depth){ const o=ctx.createOscillator(), g=ctx.createGain(), l=ctx.createOscillator(), lg=ctx.createGain();
+    o.frequency.setValueAtTime(f,t); l.frequency.value=rate; lg.gain.value=f*depth; l.connect(lg); lg.connect(o.frequency);
+    env(g,t,a,att,dec); o.connect(g); g.connect(master); o.start(t); l.start(t); o.stop(t+att+dec+.05); l.stop(t+att+dec+.05) }
+  // une cloche d'or (partiels de cloche, pas ceux du métallophone) et le tintement d'une pièce
+  function bell(t,f,a,dur=2.2){ [[1,1],[2,.5],[2.42,.35],[3,.25],[4.1,.15],[5.4,.08]].forEach(([k,m])=>osc(t,"sine",f*k,a*m,.002,dur*(1.2-k*.15))) }
+  function clink(t,a){ const f=3200+Math.random()*2400; osc(t,"sine",f,a,.001,.12); osc(t,"sine",f*1.47,a*.5,.001,.08) }
   function chime(t,f,a,dur=1.4){ osc(t,"sine",f,a,.004,dur); osc(t,"sine",f*2.005,a*.25,.004,dur*.6); osc(t,"triangle",f*3.01,a*.06,.004,dur*.3) }
   const api = {
     get on(){ return on },
@@ -3850,8 +3872,22 @@ const Sound = (()=>{
         env(noise(ta-.35,.4,[{type:"bandpass",f:400,f2:5000,Q:.8}]),ta-.35,.12,.33,.06);   // le souffle qui monte juste avant le TAAA
         pad(ta, NOTE(-12), .07, 2.6); pad(ta, NOTE(-5), .04, 2.6);
         for(let i=0;i<24;i++) glock(ta+.05+i*.05, 1800+Math.random()*3600, .035, .45) }
-      if(shiny){ const tt=t+step*(M.length+1);   // glissando magique vers le haut
-        [0,2,4,7,9,12,14,16,19,21,24,28].forEach((n,i)=>glock(tt+i*.045, NOTE(n+12), vol*.6, .6)) } },
+      // (8 octobre 2026) chaque shiny a sa signature, après la mélodie de sa taille (shiny : 1 Irisée, 2 Dorée, 3 Lumineuse ; true compte comme Irisée)
+      const sh = shiny===true ? 1 : shiny|0, tt=t+step*(M.length+1);
+      if(sh===1){   // Irisée : la montée magique en deux voix un peu décalées qui ondulent, comme des reflets
+        [0,2,4,7,9,12,14,16,19,21,24,28].forEach((n,i)=>{ glock(tt+i*.05, NOTE(n+12), vol*.55, .7); vib(tt+.022+i*.05, NOTE(n+12)*1.006, vol*.3, .002, .6, 5, .015) });
+        pad(tt+.55, NOTE(12), .035, 1.6) }
+      if(sh===2){   // Dorée : des cloches d'or, une pluie de pièces, puis l'accord qui reste en scintillant
+        [12,16,19,24].forEach((n,i)=>bell(tt+i*.13, NOTE(n), .09, 2.4));
+        for(let i=0;i<16;i++) clink(tt+.3+i*.06+Math.random()*.05, .05+Math.random()*.05);
+        const tc=tt+.75; [12,16,19,24].forEach(n=>vib(tc, NOTE(n), .05, .05, 2.2, 7, .006));
+        for(let i=0;i<10;i++) glock(tc+.2+i*.12, 2600+Math.random()*2400, .025, .5) }
+      if(sh===3){   // Lumineuse : un halo aigu qui tient au-dessus d'une nappe, puis de la poussière d'étoiles qui descend lentement
+        const th=t+step*3; vib(th, NOTE(31), .06, .6, 2.6, 5, .004); pad(th, NOTE(7), .05, 2.8); pad(th, NOTE(-5), .04, 2.8);
+        [36,33,31,28,24,21,19,16,12].forEach((n,i)=>glock(tt+.3+i*.16, NOTE(n), .07, 1.1)) } },
+    // juste avant une Lumineuse : la lumière s'éteint, un silence, puis un souffle qui monte comme une lumière qui s'allume
+    lumSwell(delay=0){ if(!init()) return; const t=now()+delay;
+      env(noise(t,1.1,[{type:"bandpass",f:300,f2:6000,Q:1.1}]),t,.22,1,.12); osc(t,"sine",220,.08,1,.15,null,880) },
     // un choc de bille sur le sol, planifié dans le temps (billes qui roulent hors du sachet)
     tap(delay,a,p=1){ if(!init()) return; const t=now()+delay; thud(t,a*.6,160); clack(t,a,p) },
     // vrai rebond enregistré : force 0..1 (choisit un choc franc ou un petit), hauteur (grosse bille = plus grave), stéréo
@@ -7087,7 +7123,7 @@ function showCraft(inputs, out, pxp){
         ${eventOf(out) ? "" : ui.craft && craftPool(ui.craft.t).length>=craftN(ui.craft.t)?`<button class="btn btn-yellow" data-action="craft-again">Préparer une autre fusion</button>`:""}
         <button class="btn btn-ghost" data-action="craft-see" data-id="${out.id}">Voir la fiche</button>
         <button class="btn btn-ghost" data-action="close-ov">Retour à la Confiserie</button></div>`;
-    Sound.reveal(FMT_TIER[out.type], !!out.shiny);
+    Sound.reveal(FMT_TIER[out.type], out.shiny||0);
   }, reduce?50:1900);
 }
 
@@ -7668,6 +7704,14 @@ const FX = {
     for(let i=0;i<16;i++) add.push({x:p.x,y:p.y,vx:(Math.random()-.5)*1.5,vy:(Math.random()-.5)*1.5,life:1,dec:.006,sz:1.2,c:"#FFF3D6",g:.02,twinkle:true});
     add.push({ring:true,x:p.x,y:p.y,r:10,life:.7,dec:.03,c:p.col});
   },
+  // une pluie de pièces d'or depuis le haut (shiny Dorée)
+  coins(n){ if(this.reduce()) return;
+    for(let i=0;i<n;i++) this.parts.push({coin:true,x:Math.random()*innerWidth,y:-20-Math.random()*innerHeight*.5,vx:(Math.random()-.5)*1.2,vy:2+Math.random()*2.5,g:.06,life:1,dec:.0045,sz:5+Math.random()*4,rot:Math.random()*6});
+    this.start() },
+  // des étoiles qui scintillent et tombent doucement (shiny Lumineuse)
+  stars(n,cols){ if(this.reduce()) return;
+    for(let i=0;i<n;i++) this.parts.push({x:Math.random()*innerWidth,y:Math.random()*innerHeight*.6,vx:0,vy:.3+Math.random()*.7,g:0,life:1,dec:.003+Math.random()*.003,sz:1.2+Math.random()*2.2,c:cols[i%cols.length],twinkle:true});
+    this.start() },
   at(el){ const r=el.getBoundingClientRect(); return [r.left+r.width/2, r.top+r.height/2] },
   setDust(on){ this.dust=on && !this.reduce(); if(this.dust) this.start() },
   start(){ if(!this.raf){ if(!this.ctx) this.fit(); this.raf=requestAnimationFrame(()=>this.loop()) } },
@@ -7679,6 +7723,9 @@ const FX = {
     this.parts = this.parts.filter(p=>{
       if(p.rocket && p.vy>=-.6){ this.explode(p,add); return false }
       p.life -= p.dec; if(p.life<=0) return false;
+      if(p.coin){ p.vy=Math.min(p.vy+p.g,5); p.x+=p.vx; p.y+=p.vy; p.rot+=.14; const k=Math.abs(Math.cos(p.rot));
+        c.globalAlpha=Math.min(1,p.life*2); c.fillStyle="#E8A317"; c.beginPath(); c.ellipse(p.x,p.y,p.sz*k+.5,p.sz,0,0,TAU); c.fill();
+        c.fillStyle="#FFE38A"; c.beginPath(); c.ellipse(p.x,p.y,(p.sz*k+.5)*.62,p.sz*.62,0,0,TAU); c.fill(); return p.y<innerHeight+20 }
       if(p.ring){ p.r += 9*p.life+2; c.globalAlpha=p.life*.8; c.strokeStyle=p.c; c.lineWidth=4*p.life+1; c.beginPath(); c.arc(p.x,p.y,p.r,0,TAU); c.stroke(); return true }
       p.vx*=.982; p.vy=p.vy*.982+p.g; p.x+=p.vx; p.y+=p.vy;
       c.globalAlpha = Math.min(1,p.life*1.5)*(p.dust?.45:1)*(p.twinkle?(Math.random()<.5?1:.2):1); c.fillStyle=p.c; c.strokeStyle=p.c;
@@ -7904,19 +7951,36 @@ function reveal(i){
   el.setAttribute("aria-label", specName(ovState.results[i].s));
   const rs = ovState.results[i].s, k = pullScore(rs);
   const [x,y] = FX.at(el.querySelector(".slot-ball"));
-  FX.burst(x,y, scoreCols(k), 18+k*14, .6+k*.12);
-  if(k>=FMT_TIER.calot) FX.ring(x,y, scoreCol(k));
-  if(k>=6){ FX.burst(x,y, SHINY_COLS, 70, 1.3); FX.fireworks(SHINY_COLS, 8) }
+  if(!(rs.shiny>=2)){ FX.burst(x,y, scoreCols(k), 18+k*14, .6+k*.12); if(k>=FMT_TIER.calot) FX.ring(x,y, scoreCol(k)) }   // Dorée et Lumineuse ont leurs propres couleurs
+  if(rs.shiny) shinyFX(rs, el, x, y);
+  else if(k>=6){ FX.burst(x,y, SHINY_COLS, 70, 1.3); FX.fireworks(SHINY_COLS, 8) }
   else if(k===FMT_TIER.mammouth){ FX.burst(x,y, scoreCols(k), 120, 1.6); setTimeout(()=>FX.ring(x,y, "#FFE3B0"), 180) }
   if(k>=BIG){ const b=document.getElementById("ov-body"); b.classList.remove("quake"); void b.offsetWidth; b.classList.add("quake") }
-  Sound.reveal(TIDX[rs.type], !!rs.shiny, Math.max(0,decorRar(rs)));
+  Sound.reveal(TIDX[rs.type], rs.shiny||0, Math.max(0,decorRar(rs)));
   // un motif épique ou légendaire : une deuxième gerbe à sa couleur, et son petit air à lui
   const dr = decorRar(rs);
   if(dr>=3) setTimeout(()=>{ if(!ovState) return; const c = DECOR_RAR[dr].c;
-    FX.burst(x,y, [c, shade(c,.45), "#FFF3D6"], dr===4 ? 90 : 45, dr===4 ? 1.3 : .9); if(dr===4) FX.ring(x,y, c); Sound.decor(dr) }, 520);
+    FX.burst(x,y, [c, shade(c,.45), "#FFF3D6"], dr===4 ? 90 : 45, dr===4 ? 1.3 : .9); if(dr===4) FX.ring(x,y, c); if(!rs.shiny) Sound.decor(dr) }, 520);   // une shiny garde sa signature : pas d'air de motif par-dessus
   if(ovState.results[i].wish){ Sound.reveal(5,false); setTimeout(()=>toast(`Sur ta liste de souhaits : ${specName(rs)} ! Elle rejoint ta boîte à billes.`),500) }
   releaseNotes(x=>x.at===i);
   if(ovState.opened.size === ovState.results.length) finishReveal();
+}
+// (8 octobre 2026) une ouverture par shiny : on la reconnaît aux yeux avant de lire son nom
+const GOLD_COLS = ["#FFE38A","#FFC93F","#E8A317","#FFF3C4"];
+function shinyFX(rs, el, x, y){
+  const ov = document.getElementById("ov"), sh = rs.shiny;
+  el.classList.add("sh"+sh);
+  if(sh===1){   // Irisée : des anneaux arc-en-ciel, des confettis, un halo qui tourne en changeant de couleur
+    SHINY_COLS.forEach((c,j)=>setTimeout(()=>FX.ring(x,y,c), j*70));
+    FX.burst(x,y, SHINY_COLS, 110, 1.4); FX.fireworks(SHINY_COLS, 5) }
+  if(sh===2){   // Dorée : l'écran se réchauffe, des rayons d'or, une pluie de pièces
+    ov.classList.add("warm"); setTimeout(()=>ov.classList.remove("warm"), 3200);
+    FX.burst(x,y, GOLD_COLS, 80, 1.2); FX.ring(x,y,"#FFD34D"); FX.coins(36); FX.fireworks(GOLD_COLS, 4) }
+  if(sh===3){   // Lumineuse : un éclair blanc, puis de la poussière d'étoiles (le noir et le souffle sont venus juste avant, dans revealDrama)
+    const lc = PALETTES[rs.pal][2]; el.style.setProperty("--lc", lc);
+    const f = document.createElement("div"); f.className = "ov-flash"; ov.appendChild(f); setTimeout(()=>f.remove(), 900);
+    ov.classList.remove("blackout"); ov.classList.add("lumnight"); setTimeout(()=>ov.classList.remove("lumnight"), 3600);
+    FX.burst(x,y, ["#FFFFFF","#DFF8FF",lc], 90, 1); FX.stars(50, ["#DFF8FF","#BFEFFF",lc]) }
 }
 // Suspense avant un gros : plus la bille est rare, plus ça dure. Boulet : elle tremble. Mammouth : elle tremble,
 // s'arrête… et repart de plus belle, pendant que le reste s'assombrit. Shiny : pareil en plus long, puis feu d'artifice.
@@ -7930,7 +7994,9 @@ function revealDrama(i, then){
   el.style.setProperty("--sd", wait+"ms"); el.style.setProperty("--tc", "#FFE3B0");
   el.classList.add("suspense"); if(mega){ el.classList.add("mega"); ov.classList.add("dim") }
   Sound.suspense(wait/1000, k);
-  setTimeout(()=>{ if(ovState!==st) return; el.classList.remove("suspense","mega"); ov.classList.remove("dim"); reveal(i); then?.(k) }, wait);
+  // une Lumineuse : à la fin du suspense, tout s'éteint, un silence, et un souffle qui monte jusqu'à l'éclair
+  if(st.results[i].s.shiny===3) setTimeout(()=>{ if(ovState!==st) return; ov.classList.add("blackout"); Sound.lumSwell(.35) }, wait-1500);
+  setTimeout(()=>{ if(ovState!==st) return; el.classList.remove("suspense","mega"); ov.classList.remove("dim","blackout"); reveal(i); then?.(k) }, wait);
 }
 // « Tout révéler » : une par une, tranquillement
 function revealAll(btn){

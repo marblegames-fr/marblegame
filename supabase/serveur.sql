@@ -583,9 +583,8 @@ begin
     when 'succes' then
       if montant > 1000 then raise exception 'montant_invalide'; end if;
       k := cle;
-    when 'serie' then
-      if montant > 600 then raise exception 'montant_invalide'; end if;
-      k := cle;
+    when 'serie' then   -- (8 octobre 2026) les séries à thème ont été retirées du jeu
+      raise exception 'deja';   -- 'deja' : une vieille page encore ouverte ne montre pas d'erreur
     when 'evenement' then   -- (4 octobre 2026) plus de sachet d'événement offert : on coche « billes d'événement » sur les sachets.
       raise exception 'deja';   -- 'deja' : les anciens clients ne montrent pas d'erreur, et le serveur corrige leur compte de sachets
     when 'passe' then   -- paliers de la saison en cours seulement

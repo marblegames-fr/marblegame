@@ -825,18 +825,15 @@ button.rw:hover{transform:translateY(-2px)}
   background:var(--pm),var(--pl),var(--pb);isolation:isolate;
   border:3px solid var(--ol);border-radius:6px 20px 0 6px;
   box-shadow:7px 7px 0 -3px var(--under1),7px 7px 0 0 var(--ol),14px 14px 0 -3px var(--under2),14px 14px 0 0 var(--ol),20px 26px 34px -18px rgba(0,0,0,.55)}
-/* un papier par intercalaire : Seyès (Album), petits carreaux (Mes billes), kraft (Séries), vieux livre (Billepedia) */
+/* un papier par intercalaire : Seyès (Album), petits carreaux (Mes billes), vieux livre (Billepedia) */
 .cahier-page[data-paper="billes"]{--pl:repeating-linear-gradient(180deg,transparent 0 19px,rgba(60,110,180,.14) 19px 20px),repeating-linear-gradient(90deg,transparent 0 19px,rgba(60,110,180,.14) 19px 20px)}
-.cahier-page[data-paper="series"]{--pm:linear-gradient(transparent,transparent);--pl:radial-gradient(circle at 20% 30%,rgba(255,255,255,.12) 0 2px,transparent 3px) 0 0/23px 29px,radial-gradient(circle at 70% 60%,rgba(90,55,20,.12) 0 1.5px,transparent 2.5px) 0 0/31px 19px;
   --pb:var(--kraft);--muted:#6E5A3E;--ink-2:#4D3F2C}
 .cahier-page[data-paper="pedia"]{--pm:linear-gradient(transparent,transparent);--pl:radial-gradient(ellipse at 50% 40%,transparent 55%,rgba(130,85,30,.2) 100%);--pb:var(--old)}
 .cahier-page[data-paper="pedia"] .cp-title h2{font-family:Georgia,"Times New Roman",serif;font-style:italic;font-weight:700;font-size:38px;background:none;border-bottom:3px double rgba(90,60,25,.5);padding:0 4px 4px;transform:none}
 .cahier-page[data-paper="pedia"] .cp-title span{font-family:Georgia,"Times New Roman",serif;font-style:italic;font-size:17px;color:#6B5434}
-.cahier-page[data-paper="series"] .cp-title span{color:#4D3F2C}
 /* le coin corné, en bas à droite */
 .cahier-page::after{content:"";position:absolute;right:-3px;bottom:-3px;width:46px;height:46px;border-top:2.5px solid var(--ol);border-left:2.5px solid var(--ol);
   background:linear-gradient(135deg,var(--corner) 0%,#E8DAB4 46%,var(--ol) 46% 50%,var(--under1) 50%);filter:drop-shadow(-2px -2px 3px rgba(0,0,0,.12))}
-.cahier-page[data-paper="series"]::after{background:linear-gradient(135deg,#E6CDA6 0%,#BF9B68 46%,var(--ol) 46% 50%,var(--under1) 50%)}
 .cahier-page[data-paper="pedia"]::after{background:linear-gradient(135deg,var(--old) 0%,#E0CB98 46%,var(--ol) 46% 50%,var(--under1) 50%)}
 /* la page qui se tourne quand on change d'intercalaire */
 .cahier-page.turn{animation:pageturn .38s cubic-bezier(.2,1.25,.4,1) both;transform-origin:0 50%}
@@ -850,7 +847,6 @@ button.rw:hover{transform:translateY(-2px)}
 .cp-doodles .dd-blot{left:-6px;bottom:26px;width:54px;opacity:.3}
 .cp-doodles .dd-blot path{fill:currentColor;stroke:none}
 .cp-doodles .dd-heart{right:14px;top:16px;width:30px;transform:rotate(10deg);color:#D9465F}
-.cahier-page[data-paper="series"] .cp-doodles{color:#5A3A18}
 .cahier-page[data-paper="pedia"] .cp-doodles{color:#7A5524}
 /* l'album : chaque bille trouvée est scotchée sur sa carte ; une bille à trouver est juste dessinée au crayon */
 .cahier-page[data-paper="album"] .m-card.case::before{content:"";position:absolute;top:-9px;left:50%;z-index:2;width:50px;height:17px;margin-left:-25px;background:rgba(241,224,170,.88);border-left:2px dotted rgba(255,255,255,.7);border-right:2px dotted rgba(255,255,255,.7);box-shadow:0 1px 2px rgba(0,0,0,.12);transform:rotate(-4deg)}
@@ -908,9 +904,6 @@ button.rw:hover{transform:translateY(-2px)}
 .bx-hide input{width:17px;height:17px;accent-color:var(--tc);margin:0}
 .bx-hide:has(input:checked){border-color:var(--ol,#2B2233)}
 .bx-bar .seen-all{flex-basis:100%;margin:0;height:36px}
-.se-filt{display:flex;gap:6px;flex-wrap:wrap;margin:0 0 16px}
-.se-filt .bx-dot.all{display:inline-flex;align-items:center;gap:5px;height:42px}
-.se-filt .bx-dot.all small{font-family:var(--body);font-size:12px;font-weight:900;opacity:.6;margin-left:2px}
 /* les en-têtes de taille : une ligne écrite à la main */
 .th-line{display:flex;align-items:center;gap:12px;margin:4px 0 12px}
 .th-line h2{font-family:var(--hand);font-size:32px;font-weight:700;line-height:1;color:var(--ol,#2B2233);white-space:nowrap}
@@ -1063,38 +1056,14 @@ button.rw:hover{transform:translateY(-2px)}
 .wish.got{border:2px solid var(--green);border-style:solid}
 .wish.got small{color:var(--green)}
 .wish img{width:44px;height:auto}
-.wish .sil,.s-item .sil{width:44px;height:44px;border-radius:50%;background:radial-gradient(circle at 35% 30%,color-mix(in srgb,var(--c2,#999) 35%,transparent),color-mix(in srgb,var(--c1,#666) 30%,transparent) 70%);box-shadow:inset 0 0 0 2px color-mix(in srgb,var(--ink) 12%,transparent);filter:grayscale(.55)}
+.wish .sil{width:44px;height:44px;border-radius:50%;background:radial-gradient(circle at 35% 30%,color-mix(in srgb,var(--c2,#999) 35%,transparent),color-mix(in srgb,var(--c1,#666) 30%,transparent) 70%);box-shadow:inset 0 0 0 2px color-mix(in srgb,var(--ink) 12%,transparent);filter:grayscale(.55)}
 .sh-cell.missing{cursor:pointer}
 .sh-cell.missing:hover{opacity:1}
 .sh-cell.wished{opacity:1;border:2px solid #E0A417;border-style:solid}
 .sh-cell .wstar{position:absolute;top:4px;right:5px;color:#E0A417}
 .slot.wished .slot-banner{color:#FFD27A}
 .slot-banner.low{font-size:19px;color:color-mix(in srgb,var(--tc) 45%,#fff);text-shadow:0 2px 0 rgba(0,0,0,.45)}
-/* séries */
-.series-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(330px,1fr));gap:14px}
-.serie{display:flex;flex-direction:column;gap:12px}
-.serie.ready{border:2px solid #E0A417;background:linear-gradient(180deg,var(--gold-bg),var(--panel) 50%)}
-.serie.claimed{border-color:color-mix(in srgb,#4CC27A 45%,var(--line));background:linear-gradient(180deg,color-mix(in srgb,#4CC27A 9%,var(--panel)),var(--panel) 55%)}
-.serie-done{display:inline-flex;align-items:center;gap:5px;font-size:12.5px;font-weight:900;color:#fff;background:#3FAE6C;padding:4px 10px;border-radius:999px;white-space:nowrap}
-.serie-min{align-self:flex-start;display:inline-flex;align-items:center;gap:5px;margin-top:-4px;font-size:11.5px;font-weight:800;color:var(--ink-2);padding:2px 9px;border-radius:999px;background:var(--panel-2);border:1px solid var(--line)}
-.serie-bar{height:6px;border-radius:99px;background:var(--line);overflow:hidden}
-.serie-bar i{display:block;height:100%;border-radius:inherit;background:linear-gradient(90deg,#E0A417,#F2C14E)}
-.serie.claimed .serie-bar i{background:#3FAE6C}
-.s-item{position:relative}
-.s-item.miss img{filter:grayscale(.9) opacity(.35)}
-.s-item.miss.pal img{filter:saturate(.75) opacity(.5)}
-.s-item.kept img{opacity:.55}
-.kept-ic{position:absolute;top:5px;right:6px;display:grid;place-items:center;width:16px;height:16px;border-radius:50%;background:#3FAE6C;color:#fff}
-.serie-head{display:flex;justify-content:space-between;gap:10px;align-items:flex-start}
-.serie-head h3{font-size:17px;font-weight:900}
-.serie-head p{font-size:12.5px;font-weight:600;color:var(--ink-2);margin-top:2px}
 .serie-n{font-weight:900;font-size:14px;font-variant-numeric:tabular-nums;white-space:nowrap;padding:3px 10px;border-radius:999px;background:var(--panel-2);border:1px solid var(--line)}
-.serie-items{display:grid;grid-template-columns:repeat(auto-fill,minmax(70px,1fr));gap:6px}
-.s-item{display:flex;flex-direction:column;align-items:center;gap:4px;padding:8px 2px 6px;border-radius:12px;background:var(--panel-2);border:1px dashed var(--line-2);text-align:center}
-.s-item.got{border:1px solid var(--line)}
-.s-item img{width:42px;height:auto;filter:drop-shadow(0 4px 3px rgba(0,0,0,.25))}
-.s-item small{font-size:10.5px;font-weight:800;color:var(--ink-2);line-height:1.15}
-.serie-foot{display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap;margin-top:auto}
 @media (max-width:1000px){ .goal-grid{grid-template-columns:minmax(0,1fr)} .wish-row{grid-template-columns:repeat(3,minmax(0,1fr))} }
 .chal-sec h2{font-size:19px;font-weight:900;margin-bottom:10px}
 .chal-sec h2 small{font-size:13px;font-weight:800;color:var(--muted);margin-left:6px}
@@ -5066,14 +5035,14 @@ let STORE_KEY = CLOUD_UID ? "billeo-u-"+CLOUD_UID : GUEST_KEY;       // avec un 
 // une nouvelle partie part vraiment de zéro : aucune bille, 100 bonbecs et 5 sachets gratuits à ouvrir
 function starterState(){
   const now = Date.now();
-  return {v:2, fv:2, pv:2, cv:2, cover:{}, wish:[], seriesDone:[], jetons:100, holes:0, specs:[], active:null, unseen:[], freeT0:now-5*FREE_EVERY, best:{}, bagInv:{}, title:"Petit Boulet", titles:["Petit Boulet"], name:"Billeur", vitrine:[null,null,null,null,null], chal:[], pity:0, bags:0, log:[]};
+  return {v:2, fv:2, pv:2, cv:2, cover:{}, wish:[], jetons:100, holes:0, specs:[], active:null, unseen:[], freeT0:now-5*FREE_EVERY, best:{}, bagInv:{}, title:"Petit Boulet", titles:["Petit Boulet"], name:"Billeur", vitrine:[null,null,null,null,null], chal:[], pity:0, bags:0, log:[]};
 }
 let S;
 // charge une sauvegarde (ou en crée une neuve) et la met à jour si elle vient d'une ancienne version du jeu
 function adoptState(raw){
 S = raw;
 if(!S || S.v!==2 || !Array.isArray(S.specs)) S = starterState();
-else S = Object.assign({cover:{}, wish:[], seriesDone:[], unseen:[], best:{}, bagInv:{}, title:"Petit Boulet", titles:["Petit Boulet"], name:"Billeur", vitrine:[null,null,null,null,null], chal:[], pity:0, bags:0, log:[]}, S);
+else S = Object.assign({cover:{}, wish:[], unseen:[], best:{}, bagInv:{}, title:"Petit Boulet", titles:["Petit Boulet"], name:"Billeur", vitrine:[null,null,null,null,null], chal:[], pity:0, bags:0, log:[]}, S);
 // anciennes sauvegardes : la bille chinoise n'existe plus, le niveau non plus
 // Motif Arc-en-ciel supprimé (trop proche de la shiny Irisée) : les motifs suivants ont remonté d'un cran.
 // Les billes Arc-en-ciel déjà trouvées deviennent Aurore (même rareté), Givrée pour la saison Flocon, Pixel pour L'Arcade.
@@ -5664,50 +5633,6 @@ const CHALLENGES = [
   {id:"craft10", cat:"habitudes", icon:"flask", title:"Apprenti confiseur", desc:"Réussis 10 fusions à la Confiserie.", goal:10, prog:()=>S.crafts||0, rew:{j:80, title:"Apprenti confiseur"}},
   {id:"t-chouchou", cat:"habitudes", icon:"quest", title:"Chouchou de la maîtresse", desc:"Récupère 5 fois le bonus des quêtes du jour.", goal:5, prog:()=>S.stats.bonus, rew:{j:50, title:"Chouchou de la maîtresse"}},
 ];
-// Séries : de petits albums à thème, chacun avec sa récompense (une case = un motif et/ou un coloris, n'importe quelle taille)
-const FAM_ID = n => FAMILIES.findIndex(F=>F.name===n), PAL_ID = n => PALETTES.findIndex(P=>P[0]===n);
-// les récompenses suivent la difficulté (nombre moyen de sachets pour finir la série) : facile 30, moyenne 50-60, difficile 100-120, très difficile 200, le Graal 600 (÷10 le 6 octobre 2026)
-const SERIES = [
-  // min : la taille minimum de la bille qui remplit la case (sinon n'importe laquelle)
-  {id:"trousse", name:"La trousse d'écolier", desc:"Les motifs du cahier de classe, en Bille chinoise ou plus.", items:[{fam:"Damier",min:"chinoise"},{fam:"Écossais",min:"chinoise"},{fam:"Pixel",min:"chinoise"},{fam:"Cible",min:"chinoise"},{pal:"Encre",min:"chinoise"},{pal:"Citron",min:"chinoise"}], rew:{j:30, bag:"classique"}},
-  {id:"bonbons", name:"La boulangerie du coin", desc:"Des billes qui donnent faim.", items:[{fam:"Berlingot",min:"calot"},{fam:"Millefiori",min:"chinoise"},{fam:"À pois",min:"calot"},{fam:"Nid d'abeille",min:"chinoise"},{pal:"Barbe à papa"},{pal:"Chocolat menthe"},{pal:"Framboise"},{pal:"Sorbet"}], rew:{j:100, bag:"premium"}},
-  {id:"nature", name:"Au fond du jardin", desc:"Ce qu'on trouve en rentrant de l'école.", items:[{fam:"Bois",min:"calot"},{fam:"Écailles",min:"chinoise"},{fam:"Tigrée",min:"chinoise"},{fam:"Œil-de-chat",min:"calot"},{pal:"Forêt"},{pal:"Sauge"},{pal:"Kiwi"},{pal:"Menthe"}], rew:{j:50, bag:"classique"}},
-  {id:"arcenciel", name:"L'arc-en-ciel", desc:"Une Bille chinoise ou plus de chaque couleur, peu importe le motif.", items:["Cerise","Ambre","Citron","Émeraude","Azur","Saphir","Lavande"].map(pal=>({pal, min:"chinoise"})), rew:{j:50, bag:"classique"}},
-  {id:"noiretblanc", name:"Noir et blanc", desc:"Pour les amateurs de contrastes, en Bille chinoise ou plus.", items:["Encre","Réglisse","Béton","Brume","Ciel d'orage","Nuit"].map(pal=>({pal, min:"chinoise"})), rew:{j:50, bag:"classique"}},
-  {id:"pierres", name:"Les pierres précieuses", desc:"Des pierres dans les coloris des joyaux.", items:[{fam:"Agate",pal:"Rubis"},{fam:"Marbre",pal:"Saphir"},{fam:"Cristal",pal:"Émeraude"},{fam:"Nacrée",pal:"Opale"}], rew:{j:600, bag:"collector", title:"Joaillier"}},
-  {id:"feuglace", name:"Le feu et la glace", desc:"Du plus chaud au plus froid.", items:[{fam:"Lave"},{fam:"Givrée",min:"calot"},{fam:"Cristal",min:"calot"},{pal:"Volcan",min:"calot"},{pal:"Glacier",min:"calot"}], rew:{j:100, bag:"premium"}},
-  {id:"cosmos", name:"Le système solaire", desc:"Les motifs venus d'ailleurs.", items:[{fam:"Globe"},{fam:"Planète"},{fam:"Galaxie"},{fam:"Aurore"}], rew:{j:200, bag:"premium", title:"Astronome"}},
-  {id:"grenier", name:"Le grenier de papi", desc:"Les billes d'autrefois, retrouvées dans une vieille boîte en fer. Que des Calots ou plus gros.", items:[{fam:"Terre",min:"calot"},{fam:"Oignon",min:"calot"},{fam:"Opaline",min:"calot"},{fam:"Tourbillon",min:"calot"},{fam:"Marbre",min:"calot"}], rew:{j:100, bag:"premium"}},
-  {id:"foire", name:"La fête foraine", desc:"Paillettes, rubans et barbe à papa.", items:[{fam:"Arlequin",min:"chinoise"},{fam:"Ruban",min:"chinoise"},{fam:"Pailletée",min:"chinoise"},{pal:"Pop"},{pal:"Sucre d'orge"},{pal:"Néon"},{pal:"Tropical"}], rew:{j:30, bag:"classique"}},
-  {id:"atelier", name:"L'atelier du bricoleur", desc:"Des billes solides comme des outils.", items:[{fam:"Acier"},{fam:"Fumée",min:"calot"},{fam:"Craquelée",min:"calot"},{pal:"Cuivre",min:"calot"},{pal:"Pétrole",min:"calot"}], rew:{j:120, bag:"premium", title:"Bricoleur"}},
-  {id:"zoo", name:"Le zoo", desc:"Des fauves, des écailles et des plumes de toutes les couleurs.", items:[{fam:"Tigrée",min:"chinoise"},{fam:"Écailles",min:"chinoise"},{fam:"Nid d'abeille",min:"chinoise"},{pal:"Toucan"},{pal:"Paon"},{pal:"Kaki"}], rew:{j:60, bag:"classique"}},
-  {id:"pastels", name:"Les pastels", desc:"Des couleurs toutes douces, en Bille chinoise ou plus.", items:["Lilas","Opale","Menthe","Or rose","Sorbet","Barbe à papa"].map(pal=>({pal, min:"chinoise"})), rew:{j:50, bag:"classique"}},
-  {id:"piquenique", name:"Le pique-nique", desc:"La nappe à carreaux, le panier et tout ce qu'il y a dedans.", items:[{fam:"Écossais",min:"calot"},{fam:"Damier",min:"calot"},{fam:"À pois",min:"calot"},{pal:"Cerise"},{pal:"Kiwi"},{pal:"Citron"}], rew:{j:50, bag:"classique"}},
-  {id:"mer", name:"Au bord de la mer", desc:"Le sable, les vagues et les coquillages, en Calot ou plus.", items:[{fam:"Nacrée"},{fam:"Écailles",min:"calot"},{pal:"Lagon",min:"calot"},{pal:"Corail",min:"calot"},{pal:"Sable",min:"calot"},{pal:"Tropical",min:"calot"}], rew:{j:100, bag:"premium"}},
-  {id:"cathedrale", name:"La cathédrale", desc:"Des vitraux couleur de joyaux et des fleurs de verre.", items:[{fam:"Vitrail",pal:"Rubis"},{fam:"Vitrail",pal:"Saphir"},{fam:"Millefiori",min:"calot"},{pal:"Opale",min:"calot"}], rew:{j:400, bag:"collector", title:"Maître verrier"}},
-  {id:"univers", name:"Au bout de l'univers", desc:"Les trois motifs légendaires, et une nuit sans fin.", items:[{fam:"Trou noir"},{fam:"Galaxie",min:"calot"},{fam:"Aurore",min:"calot"},{pal:"Nuit",min:"boulet"}], rew:{j:300, bag:"collector", title:"Explorateur"}},
-  // rar : un panier de motifs (0 Commun … 4 Légendaire) ; twin : deux exemplaires identiques de la même bille ; type : la taille exacte
-  {id:"paniers", name:"Du commun au légendaire", desc:"Un Calot ou plus gros dans chaque panier de motifs, du plus courant au plus rare.", items:DECOR_RAR.map((_,rar)=>({rar, min:"calot"})), rew:{j:200, bag:"premium", title:"Connaisseur"}},
-  {id:"azur", name:"Tout en Azur", desc:"Un motif de chaque panier, jusqu'à l'Épique, mais toujours en Azur.", items:[0,1,2,3].map(rar=>({rar, pal:"Azur"})), rew:{j:100, bag:"premium"}},
-  {id:"jumelles", name:"Les jumelles", desc:"Deux exemplaires de la même bille (même taille, même motif, même coloris), dans trois tailles.", items:["mini","bille","chinoise"].map(type=>({type, twin:true})), rew:{j:50, bag:"classique"}},
-  {id:"grands", name:"Les grands formats", desc:"De la plus petite à la plus grosse, dans un même motif.", items:TK.map(type=>({type})), same:"family", rew:{j:60, bag:"premium", title:"Toutes tailles"}},
-];
-const seriesMatch = (it,x) => (!it.fam || x.family===FAM_ID(it.fam)) && (!it.pal || x.pal===PAL_ID(it.pal)) && (!it.type || x.type===it.type) && (!it.min || TIDX[x.type]>=TIDX[it.min])
-  && (it.rar==null || (!extraFam(x.family) && FAMILIES[x.family].rar===it.rar)) && (!it.twin || SC().filter(y=>colorKey(y)===colorKey(x)).length>=2);
-const MIN_LBL = {chinoise:"Chinoise ou +", calot:"Calot ou +", boulet:"Boulet ou +"};
-const seriesLabel = it => [it.twin?"2 ×":"", it.type?TYPES[it.type].label:"", it.rar!=null?`Motif ${DECOR_RAR[it.rar].name.toLowerCase()}`:"", it.fam||"", it.pal?(it.fam||it.rar!=null?it.pal:`Coloris ${it.pal}`):"", it.min?`(${MIN_LBL[it.min]})`:""].filter(Boolean).join(" ");
-// ce qui remplit chaque case d'une série (pour « grands formats » : les 6 tailles dans un même motif, le motif le plus avancé)
-function seriesFill(se){
-  if(se.same==="family"){
-    let best=null;
-    FAMILIES.forEach((_,f)=>{ const got=se.items.map(it=>SC().filter(x=>x.family===f&&seriesMatch(it,x)).sort(tierSort)[0]); const n=got.filter(Boolean).length; if(!best||n>best.n) best={n,got,f} });
-    return best.got;
-  }
-  return se.items.map(it=>SC().filter(x=>seriesMatch(it,x)).sort(tierSort)[0]);
-}
-const seriesProg = se => seriesFill(se).filter(Boolean).length;
-const seriesClaimable = () => SERIES.filter(se=>!(S.seriesDone||[]).includes(se.id) && seriesProg(se)>=se.items.length).length;
-
 // Liste de souhaits : des billes précises (taille, motif, coloris) qu'on chasse
 const WISH_MAX = 6;
 const wishSpec = k => { const [type,f,p]=k.split("|"); return {seed:hash("wish"+k), type, family:+f, pal:+p, shiny:0} };
@@ -5938,7 +5863,7 @@ function renderNav(){
 }
 
 /* ---------- Ma journée : bonbec, sachets gratuits, quêtes, jeux, passe… une seule liste ---------- */
-const mjClaimable = () => (dailyReady()?1:0) + questsClaimable() + passClaimable() + chalClaimable() + seriesClaimable();
+const mjClaimable = () => (dailyReady()?1:0) + questsClaimable() + passClaimable() + chalClaimable();
 function mjRow(o){
   const tag = o.act && !o.btn ? "button" : "div";
   return `<${tag} class="mj-row${o.ready?" ready":""}${o.done?" done":""}" ${tag==="button"?o.act:""}>
@@ -5961,7 +5886,7 @@ function dayHTML(inSheet, wide){
   rows1.push(mjRow({icon:"bag", title: st ? `${st} sachet${st>1?"s":""} gratuit${st>1?"s":""} à ouvrir` : "Sachet gratuit",
     text: st>=FREE_MAX ? "Stock plein : ouvre-en un !" : `${st} / ${FREE_MAX} · prochain dans <span data-free-timer>${freeLeft()}</span>`, p:st/FREE_MAX,
     btn: st ? `<button class="btn btn-ghost" data-action="open-free">Ouvrir</button>` : "", act:'data-action="nav" data-view="sacs"'}));
-  if(gifts) rows1.push(mjRow({icon:"gift", title:`${gifts} sachet${gifts>1?"s":""} offert${gifts>1?"s":""}`, text:"Gagnés au passe, aux séries ou aux succès", act:'data-action="nav" data-view="sacs"'}));
+  if(gifts) rows1.push(mjRow({icon:"gift", title:`${gifts} sachet${gifts>1?"s":""} offert${gifts>1?"s":""}`, text:"Gagnés au passe ou aux succès", act:'data-action="nav" data-view="sacs"'}));
   // les quêtes
   const rows2 = Q.items.map((q,i)=>{ const D = QUESTS[q.id], done = questDone(q);
     return mjRow({icon:D.icon, title:D.title, text:`${q.p} / ${D.goal}`, p:q.p/D.goal, rw:D.reward, done:q.claimed, ready:done&&!q.claimed,
@@ -5981,10 +5906,9 @@ function dayHTML(inSheet, wide){
   if(srvOn() && gc.etat){ const N = gcNext();
     rows3.push(mjRow({icon:"flag", title: gc.etat.inscrit ? `Inscrit à la Grande Course` : `La Grande Course ${gcWhen(N)}`, done:gc.etat.inscrit,
       text: gc.etat.inscrit ? `Départ ${gcWhen(N)}` : "Inscription gratuite : un Sachet Collector pour le gagnant", act:'data-action="nav" data-view="grandecourse"'})) }
-  // succès et séries terminés
-  const nc = chalClaimable(), ns = seriesClaimable(), rows4 = [];
+  // succès réussis
+  const nc = chalClaimable(), rows4 = [];
   if(nc) rows4.push(mjRow({icon:"trophy", title:`${nc} succès réussi${nc>1?"s":""}`, text:"Ta récompense t'attend", ready:true, act:'data-action="nav" data-view="succes"'}));
-  if(ns) rows4.push(mjRow({icon:"book", title:`${ns} série${ns>1?"s":""} terminée${ns>1?"s":""}`, text:"Ta récompense t'attend", ready:true, act:'data-action="series-go"'}));
   // le passe de saison
   const P = ensurePass(), se = seasonNow(), tier = passTier(), pc = passClaimable();
   const [into, need] = tierProg(P.xp, tier);
@@ -6045,19 +5969,13 @@ function claimBonus(){
   Q.bonus = true; earn("quetes-bonus", dayKey(), 0, QUEST_BONUS); S.stats.bonus++; passXP(PASS_XP.bonus);
   return 1;
 }
-function claimRew(r, source, key){   // récompense d'un succès ou d'une série
+function claimRew(r, source, key){   // récompense d'un succès
   if(r.j || r.bag) earn(source, key, r.j||0, r.bag);
   if(r.title && !S.titles.includes(r.title)) S.titles.push(r.title);   // le titre choisi dans le profil reste affiché
 }
 function claimChal(c){
   if(!c || S.chal.includes(c.id) || chalProg(c)<c.goal) return false;
   S.chal.push(c.id); claimRew(c.rew, "succes", c.id); return true;
-}
-function claimSeries(se){
-  S.seriesDone = S.seriesDone||[];
-  if(!se || S.seriesDone.includes(se.id) || seriesProg(se)<se.items.length) return false;
-  (S.seriesSnap ||= {})[se.id] = seriesFill(se).map(x=>x && {seed:x.seed, type:x.type, family:x.family, pal:x.pal, shiny:x.shiny||0});
-  S.seriesDone.push(se.id); claimRew(se.rew, "serie", se.id); return true;
 }
 // ce qu'on a avant de récupérer, pour montrer ensuite exactement ce qui vient d'arriver
 const snapGains = () => ({j:S.jetons, bags:{...S.bagInv}, ids:new Set(S.specs.map(x=>x.id)), titles:[...S.titles]});
@@ -6091,7 +6009,7 @@ function showRecap(before, lines, title, detail=[]){
     requestAnimationFrame(step) }
   el.querySelector(".btn-yellow").focus();
 }
-// ce que rapporte un succès ou une série : bonbecs, sachet, titre
+// ce que rapporte un succès : bonbecs, sachet, titre
 const rewText = r => [r.j ? `${fmt(r.j)} ${CUR.many}` : "", r.bag ? BAG_BY[r.bag].name : "", r.title ? `titre « ${r.title} »` : ""].filter(Boolean).join(" + ");
 function claimAll(){
   const before = snapGains(), got = [];   // got : chaque récompense, avec d'où elle vient et ce qu'elle rapporte
@@ -6100,7 +6018,6 @@ function claimAll(){
   if(claimBonus()) got.push({ic:"star", k:`Les ${QUESTS_N} quêtes du jour`, t:"Bonus des quêtes", r:BAG_BY[QUEST_BONUS].name});
   for(let k=1;k<=passTier();k++) ["free","prem"].forEach(tr=>{ const r = grantReward(tr,k); if(r) got.push({ic:"ticket", k:`Passe de saison${tr==="prem"?" · premium":""}`, t:`Palier ${k}`, r:rewardLabel(r)}) });
   CHALLENGES.forEach(c=>{ if(claimChal(c)) got.push({ic:c.icon||"trophy", k:"Succès", t:c.title, r:rewText(c.rew)}) });
-  SERIES.forEach(se=>{ if(claimSeries(se)) got.push({ic:"book", k:"Série", t:se.name, r:rewText(se.rew)}) });
   if(!got.length) return;
   save(); Sound.coin(); Sound.ding(); closeModal(); openDay(false); renderTop(); renderNav(); renderView();
   showRecap(before, [], got.length>1 ? `${got.length} récompenses récupérées !` : "Bien joué !", got);
@@ -6212,7 +6129,7 @@ function renderTop(){
 // Petit tableau de bord du joueur, sous son profil en haut à droite
 function renderProfPop(){
   const a = ownActive(), found = albumFound().size;
-  const nChal = CHALLENGES.filter(c=>S.chal.includes(c.id)).length, claim = chalClaimable()+seriesClaimable()+questsClaimable();
+  const nChal = CHALLENGES.filter(c=>S.chal.includes(c.id)).length, claim = chalClaimable()+questsClaimable();
   document.getElementById("prof-pop").innerHTML = `
     <div class="pp-head"><span class="av-ring big" style="--p:${Math.max(1.5,found/ALBUM_TOTAL*100)}"><span class="avatar">${avatarHTML(a,160,56)}</span></span>
       <div><b>${esc(S.name)}</b><small>${esc(S.title)}</small>${a?`<small class="pp-ball">Joue avec : ${esc(specName(a))}</small>`:""}</div></div>
@@ -6220,7 +6137,7 @@ function renderProfPop(){
       <div class="wide"><small>Billes trouvées</small><b>${fmt(found)} <i>/ ${fmt(ALBUM_TOTAL)}</i></b><span class="bar"><i style="width:${Math.max(.8,found/ALBUM_TOTAL*100)}%"></i></span></div>
       <div class="wide"><small>Succès</small><b>${nChal} <i>/ ${CHALLENGES.length}</i></b></div>
     </div>
-    ${claim?`<button class="pp-claim" data-action="nav" data-view="${chalClaimable()?"succes":seriesClaimable()?"collection":"quetes"}">${ic("gift",16)} ${claim} récompense${claim>1?"s":""} à récupérer</button>`:""}
+    ${claim?`<button class="pp-claim" data-action="nav" data-view="${chalClaimable()?"succes":"quetes"}">${ic("gift",16)} ${claim} récompense${claim>1?"s":""} à récupérer</button>`:""}
     <div class="pp-links">
       <button data-action="nav" data-view="profil">${ic("user",16)} Mon profil</button>
       <button data-action="nav" data-view="succes">${ic("trophy",16)} Succès</button>
@@ -6588,10 +6505,6 @@ function nextGoals(){
   const cases = [...slotsOwned()].map(([k,l])=>({k,l,got:casePals(l)})).filter(c=>c.got<BASE_PALS).sort((a,b)=>b.got-a.got);
   if(cases[0] && cases[0].got>=2){ const c=cases[0], x=coverOf(c.l);
     goals.push({icon:"layers", img:exSpec(x.type, x.family, "objectif"), title:`Complète ton motif ${FAMILIES[x.family].name} · ${TYPES[x.type].label}`, text:`Plus que ${BASE_PALS-c.got} coloris pour le motif complet.`, p:c.got, goal:BASE_PALS, act:`data-action="sheet" data-type="${x.type}" data-fam="${x.family}"`, cta:"Voir les coloris"}) }
-  // la série la plus avancée
-  const se = SERIES.filter(x=>!(S.seriesDone||[]).includes(x.id)).map(x=>({x,p:seriesProg(x)})).sort((a,b)=>b.p/b.x.items.length-a.p/a.x.items.length)[0];
-  if(se){ const left=se.x.items.length-se.p;
-    goals.push({icon:"book", title:`Série « ${se.x.name} »`, text:left?`Encore ${left} bille${left>1?"s":""} pour la récompense.`:"Série complète : récupère ta récompense !", p:se.p, goal:se.x.items.length, act:`data-action="series-go"`, cta:left?"Voir la série":"Récupérer", ready:!left}) }
   // le succès le plus proche
   const ch = CHALLENGES.filter(c=>!S.chal.includes(c.id)).map(c=>({c,p:chalProg(c)})).filter(o=>o.p>0||o.c.goal<=3).sort((a,b)=>(b.p>=b.c.goal)-(a.p>=a.c.goal) || b.p/b.c.goal-a.p/a.c.goal)[0];
   if(ch){ const done=ch.p>=ch.c.goal;
@@ -6631,36 +6544,6 @@ function chalRow(c){
     ${got?`<span class="q-state">${ic("check",16,2.5)} Récupéré</span>`:done?`<button class="btn btn-yellow q-claim" data-action="chal-claim" data-id="${c.id}">${ic("gift",16)} Récupérer</button>`:""}
   </div>`;
 }
-function seriesView(){
-  const done = S.seriesDone||[], snap = S.seriesSnap||{};
-  // une case vide montre ce qu'il faut trouver (en fantôme) ; une case d'une série terminée dont la bille est partie garde son souvenir
-  const ghostOf = (se,it,i) => ({seed:hash("serie"+se.id+i), type:it.type||it.min||"bille", family:it.fam?FAM_ID(it.fam):it.rar!=null?FAM_ORDER.find(f=>FAMILIES[f].rar===it.rar):EX_FAM, pal:it.pal?PAL_ID(it.pal):EX_PAL, shiny:0});
-  const list = SERIES.map(se=>{ const fill = seriesFill(se), n = fill.filter(Boolean).length, got = done.includes(se.id);
-    return {se, fill, n, got, ready: n>=se.items.length && !got} });
-  list.sort((a,b)=>(b.ready-a.ready) || (a.got-b.got) || b.n/b.se.items.length - a.n/a.se.items.length);
-  // le filtre : toutes, en cours (dont celles à récupérer) ou terminées
-  const F = ui.serieF || "all", nGot = list.filter(x=>x.got).length;
-  const shown = list.filter(x=>F==="all" || (F==="done" ? x.got : !x.got));
-  const chip = (k,l,n) => `<button class="bx-dot all" data-action="serie-f" data-f="${k}" aria-pressed="${F===k}">${l} <small>${n}</small></button>`;
-  return `<p class="conf-intro">Remplis une série pour gagner sa récompense.</p>
-  <div class="se-filt" role="group" aria-label="Filtrer les séries">${chip("all","Toutes",list.length)}${chip("todo","En cours",list.length-nGot)}${chip("done","Terminées",nGot)}</div>
-  ${shown.length ? "" : `<p class="empty">${F==="done" ? "Aucune série terminée pour l'instant : la plus avancée est dans « En cours »." : "Tu as terminé toutes les séries, bravo !"}</p>`}
-  <div class="series-grid">${shown.map(({se,fill,n,got,ready})=>{
-    const mins = [...new Set(se.items.map(it=>it.min||""))], common = mins.length===1 && mins[0] ? mins[0] : "";
-    const lbl = it => seriesLabel(common ? {...it, min:undefined} : it);
-    return `<section class="panel serie${ready?" ready":""}${got?" claimed":""}">
-      <div class="serie-head"><div><h3>${se.name}</h3><p>${se.desc}</p></div>${got?`<span class="serie-done">${ic("check",14,3)} Terminée</span>`:`<span class="serie-n">${n} / ${se.items.length}</span>`}</div>
-      ${common?`<span class="serie-min">${ic("layers",13)} ${MIN_LBL[common]}</span>`:""}
-      <div class="serie-bar"><i style="width:${(got?1:n/se.items.length)*100}%"></i></div>
-      <div class="serie-items">${se.items.map((it,i)=>{ const x = fill[i];
-        if(x) return `<button class="s-item got" data-action="spec" data-id="${x.id}" aria-label="${esc(specName(x))}">${mImg(x,100,42,"")}<small>${lbl(it)||esc(specName(x))}</small></button>`;
-        if(got){ const m = snap[se.id]?.[i] || ghostOf(se,it,i);
-          return `<div class="s-item kept" title="Elle n'est plus dans ta boîte, mais elle a rempli cette case : la série reste terminée.">${mImg(m,100,42,"")}<span class="kept-ic">${ic("check",10,3.4)}</span><small>${lbl(it)}</small></div>` }
-        return `<div class="s-item miss${it.pal&&!it.fam?" pal":""}">${mImg(ghostOf(se,it,i),100,42,"")}<small>${lbl(it)}</small></div>` }).join("")}</div>
-      <div class="serie-foot"><div class="rews">${rewChips(se.rew)}</div>
-        ${got?"":ready?`<button class="btn btn-yellow" data-action="series-claim" data-id="${se.id}">${ic("gift",16)} Récupérer</button>`:""}</div>
-    </section>` }).join("")}</div>`;
-}
 function viewSucces(){
   const n = CHALLENGES.filter(c=>S.chal.includes(c.id)).length, claim = chalClaimable(), cat = ui.chalCat || "all";
   const order = (a,b)=>{ const sa=S.chal.includes(a.id)?2:chalProg(a)>=a.goal?0:1, sb=S.chal.includes(b.id)?2:chalProg(b)>=b.goal?0:1; return sa-sb || chalProg(b)/b.goal-chalProg(a)/a.goal };
@@ -6690,7 +6573,7 @@ function viewSucces(){
    COLLECTION
    ===================================================================== */
 // la boîte à billes est un cahier : chaque page a son intercalaire de couleur, sur le côté (en haut sur téléphone)
-const CAHIER = [["album","#8A63D2","book","Album"],["billes","#5BAA4A","layers","Mes billes"],["series","#E8664F","trophy","Séries"],["pedia","#4C93C9","search","Billepedia"]];
+const CAHIER = [["album","#8A63D2","book","Album"],["billes","#5BAA4A","layers","Mes billes"],["pedia","#4C93C9","search","Billepedia"]];
 let cahierLast = null;   // l'intercalaire affiché la dernière fois (pour tourner la page quand on en change)
 const DOODLES = `<div class="cp-doodles" aria-hidden="true">
   <svg class="dd-ball dd-m" viewBox="0 0 30 62"><path d="M9 26l-3-12M15 25V9M21 26l3-12"/><circle cx="15" cy="45" r="11"/><path d="M8 44c3-5 10-6 14 0M11 50c3 2 7 2 9-1"/><path d="M4 59c8 2 16 2 24 0"/></svg>
@@ -6701,7 +6584,7 @@ const DOODLES = `<div class="cp-doodles" aria-hidden="true">
 </div>`;
 function viewCollection(){
   const slots = slotsOwned(), found = albumFound();
-  if(ui.tab==="defis") ui.tab = "album";   // les défis ont leur propre page (Succès)
+  if(ui.tab==="defis" || ui.tab==="series") ui.tab = "album";   // les défis ont leur propre page (Succès) ; les séries ont été retirées le 8 octobre 2026
   // Événements et Bêta ne sont plus des pages du cahier, mais des filtres (de l'Album et de Mes billes)
   if(ui.tab==="events"){ ui.tab = "album"; ui.show = "event" }
   if(ui.tab==="beta"){ ui.tab = "billes"; ui.show = "beta" }
@@ -6732,7 +6615,7 @@ function viewCollection(){
   const sizeDot = t => { const n = ui.tab==="billes" ? S.specs.filter(s=>s.type===t).length : DECOR_IDS.filter(f=>slots.has(t+"|"+f)).length;
     const lbl = `${TYPES[t].label} · ${ui.tab==="billes" ? `${n} bille${n>1?"s":""}` : `${n} / ${N_DECORS} motifs`}`;
     return `<button class="bx-dot" style="${tstyle(t)}" data-action="ftype" data-type="${ui.type===t?"all":t}" aria-pressed="${ui.type===t}" title="${lbl}" aria-label="${lbl}">${mImg({seed:hash("pedia-fmt"+t), type:t, family:0, pal:PEDIA_PAL, shiny:0},96,Math.round(12*scaleOf(t)+12),"")}<i class="bx-n">${n>9999?Math.floor(n/1000)+"k":fmt(n)}</i></button>` };
-  const filters = ui.tab==="defis"||ui.tab==="series"||ui.tab==="pedia" ? "" : `<div class="bx-bar">
+  const filters = ui.tab==="defis"||ui.tab==="pedia" ? "" : `<div class="bx-bar">
     <div class="bx-dots" role="group" aria-label="Filtrer par taille"><button class="bx-dot all" data-action="ftype" data-type="all" aria-pressed="${ui.type==="all"}">Toutes${ui.tab==="billes"?` <small class="bx-all-n">${fmt(S.specs.length)}</small>`:""}</button>${TK.map(sizeDot).join("")}</div>
     <div class="bx-tools">
       ${ui.tab==="album" && show==="all" ? `<label class="bx-hide"><input type="checkbox" id="f-hide" ${ui.hideMissing?"checked":""}> Masquer les billes à trouver</label>` : ""}
@@ -6811,9 +6694,7 @@ function viewCollection(){
     }).join("");
     if(show==="dups" && recyclableDups().length) body = dupsBar() + body;
   }
-  if(ui.tab==="series"){
-    body = seriesView();
-  } else if(ui.tab==="album" && show==="event"){
+  if(ui.tab==="album" && show==="event"){
     body = eventsView();
   } else if(show==="beta" && (ui.tab==="album"||ui.tab==="billes")){
     body = betaView();
@@ -6834,17 +6715,16 @@ function viewCollection(){
     body = (show==="dups" && recyclableDups().length ? dupsBar() : "") + (list.length ? `<div class="card-grid">${list.map(x=>ballCard(x, grps.get(x.id))).join("")}</div>` : `<p class="empty">${qw.length?"Aucune bille ne correspond à ta recherche.":EMPTY[show]||EMPTY.all}</p>`);
   }
 
-  const nSeries = SERIES.filter(se=>(S.seriesDone||[]).includes(se.id)).length;
   const turn = cahierLast!=null && cahierLast!==ui.tab; cahierLast = ui.tab;
   return `<h1 class="sr-only">Ma boîte à billes</h1>
   <div class="cahier" style="--tc:${(CAHIER.find(c=>c[0]===ui.tab)||CAHIER[0])[1]}">
     <div class="cahier-tabs" role="tablist" aria-label="Les pages de ta boîte à billes">
       ${CAHIER.map(([k,c,icon,lbl])=>{
-        const n = {album:`${slots.size} / ${TOTAL_SLOTS}`, billes:S.specs.length, series:`${nSeries} / ${SERIES.length}`}[k];
-        return `<button class="ctab" role="tab" style="--c:${c}" data-action="tab" data-tab="${k}" aria-selected="${ui.tab===k}">${ic(icon,16,2.4)}<b>${lbl}</b>${n!=null?`<small>${n}</small>`:""}${k==="series"&&seriesClaimable()?`<span class="tab-dot">${seriesClaimable()}</span>`:""}</button>` }).join("")}
+        const n = {album:`${slots.size} / ${TOTAL_SLOTS}`, billes:S.specs.length}[k];
+        return `<button class="ctab" role="tab" style="--c:${c}" data-action="tab" data-tab="${k}" aria-selected="${ui.tab===k}">${ic(icon,16,2.4)}<b>${lbl}</b>${n!=null?`<small>${n}</small>`:""}</button>` }).join("")}
     </div>
     <div class="cahier-page${turn?" turn":""}" data-paper="${ui.tab}">${DOODLES}
-    ${(()=>{ const T = {album:["Mon album", `${slots.size} / ${TOTAL_SLOTS} motifs trouvés`], billes:["Mes billes", `${S.specs.length} bille${S.specs.length>1?"s":""} · ${fmt(found.size)} / ${fmt(ALBUM_TOTAL)} modèles`], series:["Mes séries", `${nSeries} / ${SERIES.length} complétées`],
+    ${(()=>{ const T = {album:["Mon album", `${slots.size} / ${TOTAL_SLOTS} motifs trouvés`], billes:["Mes billes", `${S.specs.length} bille${S.specs.length>1?"s":""} · ${fmt(found.size)} / ${fmt(ALBUM_TOTAL)} modèles`],
         beta:["Billes Bêta", `${betaOwned().length} / ${TK.length}`], events:["Événements", ""], pedia:["Billepedia", "toutes les billes du jeu"]}[ui.tab] || ["", ""];
       return T[0] ? `<div class="cp-title"><h2>${T[0]}</h2>${T[1]?`<span>${T[1]}</span>`:""}</div>` : "" })()}
   ${ui.tab==="pedia" ? viewPedia().replace(/^<div class="page-head">[\s\S]*?(?=<section class="pedia-sec">)/, "") : `
@@ -7226,7 +7106,7 @@ function confEchange(dups, dupVal){
       <button class="chip" data-action="conf-filter" data-f="doubles" aria-pressed="${!seules}">${ic("layers",14)} Mes doubles <span class="n">${dups.length}</span></button>
       <button class="chip" data-action="conf-filter" data-f="seules" aria-pressed="${seules}">${ic("star",14)} Billes en un seul exemplaire <span class="n">${singles.length}</span></button>
     </div>
-  ${seules ? `<section class="panel cf-warn">${ic("quest",22)}<div><b>Attention, ce sont tes seuls exemplaires</b><p>Une bille échangée quitte ton album (une série peut reculer).</p></div></section>`
+  ${seules ? `<section class="panel cf-warn">${ic("quest",22)}<div><b>Attention, ce sont tes seuls exemplaires</b><p>Une bille échangée quitte ton album.</p></div></section>`
   : `<section class="panel cf-sum">
       <div class="cf-receipt"><div class="rc-head">Ticket de la Confiserie</div>
         ${lines || `<div class="rc-row"><span>Aucun double pour l'instant</span><i></i><b>0</b></div>`}
@@ -12281,12 +12161,10 @@ function buyAnnonce(id){
 }
 
 // ---------- le classement : des points pour la collection (calculés par le serveur, supabase/cour.sql) ----------
-// mêmes valeurs que dans supabase/cour.sql (pts_taille, mult_decor, pts_shiny, séries)
+// mêmes valeurs que dans supabase/cour.sql (pts_taille, mult_decor, pts_shiny, grandes collections)
 const SCORE = {taille:[10,15,20,30,60,120], decor:[1,1.5,2,3,5], shiny:[150,300,600], serieDecor:200, serie:20};
-// une série à thème terminée : un quart de sa récompense en bonbecs (même table dans supabase/cour.sql : interne.series)
-const seriePts = se => Math.round(se.rew.j*10/4);   // (récompenses divisées par 10 le 6 octobre 2026, les points ne changent pas)
 const rangTxt = r => r===1 ? "1er" : `${r}e`;
-// les séries presque finies : de quoi viser le prochain palier (d'après les billes de la boîte qui comptent)
+// les grandes collections presque finies : de quoi viser le prochain palier (d'après les billes de la boîte qui comptent)
 function scoreGoals(){
   const mine = S.specs.filter(s=>s.srv && !s.secret && s.src!=="test");
   const parDecor = new Map(), parTaille = new Map(), cases = new Set(mine.map(slotKey));
@@ -12297,8 +12175,6 @@ function scoreGoals(){
     pts:Math.round(SCORE.serieDecor*SCORE.decor[FAMILIES[f].rar]), manque:`Il te manque : ${TK.filter(t=>!tailles.has(t)).map(t=>TYPES[t].pl).join(", ")}`}) });
   parTaille.forEach((decors, t)=>{ if(decors.size>=N_DECORS/2 && decors.size<N_DECORS) g.push({titre:`Tous les motifs en ${TYPES[t].pl}`, n:decors.size, of:FAMILIES.length,
     pts:SCORE.serie*SCORE.taille[TIDX[t]], manque:`Encore ${N_DECORS-decors.size} motif${N_DECORS-decors.size>1?"s":""} à trouver`}) });
-  SERIES.forEach(se=>{ const n = seriesFill(se).filter(Boolean).length; if(n>=se.items.length/2 && n<se.items.length)
-    g.push({titre:`La série « ${se.name} »`, n, of:se.items.length, pts:seriePts(se), manque:`Il te manque : ${se.items.filter((it,i)=>!seriesFill(se)[i]).map(seriesLabel).join(", ")}`}) });
   g.sort((a,b)=>(a.of-a.n)-(b.of-b.n) || b.pts-a.pts);
   if(g.length<3) g.push({titre:"Un nouveau motif dans l'album", n:cases.size, of:TOTAL_SLOTS, pts:SCORE.taille[0], manque:"Chaque nouvelle taille ou nouveau motif rapporte des points (et bien plus s'il est rare)"});
   return g.slice(0,3);
@@ -12323,7 +12199,7 @@ function courClassement(){
         <div class="cl-score"><small>Ton score</small><b>${fmt(M.total)}<span> pts</span></b>
           ${M.rang>1 && C.liste[M.rang-2] ? `<p>Plus que <b>${fmt(C.liste[M.rang-2].total - M.total + 1)} pts</b> pour passer devant ${esc(C.liste[M.rang-2].pseudo)} !</p>` : M.rang===1 && C.nb>1 ? `<p>Tu es en tête ! Garde ta place.</p>` : ""}</div>
         <div class="chips">${chip("tous","Tout le monde")}${chip("copains","Mes copains")}</div></div>
-      <div class="cl-tiles">${tile("layers","Motifs",M.pts_cases,`${fmt(M.cases)} motif${M.cases>1?"s":""}`)}${tile("book","Coloris en plus",M.pts_coloris)}${tile("star","Shiny",M.pts_shiny)}${tile("trophy","Séries et collections",M.pts_series,`${M.nb_series} complétée${M.nb_series>1?"s":""}`)}</div>
+      <div class="cl-tiles">${tile("layers","Motifs",M.pts_cases,`${fmt(M.cases)} motif${M.cases>1?"s":""}`)}${tile("book","Coloris en plus",M.pts_coloris)}${tile("star","Shiny",M.pts_shiny)}${tile("trophy","Grandes collections",M.pts_series,`${M.nb_series} complétée${M.nb_series>1?"s":""}`)}</div>
     </section>
     ${podium.length ? `<section class="panel cl-podium-wrap"><div class="cl-podium">${podium.map(x=>`<div class="cl-pod p${x.rang<=3?x.rang:3}${x.moi?" me":""}"${voir(x)}>
         <span class="cl-face">${face(x, x.rang===1?84:66)}</span><b>${esc(x.pseudo)}</b><span class="cl-pts">${fmt(x.total)}<small>pts</small></span>
@@ -12340,7 +12216,6 @@ function courClassement(){
           <li><b>Chaque motif de l'album, dans chaque taille</b><span>${TK.map(t=>`${TYPES[t].label} ${SCORE.taille[TIDX[t]]}`).join(" · ")}</span><small>× la rareté du motif : ${DECOR_RAR.map((r,i)=>`${r.name.toLowerCase()} ×${String(SCORE.decor[i]).replace(".",",")}`).join(", ")}</small></li>
           <li><b>Chaque coloris en plus</b><span>un cinquième des points de la taille</span><small>Les doubles (même coloris) ne comptent pas.</small></li>
           <li><b>Chaque shiny différente</b><span>${SHINIES.slice(1).map((x,i)=>`${x.name} ${SCORE.shiny[i]}`).join(" · ")}</span></li>
-          <li><b>Les séries à thème</b><span>${SERIES.map(se=>`${se.name} ${seriePts(se)}`).join(" · ")}</span><small>Celles de l'onglet Séries de ta boîte à billes.</small></li>
           <li><b>Les grandes collections</b><span>un motif dans les 6 tailles : ${SCORE.serieDecor} × la rareté du motif</span><small>Une taille dans tous les motifs, ou un motif complet (ses ${BASE_PALS} coloris) : ${SCORE.serie} × les points de la taille.</small></li>
         </ul><p class="meta">Les billes de départ et les secrètes ne comptent pas.</p></section>
     </div>
@@ -12909,7 +12784,6 @@ document.addEventListener("click", e=>{
       if(ui.view==="collection" && ui.tab!==t.dataset.tab) Sound.page();
       ui.tab=t.dataset.tab; closeModal(); if(ui.view!=="collection") go("collection"); else renderView(); break;
     case "ftype": ui.type=t.dataset.type; renderView(); break;
-    case "serie-f": ui.serieF=t.dataset.f; renderView(); break;
     case "show": ui.show=t.dataset.show; renderView(); break;
     case "pinfo": { const p = t.closest("h2")?.nextElementSibling; if(p){ p.hidden = !p.hidden; t.setAttribute("aria-expanded", String(!p.hidden)) } break }
     case "col-q-clear": ui.q = ""; renderView(); document.getElementById("col-q")?.focus(); break;
@@ -13089,14 +12963,6 @@ document.addEventListener("click", e=>{
     case "chal-cat": ui.chalCat=t.dataset.cat; renderView(); break;
     case "chal-state": ui.chalState=t.dataset.st; renderView(); break;
     case "prof-pop": toggleProfPop(); break;
-    case "series-go": ui.tab="series"; go("collection"); break;
-    case "series-claim": {
-      const se = SERIES.find(x=>x.id===t.dataset.id);
-      if(!claimSeries(se)) break; const r = se.rew;
-      save(); Sound.coin(); Sound.ding(); renderTop(); renderNav(); renderView();
-      toast(`Série « ${se.name} » terminée : +${fmt(r.j||0)} ${CUR.many}${r.bag?", "+BAG_BY[r.bag].name:""}${r.title?", titre « "+r.title+" »":""} !`);
-      break;
-    }
     case "wish-toggle": {
       const k = t.dataset.k; S.wish = S.wish||[];
       if(S.wish.includes(k)) S.wish = S.wish.filter(x=>x!==k);

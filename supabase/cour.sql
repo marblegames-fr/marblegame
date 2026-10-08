@@ -584,131 +584,14 @@ end $$;
 --    - un décor dans les 6 tailles : 200 × multiplicateur du décor
 --    - une taille dans tous les décors : 20 × les points de la taille
 --    - une case avec les 48 coloris de base : 20 × les points de la taille
---    - chaque série à thème terminée (onglet Séries) : un quart de sa récompense en bonbecs (voir interne.series)
+--    (les séries à thème ont été retirées du jeu le 8 octobre 2026 : elles ne rapportent plus de points)
 -- =====================================================================
 create or replace function interne.pts_taille() returns int[] language sql immutable as $$ select array[10,15,20,30,60,120] $$;
 create or replace function interne.mult_decor() returns numeric[] language sql immutable as $$ select array[1,1.5,2,3,5]::numeric[] $$;
 create or replace function interne.pts_shiny() returns int[] language sql immutable as $$ select array[150,300,600] $$;
 
--- les séries à thème, case par case (mêmes séries que SERIES dans index.html : décor et/ou coloris, taille minimum éventuelle
--- (0 Mini … 5 Mammouth)). « Les grands formats » (un décor dans les 6 tailles) est compté à part.
 drop function if exists interne.series();
--- rar : panier de décors ; taille : taille exacte ; double : deux exemplaires identiques
-create or replace function interne.series() returns table (serie text, pts int, decor int, coloris int, taille_min int, rar int, taille int, double boolean) language sql immutable as $$
-  select serie, pts, decor, coloris, taille_min, rar, taille, coalesce(double, false) from (values
-    ('trousse', 75, 21, null, 2, null::int, null::int, null::boolean),
-    ('trousse', 75, 22, null, 2, null::int, null::int, null::boolean),
-    ('trousse', 75, 25, null, 2, null::int, null::int, null::boolean),
-    ('trousse', 75, 24, null, 2, null::int, null::int, null::boolean),
-    ('trousse', 75, null, 30, 2, null::int, null::int, null::boolean),
-    ('trousse', 75, null, 17, 2, null::int, null::int, null::boolean),
-    ('bonbons', 250, 7, null, 3, null::int, null::int, null::boolean),
-    ('bonbons', 250, 14, null, 2, null::int, null::int, null::boolean),
-    ('bonbons', 250, 20, null, 3, null::int, null::int, null::boolean),
-    ('bonbons', 250, 23, null, 2, null::int, null::int, null::boolean),
-    ('bonbons', 250, null, 24, null, null::int, null::int, null::boolean),
-    ('bonbons', 250, null, 37, null, null::int, null::int, null::boolean),
-    ('bonbons', 250, null, 36, null, null::int, null::int, null::boolean),
-    ('bonbons', 250, null, 33, null, null::int, null::int, null::boolean),
-    ('nature', 125, 28, null, 3, null::int, null::int, null::boolean),
-    ('nature', 125, 29, null, 2, null::int, null::int, null::boolean),
-    ('nature', 125, 19, null, 2, null::int, null::int, null::boolean),
-    ('nature', 125, 0, null, 3, null::int, null::int, null::boolean),
-    ('nature', 125, null, 14, null, null::int, null::int, null::boolean),
-    ('nature', 125, null, 47, null, null::int, null::int, null::boolean),
-    ('nature', 125, null, 42, null, null::int, null::int, null::boolean),
-    ('nature', 125, null, 8, null, null::int, null::int, null::boolean),
-    ('arcenciel', 125, null, 12, 2, null::int, null::int, null::boolean),
-    ('arcenciel', 125, null, 3, 2, null::int, null::int, null::boolean),
-    ('arcenciel', 125, null, 17, 2, null::int, null::int, null::boolean),
-    ('arcenciel', 125, null, 2, 2, null::int, null::int, null::boolean),
-    ('arcenciel', 125, null, 0, 2, null::int, null::int, null::boolean),
-    ('arcenciel', 125, null, 20, 2, null::int, null::int, null::boolean),
-    ('arcenciel', 125, null, 10, 2, null::int, null::int, null::boolean),
-    ('noiretblanc', 125, null, 30, 2, null::int, null::int, null::boolean),
-    ('noiretblanc', 125, null, 18, 2, null::int, null::int, null::boolean),
-    ('noiretblanc', 125, null, 40, 2, null::int, null::int, null::boolean),
-    ('noiretblanc', 125, null, 23, 2, null::int, null::int, null::boolean),
-    ('noiretblanc', 125, null, 43, 2, null::int, null::int, null::boolean),
-    ('noiretblanc', 125, null, 7, 2, null::int, null::int, null::boolean),
-    ('pierres', 1500, 3, 19, null, null::int, null::int, null::boolean),
-    ('pierres', 1500, 18, 20, null, null::int, null::int, null::boolean),
-    ('pierres', 1500, 11, 2, null, null::int, null::int, null::boolean),
-    ('pierres', 1500, 10, 21, null, null::int, null::int, null::boolean),
-    ('feuglace', 250, 17, null, null, null::int, null::int, null::boolean),
-    ('feuglace', 250, 15, null, 3, null::int, null::int, null::boolean),
-    ('feuglace', 250, 11, null, 3, null::int, null::int, null::boolean),
-    ('feuglace', 250, null, 6, 3, null::int, null::int, null::boolean),
-    ('feuglace', 250, null, 13, 3, null::int, null::int, null::boolean),
-    ('cosmos', 500, 26, null, null, null::int, null::int, null::boolean),
-    ('cosmos', 500, 27, null, null, null::int, null::int, null::boolean),
-    ('cosmos', 500, 2, null, null, null::int, null::int, null::boolean),
-    ('cosmos', 500, 30, null, null, null::int, null::int, null::boolean),
-    ('grenier', 250, 8, null, 3, null::int, null::int, null::boolean),
-    ('grenier', 250, 6, null, 3, null::int, null::int, null::boolean),
-    ('grenier', 250, 4, null, 3, null::int, null::int, null::boolean),
-    ('grenier', 250, 1, null, 3, null::int, null::int, null::boolean),
-    ('grenier', 250, 18, null, 3, null::int, null::int, null::boolean),
-    ('foire', 75, 12, null, 2, null::int, null::int, null::boolean),
-    ('foire', 75, 13, null, 2, null::int, null::int, null::boolean),
-    ('foire', 75, 5, null, 2, null::int, null::int, null::boolean),
-    ('foire', 75, null, 31, null, null::int, null::int, null::boolean),
-    ('foire', 75, null, 44, null, null::int, null::int, null::boolean),
-    ('foire', 75, null, 25, null, null::int, null::int, null::boolean),
-    ('foire', 75, null, 32, null, null::int, null::int, null::boolean),
-    ('atelier', 300, 9, null, null, null::int, null::int, null::boolean),
-    ('atelier', 300, 16, null, 3, null::int, null::int, null::boolean),
-    ('atelier', 300, 31, null, 3, null::int, null::int, null::boolean),
-    ('atelier', 300, null, 22, 3, null::int, null::int, null::boolean),
-    ('atelier', 300, null, 35, 3, null::int, null::int, null::boolean),
-    -- octobre 2026 : six nouvelles séries
-    ('zoo', 150, 19, null, 2, null::int, null::int, null::boolean),
-    ('zoo', 150, 29, null, 2, null::int, null::int, null::boolean),
-    ('zoo', 150, 23, null, 2, null::int, null::int, null::boolean),
-    ('zoo', 150, null, 46, null, null::int, null::int, null::boolean),
-    ('zoo', 150, null, 34, null, null::int, null::int, null::boolean),
-    ('zoo', 150, null, 26, null, null::int, null::int, null::boolean),
-    ('pastels', 125, null, 45, 2, null::int, null::int, null::boolean),
-    ('pastels', 125, null, 21, 2, null::int, null::int, null::boolean),
-    ('pastels', 125, null, 8, 2, null::int, null::int, null::boolean),
-    ('pastels', 125, null, 29, 2, null::int, null::int, null::boolean),
-    ('pastels', 125, null, 33, 2, null::int, null::int, null::boolean),
-    ('pastels', 125, null, 24, 2, null::int, null::int, null::boolean),
-    ('piquenique', 125, 22, null, 3, null::int, null::int, null::boolean),
-    ('piquenique', 125, 21, null, 3, null::int, null::int, null::boolean),
-    ('piquenique', 125, 20, null, 3, null::int, null::int, null::boolean),
-    ('piquenique', 125, null, 12, null, null::int, null::int, null::boolean),
-    ('piquenique', 125, null, 42, null, null::int, null::int, null::boolean),
-    ('piquenique', 125, null, 17, null, null::int, null::int, null::boolean),
-    ('mer', 250, 10, null, null, null::int, null::int, null::boolean),
-    ('mer', 250, 29, null, 3, null::int, null::int, null::boolean),
-    ('mer', 250, null, 4, 3, null::int, null::int, null::boolean),
-    ('mer', 250, null, 9, 3, null::int, null::int, null::boolean),
-    ('mer', 250, null, 15, 3, null::int, null::int, null::boolean),
-    ('mer', 250, null, 32, 3, null::int, null::int, null::boolean),
-    ('cathedrale', 1000, 33, 19, null, null::int, null::int, null::boolean),
-    ('cathedrale', 1000, 33, 20, null, null::int, null::int, null::boolean),
-    ('cathedrale', 1000, 14, null, 3, null::int, null::int, null::boolean),
-    ('cathedrale', 1000, null, 21, 3, null::int, null::int, null::boolean),
-    ('univers', 750, 34, null, null, null::int, null::int, null::boolean),
-    ('univers', 750, 2, null, 3, null::int, null::int, null::boolean),
-    ('univers', 750, 30, null, 3, null::int, null::int, null::boolean),
-    ('univers', 750, null, 7, 4, null::int, null::int, null::boolean),
-    ('paniers', 500, null, null, 3, 0, null, null),
-    ('paniers', 500, null, null, 3, 1, null, null),
-    ('paniers', 500, null, null, 3, 2, null, null),
-    ('paniers', 500, null, null, 3, 3, null, null),
-    ('paniers', 500, null, null, 3, 4, null, null),
-    ('azur', 250, null, 0, null, 0, null, null),
-    ('azur', 250, null, 0, null, 1, null, null),
-    ('azur', 250, null, 0, null, 2, null, null),
-    ('azur', 250, null, 0, null, 3, null, null),
-    ('jumelles', 125, null, null, null, null, 0, true),
-    ('jumelles', 125, null, null, null, null, 1, true),
-    ('jumelles', 125, null, null, null, null, 2, true)
-  ) v (serie, pts, decor, coloris, taille_min, rar, taille, double)
-$$;
-create or replace function interne.pts_grands() returns int language sql immutable as $$ select 150 $$;   -- la série « Les grands formats »
+drop function if exists interne.pts_grands();
 
 create or replace function interne.scores() returns table (joueur uuid, total int, cases int, pts_cases int, pts_coloris int, pts_shiny int,
   pts_series int, nb_series int) language sql stable as $$
@@ -726,20 +609,11 @@ create or replace function interne.scores() returns table (joueur uuid, total in
   st as (select j, sum(20 * pt)::int p, count(*)::int n from (select j, t, max(pt) pt from k group by j, t
            having count(*) = (select count(*) from unnest(interne.decor_rarete()) x where x < 5)) x group by j),
   sc as (select j, sum(20 * pt)::int p, count(*)::int n from k where nb >= interne.nb_coloris() group by j),
-  -- séries à thème : toutes les cases de la série trouvées ; « Les grands formats » dès qu'un décor est dans les 6 tailles
-  se as (select p.j, sum(d.pts)::int p, count(*)::int n from (select distinct j from b) p
-           cross join (select distinct serie, pts from interne.series()) d
-           where not exists (select 1 from interne.series() i where i.serie = d.serie
-                   and not exists (select 1 from b where b.j = p.j and (i.decor is null or b.d = i.decor) and (i.coloris is null or b.c = i.coloris)
-                                   and (i.taille_min is null or b.t >= i.taille_min)
-                                   and (i.rar is null or (interne.decor_rarete())[b.d+1] = i.rar) and (i.taille is null or b.t = i.taille)
-                                   and (not i.double or (select count(*) from b b2 where b2.j = b.j and b2.t = b.t and b2.d = b.d and b2.c = b.c) >= 2)))
-           group by p.j),
   tot as (select j, count(*)::int cases, sum(round(pt * m))::int pc, sum((pt / 5) * (nc - 1))::int pk from k group by j),
   x as (select tot.*, coalesce(sh.p,0) psh,
-          coalesce(sd.p,0) + coalesce(st.p,0) + coalesce(sc.p,0) + coalesce(se.p,0) + case when sd.n > 0 then interne.pts_grands() else 0 end pse,
-          coalesce(sd.n,0) + coalesce(st.n,0) + coalesce(sc.n,0) + coalesce(se.n,0) + case when sd.n > 0 then 1 else 0 end nse
-        from tot left join sh on sh.j = tot.j left join sd on sd.j = tot.j left join st on st.j = tot.j left join sc on sc.j = tot.j left join se on se.j = tot.j)
+          coalesce(sd.p,0) + coalesce(st.p,0) + coalesce(sc.p,0) pse,
+          coalesce(sd.n,0) + coalesce(st.n,0) + coalesce(sc.n,0) nse
+        from tot left join sh on sh.j = tot.j left join sd on sd.j = tot.j left join st on st.j = tot.j left join sc on sc.j = tot.j)
   select j, (pc + pk + psh + pse)::int, cases, pc, pk, psh, pse::int, nse::int from x
 $$;
 

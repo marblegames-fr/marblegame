@@ -1404,7 +1404,7 @@ body.vit-dragging,body.vit-dragging *{cursor:grabbing!important;user-select:none
 .ds-tier.pop{animation:ds-tpop .4s cubic-bezier(.3,1.6,.5,1)}
 @keyframes ds-tpop{from{transform:translateX(-50%) scale(1.5)}}
 #ds-out{display:contents}
-.ds-prize{position:absolute;left:50%;top:44%;z-index:7;display:grid;justify-items:center;gap:8px;transform:translate(-50%,-50%);border:0;background:none;color:#fff;font:inherit;cursor:pointer;opacity:0;pointer-events:none}
+.ds-prize{position:absolute;left:50%;top:44%;z-index:7;display:grid;justify-items:center;gap:8px;transform:translate(-50%,calc(var(--ih,200px) / -2));border:0;background:none;color:#fff;font:inherit;cursor:pointer;opacity:0;pointer-events:none}
 .ds-prize.on{opacity:1;pointer-events:auto;animation:ds-rise .8s cubic-bezier(.2,1.5,.4,1) both}
 @keyframes ds-rise{from{transform:translate(-50%,-10%) scale(.2);opacity:0}}
 .ds-prize img{filter:drop-shadow(0 16px 18px rgba(0,0,0,.55))}
@@ -1840,7 +1840,7 @@ button.gh-cell:hover{transform:translateY(-2px)}
 #logo-marble.l-spin{animation:lspin .5s ease-out}
 @keyframes lspin{to{transform:rotate(360deg)}}
 #logo-marble.l-roll{animation:lroll 1.8s ease-in-out}
-@keyframes lroll{35%{transform:translateX(calc(70vw / var(--vz,1))) rotate(1080deg)}36%{opacity:0}64%{opacity:0;transform:translateX(-calc(40vw / var(--vz,1)))}65%{opacity:1}100%{transform:none}}
+@keyframes lroll{35%{transform:translateX(calc(70vw / var(--vz,1))) rotate(1080deg)}36%{opacity:0}64%{opacity:0;transform:translateX(calc(-40vw / var(--vz,1)))}65%{opacity:1}100%{transform:none}}
 
 /* ---------- confiserie ---------- */
 .tarif-grid{display:grid;grid-template-columns:repeat(7,minmax(0,1fr));gap:10px}
@@ -1954,7 +1954,7 @@ button.gh-cell:hover{transform:translateY(-2px)}
     radial-gradient(circle at 70% 70%,rgba(0,0,0,.22) 0 .8px,transparent 1.4px) 0 0/4px 4px,
     radial-gradient(ellipse 85% 75% at 50% 46%,color-mix(in srgb,var(--bc,#8a5a35) 34%,#1d1712) 0%,color-mix(in srgb,var(--bc,#8a5a35) 14%,#120e0b) 62%,#070605 100%)}
 /* le faisceau de la lampe, qui descend sur le sachet */
-.ov-bg{position:fixed;left:50%;top:-calc(12vh / var(--vz,1));width:min(900px,calc(140vw / var(--vz,1)));height:calc(78vh / var(--vz,1));transform:translateX(-50%);pointer-events:none;
+.ov-bg{position:fixed;left:50%;top:calc(-12vh / var(--vz,1));width:min(900px,calc(140vw / var(--vz,1)));height:calc(78vh / var(--vz,1));transform:translateX(-50%);pointer-events:none;
   background:conic-gradient(from 180deg at 50% 0%,transparent 156deg,rgba(255,236,200,.11) 169deg,rgba(255,236,200,.17) 180deg,rgba(255,236,200,.11) 191deg,transparent 204deg);
   -webkit-mask:linear-gradient(to bottom,#000 30%,transparent 100%);mask:linear-gradient(to bottom,#000 30%,transparent 100%);filter:blur(6px);animation:lampe 7s ease-in-out infinite}
 @keyframes lampe{50%{opacity:.75}}
@@ -3993,7 +3993,7 @@ function compose(style,d,t,z,dr,sh){
   // --- le motif : la couleur de l'accord final
   const key = KEY[dr], top = z<=1 ? 12 : 0;
   const ns = CHORD[dr].map(n=>n+S.reg+key+top);
-  const dur = S.dur*(1+dr*.22);
+  const dur = S.dur*(1+dr*.2)*.85;   // (9 octobre 2026) un peu plus court
   if(dr===4){ O.roll(d, te-1.1, 1.05); swell(d, te-1.1, .09, 1.05) }
   else if(dr===3) swell(d, te-.7, .06, .68);
   O.chord(d, te, ns, vol, dur, z, dr);
@@ -4003,7 +4003,7 @@ function compose(style,d,t,z,dr,sh){
   if(dr>=3) O.epic(d, te, ns, dur);
   if(dr===4){ cymbal(d, te, .1); O.legend(d, te, ns, dur); sparkle(d, te+.15, 22, .05, .03, O.spark) }
   L.push(["Commun : un accord simple","Peu commun : l'accord + un écho","Rare : un accord plus riche + une cascade","Épique : la musique monte d'un ton, avec des voix","Légendaire : timbales, cymbale, fanfare, étincelles"][dr]);
-  let end = te + dur + .6;
+  let end = te + dur + .4;
   // --- croisement : gros + motif épique ou légendaire = coup double
   if(z>=4 && dr>=3){ const t2 = te+.42; O.chord(d, t2, ns.map(n=>n+12), vol*1.15, dur*.8, z, dr); boom(d, t2, .4);
     if(style==="orch") timp(d, t2, 82, .55); L.push("Croisement : coup double (l'accord frappe deux fois)") }
@@ -6639,7 +6639,7 @@ function hcInit(){
   let drag = null;
   tr.addEventListener("pointerdown", e=>{ if(e.pointerType!=="mouse" || e.button!==0 || e.target.closest("button,a,input")) return;
     drag = {x:e.clientX, s:tr.scrollLeft}; tr.setPointerCapture(e.pointerId); tr.classList.add("drag") });
-  tr.addEventListener("pointermove", e=>{ if(drag) tr.scrollLeft = drag.s - (e.clientX - drag.x) });
+  tr.addEventListener("pointermove", e=>{ if(drag) tr.scrollLeft = drag.s - (e.clientX - drag.x)/uiZoom() });
   const end = e=>{ if(!drag) return; const dx = e.clientX - drag.x; drag = null; tr.classList.remove("drag"); hc.pause = Date.now() + 20000;
     hcGo(hc.i + (dx < -40 ? 1 : dx > 40 ? -1 : 0), true) };
   tr.addEventListener("pointerup", end); tr.addEventListener("pointercancel", end);
@@ -7495,7 +7495,8 @@ function vitDragStart(){
   vitDragMove(D.x, D.y);
 }
 function vitDragMove(x, y){
-  const D = vitDrag; D.ghost.style.left = x+"px"; D.ghost.style.top = y+"px";
+  // (la souris est en pixels d'écran : on les ramène à ceux de la page, agrandie sur les grands écrans)
+  const D = vitDrag, z = uiZoom(); D.ghost.style.left = x/z+"px"; D.ghost.style.top = y/z+"px";
   const over = document.elementFromPoint(x, y)?.closest("#vitrine .vit-slot");
   document.querySelectorAll("#vitrine .vit-slot").forEach(s=>s.classList.toggle("drop-on", s===over && s!==D.slot));
 }
@@ -8013,7 +8014,7 @@ function bindBag(){
     const n = performance.now(), dt = Math.max(1,n-drag.t);
     const dx = e.clientX-drag.x, dy = e.clientY-drag.y;
     drag.moved = Math.max(drag.moved, Math.hypot(dx,dy));
-    const cx = Math.max(-70,Math.min(70,dx*.6)), cy = Math.max(-50,Math.min(50,dy*.6));
+    const z = uiZoom(), cx = Math.max(-70,Math.min(70,dx*.6/z)), cy = Math.max(-50,Math.min(50,dy*.6/z));
     svg.style.transform = `translate(${cx}px,${cy}px) rotate(${cx*.25}deg)`;
     const vx = (e.clientX-drag.px)/dt, speed = Math.hypot(e.clientX-drag.px,e.clientY-drag.py)/dt;
     if(speed>.6 && n-lastShake>110 && (Math.sign(vx)!==Math.sign(lastVX) || speed>1.6)){ Sound.shake(Math.min(1.3,speed/1.8)); lastShake = n; if(ovState) ovState.shakes = (ovState.shakes||0)+1 }
@@ -8133,8 +8134,9 @@ function rollOut(){
     const orb = el.querySelector(".orb"), spin = el.querySelector(".orb-spin"), sh = el.querySelector(".ball-shadow");
     if(!orb) return;
     el.classList.add("rolling");
-    const r = orb.getBoundingClientRect(), R = r.width/2;
-    const x0 = fx-(r.left+R), y0 = Math.min(fy-(r.top+R), -40);   // le sol est à y = 0, la place à x = 0
+    // (les mesures sont en pixels d'écran : on les ramène à ceux de la page, agrandie sur les grands écrans)
+    const r = orb.getBoundingClientRect(), z = uiZoom(), R = r.width/2/z;
+    const x0 = (fx-r.left)/z-R, y0 = Math.min((fy-r.top)/z-R, -40);   // le sol est à y = 0, la place à x = 0
     // vol : la papillote jaillit (90 px au-dessus du goulot) et retombe pile à sa place
     const v0 = Math.sqrt(2*g*90), tp = v0/g, tf = Math.sqrt(2*(90-y0)/g), T1 = tp+tf, vi = g*tf;
     // puis deux petits rebonds, et un tortillement pour finir
@@ -8160,7 +8162,7 @@ function rollOut(){
     const opt = {duration:T*1000, delay:delay*1000, easing:"linear", fill:"backwards"};
     el._roll = [orb.animate(kOrb,opt), spin.animate(kSpin,opt), sh.animate(kSh,opt)];
     // chaque choc sur la table joue le vrai son de bille (plus doux : elle est emballée), à sa place dans la stéréo
-    const s = ovState.results[i].s, rate = 1.2-(scaleOf(s.type)-.5)*.9+(Math.random()-.5)*.06, pan = ((r.left+R)/innerWidth*2-1)*.7;
+    const s = ovState.results[i].s, rate = 1.2-(scaleOf(s.type)-.5)*.9+(Math.random()-.5)*.06, pan = ((r.left+r.width/2)/innerWidth*2-1)*.7;
     Sound.bounce(delay+T1, Math.min(1,vi/900), rate, pan, vol);
     hops.forEach(([h0,d,hv])=>Sound.bounce(delay+h0+d, Math.min(1,hv/900), rate, pan, vol));
   });
@@ -8234,7 +8236,8 @@ function revealAll(btn){
     if(i>=st.results.length) return;
     revealDrama(i, k=>{ const s = st.results[i].s, gap = k>=6 ? 2.6 : k>=BIG ? 1.3 : k>=FMT_TIER.calot ? .9 : .65;
       const counts = s.shiny || TIDX[s.type]>=3 || decorRar(s)>=2;
-      setTimeout(()=>next(i+1), 1000*(counts ? Math.max(gap, (st.sndLen||0)-.5) : Math.max(1, gap))) });
+      // (9 octobre 2026) on n'attend plus la toute fin : la suivante arrive pendant que l'accord résonne encore
+      setTimeout(()=>next(i+1), 1000*(counts ? Math.max(gap, (st.sndLen||0)*.7-.4) : Math.max(.85, gap))) });
   };
   next(0);
 }
@@ -9388,10 +9391,15 @@ function gratEnd(){
 const dist = {busy:false};
 const DS_COLS = TK.map(t=>TYPES[t].rc), DS_SH = [null, "#C78BFF", "#FFC93F", "#BFEFFF"];
 function distMachine(){
-  const r = rng(7); let balls = "", n = 0;
+  // (9 octobre 2026) les billes du globe en version cartoon : couleurs de bonbon, contour foncé, un reflet blanc et parfois une virgule claire
+  const r = rng(7), CART = ["#FF5FA8","#FFC93F","#2EC4DE","#7CE59A","#8C7CFF","#FF8A3D","#FF6B6B","#4FC3F7","#F7E04A","#C77DFF"]; let balls = "", n = 0;
   for(let row=0, y=242; y>58; row++, y-=19){ const half = Math.sqrt(Math.max(0, 104*104-(y-150)*(y-150)))-10;
-    for(let x=150-half+(row%2)*10; x<=150+half; x+=21){ const sz = 9+r()*5, sp = {seed:hash("dist"+n), type:"bille", family:DECOR_IDS[n*7%DECOR_IDS.length], pal:BASE_PAL_IDS[n*5%BASE_PALS], shiny:0}; n++;
-      balls += `<g class="ds-mb"><image href="${marbleURL(sp,64)}" x="${(x-sz+(r()-.5)*4).toFixed(1)}" y="${(y-sz+(r()-.5)*3).toFixed(1)}" width="${(sz*2).toFixed(1)}" height="${(sz*2).toFixed(1)}"/></g>` } }
+    for(let x=150-half+(row%2)*10; x<=150+half; x+=21){ const sz = 9+r()*4, c = CART[(n*7+row)%CART.length], cx = x+(r()-.5)*4, cy = y+(r()-.5)*3, a = r()*360|0, f = v => v.toFixed(1); n++;
+      balls += `<g class="ds-mb"><circle cx="${f(cx)}" cy="${f(cy)}" r="${f(sz)}" fill="${shade(c,-.28)}" stroke="${shade(c,-.6)}" stroke-width="1.6"/>
+        <circle cx="${f(cx-sz*.12)}" cy="${f(cy-sz*.12)}" r="${f(sz*.78)}" fill="${c}"/>
+        ${n%3 ? `<path d="M${f(cx-sz*.55)} ${f(cy+sz*.15)} Q${f(cx)} ${f(cy-sz*.5)} ${f(cx+sz*.55)} ${f(cy+sz*.1)}" stroke="${shade(c,.55)}" stroke-width="${f(sz*.22)}" stroke-linecap="round" fill="none" transform="rotate(${a} ${f(cx)} ${f(cy)})"/>` : ""}
+        <ellipse cx="${f(cx-sz*.38)}" cy="${f(cy-sz*.42)}" rx="${f(sz*.3)}" ry="${f(sz*.18)}" fill="#fff" opacity=".9" transform="rotate(-35 ${f(cx-sz*.38)} ${f(cy-sz*.42)})"/>
+        <circle cx="${f(cx+sz*.35)}" cy="${f(cy+sz*.38)}" r="${f(sz*.09)}" fill="#fff" opacity=".6"/></g>` } }
   let lights = ""; for(let i=0;i<11;i++) lights += `<circle class="ds-lt" cx="${84+i*13.2}" cy="286" r="3.6" style="--d:${(i*.05).toFixed(2)}s"/>`;
   for(let i=0;i<8;i++) lights += `<circle class="ds-lt" cx="${74-i*1.6}" cy="${300+i*15}" r="3.2" style="--d:${(.55+i*.05).toFixed(2)}s"/><circle class="ds-lt" cx="${226+i*1.6}" cy="${300+i*15}" r="3.2" style="--d:${(.55+i*.05).toFixed(2)}s"/>`;
   return `<svg viewBox="0 0 300 440" aria-hidden="true"><defs>
@@ -9439,7 +9447,7 @@ function viewDistributeur(){
   </div>`;
 }
 // la bille gagnée : elle sort de sa boule au milieu de rayons, avec son nom et sa taille
-const distOut = (s, isNew) => `<button class="ds-prize" data-action="spec" data-id="${s.id}" style="${tstyle(s.type)}">${mImg(s,320,Math.round(90*scaleOf(s.type)+80),"")}
+const distOut = (s, isNew, px = Math.round(90*scaleOf(s.type)+80)) => `<button class="ds-prize" data-action="spec" data-id="${s.id}" style="${tstyle(s.type)};--ih:${px}px">${mImg(s,320,px,"")}
     ${isNew ? `<span class="ds-new">${ic("star",12,2.6)} Nouvelle !</span>` : ""}<b${motifCol(s)}>${esc(specName(s))}</b><span style="display:flex;gap:4px">${typePill(s.type)}${shinyPill(s)}</span></button>
   <button class="ds-close" data-action="ds-close" aria-label="Fermer">×</button>`;
 function distClear(){ const g = id => document.getElementById(id); if(g("ds-out")) g("ds-out").innerHTML = ""; g("ds-rays")?.classList.remove("on"); g("ds-veil")?.classList.remove("on") }
@@ -9495,10 +9503,11 @@ async function distGo(pay){
   mini.setAttribute("cx",-50); Sound.distClunk(); bump($d("ds-flap"), "bang"); setTimeout(()=>$d("ds-flap")?.classList.remove("bang"), 260);
   M.classList.remove("spin"); M.classList.add("idle");
   // 3. la boule sort en grand, au milieu
-  const svg = M.querySelector("svg"), pt = svg.createSVGPoint(); pt.x = 150; pt.y = 404; const q = pt.matrixTransform(svg.getScreenCTM()), R = st.getBoundingClientRect();
-  const mx = R.width/2, my = R.height*.44, setCap = (c, shn) => { cap.style.setProperty("--cc", c); cap.classList.remove("sh1","sh2","sh3"); if(shn) cap.classList.add("sh"+shn) };
+  // (9 octobre 2026) en pixels de la page : sur un grand écran agrandi (--vz), ceux de l'écran sont divisés par le zoom, sinon la boule partait sur la droite
+  const svg = M.querySelector("svg"), pt = svg.createSVGPoint(); pt.x = 150; pt.y = 404; const q = pt.matrixTransform(svg.getScreenCTM()), R = st.getBoundingClientRect(), z = uiZoom();
+  const mx = R.width/z/2, my = R.height/z*.44, fxp = [mx*z, my*z], setCap = (c, shn) => { cap.style.setProperty("--cc", c); cap.classList.remove("sh1","sh2","sh3"); if(shn) cap.classList.add("sh"+shn) };
   setCap(DS_COLS[0], 0); cap.classList.remove("open","lit","up","try","shake");
-  cap.style.transition = "none"; cap.style.left = (q.x-R.left)+"px"; cap.style.top = (q.y-R.top)+"px"; cap.style.setProperty("--cs","30px"); cap.hidden = false; void cap.offsetWidth; cap.style.transition = "";
+  cap.style.transition = "none"; cap.style.left = (q.x-R.left)/z+"px"; cap.style.top = (q.y-R.top)/z+"px"; cap.style.setProperty("--cs","30px"); cap.hidden = false; void cap.offsetWidth; cap.style.transition = "";
   await wait(250); if(!alive()) return finish();
   $d("ds-veil").classList.add("on"); cap.style.left = mx+"px"; cap.style.top = my+"px"; cap.style.setProperty("--cs", "150px");
   await wait(850); if(!alive()) return finish();
@@ -9514,7 +9523,7 @@ async function distGo(pay){
   if(sh){ await wait(900); if(!alive()) return finish();
     if(sh===3){ st.classList.add("night"); Sound.lumSwell(0); await wait(1100); st.classList.remove("night") }
     setCap(DS_SH[sh], sh); cap.classList.add("lit"); bump(cap, "up"); Sound.distStep(k+1); Sound.distStep(k+2); ring(mx, my, DS_SH[sh]);
-    distConfetti(sh===2 ? GOLD_COLS : sh===3 ? ["#fff","#DFF8FF","#9FE6FF"] : SHINY_COLS, 60, mx, my, .8);
+    distConfetti(sh===2 ? GOLD_COLS : sh===3 ? ["#fff","#DFF8FF","#9FE6FF"] : SHINY_COLS, 60, ...fxp, .8);
     tl.style.setProperty("--tc", DS_SH[sh]); tl.textContent = `${TYPES[s.type].label} · ${SHINIES[sh].name} !`; bump(tl, "pop") }
   else if(k<5){ await wait(700 + k*120); if(!alive()) return finish(); bump(cap, "try"); Sound.distFail() }
   await wait(500); if(!alive()) return finish();
@@ -9530,7 +9539,7 @@ async function distGo(pay){
   $d("ds-rays").style.setProperty("--rc", col); $d("ds-rays").classList.add("on");
   give(); winShown(s.id); $d("ds-out").innerHTML = distOut(s, isNew); bump($d("ds-out").querySelector(".ds-prize"), "on"); tl.classList.remove("on");
   Sound.reveal(k, sh, Math.max(0, decorRar(s)));
-  if(k>=3 || sh) distConfetti([col, DS_COLS[k], "#FFE14D", "#fff"], 40 + k*25, mx, my, 1 + k*.12);
+  if(k>=3 || sh) distConfetti([col, DS_COLS[k], "#FFE14D", "#fff"], 40 + k*25, ...fxp, 1 + k*.12);
   finish();
   await wait(500); cap.hidden = true; M.classList.remove("hot");
 }
@@ -14344,7 +14353,9 @@ function tutoShow(){
     const bub = el.querySelector(".tu-bub"), spot = el.querySelector(".tu-spot");
     const tg = [...document.querySelectorAll(T.target||"_")].find(x=>x.offsetParent!==null);
     if(!tg){ spot.hidden = true; bub.style.cssText = "left:50%;top:50%;transform:translate(-50%,-50%)"; bub.className = "tu-bub"; return }
-    const r = tg.getBoundingClientRect(), pad = 8, W = Math.min(340, innerWidth-24);
+    // (en pixels de la page : sur un grand écran agrandi, ceux de l'écran sont divisés par le zoom)
+    const z = uiZoom(), b = tg.getBoundingClientRect(), r = {left:b.left/z, top:b.top/z, width:b.width/z, height:b.height/z, bottom:b.bottom/z};
+    const innerWidth = window.innerWidth/z, innerHeight = window.innerHeight/z, pad = 8, W = Math.min(340, innerWidth-24);
     spot.hidden = false; Object.assign(spot.style, {left:r.left-pad+"px", top:r.top-pad+"px", width:r.width+pad*2+"px", height:r.height+pad*2+"px"});
     // un grand élément (le terrain du Tir) : la bulle se pose en bas de l'écran, par-dessus
     if(r.height > innerHeight*.5){ bub.className = "tu-bub"; bub.style.cssText = `width:${W}px;left:${(innerWidth-W)/2}px;top:${innerHeight-bub.offsetHeight-90}px`; return }

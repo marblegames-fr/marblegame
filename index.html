@@ -2169,6 +2169,12 @@ body:has(#view .game-wrap) .mj-btn{display:none}
 
 /* ---------- toast ---------- */
 /* notifications : bien visibles, au-dessus de la barre du bas ; elles restent le temps de lire (et partent d'un toucher) */
+/* (9 octobre 2026) le bandeau « le serveur ne répond pas » */
+.net-bar{position:fixed;left:50%;top:calc(12px + env(safe-area-inset-top,0px));transform:translateX(-50%);z-index:90;display:flex;align-items:center;gap:12px;max-width:calc(100% - 24px);
+  padding:8px 8px 8px 16px;border-radius:999px;background:#3B1420;color:#FFE9E0;border:2px solid #E5484D;box-shadow:0 10px 26px rgba(0,0,0,.35);font-weight:800;font-size:14px;animation:netin .35s ease-out}
+.net-bar .btn{flex:none}
+@keyframes netin{from{transform:translate(-50%,-30px);opacity:0}}
+@media (max-width:640px){.net-bar{border-radius:16px;font-size:13px}}
 .toast{position:fixed;left:50%;bottom:calc(34px + env(safe-area-inset-bottom,0px));transform:translate(-50%,24px) scale(.96);z-index:80;
   display:flex;align-items:center;gap:12px;width:max-content;max-width:min(560px,calc(100% - 28px));
   background:var(--ink);color:var(--on-ink);font-weight:800;font-size:16px;line-height:1.35;padding:14px 20px 16px 14px;border-radius:18px;
@@ -7331,7 +7337,7 @@ function showCraft(inputs, out, pxp){
       <div class="reveal-row"><button class="slot is-open ${k>=BIG?"big":""} ${out.shiny?"shiny":""}" data-action="zoom" data-id="${out.id}" aria-label="Agrandir ${esc(specName(out))}" style="--tc:${scoreCol(k)};${tstyle(out.type)}">
         ${bannerOf(out,k)?`<span class="slot-banner">${bannerOf(out,k)}</span>`:""}
         <div class="slot-ball"><span class="rays"></span>${mImg(out,300,Math.round(150*scaleOf(out.type)),"")}</div>
-        <div class="slot-info"><b>${esc(specName(out))}</b><span style="display:flex;gap:4px;flex-wrap:wrap;justify-content:center">${typePill(out.type,true)}${shinyPill(out)}</span>${tierTag(out)}${decStamp(out)}</div>
+        <div class="slot-info"><b${motifCol(out)}>${esc(specName(out))}</b><span style="display:flex;gap:4px;flex-wrap:wrap;justify-content:center">${typePill(out.type,true)}${shinyPill(out)}</span>${tierTag(out)}${decStamp(out)}</div>
       </button></div>
       <div class="ov-actions"><span class="ov-xp" style="flex-basis:100%;justify-content:center">${ic("ticket",18)} +${pxp} XP de saison</span>
         ${eventOf(out) ? "" : ui.craft && craftPool(ui.craft.t).length>=craftN(ui.craft.t)?`<button class="btn btn-yellow" data-action="craft-again">Préparer une autre fusion</button>`:""}
@@ -7880,6 +7886,8 @@ async function openBag(bagId, gift){
 const pullScore = s => s.shiny || s.secret ? 6 : tierOf(s);
 // rareté du motif (0 Commun … 4 Légendaire ; -1 pour les motifs d'événement et de saison)
 const decorRar = s => extraFam(s.family) ? -1 : FAMILIES[s.family].rar;
+// (9 octobre 2026) le nom d'une bille (« Ruban Terracotta » : le motif d'abord) prend la couleur de la rareté de son motif, éclaircie pour le fond sombre ; un motif commun reste blanc
+const motifCol = s => { const r = decorRar(s); return r>=1 ? ` style="color:color-mix(in srgb,${DECOR_RAR[r].c} 62%,#fff)"` : "" };
 // le suspense tient compte des deux : un motif épique compte une taille de plus, un légendaire deux (un Calot Galaxie tremble comme un Mammouth)
 const dramaOf = s => Math.max(pullScore(s), Math.min(5, tierOf(s) + (decorRar(s)===4 ? 2 : decorRar(s)===3 ? 1 : 0)));
 // ce qui est nouveau : un éclat scintille une fois sur le reflet de la bille quand elle apparaît (doré = nouveau motif dans cette taille, bleu = nouveau coloris), rien pour un doublon
@@ -8072,7 +8080,7 @@ function showReveal(){
         return `<button class="slot${wish?" wished":""} ${big?"big":""} ${s.shiny?"shiny":""}${nb?"":" dupe"}" style="--d:${i*130}ms;--tc:${shade(ovState.bag.color,.2)};${tstyle(s.type)}" data-tc="${scoreCol(k)}" data-action="reveal" data-i="${i}" aria-label="Découvrir la bille ${i+1}">
         ${wish?`<span class="slot-banner">Ta liste !</span>`:s.secret?`<span class="slot-banner">Secrète !</span>`:bannerOf(s,k)?`<span class="slot-banner${k<2?" low":""}">${bannerOf(s,k)}</span>`:""}
         <div class="slot-ball"><span class="rays"></span><span class="ball-shadow"></span><span class="orb"><span class="orb-spin">${candySVG(i)}</span></span>${mImg(s,300,sz,"")}${nb?nbSpark(isNew||evNew,sz):""}</div>
-        <div class="slot-info"><b>${nbDot({isNew,newColor,evNew})}${esc(specName(s))}</b><span style="display:flex;gap:4px;flex-wrap:wrap;justify-content:center">${wish||s.secret?typePill(s.type,true):""}${shinyPill(s)}${edPill(s)}</span>${tierTag(s)}${decStamp(s)}</div>
+        <div class="slot-info"><b${motifCol(s)}>${nbDot({isNew,newColor,evNew})}${esc(specName(s))}</b><span style="display:flex;gap:4px;flex-wrap:wrap;justify-content:center">${wish||s.secret?typePill(s.type,true):""}${shinyPill(s)}${edPill(s)}</span>${tierTag(s)}${decStamp(s)}</div>
       </button>`}).join("")}
     </div>
     <div class="ov-actions" id="ov-actions">
@@ -8973,6 +8981,7 @@ const oddsBtn = from => `<button class="odds-i" data-action="bille-odds" data-fr
 // qu'un filet doré), 2) les motifs de cette rareté défilent comme une machine à sous jusqu'au bon, 3) le Mammouth apparaît.
 // Le serveur a déjà tout tiré : la roulette ne fait que le montrer.
 function mammRoulette(b, from){
+  winShown(b.id);
   const el = document.getElementById("modal"), F = FAMILIES[b.family], fw = DECOR_IDS.reduce((a,f)=>a+FAM_W[f],0);
   const rars = DECOR_RAR.map((R,k)=>({R, k, p:DECOR_IDS.filter(f=>FAMILIES[f].rar===k).reduce((a,f)=>a+FAM_W[f],0)/fw})).filter(x=>x.p>0);
   let a0 = 0; const segs = rars.map(x=>{ const a1 = a0+x.p*360, g = {...x, a0, a1}; a0 = a1; return g });
@@ -9056,7 +9065,7 @@ async function pachiGo(pay){
   if(pay){ S.jetons -= PACHI_PRICE; if(!srvOn()) playedToday().pachiN = pachiBought()+1 }   // la mise part tout de suite (le serveur l'a déjà prise)
   walletFreeze = S.jetons; renderTop();
   let given = false;
-  const give = () => { if(given) return; given = true; walletFreeze = null; gain(); renderTop(); if(bille){ S.specs.push(bille); S.unseen.push(bille.id); logFind(bille); save() } };
+  const give = () => { if(given) return; given = true; walletFreeze = null; gain(); renderTop(); if(bille){ S.specs.push(bille); S.unseen.push(bille.id); logFind(bille); winHold(bille, "pachinko") } };
   // si on quitte le plateau pendant la chute, le gain arrive quand même, à l'heure où la bille serait tombée
   setTimeout(give, (PACHI_ROWS+1)*PACHI_HOP*1000 + 600);
   const cs = PACHI[slot];
@@ -9180,7 +9189,7 @@ async function roueGo(pay){
   walletFreeze = S.jetons; renderTop();   // pas de spoiler pendant que la roue tourne
   let given = false;
   const give = () => { if(given) return; given = true; walletFreeze = null; gain();
-    if(bille){ S.specs.push(bille); S.unseen.push(bille.id); logFind(bille); save() }
+    if(bille){ S.specs.push(bille); S.unseen.push(bille.id); logFind(bille); winHold(bille, "roue") }
     renderTop(); renderNav(); gamesBonus() };
   const reduce = matchMedia("(prefers-reduced-motion: reduce)").matches, dur = reduce ? 700 : ROUE_DUR;
   setTimeout(give, dur+500);   // si on quitte la page pendant que la roue tourne, le lot arrive quand même
@@ -9312,7 +9321,7 @@ async function gratGo(pay){
   walletFreeze = S.jetons; renderTop();   // le lot n'apparaît qu'une fois le ticket gratté
   let given = false;
   grat.give = () => { if(given) return; given = true; walletFreeze = null; gain();
-    if(bille){ S.specs.push(bille); S.unseen.push(bille.id); logFind(bille); save() }
+    if(bille){ S.specs.push(bille); S.unseen.push(bille.id); logFind(bille); winHold(bille, "grattage") }
     renderTop(); renderNav(); if(!pay) gamesBonus() };
   grat.k = k; grat.bille = bille; grat.cells = gratCells(ROUE[k].lbl); grat.done = false;
   Sound.whoosh?.();
@@ -9428,7 +9437,7 @@ function viewDistributeur(){
 }
 // la bille gagnée : elle sort de sa boule au milieu de rayons, avec son nom et sa taille
 const distOut = (s, isNew) => `<button class="ds-prize" data-action="spec" data-id="${s.id}" style="${tstyle(s.type)}">${mImg(s,320,Math.round(90*scaleOf(s.type)+80),"")}
-    ${isNew ? `<span class="ds-new">${ic("star",12,2.6)} Nouvelle !</span>` : ""}<b>${esc(specName(s))}</b><span style="display:flex;gap:4px">${typePill(s.type)}${shinyPill(s)}</span></button>
+    ${isNew ? `<span class="ds-new">${ic("star",12,2.6)} Nouvelle !</span>` : ""}<b${motifCol(s)}>${esc(specName(s))}</b><span style="display:flex;gap:4px">${typePill(s.type)}${shinyPill(s)}</span></button>
   <button class="ds-close" data-action="ds-close" aria-label="Fermer">×</button>`;
 function distClear(){ const g = id => document.getElementById(id); if(g("ds-out")) g("ds-out").innerHTML = ""; g("ds-rays")?.classList.remove("on"); g("ds-veil")?.classList.remove("on") }
 // des confettis dans la scène
@@ -9454,7 +9463,7 @@ async function distGo(pay){
   }catch(e){ dist.busy = false; chanceFail("distributeur", e); return }
   const isNew = !S.specs.some(x=>colorKey(x)===colorKey(s));
   let given = false, done = false;
-  const give = () => { if(given) return; given = true; gain(); S.specs.push(s); S.unseen.push(s.id); logFind(s); save(); renderTop(); renderNav() };
+  const give = () => { if(given) return; given = true; gain(); S.specs.push(s); S.unseen.push(s.id); logFind(s); winHold(s, "distributeur"); renderTop(); renderNav() };
   const st = document.getElementById("ds-stage"), $d = id => document.getElementById(id), alive = () => !!st?.isConnected, wait = ms => new Promise(r=>setTimeout(r, ms));
   // la fin : la bille est rangée, le bonus des jeux compte, et les boutons reviennent (aussi si le joueur quitte la page en route)
   const finish = () => { if(done) return; done = true; give(); dist.busy = false; if(!pay) gamesBonus(); const b = $d("ds-btns"); if(b) b.innerHTML = chanceBtns("distributeur","ds-go","Tourner la manivelle") };
@@ -9516,7 +9525,7 @@ async function distGo(pay){
   cap.classList.add("open"); Sound.distPop(); ring(mx, my, "#fff");
   const col = sh ? DS_SH[sh] : PALETTES[s.pal][2];
   $d("ds-rays").style.setProperty("--rc", col); $d("ds-rays").classList.add("on");
-  $d("ds-out").innerHTML = distOut(s, isNew); bump($d("ds-out").querySelector(".ds-prize"), "on"); tl.classList.remove("on");
+  give(); winShown(s.id); $d("ds-out").innerHTML = distOut(s, isNew); bump($d("ds-out").querySelector(".ds-prize"), "on"); tl.classList.remove("on");
   Sound.reveal(k, sh, Math.max(0, decorRar(s)));
   if(k>=3 || sh) distConfetti([col, DS_COLS[k], "#FFE14D", "#fff"], 40 + k*25, mx, my, 1 + k*.12);
   finish();
@@ -9530,8 +9539,8 @@ const lotBall = (n, on) => `<span class="lt-ball${on?" on":""}">${n}</span>`;
 function lotLoad(force){
   if(!srvOn() || lot.loading || (lot.data && !force)) return;
   lot.loading = true;
-  srv(()=>Cloud.eco.loterie()).then(r=>{ lot.loading = false; lot.data = r; applyEco(r.eco); lotWins(r.gagne); if(ui.view==="loterie" || ui.view==="jeux") renderView(); renderBell(); renderDay() },
-    e=>{ lot.loading = false; srvFail(e) });
+  srv(()=>Cloud.eco.loterie()).then(r=>{ lot.loading = false; lot.data = r; netMark("lot", true); applyEco(r.eco); lotWins(r.gagne); if(ui.view==="loterie" || ui.view==="jeux") renderView(); renderBell(); renderDay() },
+    e=>{ lot.loading = false; if(e?.code!=="serveur_absent") netMark("lot", false); srvFail(e) });
 }
 function lotWins(g){
   (g||[]).forEach(w=>{ if(w.bille){ const s = srvAdopt([w.bille])[0]; S.specs.push(s); S.unseen.push(s.id); logFind(s); lot.mamm = s } });
@@ -10279,7 +10288,7 @@ const SETUP = {
       if(st===3 && used===1 && gameLive("chateau")){
         // rasé en un seul tir : un Mammouth garanti, comme la case Mammouth du Plinko (la roulette montre son motif)
         prize = " Et un Mammouth pour ta boîte : la roulette choisit son motif…";
-        const won = s => { S.specs.push(s); S.unseen.push(s.id); logFind(s); save(); setTimeout(()=>mammRoulette(s, "chateau"), 1600) };
+        const won = s => { S.specs.push(s); S.unseen.push(s.id); logFind(s); winHold(s, "chateau"); setTimeout(()=>mammRoulette(s, "chateau"), 1600) };
         if(srvOn()) srv(()=>Cloud.eco.marble("chateau","")).then(r=>{ applyEco(r.eco); won(srvAdopt([r.bille])[0]) }, srvFail);
         else srvNeed();
       }
@@ -10804,7 +10813,8 @@ const gc = {etat:null, busy:false, pick:null, live:null};
 function gcLoad(force){
   if(!srvOn() || gc.busy || (gc.etat && !force)) return;
   gc.busy = true;
-  Cloud.course.etat().then(e=>{ gc.etat = e; if(ui.view==="grandecourse") renderView(); renderNav() }, ()=>{}).finally(()=>{ gc.busy = false });
+  Cloud.course.etat().then(e=>{ gc.etat = e; netMark("gc", true); if(ui.view==="grandecourse") renderView(); renderNav() },
+    ()=>{ netMark("gc", false); setTimeout(()=>gcLoad(true), 15000) }).finally(()=>{ gc.busy = false });   // sans réponse : on retente, sinon la page croit qu'on n'est pas inscrit
 }
 const isoDay = (d=new Date()) => `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,"0")}-${String(d.getDate()).padStart(2,"0")}`;
 // sans compte (ou avant la réponse du serveur) : la prochaine course, calculée ici
@@ -12328,12 +12338,12 @@ function courLoad(kind, force){
   const f = {moi:()=>Cloud.cour.moi(), fil:()=>Cloud.cour.fil(), trocs:()=>Cloud.cour.trocs(),
     marche:()=>Cloud.cour.marche(cour.f), annonces:()=>Cloud.cour.annonces(), journal:()=>Cloud.cour.journal(0, 120),
     encheres:()=>Cloud.cour.encheres(), classement:()=>Cloud.cour.classement(ui.clPortee)}[kind];
-  f().then(d=>{ const prev = cour[kind]; cour[kind] = d; cour.ok = true;
+  f().then(d=>{ const prev = cour[kind]; cour[kind] = d; cour.ok = true; if(kind==="moi") netMark("cour", true);
       if(kind==="moi") courMoiNews(prev, d);
       if(ui.view==="cour" || (["fil","moi","encheres","classement"].includes(kind) && ui.view==="accueil")) renderView();
       if(kind==="moi") renderNav();
       if(kind==="moi" || kind==="journal") renderBell() },
-    e=>{ if(e.code==="serveur_absent"){ if(kind==="moi") cour.ok = false; else cour.absent[kind] = true } else if(ui.view==="cour") courFail(e); if(ui.view==="cour") renderView() })
+    e=>{ if(e.code==="serveur_absent"){ if(kind==="moi") cour.ok = false; else cour.absent[kind] = true } else { if(kind==="moi") netMark("cour", false); if(ui.view==="cour") courFail(e) } if(ui.view==="cour") renderView() })
     .finally(()=>{ cour.loading[kind] = false });
 }
 const courRefresh = (...kinds) => kinds.forEach(k=>courLoad(k, true));
@@ -13073,6 +13083,7 @@ document.addEventListener("click", e=>{
     case "gr-all": { const cv = document.getElementById("gr-foil"); if(cv) cv.getContext("2d").clearRect(0,0,cv.width,cv.height); gratEnd(); break }
     case "ds-go": distGo(t.dataset.pay==="1"); break;
     case "ds-close": distClear(); break;
+    case "net-reload": t.disabled = true; Promise.race([Promise.resolve(cloudFlush()).catch(()=>{}), new Promise(r=>setTimeout(r, 2500))]).finally(()=>location.reload()); break;
     case "lot-go": lotGo(); break;
     case "lot-mamm": { const m = lot.mamm; lot.mamm = null; if(m) mammRoulette(m, "loterie"); else closeModal(); break; }
     case "pachi-go": { const pay = t.dataset.pay==="1"; if(!pachiBall() && needBall(()=>pachiGo(pay), true)) break; } pachiGo(t.dataset.pay==="1"); break;
@@ -13601,6 +13612,17 @@ function ecoRetry(delay){
 }
 // les appels partent un par un, dans l'ordre : le dernier état reçu est toujours le bon
 function srv(fn){ const p = eco.q.then(fn); eco.q = p.catch(()=>{}); return p }
+// (9 octobre 2026) le serveur ne répond pas (au chargement, ou pour la Grande Course, la cour, la loterie) : un bandeau propose de rafraîchir.
+// Il n'apparaît qu'après 4 secondes de panne, et part tout seul quand le serveur répond de nouveau.
+const net = {bad:new Set(), t:0};
+function netMark(k, ok){ if(ok) net.bad.delete(k); else net.bad.add(k); clearTimeout(net.t); net.t = setTimeout(netBanner, ok ? 0 : 4000) }
+function netBanner(){
+  const on = sync.on && navigator.onLine!==false && net.bad.size>0; let el = document.getElementById("net-bar");
+  if(!on){ el?.remove(); return } if(el) return;
+  el = document.createElement("div"); el.id = "net-bar"; el.className = "net-bar"; el.setAttribute("role","alert");
+  el.innerHTML = `<span>Le serveur ne répond pas : certaines infos peuvent ne pas être à jour.</span><button class="btn btn-yellow btn-sm" data-action="net-reload">${ic("recycle",16)} Rafraîchir</button>`;
+  document.body.appendChild(el);
+}
 function applyEco(e){
   if(!e) return;
   S.jetons = e.bonbecs; S.depart = e.depart||0; S.bagInv = knownBags(e.sacs); S.freeT0 = e.gratuit_t0; S.pity = e.pity;
@@ -13649,8 +13671,8 @@ function dropLocal(id){
 function srvAdopt(list){ list.forEach(x=>sync.known.add(x.id)); return list }
 // première connexion avec le serveur : il reprend les bonbecs et les sachets offerts de la partie
 async function ecoStart(){
-  try{ applyEco(await Cloud.eco.start(S.jetons, S.bagInv||{}, S.pity||0)); eco.ready = true; eventGifts() }
-  catch(e){ eco.ready = false; if(e.code!=="serveur_absent") console.warn("Serveur indisponible, la partie continue sur l'appareil", e);
+  try{ applyEco(await Cloud.eco.start(S.jetons, S.bagInv||{}, S.pity||0)); eco.ready = true; netMark("eco", true); eventGifts() }
+  catch(e){ eco.ready = false; if(e.code!=="serveur_absent") netMark("eco", false); if(e.code!=="serveur_absent") console.warn("Serveur indisponible, la partie continue sur l'appareil", e);
     if(!eco.retry) ecoRetry([5e3,15e3,30e3][eco.tries++] ?? 60e3) }   // pendant un nouvel essai, c'est ecoRetry qui prévoit le suivant
 }
 // (4 octobre 2026) plus de sachet d'événement offert à l'arrivée : chacun coche « billes d'événement » sur ses sachets
@@ -14373,11 +14395,31 @@ const popupsFree = () => ["auth","sync-veil","modal","ov","ask","gc-ov"].every(i
 const inGame = () => ["tir","pot","chateau","casse","tic","course"].includes(ui.view) && !document.querySelector(".g-result:not([hidden])");
 let heldNews = null;
 function showHeldNews(){ if(!heldNews || !popupsFree()) return; const n = heldNews; heldNews = null; openNews(n) }
+// (9 octobre 2026) une bille gagnée à un jeu (Roue, Ticket, Plinko, Distributeur, Château) avant d'avoir vu son ouverture
+// (page fermée ou quittée en route) : on la garde dans S.unshown et on la montre au prochain lancement
+function winHold(s, from){ if(!s) return; (S.unshown = S.unshown||[]).push({id:s.id, from}); save() }
+function winShown(id){ if(!S.unshown?.length) return; S.unshown = S.unshown.filter(x=>x.id!==id); save() }
+let winsAtBoot = null;   // seulement celles d'avant ce lancement : pas celle d'une partie en cours
+const WIN_FROM = {roue:"à la Roue", grattage:"au Ticket à gratter", pachinko:"au Plinko", distributeur:"au Distributeur", chateau:"au Château"};
+function winsPopup(){
+  const list = (winsAtBoot||[]).map(x=>({...x, s:specById(x.id)})).filter(x=>x.s); winsAtBoot = [];
+  (S.unshown||[]).length && (S.unshown = []); save();
+  if(!list.length) return false;
+  const el = document.getElementById("modal");
+  el.innerHTML = `<div class="modal tuto-modal" role="dialog" aria-modal="true" aria-label="Tes billes gagnées"><button class="close-x" data-action="close-modal" aria-label="Fermer">×</button>
+    <h2>${list.length>1 ? "Des billes t'attendaient !" : "Une bille t'attendait !"}</h2><p>${list.length>1 ? "Elles sont sorties quand tu n'étais plus là : elles sont rangées dans ta boîte à billes." : "Elle est sortie quand tu n'étais plus là : elle est rangée dans ta boîte à billes."}</p>
+    <div class="dp-list">${list.map(x=>`<button class="dp-card" data-action="spec" data-id="${x.s.id}" style="--c:${PALETTES[x.s.pal][2]}">${mImg(x.s,200,84,"")}
+      <span><em>Gagnée ${WIN_FROM[x.from]||"à un jeu"}</em><b${motifCol(x.s)}>${esc(specName(x.s))}</b><small>${typePill(x.s.type)}${shinyPill(x.s)}</small></span></button>`).join("")}</div>
+    <button class="btn btn-yellow btn-xl" data-action="close-modal">Super !</button></div>`;
+  el.hidden = false; Sound.ding(); return true;
+}
 function bootPopups(){
+  if(winsAtBoot===null) winsAtBoot = (S.unshown||[]).slice();
   if(!popupsFree()) return;
   if(tutoDue()){ tutoStart(); return }
   if(tutoOn()) return;   // pendant le premier lancement : pas de bonbec du jour ni de nouvelles par-dessus
   if(departDue()){ departPick(); return }
+  if(winsAtBoot?.length && winsPopup()) return;
   const P = S.pendingBag;
   if(P){ delete S.pendingBag; save();
     const results = (P.r||[]).map(x=>({...x, s:specById(x.id)})).filter(x=>x.s);

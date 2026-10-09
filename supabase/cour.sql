@@ -216,6 +216,7 @@ begin
     -- sa plus belle bille : la shiny la plus rare, puis la plus grosse, puis le décor le plus rare
     'top', (select interne.bille_json(b) from billes b where b.proprietaire = qui and b.detruite_le is null and coalesce(b.donnees->>'src', '') <> 'test'
               and b.secrete is null   -- (7 octobre 2026) jamais une bille secrète (ni la Bêta)
+              and (interne.decor_rarete())[b.decor+1] < 5 and interne.coloris_normal(b.coloris)   -- (9 octobre 2026) ni une bille d'événement ni du passe de saison, comme pour l'album
               order by b.shiny desc, interne.rang(b.taille) desc, (interne.decor_rarete())[b.decor+1] desc, b.numero limit 1),
     'billes', (select count(*) from billes b where b.proprietaire = qui and b.detruite_le is null),
     -- l'album : les billes différentes (taille, décor, coloris) et les cases (taille, décor), hors événements, saisons et secrètes

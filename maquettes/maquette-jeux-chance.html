@@ -1,0 +1,416 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Billeo · Nouveaux jeux de chance</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Lilita+One&family=Nunito:wght@500;600;700;800;900&family=Caveat:wght@600;700&display=swap">
+<style>
+:root{
+  --bg:#12151F;--panel:#1B1F2C;--panel-2:#232838;--line:#2C3244;--line-2:#3D4459;
+  --ink:#F3F0EA;--ink-2:#BFC2CF;--muted:#858A9C;--yellow:#FFC93F;--blue:#4F86F5;
+  --display:"Lilita One","Arial Rounded MT Bold",sans-serif;--body:"Nunito","Segoe UI",system-ui,sans-serif;--hand:"Caveat",cursive;
+  color-scheme:dark;
+}
+*{box-sizing:border-box;margin:0}
+body{min-height:100vh;color:var(--ink);font-family:var(--body);font-weight:600;font-size:14px;line-height:1.45;-webkit-font-smoothing:antialiased;
+  background:radial-gradient(120% 70% at 50% -10%,#2A2F5E 0%,#171B33 38%,#0D1020 70%,#090B16 100%) fixed #0D1020}
+.wrap{max-width:860px;margin:0 auto;padding:24px 16px 60px}
+.kick{font-size:11px;font-weight:900;letter-spacing:.08em;text-transform:uppercase;color:var(--yellow)}
+h1{font-family:var(--display);font-weight:400;font-size:clamp(28px,5vw,40px);line-height:1.1;margin:4px 0 6px}
+.lead{color:var(--ink-2);max-width:620px}
+.tabs{display:flex;gap:8px;flex-wrap:wrap;margin:20px 0 16px}
+.tabs button{font:inherit;font-weight:900;font-size:14px;color:var(--ink-2);background:var(--panel);border:1px solid var(--line);padding:10px 16px;border-radius:999px;cursor:pointer;display:flex;align-items:center;gap:8px}
+.tabs button.on{background:var(--yellow);color:#2B2233;border-color:var(--yellow)}
+.panel{background:var(--panel);border:1px solid var(--line);border-radius:22px;overflow:hidden;box-shadow:0 20px 50px -25px rgba(0,0,0,.8)}
+.game{display:none}.game.on{display:block}
+.stage{position:relative;user-select:none;-webkit-user-select:none}
+.bar{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:14px 18px;border-top:1px solid var(--line);flex-wrap:wrap}
+.bar h2{font-family:var(--display);font-weight:400;font-size:22px}
+.bar p{color:var(--muted);font-size:13px}
+.btn{font:inherit;font-weight:900;font-size:15px;border:0;border-radius:999px;padding:12px 22px;cursor:pointer;background:var(--yellow);color:#2B2233;box-shadow:0 3px 0 #B07A08;display:inline-flex;align-items:center;gap:8px}
+.btn:disabled{opacity:.5;cursor:default}
+.btn.ghost{background:var(--panel-2);color:var(--ink);box-shadow:none;border:1px solid var(--line-2)}
+.odds{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:8px;padding:0 18px 18px}
+.odds div{display:flex;align-items:center;gap:8px;background:var(--panel-2);border:1px solid var(--line);border-radius:12px;padding:6px 10px;font-size:12.5px;font-weight:800}
+.odds svg{width:30px;height:30px;flex:none}
+.odds small{margin-left:auto;white-space:nowrap;color:var(--muted);font-weight:800}
+.notes{margin-top:18px;color:var(--ink-2);font-size:13.5px}
+.notes li{margin:4px 0 4px 18px}
+
+/* ---------- le lot gagné ---------- */
+.win{position:absolute;inset:0;display:grid;place-items:center;background:rgba(6,8,16,.6);backdrop-filter:blur(3px);opacity:0;pointer-events:none;transition:opacity .3s;z-index:5}
+.win.on{opacity:1;pointer-events:auto}
+.win-card{text-align:center;background:var(--panel);border:1px solid var(--line-2);border-radius:22px;padding:22px 26px 20px;min-width:240px;box-shadow:0 30px 60px -20px rgba(0,0,0,.9);transform:scale(.7);transition:transform .4s cubic-bezier(.2,.9,.3,1.4)}
+.win.on .win-card{transform:none}
+.win-card small{font-family:var(--hand);font-size:24px;color:var(--yellow)}
+.win-card svg{width:120px;height:120px;display:block;margin:6px auto;filter:drop-shadow(0 10px 18px rgba(0,0,0,.5))}
+.win-card b{display:block;font-family:var(--display);font-weight:400;font-size:26px;margin-bottom:12px}
+.win-card .rays{position:absolute}
+.win-card.big{box-shadow:0 0 0 3px var(--yellow),0 0 60px rgba(255,201,63,.5)}
+
+/* ---------- Pêche aux canards ---------- */
+#peche canvas{display:block;width:100%;height:auto;cursor:pointer;touch-action:manipulation}
+
+/* ---------- Marelle ---------- */
+#marelle .stage{background:#1B1E28;display:grid;place-items:center;padding:10px 0}
+#marelle svg.board{width:min(100%,420px);height:auto;display:block;cursor:pointer}
+.case-hit{fill:transparent}
+.chalk{fill:none;stroke:#EEF1FA;stroke-width:4;stroke-linecap:round;stroke-linejoin:round;opacity:.85}
+.chalk-y{fill:none;stroke:#FFD54A;stroke-width:6;stroke-linecap:round;stroke-linejoin:round}
+
+/* ---------- Pochette surprise ---------- */
+#pochette .stage{padding:22px 18px;background:
+  radial-gradient(90% 70% at 50% 0%,rgba(255,201,63,.10),transparent 70%),
+  repeating-linear-gradient(90deg,#2A2230 0 46px,#2E2535 46px 92px)}
+.pochettes{display:grid;grid-template-columns:repeat(3,1fr);gap:14px;max-width:560px;margin:0 auto}
+.po{position:relative;aspect-ratio:3/3.6;border:0;background:none;padding:0;cursor:pointer;transition:transform .2s}
+.po:hover:not(:disabled){transform:translateY(-6px) rotate(-1.5deg)}
+.po:disabled{cursor:default}
+.po svg{position:absolute;inset:0;width:100%;height:100%;overflow:visible}
+.po .haut{transition:transform .9s cubic-bezier(.2,.7,.3,1),opacity .9s;transform-origin:50% 30%}
+.po.dech .haut{transform:translate(-14%,-85%) rotate(-28deg);opacity:0}
+.po.shake{animation:po-shake .5s}
+@keyframes po-shake{20%{transform:rotate(-5deg)}40%{transform:rotate(5deg)}60%{transform:rotate(-4deg)}80%{transform:rotate(3deg)}}
+.po .lot{position:absolute;left:50%;top:34%;width:56%;transform:translate(-50%,40%) scale(.4);opacity:0;transition:transform .7s .25s cubic-bezier(.2,.9,.3,1.5),opacity .3s .25s;pointer-events:none}
+.po.dech .lot{transform:translate(-50%,-62%) scale(1);opacity:1}
+.po .lot svg{position:static;width:100%;height:auto;filter:drop-shadow(0 6px 10px rgba(0,0,0,.5))}
+.po.fade{opacity:.35;filter:saturate(.4)}
+.po .glow{position:absolute;left:50%;top:30%;width:120%;aspect-ratio:1;transform:translate(-50%,-50%) scale(0);border-radius:50%;background:radial-gradient(circle,rgba(255,230,140,.7),transparent 60%);transition:transform .6s .2s;pointer-events:none}
+.po.dech .glow{transform:translate(-50%,-50%) scale(1)}
+.confetti{position:absolute;width:8px;height:12px;border-radius:2px;pointer-events:none;z-index:4}
+@media (max-width:520px){ .pochettes{gap:8px} .bar{padding:12px 14px} }
+@media (prefers-reduced-motion:reduce){ *{transition-duration:.01s!important;animation-duration:.01s!important} }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <span class="kick">Maquette · jeux de chance</span>
+  <h1>Pêche aux canards, Marelle, Pochette surprise</h1>
+  <p class="lead">Trois jeux 100 % hasard, jouables pour de faux. Dans le vrai jeu, le serveur tire le lot ; ici c'est tiré dans la page. Le canard, la case ou la pochette qu'on choisit ne change rien aux chances : c'est juste l'animation.</p>
+
+  <div class="tabs" id="tabs">
+    <button data-g="peche" class="on">🦆 Pêche aux canards</button>
+    <button data-g="marelle">🖍️ La Marelle</button>
+    <button data-g="pochette">🎁 Pochette surprise</button>
+  </div>
+
+  <!-- ===== Pêche aux canards ===== -->
+  <section class="game on" id="peche">
+    <div class="panel">
+      <div class="stage"><canvas id="cv-peche" width="1440" height="960"></canvas><div class="win" id="win-peche"></div></div>
+      <div class="bar"><div><h2>La Pêche aux canards</h2><p>Clique sur un canard pour le pêcher : le lot est écrit sous son ventre.</p></div></div>
+      <div class="odds" id="odds-peche"></div>
+    </div>
+  </section>
+
+  <!-- ===== Marelle ===== -->
+  <section class="game" id="marelle">
+    <div class="panel">
+      <div class="stage"><svg class="board" id="sv-marelle" viewBox="0 0 400 790"></svg><div class="win" id="win-marelle"></div></div>
+      <div class="bar"><div><h2>La Marelle</h2><p>Lance ta bille : elle retombe sur une case. Plus elle va loin, plus c'est gros. Le Ciel, c'est le Mammouth.</p></div><button class="btn" id="go-marelle">Lancer ma bille</button></div>
+      <div class="odds" id="odds-marelle"></div>
+    </div>
+  </section>
+
+  <!-- ===== Pochette surprise ===== -->
+  <section class="game" id="pochette">
+    <div class="panel">
+      <div class="stage"><div class="pochettes" id="pochettes"></div><div class="win" id="win-pochette"></div></div>
+      <div class="bar"><div><h2>La Pochette surprise</h2><p>Choisis une pochette et déchire-la.</p></div><button class="btn ghost" id="re-pochette">Nouvelles pochettes</button></div>
+      <div class="odds" id="odds-pochette"></div>
+    </div>
+  </section>
+
+  <ul class="notes">
+    <li>Les lots et les chances sont des exemples, à régler comme les autres jeux (rentabilité ~90 % sur les parties payantes).</li>
+    <li>Comme aujourd'hui : une partie offerte par jour, puis 4 à acheter.</li>
+  </ul>
+</div>
+
+<script>
+/* ================= outils ================= */
+const $ = id => document.getElementById(id);
+const wait = ms => new Promise(r=>setTimeout(r, ms));
+const ease = t => 1-Math.pow(1-t,3), easeIO = t => t<.5 ? 4*t*t*t : 1-Math.pow(-2*t+2,3)/2;
+function pickW(list){ const tot = list.reduce((a,l)=>a+l.w,0); let x = Math.random()*tot; for(const l of list){ if((x-=l.w)<0) return l } return list[0] }
+
+// petits sons faits à la volée
+let AC = null; const ac = () => AC || (AC = new (window.AudioContext||window.webkitAudioContext)());
+function tone(f, d=.12, type="sine", v=.15, t0=0, glide=0){ try{ const a = ac(), o = a.createOscillator(), g = a.createGain(), t = a.currentTime+t0;
+  o.type = type; o.frequency.setValueAtTime(f, t); if(glide) o.frequency.exponentialRampToValueAtTime(glide, t+d);
+  g.gain.setValueAtTime(0, t); g.gain.linearRampToValueAtTime(v, t+.01); g.gain.exponentialRampToValueAtTime(.001, t+d);
+  o.connect(g).connect(a.destination); o.start(t); o.stop(t+d+.05) }catch(e){} }
+const Snd = {
+  pouet(){ tone(900,.18,"square",.05,0,500); tone(1300,.12,"triangle",.05,.06,800) },
+  plouf(){ tone(300,.25,"sine",.18,0,80); tone(700,.15,"sine",.06,.05,200) },
+  tac(v=.2){ tone(180,.06,"triangle",v); tone(90,.08,"sine",v*.8) },
+  craie(){ for(let i=0;i<6;i++) tone(2400+Math.random()*1800,.03,"sawtooth",.012,i*.05) },
+  whoosh(){ tone(500,.4,"sine",.06,0,1200) },
+  win(big){ const n = big ? [523,659,784,1047,1319] : [523,659,784]; n.forEach((f,i)=>tone(f,.4,"triangle",.12,i*.09)); if(big) tone(2093,.8,"sine",.08,.5) },
+  dechire(){ try{ const a = new Audio("../PAPRRip_Papier%20dechire%206%20(ID%203243)_LaSonotheque.fr.wav"); a.volume = .7; a.play().catch(()=>{}) }catch(e){} },
+};
+
+/* ================= les lots (exemples) ================= */
+const BAG = {classique:["#C98E4E","Sachet Classique"], premium:["#8C5CF0","Sachet Premium"], collector:["#E5484D","Sachet Collector"]};
+function lotSVG(l){
+  if(l.k==="bonbecs") return `<svg viewBox="0 0 120 120"><g transform="rotate(-18 60 60)">
+    <path d="M22 60 L4 42 L8 60 L4 78 Z" fill="#FF5FA8"/><path d="M98 60 L116 42 L112 60 L116 78 Z" fill="#FF5FA8"/>
+    <ellipse cx="60" cy="60" rx="38" ry="26" fill="#FF7BB8"/><ellipse cx="60" cy="60" rx="38" ry="26" fill="url(#cs)" opacity=".0"/>
+    <path d="M34 50 Q60 36 86 50" stroke="#fff" stroke-width="5" fill="none" opacity=".55" stroke-linecap="round"/>
+    <path d="M40 62 L48 52 M56 70 L66 50 M74 68 L80 58" stroke="#FFC6E0" stroke-width="5" stroke-linecap="round"/></g>
+    <text x="60" y="112" text-anchor="middle" font-family="Lilita One" font-size="26" fill="#fff" stroke="#2B2233" stroke-width="5" paint-order="stroke">${l.n}</text></svg>`;
+  if(l.k==="sachet"){ const [c] = BAG[l.b]; return `<svg viewBox="0 0 120 120">
+    <path d="M28 30 L92 30 L98 104 Q60 114 22 104 Z" fill="${c}"/><path d="M28 30 L92 30 L98 104 Q60 114 22 104 Z" fill="url(#bagsh)"/>
+    <path d="M26 20 l6 10 l6 -10 l6 10 l6 -10 l6 10 l6 -10 l6 10 l6 -10 l6 10 l6 -10 l6 10 L94 34 L26 34 Z" fill="${c}" stroke="rgba(0,0,0,.25)" stroke-width="2"/>
+    <circle cx="60" cy="68" r="18" fill="#fff" opacity=".92"/><path d="M60 56 l4 8 9 1 -7 6 2 9 -8 -5 -8 5 2 -9 -7 -6 9 -1z" fill="${c}"/></svg>` }
+  if(l.k==="bille") return `<svg viewBox="0 0 120 120"><defs><radialGradient id="mb${l.id}" cx="35%" cy="30%" r="75%"><stop offset="0" stop-color="#BFE3FF"/><stop offset=".45" stop-color="#2E6BE6"/><stop offset="1" stop-color="#0B1E5C"/></radialGradient></defs>
+    <circle cx="60" cy="60" r="44" fill="url(#mb${l.id})"/><path d="M28 70 Q60 40 92 60" stroke="#FFC93F" stroke-width="6" fill="none" opacity=".8"/><ellipse cx="44" cy="40" rx="13" ry="8" fill="#fff" opacity=".7"/></svg>`;
+  if(l.k==="mammouth") return `<svg viewBox="0 0 120 120"><defs><radialGradient id="mm${l.id}" cx="35%" cy="30%" r="75%"><stop offset="0" stop-color="#FFE7A8"/><stop offset=".5" stop-color="#E0457B"/><stop offset="1" stop-color="#3B0A3F"/></radialGradient></defs>
+    <circle cx="60" cy="60" r="56" fill="none" stroke="#FFC93F" stroke-width="3" stroke-dasharray="4 7" opacity=".9"/>
+    <circle cx="60" cy="60" r="50" fill="url(#mm${l.id})"/><path d="M18 68 Q50 30 102 56 M22 82 Q62 56 98 78" stroke="#FFE14D" stroke-width="6" fill="none" opacity=".75"/><ellipse cx="42" cy="36" rx="15" ry="9" fill="#fff" opacity=".7"/></svg>`;
+}
+const lotName = l => l.k==="bonbecs" ? `${l.n} bonbecs` : l.k==="sachet" ? BAG[l.b][1] : l.k==="bille" ? "Une bille" : "Un Mammouth !";
+const isBig = l => l.k==="mammouth" || (l.k==="sachet" && l.b!=="classique");
+let LID = 0; const L = (k, w, x={}) => ({k, w, id:LID++, ...x});
+const DEFS = `<svg width="0" height="0" style="position:absolute"><defs><linearGradient id="bagsh" x1="0" x2="1"><stop offset="0" stop-color="#000" stop-opacity=".18"/><stop offset=".4" stop-color="#fff" stop-opacity=".12"/><stop offset="1" stop-color="#000" stop-opacity=".25"/></linearGradient></defs></svg>`;
+document.body.insertAdjacentHTML("afterbegin", DEFS);
+
+function odds(el, lots){
+  const tot = lots.reduce((a,l)=>a+l.w,0);
+  $(el).innerHTML = lots.map(l=>`<div>${lotSVG(l)}<span>${lotName(l).replace(" !","")}</span><small>${(l.w/tot*100).toFixed(l.w/tot<.01?1:0)} %</small></div>`).join("");
+}
+function showWin(id, l, again){
+  const w = $(id); w.innerHTML = `<div class="win-card${isBig(l)?" big":""}"><small>${isBig(l)?"Waouh !":"Gagné !"}</small>${lotSVG(l)}<b>${lotName(l)}</b><button class="btn">Rejouer</button></div>`;
+  w.classList.add("on"); Snd.win(isBig(l));
+  confetti(w, isBig(l) ? 70 : 30);
+  w.querySelector("button").onclick = () => { w.classList.remove("on"); again() };
+}
+function confetti(host, n){
+  const R = host.getBoundingClientRect(), cols = ["#FFC93F","#FF5FA8","#4F86F5","#7CE59A","#B07CFF","#fff"];
+  for(let i=0;i<n;i++){ const c = document.createElement("i"); c.className = "confetti"; c.style.background = cols[i%cols.length];
+    c.style.left = R.width/2+"px"; c.style.top = R.height*.45+"px"; host.appendChild(c);
+    const a = Math.random()*Math.PI*2, v = 120+Math.random()*260, dx = Math.cos(a)*v, dy = Math.sin(a)*v - 120;
+    c.animate([{transform:"translate(0,0) rotate(0)",opacity:1},{transform:`translate(${dx}px,${dy+260}px) rotate(${Math.random()*720}deg)`,opacity:0}],{duration:1200+Math.random()*700,easing:"cubic-bezier(.2,.7,.4,1)"}).onfinish = () => c.remove() }
+}
+
+/* ================= onglets ================= */
+$("tabs").onclick = e => { const b = e.target.closest("button"); if(!b) return;
+  for(const x of $("tabs").children) x.classList.toggle("on", x===b);
+  for(const g of document.querySelectorAll(".game")) g.classList.toggle("on", g.id===b.dataset.g) };
+
+/* =====================================================================
+   1. LA PÊCHE AUX CANARDS (canvas)
+   ===================================================================== */
+(function(){
+  const LOTS = [L("bonbecs",30,{n:5}), L("bonbecs",24,{n:10}), L("bonbecs",16,{n:20}), L("bonbecs",8,{n:50}), L("bille",10), L("sachet",8,{b:"classique"}), L("sachet",3.5,{b:"premium"}), L("mammouth",.5)];
+  odds("odds-peche", LOTS);
+  const TIER = l => l.k==="mammouth" ? ["#FF8A3D","★"] : l.k==="sachet" ? (l.b==="premium"?["#B07CFF","S"]:["#4F86F5","S"]) : l.k==="bille" ? ["#4CC27A","B"] : ["#FF5FA8", l.n];
+  const cv = $("cv-peche"), c = cv.getContext("2d"), W = 720, H = 480; c.scale(2,2);
+  const CX = 360, CY = 318, RX = 300, RY = 112;
+  const N = 12, ducks = Array.from({length:N}, (_,i)=>({i, a:i/N*Math.PI*2, hue:i%3, out:false}));
+  let t0 = performance.now(), hover = null, pick = null, busy = false;
+  const pos = (d, t) => { const a = d.a + t*.22, x = CX + Math.cos(a)*RX*.8, y = CY + Math.sin(a)*RY*.72 + Math.sin(t*2.6+d.i)*2.2;
+    return {x, y, s:.72 + .42*(y-(CY-RY))/(2*RY), dir:-Math.sin(a) >= 0 ? 1 : -1, tilt:Math.sin(t*2.2+d.i*1.7)*.07} };
+
+  function duck(x, y, s, dir, tilt, glow, under, lot){
+    c.save(); c.translate(x, y); c.rotate(tilt); c.scale(s*dir, s);
+    if(glow){ c.shadowColor = "rgba(255,230,120,.95)"; c.shadowBlur = 22 }
+    const body = c.createLinearGradient(0,-30,0,22); body.addColorStop(0,"#FFE680"); body.addColorStop(.6,"#FFC21A"); body.addColorStop(1,"#E39A00");
+    if(under){   // vu de dessous : le ventre et l'étiquette du lot
+      c.fillStyle = body; c.beginPath(); c.ellipse(0,0,40,26,0,0,Math.PI*2); c.fill(); c.shadowBlur = 0;
+      c.fillStyle = "rgba(0,0,0,.12)"; c.beginPath(); c.ellipse(0,6,34,16,0,0,Math.PI*2); c.fill();
+      const [col, txt] = TIER(lot); c.scale(dir,1);
+      c.fillStyle = "#fff"; c.beginPath(); c.arc(0,0,19,0,Math.PI*2); c.fill();
+      c.fillStyle = col; c.beginPath(); c.arc(0,0,15.5,0,Math.PI*2); c.fill();
+      c.fillStyle = "#fff"; c.font = `${String(txt).length>1?14:18}px "Lilita One"`; c.textAlign = "center"; c.textBaseline = "middle"; c.fillText(txt, 0, 1);
+      c.restore(); return }
+    // queue, corps, aile, tête, bec, œil
+    c.fillStyle = "#F2B000"; c.beginPath(); c.moveTo(-34,-6); c.lineTo(-48,-22); c.lineTo(-30,-16); c.closePath(); c.fill();
+    c.fillStyle = body; c.beginPath(); c.ellipse(0,0,38,22,0,Math.PI*1.02,Math.PI*1.98+.06,false); c.ellipse(0,0,38,22,0,0,Math.PI,false); c.fill(); c.shadowBlur = 0;
+    c.strokeStyle = "rgba(160,95,0,.55)"; c.lineWidth = 2.4; c.beginPath(); c.ellipse(-4,-2,18,10,-.15,Math.PI*.1,Math.PI*.95); c.stroke();
+    const hg = c.createRadialGradient(18,-38,2,22,-30,20); hg.addColorStop(0,"#FFF1A8"); hg.addColorStop(1,"#FFBE10");
+    c.fillStyle = hg; c.beginPath(); c.arc(22,-28,17,0,Math.PI*2); c.fill();
+    c.fillStyle = "#FF7A1A"; c.beginPath(); c.moveTo(36,-30); c.quadraticCurveTo(52,-28,50,-22); c.quadraticCurveTo(42,-20,35,-22); c.closePath(); c.fill();
+    c.fillStyle = "#1B1A22"; c.beginPath(); c.arc(27,-33,3.6,0,Math.PI*2); c.fill(); c.fillStyle = "#fff"; c.beginPath(); c.arc(28.2,-34.3,1.2,0,Math.PI*2); c.fill();
+    c.fillStyle = "rgba(255,120,150,.45)"; c.beginPath(); c.arc(31,-24,3.5,0,Math.PI*2); c.fill();
+    c.restore();
+  }
+
+  function scene(now){
+    const t = (now - t0)/1000;
+    // fond : le stand de kermesse, guirlande d'ampoules
+    const bg = c.createLinearGradient(0,0,0,H); bg.addColorStop(0,"#2B2350"); bg.addColorStop(1,"#141029"); c.fillStyle = bg; c.fillRect(0,0,W,H);
+    for(let i=0;i<14;i++){ const x = i*W/13, y = 74 + Math.sin(i/13*Math.PI)*22; c.fillStyle = `hsla(${i*47%360},90%,${60+Math.sin(t*3+i)*12}%,1)`;
+      c.shadowColor = c.fillStyle; c.shadowBlur = 12; c.beginPath(); c.arc(x, y, 5, 0, Math.PI*2); c.fill() } c.shadowBlur = 0;
+    c.strokeStyle = "rgba(255,255,255,.25)"; c.lineWidth = 1.5; c.beginPath(); for(let i=0;i<=40;i++){ const x = i*W/40, y = 70 + Math.sin(i/40*Math.PI)*22; i?c.lineTo(x,y):c.moveTo(x,y) } c.stroke();
+    // l'auvent rayé
+    for(let i=0;i<12;i++){ c.fillStyle = i%2 ? "#FFF3E0" : "#E5484D"; c.beginPath(); c.moveTo(i*60,0); c.lineTo(i*60+60,0); c.lineTo(i*60+60,40); c.arc(i*60+30,40,30,0,Math.PI); c.closePath(); c.fill() }
+    c.fillStyle = "rgba(0,0,0,.25)"; c.fillRect(0,0,W,6);
+    // le panneau
+    c.save(); c.translate(W/2, 120); c.rotate(-.03); c.fillStyle = "#FFC93F"; c.beginPath(); c.roundRect(-130,-22,260,44,12); c.fill();
+    c.fillStyle = "#2B2233"; c.font = '26px "Lilita One"'; c.textAlign = "center"; c.textBaseline = "middle"; c.fillText("PÊCHE AUX CANARDS", 0, 2); c.restore();
+    // le bassin : rebord en bois puis l'eau
+    c.fillStyle = "rgba(0,0,0,.35)"; c.beginPath(); c.ellipse(CX, CY+26, RX+26, RY+26, 0, 0, Math.PI*2); c.fill();
+    const wood = c.createLinearGradient(0,CY-RY,0,CY+RY+30); wood.addColorStop(0,"#B9773E"); wood.addColorStop(1,"#6E3F1C");
+    c.fillStyle = wood; c.beginPath(); c.ellipse(CX, CY+10, RX+22, RY+26, 0, 0, Math.PI*2); c.fill();
+    c.fillStyle = "#8A5128"; c.beginPath(); c.ellipse(CX, CY, RX+22, RY+22, 0, 0, Math.PI*2); c.fill();
+    const wat = c.createRadialGradient(CX, CY-30, 20, CX, CY, RX); wat.addColorStop(0,"#5FD1F0"); wat.addColorStop(.6,"#2496D6"); wat.addColorStop(1,"#14609E");
+    c.fillStyle = wat; c.beginPath(); c.ellipse(CX, CY, RX, RY, 0, 0, Math.PI*2); c.fill();
+    // l'îlot du milieu
+    c.fillStyle = "#6E3F1C"; c.beginPath(); c.ellipse(CX, CY+4, RX*.48, RY*.36, 0, 0, Math.PI*2); c.fill();
+    c.fillStyle = "#C98A4C"; c.beginPath(); c.ellipse(CX, CY, RX*.48, RY*.34, 0, 0, Math.PI*2); c.fill();
+    c.fillStyle = "#3FA35A"; c.beginPath(); c.ellipse(CX, CY-2, RX*.42, RY*.26, 0, 0, Math.PI*2); c.fill();
+    // reflets qui ondulent
+    c.save(); c.beginPath(); c.ellipse(CX, CY, RX, RY, 0, 0, Math.PI*2); c.clip();
+    c.strokeStyle = "rgba(255,255,255,.35)"; c.lineWidth = 2;
+    for(let k=0;k<9;k++){ const a = k/9*Math.PI*2 + t*.22, x = CX+Math.cos(a)*RX*.8, y = CY+Math.sin(a)*RY*.72+14;
+      c.beginPath(); c.ellipse(x - Math.sin(a)*30, y, 14+Math.sin(t*3+k)*4, 3, 0, 0, Math.PI*2); c.stroke() }
+    c.restore();
+    // les canards, du fond vers l'avant
+    const list = ducks.filter(d=>!d.out).map(d=>({d, ...pos(d,t)})).sort((a,b)=>a.y-b.y);
+    for(const p of list){ duck(p.x, p.y-8, p.s, p.dir, p.tilt, hover===p.d && !busy);
+      c.fillStyle = "rgba(20,96,158,.55)"; c.beginPath(); c.ellipse(p.x, p.y+8*p.s, 36*p.s, 7*p.s, 0, 0, Math.PI*2); c.fill() }
+    c.fillStyle = "#8A5128"; c.beginPath(); c.ellipse(CX, CY, RX+22, RY+22, 0, .08, Math.PI-.08); c.ellipse(CX, CY, RX, RY, 0, Math.PI-.08, .08, true); c.fill();   // le rebord de devant passe devant les canards
+    // le canard pêché : la ligne, puis il monte et se retourne
+    if(pick){ const u = Math.min(1,(now-pick.t0)/pick.T);
+      const x = pick.x + (W/2-pick.x)*ease(u), y = pick.y + (215-pick.y)*ease(u), s = pick.s + (2.1-pick.s)*ease(u);
+      c.strokeStyle = "rgba(255,255,255,.8)"; c.lineWidth = 1.5; c.beginPath(); c.moveTo(W/2+170, 0); c.quadraticCurveTo(W/2+80, 60, x+10*s, y-46*s*(pick.flip?0:1)); c.stroke();
+      c.fillStyle = "#C9CDD6"; c.beginPath(); c.arc(x+10*s, y-46*s*(pick.flip?0:1), 3, 0, Math.PI*2); c.fill();
+      if(pick.flip){ const f = Math.min(1,(now-pick.flip)/500), sx = Math.cos(f*Math.PI);   // il tourne sur lui-même : de profil, puis le ventre
+        c.save(); c.translate(x, y); c.scale(Math.max(.02,Math.abs(sx)), 1); duck(0, 0, s, 1, 0, true, sx<0, pick.lot); c.restore();
+        if(f>=1 && !pick.shown){ pick.shown = true; pick.done() } }
+      else duck(x, y, s, pick.dir, Math.sin(now/90)*.15, true);
+      if(u>=1 && !pick.flip){ pick.flip = now; Snd.whoosh() } }
+    requestAnimationFrame(scene);
+  }
+  requestAnimationFrame(scene);
+
+  const at = e => { const R = cv.getBoundingClientRect(); return [(e.clientX-R.left)/R.width*W, (e.clientY-R.top)/R.height*H] };
+  const nearest = (x, y) => { const t = (performance.now()-t0)/1000; let best = null, bd = 1e9;
+    for(const d of ducks){ if(d.out) continue; const p = pos(d,t), dd = Math.hypot(p.x-x, (p.y-20)-y); if(dd < 46*p.s && dd < bd){ bd = dd; best = d } } return best };
+  cv.onmousemove = e => { hover = busy ? null : nearest(...at(e)) };
+  cv.onmouseleave = () => hover = null;
+  cv.onclick = e => { if(busy) return; const d = nearest(...at(e)); if(!d) return;
+    busy = true; hover = null; const t = (performance.now()-t0)/1000, p = pos(d,t), lot = pickW(LOTS);
+    d.out = true; Snd.plouf(); setTimeout(()=>Snd.pouet(), 250);
+    pick = {d, x:p.x, y:p.y-8, s:p.s, dir:p.dir, t0:performance.now(), T:900, lot, done:()=>setTimeout(()=>showWin("win-peche", lot, ()=>{ d.out = false; pick = null; busy = false }), 450)} };
+})();
+
+/* =====================================================================
+   2. LA MARELLE (SVG)
+   ===================================================================== */
+(function(){
+  const sv = $("sv-marelle"), NS = "http://www.w3.org/2000/svg";
+  // les cases, du bas vers le Ciel (x, y, largeur, hauteur) et leur lot
+  const S = 92, X0 = 200-S/2, CASES = [
+    {n:"1", x:X0, y:610, lot:L("bonbecs",28,{n:5})},
+    {n:"2", x:X0, y:518, lot:L("bonbecs",22,{n:10})},
+    {n:"3", x:X0, y:426, lot:L("bonbecs",16,{n:15})},
+    {n:"4", x:200-S, y:334, lot:L("bille",8)},
+    {n:"5", x:200, y:334, lot:L("bonbecs",10,{n:25})},
+    {n:"6", x:X0, y:242, lot:L("sachet",7,{b:"classique"})},
+    {n:"7", x:200-S, y:150, lot:L("bonbecs",5,{n:50})},
+    {n:"8", x:200, y:150, lot:L("sachet",3.5,{b:"premium"})},
+    {n:"Ciel", ciel:true, x:200-S, y:58, lot:L("mammouth",.5)},
+  ];
+  odds("odds-marelle", CASES.map(c=>c.lot));
+  const rough = `<filter id="craie" x="-5%" y="-5%" width="110%" height="110%"><feTurbulence type="fractalNoise" baseFrequency=".9" numOctaves="2" seed="3"/><feDisplacementMap in="SourceGraphic" scale="3.2"/></filter>
+    <filter id="grain"><feTurbulence type="fractalNoise" baseFrequency="1.6" numOctaves="2" stitchTiles="stitch"/><feColorMatrix values="0 0 0 0 1  0 0 0 0 1  0 0 0 0 1  0 0 0 .5 -.2"/></filter>
+    <radialGradient id="mbl" cx="35%" cy="30%" r="75%"><stop offset="0" stop-color="#BFE3FF"/><stop offset=".45" stop-color="#2E6BE6"/><stop offset="1" stop-color="#0B1E5C"/></radialGradient>`;
+  const box = c => c.ciel ? `M${c.x} ${c.y+92} A${S} ${S*.9} 0 0 1 ${c.x+2*S} ${c.y+92} Z` : `M${c.x} ${c.y} h${S} v${S} h${-S} Z`;
+  const ctr = c => c.ciel ? [200, c.y+48] : [c.x+S/2, c.y+S/2];
+  sv.innerHTML = `<defs>${rough}</defs>
+    <rect width="400" height="790" fill="#22262F"/><rect width="400" height="790" filter="url(#grain)" opacity=".18"/>
+    <g opacity=".08" class="chalk" filter="url(#craie)"><path d="M30 760 q40 -30 80 0 M300 40 q30 20 60 -6 M40 120 l20 20 M340 520 c20 -10 30 10 10 20"/></g>
+    <g filter="url(#craie)">${CASES.map(c=>`<path class="chalk" d="${box(c)}"/>`).join("")}</g>
+    <g font-family="Caveat" font-weight="700" fill="#EEF1FA" opacity=".9" text-anchor="middle">${CASES.map(c=>{ const [x,y] = ctr(c); return `<text x="${x}" y="${y-(c.ciel?10:16)}" font-size="${c.ciel?30:34}">${c.n}</text>` }).join("")}</g>
+    <g>${CASES.map(c=>{ const [x,y] = ctr(c); return `<g transform="translate(${x-17} ${y-6+(c.ciel?6:0)}) scale(.28)" opacity=".9">${lotSVG(c.lot).replace(/^<svg[^>]*>|<\/svg>$/g,"")}</g>` }).join("")}</g>
+    <path id="mr-hi" class="chalk-y" d="" filter="url(#craie)" opacity="0"/>
+    <path class="chalk" d="M110 740 h180" stroke-dasharray="10 9" filter="url(#craie)" opacity=".7"/>
+    <text x="200" y="770" text-anchor="middle" font-family="Caveat" font-weight="700" font-size="20" fill="#EEF1FA" opacity=".6">on lance d'ici</text>
+    <ellipse id="mr-sh" cx="200" cy="722" rx="14" ry="5" fill="#000" opacity=".4"/>
+    <g id="mr-ball" transform="translate(200 712)"><circle r="14" fill="url(#mbl)"/><ellipse cx="-5" cy="-6" rx="5" ry="3" fill="#fff" opacity=".75"/></g>`;
+  const ball = $("mr-ball"), sh = $("mr-sh"), hi = $("mr-hi"), go = $("go-marelle");
+  let busy = false;
+  const setBall = (x, y, h, s=1) => { ball.setAttribute("transform", `translate(${x} ${y-h}) scale(${s})`); sh.setAttribute("cx", x); sh.setAttribute("cy", y+10); sh.setAttribute("rx", 14*(1-h/400)); sh.setAttribute("opacity", .4*(1-h/300)) };
+  const anim = (T, f) => new Promise(res=>{ const t0 = performance.now(); const st = now => { const u = Math.min(1,(now-t0)/T); f(u); u<1 ? requestAnimationFrame(st) : res() }; requestAnimationFrame(st) });
+  async function play(){
+    if(busy) return; busy = true; go.disabled = true; hi.setAttribute("opacity", 0);
+    const tot = CASES.reduce((a,c)=>a+c.lot.w,0); let x = Math.random()*tot, C = CASES[0]; for(const c of CASES){ if((x-=c.lot.w)<0){ C = c; break } }
+    const [tx, ty0] = ctr(C), tx2 = tx + (Math.random()-.5)*(C.ciel?60:36), ty = ty0 + (Math.random()-.5)*(C.ciel?20:30) + 14;
+    // le vol : elle part d'en bas, monte en cloche (plus grosse = plus haute), retombe un peu avant, rebondit deux fois et roule jusqu'à sa case
+    const sx = 200, sy = 712, lx = tx2 + (sx-tx2)*.14, ly = ty + (sy-ty)*.14, peak = 120 + (sy-ty)*.35;
+    Snd.whoosh();
+    await anim(950, u=>{ const e = easeIO(u); setBall(sx+(lx-sx)*e, sy+(ly-sy)*e, Math.sin(u*Math.PI)*peak, 1+Math.sin(u*Math.PI)*.7) });
+    Snd.tac(.25);
+    await anim(320, u=>setBall(lx+(tx2-lx)*u*.6, ly+(ty-ly)*u*.6, Math.sin(u*Math.PI)*26));
+    Snd.tac(.12);
+    await anim(220, u=>setBall(lx+(tx2-lx)*(.6+u*.3), ly+(ty-ly)*(.6+u*.3), Math.sin(u*Math.PI)*9));
+    Snd.tac(.06);
+    await anim(380, u=>setBall(lx+(tx2-lx)*(.9+ease(u)*.1), ly+(ty-ly)*(.9+ease(u)*.1), 0));
+    // la case est entourée à la craie jaune
+    hi.setAttribute("d", box(C)); const L0 = hi.getTotalLength(); hi.style.strokeDasharray = L0; hi.style.strokeDashoffset = L0; hi.setAttribute("opacity", 1);
+    Snd.craie(); await anim(600, u=>hi.style.strokeDashoffset = L0*(1-u));
+    await wait(350);
+    showWin("win-marelle", C.lot, ()=>{ busy = false; go.disabled = false; hi.setAttribute("opacity", 0); setBall(200, 712, 0) });
+  }
+  go.onclick = play; sv.onclick = play;
+})();
+
+/* =====================================================================
+   3. LA POCHETTE SURPRISE
+   ===================================================================== */
+(function(){
+  const LOTS = [L("bonbecs",30,{n:5}), L("bonbecs",24,{n:10}), L("bonbecs",16,{n:20}), L("bonbecs",8,{n:50}), L("bille",10), L("sachet",8,{b:"classique"}), L("sachet",3.5,{b:"premium"}), L("mammouth",.5)];
+  odds("odds-pochette", LOTS);
+  const PAPIERS = [
+    {f:"#C99A62", d:"#A97B45", p:""},   // kraft
+    {f:"#F6B6CF", d:"#E28AAE", p:"rayures"},
+    {f:"#9CC8F5", d:"#6FA6E0", p:"pois"},
+    {f:"#FFD866", d:"#E9B23A", p:"etoiles"},
+    {f:"#B9E3A8", d:"#8CC67A", p:"rayures"},
+    {f:"#D6C1F5", d:"#B39BE3", p:"pois"},
+  ];
+  const grid = $("pochettes"); let busy = false;
+  // une pochette : le bas et le haut sont deux morceaux, séparés par une déchirure en zigzag
+  const ZZ = "L94 34 L86 30 L78 36 L70 29 L62 35 L54 28 L46 35 L38 29 L30 36 L22 30 L14 35 L6 30";
+  function pochette(i){
+    const P = PAPIERS[i % PAPIERS.length], id = "pp"+i;
+    const motif = P.p==="rayures" ? `<pattern id="${id}" width="14" height="14" patternUnits="userSpaceOnUse" patternTransform="rotate(35)"><rect width="14" height="14" fill="${P.f}"/><rect width="6" height="14" fill="#fff" opacity=".45"/></pattern>`
+      : P.p==="pois" ? `<pattern id="${id}" width="16" height="16" patternUnits="userSpaceOnUse"><rect width="16" height="16" fill="${P.f}"/><circle cx="5" cy="5" r="2.6" fill="#fff" opacity=".6"/><circle cx="13" cy="13" r="2.6" fill="#fff" opacity=".6"/></pattern>`
+      : P.p==="etoiles" ? `<pattern id="${id}" width="22" height="22" patternUnits="userSpaceOnUse"><rect width="22" height="22" fill="${P.f}"/><path d="M11 5 l2 4 4 .5 -3 3 .8 4 -3.8 -2 -3.8 2 .8 -4 -3 -3 4 -.5z" fill="#fff" opacity=".55"/></pattern>`
+      : `<pattern id="${id}" width="40" height="40" patternUnits="userSpaceOnUse"><rect width="40" height="40" fill="${P.f}"/><path d="M0 12 h40 M0 31 h40" stroke="#000" stroke-opacity=".05" stroke-width="3"/></pattern>`;
+    const corps = `M4 22 L96 22 L98 116 Q50 122 2 116 Z`;
+    return `<svg viewBox="0 0 100 120"><defs>${motif}<clipPath id="${id}b"><path d="M0 120 L0 30 L6 30 L14 35 L22 30 L30 36 L38 29 L46 35 L54 28 L62 35 L70 29 L78 36 L86 30 L94 34 L100 30 L100 120 Z"/></clipPath>
+        <clipPath id="${id}h"><path d="M0 0 L100 0 L100 30 ${ZZ.replace(/^L/,"L")} L0 30 Z"/></clipPath></defs>
+      <ellipse cx="50" cy="118" rx="44" ry="5" fill="#000" opacity=".35"/>
+      <g clip-path="url(#${id}b)"><path d="${corps}" fill="url(#${id})"/><path d="${corps}" fill="url(#bagsh)"/>
+        <rect x="34" y="62" width="32" height="32" rx="16" fill="#fff" opacity=".95"/><text x="50" y="87" text-anchor="middle" font-family="Lilita One" font-size="26" fill="${P.d}">?</text></g>
+      <g class="haut"><g clip-path="url(#${id}h)"><path d="${corps}" fill="url(#${id})"/><path d="${corps}" fill="url(#bagsh)"/>
+        <path d="M4 22 L96 22 L96 12 L4 12 Z" fill="${P.d}"/><path d="M4 12 l4 -6 4 6 4 -6 4 6 4 -6 4 6 4 -6 4 6 4 -6 4 6 4 -6 4 6 4 -6 4 6 4 -6 4 6 4 -6 4 6 4 -6 4 6 4 -6 4 6 4 -6 L96 12 Z" fill="${P.d}"/>
+        <path d="M30 18 q20 -14 40 0" stroke="#E5484D" stroke-width="4" fill="none"/><circle cx="50" cy="15" r="4" fill="#E5484D"/></g></g>
+    </svg><span class="glow"></span><span class="lot"></span>`;
+  }
+  function deal(){ busy = false; const order = [...Array(9).keys()].sort(()=>Math.random()-.5);
+    grid.innerHTML = order.map(i=>`<button class="po" aria-label="Pochette surprise">${pochette(i)}</button>`).join("") }
+  grid.onclick = async e => { const b = e.target.closest(".po"); if(!b || busy) return; busy = true;
+    const lot = pickW(LOTS); b.querySelector(".lot").innerHTML = lotSVG(lot);
+    for(const o of grid.children) o.disabled = true;
+    b.classList.add("shake"); Snd.tac(.15); await wait(520); b.classList.remove("shake");
+    Snd.dechire(); await wait(120); b.classList.add("dech");
+    for(const o of grid.children) if(o!==b) o.classList.add("fade");
+    const R = b.getBoundingClientRect(), H = grid.getBoundingClientRect(); confettiAt(grid.parentElement, R.left-H.left+R.width/2+18, R.top-H.top+R.height*.3+22, isBig(lot)?40:16);
+    await wait(1300);
+    showWin("win-pochette", lot, deal) };
+  function confettiAt(host, x, y, n){ const cols = ["#FFC93F","#FF5FA8","#4F86F5","#7CE59A","#fff"];
+    for(let i=0;i<n;i++){ const c = document.createElement("i"); c.className = "confetti"; c.style.background = cols[i%cols.length]; c.style.left = x+"px"; c.style.top = y+"px"; host.appendChild(c);
+      const a = -Math.PI/2 + (Math.random()-.5)*1.6, v = 80+Math.random()*140;
+      c.animate([{transform:"translate(0,0)",opacity:1},{transform:`translate(${Math.cos(a)*v}px,${Math.sin(a)*v+180}px) rotate(${Math.random()*600}deg)`,opacity:0}],{duration:1000+Math.random()*600,easing:"cubic-bezier(.2,.7,.4,1)"}).onfinish = () => c.remove() } }
+  $("re-pochette").onclick = deal; deal();
+})();
+</script>
+</body>
+</html>

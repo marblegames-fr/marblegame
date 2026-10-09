@@ -1934,6 +1934,10 @@ button.gh-cell:hover{transform:translateY(-2px)}
 .ov::before{content:"";position:fixed;inset:0;background:radial-gradient(circle at 50% 45%,var(--flash,transparent),transparent 55%);pointer-events:none;transition:background .4s}
 .ov .close-x{position:fixed;z-index:3;top:calc(16px + env(safe-area-inset-top,0px));right:16px;background:rgba(255,255,255,.12);color:#fff}
 .ov .close-x:hover{background:rgba(255,255,255,.22)}
+/* (9 octobre 2026) couper le son pendant l'ouverture des sachets : en haut à gauche, en face de la croix */
+.ov-snd{position:fixed;z-index:3;top:calc(16px + env(safe-area-inset-top,0px));left:16px;width:36px;height:36px;border-radius:50%;display:grid;place-items:center;background:rgba(255,255,255,.12);color:#fff}
+.ov-snd:hover{background:rgba(255,255,255,.22)}
+.ov-snd[aria-pressed="false"]{color:rgba(255,255,255,.6)}
 .ov-body{position:relative;z-index:2;display:flex;flex-direction:column;align-items:center;gap:18px;text-align:center;width:min(1040px,100%)}
 .ov-title{font-family:var(--display);font-weight:400;font-size:clamp(28px,calc(4vw / var(--vz,1)),42px);letter-spacing:.01em;line-height:1;text-shadow:0 3px 0 rgba(0,0,0,.35)}
 .ov-sub{color:#E8D6C2;font-weight:700}
@@ -3408,6 +3412,7 @@ body.gc-open{overflow:hidden}
   <div class="ov-bg" aria-hidden="true"></div>
   <canvas id="ov-fx" aria-hidden="true"></canvas>
   <button class="close-x" data-action="close-ov" aria-label="Fermer">×</button>
+  <button class="ov-snd" id="ov-snd" data-action="sound"></button>
   <div class="ov-body" id="ov-body"></div>
 </div>
 <div class="toast" id="toast" role="status" aria-live="polite"></div>
@@ -4138,10 +4143,11 @@ function renderThemeBtn(){
 }
 matchMedia("(prefers-color-scheme: dark)").addEventListener("change", ()=>renderThemeBtn());
 function renderSoundBtn(){
-  const b=document.getElementById("sound-btn"), on=Sound.on; if(!b) return;
-  b.setAttribute("aria-label", on?"Couper le son":"Activer le son");
-  b.setAttribute("aria-pressed", String(on));
-  b.innerHTML = `<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 9.5h3.5L12 5.5v13l-4.5-4H4z"/>${on?'<path d="M15.5 9a4 4 0 0 1 0 6"/><path d="M18 6.5a7.5 7.5 0 0 1 0 11"/>':'<path d="M16 9.5l5 5M21 9.5l-5 5"/>'}</svg><span>${on?"Son activé":"Son coupé"}</span>`;
+  const on=Sound.on, b=document.getElementById("sound-btn"), o=document.getElementById("ov-snd");
+  [b,o].forEach(x=>{ if(!x) return; x.setAttribute("aria-label", on?"Couper le son":"Activer le son"); x.setAttribute("aria-pressed", String(on)) });
+  const svg = `<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 9.5h3.5L12 5.5v13l-4.5-4H4z"/>${on?'<path d="M15.5 9a4 4 0 0 1 0 6"/><path d="M18 6.5a7.5 7.5 0 0 1 0 11"/>':'<path d="M16 9.5l5 5M21 9.5l-5 5"/>'}</svg>`;
+  if(b) b.innerHTML = svg + `<span>${on?"Son activé":"Son coupé"}</span>`;
+  if(o) o.innerHTML = svg;
 }
 
 /* =====================================================================

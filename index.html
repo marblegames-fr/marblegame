@@ -1309,6 +1309,26 @@ body.vit-dragging,body.vit-dragging *{cursor:grabbing!important;user-select:none
 .rq-win span{font-weight:800}
 @keyframes rq-pop{from{scale:.4;opacity:0}}
 @media (prefers-reduced-motion:reduce){ .rq-bulb{animation:none} }
+/* ---------- la Marelle (9 octobre 2026, remplace le Pot) : la cour en perspective, la marelle à la craie, la bille du joueur ---------- */
+.mrl-panel{padding:14px}
+.mrl-stage{position:relative;max-width:600px;margin:0 auto;aspect-ratio:600/640;border-radius:var(--r-md);overflow:hidden;background:#3A3F4D;box-shadow:inset 0 0 0 1px rgba(0,0,0,.25)}
+.mrl-stage::after{content:"";position:absolute;inset:0;pointer-events:none;background:radial-gradient(120% 90% at 50% 70%,transparent 55%,rgba(10,12,20,.55) 100%)}
+.mrl-svg{position:absolute;inset:0;width:100%;height:100%;display:block}
+.mrl-fill{opacity:.2;transition:opacity .5s}
+.mrl-fill.won{opacity:.75;animation:mrl-glow 1.4s ease-in-out infinite alternate}
+@keyframes mrl-glow{to{opacity:.5}}
+.mrl-num{letter-spacing:.5px}
+.mrl-hi{opacity:0;stroke-dasharray:100;stroke-dashoffset:100}
+.mrl-hi.on{opacity:1;stroke-dashoffset:0;transition:stroke-dashoffset .65s ease-out}
+.mrl-hi.now{transition:none}
+.mrl-ball{position:absolute;z-index:2;translate:-50% -50%;aspect-ratio:1;pointer-events:none;filter:drop-shadow(0 2px 2px rgba(0,0,0,.35))}
+.mrl-ball img{display:block;width:100%!important;height:auto!important}
+.mrl-sh{position:absolute;z-index:1;translate:-50% -50%;aspect-ratio:3/1;border-radius:50%;background:radial-gradient(closest-side,rgba(0,0,0,.7),rgba(0,0,0,0));pointer-events:none}
+.mrl-win{top:22%;display:flex;flex-direction:column;align-items:center;white-space:nowrap}
+.mrl-win.bas{top:80%}   /* la bille est au fond : le lot s’affiche en bas, pour ne pas la cacher */
+.mrl-cn{display:inline-grid;place-items:center;min-width:24px;height:20px;padding:0 5px;margin-right:2px;border-radius:6px;background:var(--panel-2);border:1px solid var(--line);font-family:var(--hand);font-size:16px;font-weight:700;line-height:1}
+.mrl-how{margin-top:10px}
+@media (prefers-reduced-motion:reduce){ .mrl-fill.won{animation:none} .mrl-hi.on{transition:none} }
 /* ---------- le Ticket à gratter ---------- */
 .gr-stage{position:relative;display:grid;justify-items:center;gap:14px;padding:26px 12px;border-radius:var(--r-md);
   background:radial-gradient(circle at 50% 40%,#5A2A6E,#2A1236 70%,#1A0A22)}
@@ -3773,7 +3793,7 @@ const recycleValue = s => srvOn() && !s.srv ? 0 : s.shiny && !isSeason(s) ? RECY
 const QUESTS_N = 4;
 const QUESTS = {
   sachets20: {title:"Ouvre 20 sachets", goal:20, reward:15, icon:"bag", desc:"Gratuits ou payants, tous les sachets comptent.", go:"sacs", on:["open_bag"]},
-  jeux6:     {title:"Joue à 6 jeux différents de la cour", goal:6, reward:15, icon:"play", desc:"Ta partie offerte du jour, au Tir, au Pot, au Château, à la Tic, à la Roue, au Plinko, au Ticket ou au Distributeur.", go:"jeux", set:true},
+  jeux6:     {title:"Joue à 6 jeux différents de la cour", goal:6, reward:15, icon:"play", desc:"Ta partie offerte du jour, au Tir, à la Marelle, au Château, à la Tic, à la Roue, au Plinko, au Ticket ou au Distributeur.", go:"jeux", set:true},
   boulets3:  {title:"Trouve 3 Boulets", goal:3, reward:15, icon:"layers", desc:"Dans n'importe quel sachet. Un Mammouth compte aussi.", go:"sacs", on:["find_boulet"]},
   confiserie:{title:"Fais une fusion ou échange une bille", goal:1, reward:5, icon:"candy", desc:"À la Confiserie : une fusion, ou une bille échangée contre des bonbecs.", go:"confiserie|fusion", on:["craft","recycle"]},
 };
@@ -5465,7 +5485,7 @@ if(S.quests && S.quests.items.some(q=>!QUESTS[q.id])) delete S.quests;   // (8 o
 // billes Bêta : un coloris par taille (avant le 2 octobre 2026, elles étaient toutes en Rubis)
 S.specs.forEach(s=>{ if(isBeta(s)) s.pal = BETA.palOf(s.type) });
 delete S.level; delete S.xp;
-S.stats = Object.assign({pot:0, tic:0, castle:0, bonus:0, race:0, casse:0, casseScore:0, best3:{}}, S.stats||{});
+S.stats = Object.assign({marelle:0, pot:0, tic:0, castle:0, bonus:0, race:0, casse:0, casseScore:0, best3:{}}, S.stats||{});
 }
 { let raw = null; try { raw = JSON.parse(localStorage.getItem(STORE_KEY)) } catch(e){} adoptState(raw); if(CLOUD_UID && !raw) S.name = "" }
 function save(){ try{ localStorage.setItem(STORE_KEY, JSON.stringify(S)) }catch(e){} cloudQueue() }
@@ -5656,6 +5676,7 @@ const ICON = {
   check:'<path d="M5 12.5l4.5 4.5L19 7.5"/>',
   candy:'<circle cx="12" cy="12" r="5"/><path d="M7.4 10.2 3 7.5v9l4.4-2.7M16.6 10.2 21 7.5v9l-4.4-2.7"/><path d="M10 8.5c1.5 1 3 4 4 7"/>',
   flag:'<path d="M5 21V4"/><path d="M5 4h12l-2.5 4L17 12H5"/>',
+  marelle:'<path d="M9 21h6v-5H9zM6 16h6v-5H6zM12 16h6v-5h-6zM9 11h6V7H9z"/><path d="M9 7a3 3 0 0 1 6 0"/>',
   pot:'<ellipse cx="12" cy="16" rx="8.5" ry="3.8"/><ellipse cx="12" cy="16" rx="4" ry="1.6"/><circle cx="7" cy="7.5" r="2.4"/><circle cx="15.5" cy="6" r="2"/>',
   castle:'<circle cx="12" cy="6" r="2.2"/><circle cx="9.5" cy="10.3" r="2.2"/><circle cx="14.5" cy="10.3" r="2.2"/><circle cx="7" cy="14.6" r="2.2"/><circle cx="12" cy="14.6" r="2.2"/><circle cx="17" cy="14.6" r="2.2"/><path d="M3 20.5h18"/>',
   wheel:'<circle cx="12" cy="12" r="8.5"/><circle cx="12" cy="12" r="2"/><path d="M12 3.5v6.5M12 14v6.5M3.5 12H10M14 12h6.5M6 6l4.6 4.6M13.4 13.4L18 18M18 6l-4.6 4.6M10.6 13.4L6 18"/>',
@@ -5997,11 +6018,11 @@ const CHALLENGES = [
   // --- jeux de la cour
   {id:"t-golf", cat:"jeux", icon:"target", title:"Golfeur du dimanche", desc:"Réussis 20 trous au Tir.", goal:20, prog:()=>S.holes||0, rew:{j:40}},
   {id:"t-parcours", cat:"jeux", icon:"target", title:"Le grand parcours", desc:`Réussis les ${LEVELS.length} trous différents du Tir (un nouveau chaque jour).`, goal:LEVELS.length, prog:()=>Object.keys(S.best).filter(k=>LEVELS[k]).length, rew:{j:200, bag:"premium", title:"Pro du Tir"}},
-  {id:"t-pot", icon:"pot", cat:"jeux", title:"Champion du pot", desc:"Mets 25 billes dans le pot.", goal:25, prog:()=>S.stats.pot, rew:{j:50, title:"Champion du pot"}},
+  {id:"t-marelle", icon:"marelle", cat:"jeux", title:"Champion de la marelle", desc:"Lance 25 billes à la Marelle.", goal:25, prog:()=>S.stats.marelle||0, rew:{j:50, title:"Champion de la marelle"}},   // remplace « Champion du pot » (9 octobre 2026)
   {id:"t-castle", icon:"castle", cat:"jeux", title:"Démolisseur de châteaux", desc:"Fais sortir 60 billes du cercle au Château.", goal:60, prog:()=>S.stats.castle, rew:{j:50, title:"Démolisseur"}},
   {id:"t-tic", icon:"tic", cat:"jeux", title:"Terreur du préau", desc:"Gagne 10 parties de Tic.", goal:10, prog:()=>S.stats.tic, rew:{j:60, title:"Terreur du préau"}},
   {id:"t-race", icon:"flag", cat:"jeux", title:"Maillot jaune", desc:"Gagne 5 courses sur la plage.", goal:5, prog:()=>S.stats.race, rew:{j:60, title:"Maillot jaune"}},
-  {id:"t-roi", icon:"trophy", cat:"jeux", title:"Roi de la cour", desc:"Fais 3 étoiles au Pot et au Château, et gagne une partie de Tic.", goal:3, prog:()=>["pot","chateau","tic"].filter(k=>S.stats.best3[k]).length, rew:{j:80, title:"Roi de la cour"}},
+  {id:"t-roi", icon:"trophy", cat:"jeux", title:"Roi de la cour", desc:"Fais 3 étoiles au Château et gagne une partie de Tic.", goal:2, prog:()=>["chateau","tic"].filter(k=>S.stats.best3[k]).length, rew:{j:80, title:"Roi de la cour"}},
   // --- les habitudes
   {id:"streak7", cat:"habitudes", icon:"clock", title:"Fidèle au poste", desc:"Récupère le bonbec du jour 7 jours d'affilée.", goal:7, prog:()=>bestStreak(), rew:{j:50}},
   {id:"streak28", cat:"habitudes", icon:"clock", title:"Un mois sans rater", desc:"Récupère le bonbec du jour 28 jours d'affilée.", goal:28, prog:()=>bestStreak(), rew:{j:200, bag:"premium", title:"Toujours là"}},
@@ -6215,8 +6236,8 @@ const giftCount = () => Object.values(S.bagInv).reduce((a,b)=>a+b,0);
    ===================================================================== */
 const NAV = [["accueil","Accueil","home"],["sacs","Ouvrir des sachets","bag"],["collection","Boîte à billes","layers"],["jeux","Jeux de la cour","pad"],["confiserie","La Confiserie","candy"],["cour","La cour de récré","cour"]];
 // les pages qui ne sont pas dans le menu allument leur « parent »
-const NAV_PARENT = {billepedia:"collection", tir:"jeux", pot:"jeux", chateau:"jeux", casse:"jeux", roue:"jeux", grattage:"jeux", distributeur:"jeux", loterie:"jeux", tic:"jeux", pachinko:"jeux", course:"jeux", grandecourse:"jeux", atelier:"confiserie"};
-const SOLO_GAMES = [["pot","Le Pot"],["chateau","Le Château"],["roue","La Roue"],["pachinko","Le Plinko"],["tic","La Tic"]];   // la Roue remplace le Casse-briques (6 octobre 2026)
+const NAV_PARENT = {billepedia:"collection", tir:"jeux", marelle:"jeux", pot:"jeux", chateau:"jeux", casse:"jeux", roue:"jeux", grattage:"jeux", distributeur:"jeux", loterie:"jeux", tic:"jeux", pachinko:"jeux", course:"jeux", grandecourse:"jeux", atelier:"confiserie"};
+const SOLO_GAMES = [["marelle","La Marelle"],["chateau","Le Château"],["roue","La Roue"],["pachinko","Le Plinko"],["tic","La Tic"]];   // la Roue remplace le Casse-briques (6 octobre 2026)
 function gamesReady(){ return playedToday().bonus ? [] : jeuxDuJour().filter(k=>!jeuFait(k)).map(k=>JEUX_NOM[k]) }
 function renderNav(){
   const cur = NAV_PARENT[ui.view] || ui.view, bags = freeStock()+giftCount(), games = gamesReady().length;
@@ -6540,10 +6561,11 @@ function confResync(){ if(!srvOn() || Date.now()-lastResync<30000) return; lastR
   resyncBilles().then(()=>{ if(ui.view==="confiserie" && document.getElementById("ov").hidden) renderView() }, ()=>{}) }
 function go(view){ toggleProfPop(false); if(view!==ui.view) ui.ballPicked = null; if(view==="confiserie") confResync(); if(view==="atelier"){ view="confiserie"; ui.confTab="fusion" } if(view==="billepedia"){ view="collection"; ui.tab="pedia" } ui.view=view; renderNav(); renderView(); window.scrollTo({top:0}); }
 function renderView(){
+  if(ui.view==="pot") ui.view = "marelle";   // (9 octobre 2026) le Pot est remplacé par la Marelle
   if(ui.view!=="grattage") gratFlush();   // un ticket pas fini de gratter : le lot arrive quand même
   if(ui.view==="course") ui.view = "jeux";   // la Course sur la plage a été retirée (2 octobre 2026) : un vieux lien ramène aux jeux
   const v = document.getElementById("view");
-  const map = {cour:viewCour, succes:viewSucces, accueil:viewHome, sacs:viewBags, collection:viewCollection, jeux:viewGames, tir:viewGame, pot:viewArena, chateau:viewArena, casse:viewCasse, roue:viewRoue, grattage:viewGrattage, distributeur:viewDistributeur, loterie:viewLoterie, tic:viewArena, pachinko:viewPachinko, course:viewArena, grandecourse:viewGrandeCourse, quetes:viewQuests, billepedia:viewPedia, passe:viewPass, profil:viewProfile, atelier:viewCraft, confiserie:viewConfiserie};
+  const map = {cour:viewCour, succes:viewSucces, accueil:viewHome, sacs:viewBags, collection:viewCollection, jeux:viewGames, tir:viewGame, marelle:viewMarelle, pot:viewArena, chateau:viewArena, casse:viewCasse, roue:viewRoue, grattage:viewGrattage, distributeur:viewDistributeur, loterie:viewLoterie, tic:viewArena, pachinko:viewPachinko, course:viewArena, grandecourse:viewGrandeCourse, quetes:viewQuests, billepedia:viewPedia, passe:viewPass, profil:viewProfile, atelier:viewCraft, confiserie:viewConfiserie};
   v.innerHTML = (map[ui.view] || viewSoon)();
   if(ui.view==="passe") focusTrack();
   if(ui.view==="grandecourse") gcAfterRender();
@@ -6554,6 +6576,7 @@ function renderView(){
   if(ui.view==="casse") initCasse();
   if(ui.view==="pachinko") pachiInit();
   if(ui.view==="roue") roueInit();
+  if(ui.view==="marelle") marInit();
   if(ui.view==="grattage") gratInit();
   if(ui.view==="cour" && cour.focus) setTimeout(courFocus, 60);
 }
@@ -7600,7 +7623,7 @@ function statsPanel(){
     <div class="panel-head"><h2>Mes statistiques</h2></div>
     ${group("Sachets", "bag", [cell("Sachets ouverts", n(S.bags)), cell("Billes tirées", n(ST.pulled ?? S.specs.length)), cell("Shiny trouvées", n(ST.shinyFound ?? S.specs.filter(x=>x.shiny).length)), cell("Boulets trouvés", n(ST.bouletFound ?? S.specs.filter(x=>x.type==="boulet").length)), cell("Mammouths trouvés", n(ST.mammFound ?? S.specs.filter(x=>x.type==="mammouth").length))])}
     ${group("Confiserie", "candy", [cell("Fusions réussies", n(S.crafts)), cell("Billes dans ta boîte", n(S.specs.length))])}
-    ${group("Jeux de la cour", "pad", [cell("Trous réussis au Tir", n(S.holes)), cell("Billes dans le Pot", n(ST.pot)), cell("Sorties du Château", n(ST.castle)),
+    ${group("Jeux de la cour", "pad", [cell("Trous réussis au Tir", n(S.holes)), cell("Billes lancées à la Marelle", n(ST.marelle||0)), cell("Sorties du Château", n(ST.castle)),
       cell("Tours de roue", n(ST.roue||0)), cell("Courses gagnées", n(ST.race)), cell("Parties de Tic gagnées", n(ST.tic))])}
     ${group("Habitudes", "clock", [cell("Plus longue série de jours", `${bestStreak()} j`), cell(`Bonus des ${QUESTS_N} quêtes`, n(ST.bonus))])}
     ${srvOn() ? group("La cour de récré", "cour", [cell("Trocs réussis", n(C.trocs)), cell("Billes vendues", n(C.vendues)), cell("Billes achetées", n(C.achetees)), cell("Enchères gagnées", n(C.encheres)), cell("Copains", n(C.copains))]) : ""}
@@ -9037,7 +9060,7 @@ function billeOdds(from){
   const rows = (l) => `<ul class="rewards-list">${l.map(([a,b])=>`<li><span>${a}</span><b>${b}</b></li>`).join("")}</ul>`;
   const el = document.getElementById("modal");
   el.innerHTML = `<div class="modal odds-pop" role="dialog" aria-modal="true" aria-label="Les chances du Mammouth"><button class="close-x" data-action="close-modal" aria-label="Fermer">×</button>
-    <span class="dc-kick">${ic(from==="chateau"?"castle":from==="roue"?"wheel":from==="grattage"?"star":"pachi",14)} ${from==="chateau"?"Le Château · rasé en un tir":from==="roue"?"La Roue du jour · part Mammouth":from==="grattage"?"Le Ticket à gratter · 3 Mammouths":"Le Plinko · case Mammouth"}</span>
+    <span class="dc-kick">${ic(from==="chateau"?"castle":from==="roue"?"wheel":from==="grattage"?"star":from==="marelle"?"marelle":"pachi",14)} ${from==="chateau"?"Le Château · rasé en un tir":from==="roue"?"La Roue du jour · part Mammouth":from==="marelle"?"La Marelle · le Ciel":from==="grattage"?"Le Ticket à gratter · 3 Mammouths":"Le Plinko · case Mammouth"}</span>
     <h2>Les chances du Mammouth</h2>
     <p class="meta">C'est toujours un Mammouth. La roulette tire la rareté de son motif, avec les mêmes chances que dans un sachet. Le coloris est au hasard, et il peut être shiny comme dans un Sachet Collector.</p>
     <h3>1. Le motif (la roulette)</h3>${rows(DECOR_RAR.map((R,k)=>({R, n:DECOR_IDS.filter(f=>FAMILIES[f].rar===k).length})).filter(x=>x.n).map(({R,n})=>
@@ -9062,7 +9085,7 @@ function mammRoulette(b, from){
   const labels = segs.filter(g=>g.a1-g.a0>28).map(g=>{ const m = (g.a0+g.a1)/2; return `<span class="rw-l" style="transform:rotate(${m}deg) translateY(-104px) rotate(${-m}deg)">${g.R.name}</span>` }).join("");
   const same = DECOR_IDS.filter(f=>FAMILIES[f].rar===F.rar);
   el.innerHTML = `<div class="modal roue-modal mamm-modal" role="dialog" aria-modal="true" aria-label="La roulette du Mammouth">
-    <span class="dc-kick">${ic(from==="chateau"?"castle":from==="roue"?"wheel":from==="grattage"?"star":from==="loterie"?"ticket":"pachi",14)} ${from==="chateau"?"Château rasé en un tir":from==="roue"?"La Roue du jour":from==="grattage"?"Ticket à gratter":from==="loterie"?"3 bons numéros à la Loterie":"Case Mammouth"}</span><h2>Un Mammouth pour toi !</h2>
+    <span class="dc-kick">${ic(from==="chateau"?"castle":from==="roue"?"wheel":from==="grattage"?"star":from==="loterie"?"ticket":from==="marelle"?"marelle":"pachi",14)} ${from==="chateau"?"Château rasé en un tir":from==="roue"?"La Roue du jour":from==="marelle"?"Le Ciel de la Marelle":from==="grattage"?"Ticket à gratter":from==="loterie"?"3 bons numéros à la Loterie":"Case Mammouth"}</span><h2>Un Mammouth pour toi !</h2>
     <p class="meta" id="mr-step">La roulette choisit la rareté de son motif…</p>
     <div class="roue-wrap"><i class="roue-ptr"></i><div class="roue" id="roue" style="background:conic-gradient(${grad})">${labels}</div></div>
     <ul class="mr-legend">${segs.map(g=>`<li><i style="background:${g.R.c}"></i>${g.R.name} <b>${pct(+(g.p*100).toFixed(g.p<.01?2:1))}</b></li>`).join("")}</ul>
@@ -9307,7 +9330,7 @@ function artRoue(){
    Comme la Roue et le Plinko : une partie offerte par jour, puis CHANCE_MAX achetées au plus (supabase/chance.sql).
    ===================================================================== */
 const CHANCE_MAX = 4;   // 4 parties achetées par jour au plus (2 jusqu'au 9 octobre 2026)
-const CHANCE_PRIX = {roue:15, grattage:15, distributeur:15};   // un seul prix pour tous les jeux de chance, comme le Plinko (PACHI_PRICE)
+const CHANCE_PRIX = {roue:15, grattage:15, distributeur:15, marelle:15};   // un seul prix pour tous les jeux de chance, comme le Plinko (PACHI_PRICE)
 const chanceBought = k => playedToday()[k+"N"] || 0;
 const chanceFreeDone = k => !!playedToday()[k]?.done;
 // les boutons d'un jeu de hasard : la partie offerte, puis « encore une » tant qu'il en reste à acheter
@@ -9610,6 +9633,208 @@ async function distGo(pay){
   await wait(500); cap.hidden = true; M.classList.remove("hot");
 }
 
+/* ---------- la Marelle (9 octobre 2026 : remplace le Pot) ----------
+   Un jeu de hasard comme la Roue et le Ticket : mêmes lots et mêmes chances (ROUE, interne.roue_cases), une partie offerte
+   puis CHANCE_MAX à 15 bonbecs. Le serveur tire le lot (public.marelle, supabase/chance.sql) et la bille est lancée sur sa case :
+   1 = 5 bonbecs, 2 = 10, 3 = 20, 4 = Classique, 5 = 40, 6 = Premium, 7 = 100, 8 = Collector, le Ciel = le Mammouth.
+   La cour est vue en perspective : chaque point du sol (u de gauche à droite, v en s'éloignant) passe par marP. */
+const MAR_CASES = [
+  {n:"1",    lbl:"5",         u:[-75,75],   v:[40,165]},
+  {n:"2",    lbl:"10",        u:[-75,75],   v:[165,290]},
+  {n:"3",    lbl:"20",        u:[-75,75],   v:[290,415]},
+  {n:"4",    lbl:"Classique", u:[-150,0],   v:[415,540]},
+  {n:"5",    lbl:"40",        u:[0,150],    v:[415,540]},
+  {n:"6",    lbl:"Premium",   u:[-75,75],   v:[540,665]},
+  {n:"7",    lbl:"100",       u:[-150,0],   v:[665,790]},
+  {n:"8",    lbl:"Collector", u:[0,150],    v:[665,790]},
+  {n:"Ciel", lbl:"Mammouth",  u:[-150,150], v:[790,915], ciel:true},
+];
+const MAR_W = 600, MAR_H = 640, MAR_D = 2000, MAR_K = 1.32, MAR_A = -1047, MAR_B = 1672, MAR_R = 19;   // MAR_R : le rayon de la bille, au sol
+const marS = v => MAR_D/(v+MAR_D);
+const marP = (u, v, h=0) => { const s = marS(v); return [300 + u*s*MAR_K, MAR_A + MAR_B*s - h*s*MAR_K] };
+const MAR_FY = s => MAR_B*s*s/MAR_D;   // l'écrasement du sol : combien de pixels fait une unité de profondeur, à cette distance
+const marFlat = (x, y, s) => `translate(${f1(x)} ${f1(y)}) scale(${(s*MAR_K).toFixed(3)} ${MAR_FY(s).toFixed(3)})`;   // écrire « couché » sur le sol
+const marLot = c => ROUE.find(x=>x.lbl===c.lbl);
+const marCaseOfK = k => MAR_CASES.find(c=>c.lbl===ROUE[k].lbl);
+const mar = {busy:false, at:null, win:null, k:null};
+const f1 = n => n.toFixed(1);
+// le contour d'une case, au sol (le Ciel : un demi-cercle)
+function marShape(c){
+  if(c.ciel){ let d = ""; for(let i=0;i<=24;i++){ const a = i/24*Math.PI, [x,y] = marP(150*Math.cos(a), 790 + 125*Math.sin(a)); d += `${i?"L":"M"}${f1(x)} ${f1(y)}` } return d+"Z" }
+  const [a,b] = c.u, [p,q] = c.v, pts = [marP(a,p), marP(b,p), marP(b,q), marP(a,q)];
+  return pts.map(([x,y],i)=>`${i?"L":"M"}${f1(x)} ${f1(y)}`).join("")+"Z";
+}
+const marMid = c => [(c.u[0]+c.u[1])/2, c.ciel ? 838 : (c.v[0]+c.v[1])/2];
+// ce qui est écrit à la craie dans une case : le numéro, puis le lot dessiné
+function marLabel(c){
+  const L = marLot(c), [u,v] = marMid(c), [x,y] = marP(u,v), s = marS(v), col = L.c;
+  let lot;
+  if(L.roue) lot = `<circle cx="0" cy="30" r="26" fill="none" stroke="${col}" stroke-width="6"/><path d="M-20 36 Q0 12 22 24 M-16 46 Q4 30 20 40" fill="none" stroke="#FFE14D" stroke-width="5" stroke-linecap="round"/><path d="M-36 6 l-8 -6 M36 6 l8 -6 M-40 34 h-10 M40 34 h10" stroke="#FFE14D" stroke-width="4" stroke-linecap="round"/>`;
+  else if(L.sac) lot = `<g transform="translate(0 2)"><path d="M-17 4 L17 4 L20 34 Q0 39 -20 34 Z" fill="none" stroke="${col}" stroke-width="4.5" stroke-linejoin="round"/><path d="M-19 4 l4.2 -7 4.2 7 4.2 -7 4.2 7 4.2 -7 4.2 7 4.2 -7 4.2 7" fill="none" stroke="${col}" stroke-width="3.6" stroke-linejoin="round"/>
+      <path d="M0 11 l3 6 6.5 1 -4.8 4.4 1.3 6.4 -6 -3.4 -6 3.4 1.3 -6.4 -4.8 -4.4 6.5 -1z" fill="${col}"/></g><text x="0" y="58" font-size="24" fill="${col}">${esc(L.lbl)}</text>`;
+  else lot = `<g transform="translate(-30 26)"><path d="M-24 -9 L-12 0 L-24 9 Z M24 -9 L12 0 L24 9 Z" fill="none" stroke="${col}" stroke-width="4" stroke-linejoin="round"/><ellipse rx="13" ry="10" fill="none" stroke="${col}" stroke-width="4.5"/></g>
+      <text x="22" y="40" font-size="40" fill="#F4F1EA">${L.j}</text>`;
+  return `<g transform="${marFlat(x, y, s)}"><g class="mrl-lbl" data-n="${c.n}">
+    <text x="0" y="${c.ciel?-10:-16}" font-size="${c.ciel?54:50}" fill="${c.ciel?"#FFE14D":"#F4F1EA"}" class="mrl-num">${c.n}</text>${lot}</g></g>`;
+}
+function marBoard(){
+  const cols = [...new Set(MAR_CASES.map(c=>marLot(c).c))];
+  const pat = cols.map((c,i)=>`<pattern id="mrl-h${i}" width="9" height="9" patternUnits="userSpaceOnUse" patternTransform="rotate(-32)"><path d="M0 2 H9 M0 6.5 H9" stroke="${c}" stroke-width="2.2" opacity=".9"/></pattern>`).join("");
+  const hatch = c => `url(#mrl-h${cols.indexOf(marLot(c).c)})`;
+  // les feuilles mortes et les petits dessins à la craie, toujours au même endroit
+  const r = rng(11); let leaves = "";
+  for(let i=0;i<14;i++){ const u = (r()-.5)*560, v = r()*1100-40; if(Math.abs(u)<175 && v>20 && v<930) continue;
+    const [x,y] = marP(u,v), s = marS(v), a = r()*360, c = ["#C9772E","#E0A13A","#9E4B22","#B8862F"][i%4];
+    leaves += `<path transform="translate(${f1(x)} ${f1(y)}) rotate(${a.toFixed(0)}) scale(${(s*1.1).toFixed(2)} ${(s*.75).toFixed(2)})" d="M-9 0 Q0 -7 9 0 Q0 7 -9 0Z M-9 0 H11" fill="${c}" stroke="rgba(60,30,10,.5)" stroke-width="1"/>` }
+  const doodle = (u, v, d, col="#F4F1EA", sw=4) => { const [x,y] = marP(u,v), s = marS(v); return `<path transform="${marFlat(x, y, s)}" d="${d}" fill="none" stroke="${col}" stroke-width="${sw}" stroke-linecap="round" stroke-linejoin="round"/>` };
+  const [tx, ty] = marP(0, 6), [lx0, ly] = marP(-120, 26), [lx1] = marP(120, 26), WY = f1(marP(0,1050)[1]);
+  return `<svg class="mrl-svg" viewBox="0 0 ${MAR_W} ${MAR_H}" aria-hidden="true">
+    <defs>${pat}
+      <filter id="mrl-chalk" x="-5%" y="-5%" width="110%" height="110%"><feTurbulence type="fractalNoise" baseFrequency="1.1" numOctaves="2" seed="4" result="n"/>
+        <feDisplacementMap in="SourceGraphic" in2="n" scale="3.4" result="d"/><feColorMatrix in="n" values="0 0 0 0 0  0 0 0 0 0  0 0 0 0 0  0 0 0 -2.2 1.75" result="m"/><feComposite in="d" in2="m" operator="in"/></filter>
+      <filter id="mrl-grain"><feTurbulence type="fractalNoise" baseFrequency=".95" numOctaves="3" stitchTiles="stitch"/><feColorMatrix values="0 0 0 0 1  0 0 0 0 1  0 0 0 0 1  0 0 0 .9 -.32"/></filter>
+      <linearGradient id="mrl-sol" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#2C3140"/><stop offset=".25" stop-color="#3A3F4D"/><stop offset="1" stop-color="#4A4E58"/></linearGradient>
+      <radialGradient id="mrl-lamp" cx=".5" cy=".55" r=".65"><stop offset="0" stop-color="#FFE9B8" stop-opacity=".2"/><stop offset=".55" stop-color="#FFE9B8" stop-opacity=".05"/><stop offset="1" stop-color="#000" stop-opacity=".45"/></radialGradient>
+      <pattern id="mrl-brick" width="56" height="26" patternUnits="userSpaceOnUse"><rect width="56" height="26" fill="#7A3F31"/><path d="M0 12.5 H56 M0 25.5 H56 M27 0 V12.5 M0 13 V25.5 M55.5 13 V25.5" stroke="#4E2820" stroke-width="2.4"/>
+        <rect x="2" y="2" width="22" height="8" fill="#8E4A3A" opacity=".55"/><rect x="31" y="15" width="20" height="8" fill="#6A372B" opacity=".6"/></pattern>
+    </defs>
+    <rect width="${MAR_W}" height="${MAR_H}" fill="url(#mrl-sol)"/>
+    <rect width="${MAR_W}" height="${MAR_H}" filter="url(#mrl-grain)" opacity=".5"/>
+    <path d="M${f1(marP(-290,-40)[0])} ${f1(marP(-290,-40)[1])} L${f1(marP(-290,1050)[0])} ${f1(marP(-290,1050)[1])} M${f1(marP(290,-40)[0])} ${f1(marP(290,-40)[1])} L${f1(marP(290,1050)[0])} ${f1(marP(290,1050)[1])}" stroke="#E9C64A" stroke-width="5" opacity=".3" stroke-dasharray="40 18"/>
+    <g class="mrl-wall"><rect x="0" y="0" width="${MAR_W}" height="${WY}" fill="url(#mrl-brick)"/>
+      <rect x="0" y="${WY-7}" width="${MAR_W}" height="7" fill="#5A2E24"/>
+      <rect x="0" y="0" width="${MAR_W}" height="${WY}" fill="url(#mrl-lamp)" opacity=".8"/>
+      <g filter="url(#mrl-chalk)" fill="none" stroke="#F4F1EA" stroke-width="3.5" stroke-linecap="round" opacity=".75">
+        <path d="M60 22 q7 -12 14 0 q7 -12 14 0 q-14 17 -14 17 q0 0 -14 -17z" stroke="#FF8FB8" stroke-width="3"/>
+        <text x="470" y="34" font-family="Caveat" font-weight="700" font-size="26" fill="#F4F1EA" stroke="none" transform="rotate(-4 470 34)">Billeo !</text></g></g>
+    ${leaves}
+    <g filter="url(#mrl-chalk)" opacity=".55">
+      ${doodle(-200, 150, "M-26 0 a26 20 0 1 0 52 0 a26 20 0 1 0 -52 0 M-10 -4 v2 M10 -4 v2 M-12 8 q12 10 24 0", "#FFE14D")}
+      ${doodle(205, 380, "M-30 -20 v40 M-10 -20 v40 M-44 -6 h44 M-44 8 h44 M-34 -14 l8 8 M-26 -14 l-8 8 M-6 2 a5 5 0 1 0 0.1 0", "#9FD8FF", 3.5)}
+      ${doodle(-212, 600, "M0 -24 L7 -8 L24 -8 L10 3 L15 20 L0 10 L-15 20 L-10 3 L-24 -8 L-7 -8 Z", "#FF8FB8")}
+      ${doodle(200, 820, "M-30 0 C-20 -24 20 -24 30 0 M-26 6 h52", "#B7F0A0")}
+    </g>
+    <g class="mrl-fills">${MAR_CASES.map(c=>`<path d="${marShape(c)}" fill="${hatch(c)}" class="mrl-fill" data-n="${c.n}"/>`).join("")}</g>
+    <g filter="url(#mrl-chalk)">
+      <g fill="none" stroke="#F4F1EA" stroke-width="4.5" stroke-linejoin="round" stroke-linecap="round">${MAR_CASES.map(c=>`<path d="${marShape(c)}"/>`).join("")}</g>
+      ${(()=>{ let d = ""; for(let i=0;i<11;i++){ const a = Math.PI*(.06+.88*i/10), p = (r)=>marP(r*Math.cos(a), 790 + r*.83*Math.sin(a)), [x0,y0] = p(166), [x1,y1] = p(192); d += `M${f1(x0)} ${f1(y0)}L${f1(x1)} ${f1(y1)}` }
+        return `<path d="${d}" stroke="#FFE14D" stroke-width="4" stroke-linecap="round" opacity=".85"/>` })()}
+      <g font-family="Caveat" font-weight="700" text-anchor="middle">${MAR_CASES.map(marLabel).join("")}</g>
+      <path d="M${f1(lx0)} ${f1(ly)} L${f1(lx1)} ${f1(ly)}" stroke="#F4F1EA" stroke-width="4" stroke-dasharray="14 10" stroke-linecap="round" opacity=".8"/>
+      <g transform="${marFlat(tx, ty, marS(6))}"><text x="0" y="12" font-family="Caveat" font-weight="700" font-size="40" fill="#F4F1EA" text-anchor="middle" opacity=".85">TERRE</text></g>
+      <path id="mrl-hi" class="mrl-hi" d="" pathLength="100" fill="none" stroke="#FFE14D" stroke-width="8" stroke-linejoin="round" stroke-linecap="round"/>
+    </g>
+  </svg>`;
+}
+function viewMarelle(){
+  const done = chanceFreeDone("marelle"), tot = ROUE.reduce((a,c)=>a+c.w,0);
+  const P = c => ROUE.filter(x=>x.lbl===c.lbl).reduce((a,x)=>a+x.w,0)/tot;
+  const prize = c => { const L = marLot(c); return L.roue ? `Un Mammouth ${oddsBtn("marelle")}` : L.sac ? BAG_BY[L.sac].name : `${fmt(L.j)} ${CUR.many}` };
+  return `<div class="page-head"><div><button class="back-link" data-action="nav" data-view="jeux">${ic("chevl",14)} Tous les jeux</button><h1>La Marelle</h1>
+    <span class="gt-state${done?"":" ok"}" id="day-chip">${done ? `${ic("check",14,3)} Lancer offert joué · le prochain dans <b data-quest-timer>${untilMidnight()}</b>` : `${ic("gift",14)} Ton lancer du jour t'attend`}</span></div></div>
+  <div class="game-wrap">
+    <section class="panel mrl-panel">
+      <div class="mrl-stage" id="mrl-stage">${marBoard()}
+        <i class="mrl-sh" id="mrl-sh"></i><span class="mrl-ball" id="mrl-ball">${mImg(activeSpec(),160,64,"")}</span>
+        <div class="rq-win mrl-win${(mar.at?.v||0)>400?" bas":""}" id="mrl-win" ${mar.win ? "" : "hidden"}>${mar.win||""}</div>
+      </div>
+      <div class="pachi-btns" id="mrl-btns">${mar.busy ? `<button class="btn btn-yellow btn-xl" disabled>${ic("marelle",18)} La bille vole…</button>` : chanceBtns("marelle","mrl-go","Lancer ma bille")}</div>
+    </section>
+    <aside><section class="panel"><div class="panel-head"><h3>Les cases</h3><span class="sample-tag">Chances</span></div>
+      <ul class="rewards-list">${MAR_CASES.map(c=>({c, p:P(c)})).reverse().map(({c,p})=>`<li><span><i class="pachi-dot" style="background:${marLot(c).c}"></i><b class="mrl-cn">${c.ciel?"Ciel":c.n}</b> ${prize(c)}</span><b>${pct(+(p*100).toFixed(p<.01?1:0))}</b></li>`).join("")}</ul>
+      <p class="meta mrl-how">Ta bille retombe toujours sur une case : tu gagnes à tous les coups. Plus elle va loin, plus c'est gros.</p>
+    </section></aside>
+  </div>`;
+}
+// placer la bille (et son ombre) au point (u, v) du sol, à la hauteur h ; tourne : l'angle de la bille qui roule
+function marPlace(u, v, h=0, turn=0){
+  const b = document.getElementById("mrl-ball"), sh = document.getElementById("mrl-sh"); if(!b || !sh) return;
+  const s = marS(v), [x,y] = marP(u, v, h+MAR_R), [gx,gy] = marP(u, v), d = 2*MAR_R*s*MAR_K, k = Math.max(.35, 1-h/500);
+  b.style.left = f1(x/MAR_W*100)+"%"; b.style.top = f1(y/MAR_H*100)+"%"; b.style.width = (d/MAR_W*100).toFixed(2)+"%"; b.style.rotate = turn.toFixed(0)+"deg";
+  sh.style.left = f1(gx/MAR_W*100)+"%"; sh.style.top = f1(gy/MAR_H*100)+"%"; sh.style.width = (d*1.15*k/MAR_W*100).toFixed(2)+"%"; sh.style.opacity = (.55*k).toFixed(2);
+}
+function marInit(){
+  const at = mar.at || {u:118, v:4};
+  marPlace(at.u, at.v);
+  if(mar.k!=null && mar.win){ const c = marCaseOfK(mar.k), hi = document.getElementById("mrl-hi"); if(hi){ hi.setAttribute("d", marShape(c)); hi.classList.add("on", "now") }
+    document.querySelector(`.mrl-fill[data-n="${c.n}"]`)?.classList.add("won") }
+}
+const marAnim = (T, f) => new Promise(res=>{ const t0 = performance.now(); const st = now => { const u = Math.max(0, Math.min(1,(now-t0)/T)); f(u); if(u<1 && document.getElementById("mrl-ball")) requestAnimationFrame(st); else res() }; requestAnimationFrame(st) });
+async function marGo(pay){
+  if(!srvNeed()) return;
+  if(mar.busy || !chanceCanPay("marelle", !!pay)) return;
+  mar.busy = true; mar.win = null;
+  const btns = () => { const b = document.getElementById("mrl-btns"); if(b) b.innerHTML = mar.busy ? `<button class="btn btn-yellow btn-xl" disabled>${ic("marelle",18)} La bille vole…</button>` : chanceBtns("marelle","mrl-go","Lancer ma bille") };
+  btns();
+  let k, bille = null, gain, srvR = null;
+  try{
+    if(srvOn()){ const r = await srv(()=>Cloud.eco.marelle(!!pay)); srvR = r; k = r.case; if(r.bille) bille = srvAdopt([r.bille])[0]; gain = () => applyEco(r.eco) }
+    else { k = pickW(Math.random(), ROUE.map(c=>c.w)); const c0 = ROUE[k];
+      if(c0.roue) bille = makeSpec("mammouth", {shiny:Math.random()<MAMM_SHINY ? rollShiny() : 0, src:"marelle"});
+      gain = () => { if(c0.j) S.jetons += c0.j; if(c0.sac) S.bagInv[c0.sac] = (S.bagInv[c0.sac]||0)+1; save() } }
+  }catch(e){ mar.busy = false; btns(); chanceFail("marelle", e); return }
+  const L = ROUE[k], C = marCaseOfK(k);
+  chanceMark("marelle", pay, srvR);
+  S.stats.marelle = (S.stats.marelle||0)+1; save();
+  walletFreeze = S.jetons; renderTop();   // pas de spoiler pendant que la bille vole
+  let given = false;
+  const give = () => { if(given) return; given = true; walletFreeze = null; gain();
+    if(bille){ S.specs.push(bille); S.unseen.push(bille.id); logFind(bille); winHold(bille, "marelle") }
+    renderTop(); renderNav(); if(!pay) gamesBonus() };
+  setTimeout(()=>{ if(!document.getElementById("mrl-ball")){ mar.busy = false; give() } }, 6000);   // page quittée en route : le lot arrive quand même
+  // où elle tombe : au hasard dans la case, pas trop près des traits
+  const [u0,u1] = C.u, [v0,v1] = C.v, mg = 30;
+  let tu = u0+mg + Math.random()*(u1-u0-2*mg), tv = v0+mg + Math.random()*(v1-v0-2*mg);
+  if(C.ciel){ const a = .25 + Math.random()*.5, rr = Math.random()*.55; tu = Math.cos(a*Math.PI)*150*rr; tv = 790 + 28 + Math.sin(a*Math.PI)*125*rr*.6 }
+  const reduce = matchMedia("(prefers-reduced-motion: reduce)").matches;
+  const hi = document.getElementById("mrl-hi"), w0 = document.getElementById("mrl-win");
+  if(w0) w0.hidden = true; hi?.classList.remove("on", "now"); document.querySelectorAll(".mrl-fill.won").forEach(e=>e.classList.remove("won"));
+  const start = {u:(Math.random()-.5)*30, v:-20};   // on relance toujours depuis la Terre
+  let turn = 0;
+  if(!reduce){
+    // 1. elle revient dans la main, sur la Terre
+    const from = mar.at || {u:118, v:4};
+    await marAnim(320, e=>marPlace(from.u + (start.u-from.u)*e, from.v + (start.v-from.v)*e, 40*Math.sin(e*Math.PI/2), 0));
+    // 2. le lancer : une cloche, plus haute pour les cases du fond ; elle retombe un peu avant sa case
+    const lu = tu + (start.u-tu)*.12, lv = tv - Math.min(60, (tv-start.v)*.12), H = 110 + tv*.32, T1 = 720 + tv*.55;
+    Sound.whoosh();
+    await marAnim(T1, e=>{ turn = e*540; marPlace(start.u + (lu-start.u)*e, start.v + (lv-start.v)*e, 4*H*e*(1-e) + 40*(1-e), turn) });
+    if(!document.getElementById("mrl-ball")) return;
+    Sound.tap(0, .9, 1); const st = document.getElementById("mrl-stage"); if(st){ const r = st.getBoundingClientRect(), [px,py] = marP(lu, lv); FX.burst((r.left + px/MAR_W*r.width)*1, (r.top + py/MAR_H*r.height)*1, ["#F4F1EA","#DAD6CC","#FFFFFF"], 16, .45) }
+    // 3. deux petits rebonds, puis elle roule jusqu'à sa place
+    const at = p => [lu + (tu-lu)*p, lv + (tv-lv)*p];
+    await marAnim(360, e=>{ const [u,v] = at(.62*e); turn += 3; marPlace(u, v, 4*26*e*(1-e), turn) }); Sound.tap(0, .45, 1.1);
+    await marAnim(200, e=>{ const [u,v] = at(.62+.28*e); turn += 3; marPlace(u, v, 4*8*e*(1-e), turn) }); Sound.tap(0, .2, 1.2);
+    await marAnim(420, e=>{ const p = .9 + .1*(1-Math.pow(1-e,3)), [u,v] = at(p); turn += 2*(1-e); marPlace(u, v, 0, turn) });
+  } else marPlace(tu, tv);
+  mar.at = {u:tu, v:tv}; mar.k = k;
+  if(!document.getElementById("mrl-ball")){ mar.busy = false; give(); return }
+  // 4. la case s'entoure à la craie jaune et se colore
+  const h2 = document.getElementById("mrl-hi"); if(h2){ h2.setAttribute("d", marShape(C)); void h2.getBoundingClientRect(); h2.classList.add("on") }
+  document.querySelector(`.mrl-fill[data-n="${C.n}"]`)?.classList.add("won");
+  for(let i=0;i<5;i++) setTimeout(()=>Sound.hit?.(.04+Math.random()*.03), i*110);
+  await new Promise(r=>setTimeout(r, reduce ? 100 : 700));
+  mar.busy = false; give();
+  const big = L.roue || L.sac==="collector" || L.sac==="premium" || L.j>=100;
+  mar.win = `<b>${L.roue ? "LE CIEL !" : big ? "Jackpot !" : `Case ${C.n} !`}</b><span>${rouePrize(L)}</span>`;
+  const w = document.getElementById("mrl-win"); if(w){ w.innerHTML = mar.win; w.classList.toggle("bas", tv>400); w.hidden = false }
+  if(big){ Sound.ding(); FX.fireworks([L.c, "#FFE14D", "#FFFFFF"], 6) } else Sound.coin();
+  const wb = document.getElementById("mrl-ball"); if(wb){ const [x,y] = FX.at(wb); FX.burst(x, y, [L.c, "#FFE14D", "#FFF2B0"], big ? 70 : 34, 1) }
+  if(L.roue && bille) setTimeout(()=>mammRoulette(bille, "marelle"), 900);
+  btns();
+  const ch = document.getElementById("day-chip"); if(ch && chanceFreeDone("marelle")){ ch.className = "gt-state"; ch.innerHTML = `${ic("check",14,3)} Lancer offert joué · le prochain dans <b data-quest-timer>${untilMidnight()}</b>` }
+}
+// la vignette de la page des jeux : la marelle à la craie couchée sur le bitume, une bille sur la case 3
+function artMarelle(){
+  const c = (x,y,w,h) => `<rect x="${x}" y="${y}" width="${w}" height="${h}"/>`, t = (x,y,n) => `<text x="${x}" y="${y}">${n}</text>`;
+  return ART_SVG(`<rect width="320" height="100" fill="#3A3F4D"/><rect width="320" height="100" fill="#2C3140" opacity=".5"/>
+    <g transform="translate(160 50) scale(.74) translate(-158 -50)"><g fill="none" stroke="#F4F1EA" stroke-width="2.6" stroke-linejoin="round" opacity=".92">${c(24,34,38,32)}${c(62,34,38,32)}${c(100,34,38,32)}${c(138,16,38,34)}${c(138,50,38,34)}${c(176,34,38,32)}${c(214,16,38,34)}${c(214,50,38,34)}
+      <path d="M252 16 A44 34 0 0 1 252 84 Z" stroke="#FFE14D"/></g>
+    <g font-family="Caveat" font-weight="700" font-size="20" fill="#F4F1EA" text-anchor="middle">${t(43,57,1)}${t(81,57,2)}${t(119,57,3)}${t(157,40,4)}${t(157,74,5)}${t(195,57,6)}${t(233,40,7)}${t(233,74,8)}<text x="272" y="56" fill="#FFE14D" font-size="18">Ciel</text></g>
+    <ellipse cx="121" cy="66" rx="9" ry="3" fill="#000" opacity=".4"/><circle cx="121" cy="58" r="8" fill="#3E7BFA"/><circle cx="118" cy="55" r="2.6" fill="#fff" opacity=".8"/>
+    <path d="M290 12 l4 -6 M300 22 l7 -3 M296 90 l6 4" stroke="#FFE14D" stroke-width="2.4" stroke-linecap="round"/></g>`);
+}
+
 /* ---------- la Loterie de la semaine ---------- */
 const lot = {data:null, loading:false, fresh:null};
 const LOT_PRIX = [{bons:3, txt:"Un Mammouth + un Sachet Collector + 500 bonbecs"}, {bons:2, txt:"Un Sachet Premium + 50 bonbecs"}, {bons:1, txt:"15 bonbecs"}];   // 7 octobre 2026 : mêmes lots dans supabase/chance.sql
@@ -9725,7 +9950,7 @@ function artLoterie(){
   const n = [7,13,18], c = ["#E5484D","#FFC93F","#2EC4DE"];
   return ART_SVG(`<rect width="320" height="100" fill="#1B4D3A"/>${n.map((x,i)=>`<circle cx="${110+i*50}" cy="50" r="20" fill="${c[i]}"/><circle cx="${110+i*50}" cy="50" r="12" fill="#fff"/><text x="${110+i*50}" y="55" text-anchor="middle" font-family="Lilita One" font-size="14" fill="#2B2233">${x}</text>`).join("")}`);
 }
-const GAME_ICON = {tir:"target", pot:"pot", chateau:"castle", casse:"layers", course:"flag", tic:"tic", pachinko:"pachi", roue:"wheel", grattage:"star", distributeur:"gift", loterie:"ticket"};
+const GAME_ICON = {tir:"target", marelle:"marelle", pot:"pot", chateau:"castle", casse:"layers", course:"flag", tic:"tic", pachinko:"pachi", roue:"wheel", grattage:"star", distributeur:"gift", loterie:"ticket"};
 function viewGames(){
   gcLoad();
   const P = playedToday(), tirDone = !!P.tir[0], tirL = LEVELS[tirOfDay()];
@@ -9734,7 +9959,7 @@ function viewGames(){
   const won = Object.keys(DAY_GAMES).reduce((a,k)=>a+(dayGame(k)?.rew||0), 0);
   const maxAll = TIR_MAX + Object.values(DAY_GAMES).reduce((a,g)=>a+g.max, 0);
   // un jeu « fait à fond » aujourd'hui : la partie du jour est finie, et pour les jeux de chance toutes les parties à acheter aussi
-  const CHANCE_KEYS = ["roue","pachinko","grattage","distributeur"];
+  const CHANCE_KEYS = ["roue","pachinko","grattage","distributeur","marelle"];
   const freeDone = k => k==="roue"||k==="pachinko" ? !soloReady(k) && !gameLive(k) : chanceFreeDone(k);
   const bought = k => k==="pachinko" ? pachiBought() : chanceBought(k), maxOf = k => k==="pachinko" ? PACHI_MAX : CHANCE_MAX;
   const maxed = k => k==="tir" ? tirDone : CHANCE_KEYS.includes(k) ? freeDone(k) && bought(k)>=maxOf(k) : !!dayGame(k)?.done;
@@ -9750,13 +9975,13 @@ function viewGames(){
   const solo = [
     {v:"tir", t:"Le Tir", max:TIR_MAX, d:`Un nouveau trou chaque jour, parmi ${LEVELS.length} : murs, sable, eau et champignons. Aujourd'hui : « ${tirL.name} », par ${tirL.par}.`, art:artTir(),
       stat:`${S.holes} trou${S.holes>1?"s":""} réussi${S.holes>1?"s":""}`, ok:!tirDone, state:tirDone?`${ic("check",14,3)} Trou du jour réussi`:`${ic("gift",14)} Trou du jour à réussir`},
-    {...day("pot"), d:ARENA.pot.lead, art:artPot(), stat:`${S.stats.pot} bille${S.stats.pot>1?"s":""} dans le pot`},
     {...day("chateau"), d:ARENA.chateau.lead, art:artChateau(), stat:`${S.stats.castle} bille${S.stats.castle>1?"s":""} sortie${S.stats.castle>1?"s":""} du cercle`},
   ];
   const chanceTile = (v, t, d, art, prize) => ({v, t, d, art, prize, ok:!chanceFreeDone(v), state:chanceFreeDone(v) ? `${ic("check",14,3)} Partie offerte jouée` : `${ic("gift",14)} Partie offerte à jouer`, stat:`${chanceBought(v)} / ${CHANCE_MAX} achetées aujourd'hui · ${CHANCE_PRIX[v]} ${CUR.many}`});
   const chance = [
     {...day("roue"), d:"Un tour de roue gratuit chaque jour : bonbecs, sachets offerts… et peut-être un Mammouth !", art:artRoue(), stat:`${S.stats.roue||0} tour${(S.stats.roue||0)>1?"s":""} de roue`},
     {...day("pachinko"), d:"Lâche une bille en haut du plateau : elle rebondit de clou en clou jusqu'à une case. Bonbecs, sachets offerts… et tout au bord, un Mammouth !", art:artPachinko(), stat:`${S.stats.pachi||0} bille${(S.stats.pachi||0)>1?"s":""} lâchée${(S.stats.pachi||0)>1?"s":""}`},
+    chanceTile("marelle", "La Marelle", "Lance ta bille sur la marelle : elle retombe toujours sur une case. Le Ciel, c'est le Mammouth !", artMarelle(), "un Mammouth"),
     chanceTile("grattage", "Le Ticket à gratter", "Gratte 6 cases : 3 dessins pareils, et le lot est à toi.", artGrattage(), "un Collector"),
     chanceTile("distributeur", "Le Distributeur", "Tourne la manivelle : une boule tombe avec une bille dedans.", artDistributeur(), "un Mammouth"),
   ];
@@ -10186,8 +10411,9 @@ const DAY_GAMES = {
 // (6 octobre 2026) les 3 jeux du jour, tirés chaque jour parmi 8 et les mêmes pour tout le monde : un Sachet Premium quand ils sont faits
 // (seule la partie offerte compte). Même calcul que interne.jeux_du_jour dans supabase/serveur.sql : toujours un jeu d'adresse en premier.
 const GAMES_BONUS = "premium";
-const JEUX_TOUS = ["tir","pot","chateau","tic","roue","pachinko","grattage","distributeur"];
-const JEUX_NOM = {tir:"Le Tir", pot:"Le Pot", chateau:"Le Château", tic:"La Tic", roue:"La Roue", pachinko:"Le Plinko", grattage:"Le Ticket", distributeur:"Le Distributeur"};
+// (9 octobre 2026) la Marelle prend la place du Pot dans la liste (même position : les jeux du jour tirés ne changent pas)
+const JEUX_TOUS = ["tir","marelle","chateau","tic","roue","pachinko","grattage","distributeur"];
+const JEUX_NOM = {tir:"Le Tir", marelle:"La Marelle", pot:"Le Pot", chateau:"Le Château", tic:"La Tic", roue:"La Roue", pachinko:"Le Plinko", grattage:"Le Ticket", distributeur:"Le Distributeur"};
 function jeuxDuJour(key=dayKey()){
   const [y,m,dd] = key.split("-").map(Number), d = Math.round((Date.UTC(y,m-1,dd)-Date.UTC(2026,0,1))/864e5);
   let x = (d*7919 + 12345) % 65521; const nx = () => (x = (x*x + 7) % 65521);
@@ -13166,6 +13392,7 @@ document.addEventListener("click", e=>{
     case "craft-ev": ui.confTab = "evenement"; renderView(); break;
     case "roue-go": roueGo(t.dataset.pay==="1"); break;
     case "gr-go": gratGo(t.dataset.pay==="1"); break;
+    case "mrl-go": marGo(t.dataset.pay==="1"); break;
     case "gr-all": { const cv = document.getElementById("gr-foil"); if(cv) cv.getContext("2d").clearRect(0,0,cv.width,cv.height); gratEnd(); break }
     case "ds-go": distGo(t.dataset.pay==="1"); break;
     case "ds-close": distClear(); break;

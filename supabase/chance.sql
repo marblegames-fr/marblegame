@@ -60,6 +60,25 @@ begin
   return jsonb_build_object('eco', interne.etat(qui), 'case', c.k, 'bonbecs', c.bonbecs, 'sac', c.sac, 'bille', b, 'achetees', j.achetees);
 end $$;
 
+-- ---------- La Marelle (9 octobre 2026 : remplace le Pot) : offerte, ou 15 bonbecs ; mêmes lots et mêmes chances que la Roue ----------
+-- la case est choisie dans la page d'après le lot : 1 = 5 bonbecs … 8 = Collector, le Ciel = le Mammouth (MAR_CASES dans index.html)
+create or replace function public.marelle(payer boolean default false)
+returns jsonb language plpgsql security definer set search_path = public as $$
+declare qui uuid := interne.moi(); today text := interne.aujourdhui()::text; c record; x numeric; acc numeric := 0; j record; b jsonb := null;
+begin
+  select * into j from interne.jeu_chance(qui, 'marelle', payer, 15);
+  x := random() * (select sum(poids) from interne.roue_cases());
+  for c in select * from interne.roue_cases() order by k loop
+    acc := acc + c.poids; exit when x < acc;
+  end loop;
+  if j.lie then perform interne.crediter_lie(qui, c.bonbecs, c.sac); else perform interne.crediter(qui, c.bonbecs, c.sac); end if;
+  if not payer and c.bonbecs > 0 then update gains set montant = c.bonbecs where joueur = qui and source = 'jeu' and cle = today || '|marelle'; end if;
+  if c.taille = 'mammouth' then
+    b := interne.nouvelle_bille(qui, 'mammouth', shiny => interne.tirer_shiny(interne.taux_shiny() * 10), src => 'marelle', liee => j.lie);
+  end if;
+  return jsonb_build_object('eco', interne.etat(qui), 'case', c.k, 'bonbecs', c.bonbecs, 'sac', c.sac, 'bille', b, 'achetees', j.achetees);
+end $$;
+
 -- ---------- Le Distributeur de billes : offert, ou 15 bonbecs ; toujours une bille ----------
 -- sa taille comme la vedette du sachet gratuit (Mini 30, Bille 33, Chinoise 20, Calot 12, Boulet 4, Mammouth 1), shiny au taux de base
 create or replace function public.distributeur(payer boolean default false)
@@ -168,7 +187,7 @@ begin
 end $$;
 
 do $$ declare f text; begin
-  foreach f in array array['roue(boolean)','grattage(boolean)','distributeur(boolean)','loterie_etat()','loterie_ticket()'] loop
+  foreach f in array array['roue(boolean)','grattage(boolean)','marelle(boolean)','distributeur(boolean)','loterie_etat()','loterie_ticket()'] loop
     execute format('revoke all on function public.%s from public, anon', f);
     execute format('grant execute on function public.%s to authenticated', f);
   end loop;

@@ -102,6 +102,7 @@
       // les jeux de hasard (supabase/chance.sql) : payer = false pour la partie offerte du jour
       roue: payer => rpc("roue", {payer:!!payer}),
       grattage: payer => rpc("grattage", {payer:!!payer}),
+      marelle: payer => rpc("marelle", {payer:!!payer}),   // (9 octobre 2026) remplace le Pot
       distributeur: payer => rpc("distributeur", {payer:!!payer}),
       loterie: () => rpc("loterie_etat"),
       loterieTicket: () => rpc("loterie_ticket"),

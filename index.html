@@ -3136,7 +3136,7 @@ button.cp-who:hover b{text-decoration:underline}
   *,*::before,*::after{animation-duration:.01ms!important;animation-iteration-count:1!important;transition-duration:.01ms!important}
 }
 /* ---------- compte : la cour de récré, le soir (bienvenue, inscription, connexion) ---------- */
-.auth{position:fixed;inset:0;z-index:75;overflow:auto;background:#130D0A;color:#fff;color-scheme:dark;
+.auth{position:fixed;inset:0;z-index:75;overflow:auto;background:#0C0F18;color:#fff;color-scheme:dark;
   --ink:#fff;--ink-2:rgba(255,255,255,.74);--muted:rgba(255,255,255,.56);--panel:rgba(255,255,255,.06);--panel-2:rgba(255,255,255,.08);
   --line:rgba(255,255,255,.1);--line-2:rgba(255,255,255,.18);--warn:#FFA48A;--blue:#9DBBFF}
 .auth[hidden]{display:none}
@@ -3144,8 +3144,8 @@ button.cp-who:hover b{text-decoration:underline}
 #auth-fx{position:fixed;inset:0;width:100%;height:100%;display:block;touch-action:none;cursor:grab}
 #auth-fx.aiming{cursor:grabbing}
 #auth-fx.off{cursor:default}
-.auth-balls{position:fixed;left:16px;bottom:16px;z-index:2;display:inline-flex;align-items:center;gap:8px;height:38px;padding:0 15px;border-radius:999px;background:rgba(24,17,13,.66);-webkit-backdrop-filter:blur(12px);backdrop-filter:blur(12px);border:1px solid rgba(255,255,255,.14);color:rgba(255,255,255,.78);font-weight:800;font-size:13px;transition:color .15s,background .15s}
-.auth-balls:hover{color:#fff;background:rgba(40,30,24,.8)}
+.auth-balls{position:fixed;left:16px;bottom:16px;z-index:2;display:inline-flex;align-items:center;gap:8px;height:38px;padding:0 15px;border-radius:999px;background:rgba(16,20,32,.66);-webkit-backdrop-filter:blur(12px);backdrop-filter:blur(12px);border:1px solid rgba(255,255,255,.14);color:rgba(255,255,255,.78);font-weight:800;font-size:13px;transition:color .15s,background .15s}
+.auth-balls:hover{color:#fff;background:rgba(30,36,54,.8)}
 .auth-wrap{position:relative;z-index:1;min-height:100%;max-width:1140px;margin:0 auto;padding:32px 32px 40px;align-content:start;padding-top:max(32px,calc(calc(50vh / var(--vz,1)) - 380px));display:grid;grid-template-columns:minmax(0,1fr) minmax(0,430px);gap:64px;align-items:start;pointer-events:none}
 .auth-wrap > *{pointer-events:auto}
 .auth-pitch{pointer-events:none;text-shadow:0 2px 18px rgba(0,0,0,.55);margin-top:60px}   /* fixe : ne bouge pas quand le formulaire change de hauteur */
@@ -3161,7 +3161,7 @@ button.cp-who:hover b{text-decoration:underline}
 .af-ic{width:48px;height:48px;display:grid;place-items:center;border-radius:14px;background:rgba(255,255,255,.07);border:1px solid rgba(255,255,255,.1)}
 .af-ic img{width:34px!important;filter:drop-shadow(0 3px 5px rgba(0,0,0,.4))}
 .af-ic svg{color:var(--yellow)}
-.auth-card{position:relative;width:100%;background:rgba(24,17,13,.66);-webkit-backdrop-filter:blur(16px) saturate(1.3);backdrop-filter:blur(16px) saturate(1.3);border:1px solid rgba(255,255,255,.13);border-radius:26px;padding:30px 28px 24px;box-shadow:0 40px 80px -30px rgba(0,0,0,.8),inset 0 1px 0 rgba(255,255,255,.08);text-align:center;animation:auth-card .7s .15s cubic-bezier(.2,.9,.3,1.1) both}
+.auth-card{position:relative;width:100%;background:rgba(16,20,32,.66);-webkit-backdrop-filter:blur(16px) saturate(1.3);backdrop-filter:blur(16px) saturate(1.3);border:1px solid rgba(255,255,255,.13);border-radius:26px;padding:30px 28px 24px;box-shadow:0 40px 80px -30px rgba(0,0,0,.8),inset 0 1px 0 rgba(255,255,255,.08);text-align:center;animation:auth-card .7s .15s cubic-bezier(.2,.9,.3,1.1) both}
 .auth-card h2{font-family:var(--display);font-weight:400;font-size:30px;line-height:1.05;margin:0 0 8px}
 .auth-card p{color:var(--ink-2);margin:0}
 .auth-card .auth-kicker{font-family:var(--hand);font-size:24px;color:var(--yellow);margin:-4px 0 4px}
@@ -3231,8 +3231,8 @@ button.cp-who:hover b{text-decoration:underline}
 .pp-links button.pp-out{color:var(--warn)}
 /* le premier lancement guidé (8 octobre 2026) */
 #tuto{position:fixed;inset:0;z-index:58;pointer-events:none}
-.tu-spot{position:fixed;border-radius:16px;box-shadow:0 0 0 3px var(--yellow),0 0 0 9999px rgba(8,6,4,.62);transition:all .25s;animation:tuspot 1.6s ease-in-out infinite}
-@keyframes tuspot{50%{box-shadow:0 0 0 7px rgba(255,201,63,.5),0 0 0 9999px rgba(8,6,4,.62)}}
+.tu-spot{position:fixed;border-radius:16px;box-shadow:0 0 0 3px var(--yellow),0 0 0 9999px rgba(5,7,14,.62);transition:all .25s;animation:tuspot 1.6s ease-in-out infinite}
+@keyframes tuspot{50%{box-shadow:0 0 0 7px rgba(255,201,63,.5),0 0 0 9999px rgba(5,7,14,.62)}}
 .tu-bub{position:fixed;pointer-events:auto;width:min(340px,calc(100vw - 24px));padding:14px 16px 12px;border-radius:18px;background:#FFF8EC;color:#24253D;box-shadow:0 18px 40px -12px rgba(0,0,0,.7);animation:tupop .35s cubic-bezier(.2,1.5,.4,1)}
 @keyframes tupop{from{transform:scale(.85);opacity:0}}
 .tu-bub::after{content:"";position:absolute;left:var(--ax,50%);width:16px;height:16px;background:#FFF8EC;transform:translateX(-50%) rotate(45deg)}
@@ -13935,9 +13935,9 @@ const AuthFx = (()=>{
     bg = document.createElement("canvas"); bg.width = W*dpr; bg.height = H*dpr;
     const c = bg.getContext("2d"); c.scale(dpr,dpr);
     const gr = c.createRadialGradient(W*.4,H*.55,0,W*.4,H*.55,Math.max(W,H)*.85);
-    gr.addColorStop(0,"#3D2C21"); gr.addColorStop(.55,"#1F1611"); gr.addColorStop(1,"#0C0806");
+    gr.addColorStop(0,"#262D44"); gr.addColorStop(.55,"#151A29"); gr.addColorStop(1,"#080A12");
     c.fillStyle = gr; c.fillRect(0,0,W,H);
-    for(let i=0, n=W*H/70; i<n; i++){ c.fillStyle = Math.random()<.5 ? `rgba(255,235,210,${rand(.02,.06)})` : `rgba(0,0,0,${rand(.05,.14)})`; c.fillRect(Math.random()*W, Math.random()*H, rand(.6,1.8), rand(.6,1.8)) }
+    for(let i=0, n=W*H/70; i<n; i++){ c.fillStyle = Math.random()<.5 ? `rgba(225,232,255,${rand(.02,.06)})` : `rgba(0,0,0,${rand(.05,.14)})`; c.fillRect(Math.random()*W, Math.random()*H, rand(.6,1.8), rand(.6,1.8)) }
     const chalk = (draw, a=.16, w=3) => { for(let p=0;p<3;p++){ c.save(); c.translate(rand(-.8,.8),rand(-.8,.8)); c.strokeStyle=`rgba(255,250,240,${a*rand(.6,1)})`; c.lineWidth=w*rand(.7,1.2); c.lineCap="round"; c.lineJoin="round"; c.beginPath(); draw(); c.stroke(); c.restore() } };
     chalk(()=>{ for(let i=0;i<=72;i++){ const a=i/72*Math.PI*2+.1, rr=ring.r*(1+Math.sin(a*3)*.012)+rand(-1.5,1.5); i ? c.lineTo(ring.x+Math.cos(a)*rr, ring.y+Math.sin(a)*rr) : c.moveTo(ring.x+Math.cos(a)*rr, ring.y+Math.sin(a)*rr) } }, .22, 4);
     // la marelle, en haut à gauche

@@ -9218,9 +9218,13 @@ function gratSym(lbl){
   if(c.sac) return `<span class="gr-ico gr-bag">${bagSVG(BAG_BY[c.sac])}</span><b>${c.lbl}</b>`;
   return `<span class="gr-ico"><svg class="gr-candy" viewBox="-15 -10 30 20" aria-hidden="true"><path d="M-14 -7 L-6 0 L-14 7 Z M14 -7 L6 0 L14 7 Z" fill="${c.c2}"/><ellipse rx="8" ry="6.6" fill="${c.c}"/><path d="M-4 -5.5 L0.5 5.5 M1 -5.8 L4.5 3.5" stroke="#fff" stroke-width="1.7" opacity=".75"/></svg></span><b>${c.lbl}</b>`;
 }
+// (9 octobre 2026) pour le suspense : 7 tickets sur 10 ont aussi une paire, le plus souvent d'un lot plus rare que celui gagné
+// (deux Mammouths… et il en manquait un !)
 function gratCells(lbl){
   const out = [lbl,lbl,lbl], others = GRAT_KINDS.filter(x=>x!==lbl).sort(()=>Math.random()-.5);
-  for(let i=0; out.length<6; i++){ const x = others[i%others.length]; if(out.filter(c=>c===x).length<2) out.push(x) }
+  const pr = l => ROUE.filter(x=>x.lbl===l).reduce((a,x)=>a+x.w,0), rarer = others.filter(x=>pr(x)<pr(lbl));
+  if(Math.random()<.7){ const x = rarer.length && Math.random()<.75 ? rarer[0] : others[0]; out.push(x,x) }
+  for(let i=0; out.length<6; i++){ const x = others[i%others.length]; if(!out.includes(x)) out.push(x) }
   return out.sort(()=>Math.random()-.5);
 }
 function viewGrattage(){

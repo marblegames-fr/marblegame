@@ -1342,38 +1342,77 @@ body.vit-dragging,body.vit-dragging *{cursor:grabbing!important;user-select:none
 .gr-res{position:relative;display:grid;justify-items:center;gap:2px;padding:10px 26px;border-radius:16px;background:rgba(20,8,30,.85);color:#fff;text-align:center;animation:rq-pop .45s cubic-bezier(.2,1.6,.4,1) both}
 .gr-res b{font-family:var(--display);font-weight:400;font-size:28px;color:#FFE14D}
 .gr-res span{font-weight:800}
-/* ---------- le Distributeur ---------- */
-.ds-stage{position:relative;display:grid;place-items:center;min-height:420px;padding:24px 10px 18px;border-radius:var(--r-md);overflow:hidden;
-  background:radial-gradient(ellipse at 50% 20%,#3A78B0,#173452 65%,#0D1D30)}
-.ds-stage::after{content:"";position:absolute;left:0;right:0;bottom:0;height:22%;background:linear-gradient(180deg,#5A3A22,#3A2416);box-shadow:inset 0 3px 0 rgba(255,255,255,.12)}
-.ds-machine{position:relative;z-index:1;width:min(250px,64vw)}
-.ds-svg{width:100%;height:auto;display:block;filter:drop-shadow(0 18px 18px rgba(0,0,0,.45))}
-.ds-machine.turn .ds-crank{animation:ds-crank 1.2s cubic-bezier(.4,0,.2,1)}
-.ds-machine.turn .ds-b{animation:ds-shake .45s ease-in-out var(--d) 3}
-.ds-machine.turn .ds-flap{animation:ds-flap .5s ease-in-out 1.7s}
-@keyframes ds-crank{to{transform:rotate(360deg)}}
-@keyframes ds-shake{25%{transform:translate(2px,-4px)}75%{transform:translate(-2px,2px)}}
-@keyframes ds-flap{50%{transform:translateY(-8px)}}
-.ds-cap{position:absolute;left:50%;top:84%;width:36px;height:36px;margin-left:-18px;opacity:0;pointer-events:none;z-index:2}
-.ds-cap i{position:absolute;left:0;width:36px;height:18px;transition:transform .45s cubic-bezier(.3,1.4,.5,1)}
-.ds-cap i:first-child{top:0;border-radius:18px 18px 0 0;background:radial-gradient(circle at 35% 40%,#fff 0 12%,var(--cc,#FF5FA8) 13% 100%)}
-.ds-cap i:last-child{bottom:0;border-radius:0 0 18px 18px;background:rgba(255,255,255,.88);box-shadow:inset 0 -3px 5px rgba(0,0,0,.2)}
-.ds-cap.drop{animation:ds-drop 1s cubic-bezier(.4,0,.6,1) 1.2s forwards}
-.ds-cap.open i:first-child{transform:translateY(-22px) rotate(-30deg)}
-.ds-cap.open i:last-child{transform:translateY(16px) rotate(18deg)}
-@keyframes ds-drop{0%{opacity:1;transform:translateY(-70px) scale(.5)}60%{opacity:1;transform:translateY(34px) scale(1)}75%{transform:translateY(24px)}100%{opacity:1;transform:translateY(34px)}}
-.ds-out{position:absolute;inset:0;z-index:3;display:grid;place-items:center;align-content:center;background:rgba(8,14,26,.82);backdrop-filter:blur(4px);animation:ds-in .4s ease-out both}
-@keyframes ds-in{from{opacity:0}}
-.ds-rays{position:absolute;left:50%;top:44%;width:520px;height:520px;margin:-260px 0 0 -260px;border-radius:50%;pointer-events:none;
-  background:repeating-conic-gradient(color-mix(in srgb,var(--rc) 45%,transparent) 0 8deg,transparent 8deg 22deg);
-  -webkit-mask:radial-gradient(circle,#000 0 25%,transparent 65%);mask:radial-gradient(circle,#000 0 25%,transparent 65%);animation:ds-spin 14s linear infinite}
+/* ---------- le Distributeur (9 octobre 2026 : plus grand, dans un coin de confiserie, avec une boule qui monte de cran en cran) ---------- */
+.ds-stage{position:relative;container-type:size;height:clamp(460px,calc(100vh - 330px),640px);border-radius:var(--r-md);overflow:hidden;isolation:isolate;transition:filter .4s;
+  background:radial-gradient(ellipse 60% 45% at 50% 30%,rgba(255,214,150,.35),transparent 70%),repeating-linear-gradient(90deg,#F6D9C9 0 34px,#F1C9B8 34px 68px)}
+.ds-stage::before{content:"";position:absolute;inset:0;background:radial-gradient(ellipse at 50% 35%,transparent 35%,rgba(40,14,20,.55));z-index:0;pointer-events:none}
+.ds-stage.night{filter:brightness(.35) saturate(.6)}
+.ds-counter{position:absolute;left:0;right:0;bottom:0;height:19%;z-index:1;background:linear-gradient(180deg,#9A5B32,#6E3C1E 30%,#4E2914);box-shadow:inset 0 4px 0 rgba(255,230,190,.35),0 -6px 18px rgba(0,0,0,.25)}
+.ds-counter::before{content:"";position:absolute;left:0;right:0;top:0;height:14px;background:linear-gradient(180deg,#C98A55,#8E5229)}
+.ds-sign{position:absolute;top:22px;left:24px;transform:rotate(-3deg);z-index:2;padding:7px 20px 8px;border-radius:14px;background:#3B1420;border:3px solid #FFC93F;
+  font-family:"Lilita One",sans-serif;font-size:20px;color:#FFE9A8;letter-spacing:1.5px;white-space:nowrap;box-shadow:0 8px 18px rgba(0,0,0,.3)}
+.ds-sign i{position:absolute;top:50%;width:8px;height:8px;margin-top:-4px;border-radius:50%;background:#FFE9A8;box-shadow:0 0 8px #FFC93F}
+.ds-sign i:first-child{left:-14px} .ds-sign i:last-child{right:-14px}
+.ds-machine{position:absolute;left:50%;bottom:5%;transform:translateX(-50%);z-index:3;width:min(400px,84cqw,63cqh)}
+.ds-machine svg{width:100%;height:auto;display:block;filter:drop-shadow(0 22px 22px rgba(40,10,20,.45))}
+.ds-crank{transition:transform .38s cubic-bezier(.3,1.5,.5,1)}
+.ds-mb{transition:transform .25s ease-out}
+.ds-lt{fill:#FFE9A8;opacity:.35}
+.ds-machine.idle .ds-lt{animation:ds-tw 2.4s ease-in-out infinite;animation-delay:var(--d)}
+.ds-machine.spin .ds-lt{animation:ds-chase .5s linear infinite;animation-delay:var(--d)}
+.ds-machine.hot .ds-lt{fill:var(--hc);animation:ds-chase .32s linear infinite;animation-delay:var(--d)}
+@keyframes ds-tw{50%{opacity:.9}}
+@keyframes ds-chase{0%,40%{opacity:1}60%,100%{opacity:.25}}
+.ds-flap{transition:transform .25s}
+.ds-flap.bang{transform:translateY(-6px)}
+.ds-veil{position:absolute;inset:0;z-index:4;background:rgba(14,10,22,0);pointer-events:none;transition:background .5s}
+.ds-veil.on{background:rgba(14,10,22,.72);pointer-events:auto}
+.ds-rays{position:absolute;left:50%;top:44%;width:720px;height:720px;margin:-360px 0 0 -360px;border-radius:50%;z-index:5;pointer-events:none;opacity:0;transition:opacity .4s;
+  background:repeating-conic-gradient(color-mix(in srgb,var(--rc,#fff) 50%,transparent) 0 7deg,transparent 7deg 20deg);
+  -webkit-mask:radial-gradient(circle,#000 0 20%,transparent 62%);mask:radial-gradient(circle,#000 0 20%,transparent 62%);animation:ds-spin 16s linear infinite}
+.ds-rays.on{opacity:1}
 @keyframes ds-spin{to{transform:rotate(360deg)}}
-.ds-prize{position:relative;display:grid;justify-items:center;gap:8px;background:none;border:0;color:#fff;cursor:pointer;animation:ds-rise .7s cubic-bezier(.2,1.5,.4,1) both}
-@keyframes ds-rise{from{transform:translateY(60px) scale(.3);opacity:0}}
-.ds-prize img{filter:drop-shadow(0 14px 16px rgba(0,0,0,.55))}
-.ds-prize b{font-size:19px;font-weight:900;text-shadow:0 2px 6px rgba(0,0,0,.6)}
+.ds-cap{position:absolute;z-index:6;width:var(--cs,150px);height:var(--cs,150px);margin:calc(var(--cs,150px)/-2) 0 0 calc(var(--cs,150px)/-2);cursor:pointer;border:0;background:none;padding:0;
+  transition:left .7s cubic-bezier(.3,1.25,.5,1),top .7s cubic-bezier(.3,1.25,.5,1),width .7s cubic-bezier(.3,1.25,.5,1),height .7s cubic-bezier(.3,1.25,.5,1),margin .7s cubic-bezier(.3,1.25,.5,1)}
+.ds-cap .glow{position:absolute;inset:-30%;border-radius:50%;background:radial-gradient(circle,color-mix(in srgb,var(--cc) 70%,transparent),transparent 65%);opacity:0;transition:opacity .3s}
+.ds-cap.lit .glow{opacity:.9;animation:ds-pulse 1.1s ease-in-out infinite}
+@keyframes ds-pulse{50%{transform:scale(1.12)}}
+.ds-cap .h{position:absolute;left:0;width:100%;height:50%;transition:transform .6s cubic-bezier(.3,1.4,.5,1),opacity .6s,background .25s}
+.ds-cap .top{top:0;border-radius:999px 999px 0 0;background:radial-gradient(circle at 34% 34%,#fff 0 9%,color-mix(in srgb,var(--cc) 55%,#fff) 10%,var(--cc) 45%,color-mix(in srgb,var(--cc) 60%,#000) 100%);box-shadow:inset 0 -3px 0 rgba(0,0,0,.25)}
+.ds-cap .bot{bottom:0;border-radius:0 0 999px 999px;background:radial-gradient(circle at 50% 0%,rgba(255,255,255,.95),rgba(225,235,245,.9) 60%,rgba(170,185,205,.95));box-shadow:inset 0 -8px 12px rgba(0,0,0,.18)}
+.ds-cap .band{position:absolute;left:-2%;right:-2%;top:calc(50% - 4px);height:8px;border-radius:4px;background:linear-gradient(180deg,#fff,#C9CDD6 60%,#8D919B)}
+.ds-cap.sh1 .top{background:conic-gradient(from 0deg,#FF6B9A,#FFC93F,#7BE07B,#4FC3F7,#9C7CFF,#FF6B9A);animation:ds-hue 2s linear infinite}
+.ds-cap.sh2 .top{background:radial-gradient(circle at 34% 34%,#FFF7D6 0 10%,#FFD34D 30%,#C98A12 100%)}
+.ds-cap.sh3 .top{background:radial-gradient(circle at 50% 60%,#fff 0 30%,#DFF8FF 55%,#9FE6FF 100%);box-shadow:0 0 30px #BFEFFF}
+@keyframes ds-hue{to{filter:hue-rotate(360deg)}}
+.ds-cap.up{animation:ds-up .42s cubic-bezier(.3,1.6,.5,1)}
+@keyframes ds-up{30%{transform:scale(.86,1.12) translateY(-10px)}65%{transform:scale(1.12,.9)}}
+.ds-cap.try{animation:ds-try .7s ease-in-out}
+@keyframes ds-try{20%{transform:rotate(-7deg) scale(1.04)}45%{transform:rotate(6deg) scale(1.06)}70%{transform:rotate(-3deg)}}
+.ds-cap.shake{animation:ds-shake .5s ease-in-out}
+@keyframes ds-shake{15%{transform:translateX(-9px) rotate(-8deg)}35%{transform:translateX(8px) rotate(7deg)}55%{transform:translateX(-6px) rotate(-5deg)}75%{transform:translateX(4px) rotate(3deg)}}
+.ds-cap.open .top{transform:translate(-30%,-120%) rotate(-38deg);opacity:0}
+.ds-cap.open .bot{transform:translate(28%,110%) rotate(30deg);opacity:0}
+.ds-cap.open .band,.ds-cap.open .glow{opacity:0;transition:opacity .2s}
+.ds-ring{position:absolute;z-index:6;width:10px;height:10px;margin:-5px 0 0 -5px;border-radius:50%;border:4px solid var(--rc);pointer-events:none;animation:ds-ring .7s ease-out forwards}
+@keyframes ds-ring{to{transform:scale(26);opacity:0}}
+.ds-hint{position:absolute;left:50%;top:calc(44% + 108px);transform:translateX(-50%);z-index:6;font-weight:800;font-size:15px;color:#fff;background:rgba(255,255,255,.14);border-radius:999px;padding:6px 14px;white-space:nowrap;opacity:0;transition:opacity .3s;pointer-events:none}
+.ds-hint.on{opacity:1;animation:ds-bob 1.2s ease-in-out infinite}
+@keyframes ds-bob{50%{transform:translate(-50%,-4px)}}
+.ds-tier{position:absolute;left:50%;top:calc(44% - 160px);transform:translateX(-50%);z-index:6;font-family:"Lilita One",sans-serif;font-size:24px;letter-spacing:.6px;color:var(--tc,#fff);text-shadow:0 3px 10px rgba(0,0,0,.6);opacity:0;transition:opacity .25s;white-space:nowrap}
+.ds-tier.on{opacity:1}
+.ds-tier.pop{animation:ds-tpop .4s cubic-bezier(.3,1.6,.5,1)}
+@keyframes ds-tpop{from{transform:translateX(-50%) scale(1.5)}}
+#ds-out{display:contents}
+.ds-prize{position:absolute;left:50%;top:44%;z-index:7;display:grid;justify-items:center;gap:8px;transform:translate(-50%,-50%);border:0;background:none;color:#fff;font:inherit;cursor:pointer;opacity:0;pointer-events:none}
+.ds-prize.on{opacity:1;pointer-events:auto;animation:ds-rise .8s cubic-bezier(.2,1.5,.4,1) both}
+@keyframes ds-rise{from{transform:translate(-50%,-10%) scale(.2);opacity:0}}
+.ds-prize img{filter:drop-shadow(0 16px 18px rgba(0,0,0,.55))}
+.ds-prize b{font-family:"Lilita One",sans-serif;font-weight:400;font-size:24px;letter-spacing:.4px;text-shadow:0 3px 8px rgba(0,0,0,.6)}
 .ds-new{display:inline-flex;align-items:center;gap:4px;padding:3px 10px;border-radius:999px;background:#FFC93F;color:#2B2233;font-size:12px;font-weight:900}
-.ds-close{position:absolute;top:10px;right:12px;width:34px;height:34px;border-radius:50%;border:0;background:rgba(255,255,255,.14);color:#fff;font-size:22px;cursor:pointer}
+.ds-close{position:absolute;top:12px;right:12px;z-index:8;width:34px;height:34px;border-radius:50%;border:0;background:rgba(255,255,255,.14);color:#fff;font-size:22px;cursor:pointer}
+.ds-fx{position:absolute;inset:0;z-index:8;pointer-events:none;width:100%;height:100%}
+@media (max-width:640px){.ds-sign{font-size:15px;left:14px;top:14px}.ds-tier{font-size:20px}}
 .lt-prix{display:grid;gap:8px;list-style:none;padding:0;margin:0}
 .lt-prix li{display:flex;align-items:center;gap:10px;font-weight:800}
 .lt-dots{display:inline-flex;gap:4px}
@@ -4080,6 +4119,14 @@ function compose(style,d,t,z,dr,sh){
     decor(r){ if(!init()) return; const t=now(), notes = r>=4 ? [0,4,7,12,16,19,24] : [0,4,7];
       notes.forEach((n,i)=>chime(t+i*.07, 660*Math.pow(2,n/12), r>=4 ? .09 : .07, 1.2));
       if(r>=4) for(let i=0;i<12;i++) glock(t+.45+i*.04, 2400+Math.random()*2800, .025, .35) },
+    // (9 octobre 2026) les bruits du Distributeur : les crans de la manivelle, la boule qui roule et tombe, les crans de la boule, l'ouverture
+    distNotch(){ if(!init()) return; const t=now(); clack(t,.7,.8); thud(t,.5,200); for(let i=0;i<4;i++) clack(t+.03+i*.02,.22,1.35) },
+    distRoll(d){ if(!init()) return; const t=now(); env(noise(t,d,[{type:"bandpass",f:700,f2:1500,Q:1.5}]),t,.12,.05,d); for(let i=0;i<8;i++) clack(t+i*d/8,.16,1.4) },
+    distClunk(){ if(!init()) return; const t=now(); thud(t,1,110); clack(t,.4,.7) },
+    distStep(i){ if(!init()) return; const t=now(), n=[0,4,7,12,16,19,24][Math.min(6,i)]; chime(t, NOTE(n), .14, 1); glock(t, NOTE(n+12), .05, .5) },
+    distFail(){ if(!init()) return; const t=now(); osc(t,"triangle",330,.07,.005,.25,null,300); osc(t+.12,"triangle",311,.06,.005,.3,null,290) },
+    distShake(){ if(!init()) return; const t=now(); for(let i=0;i<6;i++) clack(t+i*.06,.22,1.5) },
+    distPop(){ if(!init()) return; const t=now(); env(noise(t,.12,[{type:"bandpass",f:1800,Q:.8}]),t,.4,.003,.11); osc(t,"sine",900,.2,.003,.12,null,300) },
     ding(){ if(!ctx||!on||ctx.state!=="running") return; const t=now(); chime(t,880,.12); chime(t+.12,1318.5,.1) },
     pop(){ if(!init()) return; clack(now(),.5,1.1) },
     // tout petit clic quand on prend une bille pour la regarder de près
@@ -9324,42 +9371,54 @@ function gratEnd(){
 }
 
 /* ---------- le Distributeur de billes ---------- */
+// (9 octobre 2026) plus grand et plus lent : 3 crans de manivelle, la boule descend le toboggan derrière la vitre,
+// sort en grand, monte d'un cran par taille (de plus en plus lentement), essaie encore une fois… puis c'est le joueur qui l'ouvre
 const dist = {busy:false};
+const DS_COLS = TK.map(t=>TYPES[t].rc), DS_SH = [null, "#C78BFF", "#FFC93F", "#BFEFFF"];
 function distMachine(){
-  // le globe en verre plein de vraies billes, le chapeau chromé, le corps rouge, la manivelle et la trappe
-  const r = rng(11); let balls = "";
-  // un tas de billes rangées en quinconce, du fond du globe jusqu'aux trois quarts
-  let n = 0;
-  for(let row=0, y=176; y>62; row++, y-=17){ const half = Math.sqrt(Math.max(0, 74*74-(y-112)*(y-112)))-11;
-    for(let x=120-half+(row%2)*9; x<=120+half; x+=19){ const sp = {seed:hash("dist"+n), type:"bille", family:DECOR_IDS[n*7%DECOR_IDS.length], pal:BASE_PAL_IDS[n*5%BASE_PALS], shiny:0}; n++;
-      const jx = (r()-.5)*4, jy = (r()-.5)*3;
-      balls += `<g class="ds-b" style="--d:${(r()*.4).toFixed(2)}s"><image href="${marbleURL(sp,64)}" x="${(x-11+jx).toFixed(1)}" y="${(y-11+jy).toFixed(1)}" width="22" height="22"/></g>` } }
-  return `<svg class="ds-svg" viewBox="0 0 240 340" aria-hidden="true"><defs>
-      <radialGradient id="dsG" cx=".32" cy=".28" r=".85"><stop offset="0" stop-color="#fff" stop-opacity=".5"/><stop offset=".35" stop-color="#EAF6FF" stop-opacity=".1"/><stop offset=".85" stop-color="#9CC4E8" stop-opacity=".12"/><stop offset="1" stop-color="#6E9CC8" stop-opacity=".45"/></radialGradient>
-      <linearGradient id="dsR" x1="0" x2="1"><stop offset="0" stop-color="#8E1220"/><stop offset=".3" stop-color="#E5484D"/><stop offset=".55" stop-color="#FF7A7E"/><stop offset=".75" stop-color="#D23A42"/><stop offset="1" stop-color="#7E0F1C"/></linearGradient>
-      <linearGradient id="dsM" x1="0" x2="1"><stop offset="0" stop-color="#7D818B"/><stop offset=".45" stop-color="#FFFFFF"/><stop offset=".6" stop-color="#C9CDD6"/><stop offset="1" stop-color="#6C707A"/></linearGradient>
-      <linearGradient id="dsD" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#1A0408"/><stop offset="1" stop-color="#4A0A14"/></linearGradient>
-      <clipPath id="dsC"><circle cx="120" cy="112" r="76"/></clipPath></defs>
-    <ellipse cx="120" cy="330" rx="86" ry="8" fill="rgba(0,0,0,.35)"/>
-    <rect x="106" y="16" width="28" height="12" rx="4" fill="url(#dsM)"/><path d="M70 40 Q120 20 170 40 L166 46 H74 Z" fill="url(#dsR)" stroke="#5A0E18" stroke-width="2"/>
-    <circle cx="120" cy="112" r="78" fill="rgba(200,230,255,.08)"/>
-    <g clip-path="url(#dsC)" class="ds-balls">${balls}</g>
-    <circle cx="120" cy="112" r="78" fill="url(#dsG)" stroke="rgba(255,255,255,.75)" stroke-width="3"/>
-    <path d="M70 72 Q86 46 114 40" stroke="#fff" stroke-width="6" stroke-linecap="round" fill="none" opacity=".55"/><circle cx="160" cy="150" r="5" fill="#fff" opacity=".35"/>
-    <rect x="58" y="182" width="124" height="14" rx="5" fill="url(#dsM)" stroke="#55595F" stroke-width="1.5"/>
-    <path d="M64 196 H176 L188 318 H52 Z" fill="url(#dsR)" stroke="#5A0E18" stroke-width="2.5" stroke-linejoin="round"/>
-    <path d="M70 200 H86 L82 314 H60 Z" fill="#fff" opacity=".12"/>
-    <rect x="80" y="206" width="80" height="26" rx="8" fill="#5A0E18"/><text x="120" y="225" text-anchor="middle" font-family="Lilita One" font-size="17" fill="#FFE9A8" letter-spacing="1">BILLEO</text>
-    <rect x="152" y="240" width="18" height="30" rx="4" fill="url(#dsM)"/><rect x="159" y="246" width="4" height="18" rx="2" fill="#2A050B"/>
-    <g class="ds-crank" style="transform-origin:112px 262px"><circle cx="112" cy="262" r="21" fill="url(#dsM)" stroke="#55595F" stroke-width="2"/><circle cx="112" cy="262" r="8" fill="#C9CDD6" stroke="#55595F"/><rect x="109" y="232" width="6" height="32" rx="3" fill="#55595F"/><circle cx="112" cy="232" r="7.5" fill="#FFC93F" stroke="#9E7A1C" stroke-width="2"/></g>
-    <path d="M88 290 H152 V312 Q120 320 88 312 Z" fill="url(#dsD)" stroke="#2A050B" stroke-width="2"/><path class="ds-flap" d="M90 290 H150 V298 H90 Z" fill="url(#dsM)" opacity=".9"/>
+  const r = rng(7); let balls = "", n = 0;
+  for(let row=0, y=242; y>58; row++, y-=19){ const half = Math.sqrt(Math.max(0, 104*104-(y-150)*(y-150)))-10;
+    for(let x=150-half+(row%2)*10; x<=150+half; x+=21){ const sz = 9+r()*5, sp = {seed:hash("dist"+n), type:"bille", family:DECOR_IDS[n*7%DECOR_IDS.length], pal:BASE_PAL_IDS[n*5%BASE_PALS], shiny:0}; n++;
+      balls += `<g class="ds-mb"><image href="${marbleURL(sp,64)}" x="${(x-sz+(r()-.5)*4).toFixed(1)}" y="${(y-sz+(r()-.5)*3).toFixed(1)}" width="${(sz*2).toFixed(1)}" height="${(sz*2).toFixed(1)}"/></g>` } }
+  let lights = ""; for(let i=0;i<11;i++) lights += `<circle class="ds-lt" cx="${84+i*13.2}" cy="286" r="3.6" style="--d:${(i*.05).toFixed(2)}s"/>`;
+  for(let i=0;i<8;i++) lights += `<circle class="ds-lt" cx="${74-i*1.6}" cy="${300+i*15}" r="3.2" style="--d:${(.55+i*.05).toFixed(2)}s"/><circle class="ds-lt" cx="${226+i*1.6}" cy="${300+i*15}" r="3.2" style="--d:${(.55+i*.05).toFixed(2)}s"/>`;
+  return `<svg viewBox="0 0 300 440" aria-hidden="true"><defs>
+    <radialGradient id="dsG" cx=".32" cy=".26" r=".9"><stop offset="0" stop-color="#fff" stop-opacity=".55"/><stop offset=".35" stop-color="#EAF6FF" stop-opacity=".08"/><stop offset=".85" stop-color="#9CC4E8" stop-opacity=".14"/><stop offset="1" stop-color="#6E9CC8" stop-opacity=".5"/></radialGradient>
+    <linearGradient id="dsR" x1="0" x2="1"><stop offset="0" stop-color="#8E1220"/><stop offset=".3" stop-color="#E5484D"/><stop offset=".55" stop-color="#FF7A7E"/><stop offset=".75" stop-color="#D23A42"/><stop offset="1" stop-color="#7E0F1C"/></linearGradient>
+    <linearGradient id="dsM" x1="0" x2="1"><stop offset="0" stop-color="#7D818B"/><stop offset=".45" stop-color="#fff"/><stop offset=".6" stop-color="#C9CDD6"/><stop offset="1" stop-color="#6C707A"/></linearGradient>
+    <linearGradient id="dsW" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#2A0A12"/><stop offset="1" stop-color="#4A0F1C"/></linearGradient>
+    <clipPath id="dsC"><circle cx="150" cy="150" r="108"/></clipPath><clipPath id="dsWC"><rect x="92" y="330" width="86" height="56" rx="10"/></clipPath></defs>
+    <ellipse cx="150" cy="432" rx="118" ry="9" fill="rgba(40,10,20,.35)"/>
+    <rect x="134" y="12" width="32" height="14" rx="5" fill="url(#dsM)"/><path d="M82 46 Q150 18 218 46 L213 54 H87 Z" fill="url(#dsR)" stroke="#5A0E18" stroke-width="2"/>
+    <circle cx="150" cy="150" r="110" fill="rgba(200,230,255,.1)"/>
+    <g clip-path="url(#dsC)">${balls}</g>
+    <circle cx="150" cy="150" r="110" fill="url(#dsG)" stroke="rgba(255,255,255,.8)" stroke-width="3.5"/>
+    <path d="M78 92 Q98 58 136 48" stroke="#fff" stroke-width="8" stroke-linecap="round" fill="none" opacity=".55"/><circle cx="204" cy="206" r="7" fill="#fff" opacity=".3"/>
+    <rect x="74" y="256" width="152" height="18" rx="6" fill="url(#dsM)" stroke="#55595F" stroke-width="1.5"/>
+    <path d="M80 274 H220 L236 420 H64 Z" fill="url(#dsR)" stroke="#5A0E18" stroke-width="2.5" stroke-linejoin="round"/>
+    <path d="M88 280 H104 L98 414 H74 Z" fill="#fff" opacity=".12"/>
+    ${lights}
+    <rect x="104" y="294" width="92" height="28" rx="9" fill="#5A0E18"/><text x="150" y="315" text-anchor="middle" font-family="Lilita One" font-size="19" fill="#FFE9A8" letter-spacing="1.5">BILLEO</text>
+    <rect x="92" y="330" width="86" height="56" rx="10" fill="url(#dsW)" stroke="#2A050B" stroke-width="2"/>
+    <g clip-path="url(#dsWC)"><path d="M96 344 L166 356 M174 362 L100 376" stroke="#C9CDD6" stroke-width="3" stroke-linecap="round" opacity=".8"/>
+      <circle id="ds-mini" cx="-50" cy="-50" r="9" fill="#B9B6C6" stroke="#fff" stroke-width="1.5"/></g>
+    <rect x="94" y="332" width="18" height="52" rx="6" fill="#fff" opacity=".1"/>
+    <g class="ds-crank" id="ds-crank" style="transform-origin:208px 360px"><circle cx="208" cy="360" r="19" fill="url(#dsM)" stroke="#55595F" stroke-width="2"/><circle cx="208" cy="360" r="7" fill="#C9CDD6" stroke="#55595F"/><rect x="205" y="334" width="6" height="28" rx="3" fill="#55595F"/><circle cx="208" cy="334" r="8" fill="#FFC93F" stroke="#9E7A1C" stroke-width="2"/></g>
+    <path d="M110 392 H190 V414 Q150 422 110 414 Z" fill="#1A0408" stroke="#2A050B" stroke-width="2"/><path class="ds-flap" id="ds-flap" d="M112 392 H188 V400 H112 Z" fill="url(#dsM)" opacity=".92"/>
   </svg>`;
 }
 function viewDistributeur(){
   return `<div class="page-head"><div><button class="back-link" data-action="nav" data-view="jeux">${ic("chevl",14)} Tous les jeux</button><h1>Le Distributeur</h1></div></div>
   <div class="game-wrap">
     <section class="panel ds-panel">
-      <div class="ds-stage" id="ds-stage"><div class="ds-machine" id="ds-machine">${distMachine()}<span class="ds-cap" id="ds-cap"><i></i><i></i></span></div></div>
+      <div class="ds-stage" id="ds-stage">
+        <div class="ds-sign"><i></i>LA CONFISERIE<i></i></div><div class="ds-counter"></div>
+        <div class="ds-machine idle" id="ds-machine">${distMachine()}</div>
+        <div class="ds-veil" id="ds-veil"></div><div class="ds-rays" id="ds-rays"></div><div class="ds-tier" id="ds-tier"></div>
+        <button class="ds-cap" id="ds-cap" hidden aria-label="Ouvrir la boule"><span class="glow"></span><span class="h top"></span><span class="h bot"></span><span class="band"></span></button>
+        <div class="ds-hint" id="ds-hint">Touche la boule pour l'ouvrir !</div>
+        <div id="ds-out"></div><canvas class="ds-fx" id="ds-fx"></canvas>
+      </div>
       <div class="pachi-btns" id="ds-btns">${chanceBtns("distributeur","ds-go","Tourner la manivelle")}</div>
     </section>
     <aside><section class="panel"><div class="panel-head"><h3>Dans les boules</h3><span class="sample-tag">Chances</span></div>
@@ -9368,36 +9427,100 @@ function viewDistributeur(){
   </div>`;
 }
 // la bille gagnée : elle sort de sa boule au milieu de rayons, avec son nom et sa taille
-const distOut = (s, isNew) => `<div class="ds-out" id="ds-out"><span class="ds-rays" style="--rc:${PALETTES[s.pal][2]}"></span>
-  <button class="ds-prize" data-action="spec" data-id="${s.id}" style="${tstyle(s.type)}">${mImg(s,320,Math.round(80*scaleOf(s.type)+60),"")}
-    ${isNew ? `<span class="ds-new">${ic("star",12,2.6)} Nouvelle !</span>` : ""}<b>${esc(specName(s))}</b>${typePill(s.type)}</button>
-  <button class="ds-close" data-action="ds-close" aria-label="Fermer">×</button></div>`;
+const distOut = (s, isNew) => `<button class="ds-prize" data-action="spec" data-id="${s.id}" style="${tstyle(s.type)}">${mImg(s,320,Math.round(90*scaleOf(s.type)+80),"")}
+    ${isNew ? `<span class="ds-new">${ic("star",12,2.6)} Nouvelle !</span>` : ""}<b>${esc(specName(s))}</b><span style="display:flex;gap:4px">${typePill(s.type)}${shinyPill(s)}</span></button>
+  <button class="ds-close" data-action="ds-close" aria-label="Fermer">×</button>`;
+function distClear(){ const g = id => document.getElementById(id); if(g("ds-out")) g("ds-out").innerHTML = ""; g("ds-rays")?.classList.remove("on"); g("ds-veil")?.classList.remove("on") }
+// des confettis dans la scène
+function distConfetti(cols, n, x, y, p=1){
+  const cv = document.getElementById("ds-fx"); if(!cv || FX.reduce()) return; const R = cv.getBoundingClientRect(), cx = cv.getContext("2d"), parts = [];
+  cv.width = R.width; cv.height = R.height;
+  for(let i=0;i<n;i++){ const a = Math.random()*TAU, v = (3+Math.random()*7)*p; parts.push({x, y, vx:Math.cos(a)*v, vy:Math.sin(a)*v-3, c:cols[i%cols.length], l:70+Math.random()*50, s:3+Math.random()*4, r:Math.random()*6}) }
+  const tick = () => { if(!cv.isConnected) return; cx.clearRect(0,0,cv.width,cv.height); let alive = 0;
+    parts.forEach(q=>{ if(--q.l<=0) return; alive++; q.x+=q.vx; q.y+=q.vy; q.vy+=.18; q.vx*=.98; q.r+=.2; cx.save(); cx.translate(q.x,q.y); cx.rotate(q.r); cx.globalAlpha=Math.min(1,q.l/30); cx.fillStyle=q.c; cx.fillRect(-q.s,-q.s/2,q.s*2,q.s); cx.restore() });
+    if(alive) requestAnimationFrame(tick) };
+  requestAnimationFrame(tick);
+}
 async function distGo(pay){
   if(!srvNeed()) return;
   if(dist.busy || !chanceCanPay("distributeur", pay)) return;
   dist.busy = true;
   document.querySelectorAll('[data-action="ds-go"]').forEach(b=>b.disabled = true);
-  document.getElementById("ds-out")?.remove();
+  distClear();
   let s, gain = () => {};
   try{
     if(srvOn()){ const r = await srv(()=>Cloud.eco.distributeur(!!pay)); s = srvAdopt([r.bille])[0]; gain = () => applyEco(r.eco); chanceMark("distributeur", pay, r) }
     else { s = makeSpec(TK[pickW(Math.random(), [30,33,20,12,4,1])], {shiny:Math.random()<SHINY_RATE ? rollShiny() : 0, src:"distributeur"}); chanceMark("distributeur", pay) }
   }catch(e){ dist.busy = false; chanceFail("distributeur", e); return }
   const isNew = !S.specs.some(x=>colorKey(x)===colorKey(s));
-  let given = false;
-  const give = () => { if(given) return; given = true; gain(); S.specs.push(s); S.unseen.push(s.id); logFind(s); save(); renderTop(); renderNav(); if(!pay) gamesBonus() };
-  setTimeout(give, 3600);
-  const m = document.getElementById("ds-machine"), cap = document.getElementById("ds-cap"), col = PALETTES[s.pal][2];
-  if(m){ m.classList.remove("turn"); void m.getBoundingClientRect(); m.classList.add("turn") }
-  Sound.whoosh?.(); setTimeout(()=>Sound.drop?.(0,.6), 1250);
-  if(cap){ cap.style.setProperty("--cc", col); cap.classList.remove("drop","open"); void cap.getBoundingClientRect(); cap.classList.add("drop") }
-  setTimeout(()=>{ cap?.classList.add("open"); Sound.pop() }, 2150);
-  setTimeout(()=>{
-    dist.busy = false; give();
-    document.getElementById("ds-stage")?.insertAdjacentHTML("beforeend", distOut(s, isNew));
-    const big = tierOf(s)>=3 || s.shiny; if(big){ Sound.ding(); FX.fireworks(s.shiny ? SHINY_COLS : [col, "#FFE14D", "#FFFFFF"], 5) } else Sound.coin();
-    const b = document.getElementById("ds-btns"); if(b) b.innerHTML = chanceBtns("distributeur","ds-go","Tourner la manivelle");   // seulement les boutons : la bille ne réapparaît pas
-  }, 2500);
+  let given = false, done = false;
+  const give = () => { if(given) return; given = true; gain(); S.specs.push(s); S.unseen.push(s.id); logFind(s); save(); renderTop(); renderNav() };
+  const st = document.getElementById("ds-stage"), $d = id => document.getElementById(id), alive = () => !!st?.isConnected, wait = ms => new Promise(r=>setTimeout(r, ms));
+  // la fin : la bille est rangée, le bonus des jeux compte, et les boutons reviennent (aussi si le joueur quitte la page en route)
+  const finish = () => { if(done) return; done = true; give(); dist.busy = false; if(!pay) gamesBonus(); const b = $d("ds-btns"); if(b) b.innerHTML = chanceBtns("distributeur","ds-go","Tourner la manivelle") };
+  // la bille est à lui dès que la boule tombe ; s'il s'en va sans l'ouvrir, elle est quand même rangée
+  setTimeout(()=>{ give(); dist.busy = false; if(!alive()) finish() }, 2700);
+  const bump = (el, c) => { el.classList.remove(c); void el.offsetWidth; el.classList.add(c) };
+  const ring = (x, y, c) => { const e = document.createElement("span"); e.className = "ds-ring"; e.style.cssText = `left:${x}px;top:${y}px;--rc:${c}`; st.appendChild(e); setTimeout(()=>e.remove(), 800) };
+  if(!alive()) return finish();
+  const k = TIDX[s.type], sh = s.shiny||0, M = $d("ds-machine"), cap = $d("ds-cap"), tl = $d("ds-tier");
+  M.classList.remove("idle"); M.classList.add("spin");
+  // 1. trois crans de manivelle : les billes sautent à chaque cran
+  const balls = [...M.querySelectorAll(".ds-mb")];
+  for(let i=1;i<=3;i++){
+    $d("ds-crank").style.transform = `rotate(${i*120}deg)`; Sound.distNotch();
+    balls.forEach(b=>{ b.style.transform = `translate(${(Math.random()-.5)*8}px,${-4-Math.random()*10}px)` });
+    await wait(200); balls.forEach(b=>{ b.style.transform = "" }); await wait(300);
+  }
+  if(!alive()) return finish();
+  // 2. la boule descend le toboggan derrière la vitre, puis tombe dans la trappe
+  const mini = $d("ds-mini"), path = [[135,330],[100,344],[166,356],[174,366],[100,377],[140,392]], T = 1100; Sound.distRoll(T/1000);
+  const t0 = performance.now();
+  await new Promise(res=>{ const step = now => { if(!mini.isConnected) return res(); const u = Math.max(0, Math.min(1,(now-t0)/T)), f = u*(path.length-1), i = Math.min(path.length-2, Math.floor(f)), v = f-i;
+    mini.setAttribute("cx", path[i][0]+(path[i+1][0]-path[i][0])*v); mini.setAttribute("cy", path[i][1]+(path[i+1][1]-path[i][1])*v);
+    if(u<1) requestAnimationFrame(step); else res() }; requestAnimationFrame(step) });
+  if(!alive()) return finish();
+  mini.setAttribute("cx",-50); Sound.distClunk(); bump($d("ds-flap"), "bang"); setTimeout(()=>$d("ds-flap")?.classList.remove("bang"), 260);
+  M.classList.remove("spin"); M.classList.add("idle");
+  // 3. la boule sort en grand, au milieu
+  const svg = M.querySelector("svg"), pt = svg.createSVGPoint(); pt.x = 150; pt.y = 404; const q = pt.matrixTransform(svg.getScreenCTM()), R = st.getBoundingClientRect();
+  const mx = R.width/2, my = R.height*.44, setCap = (c, shn) => { cap.style.setProperty("--cc", c); cap.classList.remove("sh1","sh2","sh3"); if(shn) cap.classList.add("sh"+shn) };
+  setCap(DS_COLS[0], 0); cap.classList.remove("open","lit","up","try","shake");
+  cap.style.transition = "none"; cap.style.left = (q.x-R.left)+"px"; cap.style.top = (q.y-R.top)+"px"; cap.style.setProperty("--cs","30px"); cap.hidden = false; void cap.offsetWidth; cap.style.transition = "";
+  await wait(250); if(!alive()) return finish();
+  $d("ds-veil").classList.add("on"); cap.style.left = mx+"px"; cap.style.top = my+"px"; cap.style.setProperty("--cs", "150px");
+  await wait(850); if(!alive()) return finish();
+  tl.style.setProperty("--tc", DS_COLS[0]); tl.textContent = TYPES[TK[0]].label; tl.classList.add("on");
+  // 4. elle monte d'un cran, de plus en plus lentement
+  for(let i=1;i<=k;i++){
+    await wait(380 + i*170 + (i===k ? 250 : 0)); if(!alive()) return finish();
+    setCap(DS_COLS[i], 0); bump(cap, "up"); cap.classList.toggle("lit", i>=3); Sound.distStep(i); ring(mx, my, DS_COLS[i]);
+    tl.style.setProperty("--tc", DS_COLS[i]); tl.textContent = TYPES[TK[i]].label; bump(tl, "pop");
+    if(i>=4){ M.classList.add("hot"); M.style.setProperty("--hc", DS_COLS[i]) }
+  }
+  // une shiny monte d'un dernier cran, à elle (la Lumineuse éteint tout d'abord) ; sinon elle essaie encore une fois, sans y arriver
+  if(sh){ await wait(900); if(!alive()) return finish();
+    if(sh===3){ st.classList.add("night"); Sound.lumSwell(0); await wait(1100); st.classList.remove("night") }
+    setCap(DS_SH[sh], sh); cap.classList.add("lit"); bump(cap, "up"); Sound.distStep(k+1); Sound.distStep(k+2); ring(mx, my, DS_SH[sh]);
+    distConfetti(sh===2 ? GOLD_COLS : sh===3 ? ["#fff","#DFF8FF","#9FE6FF"] : SHINY_COLS, 60, mx, my, .8);
+    tl.style.setProperty("--tc", DS_SH[sh]); tl.textContent = `${TYPES[s.type].label} · ${SHINIES[sh].name} !`; bump(tl, "pop") }
+  else if(k<5){ await wait(700 + k*120); if(!alive()) return finish(); bump(cap, "try"); Sound.distFail() }
+  await wait(500); if(!alive()) return finish();
+  $d("ds-hint").classList.add("on");
+  await new Promise(res=>{ const iv = setInterval(()=>{ if(!alive()){ clearInterval(iv); res() } }, 500); cap.onclick = () => { cap.onclick = null; clearInterval(iv); res() } });   // s'il quitte la page sans l'ouvrir : on termine quand même
+  if(!alive()) return finish();
+  $d("ds-hint").classList.remove("on");
+  // 5. on l'ouvre : elle tremble, plus fort et plus longtemps si elle est grosse
+  const shakes = 1 + Math.floor(k/2) + (sh ? 1 : 0);
+  for(let i=0;i<shakes;i++){ bump(cap, "shake"); Sound.distShake(); await wait(560); if(!alive()) return finish() }
+  cap.classList.add("open"); Sound.distPop(); ring(mx, my, "#fff");
+  const col = sh ? DS_SH[sh] : PALETTES[s.pal][2];
+  $d("ds-rays").style.setProperty("--rc", col); $d("ds-rays").classList.add("on");
+  $d("ds-out").innerHTML = distOut(s, isNew); bump($d("ds-out").querySelector(".ds-prize"), "on"); tl.classList.remove("on");
+  Sound.reveal(k, sh, Math.max(0, decorRar(s)));
+  if(k>=3 || sh) distConfetti([col, DS_COLS[k], "#FFE14D", "#fff"], 40 + k*25, mx, my, 1 + k*.12);
+  finish();
+  await wait(500); cap.hidden = true; M.classList.remove("hot");
 }
 
 /* ---------- la Loterie de la semaine ---------- */
@@ -12949,7 +13072,7 @@ document.addEventListener("click", e=>{
     case "gr-go": gratGo(t.dataset.pay==="1"); break;
     case "gr-all": { const cv = document.getElementById("gr-foil"); if(cv) cv.getContext("2d").clearRect(0,0,cv.width,cv.height); gratEnd(); break }
     case "ds-go": distGo(t.dataset.pay==="1"); break;
-    case "ds-close": document.getElementById("ds-out")?.remove(); break;
+    case "ds-close": distClear(); break;
     case "lot-go": lotGo(); break;
     case "lot-mamm": { const m = lot.mamm; lot.mamm = null; if(m) mammRoulette(m, "loterie"); else closeModal(); break; }
     case "pachi-go": { const pay = t.dataset.pay==="1"; if(!pachiBall() && needBall(()=>pachiGo(pay), true)) break; } pachiGo(t.dataset.pay==="1"); break;

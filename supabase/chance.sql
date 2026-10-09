@@ -154,12 +154,16 @@ end $$;
 -- le ticket gratuit du jour
 create or replace function public.loterie_ticket()
 returns jsonb language plpgsql security definer set search_path = public as $$
-declare qui uuid := interne.moi(); nums int[];
+declare qui uuid := interne.moi(); nums int[]; p date := interne.loterie_prochain();
 begin
   begin insert into gains (joueur, source, cle) values (qui, 'loterie', interne.aujourdhui()::text);
   exception when unique_violation then raise exception 'deja'; end;
-  nums := array(select g from (select g from generate_series(1, 20) g order by random() limit 3) x order by g);
-  insert into loterie_tickets (joueur, tirage, numeros) values (qui, interne.loterie_prochain(), nums);
+  -- (9 octobre 2026) jamais deux fois les mêmes numéros dans la même semaine : on retire tant que la combinaison est déjà dans ses tickets
+  loop
+    nums := array(select g from (select g from generate_series(1, 20) g order by random() limit 3) x order by g);
+    exit when not exists (select 1 from loterie_tickets k where k.joueur = qui and k.tirage = p and k.numeros = nums);
+  end loop;
+  insert into loterie_tickets (joueur, tirage, numeros) values (qui, p, nums);
   return public.loterie_etat() || jsonb_build_object('nouveau', nums);
 end $$;
 

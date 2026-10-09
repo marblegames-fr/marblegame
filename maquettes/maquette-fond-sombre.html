@@ -1,0 +1,208 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Billeo · Fond du mode sombre</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Lilita+One&family=Nunito:wght@500;600;700;800;900&family=Caveat:wght@600;700&display=swap">
+<style>
+/* les vraies couleurs du mode sombre actuel */
+:root{
+  --bg:#12151F;--panel:#1B1F2C;--panel-2:#232838;--line:#2C3244;--line-2:#3D4459;
+  --ink:#F3F0EA;--ink-2:#BFC2CF;--muted:#858A9C;--yellow:#FFC93F;--blue:#4F86F5;--blue-2:#9CBBFF;
+  --topbar:rgba(18,21,31,.88);
+  --display:"Lilita One","Arial Rounded MT Bold",sans-serif;--body:"Nunito","Segoe UI",system-ui,sans-serif;--hand:"Caveat",cursive;
+  --shadow:0 1px 0 rgba(0,0,0,.25),0 8px 22px -12px rgba(0,0,0,.7);
+  color-scheme:dark;
+}
+*{box-sizing:border-box;margin:0}
+html,body{min-height:100%}
+body{background:var(--bg);color:var(--ink);font-family:var(--body);font-weight:600;font-size:14px;line-height:1.45;-webkit-font-smoothing:antialiased;overflow-x:hidden}
+
+/* ---------- le fond : un calque fixe derrière tout (ne bouge pas au défilement, ne coûte rien) ---------- */
+#fond{position:fixed;inset:0;z-index:0;pointer-events:none;overflow:hidden}
+#fond > *{position:absolute;inset:0}
+.app{position:relative;z-index:1}
+
+/* grain commun (papier/feutre), en SVG : très léger */
+.grain{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='220' height='220'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.85' numOctaves='3' stitchTiles='stitch'/%3E%3CfeColorMatrix values='0 0 0 0 1  0 0 0 0 1  0 0 0 0 1  0 0 0 .55 0'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");opacity:.05;mix-blend-mode:overlay}
+
+/* 0. actuel */
+body[data-f="actuel"] #fond{background:#12151F}
+
+/* 1. Nuit étoilée : ciel profond, aurore discrète en haut, étoiles qui scintillent */
+body[data-f="nuit"] #fond{background:radial-gradient(120% 70% at 50% -10%,#2A2F5E 0%,#171B33 38%,#0D1020 70%,#090B16 100%)}
+body[data-f="nuit"] .aurore{background:
+  radial-gradient(40% 30% at 20% 0%,rgba(90,120,255,.28),transparent 70%),
+  radial-gradient(35% 28% at 75% 4%,rgba(170,90,255,.22),transparent 70%),
+  radial-gradient(30% 20% at 50% 0%,rgba(80,220,200,.12),transparent 70%);
+  filter:blur(10px);animation:aurore 18s ease-in-out infinite alternate}
+@keyframes aurore{to{transform:translateX(4%) scaleY(1.15);opacity:.75}}
+.etoiles{background-repeat:repeat}
+.etoiles.e1{background-image:radial-gradient(1.2px 1.2px at 20px 30px,#fff,transparent),radial-gradient(1px 1px at 140px 80px,#cfd8ff,transparent),radial-gradient(1.4px 1.4px at 260px 160px,#fff,transparent),radial-gradient(1px 1px at 90px 210px,#fff,transparent),radial-gradient(1.2px 1.2px at 310px 40px,#ffe9b8,transparent);background-size:340px 260px;opacity:.55;animation:scint 4s ease-in-out infinite alternate}
+.etoiles.e2{background-image:radial-gradient(1px 1px at 60px 120px,#fff,transparent),radial-gradient(1.6px 1.6px at 200px 20px,#dfe6ff,transparent),radial-gradient(1px 1px at 380px 190px,#fff,transparent),radial-gradient(1.1px 1.1px at 250px 260px,#fff,transparent);background-size:430px 300px;opacity:.35;animation:scint 6s 1.5s ease-in-out infinite alternate}
+@keyframes scint{to{opacity:.12}}
+
+/* 2. Tapis de jeu : feutrine bleu nuit sous une lampe, avec le cercle du jeu de billes tracé dessus */
+body[data-f="tapis"] #fond{background:radial-gradient(90% 75% at 50% 35%,#24305A 0%,#18203F 45%,#0D1226 85%,#080B18 100%)}
+body[data-f="tapis"] .feutre{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='300' height='300'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='1.4' numOctaves='2' stitchTiles='stitch'/%3E%3CfeColorMatrix values='0 0 0 0 .7  0 0 0 0 .78  0 0 0 0 1  0 0 0 .5 0'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");opacity:.09}
+body[data-f="tapis"] .cercle{inset:auto;left:50%;top:55%;width:min(1100px,140vw);aspect-ratio:1;transform:translate(-50%,-50%);border-radius:50%;border:3px dashed rgba(240,236,255,.07);box-shadow:0 0 0 60px rgba(255,255,255,.012)}
+body[data-f="tapis"] .vignette{background:radial-gradient(ellipse at center,transparent 50%,rgba(0,0,0,.55) 100%)}
+
+/* 3. Billes en halo : de grosses lueurs colorées qui dérivent lentement (comme des billes floues vues de très près) */
+body[data-f="halos"] #fond{background:#0E1120}
+body[data-f="halos"] .orbe{inset:auto;border-radius:50%;filter:blur(70px);opacity:.55;will-change:transform}
+body[data-f="halos"] .o1{width:46vw;height:46vw;left:-10vw;top:-12vw;background:radial-gradient(circle at 35% 35%,#3D6BFF,#1B2C8A 60%,transparent 70%);animation:derive1 26s ease-in-out infinite alternate}
+body[data-f="halos"] .o2{width:38vw;height:38vw;right:-8vw;top:20vh;background:radial-gradient(circle at 35% 35%,#9A4DFF,#3E1A7A 60%,transparent 70%);animation:derive2 32s ease-in-out infinite alternate}
+body[data-f="halos"] .o3{width:30vw;height:30vw;left:30vw;bottom:-14vw;background:radial-gradient(circle at 35% 35%,#FFB938,#8A4A10 60%,transparent 70%);opacity:.32;animation:derive3 28s ease-in-out infinite alternate}
+body[data-f="halos"] .o4{width:22vw;height:22vw;left:8vw;bottom:10vh;background:radial-gradient(circle at 35% 35%,#2BD3B0,#0E5A50 60%,transparent 70%);opacity:.3;animation:derive2 36s 4s ease-in-out infinite alternate-reverse}
+@keyframes derive1{to{transform:translate(12vw,8vh) scale(1.1)}}
+@keyframes derive2{to{transform:translate(-10vw,-6vh) scale(.92)}}
+@keyframes derive3{to{transform:translate(-8vw,-10vh) scale(1.12)}}
+/* en option : les panneaux deviennent du verre dépoli pour laisser passer les couleurs */
+body[data-f="halos"].verre .panel,body[data-f="halos"].verre .top{background:rgba(27,31,44,.62);-webkit-backdrop-filter:blur(18px) saturate(1.3);backdrop-filter:blur(18px) saturate(1.3);border-color:rgba(255,255,255,.08)}
+
+/* 4. Cour de récré la nuit : bitume bleu nuit, dessins à la craie à moitié effacés (marelle, cercle de billes, flèches) */
+body[data-f="craie"] #fond{background:radial-gradient(110% 80% at 50% 20%,#1E2436 0%,#141826 60%,#0B0D16 100%)}
+body[data-f="craie"] .bitume{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='260' height='260'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='2.2' numOctaves='2' stitchTiles='stitch'/%3E%3CfeColorMatrix values='0 0 0 0 1  0 0 0 0 1  0 0 0 0 1  0 0 0 .9 -.35'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");opacity:.07}
+body[data-f="craie"] .dessins{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='900' height='700' fill='none' stroke='%23E8ECFF' stroke-width='3' stroke-linecap='round' stroke-linejoin='round'%3E%3Cg opacity='.9'%3E%3Cpath d='M90 520h70v70H90zM90 450h70v70H90zM55 380h70v70H55zM125 380h70v70h-70zM90 310h70v70H90z'/%3E%3Cpath d='M92 240c10-30 60-30 66 0' /%3E%3Ctext x='112' y='560' font-family='Comic Sans MS' font-size='30' fill='%23E8ECFF' stroke='none'%3E1%3C/text%3E%3Ctext x='112' y='490' font-family='Comic Sans MS' font-size='30' fill='%23E8ECFF' stroke='none'%3E2%3C/text%3E%3C/g%3E%3Cellipse cx='620' cy='200' rx='120' ry='96' stroke-dasharray='14 10'/%3E%3Ccircle cx='600' cy='190' r='9'/%3E%3Ccircle cx='640' cy='215' r='9'/%3E%3Ccircle cx='625' cy='170' r='9'/%3E%3Cpath d='M420 560c60-40 140-50 220-20m-24-22 26 22-32 10'/%3E%3Cpath d='M760 470l18 36 40 6-29 28 7 40-36-19-36 19 7-40-29-28 40-6z'/%3E%3Cpath d='M330 120c-20 8-30 30-14 44 18 14 40-2 32-24'/%3E%3C/svg%3E");background-size:900px 700px;opacity:.06}
+body[data-f="craie"] .vignette{background:radial-gradient(ellipse at center,transparent 55%,rgba(0,0,0,.5) 100%)}
+
+/* 5. Papier cadeau : petites billes-agates et papillotes en motif ton sur ton, sous une lumière douce */
+body[data-f="motif"] #fond{background:radial-gradient(100% 70% at 50% 0%,#232A45 0%,#151A2C 55%,#0D1020 100%)}
+body[data-f="motif"] .papier{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cg fill='none' stroke='%23C9D3FF' stroke-width='1.6'%3E%3Ccircle cx='40' cy='40' r='13'/%3E%3Cpath d='M30 44c6-10 14-12 22-6'/%3E%3Ccircle cx='120' cy='120' r='13'/%3E%3Cpath d='M110 124c6-10 14-12 22-6'/%3E%3Cpath d='M108 40h24M104 33l4 7-4 7M136 33l-4 7 4 7'/%3E%3Cpath d='M28 120h24M24 113l4 7-4 7M56 113l-4 7 4 7'/%3E%3C/g%3E%3Cg fill='%23C9D3FF'%3E%3Ccircle cx='80' cy='80' r='2'/%3E%3Ccircle cx='0' cy='80' r='2'/%3E%3Ccircle cx='80' cy='0' r='2'/%3E%3C/g%3E%3C/svg%3E");background-size:160px;opacity:.045;transform:rotate(-12deg) scale(1.4)}
+body[data-f="motif"] .vignette{background:radial-gradient(ellipse at 50% 30%,transparent 40%,rgba(0,0,0,.45) 100%)}
+
+/* 6. Reflets de verre : la lumière qui passe à travers les billes (caustiques) ondule doucement */
+body[data-f="reflets"] #fond{background:radial-gradient(120% 80% at 70% 10%,#1F2A4E 0%,#131932 50%,#0A0D1A 100%)}
+body[data-f="reflets"] .caus{opacity:.16;mix-blend-mode:screen}
+body[data-f="reflets"] .caus canvas{width:100%;height:100%;display:block}
+
+/* ---------- la maquette d'appli ---------- */
+.top{position:sticky;top:0;z-index:5;display:flex;align-items:center;gap:16px;height:68px;padding-inline:24px;background:var(--topbar);backdrop-filter:blur(8px);border-bottom:1px solid var(--line)}
+.logo{font-family:var(--display);font-size:28px;color:var(--yellow);letter-spacing:.5px}
+.nav{display:flex;gap:6px;margin-left:12px}
+.nav span{padding:8px 14px;border-radius:999px;color:var(--ink-2);font-weight:800}
+.nav span.on{background:var(--panel-2);color:var(--ink)}
+.coins{margin-left:auto;display:flex;align-items:center;gap:8px;background:var(--panel-2);border:1px solid var(--line);padding:6px 14px;border-radius:999px;font-weight:900}
+.coins i{width:18px;height:18px;border-radius:50%;background:radial-gradient(circle at 35% 30%,#FFE9A0,#FFC93F 50%,#C98A0B)}
+.wrap{max-width:1180px;margin:0 auto;padding:28px 24px 120px}
+h1{font-family:var(--display);font-weight:400;font-size:34px;margin-bottom:4px}
+.sub{color:var(--muted);font-family:var(--hand);font-size:22px;margin-bottom:22px}
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(170px,1fr));gap:16px}
+.panel{background:var(--panel);border:1px solid var(--line);border-radius:18px;padding:18px;box-shadow:var(--shadow)}
+.carte{display:flex;flex-direction:column;align-items:center;gap:10px;text-align:center}
+.bille{width:86px;height:86px;border-radius:50%;position:relative;box-shadow:inset -10px -14px 24px rgba(0,0,0,.45),0 10px 18px -8px rgba(0,0,0,.8)}
+.bille::after{content:"";position:absolute;left:18%;top:12%;width:32%;height:24%;border-radius:50%;background:radial-gradient(rgba(255,255,255,.85),transparent 70%)}
+.carte b{font-family:var(--display);font-weight:400;font-size:18px}
+.pill{font-size:11px;font-weight:900;letter-spacing:.06em;text-transform:uppercase;padding:3px 10px;border-radius:999px}
+.row{display:grid;grid-template-columns:2fr 1fr;gap:16px;margin-top:16px}
+.panel h3{font-family:var(--display);font-weight:400;font-size:20px;margin-bottom:8px}
+.panel p{color:var(--ink-2)}
+.btn{display:inline-block;margin-top:12px;background:var(--yellow);color:#1B1A22;font-weight:900;padding:10px 18px;border-radius:999px}
+@media (max-width:720px){ .nav{display:none} .row{grid-template-columns:1fr} .top{padding-inline:16px} .wrap{padding-inline:16px} }
+
+/* ---------- le sélecteur ---------- */
+.choix{position:fixed;left:50%;bottom:16px;transform:translateX(-50%);z-index:20;display:flex;flex-wrap:wrap;justify-content:center;gap:6px;max-width:calc(100vw - 32px);padding:8px;border-radius:20px;background:rgba(10,12,20,.82);backdrop-filter:blur(12px);border:1px solid rgba(255,255,255,.12);box-shadow:0 20px 40px -10px rgba(0,0,0,.7)}
+.choix button{font:inherit;font-weight:800;font-size:13px;color:#cfd3e0;background:transparent;border:0;padding:8px 12px;border-radius:12px;cursor:pointer}
+.choix button.on{background:var(--yellow);color:#1B1A22}
+.choix label{display:none;align-items:center;gap:6px;font-size:12px;color:#cfd3e0;padding:0 8px}
+body[data-f="halos"] .choix label{display:flex}
+.legende{position:fixed;left:50%;bottom:78px;transform:translateX(-50%);z-index:20;max-width:min(560px,calc(100vw - 32px));text-align:center;font-size:13px;color:#d8dbe6;background:rgba(10,12,20,.7);backdrop-filter:blur(8px);padding:8px 14px;border-radius:12px}
+</style>
+</head>
+<body data-f="nuit">
+
+<div id="fond">
+  <div class="aurore"></div><div class="etoiles e1"></div><div class="etoiles e2"></div>
+  <div class="feutre"></div><div class="cercle"></div>
+  <div class="orbe o1"></div><div class="orbe o2"></div><div class="orbe o3"></div><div class="orbe o4"></div>
+  <div class="bitume"></div><div class="dessins"></div>
+  <div class="papier"></div>
+  <div class="caus"><canvas id="caus"></canvas></div>
+  <div class="vignette"></div>
+  <div class="grain"></div>
+</div>
+
+<div class="app">
+  <header class="top">
+    <span class="logo">Billeo</span>
+    <nav class="nav"><span class="on">Accueil</span><span>Ma collection</span><span>Cour de récré</span><span>Album</span></nav>
+    <span class="coins"><i></i>1 240</span>
+  </header>
+  <main class="wrap">
+    <h1>Ma collection</h1>
+    <div class="sub">48 billes rangées dans le sac</div>
+    <div class="grid" id="grid"></div>
+    <div class="row">
+      <div class="panel"><h3>Sachet du jour</h3><p>Ton sachet gratuit t'attend. Ouvre-le pour découvrir trois nouvelles billes, avec peut-être une shiny.</p><span class="btn">Ouvrir le sachet</span></div>
+      <div class="panel"><h3>Cour de récré</h3><p>3 amis en ligne · 2 trocs proposés</p></div>
+    </div>
+  </main>
+</div>
+
+<div class="legende" id="legende"></div>
+<div class="choix" id="choix"></div>
+
+<script>
+const FONDS = [
+  ["actuel","Actuel","Le fond uni bleu nuit d'aujourd'hui, pour comparer."],
+  ["nuit","Nuit étoilée","Un ciel profond, une aurore bleue et violette tout en haut qui ondule lentement, et des étoiles qui scintillent."],
+  ["tapis","Tapis de jeu","Une feutrine bleu nuit sous une lampe, avec le grand cercle du jeu de billes tracé en pointillés et les coins dans l'ombre."],
+  ["halos","Halos de billes","De grosses lueurs bleue, violette, dorée et turquoise qui dérivent très lentement, comme des billes floues vues de très près. Case « verre dépoli » : les panneaux laissent passer les couleurs."],
+  ["craie","Cour la nuit","Le bitume de la cour, avec des dessins à la craie à moitié effacés : marelle, cercle de billes, flèche, étoile."],
+  ["motif","Papier cadeau","Des petites billes et papillotes ton sur ton, en motif penché, très discret, comme un papier de sachet."],
+  ["reflets","Reflets de verre","La lumière qui traverse le verre des billes et ondule doucement au sol (caustiques)."],
+];
+const choix = document.getElementById("choix"), leg = document.getElementById("legende");
+for(const [id,nom] of FONDS){
+  const b = document.createElement("button"); b.textContent = nom; b.dataset.id = id;
+  b.onclick = () => pose(id); choix.appendChild(b);
+}
+const lab = document.createElement("label"); lab.innerHTML = '<input type="checkbox" id="verre" checked> verre dépoli'; choix.appendChild(lab);
+document.getElementById("verre").onchange = e => document.body.classList.toggle("verre", e.target.checked);
+document.body.classList.add("verre");
+function pose(id){
+  document.body.dataset.f = id;
+  for(const b of choix.querySelectorAll("button")) b.classList.toggle("on", b.dataset.id===id);
+  leg.textContent = FONDS.find(f=>f[0]===id)[2];
+  try{ localStorage.setItem("maq-fond", id) }catch(e){}
+}
+let dep = "nuit"; try{ dep = localStorage.getItem("maq-fond") || dep }catch(e){}
+pose(dep);
+
+// les calques ne s'affichent que pour leur fond
+const SHOW = {aurore:"nuit",etoiles:"nuit",feutre:"tapis",cercle:"tapis",orbe:"halos",bitume:"craie",dessins:"craie",papier:"motif",caus:"reflets",vignette:"tapis craie motif"};
+const st = document.createElement("style");
+st.textContent = Object.entries(SHOW).map(([c,fs]) => `#fond .${c}{display:none}` + fs.split(" ").map(f=>`body[data-f="${f}"] #fond .${c}{display:block}`).join("")).join("\n");
+document.head.appendChild(st);
+
+// quelques billes d'exemple
+const B = [["Agate","#3E7BFA","#0B1E5C","Calot","#4F86F5"],["Œil de chat","#3FD08A","#0A4A2C","Commun","#4CC27A"],["Galaxie","#B46BFF","#2A0B57","Épique","#B07CFF"],["Lave","#FF7A2E","#4A0E05","Rare","#FF9E5E"],["Dorée","#FFD566","#7A4B05","Légendaire","#FFC93F"],["Nacrée","#E7E4F5","#6A6787","Calot","#4F86F5"]];
+document.getElementById("grid").innerHTML = B.map(([n,c1,c2,r,rc]) =>
+  `<div class="panel carte"><div class="bille" style="background:radial-gradient(circle at 35% 30%,${c1},${c2} 75%)"></div><b>${n}</b><span class="pill" style="background:color-mix(in srgb,${rc} 22%,#1B1F2C);color:color-mix(in srgb,${rc} 60%,#fff)">${r}</span></div>`).join("");
+
+// caustiques : petit canvas basse résolution étiré, recalculé ~20 fois par seconde
+const cv = document.getElementById("caus"), cx = cv.getContext("2d");
+const W = 160, H = 100; cv.width = W; cv.height = H;
+const img = cx.createImageData(W, H);
+let t0 = performance.now(), last = 0;
+function caus(now){
+  requestAnimationFrame(caus);
+  if(document.body.dataset.f !== "reflets" || now - last < 50) return; last = now;
+  const t = (now - t0) / 4000;
+  for(let y=0;y<H;y++) for(let x=0;x<W;x++){
+    const u = x/W*6, v = y/H*4;
+    let s = Math.sin(u*1.3 + t*1.7 + Math.sin(v*1.1 - t)) + Math.sin(v*1.7 - t*1.3 + Math.sin(u*0.9 + t*0.7)) + Math.sin((u+v)*0.8 + t);
+    s = Math.pow(1 - Math.abs(Math.sin(s*1.6)), 6);
+    const i = (y*W + x)*4;
+    img.data[i] = 120*s; img.data[i+1] = 170*s; img.data[i+2] = 255*s; img.data[i+3] = 255;
+  }
+  cx.putImageData(img, 0, 0);
+}
+requestAnimationFrame(caus);
+</script>
+</body>
+</html>

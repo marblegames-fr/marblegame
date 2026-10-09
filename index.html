@@ -53,7 +53,7 @@ try{ document.documentElement.dataset.theme = localStorage.getItem("billeo-theme
     --yellow-soft:#3F3212;--blue:#4F86F5;--blue-2:#9CBBFF;--blue-soft:#1C2A48;--purple-soft:#2E2344;
     --green:#4CC27A;--green-soft:#1B3524;
     --shadow:0 1px 0 rgba(0,0,0,.25),0 8px 22px -12px rgba(0,0,0,.7);
-    --on-ink:#12151F;--glow:#2F3546;--topbar:rgba(18,21,31,.88);--track:#2C3244;
+    --on-ink:#12151F;--glow:#2F3546;--topbar:rgba(16,19,36,.6);--track:#2C3244;
     --gold-line:#8C6A1C;--gold-bg:#2E2512;--yellow-hover:#FFD35F;
     --blue-line:#34487A;--purple-line:#4E3A70;--green-line:#2F5A3A;
     --avatar-1:#2F3546;--avatar-2:#1A1E2A;--close-bg:rgba(30,34,46,.85);--warn:#F08A6E;
@@ -67,7 +67,7 @@ try{ document.documentElement.dataset.theme = localStorage.getItem("billeo-theme
     --yellow-soft:#3F3212;--blue:#4F86F5;--blue-2:#9CBBFF;--blue-soft:#1C2A48;--purple-soft:#2E2344;
     --green:#4CC27A;--green-soft:#1B3524;
     --shadow:0 1px 0 rgba(0,0,0,.25),0 8px 22px -12px rgba(0,0,0,.7);
-    --on-ink:#12151F;--glow:#2F3546;--topbar:rgba(18,21,31,.88);--track:#2C3244;
+    --on-ink:#12151F;--glow:#2F3546;--topbar:rgba(16,19,36,.6);--track:#2C3244;
     --gold-line:#8C6A1C;--gold-bg:#2E2512;--yellow-hover:#FFD35F;
     --blue-line:#34487A;--purple-line:#4E3A70;--green-line:#2F5A3A;
     --avatar-1:#2F3546;--avatar-2:#1A1E2A;--close-bg:rgba(30,34,46,.85);--warn:#F08A6E;
@@ -3417,8 +3417,20 @@ body.gc-open{overflow:hidden}
 .beta-b img{filter:drop-shadow(0 6px 8px rgba(120,10,30,.3))}
 .beta-b small{font-size:11.5px;font-weight:800;color:var(--rc)}
 .beta-modal .meta{margin:4px auto 18px}
+/* mode sombre : un ciel de nuit étoilée derrière l'appli (calque fixe, ne bouge pas au défilement) ; caché en mode clair */
+.ciel{position:fixed;inset:0;z-index:-1;pointer-events:none;overflow:hidden;display:none;background:radial-gradient(120% 70% at 50% -10%,#2A2F5E 0%,#171B33 38%,#0D1020 70%,#090B16 100%)}
+.ciel i{position:absolute;inset:0}
+.ci-aurore{inset:-10% -10% auto -10%!important;height:80%;background:radial-gradient(42% 50% at 22% 8%,rgba(90,120,255,.34),transparent 70%),radial-gradient(38% 46% at 76% 14%,rgba(170,90,255,.28),transparent 70%),radial-gradient(32% 34% at 50% 4%,rgba(80,220,200,.15),transparent 70%);animation:ci-aurore 18s ease-in-out infinite alternate;will-change:transform,opacity}
+@keyframes ci-aurore{to{transform:translateX(4%) scaleY(1.15);opacity:.75}}
+.ci-e1{background-image:radial-gradient(1.2px 1.2px at 20px 30px,#fff,transparent),radial-gradient(1px 1px at 140px 80px,#cfd8ff,transparent),radial-gradient(1.4px 1.4px at 260px 160px,#fff,transparent),radial-gradient(1px 1px at 90px 210px,#fff,transparent),radial-gradient(1.2px 1.2px at 310px 40px,#ffe9b8,transparent);background-size:340px 260px;opacity:.75;animation:ci-scint 4s ease-in-out infinite alternate}
+.ci-e2{background-image:radial-gradient(1px 1px at 60px 120px,#fff,transparent),radial-gradient(1.6px 1.6px at 200px 20px,#dfe6ff,transparent),radial-gradient(1px 1px at 380px 190px,#fff,transparent),radial-gradient(1.1px 1.1px at 250px 260px,#fff,transparent);background-size:430px 300px;opacity:.5;animation:ci-scint 6s 1.5s ease-in-out infinite alternate}
+@keyframes ci-scint{to{opacity:.12}}
+@media (prefers-color-scheme:dark){ :root:not([data-theme="light"]) .ciel{display:block} }
+:root[data-theme="dark"] .ciel{display:block}
+@media (prefers-reduced-motion:reduce){ .ciel i{animation:none} }
 </style>
 
+<div class="ciel" aria-hidden="true"><i class="ci-aurore"></i><i class="ci-e1"></i><i class="ci-e2"></i></div>
 <div class="beta-rib" id="beta-rib" hidden></div>
 <header class="topbar">
   <div class="logo"><a href="#" data-action="nav" data-view="accueil" aria-label="Billeo : retour à l'accueil"><span class="lw" aria-hidden="true"><span class="lt">B</span><span class="lt i">ı<img id="logo-marble" alt=""></span><span class="lt">l</span><span class="lt">l</span><span class="lt">e</span><span class="lt">o</span></span></a></div>

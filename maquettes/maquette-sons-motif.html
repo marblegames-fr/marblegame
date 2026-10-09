@@ -1,0 +1,374 @@
+<!doctype html>
+<html lang="fr" data-theme="dark">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Mélodies du motif</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Lilita+One&family=Nunito:wght@500;600;700;800;900&display=swap">
+<style>
+:root{
+  --bg:#FBF4E6; --panel:#FFFCF6; --panel-2:#FFF3DF; --line:#EADBC0; --ink:#2B2118; --muted:#7A6A58;
+  --accent:#F5B82E; --accent-ink:#3A2A00;
+  --r0:#8E8898; --r1:#2F8F45; --r2:#2E6BE6; --r3:#8A4AD6; --r4:#D97E06;
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){ --bg:#16120E; --panel:#211B15; --panel-2:#2A221A; --line:#3A3026; --ink:#F6EEDF; --muted:#B5A48E; }
+}
+:root[data-theme="dark"]{ --bg:#16120E; --panel:#211B15; --panel-2:#2A221A; --line:#3A3026; --ink:#F6EEDF; --muted:#B5A48E; }
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);font:500 15px/1.5 Nunito,system-ui,sans-serif}
+.wrap{max-width:1100px;margin:0 auto;padding:28px 16px 60px}
+h1,h2{font-family:"Lilita One",Nunito,sans-serif;font-weight:400;margin:0}
+h1{font-size:clamp(28px,4vw,40px)}
+h2{font-size:21px;margin-bottom:8px}
+.lead{color:var(--muted);max-width:780px;margin:8px 0 20px}
+.card{background:var(--panel);border:1px solid var(--line);border-radius:20px;padding:18px;margin-bottom:14px}
+.lbl{font:900 12px Nunito;letter-spacing:.06em;text-transform:uppercase;color:var(--muted);margin:0 0 6px}
+.seg{display:flex;flex-wrap:wrap;gap:4px;background:var(--panel-2);border:1px solid var(--line);border-radius:14px;padding:4px}
+.seg button{flex:1 1 auto;font:900 13.5px Nunito;border:0;border-radius:10px;padding:9px 12px;background:transparent;color:var(--ink);cursor:pointer}
+.seg button[aria-pressed="true"]{background:var(--accent);color:var(--accent-ink)}
+.sdesc{color:var(--muted);font-size:13.5px;margin:8px 2px 0;min-height:2.6em}
+.row{display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin-top:12px}
+.btn{font:800 14px Nunito,sans-serif;border:1px solid var(--line);background:var(--panel-2);color:var(--ink);border-radius:999px;padding:8px 14px;cursor:pointer}
+.btn:hover{border-color:var(--accent)}
+.btn.y{background:var(--accent);color:var(--accent-ink);border-color:transparent}
+label.ck{display:flex;gap:8px;align-items:center;font-weight:800;cursor:pointer;font-size:14px}
+label.ck input{accent-color:var(--accent);width:18px;height:18px}
+.top{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:14px}
+.stage{position:relative;border-radius:16px;overflow:hidden;background:radial-gradient(circle at 50% 45%,#3A2C1E,#120D09 75%);height:260px}
+.stage canvas{position:absolute;inset:0;width:100%;height:100%}
+.grid-wrap{overflow-x:auto}
+table{border-collapse:separate;border-spacing:5px;width:100%;min-width:560px;table-layout:fixed}
+th:first-child{width:96px}
+th{font:900 12.5px Nunito;color:var(--muted);text-align:center;padding:2px}
+th.r{text-align:right;padding-right:8px;white-space:nowrap}
+th .dot{display:inline-block;width:9px;height:9px;border-radius:50%;margin-right:5px;vertical-align:0}
+td button{width:100%;height:44px;border-radius:12px;border:1px solid var(--line);background:var(--panel-2);color:var(--ink);font:800 16px Nunito;cursor:pointer}
+td button:hover{border-color:var(--accent)}
+td button.on{background:var(--accent);color:var(--accent-ink);border-color:transparent}
+.now{display:flex;gap:14px;align-items:baseline;flex-wrap:wrap;margin-top:12px}
+.now b{font-family:"Lilita One";font-weight:400;font-size:21px}
+.note{color:var(--muted);font-size:13.5px}
+.chips{display:flex;gap:6px;flex-wrap:wrap;margin-top:8px}
+.chip{font:800 12.5px Nunito;padding:4px 10px;border-radius:999px;background:var(--panel-2);border:1px solid var(--line)}
+.legend{display:grid;grid-template-columns:repeat(auto-fit,minmax(230px,1fr));gap:10px;margin-top:6px}
+.legend div{background:var(--panel-2);border:1px solid var(--line);border-radius:14px;padding:10px 12px;font-size:13.5px}
+.legend b{display:block;font-weight:900;margin-bottom:2px}
+@media (max-width:820px){ .top{grid-template-columns:minmax(0,1fr)} }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <h1>La mélodie du motif</h1>
+  <p class="lead">« Motif seul » : la taille ne s'entend plus, seule la rareté du motif fait la mélodie (une note pour un Commun, jusqu'à cinq pour un Légendaire). Plusieurs mélodies à comparer. Par-dessus, la shiny a son propre son, de plus en plus fort de l'Irisée à la Lumineuse, calé sur son animation du jeu (rejouée dans la petite scène).</p>
+
+  <div class="top">
+    <div class="card">
+      <p class="lbl">Boîte à musique</p>
+      <div class="seg mel" id="mels"></div>
+      <p class="lbl" style="margin-top:10px">Autres instruments</p>
+      <div class="seg mel" id="mels2"></div>
+      <p class="sdesc" id="mdesc"></p>
+      <label class="ck"><input type="checkbox" id="fw" checked> Avec les feux d'artifice du jeu (Irisée, Dorée)</label>
+    </div>
+    <div class="card" style="padding:10px">
+      <div class="stage"><canvas id="cv"></canvas></div>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="grid-wrap"><table id="grid"></table></div>
+    <div class="row">
+      <button class="btn y" id="replay">▶ Rejouer</button>
+      <button class="btn" id="stop">■ Stop</button>
+      <button class="btn" id="climb">Du Commun au Légendaire</button>
+      <button class="btn" id="shinies">Les 3 shiny à la suite</button>
+      <button class="btn" id="allmel">Toutes celles du groupe (Rare)</button>
+      <button class="btn" id="bag">Un sachet de 6</button>
+    </div>
+    <div class="now"><b id="title">Clique sur une case</b><span class="note" id="sub"></span></div>
+    <div class="chips" id="chips"></div>
+  </div>
+
+  <div class="card">
+    <h2>Comment ça marche</h2>
+    <div class="legend">
+      <div><b>Le motif : la mélodie</b>Commun : une seule note. Peu commun : 2. Rare : 3. Épique : 4, et une petite note brillante au moment de la deuxième gerbe de confettis. Légendaire : 5, et une cascade d'étincelles avec la deuxième gerbe et son anneau.</div>
+      <div><b>Irisée (la moins rare)</b>Les 6 anneaux arc-en-ciel partent l'un après l'autre : une petite gamme de 6 notes qui ondulent, une par anneau. Puis les fusées du feu d'artifice (leur son est celui du jeu).</div>
+      <div><b>Dorée</b>L'écran se réchauffe : une cloche dorée et une note grave et chaude. Puis la pluie de pièces : des « tinks » qui tombent en même temps qu'elles, nombreux au début, de plus en plus rares.</div>
+      <div><b>Lumineuse (la plus rare)</b>Tout s'éteint et un souffle monte (comme dans le jeu), puis l'éclair blanc : un accord de cristal et une basse profonde pendant la nuit, et la poussière d'étoiles qui tombe en petits scintillements.</div>
+    </div>
+  </div>
+</div>
+
+<script>
+/* ===== le moteur audio ===== */
+let ctx=null, master=null, revIn=null, noiseBuf=null, bus=null, timers=[];
+function init(){
+  if(!ctx){
+    const AC = window.AudioContext||window.webkitAudioContext; ctx = new AC();
+    master = ctx.createGain(); master.gain.value = .8;
+    const comp = ctx.createDynamicsCompressor(); master.connect(comp); comp.connect(ctx.destination);
+    noiseBuf = ctx.createBuffer(1, ctx.sampleRate*4, ctx.sampleRate);
+    const d = noiseBuf.getChannelData(0); for(let i=0;i<d.length;i++) d[i] = Math.random()*2-1;
+    const len = ctx.sampleRate*2.4, ir = ctx.createBuffer(2, len, ctx.sampleRate);
+    for(let c=0;c<2;c++){ const x = ir.getChannelData(c); for(let i=0;i<len;i++) x[i] = (Math.random()*2-1)*Math.pow(1-i/len, 3.2) }
+    const conv = ctx.createConvolver(); conv.buffer = ir; revIn = ctx.createGain(); revIn.connect(conv); conv.connect(master);
+  }
+  if(ctx.state==="suspended") ctx.resume();
+}
+function newBus(wet){
+  stopAll();
+  const g = ctx.createGain(); g.connect(master);
+  const s = ctx.createGain(); s.gain.value = wet; g.connect(s); s.connect(revIn);
+  bus = g; return g;
+}
+function stopAll(fade=.04){
+  timers.forEach(clearTimeout); timers = [];
+  if(bus){ const old = bus; old.gain.setTargetAtTime(0, ctx.currentTime, fade); setTimeout(()=>old.disconnect(), 800) } bus = null;
+  FX.clear();
+}
+const later = (fn, ms) => timers.push(setTimeout(fn, ms));
+
+const NOTE = st => 523.25*Math.pow(2,st/12);   // demi-tons au-dessus du do5
+function env(g,t,a,att,dec){ g.gain.setValueAtTime(.0001,t); g.gain.exponentialRampToValueAtTime(Math.max(a,.0002),t+att); g.gain.exponentialRampToValueAtTime(.0001,t+att+dec) }
+function osc(d,t,type,f,a,att,dec,f2){
+  const o=ctx.createOscillator(), g=ctx.createGain(); o.type=type; o.frequency.setValueAtTime(f,t);
+  if(f2) o.frequency.exponentialRampToValueAtTime(f2,t+att+dec);
+  env(g,t,a,att,dec); o.connect(g); g.connect(d); o.start(t); o.stop(t+att+dec+.05);
+}
+function noise(d,t,dur,filters){
+  const s=ctx.createBufferSource(); s.buffer=noiseBuf; const g=ctx.createGain(); let node=s;
+  filters.forEach(fp=>{ const f=ctx.createBiquadFilter(); f.type=fp.type; f.frequency.setValueAtTime(fp.f,t);
+    if(fp.f2) f.frequency.exponentialRampToValueAtTime(fp.f2,t+dur); if(fp.Q) f.Q.value=fp.Q; node.connect(f); node=f });
+  node.connect(g); g.connect(d);
+  s.start(t, Math.random()*Math.max(0,1.9-dur), dur+.05);
+  return g;
+}
+function vib(d,t,f,a,att,dec,rate,depth){ const o=ctx.createOscillator(), g=ctx.createGain(), l=ctx.createOscillator(), lg=ctx.createGain();
+  o.frequency.setValueAtTime(f,t); l.frequency.value=rate; lg.gain.value=f*depth; l.connect(lg); lg.connect(o.frequency);
+  env(g,t,a,att,dec); o.connect(g); g.connect(d); o.start(t); l.start(t); o.stop(t+att+dec+.05); l.stop(t+att+dec+.05) }
+function thud(d,t,a=1,f=180){ osc(d,t,"sine",f*1.6,a*.5,.002,.09,f); env(noise(d,t,.05,[{type:"lowpass",f:700}]),t,a*.5,.002,.04) }
+
+/* ----- les instruments ----- */
+const V = {
+  mbox(d,t,f,a,dur){ osc(d,t,"sine",f,a,.001,dur); osc(d,t,"sine",f*3,a*.22,.001,dur*.25); osc(d,t,"sine",f*5.93,a*.09,.001,dur*.1);
+    env(noise(d,t,.008,[{type:"highpass",f:6000}]),t,a*.3,.0005,.006) },
+  bell(d,t,f,a,dur){ [[1,1],[2,.45],[2.42,.3],[3,.2],[4.1,.12],[5.4,.06]].forEach(([k,m])=>osc(d,t,"sine",f*k,a*m,.002,dur*(1.2-k*.15))) },
+  marimba(d,t,f,a,dur){ osc(d,t,"sine",f,a,.002,dur*.6); osc(d,t,"sine",f*3.98,a*.28,.001,.07); osc(d,t,"sine",f*9.9,a*.06,.001,.025);
+    env(noise(d,t,.012,[{type:"bandpass",f:Math.min(9000,f*4),Q:2}]),t,a*.35,.0005,.01) },
+  glock(d,t,f,a,dur){ osc(d,t,"sine",f,a,.002,dur); osc(d,t,"sine",f*2.76,a*.35,.001,dur*.35); osc(d,t,"sine",f*5.4,a*.12,.001,dur*.12);
+    env(noise(d,t,.01,[{type:"highpass",f:5000}]),t,a*.25,.001,.008) },
+  bulle(d,t,f,a,dur){ osc(d,t,"sine",f*.62,a*1.1,.004,Math.min(.16,dur),f*1.08); osc(d,t+.012,"sine",f,a*.55,.004,dur*.6);
+    env(noise(d,t,.02,[{type:"bandpass",f:f*2,Q:6}]),t,a*.3,.001,.015) },
+  kalimba(d,t,f,a,dur){ osc(d,t,"sine",f,a,.002,dur); osc(d,t,"sine",f*5.95,a*.07,.001,.06); osc(d,t,"triangle",f*2,a*.08,.002,dur*.25);
+    env(noise(d,t,.015,[{type:"lowpass",f:2400}]),t,a*.25,.001,.012) },
+  chime(d,t,f,a,dur){ osc(d,t,"sine",f,a,.004,dur); osc(d,t,"sine",f*2.005,a*.25,.004,dur*.6); osc(d,t,"triangle",f*3.01,a*.06,.004,dur*.3) },
+};
+function clink(d,t,a){ const f=3200+Math.random()*2400; osc(d,t,"sine",f,a,.001,.12); osc(d,t,"sine",f*1.47,a*.5,.001,.08) }
+
+/* ----- les mélodies : la note du Commun, puis celles qui s'ajoutent avec la rareté -----
+   notes = demi-tons ; times = quand chaque note tombe (en s) ; off = la tonalité ; tail = la tenue de la dernière note */
+const MEL = {
+  montee:  {n:"Montée", g:1, v:"mbox", off:0, notes:[0,4,7,12,16], times:[0,.055,.11,.165,.22], tail:.5,
+            d:"Boîte à musique (le son actuel du jeu) : chaque rareté ajoute une note plus haute, très vite. Simple et clair."},
+  // (9 octobre 2026) d'autres airs, toujours à la boîte à musique
+  comptine:{n:"Comptine", g:1, v:"mbox", off:0, notes:[0,0,7,7,9], times:[0,.1,.2,.3,.4], tail:.6,
+            d:"Le début de « Ah ! vous dirai-je, maman » (Brille, brille, petite étoile) : chaque rareté avance d'une note dans l'air. Tout le monde le reconnaît."},
+  berceuse:{n:"Berceuse", g:1, v:"mbox", off:0, notes:[7,12,11,12,16], times:[0,.09,.18,.27,.38], tail:.7,
+            d:"Un petit tour de berceuse (sol, do, si, do, mi) : doux, un peu plus lent, avec la note qui se pose à la fin."},
+  pluie:   {n:"Pluie", g:1, v:"mbox", off:0, notes:[24,19,16,12,7], times:[0,.06,.12,.18,.24], tail:.55,
+            d:"À l'envers : les notes tombent du haut comme des gouttes. Plus le motif est rare, plus la pluie descend loin."},
+  egrene:  {n:"Égrené", g:1, v:"mbox", off:-5, notes:[0,7,12,16,19], times:[0,.07,.14,.21,.28], tail:.9, ring:true,
+            d:"Les notes ne s'arrêtent pas : elles résonnent toutes ensemble et forment un accord qui s'ouvre, de plus en plus large avec la rareté."},
+  deuxvoix:{n:"Deux voix", g:1, v:"mbox", off:0, notes:[0,4,7,12,16], h:[-5,0,4,7,12], times:[0,.065,.13,.195,.26], tail:.6,
+            d:"La « Montée », mais chaque note a sa petite harmonie en dessous : plus riche, comme une boîte à musique à deux peignes."},
+  ralenti: {n:"Ralenti", g:1, v:"mbox", off:0, notes:[0,4,7,12,16], times:[0,.06,.13,.22,.35], tail:.7, wobble:true,
+            d:"La boîte qui finit sa course : les notes s'espacent de plus en plus, et la dernière vacille un peu, comme quand le ressort s'arrête."},
+  carillon:{n:"Carillon", v:"bell", off:-5, notes:[7,0,4,7,12], times:[0,.11,.2,.28,.36], tail:.9, a:.07,
+            d:"Des petites cloches : « ding-dong » pour un Peu commun, puis la cloche remonte jusqu'à l'octave. Plus rond, un peu plus long."},
+  rebond:  {n:"Rebond", v:"marimba", off:-5, notes:[0,7,12,16,19], times:[0,.14,.245,.32,.37], tail:.45, a:.15,
+            d:"Une bille qui rebondit sur un xylophone en bois : les rebonds se rapprochent et montent. Le plus « bille » de tous."},
+  tada:    {n:"Ta-da !", v:"glock", off:0, notes:[-5,0,4,7,12], times:"tada", tail:.6, a:.09,
+            d:"Une mini-fanfare au glockenspiel : des notes courtes puis une longue (« ta-ta-DAA »). Ça sonne comme une récompense."},
+  bulles:  {n:"Bulles", v:"bulle", off:-5, notes:[0,4,7,9,12], times:[0,.07,.14,.21,.28], tail:.35, a:.13,
+            d:"Des « ploup » de bonbon qui pétillent, comme des bulles qui remontent. Rigolo, très court, va bien avec la papillote."},
+  kalimba: {n:"Kalimba", v:"kalimba", off:0, notes:[0,9,7,12,16], times:[0,.08,.16,.24,.32], tail:.7, a:.12,
+            d:"Un piano à pouces, doux et chaleureux. La petite mélodie monte, redescend d'un pas, puis remonte : la plus « chantante »."},
+};
+const timesOf = (m,n) => m.times==="tada" ? Array.from({length:n},(_,i)=>i<n-1 ? i*.07 : n>1 ? (n-2)*.07+.15 : 0) : m.times.slice(0,n);
+const DR = ["Commun","Peu commun","Rare","Épique","Légendaire"];
+const DRC = ["#B9B2C2","#4CC26A","#4C8DFF","#A86BFF","#FF9F1C"];
+const SH = ["Pas shiny","Irisée","Dorée","Lumineuse"];
+const PENTA = [0,2,4,7,9,12,14,16,19,21,24,26,28,31];
+
+function motif(d,t,m,dr,shy){
+  const n = dr+1, ts = timesOf(m,n), a = (m.a||.11)*(shy ? .8 : 1), K = m.off;
+  ts.forEach((x,i)=>{ const last = i===n-1, f = NOTE(K+m.notes[i]);
+    V[m.v](d, t+x, f, a*(last ? 1.1 : .85)*(m.ring ? .8 : 1), last ? m.tail+.08*dr : m.ring ? .9 : .28);
+    if(m.h) V[m.v](d, t+x+.008, NOTE(K+m.h[i]), a*.5, last ? m.tail : .22);
+    if(m.wobble && last && dr) vib(d, t+x+.02, f, a*.35, .02, m.tail, 5.5, .006) });
+  // la deuxième gerbe de confettis (520 ms dans le jeu, épique et légendaire)
+  if(dr===3) V.chime(d, t+.52, NOTE(K+24+m.notes[n-1]%12), .035, .6);
+  if(dr===4){ for(let i=0;i<7;i++) V.glock(d, t+.52+i*.045+Math.random()*.015, NOTE(K+24+PENTA[i+2]), .028+Math.random()*.012, .35); V.chime(d, t+.52, NOTE(K+24), .04, .9) }
+  return ts.at(-1) + m.tail + (dr>=3 ? .5 : 0);
+}
+/* ----- la shiny, calée sur l'animation du jeu (t = le moment où la bille s'ouvre) ----- */
+function shinyIri(d,t,K){   // 6 anneaux arc-en-ciel toutes les 70 ms : une note par anneau
+  [12,14,16,19,21,24].forEach((n,j)=>{ const f = NOTE(K+n+12);
+    V.chime(d, t+j*.07, f, .045, .55); vib(d, t+j*.07+.01, f*1.004, .022, .01, .5, 6+j*.4, .012) });
+  vib(d, t+.38, NOTE(K+36), .025, .05, .7, 5.5, .015);
+  return .9;
+}
+function shinyGold(d,t,K){   // l'écran se réchauffe (cloche + note chaude), puis la pluie de pièces
+  V.bell(d, t, NOTE(K+12), .07, 1.6); V.bell(d, t+.1, NOTE(K+19), .05, 1.4);
+  osc(d, t, "sine", NOTE(K-24), .07, .25, 1.6); osc(d, t, "triangle", NOTE(K-12), .025, .3, 1.3);
+  clink(d, t+.04, .07); clink(d, t+.08, .06);
+  let x = .25; for(let i=0;i<16;i++){ clink(d, t+x, (.06-.0028*i)*(.6+Math.random()*.5)); x += .05+i*.011+Math.random()*.05 }
+  return Math.max(1.8, x);
+}
+function lumSwell(d,t){   // le souffle du jeu, pendant le noir (copié tel quel)
+  env(noise(d,t,1.1,[{type:"bandpass",f:300,f2:6000,Q:1.1}]),t,.22,1,.12); osc(d,t,"sine",220,.08,1,.15,880) }
+function shinyLum(d,t,K){   // l'éclair : accord de cristal + basse profonde (la nuit), puis la poussière d'étoiles
+  env(noise(d,t,.5,[{type:"highpass",f:3000}]),t,.09,.003,.45);
+  [12,19,24,28,31].forEach((n,i)=>V.chime(d, t+i*.025, NOTE(K+n), .06-.006*i, 2.2));
+  osc(d, t, "sine", NOTE(K-24), .1, .04, 2.6); osc(d, t, "sine", NOTE(K-17), .035, .2, 2.2);
+  vib(d, t+.05, NOTE(K+36), .02, .2, 1.4, 7, .006);
+  let x = .3; for(let i=0;i<20;i++){ V.glock(d, t+x, NOTE(K+24+PENTA[Math.floor(Math.random()*PENTA.length)]), (.04-.0015*i)*(.6+Math.random()*.6), .35); x += .07+i*.006+Math.random()*.08 }
+  return Math.max(2.6, x);
+}
+function firework(d,t){   // le son des fusées du jeu (copié tel quel)
+  const up=.95+Math.random()*.2;
+  osc(d,t,"sine",700,.035,.05,up,2100);
+  env(noise(d,t,up,[{type:"bandpass",f:3000,f2:6000,Q:2}]),t,.05,.05,up);
+  const b=t+up; thud(d,b,.55,90); env(noise(d,b,.5,[{type:"lowpass",f:1600,f2:300}]),b,.35,.004,.45);
+  for(let i=0;i<14;i++){ const c=b+.12+Math.random()*.9; env(noise(d,c,.02,[{type:"highpass",f:3500}]),c,.12*Math.random()+.04,.001,.015) }
+  return up;
+}
+
+/* ===== la petite scène : les animations du jeu, simplifiées ===== */
+const TAU = Math.PI*2, RAIN = ["#FF6FB5","#FFB547","#FFE14D","#6FE3A8","#5AB8FF","#B07BFF"], GOLD = ["#FFE38A","#FFC93F","#E8A317","#FFF3C4"];
+const FX = {
+  parts:[], raf:0, cv:null, c:null, W:0, H:0, ball:null, over:null,
+  fit(){ const cv=this.cv=document.getElementById("cv"), d=Math.min(2,devicePixelRatio||1), r=cv.getBoundingClientRect();
+    this.W=r.width; this.H=r.height; cv.width=Math.round(r.width*d); cv.height=Math.round(r.height*d); this.c=cv.getContext("2d"); this.c.setTransform(d,0,0,d,0,0); this.draw() },
+  clear(){ this.parts=[]; this.ball=null; this.over=null; this.draw() },
+  burst(cols,n,pow){ const x=this.W/2,y=this.H/2; for(let i=0;i<n;i++){ const a=Math.random()*TAU, v=(1.2+Math.random()*4.5)*pow;
+    this.parts.push({x,y,vx:Math.cos(a)*v,vy:Math.sin(a)*v-pow,life:1,dec:.01+Math.random()*.016,sz:1.4+Math.random()*2.6*pow,c:cols[i%cols.length],spark:Math.random()<.6,g:.09}) } this.go() },
+  ring(c){ this.parts.push({ring:true,x:this.W/2,y:this.H/2,r:16,life:1,dec:.028,c}); this.go() },
+  coins(n){ for(let i=0;i<n;i++) this.parts.push({coin:true,x:Math.random()*this.W,y:-15-Math.random()*this.H*.6,vx:(Math.random()-.5),vy:1+Math.random()*1.8,g:.05,life:1,dec:.005,sz:4+Math.random()*3,rot:Math.random()*6}); this.go() },
+  stars(n,cols){ for(let i=0;i<n;i++) this.parts.push({x:Math.random()*this.W,y:Math.random()*this.H*.6,vx:0,vy:.2+Math.random()*.5,g:0,life:1,dec:.004+Math.random()*.004,sz:1+Math.random()*2,c:cols[i%cols.length],twinkle:true}); this.go() },
+  rocket(cols,i){ const x=this.W*(.12+.76*Math.random()), y=this.H+10, top=this.H*(.12+.3*Math.random()), g=.1;
+    this.parts.push({rocket:true,x,y,vx:(Math.random()-.5)*1.2,vy:-Math.sqrt(2*g*(y-top)),g,life:1,dec:0,col:cols[i%cols.length],alt:cols[(i+2)%cols.length]}); this.go() },
+  explode(p,add){ for(let i=0;i<60;i++){ const a=i/60*TAU, v=1.6+Math.random()*2.6;
+      add.push({x:p.x,y:p.y,vx:Math.cos(a)*v,vy:Math.sin(a)*v,life:1,dec:.01+Math.random()*.01,sz:1.4+Math.random()*1.6,c:i%3?p.col:p.alt,spark:true,g:.04}) }
+    add.push({ring:true,x:p.x,y:p.y,r:8,life:.7,dec:.03,c:p.col}) },
+  go(){ if(!this.raf) this.raf=requestAnimationFrame(()=>this.loop()) },
+  draw(){
+    const c=this.c; if(!c) return; const W=this.W, H=this.H, now=performance.now(); c.clearRect(0,0,W,H);
+    const o=this.over;
+    if(o){ const k=(now-o.t0)/1000;
+      if(o.warm && k<3.2){ c.fillStyle=`rgba(255,180,60,${.28*Math.min(1,k*3)*Math.min(1,(3.2-k)*2)})`; c.fillRect(0,0,W,H) }
+      if(o.black!=null && k<0){ c.fillStyle=`rgba(0,0,0,${Math.min(.9,(k+o.black)*2)})`; c.fillRect(0,0,W,H) }
+      if(o.night && k>=0 && k<3.6){ c.fillStyle=`rgba(0,4,16,${.6*Math.min(1,(3.6-k))})`; c.fillRect(0,0,W,H) } }
+    const b=this.ball;
+    if(b){ const k=(now-b.t0)/1000, x=W/2, y=H/2, s=k<0 ? 0 : Math.min(1, k/.25), r=34*(s<1 ? .3+.7*s+.15*Math.sin(s*Math.PI) : 1);
+      if(k>=0){
+        if(b.sh===1){ c.save(); c.translate(x,y); c.rotate(k*1.6); const g=c.createConicGradient(0,0,0); RAIN.forEach((col,i)=>g.addColorStop(i/6,col)); g.addColorStop(1,RAIN[0]);
+          c.globalAlpha=.45; c.filter="blur(14px)"; c.fillStyle=g; c.beginPath(); c.arc(0,0,r+14,0,TAU); c.fill(); c.restore() }
+        if(b.sh===2){ c.save(); c.translate(x,y); c.rotate(k*.5); c.globalAlpha=.7; for(let i=0;i<20;i++){ c.rotate(TAU/20); const g=c.createLinearGradient(0,0,0,-110); g.addColorStop(0,"rgba(255,214,90,.8)"); g.addColorStop(1,"rgba(255,214,90,0)");
+          c.fillStyle=g; c.beginPath(); c.moveTo(0,0); c.lineTo(-6,-110); c.lineTo(6,-110); c.fill() } c.restore() }
+        if(b.sh===3){ const p=1+.2*Math.sin(k*2.8), g=c.createRadialGradient(x,y,0,x,y,(r+40)*p); g.addColorStop(0,"rgba(159,232,255,.9)"); g.addColorStop(1,"rgba(159,232,255,0)");
+          c.fillStyle=g; c.beginPath(); c.arc(x,y,(r+40)*p,0,TAU); c.fill() }
+        const g=c.createRadialGradient(x-r*.35,y-r*.4,r*.1,x,y,r); g.addColorStop(0,"#FFFFFF"); g.addColorStop(.25,b.col); g.addColorStop(1,"#1A1030");
+        c.fillStyle=g; c.beginPath(); c.arc(x,y,r,0,TAU); c.fill();
+        c.fillStyle="#F6EEDF"; c.font="900 14px Nunito"; c.textAlign="center"; c.fillText(b.label, x, y+r+24);
+      } else { c.fillStyle="#E9D3A8"; c.beginPath(); c.ellipse(x,y,26,20,0,0,TAU); c.fill(); c.fillStyle="#C9A46A"; c.fillRect(x-38,y-6,12,12); c.fillRect(x+26,y-6,12,12) }
+    } else { const x=W/2,y=H/2; c.fillStyle="#E9D3A8"; c.beginPath(); c.ellipse(x,y,26,20,0,0,TAU); c.fill(); c.fillStyle="#C9A46A"; c.fillRect(x-38,y-6,12,12); c.fillRect(x+26,y-6,12,12) }
+    if(o && o.flash!=null){ const k=(now-o.t0)/1000; if(k>=0 && k<.8){ c.fillStyle=`rgba(255,255,255,${.95*(1-k/.8)})`; c.fillRect(0,0,W,H) } }
+    c.globalCompositeOperation="lighter"; const add=[];
+    this.parts=this.parts.filter(p=>{
+      if(p.rocket && p.vy>=-.5){ this.explode(p,add); return false }
+      p.life-=p.dec; if(p.life<=0) return false;
+      if(p.coin){ p.vy=Math.min(p.vy+p.g,4); p.x+=p.vx; p.y+=p.vy; p.rot+=.14; const k=Math.abs(Math.cos(p.rot));
+        c.globalCompositeOperation="source-over"; c.globalAlpha=Math.min(1,p.life*2); c.fillStyle="#E8A317"; c.beginPath(); c.ellipse(p.x,p.y,p.sz*k+.5,p.sz,0,0,TAU); c.fill();
+        c.fillStyle="#FFE38A"; c.beginPath(); c.ellipse(p.x,p.y,(p.sz*k+.5)*.62,p.sz*.62,0,0,TAU); c.fill(); c.globalCompositeOperation="lighter"; return p.y<H+20 }
+      if(p.ring){ p.r+=7*p.life+2; c.globalAlpha=p.life*.8; c.strokeStyle=p.c; c.lineWidth=3.5*p.life+1; c.beginPath(); c.arc(p.x,p.y,p.r,0,TAU); c.stroke(); return true }
+      p.vx*=.982; p.vy=p.vy*.982+p.g; p.x+=p.vx; p.y+=p.vy;
+      c.globalAlpha=Math.min(1,p.life*1.5)*(p.twinkle?(Math.random()<.5?1:.2):1); c.fillStyle=p.c||"#FFF3D6"; c.strokeStyle=p.c||"#FFC98A";
+      if(p.rocket){ c.strokeStyle="#FFF3D6"; c.lineWidth=2; c.beginPath(); c.moveTo(p.x,p.y); c.lineTo(p.x-p.vx*4,p.y-p.vy*4); c.stroke(); return true }
+      if(p.spark){ c.lineWidth=p.sz*.7; c.beginPath(); c.moveTo(p.x,p.y); c.lineTo(p.x-p.vx*3,p.y-p.vy*3); c.stroke() }
+      else { c.beginPath(); c.arc(p.x,p.y,p.sz,0,TAU); c.fill() }
+      return true });
+    this.parts.push(...add); c.globalAlpha=1; c.globalCompositeOperation="source-over";
+  },
+  loop(){ this.raf=0; this.draw(); const o=this.over, b=this.ball, busy=this.parts.length || (b && performance.now()-b.t0<6000) || (o && performance.now()-o.t0<4000); if(busy) this.go() },
+};
+addEventListener("resize", ()=>FX.fit());
+
+/* ===== jouer une ouverture ===== */
+function playOne(mk,dr,sh){
+  init(); const m = MEL[mk], d = newBus(.16), K = m.off, L = [];
+  const pre = sh===3 ? 1.15 : 0, t = ctx.currentTime+.04+pre, t0 = performance.now()+40+pre*1000;
+  // l'image
+  FX.ball = {t0, sh, col: sh===2 ? "#E8A317" : sh===3 ? "#9FE8FF" : DRC[dr], label: DR[dr]+(sh ? " · "+SH[sh] : "")};
+  FX.over = {t0, warm: sh===2, black: sh===3 ? pre : null, flash: sh===3 ? 0 : null, night: sh===3};
+  FX.go();
+  later(()=>{
+    if(sh<2){ FX.burst(sh ? RAIN : [DRC[dr],"#FFF3D6"], 18+dr*10, .6+dr*.1) }
+    if(sh===1){ RAIN.forEach((c,j)=>later(()=>FX.ring(c), j*70)); FX.burst(RAIN, 90, 1.2) }
+    if(sh===2){ FX.burst(GOLD, 70, 1.1); FX.ring("#FFD34D"); FX.coins(30) }
+    if(sh===3){ FX.burst(["#FFFFFF","#DFF8FF","#9FE8FF"], 80, 1); FX.stars(45, ["#DFF8FF","#BFEFFF","#9FE8FF"]) }
+    if(dr>=3) later(()=>{ FX.burst([DRC[dr],"#FFF3D6"], dr===4 ? 70 : 35, dr===4 ? 1.2 : .85); if(dr===4) FX.ring(DRC[dr]) }, 520);
+  }, t0-performance.now());
+  // le son
+  if(sh===3){ lumSwell(d, t-1.15); L.push("Lumineuse : le noir et le souffle (déjà dans le jeu)") }
+  let end = motif(d, t, m, dr, sh);
+  L.push(DR[dr]+" : "+(dr+1)+" note"+(dr?"s":"")+(dr===3 ? " + une note brillante avec la 2e gerbe" : dr===4 ? " + des étincelles avec la 2e gerbe" : ""));
+  if(sh===1){ end = Math.max(end, shinyIri(d,t,K)); L.push("Irisée : 6 notes qui ondulent, une par anneau arc-en-ciel") }
+  if(sh===2){ end = Math.max(end, shinyGold(d,t,K)); L.push("Dorée : cloche + note chaude, puis les pièces qui tombent") }
+  if(sh===3){ end = Math.max(end, shinyLum(d,t,K)); L.push("Lumineuse : accord de cristal + basse profonde, puis les étoiles") }
+  if(sh && sh<3 && $("fw").checked){ const n = sh===1 ? 5 : 4;
+    for(let i=0;i<n;i++){ const dl = i*.38+Math.random()*.16; firework(d, t+dl); later(()=>FX.rocket(sh===1 ? RAIN : GOLD, i), t0-performance.now()+dl*1000) }
+    L.push("Feu d'artifice du jeu : "+n+" fusées") }
+  return {len:end, L};
+}
+
+/* ===== l'interface ===== */
+let mel = MEL[location.hash.slice(1)] ? location.hash.slice(1) : "montee", cur = null;
+const $ = id => document.getElementById(id);
+function upd(){ $("mdesc").textContent = MEL[mel].d }
+const melBtns = () => document.querySelectorAll(".seg.mel button");
+const pick = k => { mel=k; history.replaceState(null,"","#"+k); melBtns().forEach(c=>c.setAttribute("aria-pressed", c.dataset.k===k)); upd() };
+Object.entries(MEL).forEach(([k,v])=>{ const b=document.createElement("button"); b.textContent=v.n; b.dataset.k=k; b.setAttribute("aria-pressed", k===mel);
+  b.onclick=()=>{ pick(k); play(...(cur||[2,0])) }; $(v.g ? "mels" : "mels2").appendChild(b) });
+upd();
+$("grid").innerHTML = "<tr><th></th>"+DR.map((n,i)=>`<th><span class="dot" style="background:var(--r${i})"></span>${n}</th>`).join("")+"</tr>"+
+  SH.map((s,sh)=>`<tr><th class="r">${s}</th>`+DR.map((_,dr)=>`<td><button data-dr="${dr}" data-sh="${sh}" aria-label="${DR[dr]}, ${s}">▶</button></td>`).join("")+"</tr>").join("");
+$("grid").onclick = e=>{ const b=e.target.closest("button"); if(b) play(+b.dataset.dr, +b.dataset.sh) };
+function play(dr,sh){
+  cur = [dr,sh]; document.querySelectorAll("td button").forEach(b=>b.classList.toggle("on", +b.dataset.dr===dr && +b.dataset.sh===sh));
+  const r = playOne(mel, dr, sh);
+  $("title").textContent = `${MEL[mel].n} · ${DR[dr]}${sh ? " · "+SH[sh] : ""}`;
+  $("sub").textContent = sh ? `${sh===3 ? "1,2 s de noir, puis " : ""}≈ ${r.len.toFixed(1).replace(".",",")} s de son` : `≈ ${r.len.toFixed(1).replace(".",",")} s`;
+  $("chips").innerHTML = r.L.map(l=>`<span class="chip">${l}</span>`).join("");
+}
+// une suite d'ouvertures (à part des timers d'une ouverture, que chaque play() remet à zéro)
+let seqTimers = [];
+function seq(list){ seqTimers.forEach(clearTimeout); seqTimers = []; init(); let x = 0;
+  list.forEach(([fn,g])=>{ seqTimers.push(setTimeout(fn, x*1000)); x += g }) }
+
+$("stop").onclick = ()=>{ seqTimers.forEach(clearTimeout); if(ctx) stopAll(.05) };
+$("replay").onclick = ()=>play(...(cur||[2,0]));
+$("climb").onclick = ()=>{ seq([0,1,2,3,4].map(dr=>[()=>play(dr,0), dr>=3 ? 1.4 : 1])) };
+$("shinies").onclick = ()=>{ seqTimers.forEach(clearTimeout); const dr = cur ? cur[0] : 2; seq([[()=>play(dr,1),3.6],[()=>play(dr,2),3.6],[()=>play(dr,3),4]]) };
+$("allmel").onclick = ()=>{ const g = MEL[mel].g; seq(Object.keys(MEL).filter(k=>!MEL[k].g===!g).map(k=>[()=>{ pick(k); play(2,0) }, 1.4])) };
+$("bag").onclick = ()=>{ seqTimers.forEach(clearTimeout); const pick = w=>{ let r=Math.random()*w.reduce((a,b)=>a+b,0); return w.findIndex(x=>(r-=x)<0) };
+  const b = Array.from({length:6},()=>pick([45,28,16,8,3])).sort((a,c)=>a-c);
+  seq(b.map(dr=>[()=>play(dr,0), dr>=2 ? .8 : .6])) };
+FX.fit();
+</script>
+</body>
+</html>

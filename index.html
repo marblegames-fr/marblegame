@@ -2000,7 +2000,7 @@ button.gh-cell:hover{transform:translateY(-2px)}
 /* 6 billes (une secrète en plus) : toutes sur une ligne, un peu plus petites si l'écran est étroit */
 .ov-body.six{width:min(1180px,100%)}
 @media (min-width:900px){
-  .reveal-row.six{flex-wrap:nowrap;gap:12px;--sw:min(176px,calc((calc(100vw / var(--vz,1)) - 110px) / 6))}
+  .reveal-row.six{flex-wrap:nowrap;gap:12px;--sw:min(176px,calc((calc(100vw / var(--vz,1)) - 110px) / var(--n,6)))}
   .reveal-row.six .slot{width:var(--sw);padding-inline:2px}
   .reveal-row.six .slot-ball{width:calc(var(--sw) - 24px);height:calc(var(--sw) - 24px)}
   .reveal-row.six .slot-ball img{max-width:100%}
@@ -4040,8 +4040,45 @@ function compose(style,d,t,z,dr,sh){
       const g = ctx.createGain(), s = ctx.createGain(); g.connect(master); s.gain.value = ORCH.boite.wet; g.connect(s); s.connect(revIn);
       if(!keep) last = g; return g;
     }
+    /* (9 octobre 2026) l'ouverture d'un sachet, « Égrené » : la taille ne s'entend plus (l'animation la montre déjà),
+       seul le motif fait la mélodie : 1 note pour un Commun … 5 pour un Légendaire, qui résonnent ensemble en accord.
+       La shiny a son propre son, calé sur son animation (shinyFX) : t = le moment où la bille s'ouvre */
+    const EG = {off:-5, notes:[0,7,12,16,19], step:.07, tail:.9, a:.11}, PENTA = [0,2,4,7,9,12,14,16,19,21,24,26,28,31];
+    function egrene(d,t,dr,shy){
+      const n = dr+1, K = EG.off, a = EG.a*(shy ? .8 : 1);
+      for(let i=0;i<n;i++){ const last = i===n-1; mbox(d, t+i*EG.step, NOTE(K+EG.notes[i]), a*(last ? 1.1 : .85)*.8, last ? EG.tail+.08*dr : .9) }
+      // la deuxième gerbe de confettis (520 ms, épique et légendaire)
+      if(dr===3) chime(d, t+.52, NOTE(K+24+EG.notes[n-1]%12), .035, .6);
+      if(dr===4){ for(let i=0;i<7;i++) glock(d, t+.52+i*.045+Math.random()*.015, NOTE(K+24+PENTA[i+2]), .028+Math.random()*.012, .35); chime(d, t+.52, NOTE(K+24), .04, .9) }
+      return (n-1)*EG.step + EG.tail + .08*dr + (dr>=3 ? .5 : 0);
+    }
+    function shinyIri(d,t,K){   // les 6 anneaux arc-en-ciel, toutes les 70 ms : une note qui ondule par anneau
+      [12,14,16,19,21,24].forEach((n,j)=>{ const f = NOTE(K+n+12);
+        chime(d, t+j*.07, f, .045, .55); vib(d, t+j*.07+.01, f*1.004, .022, .01, .5, 6+j*.4, .012) });
+      vib(d, t+.38, NOTE(K+36), .025, .05, .7, 5.5, .015);
+      return .9;
+    }
+    function shinyGold(d,t,K){   // l'écran se réchauffe (cloche + note chaude), puis la pluie de pièces
+      bell(d, t, NOTE(K+12), .07, 1.6); bell(d, t+.1, NOTE(K+19), .05, 1.4);
+      osc(d, t, "sine", NOTE(K-24), .07, .25, 1.6); osc(d, t, "triangle", NOTE(K-12), .025, .3, 1.3);
+      clink(d, t+.04, .07); clink(d, t+.08, .06);
+      let x = .25; for(let i=0;i<16;i++){ clink(d, t+x, (.06-.0028*i)*(.6+Math.random()*.5)); x += .05+i*.011+Math.random()*.05 }
+      return Math.max(1.8, x);
+    }
+    function shinyLum(d,t,K){   // l'éclair (le noir et le souffle sont venus avant, Sound.lumSwell) : cristal + basse profonde, puis les étoiles
+      env(noise(d,t,.5,[{type:"highpass",f:3000}]),t,.09,.003,.45);
+      [12,19,24,28,31].forEach((n,i)=>chime(d, t+i*.025, NOTE(K+n), .06-.006*i, 2.2));
+      osc(d, t, "sine", NOTE(K-24), .1, .04, 2.6); osc(d, t, "sine", NOTE(K-17), .035, .2, 2.2);
+      vib(d, t+.05, NOTE(K+36), .02, .2, 1.4, 7, .006);
+      let x = .3; for(let i=0;i<20;i++){ glock(d, t+x, NOTE(K+24+PENTA[Math.floor(Math.random()*PENTA.length)]), (.04-.0015*i)*(.6+Math.random()*.6), .35); x += .07+i*.006+Math.random()*.08 }
+      return Math.max(2.6, x);
+    }
     return {
       reveal(z, dr, sh, keep){ const d = bus(keep), t = ctx.currentTime + .03; return compose("boite", d, t, z, dr, sh).end - ctx.currentTime },
+      opening(dr, sh){ const d = bus(), t = ctx.currentTime + .03;
+        let len = egrene(d, t, dr, sh);
+        if(sh) len = Math.max(len, [0, shinyIri, shinyGold, shinyLum][sh](d, t, EG.off));
+        return len + .03 },
       suspense(dur, k){ const d = bus(), t0 = ctx.currentTime; ORCH.boite.roll(d,t0,dur-.05); osc(d,t0,"sine",260,.04,dur*.9,.1,k>=6?1040:780) },
     };
   })();
@@ -4096,6 +4133,8 @@ function compose(style,d,t,z,dr,sh){
     // révélation à la boîte à musique (tier : 0 Mini … 5 Mammouth ; shiny : 1 Irisée, 2 Dorée, 3 Lumineuse, true compte comme Irisée ; dr : rareté du motif)
     // renvoie la durée de sa musique, en secondes (« Tout révéler » attend la fin pour les billes qui comptent)
     reveal(tier,shiny,dr=0,keep=false){ if(!init()) return 0; return MB.reveal(Math.min(5,tier|0), Math.max(0,dr|0), shiny===true ? 1 : shiny|0, keep) },
+    // l'ouverture d'un sachet (9 octobre 2026) : court, seulement le motif (et la shiny) ; renvoie sa durée en secondes
+    opening(shiny,dr=0){ if(!init()) return 0; return MB.opening(Math.min(4,Math.max(0,dr|0)), shiny===true ? 1 : shiny|0) },
     // juste avant une Lumineuse : la lumière s'éteint, un silence, puis un souffle qui monte comme une lumière qui s'allume
     lumSwell(delay=0){ if(!init()) return; const t=now()+delay;
       env(noise(t,1.1,[{type:"bandpass",f:300,f2:6000,Q:1.1}]),t,.22,1,.12); osc(t,"sine",220,.08,1,.15,null,880) },
@@ -8076,7 +8115,7 @@ function showReveal(){
   ob.innerHTML = `
     <div class="ov-title">${results.length} billes trouvées !</div>
     <p class="ov-sub">${ovState.forced?"Garantie Boulet activée : un gros t'attend !":"Touche chaque bille pour la découvrir…"}</p>
-    <div class="reveal-row${results.length>5?" six":""}">
+    <div class="reveal-row${results.length>5?" six":""}" style="--n:${Math.max(6,results.length)}">
 
       ${results.map(({s,isNew,newColor,evNew,wish},i)=>{
         const nb = isNew||newColor||evNew, sz = Math.round(150*scaleOf(s.type));
@@ -8183,8 +8222,8 @@ function reveal(i){
   else if(k>=6){ FX.burst(x,y, SHINY_COLS, 70, 1.3); FX.fireworks(SHINY_COLS, 8) }
   else if(k===FMT_TIER.mammouth){ FX.burst(x,y, scoreCols(k), 120, 1.6); setTimeout(()=>FX.ring(x,y, "#FFE3B0"), 180) }
   if(k>=BIG){ const b=document.getElementById("ov-body"); b.classList.remove("quake"); void b.offsetWidth; b.classList.add("quake") }
-  ovState.sndLen = Sound.reveal(TIDX[rs.type], rs.shiny||0, Math.max(0,decorRar(rs))) || 0;
-  // un motif épique ou légendaire : une deuxième gerbe à sa couleur (sa musique est déjà dans celle de la boîte à musique)
+  ovState.sndLen = Sound.opening(rs.shiny||0, Math.max(0,decorRar(rs))) || 0;
+  // un motif épique ou légendaire : une deuxième gerbe à sa couleur (le son a ses étincelles pile à ce moment)
   const dr = decorRar(rs);
   if(dr>=3) setTimeout(()=>{ if(!ovState) return; const c = DECOR_RAR[dr].c;
     FX.burst(x,y, [c, shade(c,.45), "#FFF3D6"], dr===4 ? 90 : 45, dr===4 ? 1.3 : .9); if(dr===4) FX.ring(x,y, c) }, 520);
@@ -8262,7 +8301,7 @@ function finishReveal(){
     again = freeReady() ? `<button class="btn btn-yellow" data-action="open-next-free">Ouvrir le suivant (${freeStock()} en stock)</button>` : `<button class="btn btn-yellow" data-action="to-bags">Voir les sachets payants</button>`;
   }
   if(ovState.demo){ document.querySelector(".ov-sub").textContent = "Démo terminée : ces billes ne sont pas dans ta boîte.";
-    document.getElementById("ov-actions").innerHTML = `<button class="btn btn-yellow" data-action="shiny-demo">Revoir la démo</button><button class="btn btn-ghost" data-action="close-ov">Fermer</button>`; return }
+    document.getElementById("ov-actions").innerHTML = `<button class="btn btn-yellow" data-action="${ovState.demoAct||"shiny-demo"}">Revoir la démo</button><button class="btn btn-ghost" data-action="close-ov">Fermer</button>`; return }
   const nc = results.filter(r=>r.isNew||r.evNew).length, ncol = results.filter(r=>!r.isNew&&!r.evNew&&r.newColor).length;
   const nbLeg = nc||ncol ? `<span class="nb-leg">${nc?`<span><span class="nb-dot">${SPARK}</span>${nc} nouveau${nc>1?"x":""} motif${nc>1?"s":""}</span>`:""}${ncol?`<span><span class="nb-dot col">${SPARK}</span>${ncol} nouveau${ncol>1?"x":""} coloris</span>`:""}</span>` : "";
   document.getElementById("ov-actions").innerHTML = `${nbLeg}<span class="ov-xp" style="flex-basis:100%;justify-content:center">${ic("ticket",18)} +${ovState.pxp} XP de saison</span>${again}<button class="btn btn-ghost" data-action="to-home">Revenir à l'accueil</button>`;
@@ -12298,6 +12337,7 @@ function viewSoon(){
           <button class="btn btn-ghost" data-action="daily-reset">Revoir le bonbec du jour</button>
           <button class="btn btn-ghost" data-action="pity-max">Garantie Boulet au prochain sachet</button>
           <button class="btn btn-ghost" data-action="shiny-demo">${ic("star",16)} Ouverture shiny (démo)</button>
+          <button class="btn btn-ghost" data-action="sound-demo">${ic("star",16)} Sons d'ouverture : chaque cas (démo)</button>
           ${COLORIS_MAQUETTES.length ? `<button class="btn btn-ghost" data-action="lab-open">${ic("star",16)} Maquettes de coloris</button>` : ""}
         </div>
       </section>
@@ -13423,6 +13463,10 @@ document.addEventListener("click", e=>{
     // (8 octobre 2026) pour voir et entendre les 3 ouvertures shiny : un faux sachet (Irisée, Dorée, Lumineuse), rien n'est gagné ni enregistré
     case "shiny-demo": { const results = [1,2,3].map(sh=>({s:makeSpec("calot",{shiny:sh, src:"test"}), isNew:false, newColor:false}));
       FX.stop(); ovState = {bag:BAG_BY.premium, results, opened:new Set(), gift:false, forced:false, demo:true, pxp:0}; showBagStage(); break }
+    // (9 octobre 2026) pour entendre chaque son d'ouverture : un motif de chaque rareté (Commun → Légendaire), puis les 3 shiny (motif rare) ; rien n'est gagné
+    case "sound-demo": { const fam = r => { const L = FAMILIES.map((f,i)=>i).filter(i=>FAMILIES[i].rar===r && !extraFam(i)); return L[Math.floor(Math.random()*L.length)] };
+      const results = [[0,0],[1,0],[2,0],[3,0],[4,0],[2,1],[2,2],[2,3]].map(([r,sh])=>({s:makeSpec("bille",{family:fam(r), shiny:sh, src:"test"}), isNew:false, newColor:false}));
+      FX.stop(); ovState = {bag:BAG_BY.premium, results, opened:new Set(), gift:false, forced:false, demo:true, demoAct:"sound-demo", pxp:0}; showBagStage(); break }
     case "tuto-next": { const T = TUTO[S.tuto?.step]; if(T?.act) T.act(); else tutoNext(); break }
     case "tuto-skip": tutoSkip(); break;
     case "tuto-gift": tutoEnd(); closeModal(); openBag("premium", true); break;
@@ -13602,7 +13646,7 @@ var eco = {ready:false, q:Promise.resolve(), testeur:false, busy:false, retry:fa
 // outils de test : pour les comptes testeurs, ou quand le jeu tourne sur l'ordinateur (pas en ligne)
 const DEV_HOST = location.protocol==="file:" || /^(localhost|127\.0\.0\.1|)$/.test(location.hostname);
 const devTools = () => sync.on ? eco.testeur : DEV_HOST;
-const DEV_ACTIONS = ["add-jetons","refill-free","give-shiny","pass-xp","daily-reset","pity-max","shiny-demo","reset"];
+const DEV_ACTIONS = ["add-jetons","refill-free","give-shiny","pass-xp","daily-reset","pity-max","shiny-demo","sound-demo","reset"];
 function srvOn(){ return !!(sync.on && eco.ready) }
 // (7 octobre 2026) une bille ne vient que du serveur : sans lui, pas de sachet, de fusion, de jeu de chance ni de récompense en bille.
 // On prévient le joueur et on retente la connexion au serveur.

@@ -1,0 +1,502 @@
+<!doctype html>
+<html lang="fr" data-theme="dark">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Papillote qui se déchire</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Lilita+One&family=Nunito:wght@500;600;700;800;900&display=swap">
+<style>
+:root{
+  --bg:#FBF4E6; --panel:#FFFCF6; --panel-2:#FFF3DF; --line:#EADBC0; --ink:#2B2118; --muted:#7A6A58;
+  --accent:#F5B82E; --accent-ink:#3A2A00;
+  --r0:#8E8898; --r1:#2F8F45; --r2:#2E6BE6; --r3:#8A4AD6; --r4:#D97E06;
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){ --bg:#16120E; --panel:#211B15; --panel-2:#2A221A; --line:#3A3026; --ink:#F6EEDF; --muted:#B5A48E; }
+}
+:root[data-theme="dark"]{ --bg:#16120E; --panel:#211B15; --panel-2:#2A221A; --line:#3A3026; --ink:#F6EEDF; --muted:#B5A48E; }
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);font:500 15px/1.5 Nunito,system-ui,sans-serif}
+.wrap{max-width:1100px;margin:0 auto;padding:28px 16px 60px}
+h1,h2{font-family:"Lilita One",Nunito,sans-serif;font-weight:400;margin:0}
+h1{font-size:clamp(28px,4vw,40px)}
+h2{font-size:21px;margin-bottom:8px}
+.lead{color:var(--muted);max-width:760px;margin:8px 0 20px}
+.card{background:var(--panel);border:1px solid var(--line);border-radius:20px;padding:18px;margin-bottom:14px}
+.lbl{font:900 12px Nunito;letter-spacing:.06em;text-transform:uppercase;color:var(--muted);margin:0 0 6px}
+.seg{display:flex;flex-wrap:wrap;gap:4px;background:var(--panel-2);border:1px solid var(--line);border-radius:14px;padding:4px}
+.seg button{flex:1 1 auto;font:900 13.5px Nunito;border:0;border-radius:10px;padding:9px 12px;background:transparent;color:var(--ink);cursor:pointer}
+.seg button[aria-pressed="true"]{background:var(--accent);color:var(--accent-ink)}
+.sdesc{color:var(--muted);font-size:13.5px;margin:8px 2px 0;min-height:2.6em}
+.ctl{display:grid;grid-template-columns:minmax(0,1.4fr) minmax(0,1fr);gap:16px}
+.row{display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin-top:12px}
+.btn{font:800 14px Nunito,sans-serif;border:1px solid var(--line);background:var(--panel-2);color:var(--ink);border-radius:999px;padding:8px 14px;cursor:pointer}
+.btn:hover{border-color:var(--accent)}
+.btn.y{background:var(--accent);color:var(--accent-ink);border-color:transparent}
+label.ck{display:flex;gap:8px;align-items:center;font-weight:800;cursor:pointer}
+label.ck input{accent-color:var(--accent);width:18px;height:18px}
+.grid-wrap{overflow-x:auto}
+table{border-collapse:separate;border-spacing:5px;width:100%;min-width:620px;table-layout:fixed}
+th:first-child{width:92px}
+th{font:900 12.5px Nunito;color:var(--muted);text-align:center;padding:2px}
+th.r{text-align:right;padding-right:8px;white-space:nowrap}
+th .dot{display:inline-block;width:9px;height:9px;border-radius:50%;margin-right:5px;vertical-align:0}
+td button{width:100%;height:46px;border-radius:12px;border:1px solid var(--line);background:var(--panel-2);color:var(--ink);font:800 12px Nunito;cursor:pointer;position:relative}
+td button:hover{border-color:var(--accent)}
+td button.on{background:var(--accent);color:var(--accent-ink);border-color:transparent}
+td button .pl{font-size:16px}
+.now{display:flex;gap:14px;align-items:center;flex-wrap:wrap}
+.now b{font-family:"Lilita One";font-weight:400;font-size:22px}
+.chips{display:flex;gap:6px;flex-wrap:wrap;margin-top:10px}
+.chip{font:800 12.5px Nunito;padding:4px 10px;border-radius:999px;background:var(--panel-2);border:1px solid var(--line)}
+.chip.x{background:color-mix(in srgb,var(--accent) 22%,var(--panel-2));border-color:color-mix(in srgb,var(--accent) 55%,var(--line))}
+.legend{display:grid;grid-template-columns:repeat(auto-fit,minmax(230px,1fr));gap:10px;margin-top:6px}
+.legend div{background:var(--panel-2);border:1px solid var(--line);border-radius:14px;padding:10px 12px;font-size:13.5px}
+.legend b{display:block;font-weight:900;margin-bottom:2px}
+.note{color:var(--muted);font-size:13.5px}
+@media (max-width:760px){ .ctl{grid-template-columns:minmax(0,1fr)} }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <h1>Le son de la papillote</h1>
+  <p class="lead">Un son de papier qu'on déchire, à partir de ton exemple (ou fabriqué par le jeu, pour comparer). La taille fait la déchirure : un petit « tsk » pour la Mini, un long « krrrt » en plusieurs à-coups pour le Mammouth. La rareté du motif et la shiny ajoutent juste une touche à la fin, pas une symphonie. « Actuel » est la boîte à musique du jeu aujourd'hui, pour comparer.</p>
+
+  <div class="card ctl">
+    <div>
+      <p class="lbl">Style</p>
+      <div class="seg" id="styles"></div>
+      <p class="sdesc" id="sdesc"></p>
+    </div>
+    <div>
+      <p class="lbl">Shiny</p>
+      <div class="seg" id="shinies"></div>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="grid-wrap"><table id="grid"></table></div>
+    <div class="row">
+      <button class="btn y" id="replay">▶ Rejouer</button>
+      <button class="btn" id="rand">Au hasard</button>
+      <button class="btn" id="climb">De la plus commune à la plus rare</button>
+      <button class="btn" id="stop">■ Stop</button>
+    </div>
+    <div class="row">
+      <button class="btn" id="bagnew">Nouveau sachet de 6</button>
+      <button class="btn" id="bagplay">Tout révéler · rythme du jeu</button>
+      <button class="btn y" id="bagfast">Tout révéler · rythme rapide</button>
+    </div>
+    <p class="sdesc" id="bagdesc"></p>
+  </div>
+
+  <div class="card">
+    <div class="now"><b id="title">Clique sur une case</b><span class="note" id="sub"></span></div>
+    <div class="chips" id="chips"></div>
+  </div>
+
+  <div class="card">
+    <h2>Comment ça marche</h2>
+    <div class="legend">
+      <div><b>★ Court : les trois couches</b>Taille = la première note, de la plus grave (Mini) à la plus aiguë (Mammouth), avec une petite basse dès le Calot. Motif = combien de notes suivent : Commun 0, Peu commun 1, Rare 2, Épique 3, Légendaire 4 + des étincelles. Shiny = la couleur de la dernière note : Irisée ondule, Dorée sonne comme une cloche avec une pièce, Lumineuse comme du cristal.</div>
+      <div><b>La taille fait la déchirure</b>Plus la bille est grosse, plus la papillote est grande : la déchirure dure plus longtemps, descend dans le grave et se fait en plusieurs à-coups. Le Mammouth finit par un petit « boum » sourd.</div>
+      <div><b>Le motif : une touche à la fin</b>Commun : juste le papier. Peu commun : une note. Rare : deux notes. Épique : trois notes qui montent. Légendaire : un petit arpège et quelques étincelles. Le tout en moins d'une seconde.</div>
+      <div><b>La shiny : un éclat</b>Irisée : une petite montée qui ondule. Dorée : une cloche et des pièces. Lumineuse : un halo et une pluie d'étoiles, courte.</div>
+      <div><b>« Papier seul »</b>Pas de notes du tout : la rareté se joue dans le papier lui-même, de plus en plus brillant et métallique (comme un papier doré), avec un « clac » plus net à la fin.</div>
+    </div>
+  </div>
+</div>
+
+<script>
+/* ===== le moteur audio ===== */
+// ton exemple : « Papier déchiré 6 » (LaSonotheque.fr), coupé à 0,24 s autour de la déchirure (elle finit par un « clac » vers 0,15 s)
+const TEAR_WAV = "UklGRiRaAABXQVZFZm10IBAAAAABAAEAgLsAAAB3AQACABAAZGF0YQBaAADu/wMA/f8dACQA5//D/wAAOgAoAOD/0/8aAFkAVQArAAEA6//m//H/8v/Y/8r/6v8WACsAHAADAPf/8P/l/9f/z//e/wUAFgAPAA4AHAAeAAYA6f/T/9b//P8eABUAAgATADEAJwD6/93/2//w/wUAEAAPAAMAAAAHAAYA/f/w/+v/8f/8/wMADgAHAAwAEQD1/wAAEQD6//b/AAACAAAA/f8DABQAEAAEAAAA+//4/wAACQAQAAsA8f/y/wEAAwAEAAQA+//9/wEABgAHAP//+v8IAAcA9//x//v////z//X/+v8AAAoACAAEAAAA/f8BAAsABwAAAAEABAAMABkAEAD3//r/AQAAAPv/9//2//z/CQAIAPz/+//6//z//v/w//D/+//8//r/+/8EAAUA+P/4//n/+f/4//n/AgAIAA0ADAAMAA0ABAD6//z/+f/8/woABAABAAEA/v8AAP//9f/3/wcABQD3//P//f8GAAQAAwD+//f/AAAGAAQAAgABAAYACQAAAP//+//5////AgAIAAoABAD///7/AAAAAAMA///+/wEABgAHAAYAAAAAAP7/9f/3//7/+P/5////AAABAAEAAgACAAAA+/8AAAQAAwAAAAcABgAEAAYAAQD6//n/+v8GAA8ABADz//3/EQATAA4AAwD2//z/AAD8/////f/3//z/AAD7//f/+P/7//r/+v/+//z/AAAFAAcABQAJAAkABwD+//T/9//+/wcA/v/0/wAACgABAAAAAgD9//j/9/////j/+v8WABQAAAD6//j/+P8KAAkA+/8MABIABwAHAAEA8//w//T/+f/4//L/BQAUAAwACAABAPz/9v/y//n/AAAAAP//AAAHAO7//v8iAAAA5P/o//T//f8GAAcA/P/v/wIA7/8BACEAAgAsADIA3f++/+z/JwA7ABAA0//T/+r/DQAPAO3/JwBhABwAzv/P/9b/9v8uABAA2//t/w4AGAAhAAMA5v/i/9H/1f/y//z/FgAyACIAAAD8//r/8v8FABIA9P/d//f/HgAcAAIA6v/N/wUAJwDv/9X/9/8DAPb//f8AAO3/4v8jADAA8f/e//H/DgAaAA0ADQASAAwAJgAXAPD/8/8CAA4AFwALAAAA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OQAYAPb/+P8LABkAGQARAAgA+f8CABUAFAAAANj/xv/x/xcAEQANABEADQALABgAKAAnABwAGgAcABwAEQD6/+7/6//7/ywATwArAPb/8/8YADMAOQAzABcA7v/J/7b/yP/w/wsAAQD8/xMAHQAAAOv/9f8BAPr/9P/3/wYAJgA5ACsADQD2/wAAIgAnABkAEgACAOP/wf++/+n/AADz//T/EQAVABcALQAwACMAGwANAAAA+v/x/+j/7P8MADIAPQASANr/yP/V//T/BgALABkAOgBDACIA/f8BABIAGAAWACsALwAPANn/xf/b//X/9v/0/+H/wP+w/8j/8/8HAAUABwAKAA0ALABmAHgATQARAPj/+f/s/9b/3/8EAAUAzP++//7/OgBAAB8AAAD6/wYACwAFAAQA+P/y//j/BwAXADgAPAAGAMf/uf/R/+X//v8ZABkA/v/c/9z/BwAhACEAHgAlACEAAgDp/+D/1P/M/9X/4//n//L/9P/s/9z/2//4/wsADwABAPP//P8IAAMADAAYAB0AEgAHABkAIAACAMz/uP/J//H/EgANAAIABAAAAAUA+v/n/+L/4v/n//H/9P/m/9v/2P/a/9z/3//l/+v/9f8GACgARABDAB8A9v/h//D/FwAoABEA5//b/+3/AAD2/9X/x//d//v/+v/k/+L/7P/3//3/EwAjABkAAwD//xUAHAAGAOz/2f/X//v/AADQ/7T/y//2/wgABAD//woADgD+/+z/7f8KABkAFgAPAAcA/f/t/+P/7f/1//n/6//l/+L/8f8LACAAKQAyACQAAADq//L/BwAKAPb/2f/Z/9//zf/F/9T/8v8FAP//7v/m/+j/9f/7//3/BAAZACUAFgD0/+P/6P/1/xAAHgARAA8AFwAVAAoA9v/7/xgAIAAMAPf/6v/h/+b//////97/yf/G/9f/6//w/wAAGQAfAAoA7f/h/+z/AAAPABEADQAMABIAEQAQAAkA+P/p//L/CAAKAPv/7f/f/8r/yP/g/wQAHgAiABUA9v/u/wYAJwAzACQAFQALAPf/6v/n/+7/AAANAAEA8//n//D/AAAMABAADAAHAPv/4f/j/wAAFQASAAgA/v/1//v/BwALAAgA+P/l/93/6f/4//X/8//7/woAGwAmAB8AEQACAAAADAAbAAsA+v/9/wMABQABAP7/+//6//3/BgAKAAYACAANAAUAAQAAAP7//v/8//r//P8BAAUAAQAAAPr/9f/2//3/AAD7//T/AAAQAAkA7//h/+7/DAAjACYAHAALAAgADAAIAP7/9//6/wEAEAAbABQAAQD5//j/+v/7/wAAEAAXAA4A+//5/wYAEwAOAAAAAAALAAkACwAcACgADgDz//X/BAANABAAAQD4//3/AgAKAAoA/f/v//r/EgAoACUAFwANAAUA/P8AABUAFgAKAPj/7P/z/wAAAwD5//f/+/8GAAUAAwAPABAAAQD7//3/CAAOAAUA/P/5/wQAEAAVAAcA+f/4/wAADgAiACAADgAFAAAAAQD//wEAAwAFAAQAAQAHAA4ABAD5//7/DwAWABQADgAQABQADwAFAP//9f/q/+r/9P8AABcAIAAYAAoABAD///b/8//5/wAA+P/2/w4AJQAbAAQA/P/7//f/9/8AAA0ACwAEAPj/8//u/+X/6P/9/xAAGgAXABAADQAPAA4ACAAAAAEACQANAAsAAwAAAP7/7//t//r//v8EAAsABgD9/wAABwAGAAMA///5//j/9v/z////CgACAPj/+//8//z/+f/3/wIAEgAVAAwAAAD8//r/+//2//f/AwAJAAYA/v/2//X/9P/v//b/BwAQABAABwADAAcABwAEAAEAAQACAAQABgADAAEA/P/8/wAA/f/7/wAAAgAFAAEA/f/3//D/8v/8/wgAEAAMAP7/8//w//H/9v/5////AwD9//H/9P/+/wcACgAJAAoACAADAPv/9//5//3/AgAGAAIA+//7/wUAEAAKAP3/8//v//T/+//7//r//f/4//n//v8CAAYADQAQAAgAAwAHAA0ACwADAP7//v/7//L/5P/h/+j/9f8DAAQAAAD+//7//P8CAAsAEQAOAAgAAAD5//z/BQAHAAQAAgABAAAA//8BAAMAAAAEAAsABQD7//n///8AAP7///8BAAAA/v/8//3/+v/2//n/AAAFAAUA/v/4//r/AAAMABEADQAFAP//9v/w//T/AAAQAA8AAAD0//f//P/5//P/+P8BAP///P8BAAUAAQD7//v/BgAMAAgA/f/1//j//P/5//r/AAAFAAoABgACAAAA///9//v///8AAAEAAAD///3/AAADAPz/9P/0//r/AAD+//z//v8AAAUACQAFAP3/+f/5//n//f/+/wIACQACAPr/+v8AAAMAAgAAAPz/+f/4//b/9v/7/////P/1//b/+/8AAAEA//8BAAUAAwD///7//f/9//7/AQABAP3//P/9////AQACAAAA+v/6//7/AAAEAAIAAwAHAAgAAQD9//////8AAAMABAABAP7//P/9/wAAAAD8//3///////3/+v/3//z/AAABAAMABwAGAAEA//8AAAAAAAABAAEAAAD8//r//P8EAAgACAADAP///v///wEABAADAAAA/v/5//j//P/9//7/AAACAAIAAAAAAAAA/v/8//7/AQAFAAQA///8//3/AAADAAQABAABAAAA/f/6//3/AwADAAAAAAAAAAEAAwABAP7//P/+//7//v/+//7///8BAAEAAAAAAAMAAgABAP////8AAAIAAgACAAEAAAD+//3//v///////f/9//z//P/9//7/AAAAAAIAAwABAAAAAAAAAAEAAQABAAAA//8AAAAAAAAAAAAAAQABAAEAAAD9//3///8AAAIAAgAAAP//AAAAAAAA//////////8AAAAAAAAAAAAAAQACAAEAAAAAAAAAAAAAAAAAAAAAAAAA/////wAAAQACAAEAAQABAAEAAAAAAAAAAAABAAEAAgACAAEAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=";
+let ctx=null, master=null, revIn=null, noiseBuf=null, bus=null, others=[], timers=[], tearBuf=null;
+function init(){
+  if(!ctx){
+    const AC = window.AudioContext||window.webkitAudioContext; ctx = new AC();
+    master = ctx.createGain(); master.gain.value = .8;
+    const comp = ctx.createDynamicsCompressor(); master.connect(comp); comp.connect(ctx.destination);
+    noiseBuf = ctx.createBuffer(1, ctx.sampleRate*4, ctx.sampleRate);
+    const d = noiseBuf.getChannelData(0); for(let i=0;i<d.length;i++) d[i] = Math.random()*2-1;
+    const len = ctx.sampleRate*2.4, ir = ctx.createBuffer(2, len, ctx.sampleRate);
+    for(let c=0;c<2;c++){ const x = ir.getChannelData(c); for(let i=0;i<len;i++) x[i] = (Math.random()*2-1)*Math.pow(1-i/len, 3.2) }
+    const conv = ctx.createConvolver(); conv.buffer = ir; revIn = ctx.createGain(); revIn.connect(conv); conv.connect(master);
+    const bin = atob(TEAR_WAV), u = new Uint8Array(bin.length); for(let i=0;i<bin.length;i++) u[i] = bin.charCodeAt(i);
+    ctx.decodeAudioData(u.buffer, buf=>{ tearBuf = buf });
+  }
+  if(ctx.state==="suspended") ctx.resume();
+}
+function newBus(wet, keep=false){
+  if(keep){ if(bus) others.push(bus); bus = null } else stopAll();
+  const g = ctx.createGain(); g.connect(master);
+  if(wet){ const s = ctx.createGain(); s.gain.value = wet; g.connect(s); s.connect(revIn) }
+  bus = g; return g;
+}
+function stopAll(fade=.04){
+  timers.forEach(clearTimeout); timers = [];
+  [bus, ...others].forEach(old=>{ if(!old) return; old.gain.setTargetAtTime(0, ctx.currentTime, fade); setTimeout(()=>old.disconnect(), 800) }); bus = null; others = [];
+}
+
+/* ----- le son actuel du jeu (boîte à musique), copié tel quel ----- */
+const NOTE = st => 523.25*Math.pow(2,st/12);   // demi-tons au-dessus du do5
+function env(g,t,a,att,dec){ g.gain.setValueAtTime(.0001,t); g.gain.exponentialRampToValueAtTime(Math.max(a,.0002),t+att); g.gain.exponentialRampToValueAtTime(.0001,t+att+dec) }
+function osc(d,t,type,f,a,att,dec,f2){
+  const o=ctx.createOscillator(), g=ctx.createGain(); o.type=type; o.frequency.setValueAtTime(f,t);
+  if(f2) o.frequency.exponentialRampToValueAtTime(f2,t+att+dec);
+  env(g,t,a,att,dec); o.connect(g); g.connect(d); o.start(t); o.stop(t+att+dec+.05);
+}
+function noise(d,t,dur,filters){
+  const s=ctx.createBufferSource(); s.buffer=noiseBuf; const g=ctx.createGain(); let node=s;
+  filters.forEach(fp=>{ const f=ctx.createBiquadFilter(); f.type=fp.type; f.frequency.setValueAtTime(fp.f,t);
+    if(fp.f2) f.frequency.exponentialRampToValueAtTime(fp.f2,t+dur); if(fp.Q) f.Q.value=fp.Q; node.connect(f); node=f });
+  node.connect(g); g.connect(d);
+  s.start(t, Math.random()*Math.max(0,1.9-dur), dur+.05);
+  return g;
+}
+// --- les briques du jeu (copiées telles quelles) ---
+function glock(d,t,f,a,dur=1.3){ osc(d,t,"sine",f,a,.002,dur); osc(d,t,"sine",f*2.76,a*.35,.001,dur*.35); osc(d,t,"sine",f*5.4,a*.12,.001,dur*.12);
+  env(noise(d,t,.01,[{type:"highpass",f:5000}]),t,a*.25,.001,.008) }
+function pad(d,t,f,a,dur){ [1,1.004].forEach(k=>osc(d,t,"triangle",f*k,a,dur*.35,dur*.65)); osc(d,t,"sine",f/2,a*.8,dur*.3,dur*.7) }
+function vib(d,t,f,a,att,dec,rate,depth){ const o=ctx.createOscillator(), g=ctx.createGain(), l=ctx.createOscillator(), lg=ctx.createGain();
+  o.frequency.setValueAtTime(f,t); l.frequency.value=rate; lg.gain.value=f*depth; l.connect(lg); lg.connect(o.frequency);
+  env(g,t,a,att,dec); o.connect(g); g.connect(d); o.start(t); l.start(t); o.stop(t+att+dec+.05); l.stop(t+att+dec+.05) }
+function bell(d,t,f,a,dur=2.2){ [[1,1],[2,.5],[2.42,.35],[3,.25],[4.1,.15],[5.4,.08]].forEach(([k,m])=>osc(d,t,"sine",f*k,a*m,.002,dur*(1.2-k*.15))) }
+function clink(d,t,a){ const f=3200+Math.random()*2400; osc(d,t,"sine",f,a,.001,.12); osc(d,t,"sine",f*1.47,a*.5,.001,.08) }
+function chime(d,t,f,a,dur=1.4){ osc(d,t,"sine",f,a,.004,dur); osc(d,t,"sine",f*2.005,a*.25,.004,dur*.6); osc(d,t,"triangle",f*3.01,a*.06,.004,dur*.3) }
+function thud(d,t,a=1,f=180){ osc(d,t,"sine",f*1.6,a*.5,.002,.09,f); env(noise(d,t,.05,[{type:"lowpass",f:700}]),t,a*.5,.002,.04) }
+// --- les nouvelles briques ---
+function mbox(d,t,f,a,dur=1.6){   // boîte à musique : une lame pincée, avec son petit clic
+  osc(d,t,"sine",f,a,.001,dur); osc(d,t,"sine",f*3,a*.22,.001,dur*.25); osc(d,t,"sine",f*5.93,a*.09,.001,dur*.1);
+  env(noise(d,t,.008,[{type:"highpass",f:6000}]),t,a*.3,.0005,.006) }
+function harp(d,t,f,a,dur=1.8){
+  const o=ctx.createOscillator(), fl=ctx.createBiquadFilter(), g=ctx.createGain(); o.type="triangle"; o.frequency.value=f;
+  fl.type="lowpass"; fl.frequency.setValueAtTime(Math.min(16000,f*8),t); fl.frequency.exponentialRampToValueAtTime(f*1.5,t+dur);
+  env(g,t,a,.003,dur); o.connect(fl); fl.connect(g); g.connect(d); o.start(t); o.stop(t+dur+.1) }
+function saws(d,t,f,a,att,sus,rel,cut0,cut1,n,det){   // dents de scie filtrées : cuivres et cordes
+  const fl=ctx.createBiquadFilter(), g=ctx.createGain(); fl.type="lowpass"; fl.Q.value=.8;
+  fl.frequency.setValueAtTime(cut0,t); fl.frequency.linearRampToValueAtTime(cut1,t+att); fl.frequency.setTargetAtTime(cut0*1.3,t+att+sus,rel/3);
+  g.gain.setValueAtTime(.0001,t); g.gain.linearRampToValueAtTime(a,t+att); g.gain.setValueAtTime(a,t+att+sus); g.gain.exponentialRampToValueAtTime(.0001,t+att+sus+rel);
+  for(let i=0;i<n;i++){ const o=ctx.createOscillator(); o.type="sawtooth"; o.frequency.value=f; o.detune.value=(i-(n-1)/2)*det; o.connect(fl); o.start(t); o.stop(t+att+sus+rel+.1) }
+  fl.connect(g); g.connect(d) }
+const brass   = (d,t,f,a,dur) => saws(d,t,f,a,.05,dur*.45,dur*.55, f*1.2, Math.min(9000,f*6), 2, 7);
+const strings = (d,t,f,a,dur) => saws(d,t,f,a,dur*.3,dur*.3,dur*.5, f*1.6, Math.min(7000,f*4), 3, 14);
+function choir(d,t,f,a,dur){   // un « aaah » : trois formants, un léger vibrato
+  const g=ctx.createGain(); g.gain.setValueAtTime(.0001,t); g.gain.linearRampToValueAtTime(a,t+dur*.35); g.gain.setValueAtTime(a,t+dur*.6); g.gain.exponentialRampToValueAtTime(.0001,t+dur);
+  const bands = [[750,6,1],[1150,8,.6],[2700,10,.25]].map(([ff,q,m])=>{ const b=ctx.createBiquadFilter(); b.type="bandpass"; b.frequency.value=ff; b.Q.value=q;
+    const bg=ctx.createGain(); bg.gain.value=m*3; b.connect(bg); bg.connect(g); return b });
+  for(let i=0;i<3;i++){ const o=ctx.createOscillator(); o.type="sawtooth"; o.frequency.value=f; o.detune.value=(i-1)*10;
+    const l=ctx.createOscillator(), lg=ctx.createGain(); l.frequency.value=4.8+i*.5; lg.gain.value=f*.007; l.connect(lg); lg.connect(o.frequency);
+    bands.forEach(b=>o.connect(b)); o.start(t); l.start(t); o.stop(t+dur+.1); l.stop(t+dur+.1) }
+  g.connect(d) }
+function timp(d,t,f,a){ osc(d,t,"sine",f*1.5,a,.003,1.3,f); osc(d,t,"sine",f*2.4,a*.25,.003,.35,f*1.6); env(noise(d,t,.12,[{type:"lowpass",f:900}]),t,a*.4,.002,.1) }
+function timpRoll(d,t,dur,f,a0,a1){ for(let x=0; x<dur; x+=.055){ const p=x/dur; timp(d,t+x,f,(a0+(a1-a0)*p)*(.85+Math.random()*.3)) } }
+function cymbal(d,t,a,dur=2.6){ env(noise(d,t,dur,[{type:"highpass",f:4500},{type:"peaking",f:8000,Q:.7}]),t,a,.003,dur) }
+function swell(d,t,a,dur){ const g=noise(d,t,dur,[{type:"highpass",f:3500}]); g.gain.setValueAtTime(.0001,t); g.gain.exponentialRampToValueAtTime(a,t+dur); g.gain.setValueAtTime(.0001,t+dur+.01) }
+function riser(d,t,a,dur){ env(noise(d,t,dur,[{type:"bandpass",f:300,f2:6000,Q:1.1}]),t,a,dur*.9,.1) }
+function boom(d,t,a){ osc(d,t,"sine",72,a,.01,1.3,32); thud(d,t,a*.9,80); env(noise(d,t,.8,[{type:"lowpass",f:260,f2:60}]),t,a*.6,.01,.75) }
+function sparkle(d,t,n,gap,a,voice=glock,lo=1900,hi=5200){ for(let i=0;i<n;i++) voice(d,t+i*gap+Math.random()*gap*.6, lo+Math.random()*(hi-lo), a*(.7+Math.random()*.6), .45) }
+const SZ = [
+  {n:"Mini",     reg:12, mel:[[0,7]],                                         dur:.6},
+  {n:"Bille",    reg:7,  mel:[[0,0],[1,4]],                                   dur:.85},
+  {n:"Chinoise", reg:5,  mel:[[0,4],[1,7],[2,11],[3,12]], wonk:true,          dur:1.1},
+  {n:"Calot",    reg:0,  mel:[[0,-5],[1,0],[2,4],[3.2,7]], bass:true,         dur:1.6},
+  {n:"Boulet",   reg:0,  mel:[[0,0],[1,4],[2,7],[3,12],[4,16]], bass:true, fall:true, dur:2.2},
+  {n:"Mammouth", reg:-5, mel:[[0,7],[.8,7],[1.6,7],[2.6,12],[4.2,11],[5,12],[5.8,16]], bass:true, fall:true, quake:true, dur:3.2},
+];
+const DR = ["Commun","Peu commun","Rare","Épique","Légendaire"];
+const SH = ["Aucune","Irisée","Dorée","Lumineuse"];
+const CHORD = [[0,4,7],[0,4,7,14],[0,4,7,11,14],[0,4,7,12,16],[0,4,7,12,16,19]];
+const KEY = [0,0,0,2,3];   // épique : l'accord final monte d'un ton ; légendaire : d'une tierce
+const ORCH = {
+  boite:{
+    wet:.32,
+    mel:(d,t,f,a)=>mbox(d,t,f,a*1.05,1.4),
+    chord:(d,t,ns,a,dur,z,dr)=>{ ns.forEach((n,i)=>harp(d,t+i*.045,NOTE(n-12),a*.75,dur*1.2)); mbox(d,t+ns.length*.045,NOTE(ns.at(-1)),a*.7,dur); if(z>=3||dr>=2) strings(d,t,NOTE(ns[0]-12),.025+.008*dr,dur*1.4) },
+    bass:(d,t,f,dur)=>harp(d,t,f,.3,dur*1.2),
+    spark:mbox,
+    epic:(d,t,ns,dur)=>{ choir(d,t,NOTE(ns[0]-12),.05,dur*1.5); choir(d,t,NOTE(ns[2]-12),.035,dur*1.5) },
+    legend:(d,t,ns,dur)=>{ for(let i=0;i<16;i++) harp(d,t-.5+i*.03,NOTE(ns[0]-12+[0,2,4,7,9][i%5]+12*Math.floor(i/5)),.12,1.2); ns.forEach((n,i)=>chime(d,t+.05+i*.05,NOTE(n),.06,2)) },
+    roll:(d,t,dur)=>{ for(let x=0;x<dur;x+=.07) env(noise(d,t+x,.015,[{type:"bandpass",f:2600,Q:3}]),t+x,.06+.12*x/dur,.001,.012) },   // la boîte à musique qu'on remonte
+    fallHit:(d,t)=>{ harp(d,t,65.4,.35,1.2); thud(d,t,.5,90) },
+  },
+};
+function compose(style,d,t,z,dr,sh){
+  const O = ORCH[style], S = SZ[z], step = .085*(z>=4 ? 1.12 : 1), vol = .17+.025*Math.min(z,3), L = [];
+  // épique et légendaire préparent l'accord final (montée de cymbale, roulement) : pour une petite bille, la mélodie attend la fin de la préparation
+  const pre = dr===4 ? 1.15 : dr===3 ? .75 : 0;
+  t += Math.max(0, pre - (S.mel.at(-1)[0]+1.15)*step);
+  // --- la taille : le corps
+  if(S.quake){ osc(d,t,"sine",70,.45,.01,1.1,32); env(noise(d,t,1,[{type:"lowpass",f:260,f2:60}]),t,.36,.01,.95) }
+  if(S.fall) O.fallHit(d,t);
+  S.mel.forEach(([k,n],i)=>O.mel(d, t+k*step, NOTE(n+S.reg)*(S.wonk ? (i%2 ? 1.012 : .993) : 1), vol, z));
+  const te = t + (S.mel.at(-1)[0]+1.15)*step;
+  L.push(`${S.n} : ${["un « ting » tout petit","deux notes","une mélodie un peu de travers","une mélodie avec sa basse","une chute lourde, une grande montée","le sol tremble, ta-ta-ta-TAAA"][z]}`);
+  // --- le motif : la couleur de l'accord final
+  const key = KEY[dr], top = z<=1 ? 12 : 0;
+  const ns = CHORD[dr].map(n=>n+S.reg+key+top);
+  const dur = S.dur*(1+dr*.2)*.85;   // (9 octobre 2026) un peu plus court
+  if(dr===4){ O.roll(d, te-1.1, 1.05); swell(d, te-1.1, .09, 1.05) }
+  else if(dr===3) swell(d, te-.7, .06, .68);
+  O.chord(d, te, ns, vol, dur, z, dr);
+  if(S.bass) O.bass(d, te, NOTE(S.reg+key-24), dur);
+  if(dr>=1) O.mel(d, te+.2, NOTE(ns.at(-1)+12), vol*.4, 0);
+  if(dr>=2) [4,7,12,16].forEach((n,i)=>O.spark(d, te+.32+i*.06, NOTE(ns.at(-1)+n), vol*.4, .6));
+  if(dr>=3) O.epic(d, te, ns, dur);
+  if(dr===4){ cymbal(d, te, .1); O.legend(d, te, ns, dur); sparkle(d, te+.15, 22, .05, .03, O.spark) }
+  L.push(["Commun : un accord simple","Peu commun : l'accord + un écho","Rare : un accord plus riche + une cascade","Épique : la musique monte d'un ton, avec des voix","Légendaire : timbales, cymbale, fanfare, étincelles"][dr]);
+  let end = te + dur + .4;
+  // --- croisement : gros + motif épique ou légendaire = coup double
+  if(z>=4 && dr>=3){ const t2 = te+.42; O.chord(d, t2, ns.map(n=>n+12), vol*1.15, dur*.8, z, dr); boom(d, t2, .4);
+    if(style==="orch") timp(d, t2, 82, .55); L.push("Croisement : coup double (l'accord frappe deux fois)") }
+  // --- la shiny : sa signature par-dessus
+  const ts = te + .18;
+  if(sh===1){ [0,2,4,7,9,12,14,16,19,21,24,28].forEach((n,i)=>{ O.spark(d, ts+i*.05, NOTE(n+12+key), vol*.5, .7); vib(d, ts+.022+i*.05, NOTE(n+12+key)*1.006, vol*.25, .002, .6, 5, .015) });
+    pad(d, ts+.55, NOTE(12+key), .035, 1.8); if(style==="orch") strings(d, ts+.5, NOTE(24+key), .03, 1.6); end = Math.max(end, ts+2.5) }
+  if(sh===2){ [12,16,19,24].forEach((n,i)=>bell(d, ts+i*.13, NOTE(n+key), .085, 2.4));
+    for(let i=0;i<16;i++) clink(d, ts+.3+i*.06+Math.random()*.05, .05+Math.random()*.05);
+    const tc = ts+.75; [12,16,19,24].forEach(n=>vib(d, tc, NOTE(n+key), .045, .05, 2.2, 7, .006));
+    if(style==="orch") [0,4,7].forEach(n=>brass(d, tc, NOTE(n+key-12), .04, 1.2));
+    if(style==="boite") [12,16,19,24].forEach((n,i)=>mbox(d, tc+.1+i*.1, NOTE(n+12+key), .08, 1));
+    end = Math.max(end, ts+3) }
+  if(sh===3){ vib(d, ts-.2, NOTE(31+key), .06, .6, 2.6, 5, .004); pad(d, ts-.2, NOTE(7+key), .05, 2.8);
+    if(style!=="metal") choir(d, ts, NOTE(19+key), .04, 2.6);
+    [36,33,31,28,24,21,19,16,12].forEach((n,i)=>O.spark(d, ts+.3+i*.16, NOTE(n+key), .07, 1.1)); end = Math.max(end, ts+3.2) }
+  if(sh) L.push(`${SH[sh]} : sa signature (${["","montée magique qui ondule","cloches d'or et pièces","halo et poussière d'étoiles"][sh]})`);
+  // --- croisement : shiny + motif épique ou légendaire = jackpot
+  if(sh && dr>=3){ const tj = ts+1.7, k2 = key+2, nj = CHORD[4].map(n=>n+k2+(z<=1?12:0));
+    cymbal(d, tj, .09); O.chord(d, tj, nj, vol*1.1, 2.4, 5, 4); sparkle(d, tj+.1, 26, .045, .03, O.spark);
+    if(style!=="metal") choir(d, tj, NOTE(k2-12), .05, 2.6); end = Math.max(end, tj+3);
+    L.push("Croisement : jackpot (shiny + motif "+DR[dr].toLowerCase()+") : un accord final encore plus haut") }
+  // --- le sommet : Mammouth + Légendaire + shiny
+  if(z===5 && dr===4 && sh){ const tu = ts+3.3; O.roll(d, tu-1, .95); boom(d, tu, .6); cymbal(d, tu, .12, 3.2);
+    O.chord(d, tu, CHORD[4].map(n=>n+key+7), vol*1.2, 3.4, 5, 4); O.bass(d, tu, NOTE(key+7-36), 3.4); sparkle(d, tu+.2, 40, .05, .03, O.spark);
+    end = tu+4; L.push("L'ultime : Mammouth légendaire et shiny, une dernière vague encore plus grande") }
+  return {end, layers:L};
+}
+
+
+/* ===== la déchirure =====
+   Du papier qui cède : un frottement de fibres (bruit) dont la force saute toutes les 3 ms (le papier accroche puis lâche),
+   et par-dessus des craquements très courts (les fibres qui cassent une à une). Fabriqué échantillon par échantillon. */
+function tearData(dur, rate, segs, metal){
+  const sr = ctx.sampleRate, n = Math.ceil(sr*(dur+.08)), x = new Float32Array(n), I = new Float32Array(n);
+  // les à-coups : chaque morceau part fort et s'essouffle, avec un petit blanc entre deux
+  let s = 0; const lens = []; for(let k=0;k<segs;k++) lens.push(.6+Math.random()*.6);
+  const gap = segs>1 ? .035 : 0, unit = (dur - gap*(segs-1)) / lens.reduce((a,b)=>a+b,0);
+  lens.forEach((l,k)=>{ const a = Math.floor(s*sr), L = Math.floor(l*unit*sr), pk = k ? .75+Math.random()*.25 : 1;
+    for(let i=0;i<L && a+i<n;i++){ const p = i/L; I[a+i] = Math.max(I[a+i], pk*Math.min(1,p*30)*Math.pow(1-p,.5)) }
+    s += l*unit + gap });
+  // l'accroche : la force change par sauts
+  let r = .6, st = Math.floor(sr*.003);
+  for(let i=0;i<n;i++){ if(i%st===0) r = Math.max(.12, Math.min(1, r*.5 + Math.random()*.75)); I[i] *= r; x[i] = (Math.random()*2-1)*I[i]*.3 }
+  // les fibres qui cassent
+  let t = 0;
+  while(true){ t += -Math.log(1-Math.random())/rate; const i0 = Math.floor(t*sr); if(i0>=n) break;
+    const amp = I[i0]; if(amp<.03) continue;
+    const A = amp*(.35+Math.random()*1.2), L = Math.max(2, Math.floor(sr*(.0003+Math.random()*.002)));
+    for(let k=0;k<L*4 && i0+k<n;k++) x[i0+k] += (Math.random()*2-1)*A*Math.exp(-k/L) }
+  // papier doré (rareté sans notes) : de petites résonances métalliques dans les craquements
+  if(metal){ const dry = x.slice(), nf = 2+metal;
+    for(let j=0;j<nf;j++){ const f = 3000+Math.random()*5000, w = 2*Math.PI*f/sr, dk = Math.exp(-1/(sr*(.004+.003*metal))), c = 2*dk*Math.cos(w), k = (1-dk)*(.5+.25*metal);
+      let y1=0, y2=0; for(let i=0;i<n;i++){ const y = dry[i]*k + c*y1 - dk*dk*y2; y2 = y1; y1 = y; x[i] += y } } }
+  return x;
+}
+// la papillote selon la taille : durée, craquements par seconde, à-coups, filtres, épaisseur (le grave du papier)
+const PAP = [
+  {n:"Mini",     dur:.10, rate:1500, segs:1, hp:1900, pk:5600, lp:14000, body:0,   g:.55, reg:12},
+  {n:"Bille",    dur:.15, rate:1300, segs:1, hp:1400, pk:4600, lp:13000, body:.08, g:.62, reg:7},
+  {n:"Chinoise", dur:.21, rate:1150, segs:2, hp:1050, pk:3900, lp:12000, body:.15, g:.68, reg:5},
+  {n:"Calot",    dur:.29, rate:1000, segs:2, hp:750,  pk:3200, lp:10500, body:.28, g:.74, reg:0},
+  {n:"Boulet",   dur:.40, rate:900,  segs:3, hp:520,  pk:2600, lp:9500,  body:.42, g:.8,  reg:0},
+  {n:"Mammouth", dur:.56, rate:800,  segs:4, hp:360,  pk:2100, lp:8500,  body:.6,  g:.86, reg:-5},
+];
+function playBuf(d,t,data,chain,gain,pan=0){
+  const b = ctx.createBuffer(1, data.length, ctx.sampleRate); b.copyToChannel ? b.copyToChannel(data,0) : b.getChannelData(0).set(data);
+  const src = ctx.createBufferSource(); src.buffer = b; let node = src;
+  chain.forEach(([type,f,q,gn])=>{ const fl = ctx.createBiquadFilter(); fl.type = type; fl.frequency.value = f; if(q) fl.Q.value = q; if(gn!=null) fl.gain.value = gn; node.connect(fl); node = fl });
+  const g = ctx.createGain(); g.gain.value = gain; node.connect(g);
+  if(pan && ctx.createStereoPanner){ const sp = ctx.createStereoPanner(); sp.pan.value = pan; g.connect(sp); sp.connect(d) } else g.connect(d);
+  src.start(t);
+}
+// les bouts qui se détortillent : quelques craquements secs, très courts, avant la déchirure
+function untwist(d,t,z){ const n = 2+Math.round(z*.6);
+  for(let i=0;i<n;i++) env(noise(d,t+i*.022+Math.random()*.01,.012,[{type:"bandpass",f:3000+Math.random()*2500-z*250,Q:2}]),t+i*.022,.07+.012*z,.001,.009) }
+function tear(d,t,z,metal=0){
+  const P = PAP[z], x = tearData(P.dur*(1+metal*.06), P.rate*(1+metal*.15), P.segs, metal), pan = (Math.random()-.5)*.3;
+  playBuf(d, t, x, [["highpass",P.hp,.7],["peaking",P.pk*(1+metal*.08),1,6+metal],["lowpass",P.lp+metal*800,.7]], P.g, pan);
+  if(P.body) playBuf(d, t, x, [["bandpass",420+60*(5-z),1.1]], P.body*1.6, pan);
+  return t + P.dur*(1+metal*.06);
+}
+/* ----- la vraie déchirure (ton exemple) -----
+   Petite bille : on ne garde que la fin, plus vite (plus aigu, plus court). Grosse : plus lent (plus grave),
+   et plusieurs déchirures à la suite, comme une grande papillote qui cède en plusieurs fois.
+   [hauteur, début dans l'extrait (s), fin (s)] pour chaque à-coup, et le décalage entre deux */
+const REAL = [
+  {rips:[[1.45,.09,.20]],                         gap:0,   lp:15000, body:0},
+  {rips:[[1.28,.06,.20]],                         gap:0,   lp:14000, body:.1},
+  {rips:[[1.12,.03,.20]],                         gap:0,   lp:13000, body:.2},
+  {rips:[[1.0,.02,.20]],                          gap:0,   lp:12000, body:.35},
+  {rips:[[1.04,.10,.17],[.9,.03,.20]],            gap:.07, lp:11000, body:.5},
+  {rips:[[1.0,.11,.17],[.92,.09,.17],[.8,.02,.20]], gap:.075, lp:10000, body:.7},
+];
+function realTear(d,t,z,metal=0){
+  if(!tearBuf) return tear(d,t,z,metal);
+  const R = REAL[z]; let tt = t, pan = (Math.random()-.5)*.3;
+  R.rips.forEach(([rate,a,e],i)=>{
+    rate *= (.97+Math.random()*.06)*(1+metal*.03);
+    const src = ctx.createBufferSource(); src.buffer = tearBuf; src.playbackRate.value = rate;
+    const lp = ctx.createBiquadFilter(); lp.type = "lowpass"; lp.frequency.value = R.lp+metal*1000;
+    const pk = ctx.createBiquadFilter(); pk.type = "peaking"; pk.frequency.value = 5500; pk.Q.value = 2.5; pk.gain.value = metal*2.5;
+    const g = ctx.createGain(); g.gain.value = .75*(i===R.rips.length-1 ? 1 : .7);
+    src.connect(lp); lp.connect(pk); pk.connect(g);
+    if(R.body){ const bp = ctx.createBiquadFilter(); bp.type = "bandpass"; bp.frequency.value = 380+50*(5-z); bp.Q.value = 1; const bpg = ctx.createGain(); bpg.gain.value = R.body*2.2;
+      src.connect(bp); bp.connect(bpg); bpg.connect(d) }
+    if(ctx.createStereoPanner){ const sp = ctx.createStereoPanner(); sp.pan.value = pan; g.connect(sp); sp.connect(d) } else g.connect(d);
+    const len = (e-a)/rate; src.start(tt, a, e-a+.03);
+    pan = -pan*.8; tt += i<R.rips.length-1 ? len - .03 + R.gap*Math.random()*.6 : len;
+  });
+  return tt;
+}
+// le papier qui gonfle et s'envole : un « pouf » d'air, et pour les grosses, la bille qui se pose
+function puff(d,t,z){ env(noise(d,t,.12,[{type:"lowpass",f:900-z*80,f2:250}]),t,.05+.025*z,.006,.1);
+  if(z>=4) thud(d,t+.02,.25+.15*(z-4),110-15*(z-4)) }
+// le « clac » final du papier doré (style papier seul)
+function snap(d,t,a){ env(noise(d,t,.03,[{type:"highpass",f:2500},{type:"peaking",f:6500,Q:3,gain:8}]),t,a,.0008,.025) }
+
+/* ----- la touche du motif (rareté) et l'éclat de la shiny : courts ----- */
+const INV = [-5,-2,0,4,7,12];
+function accent(d,t,z,dr,inv){
+  const r = inv ? INV[z] : PAP[z].reg, v = .13+.015*Math.min(z,3);
+  const A = [[],[12],[7,12],[4,7,12],[0,4,7,12,16]][dr];
+  A.forEach((n,i)=>mbox(d, t+i*.065, NOTE(n+r), v*(i===A.length-1 ? 1 : .8), dr>=3 ? .9 : .6));
+  if(dr>=3) harp(d, t, NOTE(r-12), .1, .9);
+  if(inv && z>=3) harp(d, t, NOTE(INV[z]-24-(z-3)*2), .14+.04*(z-3), .7+.2*(z-3));   // la basse des grosses : de plus en plus grave et longue
+  if(dr===4){ for(let i=0;i<7;i++) mbox(d, t+.3+i*.045+Math.random()*.02, NOTE(r+19+[0,4,7,12,16,19,24][i]), .035+Math.random()*.02, .35) }
+  return t + (A.length ? (A.length-1)*.065 + (dr>=3 ? .9 : .6) : 0) + (dr===4 ? .3 : 0);
+}
+function flash(d,t,sh,z,inv){
+  const r = inv ? (z>=3 ? 12 : 0) : z<=1 ? 12 : 0;
+  if(sh===1){ [0,4,7,12,16,19].forEach((n,i)=>{ mbox(d, t+i*.04, NOTE(n+12+r), .06, .45); vib(d, t+.02+i*.04, NOTE(n+12+r)*1.006, .03, .002, .4, 6, .015) }); return t+.7 }
+  if(sh===2){ bell(d, t, NOTE(12+r), .07, 1.1); bell(d, t+.11, NOTE(19+r), .055, 1); for(let i=0;i<6;i++) clink(d, t+.18+i*.05+Math.random()*.03, .04+Math.random()*.04); return t+1.1 }
+  if(sh===3){ vib(d, t, NOTE(31+r), .05, .15, .9, 5, .004); [31,28,24,19,16].forEach((n,i)=>mbox(d, t+.08+i*.07, NOTE(n), .055, .5)); return t+.9 }
+  return t;
+}
+
+/* ===== « Court » : une grammaire simple, trois couches qu'on reconnaît =====
+   la taille = la première note (plus grosse = plus aiguë et brillante, une petite basse dès le Calot),
+   le motif = combien de notes suivent (0 à 4, très vite), la shiny = la couleur de la dernière note */
+const CT = { reg:[-5,-2,0,3,5,8], up:[4,7,12,16] };   // la première note selon la taille ; les notes qui suivent (au-dessus d'elle)
+function court(d,t,z,dr,sh,soft){
+  const r = CT.reg[z], v = (soft ? .7 : 1)*(.1+.008*z), step = .055, tail = soft ? .3 : .45;
+  mbox(d, t, NOTE(r), v, tail);
+  if(z>=3) harp(d, t, NOTE(r-24-(z-3)*2), .07+.035*(z-3), .35+.15*(z-3));   // le poids des grosses
+  if(z===5) thud(d, t, .18, 70);
+  const ns = CT.up.slice(0, dr), last = t + ns.length*step;
+  ns.forEach((n,i)=>{ const tt = t+(i+1)*step, isLast = i===ns.length-1;
+    if(!(isLast && sh)) mbox(d, tt, NOTE(r+n), v*(isLast ? 1 : .8), isLast ? tail+.1*dr : .25) });
+  if(dr===4) for(let i=0;i<4;i++) mbox(d, last+.08+i*.04, NOTE(r+24+[0,4,7,12][i]), .025, .2);
+  // la shiny : la dernière note (ou la première, pour un Commun) prend sa couleur
+  const tn = last, fn = NOTE(r + (ns.length ? ns.at(-1) : 0) + (ns.length ? 0 : 12));
+  if(sh===1){ vib(d, tn, fn, v*.9, .003, .5, 7, .02); vib(d, tn+.05, fn*2, v*.35, .003, .35, 6.3, .02) }
+  if(sh===2){ bell(d, tn, fn, v*.75, .6); clink(d, tn+.09, .045) }
+  if(sh===3){ chime(d, tn, fn*2, v*.8, .7); osc(d, tn, "sine", fn*4, v*.2, .002, .3); vib(d, tn+.03, fn*3, v*.15, .1, .45, 9, .006) }
+  return tn + (sh ? .7 : tail+.1*dr) + (dr===4 ? .2 : 0);
+}
+const STYLES = {
+  motif: {n:"★ Motif seul", d:"La taille ne fait plus de son (l'animation la montre déjà à partir du Boulet). Seul le motif s'entend : une note pour un Commun, puis 1, 2, 3, 4 notes qui suivent très vite (+ des étincelles pour un Légendaire). La shiny colore juste la dernière note. Même note de départ pour toutes les tailles."},
+  court: {n:"★ Court", d:"La taille = la première note (plus grosse = plus aiguë et brillante, une basse dès le Calot). Le motif = combien de notes suivent (0 à 4). La shiny = la couleur de la dernière note (ondule, cloche, cristal). Moins d'une seconde, toujours."},
+  vrai:  {n:"Ton papier + petite note", d:"Ton enregistrement : plus aigu et court pour une petite bille, plus grave et en plusieurs déchirures pour une grosse. Puis la touche du motif (rien, 1, 2, 3 notes, un arpège)."},
+  vraiseul:{n:"Ton papier seul", d:"Ton enregistrement sans aucune note : la rareté rend le papier un peu plus brillant, avec un « clac » plus net. La shiny garde son éclat."},
+  note:  {n:"Papier synthétique + note", d:"Le papier se déchire, puis une touche courte selon la rareté (rien, 1, 2, 3 notes, un arpège). Moins d'une seconde la plupart du temps."},
+  seul:  {n:"Papier seul",             d:"Aucune note : la rareté rend le papier plus brillant et métallique, et termine par un « clac » plus net. La shiny garde son éclat."},
+  notes: {n:"Notes seules", d:"Pas de papier : seulement la petite touche du motif (une note pour un Commun, puis 1, 2, 3 notes, un arpège), plus aiguë pour une petite bille, plus grave pour une grosse. Et l'éclat de la shiny."},
+  inv:   {n:"Notes seules, inversé", d:"Comme « Notes seules », mais la Mini est la plus grave (douce, discrète) et le Mammouth le plus aigu (brillant). À partir du Calot, une basse douce en dessous garde le poids des grosses billes."},
+  actuel:{n:"Actuel (boîte à musique)", d:"Le son du jeu aujourd'hui, pour comparer."},
+};
+function playOne(style,z,dr,sh,keep=false){
+  init(); const t = ctx.currentTime+.03, L = [];
+  if(style==="actuel"){ const d = newBus(.32, keep); const r = compose("boite", d, t, z, dr, sh); return {len:r.end-t, L:r.layers} }
+  const d = newBus(.14, keep);
+  if(style==="motif"){   // (9 octobre 2026) la taille est déjà dans l'animation : on ne garde que le motif (et la couleur de la shiny)
+    const end = court(d, t, 2, dr, sh);
+    L.push("Toutes les tailles : la même note de départ");
+    L.push(DR[dr]+" : "+(dr ? dr+" note"+(dr>1?"s":"")+" ensuite"+(dr===4?" + étincelles":"") : "une seule note"));
+    if(sh) L.push(SH[sh]+" : la dernière note "+["","ondule","sonne comme une cloche + une pièce","sonne comme du cristal"][sh]);
+    return {len:end-t, L};
+  }
+  if(style==="court"){
+    const end = court(d, t, z, dr, sh);
+    L.push(PAP[z].n+" : première note "+["très grave","grave","au milieu","aiguë + basse","plus aiguë + basse","la plus aiguë + basse + boum"][z]);
+    L.push(DR[dr]+" : "+(dr ? dr+" note"+(dr>1?"s":"")+" ensuite"+(dr===4?" + étincelles":"") : "rien ensuite"));
+    if(sh) L.push(SH[sh]+" : la dernière note "+["","ondule","sonne comme une cloche + une pièce","sonne comme du cristal"][sh]);
+    return {len:end-t, L};
+  }
+  if(style==="notes" || style==="inv"){
+    const inv = style==="inv", r = inv ? INV[z] : PAP[z].reg;   // seulement la touche du motif ; un Commun a quand même sa petite note, douce
+    let end = dr ? accent(d, t, z, dr, inv) : (mbox(d, t, NOTE(r+7), .09, .5), inv && z>=3 && harp(d, t, NOTE(r-24-(z-3)*2), .12+.04*(z-3), .7+.2*(z-3)), t+.5);
+    L.push(PAP[z].n+" : notes "+(inv ? (z<=1 ? "graves" : z>=4 ? "aiguës + basse" : z===3 ? "au milieu + basse" : "au milieu") : (z<=1 ? "aiguës" : z>=4 ? "graves" : "au milieu")));
+    L.push(DR[dr]+" : "+["une note douce","une note","deux notes","trois notes qui montent","un arpège + étincelles"][dr]);
+    if(sh){ end = Math.max(end, flash(d, t+.1, sh, z, inv)); L.push(SH[sh]+" : "+["","petite montée qui ondule","cloche et pièces","halo et étoiles"][sh]) }
+    return {len:end-t, L};
+  }
+  const real = style.startsWith("vrai"), seul = style==="seul" || style==="vraiseul";
+  if(!real) untwist(d, t, z);   // l'enregistrement a déjà sa propre montée
+  const t0 = real ? t : t + .05 + .012*z;
+  const te = real ? realTear(d, t0, z, seul ? dr : 0) : tear(d, t0, z, seul ? dr : 0);
+  puff(d, te-.03, z);
+  L.push(real ? `${PAP[z].n} : ${REAL[z].rips.length} déchirure${REAL[z].rips.length>1?"s":""}, ${Math.round((te-t0)*1000)} ms` : `${PAP[z].n} : déchirure de ${Math.round(PAP[z].dur*1000)} ms en ${PAP[z].segs} à-coup${PAP[z].segs>1?"s":""}`);
+  let end = te+.15;
+  if(!seul){ end = Math.max(end, accent(d, te-.02, z, dr)); L.push(DR[dr]+" : "+["juste le papier","une note","deux notes","trois notes qui montent","un arpège + étincelles"][dr]) }
+  else { if(dr) snap(d, te-.01, .06+.05*dr); L.push(DR[dr]+" : "+(dr ? "papier plus métallique + « clac »" : "papier tout simple")) }
+  if(sh){ end = Math.max(end, flash(d, te+.05, sh, z)); L.push(SH[sh]+" : "+["","petite montée qui ondule","cloche et pièces","halo et étoiles"][sh]) }
+  return {len:end-t, L};
+}
+
+/* ===== l'interface ===== */
+let style = STYLES[location.hash.slice(1)] ? location.hash.slice(1) : "motif", sh = 0, cur = null, bag = [];
+const $ = id => document.getElementById(id);
+function seg(el, items, get, set){
+  el.innerHTML = ""; items.forEach(([k,label])=>{ const b = document.createElement("button"); b.textContent = label; b.setAttribute("aria-pressed", get()===k);
+    b.onclick = ()=>{ set(k); [...el.children].forEach(c=>c.setAttribute("aria-pressed", c===b)); upd(); if(cur) play(...cur) }; el.appendChild(b) });
+}
+function upd(){ $("sdesc").textContent = STYLES[style].d }
+seg($("styles"), Object.entries(STYLES).map(([k,v])=>[k,v.n]), ()=>style, k=>style=k);
+seg($("shinies"), SH.map((n,i)=>[i,n]), ()=>sh, k=>sh=k);
+upd();
+const COL = ["var(--r0)","var(--r1)","var(--r2)","var(--r3)","var(--r4)"];
+$("grid").innerHTML = "<tr><th></th>"+DR.map((n,i)=>`<th><span class="dot" style="background:${COL[i]}"></span>${n}</th>`).join("")+"</tr>"+
+  PAP.map((p,z)=>`<tr><th class="r">${p.n}</th>`+DR.map((_,dr)=>`<td><button data-z="${z}" data-dr="${dr}"><span class="pl">▶</span></button></td>`).join("")+"</tr>").join("");
+$("grid").onclick = e=>{ const b = e.target.closest("button"); if(!b) return; play(+b.dataset.z, +b.dataset.dr) };
+function play(z,dr,s=sh,keep=false){
+  cur = [z,dr]; document.querySelectorAll("td button").forEach(b=>b.classList.toggle("on", +b.dataset.z===z && +b.dataset.dr===dr));
+  const r = playOne(style, z, dr, s, keep);
+  $("title").textContent = `${PAP[z].n} · ${DR[dr]}${s ? " · "+SH[s] : ""}`;
+  $("sub").textContent = `${STYLES[style].n} · ${r.len.toFixed(1).replace(".",",")} s`;
+  $("chips").innerHTML = r.L.map(l=>`<span class="chip">${l}</span>`).join("");
+  return r.len;
+}
+$("replay").onclick = ()=>{ if(cur) play(...cur) };
+$("stop").onclick = ()=>{ if(ctx) stopAll(.05) };
+$("rand").onclick = ()=>play(Math.floor(Math.random()*6), Math.floor(Math.random()*5));
+$("climb").onclick = ()=>{ init(); stopAll(); let t = 0;
+  [[0,0],[1,1],[2,2],[3,3],[4,4],[5,4]].forEach(([z,dr],i)=>{ timers.push(setTimeout(()=>{ const tt = timers; play(z,dr,sh,true); timers = tt }, t*1000)); t += style==="actuel" ? 2.2 : 1.1 }) };
+function rollBag(){
+  const W = [40,26,16,10,6,2]; const pick = w=>{ let r = Math.random()*w.reduce((a,b)=>a+b,0); return w.findIndex(x=>(r-=x)<0) };
+  bag = Array.from({length:6},()=>[pick(W), pick([45,28,16,8,3]), Math.random()<.08 ? 1+Math.floor(Math.random()*3) : 0]);
+  $("bagdesc").textContent = "Sachet : "+bag.map(([z,dr,s])=>`${PAP[z].n} ${DR[dr].toLowerCase()}${s ? " "+SH[s].toLowerCase() : ""}`).join(" · ");
+}
+rollBag(); $("bagnew").onclick = rollBag;
+function playBag(fast){ init(); stopAll(); let t = 0;
+  bag.forEach(([z,dr,s])=>{ timers.push(setTimeout(()=>{ const tt = timers; play(z,dr,s,true); timers = tt }, t*1000));
+    const counts = s || z>=3 || dr>=2; if(style==="motif"){ t += fast ? (s || dr>=2 ? .6 : .35) : (s || dr>=3 ? .9 : .7); return }
+    t += fast ? (counts ? .7 : .4) : (counts ? (z>=4 ? 1.3 : .9) : .85) });
+  $("bagdesc").textContent = $("bagdesc").textContent.replace(/ · durée.*$/,"")+" · durée ≈ "+t.toFixed(1).replace(".",",")+" s";
+}
+$("bagplay").onclick = ()=>playBag(false);
+$("bagfast").onclick = ()=>playBag(true);
+</script>
+</body>
+</html>

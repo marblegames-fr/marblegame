@@ -486,7 +486,7 @@ begin
   else
     -- 5 octobre 2026 : 20 billes achetées par jour au plus (PACHI_MAX dans index.html), la bille du jour en plus
     select count(*) into n from gains g where g.joueur = qui and g.source = 'plinko' and g.cle like today || '|%';
-    if n >= 2 then raise exception 'limite_plinko'; end if;   -- 6 octobre 2026 : une bille offerte + 2 achetées par jour (comme les autres jeux de hasard)
+    if n >= 4 then raise exception 'limite_plinko'; end if;   -- une bille offerte + 4 achetées par jour (2 du 6 au 9 octobre 2026) (comme les autres jeux de hasard)
     lie := interne.payer(qui, 15);   -- la bille de plus : 15 (PACHI_PRICE) ; payée avec des bonbecs de départ, le lot reste lié
     n := n + 1;
     insert into gains (joueur, source, cle) values (qui, 'plinko', today || '|' || n);

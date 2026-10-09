@@ -1,9 +1,9 @@
 -- Les jeux de hasard (6 octobre 2026) : la Roue, le Ticket à gratter, le Distributeur de billes, et la Loterie de la semaine.
 -- À installer APRÈS serveur.sql (il s'appuie sur interne.payer, interne.crediter, interne.nouvelle_bille, gains…).
--- Règle commune (choix de l'équipe) : une partie offerte par jour, puis 2 achetées au plus (le Plinko suit la même règle dans serveur.sql).
+-- Règle commune (choix de l'équipe) : une partie offerte par jour, puis 4 achetées au plus (2 jusqu'au 9 octobre 2026) (le Plinko suit la même règle dans serveur.sql).
 -- Mêmes valeurs dans index.html (CHANCE, ROUE, GRAT).
 
--- une partie : offerte (gains 'jeu' today|jeu) ou achetée (gains jeu today|n, 2 au plus) ; renvoie « liée » si payée avec des bonbecs de départ
+-- une partie : offerte (gains 'jeu' today|jeu) ou achetée (gains jeu today|n, 4 au plus) ; renvoie « liée » si payée avec des bonbecs de départ
 create or replace function interne.jeu_chance(qui uuid, jeu text, payer boolean, prix int, out lie boolean, out achetees int)
 language plpgsql as $$
 declare today text := interne.aujourdhui()::text;
@@ -15,7 +15,7 @@ begin
     exception when unique_violation then raise exception 'deja'; end;
   else
     select count(*) into achetees from gains g where g.joueur = qui and g.source = jeu and g.cle like today || '|%';
-    if achetees >= 2 then raise exception 'limite_jeu'; end if;
+    if achetees >= 4 then raise exception 'limite_jeu'; end if;
     lie := interne.payer(qui, prix);
     achetees := achetees + 1;
     insert into gains (joueur, source, cle) values (qui, jeu, today || '|' || achetees);

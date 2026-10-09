@@ -1826,6 +1826,21 @@ button.gh-cell:hover{transform:translateY(-2px)}
 .gt-max{position:absolute;right:10px;top:10px;display:inline-flex;align-items:center;gap:5px;font-size:12px;font-weight:900;padding:4px 10px;border-radius:999px;background:rgba(255,248,225,.94);color:#5A3A00;box-shadow:0 2px 6px rgba(0,0,0,.18)}
 .gt-max .coin{width:15px;height:15px}
 .game-tile.played .gt-max{opacity:.75}
+/* jeu fait à fond aujourd'hui (9 octobre 2026) : cadre doré, reflet qui passe, ruban « Fait à fond ! » ; l'image reprend ses couleurs */
+.game-tile.maxed{position:relative;border-color:#E9B23A;box-shadow:0 0 0 2px #FFC93F,0 0 22px -4px rgba(255,201,63,.55),var(--shadow)}
+.game-tile.maxed .gt-art > svg{filter:none}
+.game-tile.maxed .gt-art .gt-state{display:none}
+.game-tile.maxed .gt-art::after{content:"";position:absolute;inset:0;background:linear-gradient(110deg,transparent 35%,rgba(255,240,190,.45) 50%,transparent 65%);transform:translateX(-100%);animation:gt-reflet 4.5s ease-in-out infinite;pointer-events:none}
+@keyframes gt-reflet{0%,55%{transform:translateX(-100%)}100%{transform:translateX(100%)}}
+.gt-fond{position:absolute;left:12px;top:118px;z-index:2;display:inline-flex;align-items:center;gap:5px;padding:5px 12px;border-radius:999px;background:linear-gradient(180deg,#FFD866,#F2AE12);color:#3A2600;font-size:12.5px;font-weight:900;box-shadow:0 2px 0 #B07A08,0 6px 14px -4px rgba(0,0,0,.4);pointer-events:none;animation:gt-fond .5s cubic-bezier(.2,.9,.3,1.4) both}
+@keyframes gt-fond{from{transform:scale(.6);opacity:0}}
+@media (prefers-reduced-motion:reduce){ .game-tile.maxed .gt-art::after,.gt-fond{animation:none} }
+.gt-ttl{display:flex;flex-direction:column;gap:5px;min-width:0}
+.gt-pips{display:inline-flex;align-items:center;gap:4px;color:var(--muted)}
+.gt-pips i{width:9px;height:9px;border-radius:50%;background:var(--line-2)}
+.gt-pips i.on{background:#FFC93F;box-shadow:0 0 0 1px #D99A0E inset}
+.gt-pips em{width:1px;height:10px;margin:0 2px;background:var(--line-2)}
+.game-tile.maxed .gt-pips{color:#D99A0E}
 
 /* ---------- secrets ---------- */
 .secret-pill{background:linear-gradient(100deg,#2A1F4A,#6B3FD8)!important;color:#fff!important}
@@ -8803,7 +8818,7 @@ const PACHI = [
 // le Mammouth gagné (Plinko, Château rasé en un tir) : shiny avec les chances du Sachet Collector
 const MAMM_SHINY = SHINY_RATE*10;
 // 20 billes achetées par jour au plus (5 octobre 2026, même limite dans public.pachinko) : on joue, mais on ne farme pas les Mammouths
-const PACHI_MAX = 2;   // 6 octobre 2026 : une bille offerte + 2 achetées par jour, comme les autres jeux de chance
+const PACHI_MAX = 4;   // une bille offerte + 4 achetées par jour (2 jusqu'au 9 octobre 2026), comme les autres jeux de chance
 const pachiBought = () => playedToday().pachiN || 0;
 // la bille du Plinko se choisit une fois par jour (bille du jour et billes achetées) : la fenêtre ne revient pas avant minuit
 const pachiBall = () => { const id = playedToday().pachiBall; return (id && specById(id)) || null };
@@ -9291,7 +9306,7 @@ function artRoue(){
    LES JEUX DE HASARD (6 octobre 2026) : le Ticket à gratter, le Distributeur de billes, la Loterie de la semaine.
    Comme la Roue et le Plinko : une partie offerte par jour, puis CHANCE_MAX achetées au plus (supabase/chance.sql).
    ===================================================================== */
-const CHANCE_MAX = 2;
+const CHANCE_MAX = 4;   // 4 parties achetées par jour au plus (2 jusqu'au 9 octobre 2026)
 const CHANCE_PRIX = {roue:15, grattage:15, distributeur:15};   // un seul prix pour tous les jeux de chance, comme le Plinko (PACHI_PRICE)
 const chanceBought = k => playedToday()[k+"N"] || 0;
 const chanceFreeDone = k => !!playedToday()[k]?.done;
@@ -9718,10 +9733,17 @@ function viewGames(){
   const doneN = keys.filter(isDone).length, left = keys.length-doneN;
   const won = Object.keys(DAY_GAMES).reduce((a,k)=>a+(dayGame(k)?.rew||0), 0);
   const maxAll = TIR_MAX + Object.values(DAY_GAMES).reduce((a,g)=>a+g.max, 0);
-  const tile = c => `<article class="panel game-tile${c.ok?"":" played"}">
+  // un jeu « fait à fond » aujourd'hui : la partie du jour est finie, et pour les jeux de chance toutes les parties à acheter aussi
+  const CHANCE_KEYS = ["roue","pachinko","grattage","distributeur"];
+  const freeDone = k => k==="roue"||k==="pachinko" ? !soloReady(k) && !gameLive(k) : chanceFreeDone(k);
+  const bought = k => k==="pachinko" ? pachiBought() : chanceBought(k), maxOf = k => k==="pachinko" ? PACHI_MAX : CHANCE_MAX;
+  const maxed = k => k==="tir" ? tirDone : CHANCE_KEYS.includes(k) ? freeDone(k) && bought(k)>=maxOf(k) : !!dayGame(k)?.done;
+  // les parties du jour d'un jeu de chance : la partie offerte, puis une pastille par partie à acheter
+  const pips = k => CHANCE_KEYS.includes(k) ? `<span class="gt-pips" title="La partie offerte, puis ${maxOf(k)} parties à acheter">${ic("gift",13)}<i class="${freeDone(k)?"on":""}"></i><em></em>${Array.from({length:maxOf(k)},(_,i)=>`<i class="${i<bought(k)?"on":""}"></i>`).join("")}</span>` : "";
+  const tile = c => { const m = maxed(c.v); return `<article class="panel game-tile${c.ok?"":" played"}${m?" maxed":""}">${m?`<span class="gt-fond">${ic("star",13,2.6)} Fait à fond !</span>`:""}
     <button class="gt-art" data-action="nav" data-view="${c.v}" aria-label="${c.ok?"Jouer":"Voir"} : ${c.t}">${c.art}${jdj.has(c.v)?`<span class="gt-jdj">${ic("star",12,2.6)} Jeu du jour</span>`:""}<span class="gt-max">${c.prize ? `jusqu'à ${c.prize}` : `${COIN} jusqu'à ${c.max}`}</span><span class="gt-state ${c.ok?"ok":""}">${c.state}</span></button>
-    <div class="gt-body gt-foot"><h2>${c.t}</h2><button class="btn ${c.ok?"btn-blue":"btn-ghost"}" data-action="nav" data-view="${c.v}">${c.ok?`${ic("play",16)} Jouer`:"Voir"}</button></div>
-  </article>`;
+    <div class="gt-body gt-foot"><div class="gt-ttl"><h2>${c.t}</h2>${pips(c.v)}</div><button class="btn ${c.ok?"btn-blue":"btn-ghost"}" data-action="nav" data-view="${c.v}">${c.ok?`${ic("play",16)} Jouer`:"Voir"}</button></div>
+  </article>` };
   const state = k => { const g = dayGame(k);
     return !g ? `${ic("gift",14)} Partie du jour à jouer` : !g.done ? `${ic("play",14)} Partie en cours : à finir` : `${ic("check",14,3)} Joué aujourd'hui${g.done&&g.st!=null?` · ${"★".repeat(g.st)}${"☆".repeat(3-g.st)}`:""}${g.rew?` · +${g.rew}`:""}` };
   const day = k => ({v:k, t:DAY_GAMES[k].title, max:DAY_GAMES[k].max, prize:DAY_GAMES[k].prize, ok:soloReady(k)||gameLive(k), state:state(k)});

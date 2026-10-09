@@ -48,29 +48,29 @@ try{ document.documentElement.dataset.theme = localStorage.getItem("billeo-theme
 /* mode sombre : suit le système, sauf choix explicite (bouton soleil/lune) */
 @media (prefers-color-scheme:dark){
   :root:not([data-theme="light"]){
-    --bg:#16130F;--panel:#211D18;--panel-2:#2A251F;--line:#352E26;--line-2:#4A4136;
-    --ink:#F5EEE2;--ink-2:#C8BDAD;--muted:#8F8578;
+    --bg:#12151F;--panel:#1B1F2C;--panel-2:#232838;--line:#2C3244;--line-2:#3D4459;
+    --ink:#F3F0EA;--ink-2:#BFC2CF;--muted:#858A9C;
     --yellow-soft:#3F3212;--blue:#4F86F5;--blue-2:#9CBBFF;--blue-soft:#1C2A48;--purple-soft:#2E2344;
     --green:#4CC27A;--green-soft:#1B3524;
     --shadow:0 1px 0 rgba(0,0,0,.25),0 8px 22px -12px rgba(0,0,0,.7);
-    --on-ink:#16130F;--glow:#3A342C;--topbar:rgba(22,19,15,.88);--track:#3A332A;
+    --on-ink:#12151F;--glow:#2F3546;--topbar:rgba(18,21,31,.88);--track:#2C3244;
     --gold-line:#8C6A1C;--gold-bg:#2E2512;--yellow-hover:#FFD35F;
     --blue-line:#34487A;--purple-line:#4E3A70;--green-line:#2F5A3A;
-    --avatar-1:#3A342C;--avatar-2:#221E19;--close-bg:rgba(40,36,30,.85);--warn:#F08A6E;
+    --avatar-1:#2F3546;--avatar-2:#1A1E2A;--close-bg:rgba(30,34,46,.85);--warn:#F08A6E;
     color-scheme:dark;
   }
   :root:not([data-theme="light"]) :is(.pill,.type-box,.modal-visual,.active-visual){--rbg:color-mix(in srgb,var(--rc) 26%,var(--panel));--rtx:color-mix(in srgb,var(--rc) 55%,#fff)}
 }
 :root[data-theme="dark"]{
-    --bg:#16130F;--panel:#211D18;--panel-2:#2A251F;--line:#352E26;--line-2:#4A4136;
-    --ink:#F5EEE2;--ink-2:#C8BDAD;--muted:#8F8578;
+    --bg:#12151F;--panel:#1B1F2C;--panel-2:#232838;--line:#2C3244;--line-2:#3D4459;
+    --ink:#F3F0EA;--ink-2:#BFC2CF;--muted:#858A9C;
     --yellow-soft:#3F3212;--blue:#4F86F5;--blue-2:#9CBBFF;--blue-soft:#1C2A48;--purple-soft:#2E2344;
     --green:#4CC27A;--green-soft:#1B3524;
     --shadow:0 1px 0 rgba(0,0,0,.25),0 8px 22px -12px rgba(0,0,0,.7);
-    --on-ink:#16130F;--glow:#3A342C;--topbar:rgba(22,19,15,.88);--track:#3A332A;
+    --on-ink:#12151F;--glow:#2F3546;--topbar:rgba(18,21,31,.88);--track:#2C3244;
     --gold-line:#8C6A1C;--gold-bg:#2E2512;--yellow-hover:#FFD35F;
     --blue-line:#34487A;--purple-line:#4E3A70;--green-line:#2F5A3A;
-    --avatar-1:#3A342C;--avatar-2:#221E19;--close-bg:rgba(40,36,30,.85);--warn:#F08A6E;
+    --avatar-1:#2F3546;--avatar-2:#1A1E2A;--close-bg:rgba(30,34,46,.85);--warn:#F08A6E;
     color-scheme:dark;
 }
 :root[data-theme="dark"] :is(.pill,.type-box,.modal-visual,.active-visual){--rbg:color-mix(in srgb,var(--rc) 26%,var(--panel));--rtx:color-mix(in srgb,var(--rc) 55%,#fff)}

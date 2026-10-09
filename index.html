@@ -7887,8 +7887,10 @@ async function openBag(bagId, gift){
 const pullScore = s => s.shiny || s.secret ? 6 : tierOf(s);
 // rareté du motif (0 Commun … 4 Légendaire ; -1 pour les motifs d'événement et de saison)
 const decorRar = s => extraFam(s.family) ? -1 : FAMILIES[s.family].rar;
-// (9 octobre 2026) le nom d'une bille (« Ruban Terracotta » : le motif d'abord) prend la couleur de la rareté de son motif, éclaircie pour le fond sombre ; un motif commun reste blanc
-const motifCol = s => { const r = decorRar(s); return r>=1 ? ` style="color:color-mix(in srgb,${DECOR_RAR[r].c} 62%,#fff)"` : "" };
+// (9 octobre 2026) le nom d'une bille (« Ruban Terracotta » : le motif d'abord) prend la couleur de la rareté de son motif ; un motif commun reste blanc.
+// Des teintes vives faites pour le fond sombre, bien séparées (le vert et le bleu éclaircis se ressemblaient trop)
+const MOTIF_COL = [null, "#5BE37D", "#4FA3FF", "#C084FF", "#FFA53D"];
+const motifCol = s => { const r = decorRar(s); return r>=1 ? ` style="color:${MOTIF_COL[r]}"` : "" };
 // le suspense tient compte des deux : un motif épique compte une taille de plus, un légendaire deux (un Calot Galaxie tremble comme un Mammouth)
 const dramaOf = s => Math.max(pullScore(s), Math.min(5, tierOf(s) + (decorRar(s)===4 ? 2 : decorRar(s)===3 ? 1 : 0)));
 // ce qui est nouveau : un éclat scintille une fois sur le reflet de la bille quand elle apparaît (doré = nouveau motif dans cette taille, bleu = nouveau coloris), rien pour un doublon

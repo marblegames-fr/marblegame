@@ -5900,6 +5900,23 @@ function marbleURL(s,size=160){
     u=URL.createObjectURL(new Blob([a],{type:"image/png"})) }catch(e){}
   urlCache.set(k,u); return u;
 }
+// (11 octobre 2026) la même chose sans bloquer la page : le dessin est copié tout de suite dans un petit canevas à lui
+// (le canevas WebGL peut redessiner une autre bille aussitôt), et le PNG est fabriqué en arrière-plan par le navigateur
+const urlPend = new Map();
+function snapBlobURL(draw, size){
+  return new Promise(res=>{ try{ draw(); const c = document.createElement("canvas"); c.width = c.height = size; c.getContext("2d").drawImage(mainGL.cv, 0, 0);
+    c.toBlob(b=>res(b ? URL.createObjectURL(b) : null), "image/png") }catch(e){ res(null) } });
+}
+function marbleURLAsync(s,size){
+  const k=urlKey(s,size);
+  if(urlCache.has(k)) return Promise.resolve(urlCache.get(k));
+  if(!mainGL) return Promise.resolve(marbleURL(s,size));
+  if(!urlPend.has(k)) urlPend.set(k, snapBlobURL(()=>mainGL.draw(s,size), size).then(u=>{ urlPend.delete(k);
+    if(urlCache.has(k)){ if(u) URL.revokeObjectURL(u); return urlCache.get(k) }   // dessinée entre-temps par marbleURL
+    if(!u) return marbleURL(s,size);
+    urlCache.set(k,u); return u }));
+  return urlPend.get(k);
+}
 // b) les billes pas encore dessinées le sont seulement quand elles arrivent à l'écran, quelques-unes par image (la page reste fluide)
 const LAZY_PX = "data:image/gif;base64,R0lGODlhAQABAAAAACH5BAEKAAEALAAAAAABAAEAAAICTAEAOw==";
 const lazyTodo = new Map(); let lazyN = 0, lazyQ = [], lazyBusy = false, lazyTok = 0;
@@ -5909,7 +5926,8 @@ function lazyRun(){
   lazyBusy = true; const tok = ++lazyTok;
   const step = () => { if(tok!==lazyTok) return; lazyTok++; lazyBusy = false; const t0 = performance.now();
     while(lazyQ.length && performance.now()-t0 < 12){ const im = lazyQ.shift(), j = lazyTodo.get(im.dataset.mq); lazyTodo.delete(im.dataset.mq);
-      if(j && im.isConnected){ im.src = marbleURL(j.s, j.size); im.removeAttribute("data-mq") } }
+      if(j && im.isConnected){ im.removeAttribute("data-mq");
+        marbleURLAsync(j.s, j.size).then(u=>{ if(u && im.getAttribute("src")===LAZY_PX) im.src = u }) } }   // (le Vortex a peut-être déjà mis sa propre image)
     lazyRun() };
   requestAnimationFrame(step); setTimeout(step, 120);
 }
@@ -5946,23 +5964,19 @@ function mImg(s,size=160,px,alt){
 const isMyth = s => !!FAMILIES[s?.family]?.myth;
 const MYTH_T = 2*Math.PI/1.6, MYTH_N = 48, MYTH_COLS = ["#FF2E44","#FF8A3D","#FFFFFF","#B0122A","#FFD1D6"];
 const mythReg = new Map(), mythFrames = new Map();
-function mythURL(s, size, j){
-  let u; try{ mainGL.draw(s, size, I3, j*MYTH_T/MYTH_N); u = mainGL.cv.toDataURL("image/png") }catch(e){ return null }
-  try{ const bin=atob(u.slice(u.indexOf(",")+1)), a=new Uint8Array(bin.length); for(let i=0;i<bin.length;i++) a[i]=bin.charCodeAt(i);
-    u=URL.createObjectURL(new Blob([a],{type:"image/png"})) }catch(e){}
-  return u;
-}
+const mythURL = (s, size, j) => snapBlobURL(()=>mainGL.draw(s, size, I3, j*MYTH_T/MYTH_N), size);   // (11 octobre 2026) PNG en arrière-plan
 setInterval(()=>{
   if(document.hidden || !mainGL || matchMedia("(prefers-reduced-motion: reduce)").matches) return;
   const imgs = document.querySelectorAll("img[data-myth]"); if(!imgs.length) return;
-  const want = Math.floor((performance.now()/1000 % MYTH_T)/MYTH_T*MYTH_N); let budget = 3;
+  const want = Math.floor((performance.now()/1000 % MYTH_T)/MYTH_T*MYTH_N); let budget = 2;
   imgs.forEach(im=>{
     const r = im.getBoundingClientRect(); if(!r.width || r.bottom<0 || r.top>innerHeight) return;
     const k = im.dataset.myth, R = mythReg.get(k); if(!R) return;
     let F = mythFrames.get(k); if(!F){ F = []; mythFrames.set(k, F) }
-    if(!F[want] && budget>0){ F[want] = mythURL(R.s, R.size, want); budget-- }
-    let j = want; for(let n=0; n<MYTH_N && !F[j]; n++) j = (j+MYTH_N-1)%MYTH_N;
-    if(F[j] && im.getAttribute("src")!==F[j]){ im.removeAttribute("data-mq"); im.src = F[j] }
+    // F[j] : l’adresse de l’image, 1 pendant qu’elle se fabrique, 0 si elle a raté (on réessaiera)
+    if(!F[want] && budget>0){ const w = want; F[w] = 1; budget--; mythURL(R.s, R.size, w).then(u=>{ F[w] = u||0 }) }
+    let j = want; for(let n=0; n<MYTH_N && typeof F[j]!=="string"; n++) j = (j+MYTH_N-1)%MYTH_N;
+    if(typeof F[j]==="string" && im.getAttribute("src")!==F[j]){ im.removeAttribute("data-mq"); im.src = F[j] }
   });
 }, 1000/12);
 // l'apparition d'une bille mythique, où qu'elle sorte (sachet, mini-jeu, fusion) : un éclair rouge, le grand tourbillon, des gerbes rouges
@@ -8620,7 +8634,10 @@ function liveStart(el, slot, s, maxPx){
     // la taille à l'écran suit le diamètre : de 120 px pour une Mini (10 mm) à 420 px pour un Mammouth (40 mm)
     const px = Math.min(maxPx||999, Math.round(120+300*(T.mm-10)/30));
     liveCanvas.style.width = `min(${px}px,100%)`;
-    const dpr = pxRatio(), base = Math.min(900, Math.round(px*dpr));
+    const dpr = pxRatio(); let base = Math.min(900, Math.round(px*dpr));
+    // (11 octobre 2026) si l’appareil peine (moins de ~40 images/s en moyenne), la bille baisse un peu sa définition,
+    // sans jamais descendre sous un pixel d’image par pixel d’écran : rien ne change sur un PC qui suit
+    const floorPx = Math.min(base, Math.max(240, Math.round(px*Math.min(dpr,1)))); let fT = 0, fN = 0, fSum = 0;
     cancelAnimationFrame(liveRAF);
     const reduce = matchMedia("(prefers-reduced-motion: reduce)").matches;
     // rotation : elle tourne toute seule, on peut la prendre à la souris (ou au doigt) et la lancer
@@ -8638,6 +8655,8 @@ function liveStart(el, slot, s, maxPx){
         else if(!reduce){ if(!isMyth(liveSpec)) R = mul3(rotAxis(.25,1,.1,.008), R); else if(!touched) R = rotAxis(0,1,0,.35*Math.sin(performance.now()/1700)) }
       }
       if(++rc%120===0) R = ortho3(R);
+      const now = performance.now(), dt = fT ? now-fT : 0; fT = now;
+      if(rc>20 && dt>0 && dt<250 && base>floorPx){ fSum += dt; if(++fN===40){ if(fSum/fN>25) base = Math.max(floorPx, Math.round(base*.8)); fN = 0; fSum = 0 } }
       liveGL.draw(liveSpec, base, R);
       liveRAF = requestAnimationFrame(tick);
     };
@@ -13941,7 +13960,7 @@ function courClassement(){
   const amis = new Set((cour.moi?.amis||[]).map(a=>a.id));
   const chip = (k,l) => `<button class="chip" data-action="cl-portee" data-p="${k}" aria-pressed="${P===k}">${l}</button>`;
   const face = (x, px) => x.active ? mImg(x.active,160,Math.round(px*(.55+.45*scaleOf(x.active.type))),"") : avatarIni(x.pseudo, Math.round(px*.8));
-  const voir = x => !x.moi ? ` data-action="ami-voir" data-id="${x.id}" role="button" tabindex="0" title="Voir sa collection"` : "";
+  const voir = x => x.id ? ` data-action="ami-voir" data-id="${x.id}" role="button" tabindex="0" title="${x.moi?"Voir ma fiche, comme les autres la voient":"Voir sa collection"}"` : "";
   // depuis le 10 octobre 2026 : le podium à part, et la liste par pages de 10 (on arrive sur la page où on est)
   const top = C.podium || C.liste.slice(0,3), podium = [top[1], top[0], top[2]].filter(Boolean);
   const liste = C.liste.filter(x=>(x.pos ?? x.rang) > 3), pg = C.page || 1, pgs = C.pages || 1;
@@ -14093,7 +14112,7 @@ async function openProfil(id){
   const evs = Object.entries(P.evenements||{}).map(([d,n])=>{ const F = FAMILIES[+d], E = F && EVENTS[F.event]; if(!E) return "";
     const tot = TK.length*E.pals.length;
     return `<div class="pf2-ev" style="--ec:${E.color}"><span>${ic("flag",14)} ${esc(F.name)} <small>· ${esc(E.name)}</small></span><b>${n} / ${tot}</b><i><i style="width:${Math.round(100*n/tot)}%"></i></i></div>` }).join("");
-  const top = P.top, vit = P.vitrine||[];
+  const top = P.top, vit = P.vitrine||[], me = !!P.moi, Sa = me ? "Ta" : "Sa";   // (11 octobre 2026) sa propre fiche s'ouvre aussi depuis le classement
   const shTxt = SHINIES.slice(1).map((x,i)=>sh[i] ? `${sh[i]} ${x.name}${sh[i]>1?"s":""}` : "").filter(Boolean).join(" · ");
   el.innerHTML = `<div class="modal profil pf2" role="dialog" aria-modal="true" aria-label="${esc(P.pseudo)}">
     <span class="pf-band"${P.active?` style="${tstyle(P.active.type)}"`:""}></span>
@@ -14111,15 +14130,15 @@ async function openProfil(id){
         ${stat(fmt(P.shiny||0), "Shiny", shTxt)}
         ${stat(fmt(P.billes||0), "Billes en tout")}
       </div>
-      ${vit.length ? `<section class="pf2-sec"><h3>${ic("layers",16)} Sa vitrine</h3><div class="pf2-vit">${vit.map(x=>named(x, Math.round(30*scaleOf(x.type)+36), `Dans la vitrine de ${P.pseudo}.`)).join("")}</div></section>` : ""}
-      ${top ? `<section class="pf2-sec pf2-top" style="${tstyle(top.type)}"><span class="pf2-top-ball">${courBall(top, 92, `La plus belle bille de ${P.pseudo}.`)}</span>
-        <div><h3>${ic("star",16)} Sa plus belle bille</h3><b>${esc(courName(top))}</b><span class="pills">${typePill(top.type,true)}${shinyPill(top)}${tierTag(top)}</span></div></section>` : ""}
-      <section class="pf2-sec"><h3>${ic("book",16)} Sa collection</h3>
+      ${vit.length ? `<section class="pf2-sec"><h3>${ic("layers",16)} ${Sa} vitrine</h3><div class="pf2-vit">${vit.map(x=>named(x, Math.round(30*scaleOf(x.type)+36), me ? "Dans ta vitrine." : `Dans la vitrine de ${P.pseudo}.`)).join("")}</div></section>` : ""}
+      ${top ? `<section class="pf2-sec pf2-top" style="${tstyle(top.type)}"><span class="pf2-top-ball">${courBall(top, 92, me ? "Ta plus belle bille." : `La plus belle bille de ${P.pseudo}.`)}</span>
+        <div><h3>${ic("star",16)} ${Sa} plus belle bille</h3><b>${esc(courName(top))}</b><span class="pills">${typePill(top.type,true)}${shinyPill(top)}${tierTag(top)}</span></div></section>` : ""}
+      <section class="pf2-sec"><h3>${ic("book",16)} ${Sa} collection</h3>
         <div class="pf2-sizes">${TK.map((t,i)=>`<div style="${tstyle(t)}">${mImg(SHOWCASE[i],80,Math.round(16*scaleOf(t)+14),"")}<b>${fmt(T[t]||0)}</b><small>${TYPES[t].pl.replace("Mini billes","Minis").replace("Billes chinoises","Chinoises")}</small></div>`).join("")}</div>
         ${evs ? `<div class="pf2-evs">${evs}</div>` : ""}</section>
-      ${P.trouvailles?.length ? `<section class="pf2-sec"><h3>${ic("gift",16)} Ses dernières belles trouvailles</h3>
-        <div class="pf2-finds">${P.trouvailles.map(x=>`<div class="pf2-find" style="${tstyle(x.type)}">${courBall(x, Math.round(14*scaleOf(x.type)+24), `Une belle trouvaille de ${P.pseudo}.`)}<span><b>${esc(courName(x))}</b>${shinyPill(x)}</span><small>${x.le ? timeAgo(x.le) : ""}</small></div>`).join("")}</div></section>` : ""}
-      ${P.moi ? "" : P.ami===false ? `<div class="troc-act"><button class="btn btn-yellow" data-action="ami-ajouter-pseudo" data-pseudo="${esc(P.pseudo)}">${ic("plus",18)} L'ajouter à mes copains</button></div><p class="meta">Pour lui proposer un troc, ajoutez-vous d'abord comme copains.</p>`
+      ${P.trouvailles?.length ? `<section class="pf2-sec"><h3>${ic("gift",16)} ${me?"Tes":"Ses"} dernières belles trouvailles</h3>
+        <div class="pf2-finds">${P.trouvailles.map(x=>`<div class="pf2-find" style="${tstyle(x.type)}">${courBall(x, Math.round(14*scaleOf(x.type)+24), me ? "Une de tes belles trouvailles." : `Une belle trouvaille de ${P.pseudo}.`)}<span><b>${esc(courName(x))}</b>${shinyPill(x)}</span><small>${x.le ? timeAgo(x.le) : ""}</small></div>`).join("")}</div></section>` : ""}
+      ${P.moi ? `<p class="meta">C’est ta fiche, telle que les autres joueurs la voient.</p>` : P.ami===false ? `<div class="troc-act"><button class="btn btn-yellow" data-action="ami-ajouter-pseudo" data-pseudo="${esc(P.pseudo)}">${ic("plus",18)} L'ajouter à mes copains</button></div><p class="meta">Pour lui proposer un troc, ajoutez-vous d'abord comme copains.</p>`
         : `<div class="troc-act"><button class="btn btn-yellow" data-action="troc-new" data-id="${P.id}">${ic("swap",18)} Lui proposer un troc</button>
         <button class="btn btn-ghost" data-action="ami-retirer" data-id="${P.id}" data-pseudo="${esc(P.pseudo)}">Retirer de mes copains</button></div>`}
     </div></div>`;

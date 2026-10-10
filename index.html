@@ -8347,9 +8347,9 @@ function showBagStage(){
         <span class="gs-disc">${mImg({seed:hash("garantie"), type:"boulet", family:0, pal:PEDIA_PAL, shiny:0},160,64,"")}</span><span class="gs-ribbon">${ic("shield",15,2.6)} Boulet garanti</span></div>`:""}
     </div>
     <div class="bag-floor" aria-hidden="true"></div>
-    <p class="ov-hint${forced?" guar":""}">${forced?"Garantie Boulet : au moins un Boulet t'attend dans ce sachet !":"Touche le sachet pour l'ouvrir, ou secoue-le"}</p>
+    <p class="ov-hint${forced?" guar":""}">${forced?"Garantie Boulet : au moins un Boulet t'attend dans ce sachet !":"Touche le sachet pour l'ouvrir"}</p>
     <div class="bag-tools">
-      <button class="btn btn-ghost" data-action="shake-bag">Secouer</button>
+      <!-- (10 octobre 2026) plus de bouton « Secouer » : on garde le mystère, le joueur découvre qu'il peut attraper le sachet et l'agiter -->
       <button class="btn btn-yellow" data-action="tear">Ouvrir le sachet</button>
     </div>
     <span class="ov-count">${results.length} billes à l'intérieur</span>`;
@@ -15085,7 +15085,7 @@ function departDue(){ return srvOn() && !S.specs.some(isDepart) && !tutoOn() }
 const TUTO = [
   {go:"accueil", modal:"hello"},
   {go:"accueil", modal:"pick"},
-  {go:"sacs", target:'[data-action="open-free"]', txt:"Voici tes sachets gratuits : un nouveau toutes les 10 minutes. <b>Ouvre ton premier sachet</b>, et secoue-le pour entendre les billes !", btn:"Ouvrir", act:()=>{ tutoHide(); openBag("gratuit") }},
+  {go:"sacs", target:'[data-action="open-free"]', txt:"Voici tes sachets gratuits : un nouveau toutes les 10 minutes. <b>Ouvre ton premier sachet</b> !", btn:"Ouvrir", act:()=>{ tutoHide(); openBag("gratuit") }},
   {go:"collection", target:".bx-bar", txt:"Tes billes sont rangées dans <b>ta boîte à billes</b>. Le point rouge veut dire « nouvelle ». Ta bille de départ y est aussi, avec son étoile. Il reste des centaines de billes à trouver !"},
   {go:"tir", target:"#g-canvas", txt:"Essaie le Tir avec ta bille : <b>tire en arrière, vise le trou, et relâche</b>. Chaque jeu de la cour te rapporte des bonbecs.", btn:"Suivant"},
   {go:"cour", target:"#ami-form", txt:"Tikalo, c'est mieux à plusieurs ! Tape le <b>pseudo d'un copain</b> pour l'ajouter : vous pourrez troquer vos doubles."},

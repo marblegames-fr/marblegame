@@ -8440,9 +8440,9 @@ async function openBag(bagId, gift, auto){
   heldNotes = [];
   questEvent("open_bag", 1, 0);
   results.forEach((r,i)=>{ if(TIDX[r.s.type]>=TIDX.boulet) questEvent("find_boulet", 1, i) });
-  ovState = {bag, results, opened:new Set(), gift, forced:!!pulls.forced, pxp:passXP(bagXP(BAG_XP[bag.id])), auto:!!auto};
+  ovState = {bag, results, opened:new Set(), gift, forced:!!pulls.forced, pxp:passXP(bagXP(BAG_XP[bag.id])), autoOpen:!!auto};
   showBagStage();
-  if(ovState.auto) requestAnimationFrame(()=>tear());   // sachet gratuit ou offert enchaîné : il s'ouvre tout seul
+  if(ovState.autoOpen) requestAnimationFrame(()=>tear());   // sachet gratuit ou offert enchaîné : il s'ouvre tout seul
 }
 // Taille la plus grosse d'un tirage : 0 (Mini) à 4 (Mammouth), et 6 pour une shiny
 const pullScore = s => s.shiny || s.secret ? 6 : tierOf(s);
@@ -8544,8 +8544,8 @@ function showBagStage(){
         <span class="gs-disc">${mImg({seed:hash("garantie"), type:"boulet", family:0, pal:PEDIA_PAL, shiny:0},160,64,"")}</span><span class="gs-ribbon">${ic("shield",15,2.6)} Boulet garanti</span></div>`:""}
     </div>
     <div class="bag-floor" aria-hidden="true"></div>
-    <p class="ov-hint${forced?" guar":""}"${ovState.auto?" hidden":""}>${forced?"Garantie Boulet : au moins un Boulet t'attend dans ce sachet !":"Touche le sachet pour l'ouvrir"}</p>
-    <div class="bag-tools"${ovState.auto?" hidden":""}>
+    <p class="ov-hint${forced?" guar":""}"${ovState.autoOpen?" hidden":""}>${forced?"Garantie Boulet : au moins un Boulet t'attend dans ce sachet !":"Touche le sachet pour l'ouvrir"}</p>
+    <div class="bag-tools"${ovState.autoOpen?" hidden":""}>
       <!-- (10 octobre 2026) plus de bouton « Secouer » : on garde le mystère, le joueur découvre qu'il peut attraper le sachet et l'agiter -->
       <button class="btn btn-yellow" data-action="tear">Ouvrir le sachet</button>
     </div>

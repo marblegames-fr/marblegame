@@ -606,15 +606,16 @@ create or replace function interne.scores() returns table (joueur uuid, total in
     from b group by j, t, d),
   -- les shiny du passe de saison (coloris de saison) ne comptent pas
   sh as (select j, sum((interne.pts_shiny())[sh])::int p from (select distinct j, t, d, c, sh from b where sh > 0 and interne.coloris_normal(c)) x group by j),
+  my as (select distinct j, 500 p from b where (interne.decor_rarete())[d+1] = 6),   -- (10 octobre 2026) le motif mythique : 500 points dès le premier Vortex (SCORE.mythique)
   sd as (select j, sum(round(200 * m))::int p, count(*)::int n from (select j, d, max(m) m from k group by j, d having count(*) = 6) x group by j),
   st as (select j, sum(20 * pt)::int p, count(*)::int n from (select j, t, max(pt) pt from k group by j, t
-           having count(*) = (select count(*) from unnest(interne.decor_rarete()) x where x <> 5)) x group by j),
+           having count(*) filter (where (interne.decor_rarete())[d+1] <> 6) = (select count(*) from unnest(interne.decor_rarete()) x where x not in (5, 6))) x group by j),   -- (10 octobre 2026) sans le mythique
   sc as (select j, sum(20 * pt)::int p, count(*)::int n from k where nb >= interne.nb_coloris() group by j),
   tot as (select j, count(*)::int cases, sum(round(pt * m))::int pc, sum((pt / 5) * (nc - 1))::int pk from k group by j),
-  x as (select tot.*, coalesce(sh.p,0) psh,
+  x as (select tot.*, coalesce(sh.p,0) + coalesce(my.p,0) psh,
           coalesce(sd.p,0) + coalesce(st.p,0) + coalesce(sc.p,0) pse,
           coalesce(sd.n,0) + coalesce(st.n,0) + coalesce(sc.n,0) nse
-        from tot left join sh on sh.j = tot.j left join sd on sd.j = tot.j left join st on st.j = tot.j left join sc on sc.j = tot.j)
+        from tot left join sh on sh.j = tot.j left join my on my.j = tot.j left join sd on sd.j = tot.j left join st on st.j = tot.j left join sc on sc.j = tot.j)
   select j, (pc + pk + psh + pse)::int, cases, pc, pk, psh, pse::int, nse::int from x
 $$;
 

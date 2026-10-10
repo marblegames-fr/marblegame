@@ -3838,8 +3838,8 @@ const scaleOf = t => .5 + .5*(TYPES[t].mm-10)/30;   // taille d'affichage propor
 const DECOR_RAR = [
   {name:"Commun",     w:10, c:"#8E8898"},
   {name:"Peu commun", w:5,  c:"#2F8F45"},
-  {name:"Rare",       w:2.5,c:"#2E6BE6"},
-  {name:"Épique",     w:.8, c:"#8A4AD6"},
+  {name:"Rare",       w:3.5,c:"#2E6BE6"},   // (10 octobre 2026, le soir) 2,5 → 3,5 et 0,8 → 1,2 : avec les 13 nouveaux motifs, les rares et les épiques sortaient trop peu
+  {name:"Épique",     w:1.2, c:"#8A4AD6"},
   {name:"Légendaire", w:.2, c:"#D97E06"},
   {name:"Mythique",   w:.02, c:"#E0182D"},   // (10 octobre 2026) un seul motif, le Vortex : 10 fois plus rare qu'un légendaire (6 dans supabase/serveur.sql, 5 y étant les événements)
 ];
@@ -4090,9 +4090,11 @@ const SHINY_RATE = .0005;
 // (chaque taille rapporte donc autant en moyenne), et toujours bien moins que ce qu'elle coûte à trouver.
 const RECYCLE = {mini:1, bille:2, chinoise:4, calot:8, boulet:20, mammouth:50};   // 6 octobre 2026 : chaque taille vaut environ le double de la précédente (un Classique revendu rend ~54 % de son prix)
 // une shiny (tirée dans un sachet ou une fusion) vaut 10 fois sa taille, plus une prime selon son éclat ; celles du passe, non
-const SHINY_RECYCLE_MULT = 10, SHINY_BONUS = [0, 200, 500, 1500], MYTH_RECYCLE_MULT = 20;   // (10 octobre 2026) une bille au motif mythique rapporte 20 fois plus (même chose dans supabase/serveur.sql, echanger_billes)
+const SHINY_RECYCLE_MULT = 10, SHINY_BONUS = [0, 200, 500, 1500];
+// (10 octobre 2026) selon la rareté du motif : épique ×2, légendaire ×5, mythique ×20 (même chose dans supabase/serveur.sql, echanger_billes)
+const DECOR_RECYCLE_MULT = [1, 1, 1, 2, 5, 20];
 // avec un compte, seules les billes tirées par le serveur rapportent (pas les billes de départ ni celles d'une partie sans compte)
-const recycleValue = s => srvOn() && !s.srv ? 0 : (s.shiny && !isSeason(s) ? RECYCLE[s.type]*SHINY_RECYCLE_MULT + SHINY_BONUS[s.shiny] : RECYCLE[s.type]) * (isMyth(s) ? MYTH_RECYCLE_MULT : 1);
+const recycleValue = s => srvOn() && !s.srv ? 0 : (s.shiny && !isSeason(s) ? RECYCLE[s.type]*SHINY_RECYCLE_MULT + SHINY_BONUS[s.shiny] : RECYCLE[s.type]) * (DECOR_RECYCLE_MULT[decorRar(s)] || 1);
 
 // Quêtes du jour : (8 octobre 2026) les 4 mêmes chaque jour, dans cet ordre (avant : 4 tirées au hasard parmi 19, trop faciles).
 // Les récompenses sont aussi dans supabase/serveur.sql (public.gagner, source 'quete') : à garder pareilles.
@@ -8262,7 +8264,7 @@ function confEchange(dups, dupVal){
   <section class="panel cf-tarifs">
     <div class="panel-head"><h2>Les tarifs de la maison</h2><span class="sample-tag">Par bille</span></div>
     <div class="tarif-grid">${TK.map((t,i)=>`<div class="tarif" style="${tstyle(t)}">${mImg(SHOWCASE[i],120,Math.round(26*scaleOf(t)+18),"")}<b>${TYPES[t].label}</b><span class="price">${COIN}${fmt(RECYCLE[t])}</span></div>`).join("")}
-      <div class="tarif is-shiny"><span class="shiny-pill">${SPARK}Shiny</span><b>×${SHINY_RECYCLE_MULT} + une prime</b><span class="price" style="font-size:12px">${SHINIES.slice(1).map((x,i)=>`${x.name} +${fmt(SHINY_BONUS[i+1])}`).join("<br>")}</span></div><div class="tarif"><span class="dec-pill" style="--dc:${DECOR_RAR[5].c}">${DECOR_RAR[5].name}</span><b>Motif mythique</b><span class="price">×${MYTH_RECYCLE_MULT}</span></div></div>
+      <div class="tarif is-shiny"><span class="shiny-pill">${SPARK}Shiny</span><b>×${SHINY_RECYCLE_MULT} + une prime</b><span class="price" style="font-size:12px">${SHINIES.slice(1).map((x,i)=>`${x.name} +${fmt(SHINY_BONUS[i+1])}`).join("<br>")}</span></div>${[3,4,5].map(r=>`<div class="tarif"><span class="dec-pill" style="--dc:${DECOR_RAR[r].c}">${DECOR_RAR[r].name}</span><b>Motif ${DECOR_RAR[r].name.toLowerCase()}</b><span class="price">×${DECOR_RECYCLE_MULT[r]}</span></div>`).join("")}</div>
   </section>`;
 }
 
@@ -13902,7 +13904,7 @@ function buyAnnonce(id){
 
 // ---------- le classement : des points pour la collection (calculés par le serveur, supabase/cour.sql) ----------
 // mêmes valeurs que dans supabase/cour.sql (pts_taille, mult_decor, pts_shiny, grandes collections)
-const SCORE = {taille:[10,15,20,30,60,120], decor:[1,1.5,2,3,5,15], shiny:[150,300,600], serieDecor:200, serie:20};
+const SCORE = {taille:[10,15,20,30,60,120], decor:[1,1.5,2,3,5,15], shiny:[150,300,600], serieDecor:200, serie:20, mythique:500};   // mythique : une fois, dès qu'on a un Vortex
 const rangTxt = r => r===1 ? "1er" : `${r}e`;
 // les grandes collections presque finies : de quoi viser le prochain palier (d'après les billes de la boîte qui comptent)
 function scoreGoals(){
@@ -13913,8 +13915,10 @@ function scoreGoals(){
   const g = [];
   parDecor.forEach((tailles, f)=>{ if(tailles.size>=3 && tailles.size<TK.length) g.push({titre:`Le motif ${FAMILIES[f].name} dans les 6 tailles`, n:tailles.size, of:TK.length,
     pts:Math.round(SCORE.serieDecor*SCORE.decor[FAMILIES[f].rar]), manque:`Il te manque : ${TK.filter(t=>!tailles.has(t)).map(t=>TYPES[t].pl).join(", ")}`}) });
-  parTaille.forEach((decors, t)=>{ if(decors.size>=N_DECORS/2 && decors.size<N_DECORS) g.push({titre:`Tous les motifs en ${TYPES[t].pl}`, n:decors.size, of:FAMILIES.length,
-    pts:SCORE.serie*SCORE.taille[TIDX[t]], manque:`Encore ${N_DECORS-decors.size} motif${N_DECORS-decors.size>1?"s":""} à trouver`}) });
+  // (10 octobre 2026) une taille dans tous les motifs : le motif mythique n'est pas demandé
+  const NB = N_DECORS-1;
+  parTaille.forEach((decs, t)=>{ const n = [...decs].filter(f=>!FAMILIES[f].myth).length; if(n>=NB/2 && n<NB) g.push({titre:`Tous les motifs en ${TYPES[t].pl}`, n, of:NB,
+    pts:SCORE.serie*SCORE.taille[TIDX[t]], manque:`Encore ${NB-n} motif${NB-n>1?"s":""} à trouver`}) });
   g.sort((a,b)=>(a.of-a.n)-(b.of-b.n) || b.pts-a.pts);
   if(g.length<3) g.push({titre:"Un nouveau motif dans l'album", n:cases.size, of:TOTAL_SLOTS, pts:SCORE.taille[0], manque:"Chaque nouvelle taille ou nouveau motif rapporte des points (et bien plus s'il est rare)"});
   return g.slice(0,3);
@@ -13962,7 +13966,8 @@ function courClassement(){
           <li><b>Chaque motif de l'album, dans chaque taille</b><span>${TK.map(t=>`${TYPES[t].label} ${SCORE.taille[TIDX[t]]}`).join(" · ")}</span><small>× la rareté du motif : ${DECOR_RAR.map((r,i)=>`${r.name.toLowerCase()} ×${String(SCORE.decor[i]).replace(".",",")}`).join(", ")}</small></li>
           <li><b>Chaque coloris en plus</b><span>un cinquième des points de la taille</span><small>Les doubles (même coloris) ne comptent pas.</small></li>
           <li><b>Chaque shiny différente</b><span>${SHINIES.slice(1).map((x,i)=>`${x.name} ${SCORE.shiny[i]}`).join(" · ")}</span></li>
-          <li><b>Les grandes collections</b><span>un motif dans les 6 tailles : ${SCORE.serieDecor} × la rareté du motif</span><small>Une taille dans tous les motifs, ou un motif complet (ses ${BASE_PALS} coloris) : ${SCORE.serie} × les points de la taille.</small></li>
+          <li><b>Le motif mythique</b><span>${SCORE.mythique} dès ton premier Vortex</span><small>En plus des points de sa case (×${SCORE.decor[5]}).</small></li>
+          <li><b>Les grandes collections</b><span>un motif dans les 6 tailles : ${SCORE.serieDecor} × la rareté du motif</span><small>Une taille dans tous les motifs (le mythique n'est pas demandé), ou un motif complet (ses ${BASE_PALS} coloris) : ${SCORE.serie} × les points de la taille.</small></li>
         </ul><p class="meta">Les billes de départ et les secrètes ne comptent pas.</p></section>
     </div>
   </div>`;

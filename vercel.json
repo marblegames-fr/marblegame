@@ -3,5 +3,13 @@
     "deploymentEnabled": {
       "sauvegarde": false
     }
-  }
+  },
+  "redirects": [
+    {
+      "source": "/:path*",
+      "has": [{ "type": "host", "value": "billy-marble.vercel.app" }],
+      "destination": "https://www.tikalo.fr/:path*",
+      "permanent": true
+    }
+  ]
 }

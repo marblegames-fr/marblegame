@@ -48,22 +48,30 @@
     return vec4(uC1*0.12, 0.8+rings*1.5);
   }
 #elif MODE==66
-  { // vortex : un tourbillon de lumière qui tourne vraiment sur lui-même et aspire des étincelles vers son centre
+  { // vortex : un tourbillon de lumière qui tourne vraiment sur lui-même et aspire des étincelles vers son œil noir.
+    // Les 3 couleurs du coloris : le verre et ses volutes (la 1re), et les bras du tourbillon, chacun de sa couleur
+    // (la 2e, la 3e, et la 1re éclaircie) : deux coloris proches ne donnent pas le même vortex.
     float r=length(q), t=uTime;
-    vec3 nrm=normalize(vec3(0.25,1.0,0.35)); vec3 ua=normalize(cross(nrm,vec3(0.0,0.0,1.0))), va=cross(nrm,ua);
-    float h=dot(q,nrm); vec3 ip=q-h*nrm; float rr=length(ip)+1e-4; float ang=atan(dot(ip,va),dot(ip,ua));
-    float sw=ang+log(rr)*2.8-t*1.6;
-    float arms=pow(0.5+0.5*cos(sw*3.0+fbm(q*3.0+so)*1.2),2.0);
-    float thick=0.07+0.16*rr;
+    // le tourbillon nous fait face (la bille est posée « de face ») : la spirale est dessinée dans une couche épaisse du verre
+    float h=q.z; vec2 ip=q.xy; float rr=length(ip)+1e-4; float ang=atan(ip.y,ip.x);
+    float sw=ang+log(rr)*2.8-t*1.6;   // la spirale tourne
+    float s3=sw*3.0/6.2831853+fbm(q*3.0+so)*0.25;
+    float arm=pow(0.5+0.5*cos(s3*6.2831853),2.0);
+    float k=mod(floor(s3+0.5),3.0);
+    vec3 ac=k<1.0?uC2:(k<2.0?uC3:mix(uC1,vec3(1.0),0.4));
+    float thick=0.16+0.12*rr;
     float disk=exp(-h*h/(thick*thick))*smoothstep(0.92,0.3,rr)*smoothstep(0.04,0.14,rr);
     vec2 pp=vec2((ang-t*1.6)*12.0/6.2831853, log(rr)*4.0+t*1.5); vec2 id=floor(pp), f=fract(pp)-0.5;
-    float sp=step(0.65,h31(vec3(id,so.x)))*smoothstep(0.32,0.06,length(f))*exp(-h*h/(thick*thick*0.5))*smoothstep(0.95,0.5,rr);
+    float hk=h31(vec3(id,so.x));
+    float sp=step(0.65,hk)*smoothstep(0.32,0.06,length(f))*exp(-h*h/(thick*thick*0.5))*smoothstep(0.95,0.5,rr);
+    vec3 spc=hk<0.8?mix(uC3,vec3(1.0),0.5):mix(uC2,vec3(1.0),0.5);
     float eye=exp(-pow((rr-0.09)/0.025,2.0))*exp(-h*h*80.0);
-    vec3 c1=mix(uC3,uC2,smoothstep(0.1,0.7,rr));
-    e=c1*disk*(0.15+arms)*5.0+mix(uC3,vec3(1.0),0.6)*(sp*9.0+eye*12.0);
+    float neb=fbm(q*2.2+so+vec3(0.0,0.0,t*0.1));   // les volutes du verre, de la 1re couleur
+    e=ac*disk*(0.12+arm)*5.5+spc*sp*9.0+mix(uC3,vec3(1.0),0.5)*eye*12.0
+     +mix(uC1,vec3(1.0),0.15)*smoothstep(0.5,0.8,neb)*(1.0-disk)*0.9;
     float hole=smoothstep(0.09,0.06,length(q));
     e*=(1.0-hole)*smoothstep(0.97,0.88,r);
-    return vec4(uC1*0.1, 0.9+hole*80.0+disk*arms*2.0);
+    return vec4(uC1*0.2, 0.9+hole*80.0+disk*arm*2.0);
   }
 #elif MODE==67
   { // cœur battant : un cœur de cristal qui bat (boum-boum) au milieu du verre ; à chaque battement, une onde de lumière part de lui

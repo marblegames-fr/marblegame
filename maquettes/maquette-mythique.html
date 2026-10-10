@@ -44,6 +44,24 @@ h1 em{font-style:normal;color:var(--myth)}
 .cols button{border:0;background:rgba(255,255,255,.06);border-radius:12px;padding:6px 4px 4px;cursor:zoom-in;text-align:center;font:inherit;color:#CFC6CC;width:calc(14.28% - 6px);min-width:52px}
 .cols canvas{width:100%;max-width:70px;aspect-ratio:1;display:block;margin:0 auto}
 .cols small{display:block;font-size:10px;font-weight:800;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.vx{margin-top:22px;border-radius:24px;background:#0E0B12;color:#fff;padding:22px;box-shadow:var(--shadow)}
+.vx .k{font-family:var(--display);font-weight:400;font-size:13px;letter-spacing:.12em;text-transform:uppercase;color:#FF4A5C}
+.vx h2{font-family:var(--display);font-weight:400;font-size:34px;line-height:1}
+.vx h2 em{font-style:normal;color:#FF4A5C}
+.vx p{color:#D8D0D6;font-size:14px;max-width:70ch;margin-top:6px}
+.vx h3{font-family:var(--display);font-weight:400;font-size:22px;margin:22px 0 10px}
+.shs{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:12px}
+.shs figure{margin:0;text-align:center;background:rgba(255,255,255,.05);border-radius:18px;padding:14px 8px 12px}
+.shs canvas{width:100%;max-width:220px;aspect-ratio:1;cursor:zoom-in}
+.shs canvas.lum{filter:drop-shadow(0 0 18px var(--lc)) drop-shadow(0 0 40px var(--lc))}
+.shs b{display:block;font-size:16px;font-weight:900;margin-top:6px}
+.shs small{display:block;font-size:12px;color:#BDB3BA;font-weight:700}
+.allc{display:grid;grid-template-columns:repeat(auto-fill,minmax(96px,1fr));gap:8px}
+.allc button{border:0;background:rgba(255,255,255,.05);border-radius:14px;padding:8px 4px 6px;cursor:zoom-in;text-align:center;font:inherit;color:#CFC6CC}
+.allc canvas{width:100%;max-width:84px;aspect-ratio:1;display:block;margin:0 auto}
+.allc small{display:block;font-size:11px;font-weight:800;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.old{font-family:var(--display);font-weight:400;font-size:28px;margin:40px 0 0}
+@media (max-width:700px){ .shs{grid-template-columns:repeat(2,minmax(0,1fr))} }
 .zoom{position:fixed;inset:0;z-index:20;background:rgba(10,4,6,.88);display:grid;place-items:center;padding:16px}
 .zoom[hidden]{display:none}
 .zoom div{text-align:center;color:#fff}
@@ -60,6 +78,8 @@ h1 em{font-style:normal;color:var(--myth)}
   <p class="lead">Une 6e rareté au-dessus de Légendaire, avec <b>un seul motif</b> qui existe dans tous les coloris et toutes les tailles. Voici 4 propositions, en vrai rendu 3D et <b>animées en direct</b>, comme elles bougeraient dans le jeu. Chacune est montrée dans 6 coloris et en Mammouth.</p>
   <p class="note">Touche une bille pour la voir en grand et la faire tourner !</p>
   <div class="facts" id="facts"></div>
+  <section class="vx" id="vx"></section>
+  <h2 class="old">Les 4 propositions</h2>
   <div class="grid" id="grid"></div>
 </div>
 <div class="zoom" id="zoom" hidden><div><canvas id="zc" width="1120" height="1120"></canvas><b id="zn"></b><small>Glisse pour la tourner · touche à côté pour fermer</small></div></div>
@@ -71,7 +91,7 @@ const COLS = ["Azur","Rubis","Émeraude","Or rose","Lavande","Réglisse"].map(pa
 const MYTH = [
   {name:"Phénix", face:true, desc:"Un oiseau de feu bat des ailes au cœur du verre, sa longue queue ondule, et des flammes et des étincelles montent sans arrêt autour de lui."},
   {name:"Supernova", desc:"Une étoile palpite au centre et lâche, l'une après l'autre, des vagues de lumière qui s'élargissent jusqu'au bord du verre."},
-  {name:"Vortex", desc:"Un tourbillon de lumière qui tourne vraiment sur lui-même, avec un œil noir au milieu qui aspire des étincelles."},
+  {name:"Vortex", face:true, desc:"Un tourbillon de lumière qui tourne vraiment sur lui-même, avec un œil noir au milieu qui aspire des étincelles."},
   {name:"Cœur battant", face:true, desc:"Un cœur de cristal taillé qui bat (boum-boum) au milieu du verre ; à chaque battement, une onde en forme de cœur part de lui."},
 ];
 // les numéros 52 à 63 sont les nouveaux motifs à l'essai : les mythiques sont les numéros 64 à 67
@@ -97,6 +117,14 @@ document.getElementById("grid").innerHTML = MYTH.map((x,j)=>`<article class="my"
   <div class="cols">${COLS.slice(1).map((p,k)=>`<button>${cv(spec(x.fam,p,"calot","c"+k), 140, "sm", x.name+" - "+PALETTES[p][0], x.face)}<small>${PALETTES[p][0]}</small></button>`).join("")}
     <button>${cv(spec(x.fam,COLS[0],"mammouth","m"), 140, "sm", x.name+" - Mammouth", x.face)}<small>Mammouth</small></button></div>
 </article>`).join("");
+const VX = 66, SHN = [["Normale","Sans effet",0],["Irisée","75 % des shiny",1],["Dorée","21 % des shiny",2],["Lumineuse","4 % des shiny",3]];
+const ALL = BASE_PAL_IDS;
+document.getElementById("vx").innerHTML = `<span class="k">Le motif retenu</span><h2>Le <em>Vortex</em></h2>
+  <p>Les 3 couleurs du coloris sont utilisées : le verre et ses volutes prennent la 1re, et chacun des 3 bras du tourbillon a sa couleur (la 2e, la 3e et la 1re éclaircie). Deux coloris proches ne donnent donc pas le même vortex.</p>
+  <h3>Avec un effet shiny (en Azur)</h3>
+  <div class="shs">${SHN.map(([n,d,k])=>`<figure>${cv({...spec(VX, COLS[0], "calot", "sh"), shiny:k}, 440, k===3?"lum":"", "Vortex "+n+" - Azur", true).replace("<canvas", k===3?`<canvas style="--lc:${PALETTES[COLS[0]][2]}"`:"<canvas")}<b>${n}</b><small>${d}</small></figure>`).join("")}</div>
+  <h3>Dans tous les coloris (${ALL.length})</h3>
+  <div class="allc">${ALL.map(p=>`<button>${cv(spec(VX, p, "calot", "all"), 168, "sm", "Vortex - "+PALETTES[p][0], true)}<small>${PALETTES[p][0]}</small></button>`).join("")}</div>`;
 const cvs = [...document.querySelectorAll("canvas[data-i]")].map(c=>({c, ctx:c.getContext("2d"), it:items[+c.dataset.i], vis:true}));
 const io = new IntersectionObserver(es=>es.forEach(e=>{ const x = cvs.find(v=>v.c===e.target); if(x) x.vis = e.isIntersecting }));
 cvs.forEach(x=>io.observe(x.c));

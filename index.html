@@ -858,6 +858,7 @@ button.rw:hover{transform:translateY(-2px)}
 /* un papier par intercalaire : Seyès (Album), petits carreaux (Mes billes), vieux livre (Billepedia) */
 .cahier-page[data-paper="billes"]{--pl:repeating-linear-gradient(180deg,transparent 0 19px,rgba(60,110,180,.14) 19px 20px),repeating-linear-gradient(90deg,transparent 0 19px,rgba(60,110,180,.14) 19px 20px)}
   --pb:var(--kraft);--muted:#6E5A3E;--ink-2:#4D3F2C}
+/* (10 octobre 2026) la Confiserie dans le cahier : le ticket et son bouton l'un sous l'autre (la page du cahier est plus étroite) */
 .cahier-page[data-paper="pedia"]{--pm:linear-gradient(transparent,transparent);--pl:radial-gradient(ellipse at 50% 40%,transparent 55%,rgba(130,85,30,.2) 100%);--pb:var(--old)}
 .cahier-page[data-paper="pedia"] .cp-title h2{font-family:Georgia,"Times New Roman",serif;font-style:italic;font-weight:700;font-size:38px;background:none;border-bottom:3px double rgba(90,60,25,.5);padding:0 4px 4px;transform:none}
 .cahier-page[data-paper="pedia"] .cp-title span{font-family:Georgia,"Times New Roman",serif;font-style:italic;font-size:17px;color:#6B5434}
@@ -1816,6 +1817,12 @@ canvas.gr-foil{touch-action:none}
 .games-sec{margin-bottom:28px}
 .gs-head{margin-bottom:14px}
 .gs-head h2{font-size:21px;font-weight:900}
+.conf-page .cf-sum,.conf-page .cf-sum:has(.cf-receipt){grid-template-columns:minmax(0,1fr)}
+.conf-page .cf-sum .btn{justify-self:start}
+.conf-page .tarif-grid{grid-template-columns:repeat(4,minmax(0,1fr))}
+.conf-page .tarif.is-shiny{grid-column:span 2}
+.conf-page .fuse2{grid-template-columns:minmax(0,1fr);justify-items:center}
+.conf-page .fuse2 > *{min-width:0;max-width:100%}
 .hm-pass{display:flex;align-items:center;gap:14px;width:100%;padding:14px 18px;margin:0 0 16px;text-align:left;color:var(--ink);
   background:linear-gradient(110deg,color-mix(in srgb,#8A4AD6 18%,var(--panel)),var(--panel) 70%);border-color:color-mix(in srgb,#8A4AD6 40%,var(--line))}
 .hm-pass:hover{border-color:#8A4AD6}
@@ -7285,6 +7292,15 @@ function viewSucces(){
    COLLECTION
    ===================================================================== */
 // la boîte à billes est un cahier : chaque page a son intercalaire de couleur, sur le côté (en haut sur téléphone)
+// (10 octobre 2026) les intercalaires du cahier ; la Confiserie en est un (elle s'affiche dans le cahier, pas sur une page à part)
+function cahierTabs(cur, counts={}){
+  const dups = onbOk("confiserie") ? recyclableDups().length : 0;
+  return `<div class="cahier-tabs" role="tablist" aria-label="Les pages de ta boîte à billes">
+    ${CAHIER.map(([k,c,icon,lbl])=>{ const n = counts[k];
+      return `<button class="ctab" role="tab" style="--c:${c}" data-action="tab" data-tab="${k}" aria-selected="${cur===k}">${ic(icon,16,2.4)}<b>${lbl}</b>${n!=null?`<small>${n}</small>`:""}</button>` }).join("")}
+    ${onbOk("confiserie") ? `<button class="ctab" role="tab" style="--c:#E85D9A" data-action="nav" data-view="confiserie" aria-selected="${cur==="confiserie"}">${ic("candy",16,2.4)}<b>Confiserie</b>${dups?`<small>${dups} double${dups>1?"s":""}</small>`:""}</button>` : ""}
+  </div>`;
+}
 const CAHIER = [["album","#8A63D2","book","Album"],["billes","#5BAA4A","layers","Mes billes"],["pedia","#4C93C9","search","Billepedia"]];
 let cahierLast = null;   // l'intercalaire affiché la dernière fois (pour tourner la page quand on en change)
 const DOODLES = `<div class="cp-doodles" aria-hidden="true">
@@ -7435,12 +7451,7 @@ function viewCollection(){
   const turn = cahierLast!=null && cahierLast!==ui.tab; cahierLast = ui.tab;
   return `<h1 class="sr-only">Ma boîte à billes</h1>
   <div class="cahier" style="--tc:${(CAHIER.find(c=>c[0]===ui.tab)||CAHIER[0])[1]}">
-    <div class="cahier-tabs" role="tablist" aria-label="Les pages de ta boîte à billes">
-      ${CAHIER.map(([k,c,icon,lbl])=>{
-        const n = {album:`${slots.size} / ${TOTAL_SLOTS}`, billes:S.specs.length}[k];
-        return `<button class="ctab" role="tab" style="--c:${c}" data-action="tab" data-tab="${k}" aria-selected="${ui.tab===k}">${ic(icon,16,2.4)}<b>${lbl}</b>${n!=null?`<small>${n}</small>`:""}</button>` }).join("")}
-      ${onbOk("confiserie") ? `<button class="ctab" role="tab" style="--c:#E85D9A" data-action="nav" data-view="confiserie" aria-selected="false">${ic("candy",16,2.4)}<b>Confiserie</b>${recyclableDups().length?`<small>${recyclableDups().length} doubles</small>`:""}</button>` : ""}
-    </div>
+    ${cahierTabs(ui.tab, {album:`${slots.size} / ${TOTAL_SLOTS}`, billes:S.specs.length})}
     <div class="cahier-page${turn?" turn":""}" data-paper="${ui.tab}">${DOODLES}
     ${(()=>{ const T = {album:["Mon album", `${slots.size} / ${TOTAL_SLOTS} motifs trouvés`], billes:["Mes billes", `${S.specs.length} bille${S.specs.length>1?"s":""} · ${fmt(found.size)} / ${fmt(ALBUM_TOTAL)} modèles`],
         beta:["Billes Bêta", `${betaOwned().length} / ${TK.length}`], events:["Événements", ""], pedia:["Billepedia", "toutes les billes du jeu"]}[ui.tab] || ["", ""];
@@ -7879,7 +7890,8 @@ function viewConfiserie(){
   const evN = (()=>{ const g = new Map(); evPool().forEach(s=>{ const k = `${s.type}|${s.pal}`; g.set(k,(g.get(k)||0)+1) }); return [...g].filter(([k,n])=>TIDX[k.split("|")[0]]<TK.length-1 && n>=FUSION_EV[TIDX[k.split("|")[0]]]).length })();
   const dups = recyclableDups(), dupVal = dups.reduce((a,s)=>a+recycleValue(s),0);
   const fusions = TK.slice(0,-1).reduce((a,_,t)=>a+Math.floor(craftPool(t).length/craftN(t)),0);
-  return `<div class="page-head"><div><button class="back-link" data-action="nav" data-view="collection">${ic("chevl",14)} Ma boîte à billes</button><h1>La Confiserie</h1></div></div>
+  return `<h1 class="sr-only">La Confiserie</h1>
+  <div class="cahier cahier-conf" style="--tc:#E85D9A">${cahierTabs("confiserie")}<div class="cahier-page conf-page" data-paper="confiserie">
   <div class="cf-shop">
     <div class="cf-awning" aria-hidden="true"></div>
     <div class="conf-choices">
@@ -7891,7 +7903,8 @@ function viewConfiserie(){
         <div><b>Fusion d'événement</b><small>${evN?`${evN} fusion${evN>1?"s":""} possible${evN>1?"s":""}`:"Même coloris → la taille au-dessus"}</small></div></button>` : ""}
     </div>
   </div>
-  ${tab==="fusion" ? viewCraft() : tab==="evenement" ? evFusionPanel() : confEchange(dups, dupVal)}`;
+  ${tab==="fusion" ? viewCraft() : tab==="evenement" ? evFusionPanel() : confEchange(dups, dupVal)}
+  </div></div>`;
 }
 function confEchange(dups, dupVal){
   const seules = ui.confF==="seules", singles = recyclableSingles();

@@ -5565,9 +5565,19 @@ vec4 fam(vec3 q, out vec3 e){
       vec3 c=(vec3(h31(so+fi*3.1),h31(so+fi*5.7),h31(so+fi*8.3))-0.5)*0.8;
       float R=0.34+0.16*h31(so+fi*2.3);
       vec3 d=q-c; float L=length(d); vec3 dir=d/max(L,1e-4);
-      vec3 g=dir*5.0+fi*13.0+so; vec3 id=floor(g);
-      vec3 cd=normalize(id+0.5+(vec3(h31(id+1.0),h31(id+2.0),h31(id+3.0))-0.5)*0.7-fi*13.0-so);
-      float ang=length(dir-cd);
+      // les rayons : la sphère des directions est découpée en bandes de latitude, et chaque case porte un rayon qui
+      // reste tout entier dans sa case (avant, une grille cubique : 9 rayons sur 10 étaient coupés net par le bord de leur case)
+      vec3 dd=i==0?dir:(i==1?dir.yzx:dir.zxy);
+      float DB=3.14159265/12.0, ph0=fi*2.1+so.x;
+      float th=acos(clamp(dd.z,-1.0,1.0)), ph=mod(atan(dd.y,dd.x)+ph0,6.2831853);
+      float b=min(floor(th/DB),11.0);
+      float nl=(b<0.5||b>10.5)?1.0:floor(24.0*sin((b+0.5)*DB)+0.5), w=6.2831853/nl;
+      vec3 id=vec3(b,floor(ph/w),fi*17.0)+so;
+      float thr=(b<0.5)?0.0:((b>10.5)?3.14159265:(b+0.5)*DB+(h31(id+1.0)-0.5)*(DB-0.2));
+      float sIn=max(sin(min(b,11.0-b)*DB),1e-3);   // le bord le plus étroit de la bande (côté pôle)
+      float phr=(floor(ph/w)+0.5)*w+(h31(id+2.0)-0.5)*max(0.0,w-0.2/sIn)-ph0;
+      vec3 cd=vec3(sin(thr)*cos(phr),sin(thr)*sin(phr),cos(thr));
+      float ang=length(dd-cd);
       float ray=smoothstep(0.06,0.014,ang)*step(0.25,h31(id+4.0));
       float along=smoothstep(0.03,0.14,L)*smoothstep(R,R*0.6,L);
       float tip=smoothstep(0.07,0.0,abs(L-R*0.82))*smoothstep(0.08,0.02,ang)*step(0.25,h31(id+4.0));

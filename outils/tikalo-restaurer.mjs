@@ -120,7 +120,9 @@ async function remplacer(dir){
   }
   for(const t of tables){ const [s, n] = t.split("."); q.push(`alter table ${s}.${id(n)} enable trigger user;`) }
   const ident = await sql(`select table_schema||'.'||table_name t, column_name c from information_schema.columns where table_schema in ('public','interne') and is_identity='YES'`);
-  for(const { t, c } of ident) if(tables.includes(t)){ const [s, n] = t.split(".");
+  // (10 octobre 2026) ATTENTION : setval n'est PAS annulé par un ROLLBACK. En essai, on ne touche jamais aux compteurs :
+  // le premier essai les avait ramenés à l'état de l'export et plus aucun gain, sachet ni bille ne pouvait s'enregistrer.
+  if(!essai) for(const { t, c } of ident) if(tables.includes(t)){ const [s, n] = t.split(".");
     q.push(`select setval(pg_get_serial_sequence('${s}.${id(n)}', '${c}'), greatest(coalesce((select max(${id(c)}) from ${s}.${id(n)}), 0), 1));`) }
   const compte = tables.map(t => { const [s, n] = t.split("."); return `select '${t}' t, count(*)::int n from ${s}.${id(n)}` }).join(" union all ");
   // essai : on lit les chiffres À L'INTÉRIEUR de la transaction, puis une erreur volontaire l'annule entièrement

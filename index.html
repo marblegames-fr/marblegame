@@ -3959,9 +3959,10 @@ Object.values(SECRETS).forEach(X=>{ X.palIdx = PALETTES.length; PALETTES.push(X.
 // Événements : un motif à part et ses coloris à lui, qu'on ne trouve que pendant l'événement
 const EVENTS = {
   // dates à l'heure de Paris (mêmes dates dans supabase/serveur.sql : interne.evenement)
+  // le Pirate prolongé exceptionnellement jusqu'au 31 octobre (10 octobre 2026, ouverture du jeu) ; les suivants restent sur deux semaines
   pirates: {name:"À l'abordage !", fam:"Pirate", color:"#C8322F",
-    start:Date.parse("2026-09-30T00:00:00+02:00"), end:Date.parse("2026-10-14T23:59:59+02:00"),
-    desc:"Deux semaines de billes Pirate : coche la case sur un sachet payant.",
+    start:Date.parse("2026-09-30T00:00:00+02:00"), end:Date.parse("2026-10-31T23:59:59+01:00"),
+    desc:"Des billes Pirate jusqu'au 31 octobre : coche la case sur un sachet payant.",
     pals:[["Pavillon noir","#15151B","#D4A537","#F1E9D2","#2A2A30"],
           ["Corsaire","#1B2C5A","#C8322F","#F4EEDC","#22335E"],
           ["Coffre au trésor","#4A2A12","#F2C230","#FFF4D6","#5A3A1E"],

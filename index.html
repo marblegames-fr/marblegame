@@ -3702,6 +3702,8 @@ body.gc-open{overflow:hidden}
 .br-btn:hover{background:#FFE27A}
 .br-btn.done{background:rgba(255,255,255,.16);color:#fff;animation:none;box-shadow:inset 0 0 0 1px rgba(255,255,255,.4)}
 @keyframes brPulse{0%,100%{transform:scale(1)}50%{transform:scale(1.07)}}
+.br-bug{opacity:.92}
+.br-bug button{border:0;background:none;padding:0;color:inherit;font:inherit;font-weight:800;text-decoration:underline;text-underline-offset:2px;cursor:pointer}
 .br-short{display:none}
 @media (max-width:760px){ .br-long{display:none} .br-short{display:inline} .beta-rib{gap:8px;font-size:12px} }
 @media (prefers-reduced-motion:reduce){ .br-btn{animation:none} }
@@ -6738,7 +6740,7 @@ function renderBeta(){
   requestAnimationFrame(()=>document.documentElement.style.setProperty("--rib", BETA.open ? el.offsetHeight+"px" : "0px"));
   if(!BETA.open) return;
   const done = betaOwned().length===TK.length;
-  el.innerHTML = `<span class="br-tag">Bêta</span><span class="br-txt"><span class="br-long">La bêta se termine le 1er novembre : </span><span class="br-short">Fin de la bêta le 1er nov. : </span><b>récupère tes billes Bêta avant, elles ne seront plus disponibles après !</b></span>
+  el.innerHTML = `<span class="br-tag">Bêta</span><span class="br-txt"><span class="br-long">La bêta se termine le 1er novembre : </span><span class="br-short">Fin de la bêta le 1er nov. : </span><b>récupère tes billes Bêta avant, elles ne seront plus disponibles après !</b> <span class="br-bug">Un bug ? ${sync.on ? `<button data-action="bug-report">Signale-le</button>` : "Signale-le"}, ça nous aide beaucoup.</span></span>
     ${done ? `<button class="br-btn done" data-action="beta-see">${ic("check",14,3)} Mes billes Bêta</button>` : `<button class="br-btn" data-action="beta-claim">${ic("gift",15)} Claim</button>`}`;
 }
 function claimBeta(){

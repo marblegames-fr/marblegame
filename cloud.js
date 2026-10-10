@@ -142,7 +142,8 @@
       encheres: () => rpc("mes_encheres"),
       mettreAuxEncheres: (bille, prix, heures) => rpc("mettre_aux_encheres", {bille, prix, heures}),
       encherir: (annonce, montant) => rpc("encherir", {annonce, montant}),
-      classement: portee => rpc("classement", {portee:portee||"tous"}),
+      // page : 0 = la page où je suis, 1 = la première… (sans page : les 50 premiers, comme avant le 10 octobre 2026)
+      classement: (portee, page) => rpc("classement", page==null ? {portee:portee||"tous"} : {portee:portee||"tous", page}),
       annonces: () => rpc("mes_annonces"),
       journal: (depuis, limite) => rpc("cour_journal", {depuis:depuis||0, limite:limite||80}),
       stats: () => rpc("cour_stats"),

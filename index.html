@@ -3166,6 +3166,8 @@ button.cp-who:hover b{text-decoration:underline}
 .cl-row .who{font-weight:900;font-size:14.5px;min-width:0}
 .cl-row .who em{font-style:normal;font-size:10.5px;font-weight:900;text-transform:uppercase;letter-spacing:.05em;padding:1px 7px;border-radius:999px;background:var(--yellow);color:#24253D;vertical-align:2px}
 .cl-row .who small{display:flex;align-items:center;gap:4px;font-size:12px;font-weight:700;color:var(--muted)}
+.cl-back{cursor:pointer}
+.cl-pager .btn[disabled]{opacity:.35;cursor:default}
 .cl-gap{text-align:center;color:var(--muted);font-weight:900;letter-spacing:.3em}
 .cl-goals{display:grid;gap:14px}
 .cl-goal .g-top{display:flex;justify-content:space-between;gap:10px;align-items:baseline}
@@ -5937,6 +5939,8 @@ const ICON = {
   arrow:'<path d="M5 12h14M13 6l6 6-6 6"/>',
   chev:'<path d="M9 6l6 6-6 6"/>',
   chevl:'<path d="M15 6l-6 6 6 6"/>',
+  chevll:'<path d="M12 6l-6 6 6 6M19 6l-6 6 6 6"/>',
+  chevrr:'<path d="M5 6l6 6-6 6M12 6l6 6-6 6"/>',
   play:'<path d="M8 5.5v13l10-6.5z"/>',
   clock:'<circle cx="12" cy="12" r="8.5"/><path d="M12 7.5V12l3 2"/>',
   recycle:'<path d="M7 19H4.5a1.5 1.5 0 0 1-1.3-2.2L6 12"/><path d="M11 19h8.5a1.5 1.5 0 0 0 1.3-2.2L18.5 13"/><path d="M14.5 5.3 13.3 3.2a1.5 1.5 0 0 0-2.6 0L8.5 7"/><path d="M9 16l2 3-2 3M3.5 9.5 6 12l3-1M17 6l-2.5-.7L14 8"/>',
@@ -13325,16 +13329,20 @@ function courLoad(kind, force){
   cour.loading[kind] = true; cour.at[kind] = Date.now();
   const f = {moi:()=>Cloud.cour.moi(), fil:()=>Cloud.cour.fil(), trocs:()=>Cloud.cour.trocs(),
     marche:()=>Cloud.cour.marche(cour.f), annonces:()=>Cloud.cour.annonces(), journal:()=>Cloud.cour.journal(0, 120),
-    encheres:()=>Cloud.cour.encheres(), classement:()=>Cloud.cour.classement(ui.clPortee)}[kind];
-  f().then(d=>{ const prev = cour[kind]; cour[kind] = d; cour.ok = true; if(kind==="moi") netMark("cour", true);
+    encheres:()=>Cloud.cour.encheres(), classement:()=>Cloud.cour.classement(ui.clPortee, ui.clPage||0)}[kind];
+  f().then(d=>{ const prev = cour[kind]; cour[kind] = d; cour.ok = true; if(kind==="classement" && !cour.clAgain) cour.clWait = false; if(kind==="moi") netMark("cour", true);
       if(kind==="moi") courMoiNews(prev, d);
       if(ui.view==="cour" || (["fil","moi","encheres","classement"].includes(kind) && ui.view==="accueil")) renderView();
       if(kind==="moi") renderNav();
       if(kind==="moi" || kind==="journal") renderBell() },
-    e=>{ if(e.code==="serveur_absent"){ if(kind==="moi") cour.ok = false; else cour.absent[kind] = true } else { if(kind==="moi") netMark("cour", false); if(ui.view==="cour") courFail(e) } if(ui.view==="cour") renderView() })
-    .finally(()=>{ cour.loading[kind] = false });
+    e=>{ if(kind==="classement") cour.clWait = false; if(e.code==="serveur_absent"){ if(kind==="moi") cour.ok = false; else cour.absent[kind] = true } else { if(kind==="moi") netMark("cour", false); if(ui.view==="cour") courFail(e) } if(ui.view==="cour") renderView() })
+    .finally(()=>{ cour.loading[kind] = false;
+      // on a changé de page du classement pendant un chargement : on charge la bonne page
+      if(kind==="classement" && cour.clAgain){ cour.clAgain = false; courLoad("classement", true) } });
 }
 const courRefresh = (...kinds) => kinds.forEach(k=>courLoad(k, true));
+// le classement, page p (0 = la page où je suis)
+function clGo(p){ ui.clPage = p; cour.clWait = true; if(cour.loading.classement) cour.clAgain = true; else courLoad("classement", true); renderView() }
 // « moi » rechargé : une nouvelle demande de copain, ou un joueur qui a accepté la nôtre → un petit message (et la cloche)
 function courMoiNews(prev, d){
   if(!prev || !d) return;
@@ -13604,7 +13612,14 @@ function courClassement(){
   const chip = (k,l) => `<button class="chip" data-action="cl-portee" data-p="${k}" aria-pressed="${P===k}">${l}</button>`;
   const face = (x, px) => x.active ? mImg(x.active,160,Math.round(px*(.55+.45*scaleOf(x.active.type))),"") : avatarIni(x.pseudo, Math.round(px*.8));
   const voir = x => !x.moi ? ` data-action="ami-voir" data-id="${x.id}" role="button" tabindex="0" title="Voir sa collection"` : "";
-  const top = C.liste.slice(0,3), podium = [top[1], top[0], top[2]].filter(Boolean);
+  // depuis le 10 octobre 2026 : le podium à part, et la liste par pages de 10 (on arrive sur la page où on est)
+  const top = C.podium || C.liste.slice(0,3), podium = [top[1], top[0], top[2]].filter(Boolean);
+  const liste = C.liste.filter(x=>(x.pos ?? x.rang) > 3), pg = C.page || 1, pgs = C.pages || 1;
+  const devant = C.devant || (M.rang>1 && C.liste[M.rang-2]);
+  const enVue = C.liste.some(x=>x.moi) || top.some(x=>x.moi);
+  const pbtn = (p, icon, lbl, off) => `<button class="btn btn-ghost btn-sm" data-action="cl-page" data-p="${p}" ${off||cour.clWait?"disabled":""} aria-label="${lbl}">${ic(icon,15,2.6)}</button>`;
+  const pager = pgs>1 ? `<div class="cp-pager cl-pager">${pbtn(1,"chevll","Première page",pg<=1)}${pbtn(pg-1,"chevl","Page précédente",pg<=1)}
+      <span>Page <b>${pg}</b> / ${pgs}</span>${pbtn(pg+1,"chev","Page suivante",pg>=pgs)}${pbtn(pgs,"chevrr","Dernière page",pg>=pgs)}</div>` : "";
   const row = x => `<div class="cl-row${x.moi?" me":""}"${voir(x)}><span class="cl-rank">${x.rang}</span><span class="cl-face">${face(x,40)}</span>
       <span class="who">${esc(x.pseudo)}${x.moi?` <em>toi</em>`:""}<small>${x.titre ? `${ic("trophy",11,2.4)} ${esc(x.titre)} · ` : ""}${fmt(x.cases)} motif${x.cases>1?"s":""}</small></span>
       <span class="cl-pts">${fmt(x.total)}<small>pts</small></span></div>`;
@@ -13612,14 +13627,15 @@ function courClassement(){
     <section class="panel cl-me">
       <div class="cl-me-top"><div class="cl-medal r${Math.min(M.rang,4)}"><b>${rangTxt(M.rang)}</b><small>sur ${C.nb}</small></div>
         <div class="cl-score"><small>Ton score</small><b>${fmt(M.total)}<span> pts</span></b>
-          ${M.rang>1 && C.liste[M.rang-2] ? `<p>Plus que <b>${fmt(C.liste[M.rang-2].total - M.total + 1)} pts</b> pour passer devant ${esc(C.liste[M.rang-2].pseudo)} !</p>` : M.rang===1 && C.nb>1 ? `<p>Tu es en tête ! Garde ta place.</p>` : ""}</div>
+          ${M.rang>1 && devant ? `<p>Plus que <b>${fmt(devant.total - M.total + 1)} pts</b> pour passer devant ${esc(devant.pseudo)} !</p>` : M.rang===1 && C.nb>1 ? `<p>Tu es en tête ! Garde ta place.</p>` : ""}</div>
         <div class="chips">${chip("tous","Tout le monde")}${chip("copains","Mes copains")}</div></div>
     </section>
     ${podium.length ? `<section class="panel cl-podium-wrap"><div class="cl-podium">${podium.map(x=>`<div class="cl-pod p${x.rang<=3?x.rang:3}${x.moi?" me":""}"${voir(x)}>
         <span class="cl-face">${face(x, x.rang===1?84:66)}</span><b>${esc(x.pseudo)}</b><span class="cl-pts">${fmt(x.total)}<small>pts</small></span>
         <span class="cl-step"><i>${x.rang}</i></span></div>`).join("")}</div>
-      ${C.liste.length>3 ? `<div class="cl-list">${C.liste.slice(3).map(row).join("")}</div>` : ""}
-      ${C.moi && !C.liste.some(x=>x.moi) ? `<div class="cl-list"><div class="cl-gap">…</div>${row(Object.assign({pseudo:S.name, moi:true, active:specById(S.active)}, M))}</div>` : ""}
+      ${liste.length ? `<div class="cl-list">${liste.map(row).join("")}</div>` : ""}
+      ${C.moi && !enVue ? `<div class="cl-list"><div class="cl-gap">…</div><div class="cl-back" data-action="cl-page" data-p="0" role="button" tabindex="0" title="Aller à ma place">${row(Object.assign({pseudo:S.name, moi:true, active:specById(S.active)}, M))}</div></div>` : ""}
+      ${pager}
     </section>` : ""}
     <div class="row-2">
       <section class="panel"><div class="panel-head"><h3>${ic("flag",18)} Pour grimper</h3></div>
@@ -14118,7 +14134,7 @@ document.addEventListener("click", e=>{
     // ----- la cour de récré -----
     case "cour-tab": ui.courTab = t.dataset.tab; cour.compose = null; cour.sell = null;
       if(t.dataset.tab==="troc") courRefresh("trocs"); if(t.dataset.tab==="marche") courRefresh("marche","annonces","encheres");
-      if(t.dataset.tab==="classement") courRefresh("classement");
+      if(t.dataset.tab==="classement"){ ui.clPage = 0; courRefresh("classement") }
       if(t.dataset.tab==="journal") courSeeJournal();
       renderView(); break;
     case "cour-see": openModal(null, cour.specs[+t.dataset.k]); break;
@@ -14221,7 +14237,8 @@ document.addEventListener("click", e=>{
     }
     case "news-see": closeModal(); ui.courTab = "journal"; cour.compose = null; cour.sell = null; courSeeJournal(); if(ui.view!=="cour") go("cour"); else renderView(); break;
     case "jr-filt": ui.jf = t.dataset.f; renderView(); break;
-    case "cl-portee": ui.clPortee = t.dataset.p; cour.classement = null; courRefresh("classement"); renderView(); break;
+    case "cl-portee": ui.clPortee = t.dataset.p; ui.clPage = 0; cour.classement = null; courRefresh("classement"); renderView(); break;
+    case "cl-page": clGo(+t.dataset.p); break;
     case "tab": if(t.dataset.tab==="defis"){ closeModal(); go("succes"); break }
       if(ui.view==="collection" && ui.tab!==t.dataset.tab) Sound.page();
       ui.tab=t.dataset.tab; closeModal(); if(ui.view!=="collection") go("collection"); else renderView(); break;

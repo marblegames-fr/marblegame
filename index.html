@@ -6738,7 +6738,7 @@ function renderBeta(){
   requestAnimationFrame(()=>document.documentElement.style.setProperty("--rib", BETA.open ? el.offsetHeight+"px" : "0px"));
   if(!BETA.open) return;
   const done = betaOwned().length===TK.length;
-  el.innerHTML = `<span class="br-tag">Bêta</span><span class="br-txt"><span class="br-long">Bientôt le lancement : les comptes seront remis à zéro et </span><span class="br-short">Au lancement : </span><b>toutes les billes seront perdues, sauf les billes Bêta !</b></span>
+  el.innerHTML = `<span class="br-tag">Bêta</span><span class="br-txt"><span class="br-long">La bêta se termine le 1er novembre : </span><span class="br-short">Fin de la bêta le 1er nov. : </span><b>récupère tes billes Bêta avant, elles ne seront plus disponibles après !</b></span>
     ${done ? `<button class="br-btn done" data-action="beta-see">${ic("check",14,3)} Mes billes Bêta</button>` : `<button class="br-btn" data-action="beta-claim">${ic("gift",15)} Claim</button>`}`;
 }
 function claimBeta(){

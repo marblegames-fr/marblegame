@@ -1353,7 +1353,9 @@ body.vit-dragging,body.vit-dragging *{cursor:grabbing!important;user-select:none
 .gr-ticket.done .gr-cell:not(.win){opacity:.45;filter:saturate(.5)}
 .gr-cell.win{background:radial-gradient(circle,#fff 0 40%,color-mix(in srgb,var(--wc) 35%,#FFF6DD) 100%);box-shadow:0 0 0 3px var(--wc),0 0 18px color-mix(in srgb,var(--wc) 70%,transparent);animation:gr-win .7s ease-in-out 3}
 @keyframes gr-win{50%{transform:scale(1.07) rotate(-2deg)}}
-.gr-foil{position:absolute;inset:9px;width:calc(100% - 18px);height:calc(100% - 18px);border-radius:12px;cursor:grab;transition:opacity .45s}
+/* (10 octobre 2026) la pellicule couvre toute la grille et se dessine d'après sa propre taille : sur téléphone, elle était décalée des cases */
+.gr-foil{position:absolute;inset:0;width:100%;height:100%;border-radius:12px;cursor:grab;transition:opacity .45s}
+canvas.gr-foil{touch-action:none}
 .gr-foil:active{cursor:grabbing}
 .gr-foil.gone{opacity:0;pointer-events:none}
 .gr-idle{display:grid;place-items:center;align-content:center;gap:8px;background:linear-gradient(135deg,#C9A24A,#F7E3A3 40%,#E2BC5C 60%,#B98A2E);color:#5A3A08;font-weight:900;cursor:default}
@@ -1749,6 +1751,35 @@ body.vit-dragging,body.vit-dragging *{cursor:grabbing!important;user-select:none
 .games-sec{margin-bottom:28px}
 .gs-head{margin-bottom:14px}
 .gs-head h2{font-size:21px;font-weight:900}
+/* (10 octobre 2026) téléphone : la fenêtre « C'est parti ! » en arrivant sur un jeu (au-dessus de la barre du bas, qui reste utilisable) */
+.pgo-scrim{position:fixed;left:0;right:0;top:0;bottom:calc(68px + env(safe-area-inset-bottom,0px));z-index:39;display:grid;place-items:end center;padding:16px;background:rgba(15,12,24,.55);backdrop-filter:blur(3px);animation:pgo-in .2s ease-out}
+.pgo-scrim.out{opacity:0;transition:opacity .2s}
+.pgo{display:grid;justify-items:center;gap:8px;width:min(420px,100%);padding:22px 20px 14px;border-radius:24px;background:var(--panel);border:1px solid var(--line);box-shadow:0 24px 50px -16px rgba(0,0,0,.6);text-align:center;animation:mjup .3s cubic-bezier(.2,.9,.3,1)}
+.pgo-ic{display:grid;place-items:center;width:58px;height:58px;margin-top:-50px;border-radius:50%;background:var(--yellow);color:#2B2233;border:4px solid var(--panel);box-shadow:0 6px 16px -6px rgba(0,0,0,.5)}
+.pgo h2{font-family:var(--display);font-weight:400;font-size:30px;line-height:1}
+.pgo p{color:var(--ink-2);font-weight:700;font-size:14.5px;max-width:34ch}
+.pgo .btn-xl{width:100%;justify-content:center;margin-top:6px}
+@keyframes pgo-in{from{opacity:0}}
+@media (prefers-reduced-motion:reduce){ .pgo-scrim,.pgo{animation:none} }
+/* (10 octobre 2026) les jeux déjà joués aujourd'hui : une petite ligne chacun, sous les grandes cartes */
+.gs-sub{margin:20px 0 10px;font-size:13px;font-weight:900;letter-spacing:.06em;text-transform:uppercase;color:var(--muted)}
+.games-sec > .gs-sub:nth-child(2){margin-top:0}
+.gs-all{display:flex;align-items:center;gap:8px;padding:12px 16px;border-radius:14px;background:var(--green-soft);border:1px solid var(--green-line);color:var(--green);font-weight:800}
+.gt-done{display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:10px}
+.gt-row{display:grid;grid-template-columns:96px minmax(0,1fr) auto;align-items:center;gap:12px;padding:8px 14px 8px 8px;border-radius:16px;background:var(--panel);border:1px solid var(--line);color:var(--ink);text-align:left;transition:transform .15s,border-color .15s}
+.gt-row:hover{transform:translateY(-2px);border-color:var(--line-2)}
+.gtr-art{display:block;width:96px;height:60px;border-radius:11px;overflow:hidden;background:#B8895A}
+.gtr-art > svg{display:block;width:100%;height:100%;filter:saturate(.6) brightness(.85)}
+.gtr-txt{display:flex;flex-direction:column;gap:3px;min-width:0}
+.gtr-txt b{font-family:var(--display);font-weight:400;font-size:19px;line-height:1.05}
+.gtr-txt small{display:inline-flex;align-items:center;gap:5px;font-size:12px;font-weight:800;color:var(--muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.gtr-txt .gt-pips i{width:7px;height:7px}
+.gtr-go{display:grid;place-items:center;min-width:44px;height:34px;padding:0 12px;border-radius:999px;background:var(--panel-2);border:1px solid var(--line);font-size:13px;font-weight:900;color:var(--ink-2);white-space:nowrap}
+.gt-row.maxed{border-color:#E9B23A;box-shadow:0 0 0 1px #FFC93F inset,0 0 18px -8px rgba(255,201,63,.7);background:linear-gradient(100deg,color-mix(in srgb,#FFC93F 12%,var(--panel)),var(--panel) 60%)}
+.gt-row.maxed .gtr-art > svg{filter:none}
+.gt-row.maxed small{color:#D99A0E}
+.gt-row.maxed .gtr-go{padding:0;width:34px;min-width:34px;background:linear-gradient(180deg,#FFD866,#F2AE12);border:0;color:#3A2600}
+@media (max-width:560px){ .gt-done{grid-template-columns:minmax(0,1fr)} .gt-row{grid-template-columns:76px minmax(0,1fr) auto;gap:10px} .gtr-art{width:76px;height:52px} }
 .gs-head p{color:var(--ink-2);font-weight:600;max-width:78ch;margin-top:2px}
 .gt-state{display:inline-flex;align-items:center;gap:6px;align-self:flex-start;font-size:12px;font-weight:800;padding:4px 10px;border-radius:999px;background:var(--panel-2);color:var(--muted);border:1px solid var(--line);margin-top:6px}
 .gt-state.ok{color:var(--green);background:var(--green-soft);border-color:var(--green-line)}
@@ -6559,7 +6590,7 @@ document.addEventListener("keydown", e=>{ if(e.key==="Escape") toggleProfPop(fal
 let lastResync = 0;
 function confResync(){ if(!srvOn() || Date.now()-lastResync<30000) return; lastResync = Date.now();
   resyncBilles().then(()=>{ if(ui.view==="confiserie" && document.getElementById("ov").hidden) renderView() }, ()=>{}) }
-function go(view){ toggleProfPop(false); if(view!==ui.view) ui.ballPicked = null; if(view==="confiserie") confResync(); if(view==="atelier"){ view="confiserie"; ui.confTab="fusion" } if(view==="billepedia"){ view="collection"; ui.tab="pedia" } ui.view=view; renderNav(); renderView(); window.scrollTo({top:0}); }
+function go(view){ toggleProfPop(false); if(view!==ui.view) ui.ballPicked = null; if(view==="confiserie") confResync(); if(view==="atelier"){ view="confiserie"; ui.confTab="fusion" } if(view==="billepedia"){ view="collection"; ui.tab="pedia" } ui.view=view; renderNav(); renderView(); window.scrollTo({top:0}); phoneGo(); }
 function renderView(){
   if(ui.view==="pot") ui.view = "marelle";   // (9 octobre 2026) le Pot est remplacé par la Marelle
   if(ui.view!=="grattage") gratFlush();   // un ticket pas fini de gratter : le lot arrive quand même
@@ -9426,12 +9457,19 @@ async function gratGo(pay){
 function gratFlush(){ if(grat.cells && !grat.done){ grat.done = true; grat.give?.() } if(grat.done && ui.view!=="grattage"){ grat.cells = null; grat.done = false } }
 function gratInit(){
   const cv = document.getElementById("gr-foil"); if(!cv || grat.done) return;
-  const grid = document.getElementById("gr-grid"), R = grid.getBoundingClientRect(), dpr = Math.min(2, window.devicePixelRatio||1);
-  cv.width = Math.round(R.width*dpr); cv.height = Math.round(R.height*dpr);
-  const x = cv.getContext("2d", {willReadFrequently:true}); x.scale(dpr, dpr);
-  // la pellicule dorée de chaque case : un reflet, des pièces « B » en relief et « Gratte ! »
-  const cells = [...grid.querySelectorAll(".gr-cell")].map(c=>{ const r = c.getBoundingClientRect(); return {x:r.left-R.left, y:r.top-R.top, w:r.width, h:r.height} });
-  cells.forEach(c=>{ const g = x.createLinearGradient(c.x, c.y, c.x+c.w, c.y+c.h);
+  const grid = document.getElementById("gr-grid"), dpr = Math.min(2, window.devicePixelRatio||1);
+  const x = cv.getContext("2d", {willReadFrequently:true});
+  // (10 octobre 2026) les cases sont mesurées par rapport à la pellicule elle-même (et plus à la grille, bord compris) :
+  // sur téléphone, la pellicule était décalée et on voyait les lots sans gratter. Si la taille change (écran tourné,
+  // police chargée), on redessine la pellicule des cases pas encore grattées.
+  let cells = [], R = null;
+  const paint = () => {
+    R = cv.getBoundingClientRect(); if(!R.width) return;
+    cv.width = Math.round(R.width*dpr); cv.height = Math.round(R.height*dpr); x.setTransform(dpr,0,0,dpr,0,0);
+    cells = [...grid.querySelectorAll(".gr-cell")].map(c=>{ const r = c.getBoundingClientRect(); return {x:r.left-R.left, y:r.top-R.top, w:r.width, h:r.height} });
+    // la pellicule dorée de chaque case : un reflet, des pièces « B » en relief et « Gratte ! » ; un peu plus large que la case
+    x.fillStyle = "#D9B460"; cells.forEach((c,i)=>{ if(!grat.cleared?.[i]){ x.beginPath(); x.roundRect(c.x-2, c.y-2, c.w+4, c.h+4, 13); x.fill() } });
+    cells.forEach((c,i)=>{ if(grat.cleared?.[i]) return; const g = x.createLinearGradient(c.x, c.y, c.x+c.w, c.y+c.h);
     g.addColorStop(0,"#C9A24A"); g.addColorStop(.35,"#F7E3A3"); g.addColorStop(.5,"#E2BC5C"); g.addColorStop(.7,"#FFF1C4"); g.addColorStop(1,"#B98A2E");
     x.fillStyle = g; x.beginPath(); x.roundRect(c.x, c.y, c.w, c.h, 12); x.fill();
     x.save(); x.beginPath(); x.roundRect(c.x, c.y, c.w, c.h, 12); x.clip();
@@ -9439,8 +9477,12 @@ function gratInit(){
     x.restore();
     x.fillStyle = "rgba(255,255,255,.85)"; x.beginPath(); x.arc(c.x+c.w/2, c.y+c.h/2-6, Math.min(c.w,c.h)*.2, 0, 7); x.fill();
     x.fillStyle = "#B98A2E"; x.font = `400 ${Math.round(Math.min(c.w,c.h)*.24)}px "Lilita One", sans-serif`; x.textAlign = "center"; x.textBaseline = "middle"; x.fillText("B", c.x+c.w/2, c.y+c.h/2-5);
-    x.fillStyle = "rgba(95,60,10,.75)"; x.font = "900 11px Nunito, sans-serif"; x.fillText("GRATTE !", c.x+c.w/2, c.y+c.h-14) });
-  grat.cleared = cells.map(()=>false);
+    x.fillStyle = "rgba(95,60,10,.75)"; x.font = `900 ${c.w<90?10:11}px Nunito, sans-serif`; x.fillText("GRATTE !", c.x+c.w/2, c.y+c.h-Math.min(14, c.h*.14)) });
+  };
+  grat.cleared = null; paint(); grat.cleared = cells.map(()=>false);
+  let lastW = R?.width||0, lastH = R?.height||0;
+  if(window.ResizeObserver){ const ro = new ResizeObserver(()=>{ if(!cv.isConnected || grat.done){ ro.disconnect(); return }
+    const r = cv.getBoundingClientRect(); if(Math.abs(r.width-lastW)<1 && Math.abs(r.height-lastH)<1) return; lastW = r.width; lastH = r.height; paint() }); ro.observe(cv) }
   let down = false, last = null, chk = 0;
   const scratch = (px, py) => { x.globalCompositeOperation = "destination-out"; x.lineCap = "round"; x.lineJoin = "round"; x.lineWidth = 32;
     x.beginPath(); x.moveTo(...(last || [px, py])); x.lineTo(px+.1, py); x.stroke(); last = [px, py];
@@ -9989,7 +10031,18 @@ function viewGames(){
     {...day("tic"), d:ARENA.tic.lead, art:artTic(), stat:`${S.stats.tic} victoire${S.stats.tic>1?"s":""}`},
   ];
   const act = activeSpec();
-  [solo, multi, chance].forEach(l=>l.sort((a,b)=>(jdj.has(b.v)-jdj.has(a.v)) || (b.ok-a.ok)));   // ceux qui restent à jouer aujourd'hui d'abord (puis tout est réuni en une seule liste)
+  [solo, multi, chance].forEach(l=>l.sort((a,b)=>(b.ok-a.ok) || (jdj.has(b.v)-jdj.has(a.v))));   // ceux qui restent à jouer aujourd'hui d'abord, les jeux du jour en tête
+  // (10 octobre 2026) un jeu déjà joué aujourd'hui n'a plus de grande carte : il passe en petite ligne sous « Déjà joués aujourd'hui »
+  // (doré quand il est fait à fond, sinon on voit les parties qu'il reste à acheter) ; les fait à fond en dernier
+  const row = c => { const m = maxed(c.v), ch = CHANCE_KEYS.includes(c.v), left = ch ? maxOf(c.v)-bought(c.v) : 0;
+    return `<button class="gt-row${m?" maxed":""}" data-action="nav" data-view="${c.v}" aria-label="${c.t} : ${m?"fait à fond":"déjà joué"} aujourd'hui">
+      <span class="gtr-art">${c.art}</span>
+      <span class="gtr-txt"><b>${c.t}</b><small>${m ? `${ic("star",12,2.6)} Fait à fond aujourd'hui` : ch ? `${ic("check",12,3)} Partie offerte jouée` : c.state}</small>${pips(c.v)}</span>
+      <span class="gtr-go">${m ? ic("check",18,3) : ch ? `Encore ${left}` : "Voir"}</span></button>` };
+  const sec = (title, l) => { const todo = l.filter(c=>c.ok), done = l.filter(c=>!c.ok).sort((a,b)=>maxed(a.v)-maxed(b.v));
+    return `<section class="games-sec"><div class="gs-head"><h2>${title}</h2></div>
+    ${todo.length ? `<div class="games-grid">${todo.map(tile).join("")}</div>` : `<p class="gs-all">${ic("check",16,3)} Tout est joué ici aujourd'hui : bravo !</p>`}
+    ${done.length ? `<h3 class="gs-sub">Déjà joués aujourd'hui</h3><div class="gt-done">${done.map(row).join("")}</div>` : ""}</section>` };
   return `<div class="page-head"><div><h1>Jeux de la cour</h1></div></div>
   <section class="panel games-hero${left?"":" all-done"}">
     <div class="gh-txt"><span class="gh-kick">${ic("star",14)} Les 3 jeux du jour</span>
@@ -10019,10 +10072,8 @@ function viewGames(){
     </button>
     ${lotBanner()}
   </div>
-  <section class="games-sec"><div class="gs-head"><h2>Les jeux de la cour</h2></div>
-    <div class="games-grid">${[...solo, ...multi].map(tile).join("")}</div></section>
-  <section class="games-sec"><div class="gs-head"><h2>Les jeux de chance</h2></div>
-    <div class="games-grid">${chance.map(tile).join("")}</div></section>`;
+  ${sec("Les jeux de la cour", [...solo, ...multi])}
+  ${sec("Les jeux de chance", chance)}`;
 }
 // Avant de jouer (5 octobre 2026) : une fenêtre « Avec quelle bille tu joues ? », une fois par visite d'un mini-jeu.
 // On garde sa bille d'un clic, ou on en touche une autre, et la partie part tout de suite. Fermer la fenêtre garde la bille actuelle.
@@ -10480,6 +10531,40 @@ function dayCard(key, el){
       <div class="dc-next">${ic("clock",16)} Prochaine partie dans <b data-quest-timer>${untilMidnight()}</b></div>
       ${gameEndRow(key, funBtn(key))}</div>`;
   el.hidden = false;
+}
+// (10 octobre 2026) sur téléphone, le bouton pour commencer est souvent sous le terrain, plus bas que l'écran :
+// en arrivant sur un jeu dont la partie du jour (ou la partie offerte) reste à jouer, une fenêtre « C'est parti ! »
+// remonte le jeu en haut de l'écran et appuie sur ce bouton. Jamais pour une partie à acheter.
+const PHONE_GO = {
+  chateau:"Sors les 10 billes du cercle en 3 tirs.", tic:"Touche sa bille avant qu'il touche la tienne.",
+  marelle:"Lance ta bille : la case où elle retombe te donne son lot. Le Ciel, c'est le Mammouth !",
+  roue:"Fais tourner la roue : la part sous la flèche est pour toi.", pachinko:"Lâche ta bille : la case où elle tombe est pour toi.",
+  grattage:"Gratte les 6 cases avec le doigt : 3 dessins pareils, et le lot est à toi.", distributeur:"Tourne la manivelle : une boule tombe avec une bille dedans.",
+};
+function phoneGo(){
+  document.getElementById("pgo")?.remove();
+  const k = ui.view; if(!PHONE_GO[k] || !matchMedia("(max-width:820px)").matches) return;
+  setTimeout(()=>{
+    if(ui.view!==k || !document.getElementById("modal").hidden || document.getElementById("pgo")) return;
+    const b = [...document.querySelectorAll('#view [data-action="game-go"], #view [data-pay="0"]')].find(x=>!x.disabled && x.offsetParent);
+    if(!b) return;
+    const live = gameLive(k) && b.dataset.action==="game-go";
+    const el = document.createElement("div"); el.id = "pgo"; el.className = "pgo-scrim";
+    el.innerHTML = `<div class="pgo" role="dialog" aria-modal="true" aria-label="${JEUX_NOM[k]}">
+      <span class="pgo-ic">${ic(GAME_ICON[k],30)}</span>
+      <span class="dc-kick">${ic(live?"play":"gift",14)} ${live ? "Partie pas finie" : DAY_GAMES[k] && b.dataset.action==="game-go" ? "Ta partie du jour" : "Ta partie offerte"}</span>
+      <h2>${JEUX_NOM[k]}</h2><p>${PHONE_GO[k]}</p>
+      <button class="btn btn-yellow btn-xl" data-pgo="go">${ic("play",18)} ${live ? "Reprendre" : "C'est parti !"}</button>
+      <button class="btn btn-ghost btn-sm" data-pgo="no">Regarder le jeu d'abord</button></div>`;
+    const close = () => { el.classList.add("out"); setTimeout(()=>el.remove(), 200) };
+    el.onclick = e => { const a = e.target.closest("[data-pgo]")?.dataset.pgo; if(!a && e.target!==el) return;
+      close(); if(a!=="go") return;
+      // le jeu en haut de l'écran (juste sous la barre du haut), puis on appuie sur le vrai bouton
+      const st = document.querySelector("#view .game-wrap > :first-child"), top = document.querySelector(".topbar")?.getBoundingClientRect().bottom || 0;
+      if(st) window.scrollTo({top:Math.max(0, st.getBoundingClientRect().top + scrollY - top - 8), behavior:"smooth"});
+      setTimeout(()=>{ if(ui.view===k && b.isConnected) b.click() }, 380) };
+    document.body.appendChild(el); Sound.tap?.(0,.4);
+  }, 300);
 }
 // le panneau « Récompenses » à droite de chaque jeu (comme au Tir)
 const dayRewards = key => DAY_INFO[key] ? `<section class="panel"><div class="panel-head"><h3>Récompenses</h3></div><ul class="rewards-list">

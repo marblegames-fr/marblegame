@@ -588,7 +588,7 @@ end $$;
 --    (les séries à thème ont été retirées du jeu le 8 octobre 2026 : elles ne rapportent plus de points)
 -- =====================================================================
 create or replace function interne.pts_taille() returns int[] language sql immutable as $$ select array[10,15,20,30,60,120] $$;
-create or replace function interne.mult_decor() returns numeric[] language sql immutable as $$ select array[1,1.5,2,3,5,0,8]::numeric[] $$;   -- 6e : événements (ne comptent pas) ; 7e : mythique (10 octobre 2026)
+create or replace function interne.mult_decor() returns numeric[] language sql immutable as $$ select array[1,1.5,2,3,5,0,15]::numeric[] $$;   -- 6e : événements (ne comptent pas) ; 7e : mythique (10 octobre 2026, SCORE.decor dans index.html)
 create or replace function interne.pts_shiny() returns int[] language sql immutable as $$ select array[150,300,600] $$;
 
 drop function if exists interne.series();

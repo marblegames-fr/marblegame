@@ -4090,9 +4090,9 @@ const SHINY_RATE = .0005;
 // (chaque taille rapporte donc autant en moyenne), et toujours bien moins que ce qu'elle coûte à trouver.
 const RECYCLE = {mini:1, bille:2, chinoise:4, calot:8, boulet:20, mammouth:50};   // 6 octobre 2026 : chaque taille vaut environ le double de la précédente (un Classique revendu rend ~54 % de son prix)
 // une shiny (tirée dans un sachet ou une fusion) vaut 10 fois sa taille, plus une prime selon son éclat ; celles du passe, non
-const SHINY_RECYCLE_MULT = 10, SHINY_BONUS = [0, 200, 500, 1500];
+const SHINY_RECYCLE_MULT = 10, SHINY_BONUS = [0, 200, 500, 1500], MYTH_RECYCLE_MULT = 20;   // (10 octobre 2026) une bille au motif mythique rapporte 20 fois plus (même chose dans supabase/serveur.sql, echanger_billes)
 // avec un compte, seules les billes tirées par le serveur rapportent (pas les billes de départ ni celles d'une partie sans compte)
-const recycleValue = s => srvOn() && !s.srv ? 0 : s.shiny && !isSeason(s) ? RECYCLE[s.type]*SHINY_RECYCLE_MULT + SHINY_BONUS[s.shiny] : RECYCLE[s.type];
+const recycleValue = s => srvOn() && !s.srv ? 0 : (s.shiny && !isSeason(s) ? RECYCLE[s.type]*SHINY_RECYCLE_MULT + SHINY_BONUS[s.shiny] : RECYCLE[s.type]) * (isMyth(s) ? MYTH_RECYCLE_MULT : 1);
 
 // Quêtes du jour : (8 octobre 2026) les 4 mêmes chaque jour, dans cet ordre (avant : 4 tirées au hasard parmi 19, trop faciles).
 // Les récompenses sont aussi dans supabase/serveur.sql (public.gagner, source 'quete') : à garder pareilles.
@@ -8262,7 +8262,7 @@ function confEchange(dups, dupVal){
   <section class="panel cf-tarifs">
     <div class="panel-head"><h2>Les tarifs de la maison</h2><span class="sample-tag">Par bille</span></div>
     <div class="tarif-grid">${TK.map((t,i)=>`<div class="tarif" style="${tstyle(t)}">${mImg(SHOWCASE[i],120,Math.round(26*scaleOf(t)+18),"")}<b>${TYPES[t].label}</b><span class="price">${COIN}${fmt(RECYCLE[t])}</span></div>`).join("")}
-      <div class="tarif is-shiny"><span class="shiny-pill">${SPARK}Shiny</span><b>×${SHINY_RECYCLE_MULT} + une prime</b><span class="price" style="font-size:12px">${SHINIES.slice(1).map((x,i)=>`${x.name} +${fmt(SHINY_BONUS[i+1])}`).join("<br>")}</span></div></div>
+      <div class="tarif is-shiny"><span class="shiny-pill">${SPARK}Shiny</span><b>×${SHINY_RECYCLE_MULT} + une prime</b><span class="price" style="font-size:12px">${SHINIES.slice(1).map((x,i)=>`${x.name} +${fmt(SHINY_BONUS[i+1])}`).join("<br>")}</span></div><div class="tarif"><span class="dec-pill" style="--dc:${DECOR_RAR[5].c}">${DECOR_RAR[5].name}</span><b>Motif mythique</b><span class="price">×${MYTH_RECYCLE_MULT}</span></div></div>
   </section>`;
 }
 
@@ -13902,7 +13902,7 @@ function buyAnnonce(id){
 
 // ---------- le classement : des points pour la collection (calculés par le serveur, supabase/cour.sql) ----------
 // mêmes valeurs que dans supabase/cour.sql (pts_taille, mult_decor, pts_shiny, grandes collections)
-const SCORE = {taille:[10,15,20,30,60,120], decor:[1,1.5,2,3,5,8], shiny:[150,300,600], serieDecor:200, serie:20};
+const SCORE = {taille:[10,15,20,30,60,120], decor:[1,1.5,2,3,5,15], shiny:[150,300,600], serieDecor:200, serie:20};
 const rangTxt = r => r===1 ? "1er" : `${r}e`;
 // les grandes collections presque finies : de quoi viser le prochain palier (d'après les billes de la boîte qui comptent)
 function scoreGoals(){

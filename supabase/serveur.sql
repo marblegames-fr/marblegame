@@ -403,7 +403,8 @@ begin
     if b.origine = 'serveur' then
       v := case when b.shiny > 0 and interne.coloris_normal(b.coloris)
         then (interne.revente())[interne.rang(b.taille)+1] * 10 + (interne.prime_shiny())[b.shiny]
-        else (interne.revente())[interne.rang(b.taille)+1] end;
+        else (interne.revente())[interne.rang(b.taille)+1] end
+        * case when (interne.decor_rarete())[b.decor+1] = 6 then 20 else 1 end;   -- (10 octobre 2026) le motif mythique : ×20 (MYTH_RECYCLE_MULT dans index.html)
       total := total + v; if interne.encore_liee(b.liee, qui) then lie := lie + v; end if;   -- une bille encore liée rend des bonbecs de départ
     end if;
     update billes set detruite_le = now(), detruite_raison = 'recyclee' where id = b.id;

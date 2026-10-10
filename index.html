@@ -15008,6 +15008,8 @@ function accountBoot(){
     history.replaceState(null, "", location.pathname + location.search);
     auth.err = h.get("error_code")==="otp_expired" ? "Ce lien a expiré ou a déjà servi. Connecte-toi, ou demande un nouveau lien." : "Ce lien ne fonctionne pas. Réessaie.";
     auth.tab = "login";
+    // (10 octobre 2026) déjà connecté à un compte : l'écran de connexion ne s'ouvre pas, on le dit quand même
+    const msg = auth.err; setTimeout(()=>{ if(sync.on && auth.err===msg){ toast(msg); auth.err = "" } }, 3500);
   }
   // (10 octobre 2026) le lien « mot de passe oublié » connecte d'abord le joueur (SIGNED_IN ou INITIAL_SESSION, parfois avant
   // PASSWORD_RECOVERY) : on garde l'écran du nouveau mot de passe, la partie ne se lance qu'une fois le mot de passe enregistré

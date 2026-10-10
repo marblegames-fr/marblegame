@@ -8440,9 +8440,9 @@ async function openBag(bagId, gift, auto){
   heldNotes = [];
   questEvent("open_bag", 1, 0);
   results.forEach((r,i)=>{ if(TIDX[r.s.type]>=TIDX.boulet) questEvent("find_boulet", 1, i) });
-  ovState = {bag, results, opened:new Set(), gift, forced:!!pulls.forced, pxp:passXP(bagXP(BAG_XP[bag.id])), auto:!!(auto && gift)};
+  ovState = {bag, results, opened:new Set(), gift, forced:!!pulls.forced, pxp:passXP(bagXP(BAG_XP[bag.id])), auto:!!auto};
   showBagStage();
-  if(ovState.auto) requestAnimationFrame(()=>tear());   // sachet offert enchaîné : il s'ouvre tout seul
+  if(ovState.auto) requestAnimationFrame(()=>tear());   // sachet gratuit ou offert enchaîné : il s'ouvre tout seul
 }
 // Taille la plus grosse d'un tirage : 0 (Mini) à 4 (Mammouth), et 6 pour une shiny
 const pullScore = s => s.shiny || s.secret ? 6 : tierOf(s);
@@ -14272,7 +14272,7 @@ document.addEventListener("click", e=>{
     }
     case "open-free": openDay(false); openBag("gratuit"); break;
     case "bag-pick": ui.bag = t.dataset.bag; renderView(); break;
-    case "open-next-free": FX.stop(); openBag("gratuit"); break;
+    case "open-next-free": FX.stop(); openBag("gratuit", false, true); break;   // « Ouvrir le suivant » : le sachet s'ouvre tout seul
     case "open-gift": openBag(t.dataset.bag, true); break;
     case "pass-claim": {
       const r = grantReward(t.dataset.track, +t.dataset.t); if(!r) break;

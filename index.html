@@ -172,6 +172,7 @@ button.profile-mini:hover,button.profile-mini[aria-expanded="true"]{background:v
 @media (max-width:420px){ #daily-btn{width:34px} }
 @media (max-width:400px){ #daily-btn{display:none} }
 @media (max-width:360px){ #gc-btn{display:none} }
+@media (max-width:440px){ #pass-btn{display:none!important} }
 .coin{width:24px;height:24px;flex:none}
 button.wallet:hover{background:var(--panel-2)}
 
@@ -1848,7 +1849,7 @@ canvas.gr-foil{touch-action:none}
 @media (max-width:560px){ .hp-go,.hp-n em{display:none} .hm-pass{padding:12px 14px;gap:12px} .hp-ic{width:40px;height:40px} .hp-t small{white-space:nowrap;overflow:hidden;text-overflow:ellipsis} .hp-t b{font-size:19px}
   .hp-n{display:grid;place-items:center;min-width:28px;height:28px;padding:0 8px;font-size:14px} }
 /* (10 octobre 2026) le démarrage par étapes */
-body.onb .mj-rail,body.onb #mj-btn,body.onb #gc-btn,body.onb #daily-btn{display:none!important}
+body.onb .mj-rail,body.onb #mj-btn,body.onb #gc-btn,body.onb #pass-btn,body.onb #daily-btn{display:none!important}
 @media (min-width:1340px){ body.onb .layout{grid-template-columns:216px minmax(0,1fr)} }
 .nav-btn.locked{opacity:.42;cursor:not-allowed}
 .nav-btn.locked:hover{background:none}
@@ -2147,6 +2148,15 @@ button.gh-cell:hover{transform:translateY(-2px)}
 #gc-btn.ok{color:var(--green)}
 #gc-btn .tip{position:absolute;top:calc(100% + 6px);left:50%;transform:translateX(-50%);white-space:nowrap;background:var(--ink);color:var(--bg);font-size:12px;font-weight:800;padding:5px 10px;border-radius:8px;opacity:0;pointer-events:none;transition:opacity .15s}
 #gc-btn:hover .tip{opacity:1}
+/* (10 octobre 2026) le raccourci du passe de saison, à gauche du drapeau : un ticket et le palier en cours */
+#pass-btn{width:auto;min-width:34px;display:flex;gap:3px;padding:0 7px;color:var(--ink-2)}
+#pass-btn[hidden]{display:none}
+#pass-btn b{font-size:12.5px;font-weight:900;font-variant-numeric:tabular-nums}
+#pass-btn .dot{display:none;top:5px;right:4px}
+#pass-btn.ready{color:#C98A0A}
+#pass-btn.ready .dot{display:block}
+#pass-btn .tip{position:absolute;top:calc(100% + 6px);left:50%;transform:translateX(-50%);white-space:nowrap;background:var(--ink);color:var(--bg);font-size:12px;font-weight:800;padding:5px 10px;border-radius:8px;opacity:0;pointer-events:none;transition:opacity .15s}
+#pass-btn:hover .tip{opacity:1}
 #daily-btn .dot{display:none}
 #daily-btn.ready{color:#D9468F}
 #daily-btn.ready .dot{display:block}
@@ -3727,6 +3737,7 @@ body.gc-open{overflow:hidden}
   <div class="top-spacer"></div>
   <div class="top-acts">
     <button class="mj-btn" id="mj-btn" data-action="mj-open" aria-label="Ma journée"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3.5" y="8" width="17" height="4" rx="1"/><path d="M5 12v8h14v-8M12 8v12M12 8C10.5 4 7 4 7 6s3 2 5 2c2 0 5 0 5-2s-3.5-2-5 2"/></svg><span class="lbl">Ma journée</span><span class="n" id="mj-n" hidden></span></button>
+    <button class="icon-btn" id="pass-btn" data-action="nav" data-view="passe" aria-label="Le passe de saison" hidden></button>
     <button class="icon-btn" id="gc-btn" data-action="nav" data-view="grandecourse" aria-label="La Grande Course"><span class="dot"></span></button>
     <button class="icon-btn" id="daily-btn" data-action="daily-open" aria-label="Le bonbec du jour"><span class="dot"></span></button>
   </div>
@@ -6496,6 +6507,7 @@ const SOLO_GAMES = [["marelle","La Marelle"],["chateau","Le Château"],["roue","
 function gamesReady(){ return playedToday().bonus ? [] : jeuxDuJour().filter(k=>!jeuFait(k)).map(k=>JEUX_NOM[k]) }
 function renderNav(){
   onbCheck();
+  renderPassBtn();
   const cur = NAV_PARENT[ui.view] || ui.view, bags = freeStock()+giftCount(), games = onbOk("journee") ? gamesReady().length : 0;
   document.body.classList.toggle("onb", onbOn() && !onbOk("journee"));
   const locked = (v, label, icon) => `<button class="nav-btn locked" data-action="onb-locked" aria-disabled="true" title="Bientôt : continue ton objectif pour le débloquer">${ic(icon)}<span>${label}</span>${ic("lock",15,2.4)}</button>`;
@@ -6769,8 +6781,17 @@ function renderGcBtn(){
   b.classList.toggle("ready", !wait && (lots || !reg)); b.classList.toggle("ok", !wait && reg && !lots);
   b.setAttribute("aria-label", wait ? `La Grande Course ${gcWhen(N)}` : lots ? "La Grande Course : tes lots t'attendent, viens les récupérer" : reg ? `La Grande Course ${gcWhen(N)} : tu es inscrit` : `La Grande Course ${gcWhen(N)} : pas encore inscrit`);
 }
+// le raccourci du passe : le palier en cours, en doré avec un point quand des récompenses attendent
+function renderPassBtn(){
+  const b = document.getElementById("pass-btn"); if(!b) return;
+  b.hidden = !viewOk("passe"); if(b.hidden) return;
+  const tier = passTier(), pc = passClaimable();
+  b.innerHTML = `${ic("ticket",18)}<b>${tier}</b><span class="dot"></span><span class="tip">${pc ? `${pc} récompense${pc>1?"s":""} du passe à prendre` : `Passe de saison : palier ${tier} / ${PASS_TIERS}`}</span>`;
+  b.classList.toggle("ready", pc>0);
+  b.setAttribute("aria-label", `Passe de saison : palier ${tier} sur ${PASS_TIERS}${pc ? `, ${pc} récompense${pc>1?"s":""} à prendre` : ""}`);
+}
 function renderTop(){
-  renderBeta(); renderGcBtn(); renderBell();
+  renderBeta(); renderGcBtn(); renderPassBtn(); renderBell();
   // pendant la chute d'une bille du Plinko, le solde reste figé (sinon un rafraîchissement du serveur dévoile le gain avant l'arrivée)
   document.getElementById("jetons").textContent = fmt(walletFreeze ?? S.jetons);
   document.getElementById("jetons").title = S.depart ? `Dont ${fmt(Math.min(S.depart, S.jetons))} ${CUR.many} de départ : pour les sachets et les jeux, pas pour les trocs ni le marché` : "";

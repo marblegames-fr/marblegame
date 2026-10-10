@@ -1816,6 +1816,18 @@ canvas.gr-foil{touch-action:none}
 .games-sec{margin-bottom:28px}
 .gs-head{margin-bottom:14px}
 .gs-head h2{font-size:21px;font-weight:900}
+.hm-pass{display:flex;align-items:center;gap:14px;width:100%;padding:14px 18px;margin:0 0 16px;text-align:left;color:var(--ink);
+  background:linear-gradient(110deg,color-mix(in srgb,#8A4AD6 18%,var(--panel)),var(--panel) 70%);border-color:color-mix(in srgb,#8A4AD6 40%,var(--line))}
+.hm-pass:hover{border-color:#8A4AD6}
+.hp-ic{display:grid;place-items:center;width:46px;height:46px;flex:none;border-radius:14px;background:#8A4AD6;color:#fff}
+.hp-t{flex:1;min-width:0}
+.hp-n i,.hp-n em{font-style:normal}
+.hp-t small{display:block;font-size:11.5px;font-weight:900;letter-spacing:.06em;text-transform:uppercase;color:var(--muted)}
+.hp-t b{display:block;font-family:var(--display);font-weight:400;font-size:21px;line-height:1.1}
+.hp-n{font-size:13px;font-weight:900;padding:6px 12px;border-radius:99px;background:var(--yellow);color:#2B2233;white-space:nowrap}
+.hp-go{font-size:13px;font-weight:800;color:var(--ink-2);white-space:nowrap}
+@media (max-width:560px){ .hp-go,.hp-n em{display:none} .hm-pass{padding:12px 14px;gap:12px} .hp-ic{width:40px;height:40px} .hp-t small{white-space:nowrap;overflow:hidden;text-overflow:ellipsis} .hp-t b{font-size:19px}
+  .hp-n{display:grid;place-items:center;min-width:28px;height:28px;padding:0 8px;font-size:14px} }
 /* (10 octobre 2026) le démarrage par étapes */
 body.onb .mj-rail,body.onb #mj-btn,body.onb #gc-btn,body.onb #daily-btn{display:none!important}
 @media (min-width:1340px){ body.onb .layout{grid-template-columns:216px minmax(0,1fr)} }
@@ -6457,9 +6469,10 @@ const giftCount = () => Object.values(S.bagInv).reduce((a,b)=>a+b,0);
 /* =====================================================================
    NAVIGATION & HAUT DE PAGE
    ===================================================================== */
-const NAV = [["accueil","Accueil","home"],["sacs","Ouvrir des sachets","bag"],["collection","Boîte à billes","layers"],["jeux","Jeux de la cour","pad"],["confiserie","La Confiserie","candy"],["cour","La cour de récré","cour"]];
+// (10 octobre 2026) 5 menus : la Confiserie est un onglet de la Boîte à billes, le passe de saison une carte de l'accueil
+const NAV = [["accueil","Accueil","home"],["sacs","Ouvrir des sachets","bag"],["collection","Boîte à billes","layers"],["jeux","Mini-jeux","pad"],["cour","La cour","cour"]];
 // les pages qui ne sont pas dans le menu allument leur « parent »
-const NAV_PARENT = {billepedia:"collection", tir:"jeux", marelle:"jeux", pot:"jeux", chateau:"jeux", casse:"jeux", roue:"jeux", grattage:"jeux", distributeur:"jeux", loterie:"jeux", tic:"jeux", pachinko:"jeux", course:"jeux", grandecourse:"jeux", atelier:"confiserie"};
+const NAV_PARENT = {confiserie:"collection", passe:"accueil", billepedia:"collection", tir:"jeux", marelle:"jeux", pot:"jeux", chateau:"jeux", casse:"jeux", roue:"jeux", grattage:"jeux", distributeur:"jeux", loterie:"jeux", tic:"jeux", pachinko:"jeux", course:"jeux", grandecourse:"jeux", atelier:"confiserie"};
 const SOLO_GAMES = [["marelle","La Marelle"],["chateau","Le Château"],["roue","La Roue"],["pachinko","Le Plinko"],["tic","La Tic"]];   // la Roue remplace le Casse-briques (6 octobre 2026)
 function gamesReady(){ return playedToday().bonus ? [] : jeuxDuJour().filter(k=>!jeuFait(k)).map(k=>JEUX_NOM[k]) }
 function renderNav(){
@@ -6472,15 +6485,13 @@ function renderNav(){
       n[0]==="sacs"&&bags?`<span class="cnt n-bags" aria-label="${bags} sachet${bags>1?"s":""} à ouvrir">${bags}</span>`:""}${
       n[0]==="jeux"&&games?'<span class="ready" aria-label="Récompense du jour à gagner"></span>':""}${
       n[0]==="cour"&&courCount()?`<span class="cnt" aria-label="${courCount()} nouveauté${courCount()>1?"s":""} dans la cour">${courCount()}</span>`:""}</button>`
-  ).join("") + (()=>{ const pc = passClaimable();
-    if(!onbOk("passe")) return locked("passe", "Passe de saison", "ticket");
-    return `<button class="nav-btn" data-action="nav" data-view="passe" ${cur==="passe"?'aria-current="page"':""}>${ic("ticket")}<span>Passe de saison</span>${pc?`<span class="cnt gold" aria-label="${pc} récompense${pc>1?"s":""} à prendre">${pc}</span>`:""}</button>` })()
+  ).join("")
     + (sync.on ? `<button class="side-bug" data-action="bug-report">${ic("bug",18)}<span><b>Un souci ?</b><small>Signaler un bug</small></span></button>` : "");
   const tab = (v,l,i,dot) => `<button class="tb" data-action="nav" data-view="${v}" ${cur===v?'aria-current="page"':""}>${ic(i,24)}${l}${dot?'<span class="dot"></span>':""}</button>`;
   // 7 onglets : le sachet au milieu
   // téléphone : seulement les onglets débloqués (le sachet reste au milieu)
-  const ok = v => onbOk(v), L = [ok("accueil")&&tab("accueil","Accueil","home"), ok("collection")&&tab("collection","Boîte","layers"), ok("jeux")&&tab("jeux","Jeux","pad",games)].filter(Boolean),
-    R = [ok("confiserie")&&tab("confiserie","Confiserie","candy"), ok("cour")&&tab("cour","Cour","cour",courCount()), ok("passe")&&tab("passe","Passe","ticket",passClaimable())].filter(Boolean);
+  const ok = v => onbOk(v), L = [ok("accueil")&&tab("accueil","Accueil","home",onbOk("passe")&&passClaimable()), ok("collection")&&tab("collection","Boîte","layers")].filter(Boolean),
+    R = [ok("jeux")&&tab("jeux","Mini-jeux","pad",games), ok("cour")&&tab("cour","La cour","cour",courCount())].filter(Boolean);
   const tb = document.getElementById("tabbar");
   tb.innerHTML = L.join("") + `<button class="tab-bag" data-action="nav" data-view="sacs" ${cur==="sacs"?'aria-current="page"':""}><span class="bb">${bagSVG(FREE_BAG)}${bags?`<span class="n">${bags}</span>`:""}</span>Sachets</button>` + R.join("");
   tb.style.gridTemplateColumns = `repeat(${L.length+R.length+1},minmax(0,1fr))`;
@@ -6546,7 +6557,7 @@ function dayHTML(inSheet, wide){
   ${n ? `<button class="btn btn-yellow mj-all" data-action="claim-all">${ic("gift",18)} Tout récupérer (${n})</button>` : `<p class="mj-empty">Tout est récupéré. Reviens demain !</p>`}
   ${wide?'<div class="mj-cols">':""}<div class="mj-group"><div class="mj-gh">Tous les jours</div>${rows1.join("")}</div>
   <div class="mj-group"><div class="mj-gh">Quêtes du jour <small>remises à zéro dans <span data-quest-timer>${untilMidnight()}</span></small></div>${rows2.join("")}</div>
-  <div class="mj-group"><div class="mj-gh">Jeux de la cour</div>${rows3.join("")}</div>
+  <div class="mj-group"><div class="mj-gh">Mini-jeux</div>${rows3.join("")}</div>
   ${rows4.length?`<div class="mj-group"><div class="mj-gh">Récompenses</div>${rows4.join("")}</div>`:""}${wide?"</div>":""}
   ${wide ? "</div>" : `<div class="mj-group"><div class="mj-gh">Passe de saison</div>
     <div class="mj-pass" style="${seasonStyle(se)}"><img src="${marbleURL(finalSpec,120)}" alt="">
@@ -6826,27 +6837,28 @@ const ONB = [
   {menus:["accueil","sacs","collection"], but:"Ouvre 5 sachets", ic:"bag", go:"sacs",
     detail:"Chaque sachet te donne des billes pour remplir ta boîte. Le sachet gratuit revient toutes les 10 minutes.",
     prog:()=>[Math.min(5, S.bags||0), 5]},
-  {menus:["jeux"], but:"Joue à un jeu de la cour", ic:"pad", go:"jeux",
+  {menus:["jeux"], but:"Joue à un mini-jeu", ic:"pad", go:"jeux",
     detail:"Les jeux te rapportent des bonbecs. Avec les bonbecs, tu ouvres d'autres sachets.",
     prog:()=>[JEUX_TOUS.some(jeuFait) || S.onb.jeu ? 1 : 0, 1],
-    nouv:"Joue avec tes billes et gagne des bonbecs. Avec les bonbecs, tu ouvres d'autres sachets !", titre:"Les jeux de la cour"},
+    nouv:"Joue avec tes billes et gagne des bonbecs. Avec les bonbecs, tu ouvres d'autres sachets !", titre:"Les mini-jeux"},
   {menus:["confiserie"], but:"Va voir la Confiserie", ic:"candy", go:"confiserie",
-    detail:"Tes billes en double s'y échangent contre des bonbecs, ou se fusionnent pour obtenir une bille plus grosse.",
+    detail:"Dans ta boîte à billes, l'onglet Confiserie : tes doubles s'y échangent contre des bonbecs, ou se fusionnent pour obtenir une bille plus grosse.",
     prog:()=>[S.onb.conf ? 1 : 0, 1],
-    nouv:"Tes billes en double ne servent pas à rien : échange-les contre des bonbecs, ou fusionne-les pour une bille plus grosse.", titre:"La Confiserie"},
-  {menus:["cour"], but:"Découvre la cour de récré", ic:"cour", go:"cour",
+    nouv:"Un nouvel onglet dans ta boîte à billes : échange tes doubles contre des bonbecs, ou fusionne-les pour une bille plus grosse.", titre:"La Confiserie"},
+  {menus:["cour"], but:"Découvre la cour", ic:"cour", go:"cour",
     detail:"Retrouve tes copains, troque tes billes avec eux, vends-en au marché et grimpe au classement.",
     prog:()=>[S.onb.cour ? 1 : 0, 1],
-    nouv:"Ajoute tes copains avec leur pseudo, troque tes billes, vends-en au marché et grimpe au classement.", titre:"La cour de récré"},
+    nouv:"Ajoute tes copains avec leur pseudo, troque tes billes, vends-en au marché et grimpe au classement.", titre:"La cour"},
   {menus:[], but:"Reviens demain", ic:"clock", go:null,
     detail:"Demain, de nouvelles choses t'attendent : le bonbec du jour, des quêtes, les jeux du jour et le passe de saison.",
     prog:()=>[S.onb.day && S.onb.day!==dayKey() ? 1 : 0, 1]},
   {menus:["passe","journee"], but:null, ic:"ticket", go:"accueil",
-    nouv:"Chaque jour : un bonbec offert, des quêtes, 3 jeux du jour, la Grande Course et la loterie. Et le passe de saison te récompense tout le mois.", titre:"Ta journée et le passe de saison"},
+    nouv:"Chaque jour : un bonbec offert, des quêtes, 3 jeux du jour, la Grande Course et la loterie. Et le passe de saison, sur l'accueil, te récompense tout le mois.", titre:"Ta journée et le passe de saison"},
 ];
 const onbOn = () => !!S.onb && !S.onb.done;
 const onbOk = k => !onbOn() || ONB.slice(0, S.onb.step+1).some(e=>e.menus.includes(k));
-const viewOk = v => onbOk(NAV_PARENT[v] || v);
+// la Confiserie et le passe ont leur propre étape, même s'ils sont rangés sous la Boîte et l'Accueil
+const viewOk = v => onbOk(NAV_PARENT[v] || v) && ({confiserie:onbOk("confiserie"), atelier:onbOk("confiserie"), passe:onbOk("passe")}[v] ?? true);
 // l'objectif est-il atteint ? on passe à l'étape suivante, et sa fenêtre « Nouveau ! » attend que l'écran soit libre
 function onbCheck(){
   if(!onbOn()) return;
@@ -7060,10 +7072,18 @@ setInterval(()=>{ if(ui.view!=="accueil" || Date.now() < hc.pause || hc.hover ||
 const SHOWCASE = TK.map(t=>exSpec(t));   // une bille d'exemple par taille (tarifs, fusion, chances…)
 const LOGO_SPEC = {seed:hash("vitrine"+TK[1]), type:TK[1], family:0, pal:0, shiny:0};   // la bille du logo et de l'onglet
 
+// (10 octobre 2026) le passe de saison n'a plus de menu : une carte sur l'accueil y mène
+function homePass(){
+  const se = seasonNow(), tier = passTier(), pc = passClaimable(), P = ensurePass();
+  return `<button class="panel hm-pass" data-action="nav" data-view="passe"><span class="hp-ic">${ic("ticket",24,2.2)}</span>
+    <span class="hp-t"><small>Passe de saison · ${esc(se.def.name)}</small><b>Palier ${tier} / ${PASS_TIERS}</b></span>
+    ${pc ? `<span class="hp-n"><i>${pc}</i><em> récompense${pc>1?"s":""} à prendre</em></span>` : `<span class="hp-go">Voir le passe</span>`}${ic("chev",18)}</button>`;
+}
 function viewHome(){
   if(onbOn() && !onbOk("journee")) return viewHomeOnb();
   return `<div class="hm">
   ${homeHero()}
+  ${homePass()}
   <section class="hm-day" id="hm-day">${dayHTML(false, true)}</section>
   ${wishPanel()}
 </div>`;
@@ -7419,6 +7439,7 @@ function viewCollection(){
       ${CAHIER.map(([k,c,icon,lbl])=>{
         const n = {album:`${slots.size} / ${TOTAL_SLOTS}`, billes:S.specs.length}[k];
         return `<button class="ctab" role="tab" style="--c:${c}" data-action="tab" data-tab="${k}" aria-selected="${ui.tab===k}">${ic(icon,16,2.4)}<b>${lbl}</b>${n!=null?`<small>${n}</small>`:""}</button>` }).join("")}
+      ${onbOk("confiserie") ? `<button class="ctab" role="tab" style="--c:#E85D9A" data-action="nav" data-view="confiserie" aria-selected="false">${ic("candy",16,2.4)}<b>Confiserie</b>${recyclableDups().length?`<small>${recyclableDups().length} doubles</small>`:""}</button>` : ""}
     </div>
     <div class="cahier-page${turn?" turn":""}" data-paper="${ui.tab}">${DOODLES}
     ${(()=>{ const T = {album:["Mon album", `${slots.size} / ${TOTAL_SLOTS} motifs trouvés`], billes:["Mes billes", `${S.specs.length} bille${S.specs.length>1?"s":""} · ${fmt(found.size)} / ${fmt(ALBUM_TOTAL)} modèles`],
@@ -7858,7 +7879,7 @@ function viewConfiserie(){
   const evN = (()=>{ const g = new Map(); evPool().forEach(s=>{ const k = `${s.type}|${s.pal}`; g.set(k,(g.get(k)||0)+1) }); return [...g].filter(([k,n])=>TIDX[k.split("|")[0]]<TK.length-1 && n>=FUSION_EV[TIDX[k.split("|")[0]]]).length })();
   const dups = recyclableDups(), dupVal = dups.reduce((a,s)=>a+recycleValue(s),0);
   const fusions = TK.slice(0,-1).reduce((a,_,t)=>a+Math.floor(craftPool(t).length/craftN(t)),0);
-  return `<div class="page-head"><div><h1>La Confiserie</h1></div></div>
+  return `<div class="page-head"><div><button class="back-link" data-action="nav" data-view="collection">${ic("chevl",14)} Ma boîte à billes</button><h1>La Confiserie</h1></div></div>
   <div class="cf-shop">
     <div class="cf-awning" aria-hidden="true"></div>
     <div class="conf-choices">
@@ -8026,7 +8047,7 @@ function statsPanel(){
     <div class="panel-head"><h2>Mes statistiques</h2></div>
     ${group("Sachets", "bag", [cell("Sachets ouverts", n(S.bags)), cell("Billes tirées", n(ST.pulled ?? S.specs.length)), cell("Shiny trouvées", n(ST.shinyFound ?? S.specs.filter(x=>x.shiny).length)), cell("Boulets trouvés", n(ST.bouletFound ?? S.specs.filter(x=>x.type==="boulet").length)), cell("Mammouths trouvés", n(ST.mammFound ?? S.specs.filter(x=>x.type==="mammouth").length))])}
     ${group("Confiserie", "candy", [cell("Fusions réussies", n(S.crafts)), cell("Billes dans ta boîte", n(S.specs.length))])}
-    ${group("Jeux de la cour", "pad", [cell("Trous réussis au Tir", n(S.holes)), cell("Billes lancées à la Marelle", n(ST.marelle||0)), cell("Sorties du Château", n(ST.castle)),
+    ${group("Mini-jeux", "pad", [cell("Trous réussis au Tir", n(S.holes)), cell("Billes lancées à la Marelle", n(ST.marelle||0)), cell("Sorties du Château", n(ST.castle)),
       cell("Tours de roue", n(ST.roue||0)), cell("Courses gagnées", n(ST.race)), cell("Parties de Tic gagnées", n(ST.tic))])}
     ${group("Habitudes", "clock", [cell("Plus longue série de jours", `${bestStreak()} j`), cell(`Bonus des ${QUESTS_N} quêtes`, n(ST.bonus))])}
     ${srvOn() ? group("La cour de récré", "cour", [cell("Trocs réussis", n(C.trocs)), cell("Billes vendues", n(C.vendues)), cell("Billes achetées", n(C.achetees)), cell("Enchères gagnées", n(C.encheres)), cell("Copains", n(C.copains))]) : ""}
@@ -10567,7 +10588,7 @@ function viewGames(){
   const all = [...solo, ...multi, ...chance];
   const todo = all.filter(c=>!maxed(c.v)).sort((a,b)=>(b.ok-a.ok) || (jdj.has(b.v)-jdj.has(a.v))), done = all.filter(c=>maxed(c.v));
   const bag = BAG_BY[GAMES_BONUS], gcIn = !!gc.etat?.inscrit, L = srvOn() ? lot.data : null; if(srvOn()) lotLoad();
-  return `<div class="page-head"><div><h1>Jeux de la cour</h1></div></div>
+  return `<div class="page-head"><div><h1>Mini-jeux</h1></div></div>
   ${!onbOk("journee") ? "" : `<section class="panel gm-strip${left?"":" all-done"}">
     <div class="gs-day">
       <div class="gs-top"><span class="gh-kick">${ic("star",14)} Les 3 jeux du jour</span><small class="gh-time">${ic("clock",13)} Nouveaux dans <b data-quest-timer>${untilMidnight()}</b></small></div>
@@ -13567,7 +13588,7 @@ function courClassement(){
 
 function viewCour(){
   cour.specs = [];
-  const head = `<div class="page-head"><div><h1>La cour de récré</h1></div></div>`;  if(!sync.on) return head + `<section class="panel cour-lock">${ic("cour",40)}<h2>Il te faut un compte</h2>
+  const head = `<div class="page-head"><div><h1>La cour</h1></div></div>`;  if(!sync.on) return head + `<section class="panel cour-lock">${ic("cour",40)}<h2>Il te faut un compte</h2>
     <p class="cour-lead">Pour échanger avec les autres joueurs, il faut un compte.</p>
     ${window.Cloud?.available ? `<div class="btns"><button class="btn btn-yellow" data-action="acct-signup">Créer un compte</button><button class="btn btn-ghost" data-action="acct-login">Se connecter</button></div>` : ""}</section>`;
   if(!eco.ready || cour.ok===false) return head + `<section class="panel cour-lock">${ic("cour",40)}<h2>La cour ouvre bientôt</h2>
@@ -14358,7 +14379,7 @@ document.addEventListener("click", e=>{
       const results = [[0,0],[1,0],[2,0],[3,0],[4,0],[2,1],[2,2],[2,3]].map(([r,sh])=>({s:makeSpec("bille",{family:fam(r), shiny:sh, src:"test"}), isNew:false, newColor:false}));
       FX.stop(); ovState = {bag:BAG_BY.premium, results, opened:new Set(), gift:false, forced:false, demo:true, demoAct:"sound-demo", pxp:0}; showBagStage(); break }
     case "fuse-demo": fuseDemo(+t.dataset.r, +t.dataset.sh); break;
-    case "onb-go": { const k = onbPopDone(), N = ONB[k]; closeModal(); renderNav(); go(N?.menus.find(m=>m!=="journee") || N?.go || "accueil"); break }
+    case "onb-go": { const k = onbPopDone(), N = ONB[k]; closeModal(); renderNav(); go(N?.menus.find(m=>m!=="journee" && m!=="passe") || "accueil"); break }
     case "onb-later": onbPopDone(); closeModal(); renderNav(); renderView(); break;
     case "onb-locked": { const E = onbOn() && ONB[S.onb.step]; toast(E?.but ? `Bientôt ! Ton objectif d'abord : ${E.but.toLowerCase()}.` : "Bientôt !"); break }
     case "fuse-demo-menu": closeOv(); fuseDemoMenu(); break;

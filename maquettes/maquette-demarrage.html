@@ -40,6 +40,7 @@ button{font:inherit;color:inherit;background:none;border:0;cursor:pointer}
 #app.phone .side{display:none}
 .nav{display:flex;align-items:center;gap:12px;padding:11px 12px;border-radius:12px;font-weight:800;font-size:14.5px;color:var(--ink);text-align:left;position:relative}
 .nav:hover{background:var(--panel-2)}
+.nav.locked{opacity:.4;cursor:not-allowed} .nav.locked:hover{background:none} .nav .lk{margin-left:auto;font-size:12px}
 .nav.on{background:rgba(76,141,246,.15);color:#9CC0FF}
 .nav .ic{width:22px;text-align:center;font-size:17px}
 .nav .badge,.tb .badge{margin-left:auto;min-width:20px;height:20px;padding:0 6px;border-radius:99px;background:var(--red);color:#fff;font-size:11px;font-weight:900;display:grid;place-items:center}
@@ -162,28 +163,28 @@ const MENUS = {
   accueil:    {nom:"Accueil",        ic:"⌂"},
   sacs:       {nom:"Sachets",        ic:"🛍"},
   boite:      {nom:"Boîte à billes", court:"Boîte", ic:"◎"},
-  jeux:       {nom:"Jeux de la cour",court:"Jeux", ic:"🎯"},
-  confiserie: {nom:"La Confiserie",  court:"Confiserie", ic:"🍬"},
-  cour:       {nom:"La cour de récré",court:"Cour", ic:"👥"},
-  passe:      {nom:"Passe de saison",court:"Passe", ic:"🎟"},
+  jeux:       {nom:"Mini-jeux",      ic:"🎯"},
+  cour:       {nom:"La cour",        ic:"👥"},
 };
+// (10 octobre 2026) 5 menus : la Confiserie est un onglet de la Boîte à billes, le passe une carte de l'accueil
+const NAV5 = ["accueil","sacs","boite","jeux","cour"];
 // les étapes : ce qui est ouvert, l'objectif affiché, la condition pour passer à la suivante, la fenêtre qui présente la nouveauté
 const ETAPES = [
   {menus:["accueil","sacs","boite"], but:"Ouvre 5 sachets", detail:"Chaque sachet te donne des billes pour remplir ta boîte. Le sachet gratuit revient toutes les 10 minutes.",
     ic:"🛍", go:"sacs", fait:()=>J.sachets>=5, prog:()=>[J.sachets,5]},
-  {menus:["jeux"], but:"Joue à un jeu de la cour", detail:"Les jeux te rapportent des bonbecs. Avec les bonbecs, tu achètes d'autres sachets.",
+  {menus:["jeux"], but:"Joue à un mini-jeu", detail:"Les jeux te rapportent des bonbecs. Avec les bonbecs, tu achètes d'autres sachets.",
     ic:"🎯", go:"jeux", fait:()=>J.jeux>=1, prog:()=>[J.jeux,1],
-    nouv:{t:"Les jeux de la cour", p:"Joue avec tes billes et gagne des bonbecs. Avec les bonbecs, tu achètes d'autres sachets !", ic:"🎯"}},
-  {menus:["confiserie"], but:"Échange tes doubles", detail:"Tu as des billes en double. À la Confiserie, échange-les contre des bonbecs, ou fusionne-les pour une plus grosse.",
+    nouv:{t:"Les mini-jeux", p:"Joue avec tes billes et gagne des bonbecs. Avec les bonbecs, tu achètes d'autres sachets !", ic:"🎯"}},
+  {menus:["confiserie"], but:"Échange tes doubles", detail:"Dans ta boîte à billes, l'onglet Confiserie : échange tes doubles contre des bonbecs, ou fusionne-les pour une plus grosse.",
     ic:"🍬", go:"confiserie", fait:()=>J.echange, prog:()=>[J.echange?1:0,1],
-    nouv:{t:"La Confiserie", p:"Tes billes en double ne servent pas à rien : échange-les contre des bonbecs, ou fusionne-les pour obtenir une bille plus grosse.", ic:"🍬"}},
+    nouv:{t:"La Confiserie", p:"Un nouvel onglet dans ta boîte à billes. Tes billes en double ne servent pas à rien : échange-les contre des bonbecs, ou fusionne-les pour obtenir une bille plus grosse.", ic:"🍬"}},
   {menus:["cour"], but:"Ajoute un copain", detail:"Dans la cour, tu retrouves tes copains, tu troques tes billes et tu regardes le classement.",
     ic:"👥", go:"cour", fait:()=>J.copain, prog:()=>[J.copain?1:0,1],
-    nouv:{t:"La cour de récré", p:"Retrouve tes copains, troque tes billes avec eux, vends-en au marché et grimpe au classement.", ic:"👥"}},
+    nouv:{t:"La cour", p:"Retrouve tes copains, troque tes billes avec eux, vends-en au marché et grimpe au classement.", ic:"👥"}},
   {menus:[], but:"Reviens demain", detail:"Demain, de nouvelles choses t'attendent : le bonbec du jour, des quêtes et le passe de saison.",
     ic:"🌙", go:null, fait:()=>J.jour>=2, prog:()=>[J.jour-1,1]},
   {menus:["passe"], but:null,
-    nouv:{t:"Ta journée et le passe de saison", p:"Chaque jour : un bonbec offert, des quêtes et 3 jeux du jour. Et le passe de saison te récompense tout le mois.", ic:"🎟"}},
+    nouv:{t:"Ta journée et le passe de saison", p:"Chaque jour : un bonbec offert, des quêtes et 3 jeux du jour. Et le passe de saison, sur l'accueil, te récompense tout le mois.", ic:"🎟"}},
 ];
 let J, ui = {page:"accueil", phone:false, popup:null, rev:null, fresh:new Set()};
 const pick = a => a[Math.floor(Math.random()*a.length)];
@@ -209,20 +210,20 @@ const badges = () => ({sacs: J.gratuits || "", jeux: menusOuverts().includes("je
 
 /* ---------- l'affichage ---------- */
 function render(){
-  const ouverts = menusOuverts(), B = badges();
+  const ouverts = NAV5.filter(k=>menusOuverts().includes(k)), B = badges();
   const navItem = (k, cls) => { const M = MENUS[k], b = B[k];
     return `<button class="${cls}${ui.page===k?" on":""}${ui.fresh.has(k)?" new":""}" data-go="${k}"><span class="ic">${M.ic}</span><span>${cls==="tb"?(M.court||M.nom):M.nom}</span>${b?`<span class="badge">${b}</span>`:""}</button>` };
   APP.className = ui.phone ? "phone" : "";
   APP.innerHTML = `
     <div class="top"><div class="logo"><span class="lt">T</span><span class="lt i">ı<img src="${marbleURL(LOGO_SPEC,64)}" alt=""></span><span class="lt">k</span><span class="lt">a</span><span class="lt">l</span><span class="lt">o</span></div>
       <span class="sp"></span><span class="wallet" id="wallet">🍬 ${J.bonbecs}</span><span class="av">${img(J.billes[0],76)}</span></div>
-    <div class="body"><nav class="side">${ouverts.map(k=>navItem(k,"nav")).join("")}</nav><main>${page()}</main></div>
+    <div class="body"><nav class="side">${NAV5.map(k=>ouverts.includes(k) ? navItem(k,"nav") : `<button class="nav locked" data-act="locked"><span class="ic">${MENUS[k].ic}</span><span>${MENUS[k].nom}</span><span class="lk">🔒</span></button>`).join("")}</nav><main>${page()}</main></div>
     <nav class="tabbar">${ouverts.map(k=>navItem(k,"tb")).join("")}</nav>
     ${ui.popup ? `<div class="scrim"><div class="unlock"><span class="rays"></span><span class="ui">${ui.popup.ic}</span><small>Nouveau !</small><h2>${ui.popup.t}</h2><p>${ui.popup.p}</p>
       <button class="btn" data-act="pop-go">Va voir</button><button class="later" data-act="pop-close">Plus tard</button></div></div>` : ""}`;
   setTimeout(()=>ui.fresh.clear(), 800);
   const E = ETAPES[J.etape];
-  document.getElementById("c-info").textContent = `Étape ${Math.min(J.etape+1, ETAPES.length)} / ${ETAPES.length} · menus ouverts : ${ouverts.map(k=>MENUS[k].court||MENUS[k].nom).join(", ")}`;
+  document.getElementById("c-info").textContent = `Étape ${Math.min(J.etape+1, ETAPES.length)} / ${ETAPES.length} · menus : ${ouverts.map(k=>MENUS[k].court||MENUS[k].nom).join(", ")}${menusOuverts().includes("confiserie")?" · Confiserie (onglet de la Boîte)":""}${menusOuverts().includes("passe")?" · Passe (sur l'accueil)":""}`;
 }
 function goalCard(){
   const E = ETAPES[J.etape];
@@ -240,7 +241,8 @@ function page(){
     <div class="home2">
       <div class="panel bagcard"><span class="bg">${bagSVG(BAG_BY.gratuit)}</span><div><b>Sachet gratuit</b><small>${J.gratuits} en stock · un nouveau toutes les 10 min</small><button class="btn" data-go="sacs" ${J.gratuits?"":"disabled"}>Ouvrir</button></div></div>
       <div class="panel"><span class="k">Tes dernières billes · ${J.billes.length}</span><div class="mini">${J.billes.slice(-10).reverse().map(s=>img(s,76)).join("")}</div></div>
-      ${J.etape>=5 ? `<div class="panel"><span class="k">Ma journée</span><p class="ph">🎁 Le bonbec du jour · 📋 4 quêtes · 🎯 3 jeux du jour</p></div>` : ""}
+      ${J.etape>=5 ? `<button class="panel" data-go="passe" style="text-align:left"><span class="k">Passe de saison</span><b style="font-family:var(--display);font-weight:400;font-size:20px">Palier 1 / 30 ›</b></button>
+      <div class="panel"><span class="k">Ma journée</span><p class="ph">🎁 Le bonbec du jour · 📋 4 quêtes · 🎯 3 jeux du jour</p></div>` : ""}
     </div>`;
   if(P==="sacs") return `<h1>Ouvrir des sachets</h1><p class="lead">Touche le sachet pour l'ouvrir : 3 billes dedans.</p>
     <div class="panel center"><span class="bigbag" data-act="ouvrir">${bagSVG(BAG_BY.gratuit)}</span>
@@ -249,13 +251,14 @@ function page(){
       <button class="btn" data-act="ouvrir" ${J.gratuits?"":"disabled"}>Ouvrir un sachet</button></div>`;
   if(P==="boite") { const cnt = {}; J.billes.forEach(s=>{ const k = s.type+s.family; cnt[k]=(cnt[k]||0)+1 });
     return `<h1>Ta boîte à billes</h1><p class="lead">${J.billes.length} billes. Il en reste des centaines à trouver !</p>
+    <div style="display:flex;gap:8px;margin-bottom:12px;flex-wrap:wrap"><span class="btn ghost" style="height:36px">◎ Mes billes</span>${menusOuverts().includes("confiserie")?`<button class="btn ghost" style="height:36px;border-color:#E85D9A" data-go="confiserie">🍬 Confiserie</button>`:""}</div>
     <div class="panel"><div class="box">${J.billes.map(s=>`<div>${img(s,100)}<small class="${cnt[s.type+s.family]>1?"dbl":""}">${cnt[s.type+s.family]>1?"double":TYPES[s.type].label}</small></div>`).join("")}</div></div>` }
   if(P==="jeux") { const G = [["tir","Le Tir",artTir],["marelle","La Marelle",artMarelle],["roue","La Roue",artRoue]];
-    return `<h1>Jeux de la cour</h1><p class="lead">Chaque jeu se joue une fois par jour gratuitement et te rapporte des bonbecs.</p>
+    return `<h1>Mini-jeux</h1><p class="lead">Chaque jeu se joue une fois par jour gratuitement et te rapporte des bonbecs.</p>
     <div class="games">${G.map(([k,n,f])=>`<div class="game">${f()}<div class="gb"><b>${n}</b>${J.joues.has(k)?`<span class="played">✓ Joué · +15 🍬</span>`:`<button class="btn" data-act="jouer" data-k="${k}">Jouer</button>`}</div></div>`).join("")}</div>` }
-  if(P==="confiserie") return `<h1>La Confiserie</h1><p class="lead">Tes doubles contre des bonbecs. Tu gardes toujours un exemplaire de chaque bille.</p>
+  if(P==="confiserie") return `<button class="ph" data-go="boite" style="margin-bottom:6px">‹ Ma boîte à billes</button><h1>La Confiserie</h1><p class="lead">Tes doubles contre des bonbecs. Tu gardes toujours un exemplaire de chaque bille.</p>
     <div class="panel center">${J.echange ? `<p style="font-family:var(--display);font-size:24px">+30 🍬</p><p class="ph">Doubles échangés !</p>` : `<p class="ph" style="margin-bottom:14px">3 doubles dans ta boîte</p><button class="btn" data-act="echanger">Tout échanger · +30 🍬</button>`}</div>`;
-  if(P==="cour") return `<h1>La cour de récré</h1><p class="lead">Ajoute un copain avec son pseudo : vous pourrez troquer vos billes.</p>
+  if(P==="cour") return `<h1>La cour</h1><p class="lead">Ajoute un copain avec son pseudo : vous pourrez troquer vos billes.</p>
     <div class="panel">${J.copain ? `<p class="played">✓ Demande envoyée à Bim</p>` : `<div style="display:flex;gap:10px;flex-wrap:wrap"><span class="btn ghost" style="flex:1;justify-content:flex-start;color:var(--muted)">Bim</span><button class="btn" data-act="copain">Ajouter</button></div>`}</div>`;
   if(P==="passe") return `<h1>Passe de saison</h1><p class="lead">30 paliers ce mois-ci. Tout ce que tu fais rapporte de l'XP.</p><div class="panel"><p class="ph">Palier 1 / 30 · 🎁 10 bonbecs au palier 2</p></div>`;
   return "";
@@ -274,8 +277,9 @@ APP.addEventListener("click", e=>{
   if(k==="echanger"){ J.echange = true; J.bonbecs += 30; toast("+30 bonbecs !"); avance() }
   if(k==="copain"){ J.copain = true; toast("Demande envoyée !"); avance() }
   if(k==="demain"){ J.jour++; J.gratuits = 5; J.joues = new Set(); toast("Le lendemain…"); ui.page = "accueil"; avance() }
-  if(k==="pop-go"){ const m = ETAPES[J.etape].menus[0] || "accueil"; ui.popup = null; ui.page = m; render() }
+  if(k==="pop-go"){ const m = ETAPES[J.etape].menus.find(x=>x!=="passe") || "accueil"; ui.popup = null; ui.page = m; render() }
   if(k==="pop-close"){ ui.popup = null; render() }
+  if(k==="locked"){ const E = ETAPES[J.etape]; toast(E.but ? `Bientôt ! Ton objectif d'abord : ${E.but.toLowerCase()}.` : "Bientôt !") }
 });
 document.getElementById("c-reset").onclick = reset;
 document.getElementById("c-skip").onclick = ()=>{

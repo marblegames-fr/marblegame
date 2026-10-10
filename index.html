@@ -6297,7 +6297,7 @@ const CHALLENGES = [
   {id:"t-marelle", icon:"marelle", cat:"jeux", title:"Champion de la marelle", desc:"Lance 25 billes à la Marelle.", goal:25, prog:()=>S.stats.marelle||0, rew:{j:50, title:"Champion de la marelle"}},   // remplace « Champion du pot » (9 octobre 2026)
   {id:"t-castle", icon:"castle", cat:"jeux", title:"Démolisseur de châteaux", desc:"Fais sortir 60 billes du cercle au Château.", goal:60, prog:()=>S.stats.castle, rew:{j:50, title:"Démolisseur"}},
   {id:"t-tic", icon:"tic", cat:"jeux", title:"Terreur du préau", desc:"Gagne 10 parties de Tic.", goal:10, prog:()=>S.stats.tic, rew:{j:60, title:"Terreur du préau"}},
-  {id:"t-race", icon:"flag", cat:"jeux", title:"Maillot jaune", desc:"Gagne 5 courses sur la plage.", goal:5, prog:()=>S.stats.race, rew:{j:60, title:"Maillot jaune"}},
+  {id:"t-race", icon:"flag", cat:"jeux", title:"Maillot jaune", desc:"Gagne 5 Grandes Courses.", goal:5, prog:()=>Math.max(S.stats.race||0, S.stats.gcWins||0), rew:{j:60, title:"Maillot jaune"}},   // (10 octobre 2026) la Course sur la plage n'existe plus : ce sont les victoires à la Grande Course
   {id:"t-roi", icon:"trophy", cat:"jeux", title:"Roi de la cour", desc:"Fais 3 étoiles au Château et gagne une partie de Tic.", goal:2, prog:()=>["chateau","tic"].filter(k=>S.stats.best3[k]).length, rew:{j:80, title:"Roi de la cour"}},
   // --- les habitudes
   {id:"streak7", cat:"habitudes", icon:"clock", title:"Fidèle au poste", desc:"Récupère le bonbec du jour 7 jours d'affilée.", goal:7, prog:()=>bestStreak(), rew:{j:50}},
@@ -8098,7 +8098,7 @@ window.addEventListener("click", e=>{ if(vitDrag.block){ e.stopPropagation(); e.
 // on garde le plus grand des deux, car certains compteurs de l'appareil n'existent que depuis le 10 octobre 2026.
 let courStats = null;
 function statsPanel(){
-  if(srvOn() && !courStats){ courStats = {}; Cloud.cour.stats().then(r=>{ courStats = r||{}; if(ui.view==="profil") renderView() }, ()=>{}) }
+  if(srvOn() && !courStats){ courStats = {}; Cloud.cour.stats().then(r=>{ courStats = r||{}; if(courStats.course_victoires > (S.stats.gcWins||0)){ S.stats.gcWins = courStats.course_victoires; save() } if(ui.view==="profil") renderView() }, ()=>{}) }
   const ST = S.stats, C = courStats || {}, G = C.parties || {}, on = srvOn();
   const n = v => fmt(v||0), mx = (...a) => Math.max(0, ...a.map(v=>+v||0)), pl = (v, one, many) => v>1 ? many : one;
   // une case : le titre, le chiffre, et en dessous ce qu'il compte (facultatif)
@@ -11887,6 +11887,7 @@ function gcClaim(D, quiet){
   all().forEach(x=>x.claiming = true);
   const fin = ok => { all().forEach(x=>{ x.claiming = false; if(ok) x.lots = true }); if(ui.view==="grandecourse" && document.getElementById("gc-ov").hidden) renderView(); renderNav() };
   return srv(()=>Cloud.course.lots(D.jour, D.heure||20)).then(e=>{ applyEco(e); Sound.coin(); fin(true);
+      if(me===0){ S.stats.gcWins = (S.stats.gcWins||0)+1; save() }   // succès « Maillot jaune »
       if(!quiet) toast(`Tu as fini ${me+1}${me?"e":"er"} : ${gcLotTxt(D.resultats[me],me)}, c'est dans ta poche !`); return true },
     e=>{ fin(e?.code==="deja"); if(e?.code!=="deja" && !quiet) srvFail(e); throw e });
 }

@@ -8,7 +8,9 @@
 // Billy → Billeo : les réglages et sauvegardes rangés sous « billy-… » dans ce navigateur passent sous « billeo-… »
 try{ const ks=[]; for(let i=0;i<localStorage.length;i++){ const k=localStorage.key(i); if(k && k.startsWith("billy-")) ks.push(k) }
   for(const k of ks){ const n="billeo-"+k.slice(6); if(localStorage.getItem(n)===null) localStorage.setItem(n, localStorage.getItem(k)); localStorage.removeItem(k) } }catch(e){}
-try{ document.documentElement.dataset.theme = localStorage.getItem("billeo-theme") || "dark" }catch(e){ document.documentElement.dataset.theme = "dark" }</script>
+try{ document.documentElement.dataset.theme = localStorage.getItem("billeo-theme") || "dark" }catch(e){ document.documentElement.dataset.theme = "dark" }
+// (10 octobre 2026) arrivée par le lien « mot de passe oublié » : noté tout de suite, avant que Supabase n'efface l'adresse
+window.RECOVERY_LINK = /(^|[#&?])type=recovery(&|$)/.test(location.hash + "&" + location.search.slice(1));</script>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Gluten:wght@900&family=Lilita+One&family=Nunito:wght@500;600;700;800;900&family=Caveat:wght@600;700&display=swap">
@@ -14990,8 +14992,10 @@ function accountBoot(){
     auth.err = h.get("error_code")==="otp_expired" ? "Ce lien a expiré ou a déjà servi. Connecte-toi, ou demande un nouveau lien." : "Ce lien ne fonctionne pas. Réessaie.";
     auth.tab = "login";
   }
+  // (10 octobre 2026) le lien « mot de passe oublié » connecte d'abord le joueur (SIGNED_IN ou INITIAL_SESSION, parfois avant
+  // PASSWORD_RECOVERY) : on garde l'écran du nouveau mot de passe, la partie ne se lance qu'une fois le mot de passe enregistré
   Cloud.onAuth((ev, user)=>{
-    if(ev==="PASSWORD_RECOVERY"){ auth.closable = false; authShow("newpass"); return }
+    if(ev==="PASSWORD_RECOVERY" || (window.RECOVERY_LINK && user)){ window.RECOVERY_LINK = false; auth.closable = false; authShow("newpass"); return }
     if(auth.screen==="newpass") return;
     if(user && (ev==="INITIAL_SESSION" || ev==="SIGNED_IN")) cloudStart(user);
     else if(!user && ev==="INITIAL_SESSION") authShow("welcome");

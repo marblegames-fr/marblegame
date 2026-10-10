@@ -9,7 +9,7 @@
 --    select vault.create_secret('re_xxx', 'resend_key');            -- la première fois
 --    select vault.update_secret((select id from vault.secrets where name = 'resend_key'), 're_xxx');   -- pour la changer
 --  Sans clé, rien n'est envoyé (et rien ne casse).
---  Sans domaine à nous, Resend n'envoie qu'à l'adresse du compte Resend (marblegamesfr@gmail.com), depuis onboarding@resend.dev.
+--  Depuis le 10 octobre 2026 : expéditeur noreply@tikalo.fr (domaine vérifié sur Resend, clé limitée à l'envoi depuis tikalo.fr).
 -- =====================================================================
 
 create extension if not exists pg_net with schema extensions;
@@ -35,7 +35,7 @@ begin
     url := 'https://api.resend.com/emails',
     headers := jsonb_build_object('Authorization', 'Bearer ' || cle, 'Content-Type', 'application/json'),
     body := jsonb_build_object(
-      'from', 'Tikalo <onboarding@resend.dev>',
+      'from', 'Tikalo <noreply@tikalo.fr>',   -- (10 octobre 2026) le domaine tikalo.fr est vérifié sur Resend
       'to', jsonb_build_array('marblegamesfr@gmail.com'),
       'subject', '[Tikalo] ' || cat || ' de ' || coalesce(new.pseudo, '?') || ' : ' || left(regexp_replace(new.texte, '\s+', ' ', 'g'), 60),
       'html', corps));

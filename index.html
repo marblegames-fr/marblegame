@@ -1281,6 +1281,7 @@ body.vit-dragging,body.vit-dragging *{cursor:grabbing!important;user-select:none
 .game-stage.pachi-stage canvas{width:100%;height:auto;aspect-ratio:540/700;border-radius:22px;display:block;box-shadow:0 24px 50px -18px rgba(120,40,200,.55)}
 .pachi-panel ~ aside .rewards-list b{white-space:nowrap}
 .pachi-btns{display:flex;gap:10px;flex-wrap:wrap;justify-content:center;margin-top:14px}
+.pachi-manque{display:inline-flex;align-items:center;gap:5px;color:#E5484D!important}
 .pachi-ball{flex-basis:100%;display:flex;align-items:center;justify-content:center;gap:6px;font-size:12.5px;font-weight:700;color:var(--ink-2)}
 .pachi-n{flex-basis:100%;text-align:center;font-size:12.5px;font-weight:700;color:var(--ink-2)}
 .pachi-win{position:absolute;left:50%;top:20%;translate:-50% -50%;display:grid;justify-items:center;gap:4px;padding:16px 26px;border-radius:18px;background:rgba(20,12,30,.86);color:#fff;text-align:center;box-shadow:0 20px 40px -10px rgba(0,0,0,.6);animation:ask-in .25s ease-out}
@@ -9582,7 +9583,9 @@ function chanceBtns(k, act, verb){
   const free = !chanceFreeDone(k), n = chanceBought(k), prix = CHANCE_PRIX[k];
   if(free) return `<button class="btn btn-yellow btn-xl" data-action="${act}" data-pay="0">${ic("gift",18)} ${verb} (offert)</button>`;
   if(n>=CHANCE_MAX) return `<button class="btn btn-ghost btn-xl" disabled>${ic("clock",18)} Reviens demain !</button><small class="pachi-n">Encore ${CHANCE_MAX} parties à acheter demain · dans <b data-quest-timer>${untilMidnight()}</b></small>${chanceNext(k)}`;
-  return `<button class="btn btn-yellow btn-xl" data-action="${act}" data-pay="1" ${S.jetons<prix?"disabled":""}>${verb} · <span class="price">${COIN}${prix}</span></button><small class="pachi-n">Parties achetées aujourd'hui : <b>${n} / ${CHANCE_MAX}</b></small>${chanceNext(k)}`;
+  // (10 octobre 2026) pas assez de bonbecs : on le dit (le bouton grisé seul faisait croire à un bug)
+  const manque = S.jetons<prix ? `<small class="pachi-n pachi-manque">${ic("candy",13)} Il te manque <b>${fmt(prix-S.jetons)} ${CUR.many}</b> pour cette partie</small>` : "";
+  return `<button class="btn btn-yellow btn-xl" data-action="${act}" data-pay="1" ${S.jetons<prix?"disabled":""}>${verb} · <span class="price">${COIN}${prix}</span></button>${manque}<small class="pachi-n">Parties achetées aujourd'hui : <b>${n} / ${CHANCE_MAX}</b></small>${chanceNext(k)}`;
 }
 // payer une partie : vérifié ici, puis par le serveur ; renvoie false si on ne peut pas
 function chanceCanPay(k, pay){
@@ -14345,7 +14348,15 @@ function applyEco(e){
   S.jetons = e.bonbecs; S.depart = e.depart||0; S.bagInv = knownBags(e.sacs); S.freeT0 = e.gratuit_t0; S.pity = e.pity;
   if(e.serie_jour){ const [y,m,d] = e.serie_jour.split("-").map(Number); S.daily = {last:`${y}-${m}-${d}`, streak:e.serie} }
   eco.testeur = !!e.testeur;
-  save(); renderTop(); renderNav();
+  save(); renderTop(); renderNav(); chanceRefresh();
+}
+// (10 octobre 2026) les bonbecs ont changé (une quête récupérée, un lot…) : les boutons du jeu de chance affiché se remettent à jour
+// (avant, un bouton grisé faute de bonbecs le restait jusqu'à ce qu'on quitte la page)
+function chanceRefresh(){
+  const B = {roue:[".rq-panel .pachi-btns","roue-go","Tourner la roue",()=>roue.busy], grattage:["#gr-btns","gr-go","Un ticket",()=>grat.cells && !grat.done],
+    distributeur:["#ds-btns","ds-go","Tourner la manivelle",()=>dist.busy], marelle:["#mrl-btns","mrl-go","Lancer ma bille",()=>mar.busy]}[ui.view];
+  if(!B || B[3]()) return; const el = document.querySelector(B[0]); if(el) el.innerHTML = chanceBtns(ui.view, B[1], B[2]);
+  if(ui.view==="distributeur") dist.can?.();
 }
 // les bonbecs qu'on peut donner à un autre joueur (troc, marché, enchères) : pas ceux du cadeau de départ (serveur : interne.libres)
 // une bille du cadeau de bienvenue : échangeable 15 jours après l'inscription (s.lie = la date, en ms)

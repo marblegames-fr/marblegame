@@ -1816,6 +1816,42 @@ canvas.gr-foil{touch-action:none}
 .games-sec{margin-bottom:28px}
 .gs-head{margin-bottom:14px}
 .gs-head h2{font-size:21px;font-weight:900}
+/* (10 octobre 2026) le démarrage par étapes */
+body.onb .mj-rail,body.onb #mj-btn,body.onb #gc-btn,body.onb #daily-btn{display:none!important}
+@media (min-width:1340px){ body.onb .layout{grid-template-columns:216px minmax(0,1fr)} }
+.nav-btn.locked{opacity:.42;cursor:not-allowed}
+.nav-btn.locked:hover{background:none}
+.nav-btn.locked > svg:last-child{margin-left:auto;width:15px;height:15px}
+.onb-lead{color:var(--ink-2);font-weight:700;margin-top:6px;max-width:62ch}
+.onb-lead b{color:var(--ink)}
+.onb-goal{display:grid;grid-template-columns:auto minmax(0,1fr) auto;align-items:center;gap:18px;padding:20px 22px;margin:4px 0 18px;border-radius:22px;
+  background:linear-gradient(110deg,color-mix(in srgb,#FFC93F 18%,var(--panel)),var(--panel) 70%);border:2px solid color-mix(in srgb,#FFC93F 60%,transparent)}
+.og-ic{display:grid;place-items:center;width:60px;height:60px;border-radius:18px;background:#FFC93F;color:#2B2233;box-shadow:0 4px 0 #E0A417}
+.onb-goal small{display:block;font-size:11.5px;font-weight:900;letter-spacing:.08em;text-transform:uppercase;color:#D99A0E}
+.onb-goal b{display:block;font-family:var(--display);font-weight:400;font-size:25px;line-height:1.1;margin:2px 0 5px}
+.onb-goal p{font-size:14px;font-weight:600;color:var(--ink-2);max-width:60ch}
+.og-bar{display:block;height:9px;max-width:280px;margin-top:10px;border-radius:99px;background:var(--line);overflow:hidden}
+.og-bar i{display:block;height:100%;border-radius:inherit;background:#FFC93F;transition:width .5s}
+.og-steps{display:flex;gap:6px;margin-top:10px}
+.og-steps i{width:24px;height:5px;border-radius:9px;background:var(--line)}
+.og-steps i.done{background:var(--green)} .og-steps i.cur{background:#FFC93F}
+.og-moon{display:inline-flex;align-items:center;gap:8px;font-weight:900;color:var(--ink-2);white-space:nowrap}
+.onb-two{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:16px}
+.onb-bag{display:flex;align-items:center;gap:16px}
+.ob-art{flex:none;width:96px}.ob-art svg{width:100%;height:auto}
+.onb-bag b{display:block;font-family:var(--display);font-weight:400;font-size:22px}
+.onb-bag small{display:block;margin:3px 0 12px;font-size:13px;font-weight:700;color:var(--ink-2)}
+.onb-last{display:flex;flex-wrap:wrap;gap:6px}
+.onb-new{position:relative;display:grid;justify-items:center;gap:10px;max-width:420px;text-align:center;overflow:hidden;isolation:isolate}
+.onb-new .onb-ic{display:grid;place-items:center;width:84px;height:84px;margin-top:4px;border-radius:26px;color:#2B2233;background:radial-gradient(circle at 35% 30%,#FFE38A,#FFC93F 55%,#D99A0E);box-shadow:0 0 0 8px color-mix(in srgb,#FFC93F 18%,transparent),0 12px 30px -8px rgba(255,201,63,.6)}
+.onb-new small{font-size:12px;font-weight:900;letter-spacing:.12em;text-transform:uppercase;color:#D99A0E}
+.onb-new h2{font-family:var(--display);font-weight:400;font-size:30px;line-height:1.05}
+.onb-new p{color:var(--ink-2);font-weight:600;max-width:34ch}
+.onb-new .btn-xl{width:100%;justify-content:center;margin-top:4px}
+.onb-rays{position:absolute;left:50%;top:70px;width:360px;height:360px;margin:-180px 0 0 -180px;border-radius:50%;pointer-events:none;z-index:-1;
+  background:repeating-conic-gradient(color-mix(in srgb,#FFC93F 22%,transparent) 0 10deg,transparent 10deg 24deg);-webkit-mask:radial-gradient(circle,#000 20%,transparent 65%);mask:radial-gradient(circle,#000 20%,transparent 65%);animation:spin 12s linear infinite}
+@media (max-width:760px){ .onb-goal{grid-template-columns:auto minmax(0,1fr);padding:16px} .onb-goal .btn-xl,.og-moon{grid-column:1 / -1;width:100%;justify-content:center} .og-ic{width:48px;height:48px} .onb-two{grid-template-columns:minmax(0,1fr)} .onb-goal b{font-size:21px} }
+@media (prefers-reduced-motion:reduce){ .onb-rays{animation:none} }
 /* (10 octobre 2026) téléphone : la fenêtre « C'est parti ! » en arrivant sur un jeu (au-dessus de la barre du bas, qui reste utilisable) */
 .pgo-scrim{position:fixed;left:0;right:0;top:0;bottom:calc(68px + env(safe-area-inset-bottom,0px));z-index:39;display:grid;place-items:end center;padding:16px;background:rgba(15,12,24,.55);backdrop-filter:blur(3px);animation:pgo-in .2s ease-out}
 .pgo-scrim.out{opacity:0;transition:opacity .2s}
@@ -6427,20 +6463,27 @@ const NAV_PARENT = {billepedia:"collection", tir:"jeux", marelle:"jeux", pot:"je
 const SOLO_GAMES = [["marelle","La Marelle"],["chateau","Le Château"],["roue","La Roue"],["pachinko","Le Plinko"],["tic","La Tic"]];   // la Roue remplace le Casse-briques (6 octobre 2026)
 function gamesReady(){ return playedToday().bonus ? [] : jeuxDuJour().filter(k=>!jeuFait(k)).map(k=>JEUX_NOM[k]) }
 function renderNav(){
-  const cur = NAV_PARENT[ui.view] || ui.view, bags = freeStock()+giftCount(), games = gamesReady().length;
-  document.getElementById("nav").innerHTML = NAV.map(n=>
+  onbCheck();
+  const cur = NAV_PARENT[ui.view] || ui.view, bags = freeStock()+giftCount(), games = onbOk("journee") ? gamesReady().length : 0;
+  document.body.classList.toggle("onb", onbOn() && !onbOk("journee"));
+  const locked = (v, label, icon) => `<button class="nav-btn locked" data-action="onb-locked" aria-disabled="true" title="Bientôt : continue ton objectif pour le débloquer">${ic(icon)}<span>${label}</span>${ic("lock",15,2.4)}</button>`;
+  document.getElementById("nav").innerHTML = NAV.map(n=> !onbOk(n[0]) ? locked(n[0], n[1], n[2]) :
     `<button class="nav-btn" data-action="nav" data-view="${n[0]}" ${cur===n[0]?'aria-current="page"':""}>${ic(n[2])}<span>${n[1]}</span>${
       n[0]==="sacs"&&bags?`<span class="cnt n-bags" aria-label="${bags} sachet${bags>1?"s":""} à ouvrir">${bags}</span>`:""}${
       n[0]==="jeux"&&games?'<span class="ready" aria-label="Récompense du jour à gagner"></span>':""}${
       n[0]==="cour"&&courCount()?`<span class="cnt" aria-label="${courCount()} nouveauté${courCount()>1?"s":""} dans la cour">${courCount()}</span>`:""}</button>`
   ).join("") + (()=>{ const pc = passClaimable();
+    if(!onbOk("passe")) return locked("passe", "Passe de saison", "ticket");
     return `<button class="nav-btn" data-action="nav" data-view="passe" ${cur==="passe"?'aria-current="page"':""}>${ic("ticket")}<span>Passe de saison</span>${pc?`<span class="cnt gold" aria-label="${pc} récompense${pc>1?"s":""} à prendre">${pc}</span>`:""}</button>` })()
     + (sync.on ? `<button class="side-bug" data-action="bug-report">${ic("bug",18)}<span><b>Un souci ?</b><small>Signaler un bug</small></span></button>` : "");
   const tab = (v,l,i,dot) => `<button class="tb" data-action="nav" data-view="${v}" ${cur===v?'aria-current="page"':""}>${ic(i,24)}${l}${dot?'<span class="dot"></span>':""}</button>`;
   // 7 onglets : le sachet au milieu
-  document.getElementById("tabbar").innerHTML = tab("accueil","Accueil","home") + tab("collection","Boîte","layers") + tab("jeux","Jeux","pad",games)
-    + `<button class="tab-bag" data-action="nav" data-view="sacs" ${cur==="sacs"?'aria-current="page"':""}><span class="bb">${bagSVG(FREE_BAG)}${bags?`<span class="n">${bags}</span>`:""}</span>Sachets</button>`
-    + tab("confiserie","Confiserie","candy") + tab("cour","Cour","cour",courCount()) + tab("passe","Passe","ticket",passClaimable());
+  // téléphone : seulement les onglets débloqués (le sachet reste au milieu)
+  const ok = v => onbOk(v), L = [ok("accueil")&&tab("accueil","Accueil","home"), ok("collection")&&tab("collection","Boîte","layers"), ok("jeux")&&tab("jeux","Jeux","pad",games)].filter(Boolean),
+    R = [ok("confiserie")&&tab("confiserie","Confiserie","candy"), ok("cour")&&tab("cour","Cour","cour",courCount()), ok("passe")&&tab("passe","Passe","ticket",passClaimable())].filter(Boolean);
+  const tb = document.getElementById("tabbar");
+  tb.innerHTML = L.join("") + `<button class="tab-bag" data-action="nav" data-view="sacs" ${cur==="sacs"?'aria-current="page"':""}><span class="bb">${bagSVG(FREE_BAG)}${bags?`<span class="n">${bags}</span>`:""}</span>Sachets</button>` + R.join("");
+  tb.style.gridTemplateColumns = `repeat(${L.length+R.length+1},minmax(0,1fr))`;
   renderDay();
   renderGcBtn();
 }
@@ -6746,7 +6789,10 @@ document.addEventListener("keydown", e=>{ if(e.key==="Escape") toggleProfPop(fal
 let lastResync = 0;
 function confResync(){ if(!srvOn() || Date.now()-lastResync<30000) return; lastResync = Date.now();
   resyncBilles().then(()=>{ if(ui.view==="confiserie" && document.getElementById("ov").hidden) renderView() }, ()=>{}) }
-function go(view){ toggleProfPop(false); if(view!==ui.view) ui.ballPicked = null; if(view==="confiserie") confResync(); if(view==="atelier"){ view="confiserie"; ui.confTab="fusion" } if(view==="billepedia"){ view="collection"; ui.tab="pedia" } ui.view=view; renderNav(); renderView(); window.scrollTo({top:0}); phoneGo(); }
+function go(view){
+  if(!viewOk(view)){ const E = onbOn() && ONB[S.onb.step]; toast(E?.but ? `Bientôt ! Ton objectif d'abord : ${E.but.toLowerCase()}.` : "Bientôt !"); return }
+  if(onbOn()){ if(view==="confiserie" || view==="atelier") S.onb.conf = 1; if(view==="cour") S.onb.cour = 1; if(view==="confiserie" || view==="cour") setTimeout(onbCheck, 1500) }
+  toggleProfPop(false); if(view!==ui.view) ui.ballPicked = null; if(view==="confiserie") confResync(); if(view==="atelier"){ view="confiserie"; ui.confTab="fusion" } if(view==="billepedia"){ view="collection"; ui.tab="pedia" } ui.view=view; renderNav(); renderView(); window.scrollTo({top:0}); phoneGo(); }
 function renderView(){
   if(ui.view==="pot") ui.view = "marelle";   // (9 octobre 2026) le Pot est remplacé par la Marelle
   if(ui.view!=="grattage") gratFlush();   // un ticket pas fini de gratter : le lot arrive quand même
@@ -6767,6 +6813,87 @@ function renderView(){
   if(ui.view==="grattage") gratInit();
   if(ui.view==="distributeur") distCrankInit();
   if(ui.view==="cour" && cour.focus) setTimeout(courFocus, 60);
+}
+
+/* =====================================================================
+   LE DÉMARRAGE PAR ÉTAPES (10 octobre 2026, maquettes/maquette-demarrage.html)
+   Un nouveau joueur ne voit d'abord que l'Accueil, les Sachets et sa Boîte ; le reste se débloque une étape à la fois, avec un
+   objectif en haut de l'accueil et une fenêtre « Nouveau ! » pour chaque nouveauté. Ordinateur : les menus pas encore ouverts sont
+   gris avec un cadenas ; téléphone : ils n'apparaissent pas. S.onb = {step, done, jeu, conf, cour, day, pop} ; sans S.onb (joueurs
+   d'avant) : tout est ouvert. « journee » = Ma journée, le bonbec du jour, les jeux du jour, la Grande Course et la loterie.
+   ===================================================================== */
+const ONB = [
+  {menus:["accueil","sacs","collection"], but:"Ouvre 5 sachets", ic:"bag", go:"sacs",
+    detail:"Chaque sachet te donne des billes pour remplir ta boîte. Le sachet gratuit revient toutes les 10 minutes.",
+    prog:()=>[Math.min(5, S.bags||0), 5]},
+  {menus:["jeux"], but:"Joue à un jeu de la cour", ic:"pad", go:"jeux",
+    detail:"Les jeux te rapportent des bonbecs. Avec les bonbecs, tu ouvres d'autres sachets.",
+    prog:()=>[JEUX_TOUS.some(jeuFait) || S.onb.jeu ? 1 : 0, 1],
+    nouv:"Joue avec tes billes et gagne des bonbecs. Avec les bonbecs, tu ouvres d'autres sachets !", titre:"Les jeux de la cour"},
+  {menus:["confiserie"], but:"Va voir la Confiserie", ic:"candy", go:"confiserie",
+    detail:"Tes billes en double s'y échangent contre des bonbecs, ou se fusionnent pour obtenir une bille plus grosse.",
+    prog:()=>[S.onb.conf ? 1 : 0, 1],
+    nouv:"Tes billes en double ne servent pas à rien : échange-les contre des bonbecs, ou fusionne-les pour une bille plus grosse.", titre:"La Confiserie"},
+  {menus:["cour"], but:"Découvre la cour de récré", ic:"cour", go:"cour",
+    detail:"Retrouve tes copains, troque tes billes avec eux, vends-en au marché et grimpe au classement.",
+    prog:()=>[S.onb.cour ? 1 : 0, 1],
+    nouv:"Ajoute tes copains avec leur pseudo, troque tes billes, vends-en au marché et grimpe au classement.", titre:"La cour de récré"},
+  {menus:[], but:"Reviens demain", ic:"clock", go:null,
+    detail:"Demain, de nouvelles choses t'attendent : le bonbec du jour, des quêtes, les jeux du jour et le passe de saison.",
+    prog:()=>[S.onb.day && S.onb.day!==dayKey() ? 1 : 0, 1]},
+  {menus:["passe","journee"], but:null, ic:"ticket", go:"accueil",
+    nouv:"Chaque jour : un bonbec offert, des quêtes, 3 jeux du jour, la Grande Course et la loterie. Et le passe de saison te récompense tout le mois.", titre:"Ta journée et le passe de saison"},
+];
+const onbOn = () => !!S.onb && !S.onb.done;
+const onbOk = k => !onbOn() || ONB.slice(0, S.onb.step+1).some(e=>e.menus.includes(k));
+const viewOk = v => onbOk(NAV_PARENT[v] || v);
+// l'objectif est-il atteint ? on passe à l'étape suivante, et sa fenêtre « Nouveau ! » attend que l'écran soit libre
+function onbCheck(){
+  if(!onbOn()) return;
+  let moved = false;
+  while(S.onb.step < ONB.length-1){
+    const E = ONB[S.onb.step], [n, of] = E.prog(); if(n < of) break;
+    S.onb.step++; moved = true; const N = ONB[S.onb.step];
+    if(N.nouv) S.onb.pop = S.onb.step;
+    if(!N.but && !N.nouv) S.onb.done = true;
+  }
+  if(S.onb.step===4 && !S.onb.day) S.onb.day = dayKey();
+  if(moved){ save(); setTimeout(()=>{ renderNav(); if(ui.view==="accueil") renderView(); onbPopup() }, 400) }
+}
+function onbPopup(){
+  if(!S.onb?.pop || !popupsFree() || inGame()) return false;
+  const N = ONB[S.onb.pop]; if(!N?.nouv){ delete S.onb.pop; save(); return false }
+  const el = document.getElementById("modal");
+  el.innerHTML = `<div class="modal onb-new" role="dialog" aria-modal="true" aria-label="${esc(N.titre)}"><span class="onb-rays" aria-hidden="true"></span>
+    <span class="onb-ic">${ic(N.ic,40,2.2)}</span><small>Nouveau !</small><h2>${N.titre}</h2><p>${N.nouv}</p>
+    <button class="btn btn-yellow btn-xl" data-action="onb-go">Va voir</button><button class="linkish" data-action="onb-later">Plus tard</button></div>`;
+  el.hidden = false; Sound.ding?.(); el.querySelector(".btn-yellow")?.focus();
+  return true;
+}
+function onbPopDone(){ const k = S.onb?.pop; if(S.onb){ delete S.onb.pop; if(S.onb.step>=ONB.length-1) S.onb.done = true; save() } return k }
+// la carte « Ton objectif » en haut de l'accueil
+function onbGoal(){
+  const E = ONB[S.onb.step]; if(!E?.but) return "";
+  const [n, of] = E.prog();
+  return `<section class="onb-goal"><span class="og-ic">${ic(E.ic,28,2.2)}</span>
+    <div><small>Ton objectif</small><b>${E.but}</b><p>${E.detail}</p>
+      ${of>1 ? `<span class="og-bar"><i style="width:${Math.min(100,n/of*100)}%"></i></span>` : ""}
+      <span class="og-steps">${ONB.slice(0,-1).map((_,i)=>`<i class="${i<S.onb.step?"done":i===S.onb.step?"cur":""}"></i>`).join("")}</span></div>
+    ${E.go ? `<button class="btn btn-yellow btn-xl" data-action="nav" data-view="${E.go}">${of>1?`${n} / ${of} · `:""}Y aller</button>` : `<span class="og-moon">${ic("clock",22)} À demain !</span>`}</section>`;
+}
+// l'accueil pendant le démarrage : le but, l'objectif, le sachet gratuit et les dernières billes, rien d'autre
+function viewHomeOnb(){
+  const st = freeStock(), gifts = giftCount(), last = [...S.specs].sort((a,b)=>(b.at||0)-(a.at||0)).slice(0,12);
+  return `<div class="hm onb-home">
+    <div class="page-head"><div><h1>Salut ${esc(S.name)} !</h1><p class="onb-lead">Le but : <b>trouver toutes les billes</b>. Les sachets t'en donnent, les jeux te rapportent des bonbecs pour en ouvrir d'autres.</p></div></div>
+    ${onbGoal()}
+    <div class="onb-two">
+      <section class="panel onb-bag"><span class="ob-art">${bagSVG(FREE_BAG)}</span><div><b>${st ? `${st} sachet${st>1?"s":""} gratuit${st>1?"s":""}` : "Sachet gratuit"}</b>
+        <small>${st>=FREE_MAX ? "Stock plein : ouvre-en un !" : `Un nouveau toutes les 10 minutes · prochain dans <span data-free-timer>${freeLeft()}</span>`}${gifts?` · ${gifts} offert${gifts>1?"s":""}`:""}</small>
+        <button class="btn btn-yellow" data-action="nav" data-view="sacs" ${st||gifts?"":"disabled"}>${ic("bag",18)} Ouvrir</button></div></section>
+      <section class="panel"><div class="panel-head"><h3>Tes dernières billes</h3><button class="see-all" data-action="nav" data-view="collection">${S.specs.length} · Ta boîte ${ic("chev",14)}</button></div>
+        <div class="onb-last">${last.map(x=>`<button data-action="spec" data-id="${x.id}" title="${esc(specName(x))}">${mImg(x,96,40,"")}</button>`).join("")}</div></section>
+    </div></div>`;
 }
 
 /* =====================================================================
@@ -6934,6 +7061,7 @@ const SHOWCASE = TK.map(t=>exSpec(t));   // une bille d'exemple par taille (tari
 const LOGO_SPEC = {seed:hash("vitrine"+TK[1]), type:TK[1], family:0, pal:0, shiny:0};   // la bille du logo et de l'onglet
 
 function viewHome(){
+  if(onbOn() && !onbOk("journee")) return viewHomeOnb();
   return `<div class="hm">
   ${homeHero()}
   <section class="hm-day" id="hm-day">${dayHTML(false, true)}</section>
@@ -10440,7 +10568,7 @@ function viewGames(){
   const todo = all.filter(c=>!maxed(c.v)).sort((a,b)=>(b.ok-a.ok) || (jdj.has(b.v)-jdj.has(a.v))), done = all.filter(c=>maxed(c.v));
   const bag = BAG_BY[GAMES_BONUS], gcIn = !!gc.etat?.inscrit, L = srvOn() ? lot.data : null; if(srvOn()) lotLoad();
   return `<div class="page-head"><div><h1>Jeux de la cour</h1></div></div>
-  <section class="panel gm-strip${left?"":" all-done"}">
+  ${!onbOk("journee") ? "" : `<section class="panel gm-strip${left?"":" all-done"}">
     <div class="gs-day">
       <div class="gs-top"><span class="gh-kick">${ic("star",14)} Les 3 jeux du jour</span><small class="gh-time">${ic("clock",13)} Nouveaux dans <b data-quest-timer>${untilMidnight()}</b></small></div>
       <div class="gs-goal"><span class="gs-bag" style="--bc:${bag.color}">${bagSVG(bag)}</span>
@@ -10452,7 +10580,7 @@ function viewGames(){
       <button class="gs-pill" data-action="nav" data-view="grandecourse">${ic("flag",18)}<span><small>La Grande Course</small><b>${gcIn ? "Inscrit · départ" : "Départ"} dans <span data-gc-timer>${gcLeft(gcNext().depart-Date.now())}</span></b></span>${gcIn ? ic("check",16,3) : `<em>M'inscrire</em>`}</button>
       <button class="gs-pill" data-action="nav" data-view="loterie">${ic("ticket",18)}<span><small>La Loterie · dimanche 21 h</small><b>Tirage dans <span data-lot-timer>${lotLeft(L?.heure || lotNext())}</span></b></span>${L && !L.aujourdhui ? `<em>Mon ticket</em>` : L?.aujourdhui ? ic("check",16,3) : ""}</button>
     </div>
-  </section>
+  </section>`}
   ${todo.length ? `<div class="games-grid">${todo.map(tile).join("")}</div>` : `<p class="gs-all">${ic("check",16,3)} Tout est fait à fond aujourd'hui : bravo ! Reviens demain.</p>`}
   ${done.length ? `<div class="gt-fonds"><span class="gtf-l">${ic("star",14,2.6)} Faits à fond</span>${done.map(c=>`<button class="gtf" data-action="nav" data-view="${c.v}" title="${c.t} : fait à fond aujourd'hui${CHANCE_KEYS.includes(c.v) ? "" : " · rejouer pour le plaisir"}"><span class="gtf-art">${c.art}</span><b>${c.t}</b><span class="gtf-ok">${ic("check",11,3.4)}</span></button>`).join("")}</div>` : ""}`;
 }
@@ -14230,6 +14358,9 @@ document.addEventListener("click", e=>{
       const results = [[0,0],[1,0],[2,0],[3,0],[4,0],[2,1],[2,2],[2,3]].map(([r,sh])=>({s:makeSpec("bille",{family:fam(r), shiny:sh, src:"test"}), isNew:false, newColor:false}));
       FX.stop(); ovState = {bag:BAG_BY.premium, results, opened:new Set(), gift:false, forced:false, demo:true, demoAct:"sound-demo", pxp:0}; showBagStage(); break }
     case "fuse-demo": fuseDemo(+t.dataset.r, +t.dataset.sh); break;
+    case "onb-go": { const k = onbPopDone(), N = ONB[k]; closeModal(); renderNav(); go(N?.menus.find(m=>m!=="journee") || N?.go || "accueil"); break }
+    case "onb-later": onbPopDone(); closeModal(); renderNav(); renderView(); break;
+    case "onb-locked": { const E = onbOn() && ONB[S.onb.step]; toast(E?.but ? `Bientôt ! Ton objectif d'abord : ${E.but.toLowerCase()}.` : "Bientôt !"); break }
     case "fuse-demo-menu": closeOv(); fuseDemoMenu(); break;
     case "tuto-next": { const T = TUTO[S.tuto?.step]; if(T?.act) T.act(); else tutoNext(); break }
     case "tuto-skip": tutoSkip(); break;
@@ -15141,7 +15272,7 @@ document.addEventListener("pointerout", e=>{
 });
 // à l'arrivée (et une fois la partie du compte chargée) : le résumé d'un sachet pas fini d'ouvrir, sinon le bonbec du jour (une fois par jour)
 // le calendrier passe toujours en premier : les nouvelles de la cour attendent qu'il soit fermé
-const dailyDue = () => dailyReady() && S.dailySeen!==dayKey();
+const dailyDue = () => dailyReady() && S.dailySeen!==dayKey() && onbOk("journee");
 /* =====================================================================
    LE PREMIER LANCEMENT GUIDÉ (8 octobre 2026, maquettes/maquette-premier-lancement.html)
    Pour un compte tout neuf : bienvenue, la bille de départ, le premier sachet, la boîte à billes, le Tir, la cour, Ma journée,
@@ -15156,13 +15287,10 @@ const TUTO = [
   {go:"accueil", modal:"hello"},
   {go:"accueil", modal:"pick"},
   {go:"sacs", target:'[data-action="open-free"]', txt:"Voici tes sachets gratuits : un nouveau toutes les 10 minutes. <b>Ouvre ton premier sachet</b> !", btn:"Ouvrir", act:()=>{ tutoHide(); openBag("gratuit") }},
-  {go:"collection", target:".bx-bar", txt:"Tes billes sont rangées dans <b>ta boîte à billes</b>. Le point rouge veut dire « nouvelle ». Ta bille de départ y est aussi, avec son étoile. Il reste des centaines de billes à trouver !"},
-  {go:"tir", target:"#g-canvas", txt:"Essaie le Tir avec ta bille : <b>tire en arrière, vise le trou, et relâche</b>. Chaque jeu de la cour te rapporte des bonbecs.", btn:"Suivant"},
-  {go:"cour", target:"#ami-form", txt:"Tikalo, c'est mieux à plusieurs ! Tape le <b>pseudo d'un copain</b> pour l'ajouter : vous pourrez troquer vos doubles."},
-  {go:"accueil", target:"#mj-rail,#hm-day", txt:"Chaque jour, de nouvelles choses t'attendent dans <b>Ma journée</b> : le bonbec du jour, des sachets gratuits, des quêtes et des jeux. <b>Reviens demain !</b>", btn:"Terminer"},
+  {go:"collection", target:".bx-bar", txt:"Tes billes sont rangées dans <b>ta boîte à billes</b>. Le point rouge veut dire « nouvelle ». Ta bille de départ y est aussi, avec son étoile. <b>Le but du jeu : les trouver toutes !</b>", btn:"Terminer"},
   {go:"accueil", modal:"end"},
 ];
-function tutoStart(){ S.tuto = {step:0}; save(); tutoShow() }
+function tutoStart(){ S.tuto = {step:0}; S.onb = {step:0}; save(); tutoShow() }   // un compte tout neuf : le démarrage par étapes commence aussi
 function tutoGo(n){ if(!S.tuto) return; S.tuto.step = Math.min(n, TUTO.length-1); save(); tutoShow() }
 function tutoNext(){ tutoGo((S.tuto?.step||0)+1) }
 // « Passer » avant d'avoir choisi : on choisit d'abord sa bille de départ, puis on va à la fin
@@ -15211,7 +15339,7 @@ function tutoModal(k){
     // le cadeau : un Sachet Premium, une fois par compte (le serveur le compte avec la clé « depart »)
     if(!S.tuto.gift){ S.tuto.gift = 1; earn("depart", "depart", 0, "premium"); save(); renderTop(); renderNav() }
     el.innerHTML = `<div class="modal tuto-modal" role="dialog" aria-modal="true" aria-label="C'est parti">
-    ${dep ? `<div class="tm-trio">${mImg(dep,240,120,"")}</div>` : ""}<h2>Tu es prêt, ${esc(S.name)} !</h2><p>Pour bien commencer, la cour t'offre :</p>
+    ${dep ? `<div class="tm-trio">${mImg(dep,240,120,"")}</div>` : ""}<h2>Tu es prêt, ${esc(S.name)} !</h2><p><b>Le but : trouver toutes les billes.</b> Les sachets t'en donnent, les jeux te rapportent des bonbecs pour en ouvrir d'autres. Pour bien commencer, la cour t'offre :</p>
     <div class="tm-gift"><span class="tm-bag">${bagSVG(BAG_BY.premium)}</span><span><b>1 Sachet Premium</b><small>au moins un Calot dedans</small></span></div>
     ${dep ? `<p class="meta">${ic("star",14)} Et ton Calot ${esc(PALETTES[dep.pal][0])}, pour toujours.</p>` : `<p class="meta">Ta bille de départ t'attend sur l'accueil, quand tu veux.</p>`}
     <button class="btn btn-yellow btn-xl" data-action="tuto-gift">${ic("gift",20)} Ouvrir mon Sachet Premium</button></div>`;
@@ -15265,6 +15393,7 @@ function bootPopups(){
   if(tutoDue()){ tutoStart(); return }
   if(tutoOn()) return;   // pendant le premier lancement : pas de bonbec du jour ni de nouvelles par-dessus
   if(departDue()){ departPick(); return }
+  if(onbPopup()) return;
   if(winsAtBoot?.length && winsPopup()) return;
   const P = S.pendingBag;
   if(P){ delete S.pendingBag; save();
@@ -15280,7 +15409,8 @@ setTimeout(bootPopups, 800);
 // une fenêtre déjà ouverte (ou un sachet en cours) : on repasse dès qu'elle se ferme ; au retour sur l'onglet après minuit aussi
 // le premier lancement en cours sans bulle ni fenêtre (fenêtre fermée par erreur, sachet qui n'a pas pu s'ouvrir…) : on la remet
 setInterval(()=>{ if(tutoOn() && document.visibilityState==="visible" && !document.getElementById("tuto") && popupsFree()) tutoShow() }, 2500);
-setInterval(()=>{ if(document.visibilityState==="visible" && (tutoDue() || departDue() || dailyDue() || heldNews || gcDue() || lotDue()) && popupsFree() && !inGame()) bootPopups() }, 2000);
+setInterval(()=>{ if(document.visibilityState==="visible" && (tutoDue() || departDue() || S.onb?.pop || dailyDue() || heldNews || gcDue() || lotDue()) && popupsFree() && !inGame()) bootPopups() }, 2000);
+setInterval(()=>{ if(onbOn()) onbCheck() }, 5000);   // « Reviens demain » : on regarde de temps en temps si on a changé de jour
 // petits secrets
 document.getElementById("logo-marble").addEventListener("click", e=>{
   e.preventDefault(); e.stopPropagation();   // la bille est dans le lien du logo : la chatouiller ne ramène pas à l'accueil

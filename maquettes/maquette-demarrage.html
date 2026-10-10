@@ -1,0 +1,291 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Tikalo · démarrage par étapes</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Gluten:wght@900&family=Lilita+One&family=Nunito:wght@600;700;800;900&family=Caveat:wght@700&display=swap">
+<style>
+/* Maquette (10 octobre 2026) : le démarrage d'un nouveau joueur, menu par menu.
+   Les menus pas encore débloqués sont cachés ; un objectif à la fois en haut de l'accueil ; une fenêtre présente chaque nouveauté.
+   Tout est simulé ici (rien n'est envoyé au serveur) ; les billes et les sachets sont ceux du jeu. */
+:root{--bg:#12151F;--panel:#1B1F2C;--panel-2:#232838;--line:#2C3244;--ink:#F4ECDD;--ink-2:#C2BBB0;--muted:#8E8898;
+  --yellow:#FFC93F;--yellow-2:#E0A417;--blue:#4C8DF6;--green:#2FCF6A;--red:#E5484D;--navy:#24253D;
+  --display:"Lilita One",sans-serif;--body:"Nunito",system-ui,sans-serif;--hand:"Caveat",cursive}
+*{box-sizing:border-box;margin:0;padding:0}
+html,body{height:100%}
+body{background:#07080F;color:var(--ink);font-family:var(--body);display:flex;flex-direction:column;overflow:hidden}
+button{font:inherit;color:inherit;background:none;border:0;cursor:pointer}
+.stage-wrap{flex:1;min-height:0;display:grid;place-items:center;padding:14px}
+#app{position:relative;width:min(1180px,100%);height:100%;max-height:820px;border-radius:16px;overflow:hidden;background:var(--bg);display:grid;grid-template-rows:64px 1fr;box-shadow:0 30px 80px -30px #000}
+#app.phone{width:390px;max-height:844px;grid-template-rows:60px 1fr 66px}
+
+/* barre du haut */
+.top{display:flex;align-items:center;gap:12px;padding:0 20px;border-bottom:1px solid var(--line);background:#161A27}
+.logo{display:flex;align-items:flex-end;font-family:"Gluten",var(--display);font-weight:900;font-size:30px;line-height:1}
+.logo .lt{display:inline-block;color:var(--yellow);-webkit-text-stroke:.16em var(--navy);paint-order:stroke fill;text-shadow:0 .06em 0 #E07B00,0 .12em 0 var(--navy)}
+.logo .lt:nth-child(odd){transform:rotate(-5deg)} .logo .lt:nth-child(even){transform:translateY(-.08em) rotate(4deg)}
+.logo .i{position:relative} .logo .i img{position:absolute;left:50%;top:-.2em;width:.27em;margin-left:-.12em}
+.top .sp{flex:1}
+.wallet{display:flex;align-items:center;gap:6px;height:36px;padding:0 12px;border-radius:99px;background:var(--panel);border:1px solid var(--line);font-weight:900}
+.wallet.pulse{animation:wpulse .6s}
+@keyframes wpulse{40%{transform:scale(1.15);border-color:var(--yellow)}}
+.av{width:38px;height:38px;border-radius:50%;background:var(--panel-2);overflow:hidden}
+.av img{width:100%}
+
+/* le corps : menu à gauche (ordinateur), barre en bas (téléphone) */
+.body{display:grid;grid-template-columns:210px 1fr;min-height:0}
+#app.phone .body{grid-template-columns:1fr}
+.side{border-right:1px solid var(--line);padding:16px 10px;display:flex;flex-direction:column;gap:4px}
+#app.phone .side{display:none}
+.nav{display:flex;align-items:center;gap:12px;padding:11px 12px;border-radius:12px;font-weight:800;font-size:14.5px;color:var(--ink);text-align:left;position:relative}
+.nav:hover{background:var(--panel-2)}
+.nav.on{background:rgba(76,141,246,.15);color:#9CC0FF}
+.nav .ic{width:22px;text-align:center;font-size:17px}
+.nav .badge,.tb .badge{margin-left:auto;min-width:20px;height:20px;padding:0 6px;border-radius:99px;background:var(--red);color:#fff;font-size:11px;font-weight:900;display:grid;place-items:center}
+.nav.new,.tb.new{animation:navin .7s cubic-bezier(.2,1.5,.4,1) both}
+@keyframes navin{0%{opacity:0;transform:translateX(-30px) scale(.8)}60%{opacity:1;background:rgba(255,201,63,.25)}100%{opacity:1;transform:none}}
+.tabbar{display:none;border-top:1px solid var(--line);background:#161A27;grid-auto-flow:column;grid-auto-columns:1fr}
+#app.phone .tabbar{display:grid}
+.tb{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;font-size:10.5px;font-weight:800;color:var(--muted);position:relative}
+.tb .ic{font-size:19px}
+.tb.on{color:var(--ink)}
+.tb .badge{position:absolute;top:6px;left:calc(50% + 6px);margin:0;min-width:16px;height:16px;font-size:10px;padding:0 4px}
+
+main{overflow:auto;padding:22px 24px 30px;min-height:0}
+#app.phone main{padding:16px 14px 24px}
+h1{font-family:var(--display);font-weight:400;font-size:32px;line-height:1.05;margin-bottom:6px}
+.lead{color:var(--ink-2);font-weight:600;margin-bottom:16px;max-width:60ch}
+.panel{background:var(--panel);border:1px solid var(--line);border-radius:18px;padding:18px}
+.grid{display:grid;gap:14px}
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;height:46px;padding:0 22px;border-radius:99px;background:var(--yellow);color:#2B2233;font-weight:900;font-size:15.5px;box-shadow:0 4px 0 var(--yellow-2)}
+.btn:active{transform:translateY(2px);box-shadow:0 2px 0 var(--yellow-2)}
+.btn.ghost{background:var(--panel-2);color:var(--ink);box-shadow:none;border:1px solid var(--line)}
+.btn[disabled]{opacity:.45;pointer-events:none}
+
+/* l'objectif du moment */
+.goal{display:grid;grid-template-columns:auto 1fr auto;align-items:center;gap:16px;padding:18px 20px;border-radius:20px;margin-bottom:16px;
+  background:linear-gradient(110deg,rgba(255,201,63,.18),rgba(255,201,63,.04) 70%),var(--panel);border:2px solid rgba(255,201,63,.55)}
+.goal .gi{width:56px;height:56px;border-radius:16px;display:grid;place-items:center;background:var(--yellow);color:#2B2233;font-size:28px;box-shadow:0 4px 0 var(--yellow-2)}
+.goal small{display:block;font-size:11.5px;font-weight:900;letter-spacing:.08em;text-transform:uppercase;color:var(--yellow)}
+.goal b{display:block;font-family:var(--display);font-weight:400;font-size:23px;line-height:1.1;margin:2px 0 6px}
+.goal p{font-size:13.5px;color:var(--ink-2);font-weight:600}
+.bar{height:8px;border-radius:99px;background:var(--line);overflow:hidden;margin-top:8px;max-width:260px}
+.bar i{display:block;height:100%;background:var(--yellow);border-radius:inherit;transition:width .5s}
+.steps{display:flex;gap:6px;margin-top:10px}
+.steps i{width:22px;height:5px;border-radius:9px;background:var(--line)}
+.steps i.done{background:var(--green)} .steps i.cur{background:var(--yellow)}
+#app.phone .goal{grid-template-columns:auto 1fr;padding:14px}
+#app.phone .goal .btn{grid-column:1 / -1;width:100%}
+#app.phone .goal .gi{width:46px;height:46px;font-size:22px}
+
+.home2{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+#app.phone .home2{grid-template-columns:1fr}
+.bagcard{display:flex;align-items:center;gap:14px}
+.bagcard .bg{width:84px;flex:none} .bagcard svg{width:100%;height:auto}
+.bagcard b{font-family:var(--display);font-weight:400;font-size:20px;display:block}
+.bagcard small{color:var(--ink-2);font-weight:700;font-size:13px;display:block;margin:2px 0 10px}
+.mini{display:flex;flex-wrap:wrap;gap:6px;margin-top:10px}
+.mini img{width:38px;height:38px}
+.ph{color:var(--muted);font-weight:700;font-size:13.5px}
+.k{font-size:11.5px;font-weight:900;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);margin-bottom:8px;display:block}
+
+/* sachets */
+.reveal{display:flex;gap:18px;justify-content:center;margin:18px 0 6px;min-height:110px}
+.reveal .rb{display:grid;justify-items:center;gap:4px;animation:rpop .5s cubic-bezier(.2,1.6,.4,1) both;animation-delay:var(--d)}
+.reveal img{width:86px;height:86px}
+.reveal span{font-size:12px;font-weight:800;color:var(--ink-2)}
+@keyframes rpop{from{opacity:0;transform:scale(.3) translateY(20px)}}
+.bigbag{width:150px;margin:0 auto;display:block;cursor:pointer;transition:transform .15s}
+.bigbag:hover{transform:rotate(-3deg) scale(1.03)}
+.bigbag svg{width:100%;height:auto}
+.center{text-align:center}
+
+/* boîte */
+.box{display:grid;grid-template-columns:repeat(auto-fill,minmax(70px,1fr));gap:10px}
+.box div{display:grid;justify-items:center;gap:2px;padding:8px 4px;border-radius:12px;background:var(--panel-2)}
+.box img{width:50px;height:50px}
+.box small{font-size:10.5px;font-weight:800;color:var(--muted)}
+.box .dbl{color:var(--yellow)}
+
+/* jeux */
+.games{display:grid;grid-template-columns:repeat(auto-fill,minmax(230px,1fr));gap:14px}
+.game{border-radius:16px;overflow:hidden;background:var(--panel);border:1px solid var(--line)}
+.game svg{display:block;width:100%;height:110px}
+.game .gb{display:flex;align-items:center;justify-content:space-between;padding:12px 14px}
+.game b{font-family:var(--display);font-weight:400;font-size:20px}
+.game .btn{height:38px;padding:0 16px;font-size:14px}
+.played{display:inline-flex;align-items:center;gap:6px;font-weight:800;color:var(--green);font-size:13px}
+
+/* la fenêtre « nouveauté » */
+.scrim{position:absolute;inset:0;z-index:20;display:grid;place-items:center;padding:20px;background:rgba(5,6,14,.6);backdrop-filter:blur(3px);animation:fade .2s}
+@keyframes fade{from{opacity:0}}
+.unlock{position:relative;width:min(400px,100%);padding:30px 26px 22px;border-radius:24px;background:var(--panel);border:1px solid var(--line);text-align:center;display:grid;justify-items:center;gap:10px;
+  box-shadow:0 30px 60px -20px #000;animation:upop .5s cubic-bezier(.2,1.5,.4,1)}
+@keyframes upop{from{opacity:0;transform:scale(.7) translateY(30px)}}
+.unlock .ui{width:86px;height:86px;border-radius:26px;display:grid;place-items:center;font-size:44px;background:radial-gradient(circle at 35% 30%,#FFE38A,var(--yellow) 55%,#D99A0E);box-shadow:0 0 0 8px rgba(255,201,63,.15),0 10px 30px -6px rgba(255,201,63,.6);margin-top:-70px}
+.unlock small{font-size:12px;font-weight:900;letter-spacing:.12em;text-transform:uppercase;color:var(--yellow)}
+.unlock h2{font-family:var(--display);font-weight:400;font-size:28px;line-height:1.05}
+.unlock p{color:var(--ink-2);font-weight:600;font-size:15px;max-width:32ch}
+.unlock .btn{width:100%;margin-top:6px}
+.unlock .later{font-size:13px;font-weight:800;color:var(--muted)}
+.rays{position:absolute;left:50%;top:0;width:340px;height:340px;margin:-170px 0 0 -170px;border-radius:50%;pointer-events:none;z-index:-1;
+  background:repeating-conic-gradient(rgba(255,201,63,.18) 0 10deg,transparent 10deg 24deg);-webkit-mask:radial-gradient(circle,#000 20%,transparent 65%);mask:radial-gradient(circle,#000 20%,transparent 65%);animation:spin 12s linear infinite}
+@keyframes spin{to{transform:rotate(360deg)}}
+.done-card{text-align:center;display:grid;justify-items:center;gap:8px}
+
+/* la barre de pilotage */
+.ctl{flex:none;display:flex;align-items:center;justify-content:center;gap:8px;flex-wrap:wrap;padding:10px 14px;background:#0E1020;border-top:1px solid #23263F}
+.ctl button{height:34px;padding:0 14px;border-radius:10px;border:1px solid #2C3050;background:#1A1D35;font-weight:800;font-size:13px}
+.ctl button.on{background:var(--yellow);color:#24253D;border-color:var(--yellow)}
+.ctl .info{font-size:12.5px;font-weight:800;color:#9BA0CC;max-width:520px;text-align:center}
+.toast{position:absolute;left:50%;bottom:24px;transform:translateX(-50%);z-index:30;padding:10px 18px;border-radius:99px;background:#fff;color:#24253D;font-weight:900;font-size:14px;animation:tin .3s, tout .3s 2.2s forwards;white-space:nowrap}
+#app.phone .toast{bottom:80px}
+@keyframes tin{from{opacity:0;transform:translate(-50%,10px)}} @keyframes tout{to{opacity:0}}
+</style>
+</head>
+<body>
+<div class="stage-wrap"><div id="app"></div></div>
+<div class="ctl">
+  <button id="c-desk" class="on">Ordinateur</button><button id="c-phone">Téléphone</button>
+  <span style="width:1px;height:22px;background:#2C3050"></span>
+  <button id="c-reset">↺ Recommencer</button><button id="c-skip">Étape suivante ⏭</button>
+  <span class="info" id="c-info"></span>
+</div>
+<script src="tikalo-demo-rendu.js"></script>
+<script>
+/* =====================================================================
+   LE DÉMARRAGE PAR ÉTAPES (simulation)
+   ===================================================================== */
+const APP = document.getElementById("app");
+const MENUS = {
+  accueil:    {nom:"Accueil",        ic:"⌂"},
+  sacs:       {nom:"Sachets",        ic:"🛍"},
+  boite:      {nom:"Boîte à billes", court:"Boîte", ic:"◎"},
+  jeux:       {nom:"Jeux de la cour",court:"Jeux", ic:"🎯"},
+  confiserie: {nom:"La Confiserie",  court:"Confiserie", ic:"🍬"},
+  cour:       {nom:"La cour de récré",court:"Cour", ic:"👥"},
+  passe:      {nom:"Passe de saison",court:"Passe", ic:"🎟"},
+};
+// les étapes : ce qui est ouvert, l'objectif affiché, la condition pour passer à la suivante, la fenêtre qui présente la nouveauté
+const ETAPES = [
+  {menus:["accueil","sacs","boite"], but:"Ouvre 5 sachets", detail:"Chaque sachet te donne des billes pour remplir ta boîte. Le sachet gratuit revient toutes les 10 minutes.",
+    ic:"🛍", go:"sacs", fait:()=>J.sachets>=5, prog:()=>[J.sachets,5]},
+  {menus:["jeux"], but:"Joue à un jeu de la cour", detail:"Les jeux te rapportent des bonbecs. Avec les bonbecs, tu achètes d'autres sachets.",
+    ic:"🎯", go:"jeux", fait:()=>J.jeux>=1, prog:()=>[J.jeux,1],
+    nouv:{t:"Les jeux de la cour", p:"Joue avec tes billes et gagne des bonbecs. Avec les bonbecs, tu achètes d'autres sachets !", ic:"🎯"}},
+  {menus:["confiserie"], but:"Échange tes doubles", detail:"Tu as des billes en double. À la Confiserie, échange-les contre des bonbecs, ou fusionne-les pour une plus grosse.",
+    ic:"🍬", go:"confiserie", fait:()=>J.echange, prog:()=>[J.echange?1:0,1],
+    nouv:{t:"La Confiserie", p:"Tes billes en double ne servent pas à rien : échange-les contre des bonbecs, ou fusionne-les pour obtenir une bille plus grosse.", ic:"🍬"}},
+  {menus:["cour"], but:"Ajoute un copain", detail:"Dans la cour, tu retrouves tes copains, tu troques tes billes et tu regardes le classement.",
+    ic:"👥", go:"cour", fait:()=>J.copain, prog:()=>[J.copain?1:0,1],
+    nouv:{t:"La cour de récré", p:"Retrouve tes copains, troque tes billes avec eux, vends-en au marché et grimpe au classement.", ic:"👥"}},
+  {menus:[], but:"Reviens demain", detail:"Demain, de nouvelles choses t'attendent : le bonbec du jour, des quêtes et le passe de saison.",
+    ic:"🌙", go:null, fait:()=>J.jour>=2, prog:()=>[J.jour-1,1]},
+  {menus:["passe"], but:null,
+    nouv:{t:"Ta journée et le passe de saison", p:"Chaque jour : un bonbec offert, des quêtes et 3 jeux du jour. Et le passe de saison te récompense tout le mois.", ic:"🎟"}},
+];
+let J, ui = {page:"accueil", phone:false, popup:null, rev:null, fresh:new Set()};
+const pick = a => a[Math.floor(Math.random()*a.length)];
+const fams = () => FAMILIES.map((f,i)=>i).filter(i=>!FAMILIES[i].event && FAMILIES[i].season==null && !FAMILIES[i].secret && i!==BETA.fam && !FAMILIES[i].depart);
+function reset(){
+  const dep = makeSpec("calot", {family:pick(fams())});
+  J = {etape:0, sachets:0, jeux:0, echange:false, copain:false, jour:1, bonbecs:100, billes:[dep], gratuits:5, joues:new Set()};
+  ui.page = "accueil"; ui.popup = null; ui.rev = null; ui.fresh = new Set(); render();
+}
+const menusOuverts = () => ETAPES.slice(0, J.etape+1).flatMap(e=>e.menus);
+// une action du joueur : on regarde si l'objectif est atteint, et on débloque l'étape suivante
+function avance(){
+  const E = ETAPES[J.etape];
+  if(E?.fait && E.fait() && J.etape < ETAPES.length-1){
+    J.etape++; const N = ETAPES[J.etape]; N.menus.forEach(m=>ui.fresh.add(m));
+    if(N.nouv) setTimeout(()=>{ ui.popup = N.nouv; render() }, 700);
+  }
+  render();
+}
+const toast = t => { const e = document.createElement("div"); e.className = "toast"; e.textContent = t; APP.appendChild(e); setTimeout(()=>e.remove(), 2600) };
+const img = (s, px=96) => `<img src="${marbleURL(s, px)}" alt="">`;
+const badges = () => ({sacs: J.gratuits || "", jeux: menusOuverts().includes("jeux") && J.jeux<3 ? 3-J.jeux : ""});
+
+/* ---------- l'affichage ---------- */
+function render(){
+  const ouverts = menusOuverts(), B = badges();
+  const navItem = (k, cls) => { const M = MENUS[k], b = B[k];
+    return `<button class="${cls}${ui.page===k?" on":""}${ui.fresh.has(k)?" new":""}" data-go="${k}"><span class="ic">${M.ic}</span><span>${cls==="tb"?(M.court||M.nom):M.nom}</span>${b?`<span class="badge">${b}</span>`:""}</button>` };
+  APP.className = ui.phone ? "phone" : "";
+  APP.innerHTML = `
+    <div class="top"><div class="logo"><span class="lt">T</span><span class="lt i">ı<img src="${marbleURL(LOGO_SPEC,64)}" alt=""></span><span class="lt">k</span><span class="lt">a</span><span class="lt">l</span><span class="lt">o</span></div>
+      <span class="sp"></span><span class="wallet" id="wallet">🍬 ${J.bonbecs}</span><span class="av">${img(J.billes[0],76)}</span></div>
+    <div class="body"><nav class="side">${ouverts.map(k=>navItem(k,"nav")).join("")}</nav><main>${page()}</main></div>
+    <nav class="tabbar">${ouverts.map(k=>navItem(k,"tb")).join("")}</nav>
+    ${ui.popup ? `<div class="scrim"><div class="unlock"><span class="rays"></span><span class="ui">${ui.popup.ic}</span><small>Nouveau !</small><h2>${ui.popup.t}</h2><p>${ui.popup.p}</p>
+      <button class="btn" data-act="pop-go">Va voir</button><button class="later" data-act="pop-close">Plus tard</button></div></div>` : ""}`;
+  setTimeout(()=>ui.fresh.clear(), 800);
+  const E = ETAPES[J.etape];
+  document.getElementById("c-info").textContent = `Étape ${Math.min(J.etape+1, ETAPES.length)} / ${ETAPES.length} · menus ouverts : ${ouverts.map(k=>MENUS[k].court||MENUS[k].nom).join(", ")}`;
+}
+function goalCard(){
+  const E = ETAPES[J.etape];
+  if(!E.but) return `<div class="panel done-card" style="margin-bottom:16px"><span style="font-size:40px">🏆</span><b style="font-family:var(--display);font-weight:400;font-size:24px">Tu connais toute la cour !</b><p class="ph">Plus d'objectif ici : à toi de jouer comme tu veux.</p></div>`;
+  const [n, of] = E.prog();
+  return `<div class="goal"><span class="gi">${E.ic}</span><div><small>Ton objectif</small><b>${E.but}</b><p>${E.detail}</p>
+      ${of>1 ? `<div class="bar"><i style="width:${Math.min(100,n/of*100)}%"></i></div>` : ""}
+      <div class="steps">${ETAPES.slice(0,-1).map((_,i)=>`<i class="${i<J.etape?"done":i===J.etape?"cur":""}"></i>`).join("")}</div></div>
+    ${E.go ? `<button class="btn" data-go="${E.go}">${of>1?`${n} / ${of} · `:""}Y aller</button>` : `<button class="btn" data-act="demain">🌙 Passer à demain (démo)</button>`}</div>`;
+}
+function page(){
+  const P = ui.page;
+  if(P==="accueil") return `<h1>Salut ${"Jibriti"} !</h1><p class="lead">Le but : <b>trouver toutes les billes</b>. Les sachets t'en donnent, les jeux te rapportent des bonbecs pour en ouvrir d'autres.</p>
+    ${goalCard()}
+    <div class="home2">
+      <div class="panel bagcard"><span class="bg">${bagSVG(BAG_BY.gratuit)}</span><div><b>Sachet gratuit</b><small>${J.gratuits} en stock · un nouveau toutes les 10 min</small><button class="btn" data-go="sacs" ${J.gratuits?"":"disabled"}>Ouvrir</button></div></div>
+      <div class="panel"><span class="k">Tes dernières billes · ${J.billes.length}</span><div class="mini">${J.billes.slice(-10).reverse().map(s=>img(s,76)).join("")}</div></div>
+      ${J.etape>=5 ? `<div class="panel"><span class="k">Ma journée</span><p class="ph">🎁 Le bonbec du jour · 📋 4 quêtes · 🎯 3 jeux du jour</p></div>` : ""}
+    </div>`;
+  if(P==="sacs") return `<h1>Ouvrir des sachets</h1><p class="lead">Touche le sachet pour l'ouvrir : 3 billes dedans.</p>
+    <div class="panel center"><span class="bigbag" data-act="ouvrir">${bagSVG(BAG_BY.gratuit)}</span>
+      ${ui.rev ? `<div class="reveal">${ui.rev.map((s,i)=>`<span class="rb" style="--d:${i*.18}s">${img(s,172)}<span>${TYPES[s.type].label}</span></span>`).join("")}</div>` : ""}
+      <p class="ph" style="margin:10px 0 14px">${J.gratuits} sachet${J.gratuits>1?"s":""} gratuit${J.gratuits>1?"s":""} en stock</p>
+      <button class="btn" data-act="ouvrir" ${J.gratuits?"":"disabled"}>Ouvrir un sachet</button></div>`;
+  if(P==="boite") { const cnt = {}; J.billes.forEach(s=>{ const k = s.type+s.family; cnt[k]=(cnt[k]||0)+1 });
+    return `<h1>Ta boîte à billes</h1><p class="lead">${J.billes.length} billes. Il en reste des centaines à trouver !</p>
+    <div class="panel"><div class="box">${J.billes.map(s=>`<div>${img(s,100)}<small class="${cnt[s.type+s.family]>1?"dbl":""}">${cnt[s.type+s.family]>1?"double":TYPES[s.type].label}</small></div>`).join("")}</div></div>` }
+  if(P==="jeux") { const G = [["tir","Le Tir",artTir],["marelle","La Marelle",artMarelle],["roue","La Roue",artRoue]];
+    return `<h1>Jeux de la cour</h1><p class="lead">Chaque jeu se joue une fois par jour gratuitement et te rapporte des bonbecs.</p>
+    <div class="games">${G.map(([k,n,f])=>`<div class="game">${f()}<div class="gb"><b>${n}</b>${J.joues.has(k)?`<span class="played">✓ Joué · +15 🍬</span>`:`<button class="btn" data-act="jouer" data-k="${k}">Jouer</button>`}</div></div>`).join("")}</div>` }
+  if(P==="confiserie") return `<h1>La Confiserie</h1><p class="lead">Tes doubles contre des bonbecs. Tu gardes toujours un exemplaire de chaque bille.</p>
+    <div class="panel center">${J.echange ? `<p style="font-family:var(--display);font-size:24px">+30 🍬</p><p class="ph">Doubles échangés !</p>` : `<p class="ph" style="margin-bottom:14px">3 doubles dans ta boîte</p><button class="btn" data-act="echanger">Tout échanger · +30 🍬</button>`}</div>`;
+  if(P==="cour") return `<h1>La cour de récré</h1><p class="lead">Ajoute un copain avec son pseudo : vous pourrez troquer vos billes.</p>
+    <div class="panel">${J.copain ? `<p class="played">✓ Demande envoyée à Bim</p>` : `<div style="display:flex;gap:10px;flex-wrap:wrap"><span class="btn ghost" style="flex:1;justify-content:flex-start;color:var(--muted)">Bim</span><button class="btn" data-act="copain">Ajouter</button></div>`}</div>`;
+  if(P==="passe") return `<h1>Passe de saison</h1><p class="lead">30 paliers ce mois-ci. Tout ce que tu fais rapporte de l'XP.</p><div class="panel"><p class="ph">Palier 1 / 30 · 🎁 10 bonbecs au palier 2</p></div>`;
+  return "";
+}
+
+/* ---------- les actions ---------- */
+APP.addEventListener("click", e=>{
+  const g = e.target.closest("[data-go]"), a = e.target.closest("[data-act]");
+  if(g){ ui.page = g.dataset.go; ui.rev = null; ui.popup = null; render(); return }
+  if(!a) return;
+  const k = a.dataset.act;
+  if(k==="ouvrir"){ if(!J.gratuits) return; J.gratuits--; J.sachets++;
+    const f = fams(), sp = [0,1,2].map(i=>makeSpec(pick(["mini","bille","bille","chinoise","calot"]), {family: J.billes.length>4 && i===0 ? J.billes[1].family : pick(f)}));
+    J.billes.push(...sp); ui.rev = sp; avance() }
+  if(k==="jouer"){ J.jeux++; J.joues.add(a.dataset.k); J.bonbecs += 15; toast("+15 bonbecs !"); avance(); document.getElementById("wallet")?.classList.add("pulse") }
+  if(k==="echanger"){ J.echange = true; J.bonbecs += 30; toast("+30 bonbecs !"); avance() }
+  if(k==="copain"){ J.copain = true; toast("Demande envoyée !"); avance() }
+  if(k==="demain"){ J.jour++; J.gratuits = 5; J.joues = new Set(); toast("Le lendemain…"); ui.page = "accueil"; avance() }
+  if(k==="pop-go"){ const m = ETAPES[J.etape].menus[0] || "accueil"; ui.popup = null; ui.page = m; render() }
+  if(k==="pop-close"){ ui.popup = null; render() }
+});
+document.getElementById("c-reset").onclick = reset;
+document.getElementById("c-skip").onclick = ()=>{
+  const E = ETAPES[J.etape]; if(J.etape>=ETAPES.length-1) return;
+  if(J.etape===0){ J.sachets = 5 } else if(J.etape===1){ J.jeux = Math.max(1,J.jeux) } else if(J.etape===2){ J.echange = true } else if(J.etape===3){ J.copain = true } else if(J.etape===4){ J.jour = 2 }
+  avance() };
+const fmtBtn = ph => { ui.phone = ph; document.getElementById("c-desk").classList.toggle("on", !ph); document.getElementById("c-phone").classList.toggle("on", ph); render() };
+document.getElementById("c-desk").onclick = ()=>fmtBtn(false);
+document.getElementById("c-phone").onclick = ()=>fmtBtn(true);
+document.fonts.ready.then(reset);
+</script>
+</body>
+</html>

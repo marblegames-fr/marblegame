@@ -132,9 +132,9 @@ $$ select array_position(interne.tailles(), t) - 1 $$;   -- 0 (Mini) à 5 (Mammo
 
 -- rareté de chaque décor (dans l'ordre de FAMILIES) et poids de chaque rareté
 create or replace function interne.decor_rarete() returns int[] language sql immutable as
-$$ select array[0,0,4,2,1,2,0,1,2,3,3,1,2,1,2,1,2,3,2,2,0,0,1,1,0,1,3,3,1,2,4,2, 5, 2,4, 5,5,5,5,5,5,5,5,5,5,5,5, 5, 5, 3,3,3] $$;   -- 32 : Pirate (événement, 5 = jamais dans les sacs) ; 33 Vitrail ; 34 Trou noir ; 35 à 46 : décors de saison (passe seulement) ; 47 : Bêta ; 48 : Super-héros (événement de novembre 2026) ; 49 Prisme, 50 Orage et 51 Méduse (épiques), 7 octobre 2026 ; 8 octobre 2026 : nouvelle tier list (Opaline, Cristal, Givrée → peu commun ; Pailletée, Fumée, Millefiori, Vitrail → rare ; Prisme → épique)
+$$ select array[0,0,4,1,0,2,0,0,2,2,3,2,1,1,1,2,2,3,2,2,0,0,1,1,0,1,3,3,1,2,4,2, 5, 1,4, 5,5,5,5,5,5,5,5,5,5,5,5, 5, 5, 3,3,3, 0,0,0,0,0,1,1,1,2,3,1,4, 6] $$;   -- 32 : Pirate (événement, 5 = jamais dans les sacs) ; 33 Vitrail ; 34 Trou noir ; 35 à 46 : décors de saison (passe seulement) ; 47 : Bêta ; 48 : Super-héros (événement de novembre 2026) ; 49 Prisme, 50 Orage et 51 Méduse ; 10 octobre 2026 : nouvelle tier list (Opaline, Berlingot → commun ; Agate, Arlequin, Millefiori, Vitrail → peu commun ; Cristal, Givrée, Acier → rare), 52 à 63 nouveaux motifs (Étoilée, Cœurs, Bicolore, Vagues, Zigzag, Tricot, Nuages, Mouchetée, Jean, Ambre, Circuit, Feu d'artifice), 64 Vortex : MYTHIQUE (6)
 create or replace function interne.poids_rarete() returns numeric[] language sql immutable as
-$$ select array[10,5,2.5,0.8,0.2,0]::numeric[] $$;   -- la 6e : décors d'événement, jamais tirés
+$$ select array[10,5,2.5,0.8,0.2,0,0.02]::numeric[] $$;   -- la 6e : décors d'événement, jamais tirés ; la 7e : mythique (10 octobre 2026, DECOR_RAR[5] dans index.html)
 
 create or replace function interne.coloris_base() returns int language sql immutable as $$ select 48 $$;   -- les coloris de saison commencent à 48
 -- Les coloris qu'on tire dans les sachets : les 48 d'origine, puis ceux inventés par les joueurs (2 octobre 2026 : 76 Zède, 77 uwu ; 3 octobre : 78 Poups).

@@ -216,15 +216,15 @@ begin
     -- sa plus belle bille : la shiny la plus rare, puis la plus grosse, puis le décor le plus rare
     'top', (select interne.bille_json(b) from billes b where b.proprietaire = qui and b.detruite_le is null and coalesce(b.donnees->>'src', '') <> 'test'
               and b.secrete is null   -- (7 octobre 2026) jamais une bille secrète (ni la Bêta)
-              and (interne.decor_rarete())[b.decor+1] < 5 and interne.coloris_normal(b.coloris)   -- (9 octobre 2026) ni une bille d'événement ni du passe de saison, comme pour l'album
+              and (interne.decor_rarete())[b.decor+1] <> 5 and interne.coloris_normal(b.coloris)   -- (9 octobre 2026) ni une bille d'événement ni du passe de saison, comme pour l'album
               order by b.shiny desc, interne.rang(b.taille) desc, (interne.decor_rarete())[b.decor+1] desc, b.numero limit 1),
     'billes', (select count(*) from billes b where b.proprietaire = qui and b.detruite_le is null),
     -- l'album : les billes différentes (taille, décor, coloris) et les cases (taille, décor), hors événements, saisons et secrètes
     'album', (select count(distinct (b.taille, b.decor, b.coloris)) from billes b where b.proprietaire = qui and b.detruite_le is null
-                and interne.coloris_normal(b.coloris) and (interne.decor_rarete())[b.decor+1] < 5),
-    'cases', (select count(distinct (b.taille, b.decor)) from billes b where b.proprietaire = qui and b.detruite_le is null and (interne.decor_rarete())[b.decor+1] < 5),
+                and interne.coloris_normal(b.coloris) and (interne.decor_rarete())[b.decor+1] <> 5),
+    'cases', (select count(distinct (b.taille, b.decor)) from billes b where b.proprietaire = qui and b.detruite_le is null and (interne.decor_rarete())[b.decor+1] <> 5),
     'completes', (select count(*) from (select 1 from billes b where b.proprietaire = qui and b.detruite_le is null and interne.coloris_normal(b.coloris)
-                and (interne.decor_rarete())[b.decor+1] < 5 group by b.taille, b.decor having count(distinct b.coloris) >= interne.nb_coloris()) x),
+                and (interne.decor_rarete())[b.decor+1] <> 5 group by b.taille, b.decor having count(distinct b.coloris) >= interne.nb_coloris()) x),
     'tailles', (select coalesce(jsonb_object_agg(t, n), '{}') from (select b.taille t, count(*) n from billes b where b.proprietaire = qui and b.detruite_le is null group by b.taille) x),
     'shinies', (select jsonb_build_array(count(*) filter (where b.shiny = 1), count(*) filter (where b.shiny = 2), count(*) filter (where b.shiny = 3))
                 from billes b where b.proprietaire = qui and b.detruite_le is null),
@@ -588,7 +588,7 @@ end $$;
 --    (les séries à thème ont été retirées du jeu le 8 octobre 2026 : elles ne rapportent plus de points)
 -- =====================================================================
 create or replace function interne.pts_taille() returns int[] language sql immutable as $$ select array[10,15,20,30,60,120] $$;
-create or replace function interne.mult_decor() returns numeric[] language sql immutable as $$ select array[1,1.5,2,3,5]::numeric[] $$;
+create or replace function interne.mult_decor() returns numeric[] language sql immutable as $$ select array[1,1.5,2,3,5,0,8]::numeric[] $$;   -- 6e : événements (ne comptent pas) ; 7e : mythique (10 octobre 2026)
 create or replace function interne.pts_shiny() returns int[] language sql immutable as $$ select array[150,300,600] $$;
 
 drop function if exists interne.series();
@@ -599,7 +599,7 @@ create or replace function interne.scores() returns table (joueur uuid, total in
   with b as (
     select proprietaire j, interne.rang(taille) t, decor d, coloris c, shiny sh from public.billes
     where detruite_le is null and origine = 'serveur' and secrete is null and coalesce(donnees->>'src', '') <> 'test'
-      and coalesce((interne.decor_rarete())[decor+1], 5) < 5),   -- les décors d'événement ne comptent pas
+      and coalesce((interne.decor_rarete())[decor+1], 5) <> 5),   -- les décors d'événement ne comptent pas (le mythique, 6, compte)
   k as (   -- les cases
     select j, t, d, count(distinct c)::int nc, count(distinct c) filter (where interne.coloris_normal(c))::int nb,
       (interne.pts_taille())[t+1] pt, (interne.mult_decor())[(interne.decor_rarete())[d+1]+1] m
@@ -608,7 +608,7 @@ create or replace function interne.scores() returns table (joueur uuid, total in
   sh as (select j, sum((interne.pts_shiny())[sh])::int p from (select distinct j, t, d, c, sh from b where sh > 0 and interne.coloris_normal(c)) x group by j),
   sd as (select j, sum(round(200 * m))::int p, count(*)::int n from (select j, d, max(m) m from k group by j, d having count(*) = 6) x group by j),
   st as (select j, sum(20 * pt)::int p, count(*)::int n from (select j, t, max(pt) pt from k group by j, t
-           having count(*) = (select count(*) from unnest(interne.decor_rarete()) x where x < 5)) x group by j),
+           having count(*) = (select count(*) from unnest(interne.decor_rarete()) x where x <> 5)) x group by j),
   sc as (select j, sum(20 * pt)::int p, count(*)::int n from k where nb >= interne.nb_coloris() group by j),
   tot as (select j, count(*)::int cases, sum(round(pt * m))::int pc, sum((pt / 5) * (nc - 1))::int pk from k group by j),
   x as (select tot.*, coalesce(sh.p,0) psh,

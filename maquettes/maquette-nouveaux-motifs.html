@@ -66,10 +66,10 @@ nav.jump a{padding:8px 14px;border-radius:999px;border:1px solid var(--line);bac
 <div class="wrap">
   <span class="tag">Maquette · 10 octobre 2026</span>
   <h1>Les nouveaux motifs</h1>
-  <p class="lead">Les 13 nouveaux motifs de ta tier list, en <b>vrai rendu 3D</b> (le même moteur que dans le jeu). Chacun est montré en Azur, puis dans 5 autres coloris et en Mammouth, pour voir comment il réagit aux couleurs et à la taille. En dessous, ta tier list complète avec les vrais rendus.</p>
+  <p class="lead">Les 12 nouveaux motifs de ta tier list, en <b>vrai rendu 3D</b> (le même moteur que dans le jeu). Chacun est montré en Azur, puis dans 5 autres coloris et en Mammouth, pour voir comment il réagit aux couleurs et à la taille. En dessous, ta tier list complète avec les vrais rendus.</p>
   <p class="note">Touche une bille pour l'agrandir et la faire tourner !</p>
-  <nav class="jump"><a href="#nouveaux">Les 13 nouveaux</a><a href="#tierlist">Ta tier list complète</a></nav>
-  <h2 id="nouveaux">Les 13 nouveaux motifs</h2>
+  <nav class="jump"><a href="#nouveaux">Les 12 nouveaux</a><a href="#tierlist">Ta tier list complète</a></nav>
+  <h2 id="nouveaux">Les 12 nouveaux motifs</h2>
   <div class="news" id="news"></div>
   <h2 id="tierlist">Ta tier list complète</h2>
   <p class="lead" id="tl-lead"></p>
@@ -96,9 +96,8 @@ const NEW = [
   {name:"Nuages", rar:1, desc:"Un ciel où passent de gros nuages blancs tout ronds : un après-midi de récré au soleil."},
   {name:"Mouchetée", rar:1, desc:"Un fond clair couvert de petites taches, comme un œuf de caille."},
   {name:"Jean", rar:2, desc:"La toile de jean, avec sa trame en diagonale un peu délavée et une double couture au fil doré."},
-  {name:"Géode", rar:3, face:true, desc:"Une pierre grise toute simple… coupée d'un côté : à l'intérieur, des cristaux qui brillent vers le creux du milieu."},
   {name:"Ambre", rar:3, face:true, desc:"Une résine chaude où une feuille fossile est prise depuis des millions d'années, avec de petites bulles d'air."},
-  {name:"Circuit", rar:4, desc:"Une carte électronique : ses pistes s'allument et la lumière y court d'un point à l'autre (on le voit bouger en grand)."},
+  {name:"Circuit", rar:1, desc:"Une carte électronique : ses pistes s'allument et la lumière y court d'un point à l'autre (on le voit bouger en grand)."},
   {name:"Feu d'artifice", rar:4, desc:"Des bouquets de lumière qui éclatent dans un verre de nuit, chacun de sa couleur."},
 ];
 const N0 = FAMILIES.length;   // 52
@@ -108,10 +107,10 @@ NEW.forEach(x=>{ if(!["Ambre","Feu d'artifice"].includes(x.name)) OPAQUE_FAMS.pu
 
 // ---------- ta tier list (10 octobre 2026) ----------
 const MINE = {
-  4:["Galaxie","Aurore","Trou noir","Circuit","Feu d'artifice"],
-  3:["Nacrée","Lave","Globe","Planète","Prisme","Orage","Méduse","Géode","Ambre"],
+  4:["Galaxie","Aurore","Trou noir","Feu d'artifice"],
+  3:["Nacrée","Lave","Globe","Planète","Prisme","Orage","Méduse","Ambre"],
   2:["Pailletée","Terre","Acier","Cristal","Givrée","Fumée","Marbre","Tigrée","Écailles","Craquelée","Jean"],
-  1:["Agate","Arlequin","Ruban","Millefiori","Écossais","Nid d'abeille","Pixel","Bois","Vitrail","Tricot","Nuages","Mouchetée"],
+  1:["Agate","Arlequin","Ruban","Millefiori","Écossais","Nid d'abeille","Pixel","Bois","Vitrail","Tricot","Nuages","Mouchetée","Circuit"],
   0:["Œil-de-chat","Tourbillon","Opaline","Oignon","Berlingot","À pois","Damier","Cible","Étoilée","Cœurs","Bicolore","Vagues","Zigzag"]};
 const famByName = n => FAMILIES.findIndex(F=>F.name===n && !F.event && F.season==null && !F.beta);
 const AVANT = {}; FAMILIES.forEach((F,i)=>{ if(i<N0) AVANT[i] = F.rar });   // la rareté d'aujourd'hui (avant de la changer)

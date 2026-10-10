@@ -89,40 +89,24 @@
     return vec4(mix(den,vec3(0.93,0.64,0.24),stitch), 200.0);
   }
 #elif MODE==61
-  { // géode : une pierre grise toute simple, coupée d'un côté ; dans la coupe, une croûte d'agate
-    // et des cristaux pointés vers le creux du milieu, qui étincellent
-    vec3 u=normalize(q); float h=u.z;
-    vec3 rock=mix(vec3(0.4,0.37,0.35),vec3(0.62,0.58,0.54),fbm(u*6.0+so))*(0.8+0.3*noise(u*30.0+so));
-    if(h<0.4) return vec4(rock, 200.0);
-    vec2 p=u.xy/0.9165; float rr=length(p);
-    if(rr>0.84) return vec4(mix(vec3(0.95,0.94,0.92),uC3,0.3)*(0.82+0.18*sin(rr*130.0)), 200.0);
-    vec2 g=vec2(atan(p.y,p.x)/6.2831853*30.0, rr*7.0)+so.xy; vec2 id=floor(g), f=fract(g);
-    float hk=h31(vec3(id,so.z));
-    float facet=(0.5+0.5*sin(f.x*3.1416))*(0.65+0.35*hk)*(0.75+0.25*f.y);
-    vec3 cr=mix(uC1,uC2,hk)*(0.45+0.75*facet); cr=mix(cr,vec3(1.0),smoothstep(0.8,1.0,facet)*0.5);
-    float cav=smoothstep(0.3,0.1,rr);
-    cr=mix(cr,uC1*0.22,cav);
-    e=mix(uC2,vec3(1.0),0.6)*step(0.92,h31(vec3(id,so.x+3.0)))*smoothstep(0.6,1.0,facet)*(1.0-cav)*1.6;
-    return vec4(cr, 200.0);
-  }
-#elif MODE==62
-  { // ambre : une résine de la couleur du coloris, avec une feuille fossile couchée au cœur et de petites bulles d'air
-    float r=length(q); float n=fbm(q*3.0+so);
-    vec3 res=mix(mix(uC1,uC2,0.55),uC3,0.25+0.4*n);
+  { // ambre : une résine limpide de la couleur du coloris, plus foncée vers le bord ; au cœur, une feuille fossile
+    // bien nette (ses nervures se voient), et quelques petites bulles d'air
+    float r=length(q);
+    vec3 res=mix(mix(uC1,uC2,0.6),uC1*0.75,smoothstep(0.3,0.95,r));
     vec2 p=q.xy; float ca=0.8, sa=0.6; p=vec2(ca*p.x-sa*p.y, sa*p.x+ca*p.y);
-    float lw=0.18*sqrt(max(0.0,1.0-pow(p.y/0.46,2.0)))*(1.0-0.3*p.y);
-    float lz=smoothstep(0.045,0.025,abs(q.z));
+    float lw=0.19*sqrt(max(0.0,1.0-pow(p.y/0.46,2.0)))*(1.0-0.3*p.y);
+    float lz=smoothstep(0.04,0.02,abs(q.z));
     float leaf=smoothstep(0.01,-0.01,abs(p.x)-lw)*lz*step(abs(p.y),0.46);
     float stem=smoothstep(0.014,0.007,abs(p.x))*step(p.y,-0.4)*step(-0.68,p.y)*lz;
     float vein=max(smoothstep(0.014,0.004,abs(p.x)), smoothstep(0.06,0.02,abs(fract((p.y-abs(p.x)*1.1)*8.0)-0.5))*step(abs(p.x),lw*0.9));
-    vec3 g=q*7.0+so; vec3 id=floor(g), fc=fract(g)-0.5; float rb=0.05+0.07*h31(id+1.3);
-    float bub=step(0.62,h31(id))*smoothstep(0.03,0.0,abs(length(fc-(vec3(h31(id+3.1),h31(id+7.7),h31(id+1.9))-0.5)*0.4)-rb))*smoothstep(0.9,0.7,r);
-    e=mix(uC2,uC3,0.5)*n*0.9+vec3(1.0,0.95,0.8)*bub*1.5;
+    vec3 g=q*7.0+so; vec3 id=floor(g), fc=fract(g)-0.5; float rb=0.04+0.05*h31(id+1.3);
+    float bub=step(0.7,h31(id))*smoothstep(0.025,0.0,abs(length(fc-(vec3(h31(id+3.1),h31(id+7.7),h31(id+1.9))-0.5)*0.4)-rb))*smoothstep(0.88,0.7,r)*(1.0-lz);
+    e=mix(uC2,uC3,0.5)*0.35*smoothstep(0.7,0.0,r)+vec3(1.0,0.95,0.8)*bub*1.2;   // la lumière qui reste prise au cœur
     float lf=max(leaf,stem);
-    if(lf>0.01){ vec3 lc=mix(uC1*0.3,vec3(0.24,0.14,0.05),0.6)*(1.0-0.55*vein); e*=0.3; return vec4(lc, 70.0*lf); }
-    return vec4(res, 2.4+bub*20.0);
+    if(lf>0.01){ vec3 lc=mix(uC1*0.3,vec3(0.26,0.15,0.05),0.6)*(1.0-0.6*vein); e*=0.2; return vec4(lc, 70.0*lf); }
+    return vec4(res, 0.55+bub*25.0);
   }
-#elif MODE==63
+#elif MODE==62
   { // circuit : une carte électronique sombre ; ses pistes s'allument et la lumière y court d'un point à l'autre
     vec3 u=normalize(q); vec2 s=sph(u); float n=9.0+nb*2.0;
     vec2 p=vec2(s.x*n*2.0, s.y*n); vec2 id=floor(p), f=fract(p);
@@ -140,7 +124,7 @@
     vec3 c=mix(board,mix(uC2,vec3(0.85,0.75,0.4),0.3),max(tr,pad)*(1.0-hole));
     return vec4(c, 200.0);
   }
-#elif MODE==64
+#elif MODE==63
   { // feu d'artifice : des bouquets de lumière qui éclatent dans un verre de nuit, chacun de sa couleur
     float r=length(q); e=vec3(0.0);
     for(int i=0;i<3;i++){ float fi=float(i);

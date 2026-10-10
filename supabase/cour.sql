@@ -665,17 +665,45 @@ do $$ begin
   end if;
 end $$;
 
--- Mes statistiques de la cour : trocs réussis, billes vendues et achetées, enchères gagnées, copains
+-- Mes statistiques (page Profil) : tout ce que le serveur a noté depuis l'arrivée du joueur
+-- (10 octobre 2026, revu) en plus de la cour : les parties de chaque jeu (offertes + achetées, d'après gains),
+-- les quêtes, les succès, les jours où les 3 jeux du jour sont faits, la Grande Course, la Loterie, les billes
+-- échangées contre des bonbecs et la place au classement. Le site garde le plus grand de ses compteurs et de ceux-ci.
 create or replace function public.cour_stats() returns jsonb language plpgsql security definer set search_path = public as $$
-declare moi uuid := auth.uid();
+declare moi uuid := auth.uid(); g jsonb; mon int;
 begin
   if moi is null then raise exception 'connexion_requise'; end if;
+  -- parties jouées par jeu : la partie offerte (source 'jeu', clé « jour|jeu ») + les parties achetées (source = le jeu ; 'plinko' pour le Plinko)
+  select coalesce(jsonb_object_agg(k, n), '{}') into g from (
+    select case when source = 'jeu' then split_part(cle, '|', 2) when source = 'plinko' then 'pachinko' else source end k, count(*) n
+    from gains where joueur = moi and (source in ('jeu', 'plinko', 'roue', 'grattage', 'distributeur', 'marelle'))
+    group by 1) x;
+  select s.total into mon from interne.scores() s where s.joueur = moi;
   return jsonb_build_object(
     'trocs',    (select count(*) from trocs t where (t.de = moi or t.vers = moi) and t.statut = 'accepte'),
     'vendues',  (select count(*) from annonces a where a.vendeur = moi and a.vendue_le is not null),
     'achetees', (select count(*) from annonces a where a.acheteur = moi and not a.enchere),
     'encheres', (select count(*) from annonces a where a.acheteur = moi and a.enchere),
-    'copains',  (select count(*) from amis where joueur = moi));
+    'copains',  (select count(*) from amis where joueur = moi),
+    'gagne_marche', (select coalesce(sum(prix), 0) from annonces a where a.vendeur = moi and a.vendue_le is not null),
+    'parties',  g,
+    'quetes',   (select count(*) from gains where joueur = moi and source = 'quete'),
+    'bonus_quetes', (select count(*) from gains where joueur = moi and source = 'quetes-bonus'),
+    'jeux_bonus',   (select count(*) from gains where joueur = moi and source = 'jeux-bonus'),
+    'succes',   (select count(*) from gains where joueur = moi and source = 'succes'),
+    'sachets',  (select sacs_ouverts from portefeuilles where joueur = moi),
+    'recyclees', (select count(*) from billes where proprietaire = moi and detruite_raison = 'recyclee'),
+    'course_inscrit', (select count(*) from course_inscrits where joueur = moi),
+    'course_podiums', (select count(*) from courses c, jsonb_array_elements(c.resultats) with ordinality e(v, pos) where e.v->>'joueur' = moi::text and e.pos <= 3),
+    'course_victoires', (select count(*) from courses c where c.resultats->0->>'joueur' = moi::text),
+    'loterie_tickets', (select count(*) from loterie_tickets where joueur = moi),
+    'loterie_gagnants', (select count(*) from loterie_tickets where joueur = moi and bons >= 1),
+    'loterie_meilleur', (select coalesce(max(bons), 0) from loterie_tickets where joueur = moi),
+    -- la place au classement de tous les joueurs (comme public.classement : les comptes de test ne sont pas classés)
+    'rang', case when moi in (select joueur from testeurs) or moi not in (select joueur from portefeuilles) then null
+                 else 1 + (select count(*) from portefeuilles p left join interne.scores() s on s.joueur = p.joueur
+                           where coalesce(s.total, 0) > coalesce(mon, 0) and p.joueur not in (select joueur from testeurs)) end,
+    'classes', (select count(*) from portefeuilles p where p.joueur not in (select joueur from testeurs)));
 end $$;
 
 -- droits : le site ne peut appeler que ces fonctions-là

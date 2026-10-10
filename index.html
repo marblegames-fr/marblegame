@@ -1172,6 +1172,10 @@ body.vit-dragging,body.vit-dragging *{cursor:grabbing!important;user-select:none
 .prof-stats div{padding:12px;border-radius:12px;background:var(--panel-2);border:1px solid var(--line)}
 .prof-stats small{display:block;font-size:12px;font-weight:700;color:var(--ink-2)}
 .prof-stats b{font-size:20px;font-weight:900;font-variant-numeric:tabular-nums}
+.prof-stats b em{font-style:normal;font-size:13px;font-weight:800;color:var(--muted)}
+.prof-stats b sup{font-size:11px;font-weight:900}
+.prof-stats i{display:block;margin-top:2px;font-style:normal;font-size:11.5px;font-weight:700;color:var(--muted);line-height:1.3}
+.prof-stats .txt b{display:block;font-size:15px;line-height:1.25;overflow-wrap:anywhere}
 .modal.picker{display:block;width:min(860px,100%)}
 .picker-body{padding:26px}
 .picker-body h2{font-family:var(--display);font-weight:400;font-size:30px;line-height:1}
@@ -5858,7 +5862,7 @@ function recycleSpecs(ids){
   gone.forEach(s=>sync.why[s.id]="recyclee");
   S.specs = S.specs.filter(s=>!gone.includes(s));
   S.unseen = S.unseen.filter(id=>!set.has(id));
-  S.jetons += total;
+  S.jetons += total; S.stats.recycled = (S.stats.recycled||0)+gone.length;
   if(srvOn()){ const ids = gone.map(s=>s.id); ids.forEach(id=>sync.known.delete(id)); srv(()=>Cloud.eco.recycle(ids)).then(r=>applyEco(r.eco), srvFail) }
   save(); renderTop();
   questEvent("recycle", gone.length);
@@ -6635,7 +6639,7 @@ function claimDaily(){
 function claimQuest(i){
   ensureQuests(); const q = S.quests.items[i];
   if(!q || q.claimed || !questDone(q)) return 0;
-  q.claimed = true; earn("quete", q.id, QUESTS[q.id].reward); passXP(PASS_XP.quest);
+  q.claimed = true; S.stats.quests = (S.stats.quests||0)+1; earn("quete", q.id, QUESTS[q.id].reward); passXP(PASS_XP.quest);
   return QUESTS[q.id].reward;
 }
 function claimBonus(){
@@ -8089,21 +8093,54 @@ document.addEventListener("contextmenu", e=>{ if(vitDrag.slot && e.target.closes
 document.addEventListener("dragstart", e=>{ if(e.target.closest?.("#vitrine") || e.target.tagName==="IMG") e.preventDefault() });
 window.addEventListener("click", e=>{ if(vitDrag.block){ e.stopPropagation(); e.preventDefault(); vitDrag.block = false } }, true);
 // Mes statistiques : tout ce qu'on ne voit nulle part ailleurs, rangé par thème
+// (10 octobre 2026, revu) chaque jeu actuel a sa case (le Pot, la Course sur la plage et le Casse-briques n'en ont plus), plus la collection,
+// la Grande Course, la Loterie et le classement. Avec un compte, le serveur (cour_stats) donne les chiffres depuis l'arrivée du joueur :
+// on garde le plus grand des deux, car certains compteurs de l'appareil n'existent que depuis le 10 octobre 2026.
 let courStats = null;
 function statsPanel(){
   if(srvOn() && !courStats){ courStats = {}; Cloud.cour.stats().then(r=>{ courStats = r||{}; if(ui.view==="profil") renderView() }, ()=>{}) }
-  const ST = S.stats, n = v => fmt(v||0);
-  const cell = (lbl, v) => `<div><small>${lbl}</small><b>${v}</b></div>`;
-  const group = (title, icon, cells) => `<div class="st-group"><h3>${ic(icon,16)} ${title}</h3><div class="prof-stats">${cells.join("")}</div></div>`;
-  const C = courStats || {};
+  const ST = S.stats, C = courStats || {}, G = C.parties || {}, on = srvOn();
+  const n = v => fmt(v||0), mx = (...a) => Math.max(0, ...a.map(v=>+v||0)), pl = (v, one, many) => v>1 ? many : one;
+  // une case : le titre, le chiffre, et en dessous ce qu'il compte (facultatif)
+  const cell = (lbl, v, sub="", cls="") => `<div${cls?` class="${cls}"`:""}><small>${lbl}</small><b>${v}</b>${sub?`<i>${sub}</i>`:""}</div>`;
+  const group = (title, icon, cells) => `<div class="st-group"><h3>${ic(icon,16)} ${title}</h3><div class="prof-stats">${cells.filter(Boolean).join("")}</div></div>`;
+  // la collection
+  const found = albumFound().size, pct = found/ALBUM_TOTAL*100;
+  const nSecret = new Set(S.specs.filter(x=>SECRETS[x.secret]).map(x=>x.secret)).size, nShiny = S.specs.filter(x=>x.shiny).length;
+  const nEvent = S.specs.filter(x=>eventOf(x)).length, nSeason = S.specs.filter(isSeason).length;
+  const rare = S.specs.filter(x=>chanceOf(x)>0).sort((a,b)=>chanceOf(a)-chanceOf(b))[0];
+  const nChal = CHALLENGES.filter(c=>S.chal.includes(c.id)).length;
+  // les sachets (compteurs de l'appareil : au premier sachet, ils partent de ce qu'il y a dans la boîte)
+  const pulled = ST.pulled ?? S.specs.length, shinyF = ST.shinyFound ?? nShiny;
+  // la série du bonbec du jour : en cours seulement si on l'a récupéré aujourd'hui ou hier
+  const serie = S.daily && (S.daily.last===dayKey() || S.daily.last===dayKey(new Date(Date.now()-864e5))) ? S.daily.streak||0 : 0;
+  const rang = C.rang ? `${C.rang}<sup>${C.rang===1?"er":"e"}</sup>` : "–";
+  const jeu = (name, v, one, many) => cell(name, n(v), pl(v, one, many));
   return `<section class="panel" id="stats">
-    <div class="panel-head"><h2>Mes statistiques</h2></div>
-    ${group("Sachets", "bag", [cell("Sachets ouverts", n(S.bags)), cell("Billes tirées", n(ST.pulled ?? S.specs.length)), cell("Shiny trouvées", n(ST.shinyFound ?? S.specs.filter(x=>x.shiny).length)), cell("Boulets trouvés", n(ST.bouletFound ?? S.specs.filter(x=>x.type==="boulet").length)), cell("Mammouths trouvés", n(ST.mammFound ?? S.specs.filter(x=>x.type==="mammouth").length))])}
-    ${group("Confiserie", "candy", [cell("Fusions réussies", n(S.crafts)), cell("Billes dans ta boîte", n(S.specs.length))])}
-    ${group("Mini-jeux", "pad", [cell("Trous réussis au Tir", n(S.holes)), cell("Billes lancées à la Marelle", n(ST.marelle||0)), cell("Sorties du Château", n(ST.castle)),
-      cell("Tours de roue", n(ST.roue||0)), cell("Courses gagnées", n(ST.race)), cell("Parties de Tic gagnées", n(ST.tic))])}
-    ${group("Habitudes", "clock", [cell("Plus longue série de jours", `${bestStreak()} j`), cell(`Bonus des ${QUESTS_N} quêtes`, n(ST.bonus))])}
-    ${srvOn() ? group("La cour de récré", "cour", [cell("Trocs réussis", n(C.trocs)), cell("Billes vendues", n(C.vendues)), cell("Billes achetées", n(C.achetees)), cell("Enchères gagnées", n(C.encheres)), cell("Copains", n(C.copains))]) : ""}
+    <div class="panel-head"><h2>Mes statistiques</h2>${on?`<span class="sample-tag">Depuis ton arrivée</span>`:""}</div>
+    ${group("Ma collection", "layers", [cell("Billes dans ta boîte", n(S.specs.length)),
+      cell("Album", `${n(found)} <em>/ ${n(ALBUM_TOTAL)}</em>`, `${pct>0 && pct<1 ? "moins de 1" : Math.floor(pct)} % des billes différentes`),
+      cell("Shiny dans ta boîte", n(nShiny)), cell("Billes secrètes", `${nSecret} <em>/ ${Object.keys(SECRETS).length}</em>`),
+      nSeason ? cell("Billes de saison", n(nSeason)) : "", nEvent ? cell("Billes d'événement", n(nEvent)) : "",
+      rare ? cell("Ta bille la plus rare", esc(specName(rare)), oneIn(chanceOf(rare)), "txt") : ""])}
+    ${group("Sachets", "bag", [cell("Sachets ouverts", n(mx(S.bags, C.sachets))), cell("Billes tirées", n(pulled)),
+      cell("Shiny tirées", n(shinyF), shinyF ? `1 toutes les ${fmt(Math.round(pulled/shinyF))} billes` : ""),
+      cell("Boulets tirés", n(ST.bouletFound ?? S.specs.filter(x=>x.type==="boulet").length)), cell("Mammouths tirés", n(ST.mammFound ?? S.specs.filter(x=>x.type==="mammouth").length))])}
+    ${group("Confiserie", "flask", [cell("Fusions réussies", n(S.crafts)), cell("Billes échangées", n(mx(ST.recycled, C.recyclees)), "contre des bonbecs")])}
+    ${group("Mini-jeux", "pad", [jeu("Le Tir", S.holes, "trou réussi", "trous réussis"), jeu("Le Château", ST.castle, "bille sortie du cercle", "billes sorties du cercle"),
+      jeu("La Tic", ST.tic, "partie gagnée", "parties gagnées"), jeu("La Marelle", mx(ST.marelle, G.marelle), "bille lancée", "billes lancées"),
+      jeu("La Roue", mx(ST.roue, G.roue), "tour de roue", "tours de roue"), jeu("Le Plinko", mx(ST.pachi, G.pachinko), "bille lâchée", "billes lâchées"),
+      jeu("Le Ticket", mx(ST.grattage, G.grattage), "ticket gratté", "tickets grattés"), jeu("Le Distributeur", mx(ST.distributeur, G.distributeur), "tour de manivelle", "tours de manivelle"),
+      jeu("Les 3 jeux du jour", mx(ST.jdj, C.jeux_bonus), "jour où tout est fait", "jours où tout est fait")])}
+    ${on ? group("Les rendez-vous", "flag", [jeu("La Grande Course", C.course_inscrit, "course courue", "courses courues"),
+      jeu("Podiums", C.course_podiums, "dans le top 3", "dans le top 3"), jeu("Victoires", C.course_victoires, "course gagnée", "courses gagnées"),
+      jeu("La Loterie", C.loterie_tickets, "ticket joué", "tickets joués"), jeu("Tickets gagnants", C.loterie_gagnants, "au moins 1 bon numéro", "au moins 1 bon numéro"),
+      cell("Meilleur ticket", `${n(C.loterie_meilleur)} <em>/ 3</em>`, "bons numéros")]) : ""}
+    ${group("Habitudes", "clock", [cell("Série en cours", `${serie} j`, "bonbec du jour"), cell("Record de série", `${mx(bestStreak(), serie)} j`, "jours d'affilée"),
+      jeu("Quêtes du jour", mx(ST.quests, C.quetes), "quête réussie", "quêtes réussies"), jeu(`Bonus des ${QUESTS_N} quêtes`, mx(ST.bonus, C.bonus_quetes), "fois", "fois"),
+      cell("Succès", `${nChal} <em>/ ${CHALLENGES.length}</em>`, "réussis"), cell("Passe de saison", `${passTier()} <em>/ ${PASS_TIERS}</em>`, "palier ce mois-ci")])}
+    ${on ? group("La cour de récré", "cour", [cell("Classement", rang, C.classes ? `sur ${n(C.classes)} joueurs` : ""), cell("Copains", n(C.copains)), cell("Trocs réussis", n(C.trocs)),
+      cell("Billes vendues", n(C.vendues), C.gagne_marche ? `pour ${n(C.gagne_marche)} ${CUR.many}` : ""), cell("Billes achetées", n(C.achetees)), cell("Enchères gagnées", n(C.encheres))]) : ""}
   </section>`;
 }
 function openPicker(i){
@@ -9900,6 +9937,7 @@ function chanceMark(k, pay, r){
   const P = playedToday();
   if(pay){ P[k+"N"] = r?.achetees ?? chanceBought(k)+1; S.jetons -= CHANCE_PRIX[k] }
   else P[k] = {done:1};
+  if(k==="grattage" || k==="distributeur") S.stats[k] = (S.stats[k]||0)+1;   // (la Roue et la Marelle comptent leurs parties à part)
   save();
 }
 const chanceFail = (k, e) => { if(e?.code==="limite_jeu"){ playedToday()[k+"N"] = CHANCE_MAX; save() } if(e?.code==="deja"){ playedToday()[k] = {done:1}; save() } renderView(); srvFail(e) };
@@ -11064,7 +11102,7 @@ const jeuxFaits = () => JEUX_TOUS.filter(jeuFait).length;
 function gamesBonus(){
   ensureQuests(); questSet("jeux6", jeuxFaits()); save(); renderNav();   // la quête des 6 jeux différents
   const P = playedToday(); if(P.bonus || !allGamesDone()) return;
-  P.bonus = 1; earn("jeux-bonus", dayKey(), 0, GAMES_BONUS); save(); renderTop(); renderNav();
+  P.bonus = 1; S.stats.jdj = (S.stats.jdj||0)+1; earn("jeux-bonus", dayKey(), 0, GAMES_BONUS); save(); renderTop(); renderNav();
   setTimeout(()=>{ toast(`Tes 3 jeux du jour sont faits : un ${BAG_BY[GAMES_BONUS].name} t'est offert !`); Sound.ding() }, 1400);
 }
 const DAY_INFO = {
@@ -14667,7 +14705,7 @@ function netBanner(){
 function applyEco(e){
   if(!e) return;
   S.jetons = e.bonbecs; S.depart = e.depart||0; S.bagInv = knownBags(e.sacs); S.freeT0 = e.gratuit_t0; S.pity = e.pity;
-  if(e.serie_jour){ const [y,m,d] = e.serie_jour.split("-").map(Number); S.daily = {last:`${y}-${m}-${d}`, streak:e.serie} }
+  if(e.serie_jour){ const [y,m,d] = e.serie_jour.split("-").map(Number); S.daily = {last:`${y}-${m}-${d}`, streak:e.serie, best:Math.max(e.serie, S.daily?.best||0)} }   // le record de série reste (avant le 10 octobre 2026, il se perdait ici)
   eco.testeur = !!e.testeur;
   save(); renderTop(); renderNav(); chanceRefresh();
 }

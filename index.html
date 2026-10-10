@@ -3371,6 +3371,11 @@ button.cp-who:hover b{text-decoration:underline}
 .auth-form input:hover{border-color:rgba(255,255,255,.28)}
 .auth-form input:focus{outline:none;border-color:var(--yellow);background:rgba(0,0,0,.4);box-shadow:0 0 0 4px rgba(255,201,63,.2)}
 .auth-form small{display:block;margin-top:6px;color:var(--muted);font-size:12px}
+.pw-rules{display:flex;flex-wrap:wrap;gap:4px 12px;margin:7px 0 0;padding:0;list-style:none;font-size:12px;font-weight:700;color:var(--muted)}
+.pw-rules li{display:inline-flex;align-items:center;gap:5px}
+.pw-rules li::before{content:"";width:12px;height:12px;border-radius:50%;border:1.5px solid currentColor;box-sizing:border-box}
+.pw-rules li.ok{color:var(--green)}
+.pw-rules li.ok::before{background:currentColor;box-shadow:inset 0 0 0 2px var(--panel)}
 .auth-captcha{margin-top:14px}
 /* la case des règles du jeu (8 octobre 2026) : âge (15 ans ou un parent d'accord) + CGU et données personnelles, voir legal.html */
 .auth-form label.auth-ok{display:flex;gap:10px;align-items:flex-start;margin:16px 0 0;font-size:13px;font-weight:700;text-transform:none;letter-spacing:0;line-height:1.45;color:var(--ink-2);cursor:pointer}
@@ -13431,6 +13436,8 @@ function courCopains(){
 }
 document.addEventListener("input", e=>{
   if(e.target.id==="troc-q"){ trocFind(); return }
+  if(e.target.id==="a-pass" && document.getElementById("pw-rules")){
+    const v = e.target.value; PASS_RULES.forEach(([k,,ok])=>document.querySelector(`#pw-rules [data-r="${k}"]`)?.classList.toggle("ok", ok(v))); return }
   if(e.target.id!=="cp-q") return;
   // une recherche cherche dans tous les copains, pas seulement la page affichée (les pages reviennent quand on efface)
   const q = fold(e.target.value).trim(); let n = 0;
@@ -14804,13 +14811,19 @@ const AUTH_ERR = {
   invalid_credentials:"E-mail ou mot de passe incorrect.",
   email_not_confirmed:"Confirme d'abord ton adresse e-mail : clique sur le lien reçu (regarde aussi dans les spams).",
   user_already_exists:"Un compte existe déjà avec cet e-mail. Connecte-toi !",
-  weak_password:"Ce mot de passe est trop facile à deviner. Choisis-en un plus long.",
+  weak_password:"Ce mot de passe est trop facile à deviner : au moins 8 caractères, avec une minuscule, une majuscule et un chiffre.",
   email_address_invalid:"Cette adresse e-mail n'est pas valide.",
   over_email_send_rate_limit:"Trop d'e-mails envoyés d'un coup. Réessaie dans quelques minutes.",
   over_request_rate_limit:"Trop d'essais d'un coup. Réessaie dans quelques minutes.",
   same_password:"C'est déjà ton mot de passe actuel.",
   captcha_failed:"La vérification anti-robot n'a pas marché. Coche la case si elle apparaît, puis réessaie.",
 };
+// (10 octobre 2026) un mot de passe : 8 caractères au moins, avec une minuscule, une majuscule et un chiffre
+// (recommandation de la CNIL avec captcha et blocage des essais ; même règle dans les réglages de Supabase Auth)
+const PASS_RULES = [["len","8 caractères", v=>v.length>=8], ["low","une minuscule", v=>/[a-zà-ÿ]/.test(v)], ["up","une majuscule", v=>/[A-ZÀ-Þ]/.test(v)], ["dig","un chiffre", v=>/\d/.test(v)]];
+const passOk = v => PASS_RULES.every(r=>r[2](v));
+const PASS_MSG = "Ton mot de passe doit faire au moins 8 caractères, avec une minuscule, une majuscule et un chiffre.";
+const passRules = () => `<ul class="pw-rules" id="pw-rules" aria-live="polite">${PASS_RULES.map(([k,l])=>`<li data-r="${k}">${l}</li>`).join("")}</ul>`;
 const authErr = e => AUTH_ERR[e?.code] || (e?.message==="hors-ligne" || /fetch|network/i.test(e?.message||"") ? "Connexion impossible. Vérifie ton accès à Internet." : "Oups, ça n'a pas marché. Réessaie dans un instant.");
 // anti-robots (Cloudflare Turnstile) : presque toujours invisible, une case à cocher seulement en cas de doute
 const Captcha = (()=>{
@@ -14857,7 +14870,7 @@ function authShow(screen, opts){
     ${auth.tab==="signup" ? `<form class="auth-form" id="auth-signup" novalidate>
       ${field("a-pseudo","Pseudo","text",`maxlength="20" autocomplete="nickname" spellcheck="false" required`)}<small>3 à 20 caractères. C'est le nom que les autres joueurs verront.</small>
       ${field("a-email","E-mail","email",`autocomplete="email" value="${esc(auth.email)}" required`)}
-      ${field("a-pass","Mot de passe","password",`minlength="8" autocomplete="new-password" required`)}<small>8 caractères minimum.</small>
+      ${field("a-pass","Mot de passe","password",`minlength="8" autocomplete="new-password" required`)}${passRules()}
       <label class="auth-ok"><input type="checkbox" id="a-ok" name="a-ok" required><span>J'ai 15 ans ou plus, ou un parent est d'accord. J'accepte les <a href="legal.html#cgu" target="_blank" rel="noopener">règles du jeu</a> et j'ai lu comment sont utilisées <a href="legal.html#confidentialite" target="_blank" rel="noopener">mes données</a>.</span></label>
       ${cap}${err}<button class="btn btn-yellow" type="submit">Créer mon compte</button>
     </form>` : `<form class="auth-form" id="auth-login" novalidate>
@@ -14881,8 +14894,9 @@ function authShow(screen, opts){
     <p>Si un compte existe avec <span class="auth-mail">${esc(auth.email)}</span>, tu vas recevoir un lien pour choisir un nouveau mot de passe.</p>
     <div class="auth-links"><button class="auth-link" data-action="auth-go" data-screen="welcome" data-tab="login">Retour à la connexion</button></div>`;
   else if(screen==="newpass") body = `${head}<h2>Nouveau mot de passe</h2>
-    <form class="auth-form" id="auth-newpass" novalidate>${field("a-pass","Nouveau mot de passe","password",`minlength="8" autocomplete="new-password" required`)}<small>8 caractères minimum.</small>
-      ${err}<button class="btn btn-yellow" type="submit">Enregistrer</button></form>`;
+    <form class="auth-form" id="auth-newpass" novalidate>${field("a-pass","Nouveau mot de passe","password",`minlength="8" autocomplete="new-password" required`)}${passRules()}
+      ${err}<button class="btn btn-yellow" type="submit">Enregistrer</button></form>
+    <div class="auth-links"><button class="auth-link" data-action="auth-cancel-recovery">Annuler et me déconnecter</button></div>`;
   else if(screen==="import") body = `${head}<h2>Tu as déjà des billes ici</h2>
     <p>Cet appareil contient une collection de <b>${fmt(auth.opts.n)} bille${auth.opts.n>1?"s":""}</b> jouée sans compte. Tu veux la garder sur ton compte ?</p>
     <button class="btn btn-yellow" data-action="auth-import" data-keep="1">Garder cette collection</button>
@@ -14936,6 +14950,7 @@ document.addEventListener("click", async e=>{
     case "auth-tab": auth.tab = t.dataset.tab; authShow("welcome"); break;
     case "auth-go": if(t.dataset.tab) auth.tab = t.dataset.tab; authShow(t.dataset.screen); break;
     case "auth-close": authHide(); setTimeout(bootPopups, 300); break;
+    case "auth-cancel-recovery": lsSet("billeo-recovery", null); Promise.resolve(Cloud.signOut()).catch(()=>{}).finally(()=>location.replace(location.pathname)); break;
     case "auth-balls": AuthFx.setOff(!AuthFx.off); t.innerHTML = authBallsLabel(); break;
     case "auth-import": auth.opts.begin(t.dataset.keep==="1"); break;
     case "auth-retry": { if(!window.Cloud?.available){ location.reload(); break } const u = await Cloud.currentUser().catch(()=>null); if(u){ sync.uid = null; cloudStart(u) } else authShow("welcome"); break }
@@ -14956,7 +14971,7 @@ document.addEventListener("submit", async e=>{
     if(f.id==="auth-signup"){
       const pseudo = f["a-pseudo"].value.trim().replace(/\s+/g," ");
       if(!/^[\p{L}\p{N}_\- ]{3,20}$/u.test(pseudo)) return authFail("Ton pseudo doit faire 3 à 20 caractères : lettres, chiffres, espaces, - et _.");
-      if(pass.length<8) return authFail("Ton mot de passe doit faire au moins 8 caractères.");
+      if(!passOk(pass)) return authFail(PASS_MSG);
       if(!f["a-ok"].checked) return authFail("Coche la case pour accepter les règles du jeu (avec l'accord d'un parent si tu as moins de 15 ans).");
       btn.disabled = true;
       const r = await Cloud.signUp(email, pass, pseudo, await Captcha.token(), {cgu:CGU_VERSION});
@@ -14965,13 +14980,15 @@ document.addEventListener("submit", async e=>{
     else if(f.id==="auth-login"){
       if(!pass) return authFail("Entre ton mot de passe.");
       btn.disabled = true;
+      lsSet("billeo-recovery", null);   // connexion avec son mot de passe : un « mot de passe oublié » abandonné ne compte plus
       await Cloud.signIn(email, pass, await Captcha.token());
     }
     else if(f.id==="auth-forgot"){ btn.disabled = true; await Cloud.resetPassword(email, await Captcha.token()); authShow("forgot-sent") }
     else if(f.id==="auth-newpass"){
-      if(pass.length<8) return authFail("Ton mot de passe doit faire au moins 8 caractères.");
+      if(!passOk(pass)) return authFail(PASS_MSG);
       btn.disabled = true;
       await Cloud.updatePassword(pass);
+      lsSet("billeo-recovery", null);
       toast("Nouveau mot de passe enregistré !");
       auth.screen = null;
       const u = await Cloud.currentUser(); if(u){ sync.uid = null; cloudStart(u) } else authShow("welcome");
@@ -14995,7 +15012,8 @@ function accountBoot(){
   // (10 octobre 2026) le lien « mot de passe oublié » connecte d'abord le joueur (SIGNED_IN ou INITIAL_SESSION, parfois avant
   // PASSWORD_RECOVERY) : on garde l'écran du nouveau mot de passe, la partie ne se lance qu'une fois le mot de passe enregistré
   Cloud.onAuth((ev, user)=>{
-    if(ev==="PASSWORD_RECOVERY" || (window.RECOVERY_LINK && user)){ window.RECOVERY_LINK = false; auth.closable = false; authShow("newpass"); return }
+    if(ev==="PASSWORD_RECOVERY" || (window.RECOVERY_LINK && user) || (user && lsGet("billeo-recovery")===user.id)){
+      window.RECOVERY_LINK = false; if(user) lsSet("billeo-recovery", user.id); auth.closable = false; authShow("newpass"); return }
     if(auth.screen==="newpass") return;
     if(user && (ev==="INITIAL_SESSION" || ev==="SIGNED_IN")) cloudStart(user);
     else if(!user && ev==="INITIAL_SESSION") authShow("welcome");

@@ -14472,7 +14472,9 @@ document.addEventListener("click", e=>{
     case "sound": Sound.toggle(); renderSoundBtn(); toast(Sound.on?"Son activé.":"Son coupé."); break;
     case "reveal": { const i=+t.dataset.i; if(ovState?.opened.has(i)) reveal(i); else revealDrama(i); break }
     case "reveal-all": revealAll(t); break;
-    case "buy-again": openBag(ovState.bag.id, ovState.gift); break;
+    // (10 octobre 2026) « Ouvrir un autre sachet offert » : le sachet suivant s'ouvre tout seul, sans repasser par « Ouvrir le sachet »
+    case "buy-again": { const g = ovState.gift, prev = ovState;
+      openBag(ovState.bag.id, g).then(()=>{ if(g && ovState && ovState!==prev) setTimeout(()=>{ if(ovState?.gift) tear() }, 450) }); break }
     case "to-bags": closeOv(); go("sacs"); break;
     case "to-collection": closeOv(); ui.tab="billes"; ui.type="all"; go("collection"); break;
     case "to-home": closeOv(); go("accueil"); break;

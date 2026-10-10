@@ -1823,6 +1823,18 @@ canvas.gr-foil{touch-action:none}
 .conf-page .tarif.is-shiny{grid-column:span 2}
 .conf-page .fuse2{grid-template-columns:minmax(0,1fr);justify-items:center}
 .conf-page .fuse2 > *{min-width:0;max-width:100%}
+/* (10 octobre 2026) la Confiserie dans le cahier : des cadres rose bonbon pour qu'ils se détachent du papier crème */
+.conf-page{--cf-pink:#E85D9A;--cf-bg:color-mix(in srgb,var(--cf-pink) 14%,#FFF7EF);--cf-line:color-mix(in srgb,var(--cf-pink) 38%,#E8D9C4)}
+.conf-page .panel,.conf-page .cf-shop,.conf-page .cf-subf{background:var(--cf-bg);border:2px solid var(--cf-line);box-shadow:0 3px 0 color-mix(in srgb,var(--cf-pink) 22%,transparent)}
+.conf-page .conf-choice{background:#FFFDF9;border:2px solid var(--cf-line);box-shadow:0 2px 0 color-mix(in srgb,var(--cf-pink) 18%,transparent)}
+.conf-page .conf-choice[aria-pressed="true"]{background:#fff;border-color:var(--cf-pink);box-shadow:0 0 0 3px color-mix(in srgb,var(--cf-pink) 25%,transparent)}
+.conf-page .m-card,.conf-page .cf-grid > *{background:#FFFDF9;border:2px solid var(--cf-line)}
+.conf-page .cf-receipt{box-shadow:0 6px 16px -6px rgba(120,40,70,.35)}
+.conf-page .chip,.conf-page .fchip{background:#FFFDF9;border-color:var(--cf-line)}
+.conf-page .recipe{background:#FFFDF9;border:2px solid var(--cf-line)}
+.conf-page .recipe[aria-pressed="true"]{border-color:var(--a);background:#fff;box-shadow:0 0 0 2px color-mix(in srgb,var(--a) 30%,transparent)}
+.conf-page .col-search,.conf-page .col-search input{background:#FFFDF9;border-color:var(--cf-line)}
+.conf-page .conf-choices{background:var(--cf-bg)}
 .hm-pass{display:flex;align-items:center;gap:14px;width:100%;padding:14px 18px;margin:0 0 16px;text-align:left;color:var(--ink);
   background:linear-gradient(110deg,color-mix(in srgb,#8A4AD6 18%,var(--panel)),var(--panel) 70%);border-color:color-mix(in srgb,#8A4AD6 40%,var(--line))}
 .hm-pass:hover{border-color:#8A4AD6}

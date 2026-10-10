@@ -2024,6 +2024,19 @@ button.gh-cell:hover{transform:translateY(-2px)}
 .conf-btn{height:32px;padding:0 12px;font-size:13px;margin-top:4px}
 .conf-btn .coin{width:16px;height:16px}
 @media (max-width:1000px){ .tarif-grid{grid-template-columns:repeat(4,minmax(0,1fr))} }
+/* (10 octobre 2026) téléphone : 3 tarifs par ligne, la case Shiny sur toute la largeur (son texte était écrasé) ;
+   la vitrine sur 3 colonnes moins hautes ; les titres de panneau passent au-dessus de leur légende quand la place manque */
+@media (max-width:560px){
+  .tarif-grid{grid-template-columns:repeat(3,minmax(0,1fr))}
+  .tarif.is-shiny{grid-column:1 / -1;flex-direction:row;flex-wrap:wrap;justify-content:center;gap:4px 12px;padding:10px 12px}
+  .tarif.is-shiny .price{line-height:1.5}
+  .vitrine{grid-template-columns:repeat(3,minmax(0,1fr))!important;gap:8px}
+  .vit-slot{min-height:132px;padding:10px 4px}
+  .vit-slot b{font-size:12px}
+  .panel-head{flex-wrap:wrap;row-gap:4px}
+  .panel-head > h2,.panel-head > h3{flex:none}
+}
+@media (max-width:380px){ .topbar .profile-mini .avatar{width:34px;height:34px} }
 
 /* ---------- bonbec du jour ---------- */
 .modal.daily{display:block;width:min(640px,100%)}
@@ -3290,6 +3303,14 @@ button.cp-who:hover b{text-decoration:underline}
   .topbar{padding-inline:10px;gap:5px}
   .prof-wrap{padding-inline:0;border:0}
   .topbar .icon-btn{width:36px}
+  /* (10 octobre 2026) avec de grands nombres (16 cadeaux, 1 240 bonbecs), l'avatar sortait de l'écran : tout se resserre un peu */
+  .topbar{gap:4px}
+  .topbar .logo{font-size:26px}
+  .prof-wrap{margin:0!important;padding:0!important;flex:none}
+  .profile-mini{gap:0!important;padding:0!important}
+  .profile-mini .avatar{width:38px;height:38px}
+  .top-acts .mj-btn{padding:0 7px}
+  .wallet{padding:0 9px 0 4px}
 }
 @media (max-width:560px){
   .logo{font-size:30px}
@@ -7382,7 +7403,7 @@ function viewPass(){
         <li>${ic("gift",20)}<span>Récupérer le bonbec du jour</span><b>+${PASS_XP.daily}</b></li>
         <li>${ic("quest",20)}<span>Récupérer une quête du jour</span><b>+${PASS_XP.quest}</b></li>
         <li>${ic("trophy",20)}<span>Bonus des ${QUESTS_N} quêtes</span><b>+${PASS_XP.bonus}</b></li>
-        <li>${ic("target",20)}<span>Jeux de la cour (Tir, Pot, Château, Tic)</span><b>+${PASS_XP.star} par étoile</b></li>
+        <li>${ic("target",20)}<span>Jeux de la cour (Tir, Château, Tic)</span><b>+${PASS_XP.star} par étoile</b></li>
         <li>${ic("tic",20)}<span>Gagner une partie de Tic</span><b>+60</b></li>
         <li>${ic("candy",20)}<span>Échanger une bille à la Confiserie</span><b>+${PASS_XP.recycle}</b></li>
         <li>${ic("flask",20)}<span>Fusionner à la Confiserie</span><b>+${PASS_XP.craft}</b></li>

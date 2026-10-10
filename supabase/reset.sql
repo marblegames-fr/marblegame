@@ -17,6 +17,8 @@ truncate table public.offres, public.annonces, public.trocs, public.demandes_ami
 truncate table public.course_inscrits, public.courses;
 -- l'économie
 truncate table public.gains, public.mises, public.portefeuilles restart identity;
+-- la loterie du dimanche et les notifications en attente
+truncate table public.loterie_tickets, public.loterie_tirages, public.pings restart identity;
 -- les billes (et leur historique), SAUF les billes Bêta données par le serveur pendant la bêta
 delete from public.billes_historique h using public.billes b
   where h.bille = b.id and not coalesce(b.secrete = 'beta' and b.origine = 'serveur' and b.detruite_le is null, false);

@@ -211,9 +211,10 @@ button.wallet:hover{background:var(--panel-2)}
 .nav-btn .cnt{margin-left:auto;min-width:22px;text-align:center;font-size:11px;font-weight:900;padding:1px 7px;border-radius:999px;background:var(--green-soft);color:var(--green)}
 .nav-apart{margin-top:26px;position:relative}
 .nav-apart::before{content:"";position:absolute;top:-14px;left:12px;right:12px;height:1px;background:var(--line)}
-.nav-btn:has(.n-bags){padding-right:4px}
-.nav-btn .cnt.n-bags{display:grid;place-items:center;flex:none;min-width:22px;height:22px;padding:0 6px;font-size:12px;background:#E5484D;color:#fff;box-shadow:0 0 0 3px color-mix(in srgb,#E5484D 22%,transparent);animation:nbags-pulse 2.2s ease-in-out infinite}
-@keyframes nbags-pulse{50%{box-shadow:0 0 0 6px color-mix(in srgb,#E5484D 0%,transparent)}}
+/* (10 octobre 2026) le nombre de sachets est posé sur l'icône du sachet, comme une pastille d'appli : au bout du texte, il était rogné à droite */
+.nav-btn:has(.n-bags){position:relative}
+.nav-btn .cnt.n-bags{position:absolute;left:25px;top:3px;margin:0;display:grid;place-items:center;min-width:21px;height:21px;padding:0 5px;font-size:11.5px;line-height:1;background:#E5484D;color:#fff;border:2px solid var(--bg);box-shadow:0 0 0 2px color-mix(in srgb,#E5484D 25%,transparent);animation:nbags-pulse 2.2s ease-in-out infinite}
+@keyframes nbags-pulse{50%{box-shadow:0 0 0 5px color-mix(in srgb,#E5484D 0%,transparent)}}
 @media (prefers-reduced-motion:reduce){ .nav-btn .cnt.n-bags{animation:none} }
 .nav-btn .cnt.gold{background:var(--gold-bg);color:#C07A0C;border:1px solid var(--gold-line)}
 .side-friends{margin-top:auto;padding:12px;border-radius:14px;border:1.5px dashed var(--line-2);color:var(--muted);font-size:12.5px;font-weight:700;line-height:1.35}
@@ -1314,10 +1315,12 @@ body.vit-dragging,body.vit-dragging *{cursor:grabbing!important;user-select:none
 .mrl-stage{position:relative;max-width:600px;margin:0 auto;aspect-ratio:600/640;border-radius:var(--r-md);overflow:hidden;background:#3A3F4D;box-shadow:inset 0 0 0 1px rgba(0,0,0,.25)}
 .mrl-stage::after{content:"";position:absolute;inset:0;pointer-events:none;background:radial-gradient(120% 90% at 50% 70%,transparent 55%,rgba(10,12,20,.55) 100%)}
 .mrl-svg{position:absolute;inset:0;width:100%;height:100%;display:block}
-.mrl-fill{opacity:.2;transition:opacity .5s}
+.mrl-fill{opacity:.3;transition:opacity .5s}
 .mrl-fill.won{opacity:.75;animation:mrl-glow 1.4s ease-in-out infinite alternate}
 @keyframes mrl-glow{to{opacity:.5}}
 .mrl-num{letter-spacing:.5px}
+.mrl-lot{font-family:"Lilita One",var(--display);text-anchor:middle;stroke:#20232C;stroke-width:7px;stroke-linejoin:round;paint-order:stroke fill}
+.mrl-prize{filter:drop-shadow(0 2px 0 rgba(0,0,0,.35))}
 .mrl-hi{opacity:0;stroke-dasharray:100;stroke-dashoffset:100}
 .mrl-hi.on{opacity:1;stroke-dashoffset:0;transition:stroke-dashoffset .65s ease-out}
 .mrl-hi.now{transition:none}
@@ -1328,6 +1331,8 @@ body.vit-dragging,body.vit-dragging *{cursor:grabbing!important;user-select:none
 .mrl-win.bas{top:80%}   /* la bille est au fond : le lot s’affiche en bas, pour ne pas la cacher */
 .mrl-cn{display:inline-grid;place-items:center;min-width:24px;height:20px;padding:0 5px;margin-right:2px;border-radius:6px;background:var(--panel-2);border:1px solid var(--line);font-family:var(--hand);font-size:16px;font-weight:700;line-height:1}
 .mrl-how{margin-top:10px}
+.mrl-pick{display:flex;align-items:center;justify-content:center;flex-wrap:wrap;gap:6px 12px;margin-top:10px;font-size:13px;font-weight:700;color:var(--ink-2)}
+.mrl-pick span{display:inline-flex;align-items:center;gap:6px}
 @media (prefers-reduced-motion:reduce){ .mrl-fill.won{animation:none} .mrl-hi.on{transition:none} }
 /* ---------- le Ticket à gratter ---------- */
 .gr-stage{position:relative;display:grid;justify-items:center;gap:14px;padding:26px 12px;border-radius:var(--r-md);
@@ -1378,6 +1383,19 @@ canvas.gr-foil{touch-action:none}
 .ds-machine{position:absolute;left:50%;bottom:5%;transform:translateX(-50%);z-index:3;width:min(400px,84cqw,63cqh)}
 .ds-machine svg{width:100%;height:auto;display:block;filter:drop-shadow(0 22px 22px rgba(40,10,20,.45))}
 .ds-crank{transition:transform .38s cubic-bezier(.3,1.5,.5,1)}
+/* (10 octobre 2026) la manivelle se tourne au doigt ou à la souris : un tour complet (3 crans) lance la partie */
+.ds-grab{pointer-events:none;touch-action:none}
+.ds-machine.can .ds-grab{pointer-events:auto;cursor:grab}
+.ds-machine.can.grab .ds-grab{cursor:grabbing}
+.ds-ring2{opacity:0;transform-origin:208px 360px;transition:opacity .3s}
+.ds-machine.can .ds-ring2{opacity:.9;animation:ds-ring2 6s linear infinite}
+.ds-machine.grab .ds-ring2{opacity:0}
+@keyframes ds-ring2{to{transform:rotate(360deg)}}
+.ds-turn{position:absolute;z-index:4;left:calc(50% + min(150px,24cqw,19cqh));bottom:calc(5% + min(400px,84cqw,63cqh) * .2);padding:5px 12px;border-radius:999px;background:#FFE14D;color:#3A2600;font-size:13px;font-weight:900;white-space:nowrap;box-shadow:0 4px 10px rgba(0,0,0,.35);pointer-events:none;animation:ds-turn 1.6s ease-in-out infinite}
+.ds-turn::before{content:"";position:absolute;left:-6px;top:50%;margin-top:-6px;border:6px solid transparent;border-left:0;border-right-color:#FFE14D}
+.ds-turn[hidden]{display:none}
+@keyframes ds-turn{50%{transform:translateX(5px)}}
+@media (prefers-reduced-motion:reduce){ .ds-machine.can .ds-ring2,.ds-turn{animation:none} }
 .ds-mb{transition:transform .25s ease-out}
 .ds-lt{fill:#FFE9A8;opacity:.35}
 .ds-machine.idle .ds-lt{animation:ds-tw 2.4s ease-in-out infinite;animation-delay:var(--d)}
@@ -1772,13 +1790,19 @@ canvas.gr-foil{touch-action:none}
 .gtr-art > svg{display:block;width:100%;height:100%;filter:saturate(.6) brightness(.85)}
 .gtr-txt{display:flex;flex-direction:column;gap:3px;min-width:0}
 .gtr-txt b{font-family:var(--display);font-weight:400;font-size:19px;line-height:1.05}
-.gtr-txt small{display:inline-flex;align-items:center;gap:5px;font-size:12px;font-weight:800;color:var(--muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.gtr-txt small{display:flex;align-items:flex-start;gap:5px;font-size:12px;font-weight:800;line-height:1.3;color:var(--muted)}
+.gtr-txt small svg{margin-top:1px}
 .gtr-txt .gt-pips i{width:7px;height:7px}
-.gtr-go{display:grid;place-items:center;min-width:44px;height:34px;padding:0 12px;border-radius:999px;background:var(--panel-2);border:1px solid var(--line);font-size:13px;font-weight:900;color:var(--ink-2);white-space:nowrap}
+.gtr-go{display:inline-flex;align-items:center;justify-content:center;gap:5px;min-width:44px;height:34px;padding:0 12px;border-radius:999px;background:var(--panel-2);border:1px solid var(--line);font-size:12.5px;font-weight:900;color:var(--ink-2);white-space:nowrap}
+/* une partie offerte jouée, mais encore des parties à acheter : la carte reste grande, l'image garde ses couleurs */
+.game-tile.paid .gt-art .gt-state.paid{background:#FFC93F;color:#3A2600}
+.btn.gt-again{border-color:#E9B23A;color:var(--ink)}
+.gs-sub{display:flex;align-items:center;gap:6px}
+.gs-sub svg{color:#D99A0E}
 .gt-row.maxed{border-color:#E9B23A;box-shadow:0 0 0 1px #FFC93F inset,0 0 18px -8px rgba(255,201,63,.7);background:linear-gradient(100deg,color-mix(in srgb,#FFC93F 12%,var(--panel)),var(--panel) 60%)}
 .gt-row.maxed .gtr-art > svg{filter:none}
 .gt-row.maxed small{color:#D99A0E}
-.gt-row.maxed .gtr-go{padding:0;width:34px;min-width:34px;background:linear-gradient(180deg,#FFD866,#F2AE12);border:0;color:#3A2600}
+.gt-row.maxed small svg{flex:none}
 @media (max-width:560px){ .gt-done{grid-template-columns:minmax(0,1fr)} .gt-row{grid-template-columns:76px minmax(0,1fr) auto;gap:10px} .gtr-art{width:76px;height:52px} }
 .gs-head p{color:var(--ink-2);font-weight:600;max-width:78ch;margin-top:2px}
 .gt-state{display:inline-flex;align-items:center;gap:6px;align-self:flex-start;font-size:12px;font-weight:800;padding:4px 10px;border-radius:999px;background:var(--panel-2);color:var(--muted);border:1px solid var(--line);margin-top:6px}
@@ -2195,7 +2219,17 @@ button.gh-cell:hover{transform:translateY(-2px)}
 }
 body:has(#view .game-wrap) .mj-btn{display:none}
 .game-wrap{grid-template-columns:minmax(0,1fr) 260px}
-.game-stage{--ar:900/520;width:100%;max-width:max(340px,calc((100vh / var(--vz,1) - 190px) * var(--ar)));margin-inline:auto}
+/* (10 octobre 2026) sur ordinateur, un jeu tient en entier dans l'écran avec ses boutons : en arrivant, la page descend jusqu'au jeu
+   (le titre passe sous la barre du haut) et le terrain ne dépasse jamais --gh, la hauteur qui reste une fois la barre du haut,
+   le cadre du panneau et les boutons comptés */
+:root{--gh:calc(100vh / var(--vz,1) - 68px - var(--rib,0px) - 150px)}
+.game-stage{--ar:900/520;width:100%;max-width:max(340px,calc(var(--gh) * var(--ar)));margin-inline:auto}
+@media (min-width:821px){
+  .mrl-stage{max-width:min(600px,max(320px,calc(var(--gh) * 600 / 640)))}
+  .rq-wheel{width:min(440px,84vw,max(300px,calc(var(--gh) - 50px)))}
+  .ds-stage{height:clamp(420px,var(--gh),640px)}
+  .gr-stage{padding-block:18px}
+}
 .game-stage:has(canvas.bricks){--ar:3/2}
 .game-stage.pachi-stage{--ar:540/700}
 .g-result{position:absolute;inset:0;display:grid;place-items:center;background:rgba(20,30,18,.62)}   /* pas de flou : le jeu continue de se dessiner dessous */
@@ -2648,8 +2682,14 @@ button.cp-who:hover b{text-decoration:underline}
 /* ---------- troc et marché : des onglets ---------- */
 .tr-pick{display:flex;gap:10px;flex-wrap:wrap}
 .tr-pick select{flex:1 1 220px;min-width:0;height:44px;padding:0 12px;border-radius:12px;border:1.5px solid var(--line-2);background:var(--panel-2);color:var(--ink);font:inherit;font-weight:800;font-size:14.5px}
-.tr-recent{display:flex;align-items:center;flex-wrap:wrap;gap:6px;margin-top:12px}
-.tr-recent small{font-size:12px;font-weight:800;color:var(--muted);margin-right:2px}
+.tr-q{flex:1 1 220px;min-width:0}
+.tr-q input{width:100%;height:44px;font-size:14.5px}
+.tr-found{display:flex;align-items:center;flex-wrap:wrap;gap:6px;margin-top:10px}
+.tr-found:empty{display:none}
+.tr-found .fchip{gap:7px}
+.cp-pager{display:flex;align-items:center;justify-content:center;gap:12px;margin-top:12px;font-size:13px;font-weight:800;color:var(--ink-2)}
+.cp-pager[hidden]{display:none}
+.cp-pager .btn{width:36px;padding:0;justify-content:center}
 .fchip.sm{height:34px;padding:0 12px 0 4px;font-size:13px;gap:6px}
 .tr-new .meta{margin-top:10px}
 .tr-tabs,.mk-tabs{gap:8px}
@@ -2830,6 +2870,13 @@ button.cp-who:hover b{text-decoration:underline}
 .cour-form input[type=number]{width:140px}
 /* marché */
 .mk-bar{display:flex;align-items:center;gap:10px;flex-wrap:wrap}
+/* (10 octobre 2026) « Vendre une bille » mis en avant, en haut du marché */
+.mk-sell{display:grid;grid-template-columns:auto minmax(0,1fr) auto;align-items:center;gap:16px;border:2px solid #E9B23A;background:linear-gradient(100deg,color-mix(in srgb,#FFC93F 16%,var(--panel)),var(--panel) 70%)}
+.mk-sell-art{display:grid;place-items:center;width:64px;height:64px;border-radius:18px;background:linear-gradient(180deg,#FFD866,#F2AE12);color:#3A2600;box-shadow:0 4px 0 #B07A08;transform:rotate(-6deg)}
+.mk-sell > div > b{display:block;font-family:var(--display);font-weight:400;font-size:22px;line-height:1.1}
+.mk-sell small{display:block;margin-top:3px;font-size:13.5px;font-weight:700;color:var(--ink-2)}
+.mk-sell small b{font-weight:900;color:var(--ink)}
+@media (max-width:640px){ .mk-sell{grid-template-columns:auto minmax(0,1fr)} .mk-sell .btn-xl{grid-column:1 / -1;width:100%;justify-content:center} .mk-sell-art{width:52px;height:52px} }
 .mk-bar h3{font-size:17px;font-weight:900;margin-right:auto}
 .mk-bar .cour-form{margin-top:14px;width:100%}
 .mk-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(188px,1fr));gap:14px}
@@ -6609,6 +6656,7 @@ function renderView(){
   if(ui.view==="roue") roueInit();
   if(ui.view==="marelle") marInit();
   if(ui.view==="grattage") gratInit();
+  if(ui.view==="distributeur") distCrankInit();
   if(ui.view==="cour" && cour.focus) setTimeout(courFocus, 60);
 }
 
@@ -9554,7 +9602,9 @@ function distMachine(){
     <g clip-path="url(#dsWC)"><path d="M96 344 L166 356 M174 362 L100 376" stroke="#C9CDD6" stroke-width="3" stroke-linecap="round" opacity=".8"/>
       <circle id="ds-mini" cx="-50" cy="-50" r="9" fill="#B9B6C6" stroke="#fff" stroke-width="1.5"/></g>
     <rect x="94" y="332" width="18" height="52" rx="6" fill="#fff" opacity=".1"/>
+    <circle class="ds-ring2" cx="208" cy="360" r="38" fill="none" stroke="#FFE14D" stroke-width="3" stroke-dasharray="7 7"/>
     <g class="ds-crank" id="ds-crank" style="transform-origin:208px 360px"><circle cx="208" cy="360" r="19" fill="url(#dsM)" stroke="#55595F" stroke-width="2"/><circle cx="208" cy="360" r="7" fill="#C9CDD6" stroke="#55595F"/><rect x="205" y="334" width="6" height="28" rx="3" fill="#55595F"/><circle cx="208" cy="334" r="8" fill="#FFC93F" stroke="#9E7A1C" stroke-width="2"/></g>
+    <circle class="ds-grab" id="ds-grab" cx="208" cy="360" r="44" fill="transparent"/>
     <path d="M110 392 H190 V414 Q150 422 110 414 Z" fill="#1A0408" stroke="#2A050B" stroke-width="2"/><path class="ds-flap" id="ds-flap" d="M112 392 H188 V400 H112 Z" fill="url(#dsM)" opacity=".92"/>
   </svg>`;
 }
@@ -9568,6 +9618,7 @@ function viewDistributeur(){
         <div class="ds-veil" id="ds-veil"></div><div class="ds-rays" id="ds-rays"></div><div class="ds-tier" id="ds-tier"></div>
         <button class="ds-cap" id="ds-cap" hidden aria-label="Ouvrir la boule"><span class="glow"></span><span class="h top"></span><span class="h bot"></span><span class="band"></span></button>
         <div class="ds-hint" id="ds-hint">Touche la boule pour l'ouvrir !</div>
+        <div class="ds-turn" id="ds-turn" hidden>Tourne-moi !</div>
         <div id="ds-out"></div><canvas class="ds-fx" id="ds-fx"></canvas>
       </div>
       <div class="pachi-btns" id="ds-btns">${chanceBtns("distributeur","ds-go","Tourner la manivelle")}</div>
@@ -9592,9 +9643,39 @@ function distConfetti(cols, n, x, y, p=1){
     if(alive) requestAnimationFrame(tick) };
   requestAnimationFrame(tick);
 }
-async function distGo(pay){
-  if(!srvNeed()) return;
-  if(dist.busy || !chanceCanPay("distributeur", pay)) return;
+// la partie qu'on peut jouer en tournant la manivelle : la partie offerte, sinon une partie à acheter (null : aucune)
+function distTurnPay(){
+  if(dist.busy) return null;
+  if(!chanceFreeDone("distributeur")) return 0;
+  return chanceBought("distributeur")<CHANCE_MAX && S.jetons>=CHANCE_PRIX.distributeur ? 1 : null;
+}
+// (10 octobre 2026) tourner la manivelle soi-même : on l'attrape et on fait un tour dans le sens des aiguilles d'une montre,
+// un cran tous les 120° (les billes sautent) ; au 3e cran la boule tombe. Lâchée avant : elle revient en arrière.
+function distCrankInit(){
+  const M = document.getElementById("ds-machine"), g = document.getElementById("ds-grab"), cr = document.getElementById("ds-crank"), tip = document.getElementById("ds-turn");
+  if(!M || !g || !cr) return;
+  const can = () => { const pay = distTurnPay(), ok = pay!=null; M.classList.toggle("can", ok);
+    if(tip){ tip.hidden = !ok; tip.textContent = pay ? `Tourne-moi ! · ${CHANCE_PRIX.distributeur} ${CUR.many}` : "Tourne-moi !" } return pay };
+  dist.can = can; can();
+  let down = false, ang = 0, last = 0, notch = 0, pay = null;
+  const center = () => { const svg = M.querySelector("svg"), pt = svg.createSVGPoint(); pt.x = 208; pt.y = 360; return pt.matrixTransform(svg.getScreenCTM()) };
+  const angleOf = e => { const c = center(); return Math.atan2(e.clientY - c.y, e.clientX - c.x)*180/Math.PI };
+  const balls = () => [...M.querySelectorAll(".ds-mb")];
+  g.onpointerdown = e => { pay = can(); if(pay==null) return; down = true; ang = 0; notch = 0; last = angleOf(e); g.setPointerCapture(e.pointerId);
+    M.classList.add("grab"); cr.style.transition = "none"; if(tip) tip.hidden = true; e.preventDefault() };
+  g.onpointermove = e => { if(!down) return;
+    const a = angleOf(e); let d = a - last; if(d>180) d -= 360; if(d<-180) d += 360; last = a;
+    if(d>0) ang += Math.min(d, 40);   // seulement en avant (et pas de saut si le doigt passe par le centre)
+    cr.style.transform = `rotate(${ang}deg)`;
+    while(ang >= (notch+1)*120 && notch<3){ notch++; Sound.distNotch();
+      const bs = balls(); bs.forEach(b=>{ b.style.transform = `translate(${(Math.random()-.5)*8}px,${-4-Math.random()*10}px)` }); setTimeout(()=>bs.forEach(b=>{ b.style.transform = "" }), 200) }
+    if(notch>=3){ down = false; M.classList.remove("grab", "can"); cr.style.transition = ""; cr.style.transform = "rotate(360deg)"; distGo(pay, true) } };
+  g.onpointerup = g.onpointercancel = () => { if(!down) return; down = false; M.classList.remove("grab"); cr.style.transition = ""; cr.style.transform = ""; can() };
+}
+async function distGo(pay, turned){
+  const back = () => { const cr = document.getElementById("ds-crank"); if(cr) cr.style.transform = ""; dist.can?.() };   // la manivelle revient si la partie ne part pas
+  if(!srvNeed()){ back(); return }
+  if(dist.busy || !chanceCanPay("distributeur", pay)){ back(); return }
   dist.busy = true;
   document.querySelectorAll('[data-action="ds-go"]').forEach(b=>b.disabled = true);
   distClear();
@@ -9608,7 +9689,8 @@ async function distGo(pay){
   const give = () => { if(given) return; given = true; gain(); S.specs.push(s); S.unseen.push(s.id); logFind(s); winHold(s, "distributeur"); renderTop(); renderNav() };
   const st = document.getElementById("ds-stage"), $d = id => document.getElementById(id), alive = () => !!st?.isConnected, wait = ms => new Promise(r=>setTimeout(r, ms));
   // la fin : la bille est rangée, le bonus des jeux compte, et les boutons reviennent (aussi si le joueur quitte la page en route)
-  const finish = () => { if(done) return; done = true; give(); dist.busy = false; if(!pay) gamesBonus(); const b = $d("ds-btns"); if(b) b.innerHTML = chanceBtns("distributeur","ds-go","Tourner la manivelle") };
+  const finish = () => { if(done) return; done = true; give(); dist.busy = false; if(!pay) gamesBonus(); const b = $d("ds-btns"); if(b) b.innerHTML = chanceBtns("distributeur","ds-go","Tourner la manivelle");
+    const cr = $d("ds-crank"); if(cr){ cr.style.transition = "none"; cr.style.transform = ""; void cr.getBoundingClientRect(); cr.style.transition = "" } dist.can?.() };
   // la bille est à lui dès que la boule tombe ; s'il s'en va sans l'ouvrir, elle est quand même rangée
   setTimeout(()=>{ give(); dist.busy = false; if(!alive()) finish() }, 2700);
   const bump = (el, c) => { el.classList.remove(c); void el.offsetWidth; el.classList.add(c) };
@@ -9618,7 +9700,9 @@ async function distGo(pay){
   M.classList.remove("idle"); M.classList.add("spin");
   // 1. trois crans de manivelle : les billes sautent à chaque cran
   const balls = [...M.querySelectorAll(".ds-mb")];
-  for(let i=1;i<=3;i++){
+  M.classList.remove("can"); $d("ds-turn")?.setAttribute("hidden", "");
+  if(turned) await wait(250);   // le joueur vient de tourner la manivelle lui-même
+  else for(let i=1;i<=3;i++){
     $d("ds-crank").style.transform = `rotate(${i*120}deg)`; Sound.distNotch();
     balls.forEach(b=>{ b.style.transform = `translate(${(Math.random()-.5)*8}px,${-4-Math.random()*10}px)` });
     await wait(200); balls.forEach(b=>{ b.style.transform = "" }); await wait(300);
@@ -9707,8 +9791,25 @@ function marShape(c){
   return pts.map(([x,y],i)=>`${i?"L":"M"}${f1(x)} ${f1(y)}`).join("")+"Z";
 }
 const marMid = c => [(c.u[0]+c.u[1])/2, c.ciel ? 838 : (c.v[0]+c.v[1])/2];
-// ce qui est écrit à la craie dans une case : le numéro, puis le lot dessiné
+// ce qui est écrit à la craie dans une case : son numéro (le lot est dessiné à part, en couleur : marPrize)
 function marLabel(c){
+  const [u,v] = marMid(c), [x,y] = marP(u,v), s = marS(v);
+  return `<g transform="${marFlat(x, y, s)}"><g class="mrl-lbl" data-n="${c.n}">
+    <text x="${c.ciel?0:-50}" y="${c.ciel?-58:-27}" font-size="${c.ciel?46:36}" fill="${c.ciel?"#FFE14D":"#F4F1EA"}" class="mrl-num">${c.n}</text></g></g>`;
+}
+// (10 octobre 2026) le lot de chaque case, peint en couleur et cerné de sombre pour se lire de loin :
+// un bonbon et son nombre, le vrai sachet et son nom, ou le Mammouth au Ciel
+function marPrize(c){
+  const L = marLot(c), [u,v] = marMid(c), [x,y] = marP(u,v), s = marS(v), col = L.c;
+  const txt = (tx, ty, size, t, fill="#FFFFFF") => `<text x="${tx}" y="${ty}" font-size="${size}" fill="${fill}" class="mrl-lot">${t}</text>`;
+  let lot;
+  if(L.roue) lot = `<ellipse cx="0" cy="-13" rx="36" ry="30" fill="#FFE14D" opacity=".22"/><image href="${marbleURL(exSpec("mammouth"),128)}" x="-27" y="-40" width="54" height="54"/>${txt(0, 30, 26, "Mammouth", "#FFE14D")}`;
+  else if(L.sac) lot = bagSVG(BAG_BY[L.sac]).replace("<svg", `<svg x="-22" y="-26" width="44" height="53"`) + txt(0, 50, 25, esc(L.lbl), col);
+  else lot = `<g transform="translate(-30 18)"><path d="M-25 -11 L-11 0 L-25 11 Z M25 -11 L11 0 L25 11 Z" fill="${col}" stroke="#20232C" stroke-width="2.5" stroke-linejoin="round"/>
+      <ellipse rx="15" ry="12" fill="${col}" stroke="#20232C" stroke-width="2.5"/><path d="M-6 -8 L2 8 M3 -9 L9 5" stroke="#fff" stroke-width="3" stroke-linecap="round" opacity=".8"/></g>${txt(20, 36, 50, L.j)}`;
+  return `<g transform="${marFlat(x, y, s)}"><g class="mrl-prize" data-n="${c.n}">${lot}</g></g>`;
+}
+function marLabelOld(c){
   const L = marLot(c), [u,v] = marMid(c), [x,y] = marP(u,v), s = marS(v), col = L.c;
   let lot;
   if(L.roue) lot = `<circle cx="0" cy="30" r="26" fill="none" stroke="${col}" stroke-width="6"/><path d="M-20 36 Q0 12 22 24 M-16 46 Q4 30 20 40" fill="none" stroke="#FFE14D" stroke-width="5" stroke-linecap="round"/><path d="M-36 6 l-8 -6 M36 6 l8 -6 M-40 34 h-10 M40 34 h10" stroke="#FFE14D" stroke-width="4" stroke-linecap="round"/>`;
@@ -9749,6 +9850,7 @@ function marBoard(){
       <g filter="url(#mrl-chalk)" fill="none" stroke="#F4F1EA" stroke-width="3.5" stroke-linecap="round" opacity=".75">
         <path d="M60 22 q7 -12 14 0 q7 -12 14 0 q-14 17 -14 17 q0 0 -14 -17z" stroke="#FF8FB8" stroke-width="3"/>
         <text x="470" y="34" font-family="Caveat" font-weight="700" font-size="26" fill="#F4F1EA" stroke="none" transform="rotate(-4 470 34)">Billeo !</text></g></g>
+    ${marDecor(WY)}
     ${leaves}
     <g filter="url(#mrl-chalk)" opacity=".55">
       ${doodle(-200, 150, "M-26 0 a26 20 0 1 0 52 0 a26 20 0 1 0 -52 0 M-10 -4 v2 M10 -4 v2 M-12 8 q12 10 24 0", "#FFE14D")}
@@ -9764,9 +9866,35 @@ function marBoard(){
       <g font-family="Caveat" font-weight="700" text-anchor="middle">${MAR_CASES.map(marLabel).join("")}</g>
       <path d="M${f1(lx0)} ${f1(ly)} L${f1(lx1)} ${f1(ly)}" stroke="#F4F1EA" stroke-width="4" stroke-dasharray="14 10" stroke-linecap="round" opacity=".8"/>
       <g transform="${marFlat(tx, ty, marS(6))}"><text x="0" y="12" font-family="Caveat" font-weight="700" font-size="40" fill="#F4F1EA" text-anchor="middle" opacity=".85">TERRE</text></g>
-      <path id="mrl-hi" class="mrl-hi" d="" pathLength="100" fill="none" stroke="#FFE14D" stroke-width="8" stroke-linejoin="round" stroke-linecap="round"/>
     </g>
+    <g class="mrl-prizes">${MAR_CASES.map(marPrize).join("")}</g>
+    <g filter="url(#mrl-chalk)"><path id="mrl-hi" class="mrl-hi" d="" pathLength="100" fill="none" stroke="#FFE14D" stroke-width="8" stroke-linejoin="round" stroke-linecap="round"/></g>
   </svg>`;
+}
+// (10 octobre 2026) autour de la marelle : la cour un peu plus vivante (tout est posé « couché » sur le sol avec marFlat)
+function marDecor(WY){
+  const at = (u, v, inner, k=1) => { const [x,y] = marP(u,v), s = marS(v)*k; return `<g transform="${marFlat(x, y, s)}">${inner}</g>` };
+  // sur le mur : deux fenêtres de classe éclairées, du lierre qui retombe
+  const win = x => `<g transform="translate(${x} ${f1(WY*.16)})"><rect width="64" height="${f1(WY*.58)}" rx="3" fill="#2A1E16"/><rect x="4" y="4" width="56" height="${f1(WY*.58-8)}" fill="#FFD98A" opacity=".85"/>
+      <path d="M32 4 V${f1(WY*.58-4)} M4 ${f1(WY*.29)} H60" stroke="#2A1E16" stroke-width="3"/><rect x="4" y="4" width="56" height="${f1(WY*.58-8)}" fill="url(#mrl-glass)"/></g>`;
+  const ivy = (x, n) => { let d = ""; for(let i=0;i<n;i++){ const yy = 6+i*9, xx = x + Math.sin(i*1.7)*6; d += `<ellipse cx="${f1(xx)}" cy="${yy}" rx="7" ry="4.5" transform="rotate(${(i*47)%80-40} ${f1(xx)} ${yy})" fill="${i%2?"#3E7A3A":"#4F9446"}"/>` } return d };
+  const wall = `<defs><linearGradient id="mrl-glass" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#fff" stop-opacity=".45"/><stop offset=".4" stop-color="#fff" stop-opacity="0"/></linearGradient>
+      <radialGradient id="mrl-tree" cx=".5" cy=".5" r=".5"><stop offset="0" stop-color="#0B0E16" stop-opacity=".5"/><stop offset=".7" stop-color="#0B0E16" stop-opacity=".28"/><stop offset="1" stop-color="#0B0E16" stop-opacity="0"/></radialGradient>
+      <radialGradient id="mrl-bm" cx=".35" cy=".35" r=".7"><stop offset="0" stop-color="#fff" stop-opacity=".9"/><stop offset=".3" stop-color="#fff" stop-opacity="0"/></radialGradient></defs>
+    ${win(150)}${win(386)}<g>${ivy(24, 6)}${ivy(560, 5)}${ivy(300, 3)}</g>`;
+  // l'ombre d'un arbre, avec des trous de lumière
+  const tree = at(-250, 700, `<ellipse rx="190" ry="150" fill="url(#mrl-tree)"/><ellipse cx="-40" cy="-30" rx="16" ry="11" fill="#FFE9B8" opacity=".08"/><ellipse cx="50" cy="20" rx="12" ry="9" fill="#FFE9B8" opacity=".07"/>`);
+  // des bacs à fleurs au pied du mur
+  const pot = u => at(u, 1010, `<rect x="-46" y="-14" width="92" height="30" rx="4" fill="#8A5A3A" stroke="#5A3622" stroke-width="3"/>
+      ${[-30,-12,6,24,38].map((x,i)=>`<circle cx="${x}" cy="-18" r="${11+i%2*3}" fill="${i%2?"#4F9446":"#3E7A3A"}"/>`).join("")}${[-22,2,30].map((x,i)=>`<circle cx="${x}" cy="-26" r="4.5" fill="${["#FF8FB8","#FFE14D","#FF6B5A"][i]}"/>`).join("")}`, 1);
+  // un cartable rouge posé par terre, des bouts de craie, une bouche d'égout, des billes qui traînent
+  const bag = at(205, 120, `<g transform="rotate(-14)"><rect x="-38" y="-30" width="76" height="58" rx="10" fill="#C8353B" stroke="#7A1C22" stroke-width="3"/>
+      <path d="M-38 -6 H38 V-22 Q38 -30 30 -30 H-30 Q-38 -30 -38 -22 Z" fill="#E0484E" stroke="#7A1C22" stroke-width="3"/><rect x="-8" y="-12" width="16" height="12" rx="2" fill="#FFC93F" stroke="#7A1C22" stroke-width="2"/>
+      <path d="M-24 28 q-6 18 10 20 M24 28 q6 18 -10 20" fill="none" stroke="#7A1C22" stroke-width="5" stroke-linecap="round"/></g>`);
+  const chalks = at(-170, 40, ["#FF8FB8","#FFE14D","#9FD8FF","#F4F1EA"].map((c,i)=>`<rect x="${-30+i*18}" y="${i%2*8-6}" width="30" height="9" rx="4" transform="rotate(${[-20,15,-35,8][i]} ${-15+i*18} 0)" fill="${c}" stroke="rgba(0,0,0,.25)" stroke-width="1.5"/>`).join("") + `<path d="M-40 18 q20 -6 40 2" stroke="#FFE14D" stroke-width="3" fill="none" opacity=".5"/>`);
+  const grate = at(238, 520, `<ellipse rx="40" ry="40" fill="#2A2E38" stroke="#555B68" stroke-width="5"/>${[-24,-12,0,12,24].map(x=>`<rect x="${x-3}" y="-30" width="6" height="60" rx="2" fill="#1A1D25"/>`).join("")}`);
+  const marbles = [[-232,250,"#4C8DF6"],[-205,275,"#FF6B5A"],[222,300,"#3DBE7A"],[252,880,"#B07CF0"]].map(([u,v,c])=>at(u, v, `<ellipse cx="2" cy="10" rx="13" ry="5" fill="#000" opacity=".25"/><circle r="12" fill="${c}"/><circle r="12" fill="url(#mrl-bm)"/>`)).join("");
+  return wall + tree + pot(-210) + pot(210) + grate + bag + chalks + marbles;
 }
 function viewMarelle(){
   const done = chanceFreeDone("marelle"), tot = ROUE.reduce((a,c)=>a+c.w,0);
@@ -9781,6 +9909,7 @@ function viewMarelle(){
         <div class="rq-win mrl-win${(mar.at?.v||0)>400?" bas":""}" id="mrl-win" ${mar.win ? "" : "hidden"}>${mar.win||""}</div>
       </div>
       <div class="pachi-btns" id="mrl-btns">${mar.busy ? `<button class="btn btn-yellow btn-xl" disabled>${ic("marelle",18)} La bille vole…</button>` : chanceBtns("marelle","mrl-go","Lancer ma bille")}</div>
+      ${activeSpec() ? `<p class="mrl-pick"><span>${mImg(activeSpec(),96,24,"")} Tu lances <b id="mrl-bn">${esc(specName(activeSpec()))}</b></span><button class="btn btn-ghost btn-sm" data-action="mrl-ball">Changer de bille</button></p>` : ""}
     </section>
     <aside><section class="panel"><div class="panel-head"><h3>Les cases</h3><span class="sample-tag">Chances</span></div>
       <ul class="rewards-list">${MAR_CASES.map(c=>({c, p:P(c)})).reverse().map(({c,p})=>`<li><span><i class="pachi-dot" style="background:${marLot(c).c}"></i><b class="mrl-cn">${c.ciel?"Ciel":c.n}</b> ${prize(c)}</span><b>${pct(+(p*100).toFixed(p<.01?1:0))}</b></li>`).join("")}</ul>
@@ -10007,9 +10136,12 @@ function viewGames(){
   const maxed = k => k==="tir" ? tirDone : CHANCE_KEYS.includes(k) ? freeDone(k) && bought(k)>=maxOf(k) : !!dayGame(k)?.done;
   // les parties du jour d'un jeu de chance : la partie offerte, puis une pastille par partie à acheter
   const pips = k => CHANCE_KEYS.includes(k) ? `<span class="gt-pips" title="La partie offerte, puis ${maxOf(k)} parties à acheter">${ic("gift",13)}<i class="${freeDone(k)?"on":""}"></i><em></em>${Array.from({length:maxOf(k)},(_,i)=>`<i class="${i<bought(k)?"on":""}"></i>`).join("")}</span>` : "";
-  const tile = c => { const m = maxed(c.v); return `<article class="panel game-tile${c.ok?"":" played"}${m?" maxed":""}">${m?`<span class="gt-fond">${ic("star",13,2.6)} Fait à fond !</span>`:""}
-    <button class="gt-art" data-action="nav" data-view="${c.v}" aria-label="${c.ok?"Jouer":"Voir"} : ${c.t}">${c.art}${jdj.has(c.v)?`<span class="gt-jdj">${ic("star",12,2.6)} Jeu du jour</span>`:""}<span class="gt-max">${c.prize ? `jusqu'à ${c.prize}` : `${COIN} jusqu'à ${c.max}`}</span><span class="gt-state ${c.ok?"ok":""}">${c.state}</span></button>
-    <div class="gt-body gt-foot"><div class="gt-ttl"><h2>${c.t}</h2>${pips(c.v)}</div><button class="btn ${c.ok?"btn-blue":"btn-ghost"}" data-action="nav" data-view="${c.v}">${c.ok?`${ic("play",16)} Jouer`:"Voir"}</button></div>
+  const resteN = k => CHANCE_KEYS.includes(k) ? maxOf(k)-bought(k) : 0;
+  const tile = c => { const m = maxed(c.v), paid = !c.ok && !m, n = resteN(c.v);
+    const st = paid ? `${ic("candy",14)} Encore ${n} partie${n>1?"s":""} à acheter` : c.state;
+    return `<article class="panel game-tile${paid?" paid":c.ok?"":" played"}${m?" maxed":""}">${m?`<span class="gt-fond">${ic("star",13,2.6)} Fait à fond !</span>`:""}
+    <button class="gt-art" data-action="nav" data-view="${c.v}" aria-label="${c.ok?"Jouer":paid?"Rejouer":"Voir"} : ${c.t}">${c.art}${jdj.has(c.v)?`<span class="gt-jdj">${ic("star",12,2.6)} Jeu du jour</span>`:""}<span class="gt-max">${c.prize ? `jusqu'à ${c.prize}` : `${COIN} jusqu'à ${c.max}`}</span><span class="gt-state ${c.ok?"ok":paid?"paid":""}">${st}</span></button>
+    <div class="gt-body gt-foot"><div class="gt-ttl"><h2>${c.t}</h2>${pips(c.v)}</div><button class="btn ${c.ok?"btn-blue":paid?"btn-ghost gt-again":"btn-ghost"}" data-action="nav" data-view="${c.v}">${c.ok?`${ic("play",16)} Jouer`:paid?`${ic("play",16)} Rejouer`:"Voir"}</button></div>
   </article>` };
   const state = k => { const g = dayGame(k);
     return !g ? `${ic("gift",14)} Partie du jour à jouer` : !g.done ? `${ic("play",14)} Partie en cours : à finir` : `${ic("check",14,3)} Joué aujourd'hui${g.done&&g.st!=null?` · ${"★".repeat(g.st)}${"☆".repeat(3-g.st)}`:""}${g.rew?` · +${g.rew}`:""}` };
@@ -10034,15 +10166,17 @@ function viewGames(){
   [solo, multi, chance].forEach(l=>l.sort((a,b)=>(b.ok-a.ok) || (jdj.has(b.v)-jdj.has(a.v))));   // ceux qui restent à jouer aujourd'hui d'abord, les jeux du jour en tête
   // (10 octobre 2026) un jeu déjà joué aujourd'hui n'a plus de grande carte : il passe en petite ligne sous « Déjà joués aujourd'hui »
   // (doré quand il est fait à fond, sinon on voit les parties qu'il reste à acheter) ; les fait à fond en dernier
-  const row = c => { const m = maxed(c.v), ch = CHANCE_KEYS.includes(c.v), left = ch ? maxOf(c.v)-bought(c.v) : 0;
-    return `<button class="gt-row${m?" maxed":""}" data-action="nav" data-view="${c.v}" aria-label="${c.t} : ${m?"fait à fond":"déjà joué"} aujourd'hui">
+  // (10 octobre 2026) un jeu fait à fond (plus aucune partie à jouer ni à acheter) passe en petite ligne dorée, en bas ;
+  // on peut toujours l'ouvrir : « Pour le plaisir » aux jeux d'adresse (sans récompense), « Voir » aux jeux de chance
+  const row = c => { const fun = !CHANCE_KEYS.includes(c.v);
+    return `<button class="gt-row maxed" data-action="nav" data-view="${c.v}" aria-label="${c.t} : fait à fond aujourd'hui${fun?", rejouer pour le plaisir":""}">
       <span class="gtr-art">${c.art}</span>
-      <span class="gtr-txt"><b>${c.t}</b><small>${m ? `${ic("star",12,2.6)} Fait à fond aujourd'hui` : ch ? `${ic("check",12,3)} Partie offerte jouée` : c.state}</small>${pips(c.v)}</span>
-      <span class="gtr-go">${m ? ic("check",18,3) : ch ? `Encore ${left}` : "Voir"}</span></button>` };
-  const sec = (title, l) => { const todo = l.filter(c=>c.ok), done = l.filter(c=>!c.ok).sort((a,b)=>maxed(a.v)-maxed(b.v));
+      <span class="gtr-txt"><b>${c.t}</b><small>${ic("check",12,3)} ${c.v==="tir" ? "Trou du jour réussi" : dayGame(c.v)?.rew ? `Fait à fond · +${fmt(dayGame(c.v).rew)} ${CUR.many}` : "Fait à fond aujourd'hui"}</small>${pips(c.v)}</span>
+      <span class="gtr-go">${fun ? `${ic("play",13)} Pour le plaisir` : "Voir"}</span></button>` };
+  const sec = (title, l) => { const todo = l.filter(c=>!maxed(c.v)).sort((a,b)=>b.ok-a.ok), done = l.filter(c=>maxed(c.v));
     return `<section class="games-sec"><div class="gs-head"><h2>${title}</h2></div>
-    ${todo.length ? `<div class="games-grid">${todo.map(tile).join("")}</div>` : `<p class="gs-all">${ic("check",16,3)} Tout est joué ici aujourd'hui : bravo !</p>`}
-    ${done.length ? `<h3 class="gs-sub">Déjà joués aujourd'hui</h3><div class="gt-done">${done.map(row).join("")}</div>` : ""}</section>` };
+    ${todo.length ? `<div class="games-grid">${todo.map(tile).join("")}</div>` : `<p class="gs-all">${ic("check",16,3)} Tout est fait à fond ici aujourd'hui : bravo !</p>`}
+    ${done.length ? `<h3 class="gs-sub">${ic("star",13,2.6)} Faits à fond aujourd'hui</h3><div class="gt-done">${done.map(row).join("")}</div>` : ""}</section>` };
   return `<div class="page-head"><div><h1>Jeux de la cour</h1></div></div>
   <section class="panel games-hero${left?"":" all-done"}">
     <div class="gh-txt"><span class="gh-kick">${ic("star",14)} Les 3 jeux du jour</span>
@@ -10077,7 +10211,7 @@ function viewGames(){
 }
 // Avant de jouer (5 octobre 2026) : une fenêtre « Avec quelle bille tu joues ? », une fois par visite d'un mini-jeu.
 // On garde sa bille d'un clic, ou on en touche une autre, et la partie part tout de suite. Fermer la fenêtre garde la bille actuelle.
-const BALL_TIP = {pachinko:"Au Plinko, tu choisis ta bille pour toute la journée : bille du jour et billes achetées. Elle ne change que le look, les chances sont les mêmes pour toutes.", tir:"Au Tir, une petite bille se faufile plus facilement entre les obstacles.",
+const BALL_TIP = {marelle:"À la Marelle, ta bille ne change que le look : les chances sont les mêmes pour toutes.", pachinko:"Au Plinko, tu choisis ta bille pour toute la journée : bille du jour et billes achetées. Elle ne change que le look, les chances sont les mêmes pour toutes.", tir:"Au Tir, une petite bille se faufile plus facilement entre les obstacles.",
 };
 function openBallPick(next){
   const el = document.getElementById("modal"), act = activeSpec(), list = [...S.specs].sort(tierSort);
@@ -10105,6 +10239,9 @@ function swapGameBall(spec){
   } else if(v==="casse" && cb.cv && document.body.contains(cb.cv)){
     cb.spec = spec; cb.R = cbClamp(radOf(spec.type)*.7, 7, 15); cb.power = TYPES[spec.type].mm>=35 ? 2 : 1;
     (cb.balls||[]).forEach(b=>{ b.spec = spec; b.dirty = true });
+  } else if(v==="marelle"){   // à la Marelle : la bille posée sur la Terre change tout de suite
+    const b = document.getElementById("mrl-ball"); if(b && !mar.busy) b.innerHTML = mImg(spec,160,64,"");
+    const n = document.getElementById("mrl-bn"); if(n) n.textContent = specName(spec);
   } else if(v!=="pachinko") return false;   // au Plinko, la bille est prise au moment de la lâcher
   return true;
 }
@@ -10541,8 +10678,15 @@ const PHONE_GO = {
   roue:"Fais tourner la roue : la part sous la flèche est pour toi.", pachinko:"Lâche ta bille : la case où elle tombe est pour toi.",
   grattage:"Gratte les 6 cases avec le doigt : 3 dessins pareils, et le lot est à toi.", distributeur:"Tourne la manivelle : une boule tombe avec une bille dedans.",
 };
+function gameFit(){
+  const st = document.querySelector("#view .game-wrap > :first-child"); if(!st) return;
+  const top = document.querySelector(".topbar")?.getBoundingClientRect().bottom || 0, r = st.getBoundingClientRect();
+  if(r.bottom <= innerHeight - 8) return;   // tout est déjà visible : on ne bouge pas
+  window.scrollTo({top:Math.max(0, r.top + scrollY - top - 12), behavior:"smooth"});
+}
 function phoneGo(){
   document.getElementById("pgo")?.remove();
+  if(document.querySelector("#view .game-wrap") && !matchMedia("(max-width:820px)").matches){ setTimeout(()=>{ if(!document.getElementById("modal").hidden) return; gameFit() }, 150); return }
   const k = ui.view; if(!PHONE_GO[k] || !matchMedia("(max-width:820px)").matches) return;
   setTimeout(()=>{
     if(ui.view!==k || !document.getElementById("modal").hidden || document.getElementById("pgo")) return;
@@ -13017,14 +13161,12 @@ function courClassement(){
   const row = x => `<div class="cl-row${x.moi?" me":""}"${voir(x)}><span class="cl-rank">${x.rang}</span><span class="cl-face">${face(x,40)}</span>
       <span class="who">${esc(x.pseudo)}${x.moi?` <em>toi</em>`:""}<small>${x.titre ? `${ic("trophy",11,2.4)} ${esc(x.titre)} · ` : ""}${fmt(x.cases)} motif${x.cases>1?"s":""}</small></span>
       <span class="cl-pts">${fmt(x.total)}<small>pts</small></span></div>`;
-  const tile = (icon, lbl, pts, sub) => `<div class="cl-tile">${ic(icon,18,2.2)}<b>${fmt(pts)}</b><small>${lbl}</small>${sub?`<i>${sub}</i>`:""}</div>`;
   return `<div class="cour-grid">
     <section class="panel cl-me">
       <div class="cl-me-top"><div class="cl-medal r${Math.min(M.rang,4)}"><b>${rangTxt(M.rang)}</b><small>sur ${C.nb}</small></div>
         <div class="cl-score"><small>Ton score</small><b>${fmt(M.total)}<span> pts</span></b>
           ${M.rang>1 && C.liste[M.rang-2] ? `<p>Plus que <b>${fmt(C.liste[M.rang-2].total - M.total + 1)} pts</b> pour passer devant ${esc(C.liste[M.rang-2].pseudo)} !</p>` : M.rang===1 && C.nb>1 ? `<p>Tu es en tête ! Garde ta place.</p>` : ""}</div>
         <div class="chips">${chip("tous","Tout le monde")}${chip("copains","Mes copains")}</div></div>
-      <div class="cl-tiles">${tile("layers","Motifs",M.pts_cases,`${fmt(M.cases)} motif${M.cases>1?"s":""}`)}${tile("book","Coloris en plus",M.pts_coloris)}${tile("star","Shiny",M.pts_shiny)}${tile("trophy","Grandes collections",M.pts_series,`${M.nb_series} complétée${M.nb_series>1?"s":""}`)}</div>
     </section>
     ${podium.length ? `<section class="panel cl-podium-wrap"><div class="cl-podium">${podium.map(x=>`<div class="cl-pod p${x.rang<=3?x.rang:3}${x.moi?" me":""}"${voir(x)}>
         <span class="cl-face">${face(x, x.rang===1?84:66)}</span><b>${esc(x.pseudo)}</b><span class="cl-pts">${fmt(x.total)}<small>pts</small></span>
@@ -13095,6 +13237,7 @@ function courHero(){
   </section>`;
 }
 
+const CP_PAGE = 10, RARES_PAGE = 4, RARES_H = 72;
 // Les copains (allégés le 4 octobre 2026) : une liste compacte qu'on peut filtrer, et à côté les demandes,
 // l'ajout d'un copain et seulement les trouvailles rares (Mammouths et shiny)
 function courCopains(){
@@ -13102,17 +13245,22 @@ function courCopains(){
   courLoad("fil");
   const rec = M.recues||[], env = M.envoyees||[], amis = M.amis||[];
   const face = a => a.active ? mImg(a.active,96,Math.round(14*scaleOf(a.active.type)+26),"") : avatarIni(a.pseudo,36);
-  const row = a => `<div class="cp-row" data-q="${esc(fold(a.pseudo))}"${a.active?` style="${tstyle(a.active.type)}"`:""}>
+  const row = (a, i) => `<div class="cp-row" data-q="${esc(fold(a.pseudo))}"${Math.floor(i/CP_PAGE)!==A.p?" data-off hidden":""}${a.active?` style="${tstyle(a.active.type)}"`:""}>
       <button class="cp-face" data-action="ami-voir" data-id="${a.id}" aria-label="Voir la fiche de ${esc(a.pseudo)}">${face(a)}</button>
       <button class="cp-who" data-action="ami-voir" data-id="${a.id}"><b>${esc(a.pseudo)}</b>${a.active ? `<small>${esc(specName(a.active))}</small>` : ""}</button>
       <button class="btn btn-yellow btn-sm" data-action="troc-new" data-id="${a.id}">${ic("swap",15)} <span>Troquer</span></button></div>`;
   const wait = r => `<div class="cp-row wait"><span class="cp-face">${avatarIni(r.pseudo,36)}</span><span class="cp-who"><b>${esc(r.pseudo)}</b><small>${ic("clock",12,2.4)} N'a pas encore répondu</small></span>
       <button class="btn btn-ghost btn-sm" data-action="ami-retirer" data-id="${r.id}">Annuler</button></div>`;
-  const rares = (cour.fil||[]).filter(e=>e.s.type==="mammouth" || e.s.shiny).slice(0,6);
+  // (10 octobre 2026) les trouvailles rares restent 72 h, 4 par page ; les copains 10 par page (la recherche cherche dans tous)
+  const rares = (cour.fil||[]).filter(e=>(e.s.type==="mammouth" || e.s.shiny) && Date.now()-e.at < RARES_H*36e5);
+  const pg = (n, per, k) => { const max = Math.max(0, Math.ceil(n/per)-1); ui[k] = Math.min(ui[k]||0, max); return {p:ui[k], max} };
+  const A = pg(amis.length, CP_PAGE, "cpPage"), F = pg(rares.length, RARES_PAGE, "rarPage");
+  const pager = (P, k, lbl) => P.max ? `<div class="cp-pager" data-k="${k}"><button class="btn btn-ghost btn-sm" data-action="cp-page" data-k="${k}" data-d="-1" ${P.p?"":"disabled"} aria-label="${lbl} : page précédente">${ic("chevl",15,2.6)}</button>
+      <span>Page <b>${P.p+1}</b> / ${P.max+1}</span><button class="btn btn-ghost btn-sm" data-action="cp-page" data-k="${k}" data-d="1" ${P.p<P.max?"":"disabled"} aria-label="${lbl} : page suivante">${ic("chev",15,2.6)}</button></div>` : "";
   return `<div class="cp-layout">
     <section class="panel cp-main"><div class="panel-head"><h3>Mes copains<span class="cnt-n">${amis.length}</span></h3>
         ${amis.length ? `<div class="cp-search">${ic("search",15)}<input type="search" id="cp-q" placeholder="Chercher un copain" aria-label="Chercher un copain" autocomplete="off" spellcheck="false"></div>` : ""}</div>
-      ${amis.length ? `<div class="cp-list cp-amis">${amis.map(row).join("")}</div><p class="meta cp-none" hidden>Aucun copain ne s'appelle comme ça.</p>`
+      ${amis.length ? `<div class="cp-list cp-amis">${amis.map(row).join("")}</div><p class="meta cp-none" hidden>Aucun copain ne s'appelle comme ça.</p>${pager(A,"cpPage","Copains")}`
         : `<p class="empty">Pas encore de copain : ajoute-en un avec son pseudo, ou donne-lui le tien (<b>${esc(S.name)}</b>).</p>`}
       ${env.length ? `<h4 class="cp-sub">Demandes envoyées</h4><div class="cp-list">${env.map(wait).join("")}</div>` : ""}
     </section>
@@ -13124,16 +13272,19 @@ function courCopains(){
         <form id="ami-form"><input type="text" id="ami-pseudo" maxlength="20" placeholder="Son pseudo" autocomplete="off" aria-label="Pseudo de ton copain"><button class="btn btn-yellow btn-sm" type="submit">Ajouter</button></form>
         <small class="meta">Entre copains, vous voyez vos vitrines et vous pouvez troquer.</small></section>
       ${rares.length ? `<section class="panel cp-finds"><div class="panel-head"><h3>${ic("star",16)} Trouvailles rares</h3><span class="sample-tag">Mammouths et shiny</span></div>
-        ${rares.map(e=>`<div class="cp-find" style="${tstyle(e.s.type)}"><span class="fb">${courBall(e.s,Math.round(10*scaleOf(e.s.type)+30),`Trouvée par ${e.who}.`)}</span>
-          <span class="cp-who"><b>${esc(courName(e.s))}</b><small><b>${esc(e.who)}</b> · ${timeAgo(e.at)}</small></span>${shinyPill(e.s)}</div>`).join("")}</section>` : ""}
+        ${rares.slice(F.p*RARES_PAGE, (F.p+1)*RARES_PAGE).map(e=>`<div class="cp-find" style="${tstyle(e.s.type)}"><span class="fb">${courBall(e.s,Math.round(10*scaleOf(e.s.type)+30),`Trouvée par ${e.who}.`)}</span>
+          <span class="cp-who"><b>${esc(courName(e.s))}</b><small><b>${esc(e.who)}</b> · ${timeAgo(e.at)}</small></span>${shinyPill(e.s)}</div>`).join("")}${pager(F,"rarPage","Trouvailles")}</section>` : ""}
     </div>
   </div>`;
 }
 document.addEventListener("input", e=>{
+  if(e.target.id==="troc-q"){ trocFind(); return }
   if(e.target.id!=="cp-q") return;
+  // une recherche cherche dans tous les copains, pas seulement la page affichée (les pages reviennent quand on efface)
   const q = fold(e.target.value).trim(); let n = 0;
-  document.querySelectorAll(".cp-amis .cp-row").forEach(r=>{ const ok = !q || r.dataset.q.includes(q); r.hidden = !ok; n += ok });
+  document.querySelectorAll(".cp-amis .cp-row").forEach(r=>{ const ok = q ? r.dataset.q.includes(q) : !r.hasAttribute("data-off"); r.hidden = !ok; n += ok });
   document.querySelector(".cp-none")?.toggleAttribute("hidden", n>0);
+  document.querySelector('.cp-pager[data-k="cpPage"]')?.toggleAttribute("hidden", !!q);
 });
 
 // La fiche d'un joueur (refaite le 3 octobre 2026) : qui il est, où il en est, et ce qu'il a de plus beau
@@ -13207,22 +13358,33 @@ function courTroc(){
   const T = cour.trocs, amis = cour.moi?.amis || [];
   if(!T) return courWait();
   const tab = ui.trocTab || (T.recus.length || !T.envoyes.length ? "recus" : "envoyes");
-  // les copains avec qui on a troqué récemment : en raccourci
-  const recents = [...new Set([...T.recus.map(t=>t.de), ...T.envoyes.map(t=>t.vers), ...T.finis.map(t=>t.de===sync.uid ? t.vers : t.de)])]
-    .map(id=>amis.find(a=>a.id===id)).filter(Boolean).slice(0,5);
   const st = (k,l,n) => `<button class="chip" data-action="troc-tab" data-t="${k}" aria-pressed="${tab===k}">${l}${n?` <span class="n">${n}</span>`:""}</button>`;
   const list = tab==="envoyes" ? T.envoyes : tab==="finis" ? T.finis : T.recus, kind = tab==="envoyes" ? "envoye" : tab==="finis" ? "fini" : "recu";
   const vide = {recu:"Aucune offre reçue pour l'instant.", envoye:"Tu n'as pas d'offre en attente.", fini:"Pas encore de troc terminé."}[kind];
   return `<div class="cour-grid">
     <section class="panel tr-new"><div class="panel-head"><h3>${ic("swap",18)} Proposer un troc</h3></div>
-      ${amis.length ? `<form class="tr-pick" id="troc-ami-form"><select id="troc-ami" aria-label="Choisis un copain"><option value="">Choisis un copain…</option>${amis.map(a=>`<option value="${a.id}">${esc(a.pseudo)}</option>`).join("")}</select>
+      ${amis.length ? `<form class="tr-pick" id="troc-ami-form"><span class="cp-search tr-q">${ic("search",16)}<input type="search" id="troc-q" placeholder="Écris le pseudo de ton copain" aria-label="Pseudo de ton copain" autocomplete="off" spellcheck="false" enterkeyhint="go"></span>
           <button class="btn btn-yellow" type="submit">${ic("swap",17)} Proposer</button></form>
-        ${recents.length ? `<div class="tr-recent"><small>Récemment :</small>${recents.map(a=>`<button class="fchip sm" data-action="troc-new" data-id="${a.id}">${a.active ? mImg(a.active,64,24,"") : avatarIni(a.pseudo,24)}${esc(a.pseudo)}</button>`).join("")}</div>` : ""}
-        <p class="meta">Choisis un copain, puis les billes à échanger.</p>`
+        <div class="tr-found" id="troc-found" aria-live="polite"></div>
+        <p class="meta">Écris son pseudo (le début suffit), touche-le, puis choisis les billes à échanger.</p>`
         : `<p class="cour-lead">Pour troquer, ajoute d'abord des copains dans l'onglet Copains.</p>`}</section>
     <div class="chips tr-tabs">${st("recus","Offres reçues",T.recus.length)}${st("envoyes","Offres envoyées",T.envoyes.length)}${st("finis","Terminés")}</div>
     <section class="panel">${list.length ? list.map(t=>trocCard(t,kind)).join("") : `<p class="empty">${vide}</p>`}</section>
   </div>`;
+}
+// (10 octobre 2026) le copain du troc : on écrit son pseudo, les copains qui correspondent s'affichent dessous
+// (le pseudo exact seul, sinon ceux qui commencent pareil, puis ceux qui le contiennent)
+function trocMatches(){
+  const q = fold(document.getElementById("troc-q")?.value||"").trim(), amis = cour.moi?.amis || [];
+  if(!q) return [];
+  const ex = amis.filter(a=>fold(a.pseudo)===q); if(ex.length) return ex;
+  return [...amis.filter(a=>fold(a.pseudo).startsWith(q)), ...amis.filter(a=>!fold(a.pseudo).startsWith(q) && fold(a.pseudo).includes(q))];
+}
+function trocFind(){
+  const el = document.getElementById("troc-found"); if(!el) return;
+  const q = document.getElementById("troc-q").value.trim(), m = trocMatches();
+  el.innerHTML = !q ? "" : m.length ? m.slice(0,8).map(a=>`<button class="fchip" data-action="troc-new" data-id="${a.id}">${a.active ? mImg(a.active,64,26,"") : avatarIni(a.pseudo,26)}${esc(a.pseudo)} ${ic("chev",13,2.6)}</button>`).join("") + (m.length>8 ? `<small class="meta">et ${m.length-8} autre${m.length>9?"s":""} : écris un peu plus.</small>` : "")
+    : `<small class="meta">Aucun copain ne s'appelle comme ça.</small>`;
 }
 // les doubles qu'on peut troquer : tous les exemplaires d'une bille sauf celui qu'on garde (le même que pour la Confiserie)
 function trocDups(){
@@ -13325,7 +13487,10 @@ function courMarche(){
       <span class="who">${esc(specName(x))}<small>${TYPES[x.type].label}${x.shiny?" · shiny":""}${E && !a.vendue ? ` · ${a.offre?"meilleure offre":"mise à prix"}` : ""}</small></span>
       <span class="price">${COIN}${fmt(a.offre ?? a.prix)}</span><span class="ann-end">${st}</span></div>` };
   return `<div class="cour-grid">
-    <section class="panel"><div class="mk-bar"><h3>Le marché</h3><button class="btn btn-yellow btn-sm" data-action="mk-vendre">${ic("candy",16)} Vendre une bille</button>
+    ${(()=>{ const n = trocDups().size; return `<section class="panel mk-sell"><span class="mk-sell-art" aria-hidden="true">${ic("candy",34,2)}</span>
+      <div><b>Des doubles dans ta boîte ?</b><small>${n ? `Tu as <b>${fmt(n)} double${n>1?"s":""}</b> : vends-les aux autres joueurs contre des ${CUR.many}, à prix fixe ou aux enchères.` : `Vends tes billes aux autres joueurs contre des ${CUR.many}, à prix fixe ou aux enchères.`}</small></div>
+      <button class="btn btn-yellow btn-xl" data-action="mk-vendre">${ic("plus",19,2.6)} Vendre une bille</button></section>` })()}
+    <section class="panel"><div class="mk-bar"><h3>Le marché</h3>
       ${mkTab==="acheter" ? `<div class="cour-form" id="mk-filters">
         ${aucOK ? sel("mk-genre", [["","Achat et enchères"],["fixe","Achat immédiat"],["enchere","Enchères"]], f.genre) : ""}
         ${sel("mk-taille", [["","Toutes les tailles"], ...TK.map(t=>[t,TYPES[t].pl])], f.taille)}
@@ -13477,7 +13642,8 @@ document.addEventListener("click", e=>{
     case "craft-ev": ui.confTab = "evenement"; renderView(); break;
     case "roue-go": roueGo(t.dataset.pay==="1"); break;
     case "gr-go": gratGo(t.dataset.pay==="1"); break;
-    case "mrl-go": marGo(t.dataset.pay==="1"); break;
+    case "mrl-go": { const pay = t.dataset.pay==="1"; if(needBall(()=>marGo(pay))) break; marGo(pay); break; }
+    case "mrl-ball": openBallPick(null); break;
     case "gr-all": { const cv = document.getElementById("gr-foil"); if(cv) cv.getContext("2d").clearRect(0,0,cv.width,cv.height); gratEnd(); break }
     case "ds-go": distGo(t.dataset.pay==="1"); break;
     case "ds-close": distClear(); break;
@@ -13538,6 +13704,7 @@ document.addEventListener("click", e=>{
       break;
     }
     case "troc-new": trocStart(t.dataset.id); break;
+    case "cp-page": ui[t.dataset.k] = (ui[t.dataset.k]||0) + +t.dataset.d; renderView(); break;
     case "troc-contre": {   // contre-proposition : on repart du troc reçu, à l'envers, et on le modifie
       const T0 = (cour.trocs?.recus||[]).find(x=>x.id===+t.dataset.id); if(!T0) break;
       trocStart(T0.de, {give:T0.demande.map(x=>x.id), want:T0.donne.map(x=>x.id), gb:T0.demande_bonbecs, wb:T0.donne_bonbecs, remplace:T0.id});
@@ -13894,7 +14061,8 @@ document.addEventListener("submit", e=>{
   }
   if(id==="troc-ami-form"){
     e.preventDefault();
-    const v = document.getElementById("troc-ami").value; if(v) trocStart(v); else toast("Choisis d'abord un copain dans la liste.");
+    const m = trocMatches(), q = document.getElementById("troc-q").value.trim();
+    if(m.length===1) trocStart(m[0].id); else toast(m.length ? "Plusieurs copains correspondent : touche le bon." : q ? "Aucun copain ne s'appelle comme ça." : "Écris d'abord le pseudo d'un copain.");
     return;
   }
   if(id==="troc-form"){

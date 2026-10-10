@@ -261,7 +261,7 @@ begin
     from billes_historique h join billes b on b.id = h.bille
     where h.motif = 'trouvee' and h.vers in (select ami from amis where joueur = moi)
       and h.le > now() - interval '30 days' and (interne.rang(b.taille) >= 4 or b.shiny > 0)
-    order by h.le desc limit 20) x), '[]');
+    order by h.le desc limit 60) x), '[]');   -- 60 depuis le 10 octobre 2026 : la cour montre 72 h de trouvailles rares, par pages
 end $$;
 
 -- =====================================================================

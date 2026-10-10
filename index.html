@@ -503,6 +503,7 @@ main{padding:22px 24px 40px;min-width:0}
 .bag-spark{transform-box:fill-box;transform-origin:center;animation:twinkle 2.4s ease-in-out infinite}
 @keyframes twinkle{0%,100%{opacity:.25;transform:scale(.6)}50%{opacity:1;transform:scale(1.1) rotate(20deg)}}
 .bag-peek{transform-box:fill-box;transform-origin:50% 100%}
+.bag-stage.phys .bag-peek{animation:none!important}   /* (10 octobre 2026) à l'ouverture, les billes bougent pour de vrai (bagPhysics) */
 .bag-lid{transform-box:fill-box;transform-origin:50% 100%;transition:transform .5s cubic-bezier(.3,1.4,.5,1)}
 .bag-zone.charging .bag-lid{transform:translateY(-18px) rotate(-7deg)}
 .bag-glow{opacity:0;transition:opacity .4s}
@@ -5942,7 +5943,7 @@ function bagFree(b,o){
     <path d="M44 214Q100 222 156 214L154 200Q100 208 46 200Z" fill="#000" opacity=".12"/>
     <!-- la fenêtre transparente : on voit les billes -->
     <rect x="70" y="128" width="60" height="62" rx="22" fill="#2a1d12"/>
-    <g clip-path="url(#${id}-w)">${sacMarble(id,87,176,14,MC[1],1)}${sacMarble(id,114,176,14,MC[0],0)}${sacMarble(id,100,152,14,MC[2],2)}
+    <g clip-path="url(#${id}-w)"><g class="bag-peek">${sacMarble(id,87,176,14,MC[1],1)}${sacMarble(id,114,176,14,MC[0],0)}${sacMarble(id,100,152,14,MC[2],2)}</g>
       <rect x="70" y="128" width="60" height="62" fill="url(#${id}-gl)"/></g>
     <rect x="70" y="128" width="60" height="62" rx="22" fill="none" stroke="${shade(c,-.45)}" stroke-width="2"/>
     <!-- le haut replié deux fois -->
@@ -8362,9 +8363,78 @@ function showBagStage(){
   if(forced) setTimeout(()=>{ const z = document.querySelector(".guar-seal .gs-disc"); if(!z || !ovState) return;
     const [x,y] = FX.at(z); FX.burst(x,y, ["#FFD34D","#FFF3C4","#E8A317"], 70, 1.2); FX.ring(x,y, "#FFD34D"); Sound.ding(); Sound.reveal?.(4,false) }, 650);
 }
+// (10 octobre 2026) les billes qu'on voit dans le sachet (fenêtre du sachet gratuit, filet, bocal) ont une vraie physique :
+// la pesanteur et l'inertie du sachet qu'on agite (on lit sa position et son inclinaison à chaque image), des rebonds sur la paroi
+// (la forme qui découpe l'intérieur du sachet) et des chocs entre billes, avec un petit « clac ». Tout se passe dans le dessin
+// du sachet (unités du dessin) : chaque bille reçoit un déplacement et une rotation (elle roule).
+function bagPhysics(st, svg){
+  if(FX.reduce()) return;
+  const peek = svg.querySelector(".bag-peek"); if(!peek) return;
+  const clipEl = peek.closest("[clip-path]"), id = (clipEl?.getAttribute("clip-path")||"").match(/#([^)]+)/)?.[1];
+  const shape = id && svg.querySelector(`#${CSS.escape(id)}`)?.firstElementChild; if(!shape) return;
+  // la paroi : un polygone tiré de la forme (chemin du filet ou du bocal, fenêtre arrondie du sachet gratuit)
+  let poly = [];
+  if(shape.tagName==="path"){ const L = shape.getTotalLength(); for(let i=0;i<72;i++){ const q = shape.getPointAtLength(L*i/72); poly.push([q.x,q.y]) } }
+  else { const x = +shape.getAttribute("x"), y = +shape.getAttribute("y"), w = +shape.getAttribute("width"), h = +shape.getAttribute("height"), rr = Math.min(+shape.getAttribute("rx")||0, w/2, h/2);
+    for(let i=0;i<40;i++){ const a = i/40*Math.PI*2, c = [Math.cos(a), Math.sin(a)];
+      const cx = c[0]>0 ? x+w-rr : x+rr, cy = c[1]>0 ? y+h-rr : y+rr; poly.push([cx+c[0]*rr, cy+c[1]*rr]) } }
+  const ctr = poly.reduce((a,q)=>[a[0]+q[0]/poly.length, a[1]+q[1]/poly.length], [0,0]);
+  const balls = [...peek.children].map(g=>{ const c = g.querySelector("circle"); return c && {g, x0:+c.getAttribute("cx"), y0:+c.getAttribute("cy"), r:+c.getAttribute("r"), x:+c.getAttribute("cx"), y:+c.getAttribute("cy"), vx:0, vy:0, a:0} }).filter(Boolean);
+  if(!balls.length) return;
+  st.classList.add("phys");
+  const G = 1400, vb = svg.viewBox.baseVal;
+  let lastHit = 0, prev = null, prevV = [0,0], t0 = performance.now();
+  // sur téléphone, secouer l'appareil secoue aussi les billes (Android ; sur iPhone, Safari demande une permission qu'on ne réclame pas)
+  let motion = [0,0], lastMShake = 0;
+  const onMotion = e => { const a = e.acceleration; if(!a || a.x==null) return;
+    motion = [-a.x*140, a.y*140];
+    const f = Math.hypot(a.x, a.y), n = performance.now();
+    if(f > 14 && n-lastMShake > 160){ lastMShake = n; Sound.shake(Math.min(1.3, f/22)); if(ovState) ovState.shakes = (ovState.shakes||0)+1 } };
+  addEventListener("devicemotion", onMotion);
+  // une étape de calcul : forces, déplacement, paroi, chocs entre billes
+  const step = (dt, ax, ay, quiet) => {
+    for(const b of balls){ b.vx += ax*dt; b.vy += ay*dt; b.vx *= .996; b.vy *= .996; b.x += b.vx*dt; b.y += b.vy*dt }
+    for(const b of balls) for(let i=0;i<poly.length;i++){
+      const A = poly[i], B = poly[(i+1)%poly.length], ex = B[0]-A[0], ey = B[1]-A[1], L2 = ex*ex+ey*ey||1;
+      const t = Math.max(0, Math.min(1, ((b.x-A[0])*ex + (b.y-A[1])*ey)/L2)), px = A[0]+ex*t, py = A[1]+ey*t;
+      let nx = b.x-px, ny = b.y-py, d = Math.hypot(nx, ny);
+      // la normale pointe vers l'intérieur (vers le centre de la forme)
+      if((ctr[0]-px)*nx + (ctr[1]-py)*ny < 0){ nx = -nx; ny = -ny; d = -d }
+      if(d < b.r){ const k = Math.hypot(nx,ny)||1; nx /= k; ny /= k; const pen = b.r - d; b.x += nx*pen; b.y += ny*pen;
+        const vn = b.vx*nx + b.vy*ny; if(vn < 0){ b.vx -= 1.45*vn*nx; b.vy -= 1.45*vn*ny; b.vx *= .985; if(!quiet && -vn > 260) clack(-vn) } }
+    }
+    for(let i=0;i<balls.length;i++) for(let j=i+1;j<balls.length;j++){
+      const p = balls[i], q = balls[j], dx = q.x-p.x, dy = q.y-p.y, d = Math.hypot(dx,dy)||.01, min = p.r+q.r;
+      if(d < min){ const nx = dx/d, ny = dy/d, pen = (min-d)/2; p.x -= nx*pen; p.y -= ny*pen; q.x += nx*pen; q.y += ny*pen;
+        const rv = (q.vx-p.vx)*nx + (q.vy-p.vy)*ny; if(rv < 0){ const imp = -.8*rv; p.vx -= imp*nx; p.vy -= imp*ny; q.vx += imp*nx; q.vy += imp*ny; if(!quiet && -rv > 220) clack(-rv) } }
+    }
+  };
+  const clack = v => { const n = performance.now(); if(n-lastHit < 55) return; lastHit = n; Sound.hit?.(Math.min(.5, v/2600)) };
+  for(let i=0;i<240;i++) step(1/120, 0, G, true);   // les billes se posent avant qu'on les voie
+  for(const b of balls){ b.vx = b.vy = 0 }
+  const frame = now => {
+    if(!st.isConnected || st.dataset.busy){ st.classList.remove("phys"); removeEventListener("devicemotion", onMotion); return }
+    const dt = Math.min(1/30, Math.max(1/240, (now - t0)/1000)); t0 = now;
+    // où est le sachet, et comment il est penché (le glisser le déplace et l'incline, puis il revient en place)
+    const m = new DOMMatrix(getComputedStyle(svg).transform === "none" ? undefined : getComputedStyle(svg).transform);
+    const k = vb.width / (svg.clientWidth || vb.width), pos = [m.e*k, m.f*k], ang = Math.atan2(m.b, m.a);
+    const v = prev ? [(pos[0]-prev[0])/dt, (pos[1]-prev[1])/dt] : [0,0], acc = prev ? [(v[0]-prevV[0])/dt, (v[1]-prevV[1])/dt] : [0,0];
+    prev = pos; prevV = v;
+    // dans le repère du sachet : la pesanteur et l'inertie (le sachet accélère d'un côté, les billes partent de l'autre)
+    const wx = -Math.max(-9000, Math.min(9000, acc[0])) + motion[0], wy = G - Math.max(-9000, Math.min(9000, acc[1])) + motion[1];
+    motion = [motion[0]*.6, motion[1]*.6];
+    const c = Math.cos(-ang), sn = Math.sin(-ang), ax = wx*c - wy*sn, ay = wx*sn + wy*c;
+    for(let i=0;i<3;i++) step(dt/3, ax, ay, false);
+    for(const b of balls){ b.a += (b.x - (b.px ?? b.x)) / b.r; b.px = b.x;
+      b.g.setAttribute("transform", `translate(${(b.x-b.x0).toFixed(2)} ${(b.y-b.y0).toFixed(2)}) rotate(${(b.a*57.3).toFixed(1)} ${b.x0} ${b.y0})`) }
+    requestAnimationFrame(frame);
+  };
+  requestAnimationFrame(frame);
+}
 // le sachet se prend en main : on le secoue en le faisant glisser, un simple appui l'ouvre
 function bindBag(){
   const st = document.getElementById("bag-stage"), svg = st.querySelector("svg");
+  bagPhysics(st, svg);
   let drag = null, lastShake = 0, lastVX = 0;
   st.addEventListener("animationend", ()=>st.classList.remove("jiggle"));
   st.addEventListener("pointerdown", e=>{

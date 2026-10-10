@@ -1,0 +1,127 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Tikalo · Motif mythique</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Lilita+One&family=Nunito:wght@500;600;700;800;900&family=Caveat:wght@600;700&display=swap">
+<style>
+:root{
+  --bg:#FBF4E6;--panel:#FFFCF6;--panel-2:#FFF8EC;--line:#EFE3CD;--ink:#24253D;--ink-2:#56546B;--muted:#8E8898;--myth:#E0182D;
+  --display:"Lilita One","Arial Rounded MT Bold",sans-serif;--body:"Nunito","Segoe UI",system-ui,sans-serif;--hand:"Caveat",cursive;
+  --shadow:0 1px 0 rgba(120,90,40,.06),0 6px 18px -10px rgba(120,90,40,.25);
+}
+@media (prefers-color-scheme:dark){ :root:not([data-theme="light"]){
+  --bg:#16130F;--panel:#211D18;--panel-2:#2A251F;--line:#352E26;--ink:#F5EEE2;--ink-2:#C8BDAD;--muted:#8F8578;--myth:#FF3B4E;
+  --shadow:0 1px 0 rgba(0,0,0,.25),0 8px 22px -12px rgba(0,0,0,.7) } }
+*{box-sizing:border-box;margin:0}
+body{background:var(--bg);color:var(--ink);font-family:var(--body);font-weight:600;line-height:1.45}
+.wrap{max-width:1180px;margin:0 auto;padding:28px 16px 80px}
+.tag{display:inline-block;font-size:11px;font-weight:900;letter-spacing:.08em;text-transform:uppercase;padding:4px 10px;border-radius:999px;background:var(--ink);color:var(--bg)}
+h1{font-family:var(--display);font-weight:400;font-size:clamp(34px,5vw,52px);line-height:1;margin:12px 0 8px}
+h1 em{font-style:normal;color:var(--myth)}
+.lead{max-width:75ch;color:var(--ink-2)}
+.note{font-family:var(--hand);font-size:22px;color:#C07A0C;margin-top:6px}
+.facts{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:10px;margin:18px 0 6px}
+.facts div{background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:12px 14px}
+.facts small{display:block;font-size:12px;font-weight:800;color:var(--ink-2)}
+.facts b{font-size:20px;font-weight:900}
+.facts b.r{color:var(--myth)}
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(520px,1fr));gap:16px;margin-top:20px}
+.my{position:relative;overflow:hidden;border-radius:24px;background:#0E0B12;color:#fff;box-shadow:var(--shadow);padding:20px;display:grid;grid-template-columns:240px minmax(0,1fr);gap:18px;isolation:isolate}
+.my::before{content:"";position:absolute;inset:-40%;z-index:-1;background:conic-gradient(from 0deg,transparent,rgba(224,24,45,.35),transparent 30%,rgba(224,24,45,.25),transparent 60%);animation:spin 9s linear infinite}
+.my::after{content:"";position:absolute;inset:2px;z-index:-1;border-radius:22px;background:radial-gradient(circle at 25% 40%,#2A0C12,#0E0B12 70%)}
+@keyframes spin{to{transform:rotate(1turn)}}
+@media (prefers-reduced-motion:reduce){ .my::before{animation:none} }
+.my canvas.big{width:240px;height:240px;cursor:zoom-in;filter:drop-shadow(0 0 22px rgba(224,24,45,.45))}
+.my .k{font-family:var(--display);font-weight:400;font-size:13px;letter-spacing:.12em;text-transform:uppercase;color:#FF4A5C}
+.my h2{font-family:var(--display);font-weight:400;font-size:36px;line-height:1;margin:4px 0 8px}
+.my p{font-size:14px;color:#D8D0D6}
+.my .n{position:absolute;top:14px;right:16px;font-family:var(--display);font-size:44px;line-height:1;color:rgba(255,255,255,.12)}
+.cols{grid-column:1/-1;display:flex;gap:6px;flex-wrap:wrap}
+.cols button{border:0;background:rgba(255,255,255,.06);border-radius:12px;padding:6px 4px 4px;cursor:zoom-in;text-align:center;font:inherit;color:#CFC6CC;width:calc(14.28% - 6px);min-width:52px}
+.cols canvas{width:100%;max-width:70px;aspect-ratio:1;display:block;margin:0 auto}
+.cols small{display:block;font-size:10px;font-weight:800;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.zoom{position:fixed;inset:0;z-index:20;background:rgba(10,4,6,.88);display:grid;place-items:center;padding:16px}
+.zoom[hidden]{display:none}
+.zoom div{text-align:center;color:#fff}
+.zoom canvas{width:min(80vw,560px);height:min(80vw,560px);cursor:grab;touch-action:none;filter:drop-shadow(0 0 40px rgba(224,24,45,.5))}
+.zoom b{display:block;font-family:var(--display);font-weight:400;font-size:30px}
+.zoom small{opacity:.75;font-weight:700}
+@media (max-width:600px){ .grid{grid-template-columns:minmax(0,1fr)} .my{grid-template-columns:minmax(0,1fr);justify-items:center;text-align:center} .cols{justify-content:center} .cols button{width:calc(25% - 6px)} }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <span class="tag">Maquette · 10 octobre 2026</span>
+  <h1>Le motif <em>Mythique</em></h1>
+  <p class="lead">Une 6e rareté au-dessus de Légendaire, avec <b>un seul motif</b> qui existe dans tous les coloris et toutes les tailles. Voici 4 propositions, en vrai rendu 3D et <b>animées en direct</b>, comme elles bougeraient dans le jeu. Chacune est montrée dans 6 coloris et en Mammouth.</p>
+  <p class="note">Touche une bille pour la voir en grand et la faire tourner !</p>
+  <div class="facts" id="facts"></div>
+  <div class="grid" id="grid"></div>
+</div>
+<div class="zoom" id="zoom" hidden><div><canvas id="zc" width="1120" height="1120"></canvas><b id="zn"></b><small>Glisse pour la tourner · touche à côté pour fermer</small></div></div>
+
+<script src="nouveaux-motifs-rendu.js"></script>
+<script>
+const palOf = n => PALETTES.findIndex(P=>P[0]===n);
+const COLS = ["Azur","Rubis","Émeraude","Or rose","Lavande","Réglisse"].map(palOf);
+const MYTH = [
+  {name:"Phénix", face:true, desc:"Un oiseau de feu bat des ailes au cœur du verre, sa longue queue ondule, et des flammes et des étincelles montent sans arrêt autour de lui."},
+  {name:"Supernova", desc:"Une étoile palpite au centre et lâche, l'une après l'autre, des vagues de lumière qui s'élargissent jusqu'au bord du verre."},
+  {name:"Vortex", desc:"Un tourbillon de lumière qui tourne vraiment sur lui-même, avec un œil noir au milieu qui aspire des étincelles."},
+  {name:"Cœur battant", face:true, desc:"Un cœur de cristal taillé qui bat (boum-boum) au milieu du verre ; à chaque battement, une onde en forme de cœur part de lui."},
+];
+// les numéros 52 à 63 sont les nouveaux motifs à l'essai : les mythiques sont les numéros 64 à 67
+while(FAMILIES.length<64) FAMILIES.push({name:"(nouveau motif)", rar:0, desc:""});
+MYTH.forEach((x,i)=>{ x.fam = 64+i; FAMILIES.push({name:x.name, rar:5, desc:x.desc, ...(x.face?{face:true}:{})}) });
+
+// les chances : la tier list du 10 octobre (13 Communs, 13 Peu communs, 11 Rares, 8 Épiques, 4 Légendaires) + 1 Mythique
+const W = 13*10 + 13*5 + 11*2.5 + 8*.8 + 4*.2, WM = .02;
+document.getElementById("facts").innerHTML = [
+  ["Rareté", `<b class="r">Mythique</b>`],
+  ["Un seul motif", `<b>${COLS.length ? "Tous les coloris" : ""}</b>`],
+  ["Chance par bille tirée", `<b>1 sur ${Math.round((W+WM)/WM).toLocaleString("fr-FR")}</b>`],
+  ["Pour comparer : un Légendaire", `<b>1 sur ${Math.round((W+WM)/.2).toLocaleString("fr-FR")}</b>`]].map(([a,b])=>`<div><small>${a}</small>${b}</div>`).join("");
+
+// ---------- des canevas animés : chaque image, on redessine les billes visibles ----------
+const glBig = makeGL(document.createElement("canvas")), glSmall = makeGL(document.createElement("canvas")), glZoom = makeGL(document.getElementById("zc"));
+const items = [];
+const spec = (fam, pal, type="calot", k="") => ({seed:hash("mythique"+fam+k), type, family:fam, pal, shiny:0});
+const cv = (s, px, cls, label, face) => { const i = items.length; items.push({s, px, label, face, cls}); return `<canvas class="${cls}" width="${px}" height="${px}" data-i="${i}"></canvas>` };
+document.getElementById("grid").innerHTML = MYTH.map((x,j)=>`<article class="my"><span class="n">${j+1}</span>
+  <div>${cv(spec(x.fam, COLS[0]), 480, "big", x.name+" - Azur", x.face)}</div>
+  <div><span class="k">Motif mythique</span><h2>${x.name}</h2><p>${x.desc}</p></div>
+  <div class="cols">${COLS.slice(1).map((p,k)=>`<button>${cv(spec(x.fam,p,"calot","c"+k), 140, "sm", x.name+" - "+PALETTES[p][0], x.face)}<small>${PALETTES[p][0]}</small></button>`).join("")}
+    <button>${cv(spec(x.fam,COLS[0],"mammouth","m"), 140, "sm", x.name+" - Mammouth", x.face)}<small>Mammouth</small></button></div>
+</article>`).join("");
+const cvs = [...document.querySelectorAll("canvas[data-i]")].map(c=>({c, ctx:c.getContext("2d"), it:items[+c.dataset.i], vis:true}));
+const io = new IntersectionObserver(es=>es.forEach(e=>{ const x = cvs.find(v=>v.c===e.target); if(x) x.vis = e.isIntersecting }));
+cvs.forEach(x=>io.observe(x.c));
+// une petite rotation : les motifs « de face » se balancent, les autres tournent doucement
+const rotM = (ax, ay) => { const cx=Math.cos(ax), sx=Math.sin(ax), cy=Math.cos(ay), sy=Math.sin(ay); return [cy,0,-sy, sx*sy,cx,sx*cy, cx*sy,-sx,cx*cy] };
+const zoom = document.getElementById("zoom"); let zit = null, zax = 0, zay = 0, drag = null;
+function frame(t){
+  const s = t/1000;
+  if(!zoom.hidden && zit && glZoom){ if(!drag && !zit.face) zay += .006; glZoom.draw(zit.s, 1120, rotM(zax, zit.face && !drag ? zay + .35*Math.sin(s*.6) : zay)) }
+  else cvs.forEach(({c, ctx, it, vis})=>{ if(!vis) return; const gl = it.cls==="big" ? glBig : glSmall; if(!gl) return;
+    gl.draw(it.s, it.px, it.face ? rotM(0, .35*Math.sin(s*.6)) : rotM(.15, s*.25));
+    ctx.clearRect(0,0,it.px,it.px); ctx.drawImage(gl.cv, 0, 0) });
+  requestAnimationFrame(frame);
+}
+requestAnimationFrame(frame);
+document.addEventListener("click", e=>{
+  const c = e.target.closest("canvas[data-i]") || e.target.closest(".cols button")?.querySelector("canvas[data-i]");
+  if(c && !zoom.contains(e.target)){ zit = items[+c.dataset.i]; zax = 0; zay = 0; document.getElementById("zn").textContent = zit.label; zoom.hidden = false; return }
+  if(zoom.contains(e.target) && e.target.id!=="zc") zoom.hidden = true;
+});
+const zc = document.getElementById("zc");
+zc.addEventListener("pointerdown", e=>{ drag = {x:e.clientX, y:e.clientY, ax:zax, ay:zay}; zc.setPointerCapture(e.pointerId) });
+zc.addEventListener("pointermove", e=>{ if(!drag) return; zay = drag.ay + (e.clientX-drag.x)*.01; zax = drag.ax + (e.clientY-drag.y)*.01 });
+zc.addEventListener("pointerup", ()=>{ drag = null });
+document.addEventListener("keydown", e=>{ if(e.key==="Escape") zoom.hidden = true });
+</script>
+</body>
+</html>

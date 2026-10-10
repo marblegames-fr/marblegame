@@ -1,5 +1,5 @@
 -- =====================================================================
---  BILLEO : le serveur décide (anti-triche)
+--  TIKALO : le serveur décide (anti-triche)
 --  À coller dans Supabase > SQL Editor > New query > Run, APRÈS schema.sql.
 --  Le script peut être relancé sans danger.
 --

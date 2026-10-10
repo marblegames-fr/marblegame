@@ -1,5 +1,5 @@
 /* =====================================================================
-   BILLEO : tout ce qui parle à la base de données (Supabase).
+   TIKALO : tout ce qui parle à la base de données (Supabase).
    Le jeu n'utilise que l'objet Cloud ci-dessous : pour changer
    d'hébergeur un jour, c'est ce seul fichier qu'il faut réécrire.
    ===================================================================== */

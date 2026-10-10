@@ -1,10 +1,11 @@
 <meta charset="utf-8">
 <script type="importmap">{"imports":{"three":"https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.js","three/addons/":"https://cdn.jsdelivr.net/npm/three@0.160.0/examples/jsm/","cannon-es":"https://cdn.jsdelivr.net/npm/cannon-es@0.20.0/dist/cannon-es.js"}}</script>
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Billeo</title>
+<title>Tikalo</title>
 <link rel="icon" id="favicon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Cdefs%3E%3CradialGradient id='g' cx='38%25' cy='34%25' r='70%25'%3E%3Cstop offset='0' stop-color='%23BFE3FF'/%3E%3Cstop offset='.5' stop-color='%232E6BE6'/%3E%3Cstop offset='1' stop-color='%23142A6B'/%3E%3C/radialGradient%3E%3C/defs%3E%3Ccircle cx='32' cy='32' r='29' fill='url(%23g)'/%3E%3Cpath d='M14 38c8-14 22-18 36-10' stroke='%23FFC93F' stroke-width='5' fill='none' stroke-linecap='round'/%3E%3Cellipse cx='23' cy='20' rx='8' ry='5' fill='%23fff' opacity='.7'/%3E%3C/svg%3E">
 <script>/* thème sombre par défaut, appliqué avant l'affichage pour éviter un flash clair */
-// Billy est devenu Billeo (8 octobre 2026) : les réglages et sauvegardes rangés sous « billy-… » dans ce navigateur passent sous « billeo-… »
+// Billy est devenu Billeo (8 octobre 2026), puis Tikalo (10 octobre 2026 : « Billeo » était déjà pris par une entreprise). Les clés « billeo-… » restent telles quelles : changer leur nom ferait perdre les parties et réglages.
+// Billy → Billeo : les réglages et sauvegardes rangés sous « billy-… » dans ce navigateur passent sous « billeo-… »
 try{ const ks=[]; for(let i=0;i<localStorage.length;i++){ const k=localStorage.key(i); if(k && k.startsWith("billy-")) ks.push(k) }
   for(const k of ks){ const n="billeo-"+k.slice(6); if(localStorage.getItem(n)===null) localStorage.setItem(n, localStorage.getItem(k)); localStorage.removeItem(k) } }catch(e){}
 try{ document.documentElement.dataset.theme = localStorage.getItem("billeo-theme") || "dark" }catch(e){ document.documentElement.dataset.theme = "dark" }</script>
@@ -3625,7 +3626,7 @@ body.gc-open{overflow:hidden}
 <div class="ciel" aria-hidden="true"><i class="ci-aurore"></i><i class="ci-e1"></i><i class="ci-e2"></i></div>
 <div class="beta-rib" id="beta-rib" hidden></div>
 <header class="topbar">
-  <div class="logo"><a href="#" data-action="nav" data-view="accueil" aria-label="Billeo : retour à l'accueil"><span class="lw" aria-hidden="true"><span class="lt">B</span><span class="lt i">ı<img id="logo-marble" alt=""></span><span class="lt">l</span><span class="lt">l</span><span class="lt">e</span><span class="lt">o</span></span></a></div>
+  <div class="logo"><a href="#" data-action="nav" data-view="accueil" aria-label="Tikalo : retour à l'accueil"><span class="lw" aria-hidden="true"><span class="lt">T</span><span class="lt i">ı<img id="logo-marble" alt=""></span><span class="lt">k</span><span class="lt">a</span><span class="lt">l</span><span class="lt">o</span></span></a></div>
   <div class="tagline">Ouvre. Collectionne. Joue.</div>
   <div class="top-spacer"></div>
   <div class="top-acts">
@@ -3761,7 +3762,7 @@ const FAMILIES = [
   {name:"Feuilles mortes", rar:4, season:10, desc:"Des feuilles d'érable rousses, jaunes et rouges qui tombent en tournoyant dans le verre."},
   {name:"Boule à neige", rar:4, season:11, desc:"Un sapin sur un tapis de neige, une étoile au sommet, et des flocons qui flottent tout autour."},
   // la bille des bêta-testeurs : jamais dans les sachets ni dans l'album
-  {name:"Bêta",          rar:4, beta:true, desc:"Un β d'or qui brille au cœur d'un verre précieux (une pierre différente pour chaque taille), cerclé d'un anneau d'or : la bille de ceux qui ont testé Billeo avant tout le monde."},
+  {name:"Bêta",          rar:4, beta:true, desc:"Un β d'or qui brille au cœur d'un verre précieux (une pierre différente pour chaque taille), cerclé d'un anneau d'or : la bille de ceux qui ont testé Tikalo avant tout le monde."},
   // événement de novembre 2026 « Super-héros ! » (numéro 48 : toujours à la fin, les numéros ne bougent jamais)
   {name:"Super-héros",   rar:4, event:"superheros", desc:"Le blason d'un héros de la cour, frappé d'un éclair, et les rayons d'une case de bande dessinée. Chaque coloris est un héros différent."},
   // (7 octobre 2026) nouveaux motifs : un légendaire (49, le Prisme, qui remplace l'Œil de dragon du même jour ; épique depuis le 8 octobre) et deux épiques (50, 51)
@@ -3832,7 +3833,7 @@ const SEASONS = [
 ];
 SEASONS.forEach(s=>PALETTES.push(s.pal));
 const isSeason = s => s.pal>=SEASON_PAL0 && s.pal<SEASON_PAL0+SEASONS.length;
-// Billes secrètes : une seule par joueur, cachées un peu partout dans Billeo
+// Billes secrètes : une seule par joueur, cachées un peu partout dans Tikalo
 const SECRETS = {
   folle:   {name:"La Folle", type:"calot", family:1, shiny:1, pal:["Folle","#FF2E88","#2EE6FF","#FFE600","#FFE3F2"],
             hint:"La bille du logo n'aime pas qu'on la chatouille… sauf si on insiste vraiment beaucoup."},
@@ -3857,7 +3858,7 @@ const EVENTS = {
           ["Coffre au trésor","#4A2A12","#F2C230","#FFF4D6","#5A3A1E"],
           ["Caraïbes","#0E6E78","#E9D8A6","#FFFFFF","#1A7A84"],
           ["Rhum ambré","#7A3B0C","#1D1410","#F6E3C0","#8A4A18"]]},
-  // novembre 2026 : un héros par coloris (des héros de la cour, inventés pour Billeo). late : coloris rangés après ceux des joueurs (79 à 83)
+  // novembre 2026 : un héros par coloris (des héros de la cour, inventés pour Tikalo). late : coloris rangés après ceux des joueurs (79 à 83)
   superheros: {name:"Super-héros !", fam:"Super-héros", color:"#2E5BFF", late:true,
     start:Date.parse("2026-11-01T00:00:00+01:00"), end:Date.parse("2026-11-14T23:59:59+01:00"),
     desc:"Deux semaines de billes Super-héros : coche la case sur un sachet payant.",
@@ -3868,7 +3869,7 @@ const EVENTS = {
           ["Flamme écarlate","#B5121B","#FF8A1F","#FFF0B0","#C21E24"]]},
 };
 Object.values(EVENTS).filter(E=>!E.late).forEach(E=>{ E.palIdx = E.pals.map(P=>{ PALETTES.push(P); return PALETTES.length-1 }) });
-// La bille Bêta : un cadeau pour ceux qui testent Billeo avant sa sortie, une de chaque taille, gardée à la remise à zéro du lancement.
+// La bille Bêta : un cadeau pour ceux qui testent Tikalo avant sa sortie, une de chaque taille, gardée à la remise à zéro du lancement.
 // Le serveur la range avec les billes secrètes (secret « beta ») : elle ne s'échange pas, ne se vend pas et ne compte pas au classement.
 // Au lancement : open:false ici et interne.beta_ouverte() à false dans supabase/serveur.sql.
 // Un verre précieux par taille (Mini → Mammouth), toujours avec le β d'or : coloris 70 à 75, dans l'ordre des tailles (même règle dans serveur.sql).
@@ -5951,7 +5952,7 @@ function bagNet(b,o){
     <path d="M56 24L144 24L144 34L56 34Z" fill="${net}"/>
     <path d="M54 64L146 64" stroke="#C9B48C" stroke-width="2"/>
     <ellipse cx="100" cy="29" rx="9" ry="3.4" fill="#16130F"/>
-    <text x="100" y="53" text-anchor="middle" font-family="Lilita One" font-size="17" fill="#24253D">Billeo</text>
+    <text x="100" y="53" text-anchor="middle" font-family="Lilita One" font-size="17" fill="#24253D">Tikalo</text>
     <text x="100" y="61" text-anchor="middle" font-family="Nunito" font-weight="900" font-size="6.5" fill="${shade(net,-.3)}" letter-spacing="1">CLASSIQUE · 5 BILLES</text>
     <path d="M66 58l6 0M128 58l6 0" stroke="#9aa0a6" stroke-width="2.2" stroke-linecap="round"/>
     ${bagLoose(id,o)}
@@ -6012,7 +6013,7 @@ function bagJar(b,o){
     <g transform="rotate(-3 100 132)"><rect x="56" y="112" width="88" height="40" rx="6" fill="#FFF6DE" stroke="#D9A020" stroke-width="2"/>
       <rect x="60" y="116" width="80" height="32" rx="4" fill="none" stroke="#D9A020" stroke-width=".8" stroke-dasharray="3 2"/>
       <text x="100" y="132" text-anchor="middle" font-family="Caveat" font-weight="700" font-size="19" fill="${shade(c,-.1)}">${nm}</text>
-      <text x="100" y="143" text-anchor="middle" font-family="Nunito" font-weight="900" font-size="6.5" fill="#8A5E0C" letter-spacing="1.2">BILLEO · ${b.n||5} BILLES</text></g>
+      <text x="100" y="143" text-anchor="middle" font-family="Nunito" font-weight="900" font-size="6.5" fill="#8A5E0C" letter-spacing="1.2">TIKALO · ${b.n||5} BILLES</text></g>
     ${bagLoose(id,o)}
   </svg>`;
 }
@@ -6246,7 +6247,7 @@ function revealSecret(id){
   return true;
 }
 function secretGrid(){
-  return `<p class="meta" style="margin-bottom:14px">Des billes cachées dans Billeo : lis bien les indices…</p>
+  return `<p class="meta" style="margin-bottom:14px">Des billes cachées dans Tikalo : lis bien les indices…</p>
   <div class="card-grid">${Object.entries(SECRETS).filter(([id,X])=>ui.type==="all"||X.type===ui.type).map(([id,X])=>{ const s = S.specs.find(x=>x.secret===id);
     return s ? `<button class="m-card is-secret" data-action="spec" data-id="${s.id}"><span class="shiny-mark">${edPill(s)}</span><span class="ball">${mImg(s,160,Math.round(84*scaleOf(s.type)+6))}</span><b>${esc(X.name)}</b>${typePill(s.type)}</button>`
       : `<div class="m-card missing secret-card"><span class="ball"><span class="secret-q">?</span></span><b>???</b>${typePill(X.type)}<small>${esc(X.hint)}</small></div>` }).join("")}</div>`;
@@ -9156,7 +9157,7 @@ function pachiBack(k){
     c.save(); c.shadowColor = col; c.shadowBlur = 18; c.fillStyle = col; c.fillText(txt, x, y); c.shadowBlur = 6; c.fillText(txt, x, y); c.restore();
     c.fillStyle = "rgba(255,255,255,.85)"; c.font = `${size}px "Lilita One", sans-serif`; c.globalAlpha = .55; c.fillText(txt, x, y); c.globalAlpha = 1 };
   neon("PLINKO", 118, 58, 34, "#FF4FD8");
-  neon("★ BILLEO ★", PW-112, 58, 24, "#39E6FF");
+  neon("★ TIKALO ★", PW-112, 58, 24, "#39E6FF");
   const fg = c.createLinearGradient(0,6,0,34); fg.addColorStop(0,"#FFE7A0"); fg.addColorStop(.5,"#C9922E"); fg.addColorStop(1,"#6B4A12");
   c.fillStyle = fg; c.beginPath(); c.roundRect(PW/2-34, 6, 68, 30, 15); c.fill();
   c.fillStyle = "#12081F"; c.beginPath(); c.roundRect(PW/2-24, 12, 48, 18, 9); c.fill();
@@ -9633,10 +9634,10 @@ function viewGrattage(){
     <section class="panel gr-panel">
       <div class="gr-stage">
       <div class="gr-ticket${on?" on":""}${grat.done?" done":""}">
-        <div class="gr-top"><span class="gr-logo">Billeo</span><span class="gr-title">Gratte &amp; gagne</span><span class="gr-rule">3 pareils = gagné !</span></div>
+        <div class="gr-top"><span class="gr-logo">Tikalo</span><span class="gr-title">Gratte &amp; gagne</span><span class="gr-rule">3 pareils = gagné !</span></div>
         <div class="gr-grid" id="gr-grid">${on ? grat.cells.map((l,i)=>`<div class="gr-cell${grat.done?" shown"+(l===ROUE[grat.k].lbl?" win":""):""}" data-i="${i}" style="--wc:${gratLot(l).c||"#FFC93F"}">${gratSym(l)}</div>`).join("") : Array.from({length:6},()=>`<div class="gr-cell"></div>`).join("")}
           ${on && !grat.done ? `<canvas class="gr-foil" id="gr-foil"></canvas>` : !on ? `<div class="gr-foil gr-idle"><span class="gr-coin">?</span><span>Prends un ticket</span></div>` : ""}</div>
-        <div class="gr-foot">N° ${String(Date.now()%100000).padStart(5,"0")} · Billeo &amp; Cie</div>
+        <div class="gr-foot">N° ${String(Date.now()%100000).padStart(5,"0")} · Tikalo &amp; Cie</div>
       </div>
       ${grat.done ? `<div class="gr-res"><b>Gagné !</b><span>${gratPrize(ROUE[grat.k])}</span></div>` : ""}
       </div>
@@ -9765,7 +9766,7 @@ function distMachine(){
     <path d="M80 274 H220 L236 420 H64 Z" fill="url(#dsR)" stroke="#5A0E18" stroke-width="2.5" stroke-linejoin="round"/>
     <path d="M88 280 H104 L98 414 H74 Z" fill="#fff" opacity=".12"/>
     ${lights}
-    <rect x="104" y="294" width="92" height="28" rx="9" fill="#5A0E18"/><text x="150" y="315" text-anchor="middle" font-family="Lilita One" font-size="19" fill="#FFE9A8" letter-spacing="1.5">BILLEO</text>
+    <rect x="104" y="294" width="92" height="28" rx="9" fill="#5A0E18"/><text x="150" y="315" text-anchor="middle" font-family="Lilita One" font-size="19" fill="#FFE9A8" letter-spacing="1.5">TIKALO</text>
     <rect x="92" y="330" width="86" height="56" rx="10" fill="url(#dsW)" stroke="#2A050B" stroke-width="2"/>
     <g clip-path="url(#dsWC)"><path d="M96 344 L166 356 M174 362 L100 376" stroke="#C9CDD6" stroke-width="3" stroke-linecap="round" opacity=".8"/>
       <circle id="ds-mini" cx="-50" cy="-50" r="9" fill="#B9B6C6" stroke="#fff" stroke-width="1.5"/></g>
@@ -10017,7 +10018,7 @@ function marBoard(){
       <rect x="0" y="0" width="${MAR_W}" height="${WY}" fill="url(#mrl-lamp)" opacity=".8"/>
       <g filter="url(#mrl-chalk)" fill="none" stroke="#F4F1EA" stroke-width="3.5" stroke-linecap="round" opacity=".75">
         <path d="M60 22 q7 -12 14 0 q7 -12 14 0 q-14 17 -14 17 q0 0 -14 -17z" stroke="#FF8FB8" stroke-width="3"/>
-        <text x="470" y="34" font-family="Caveat" font-weight="700" font-size="26" fill="#F4F1EA" stroke="none" transform="rotate(-4 470 34)">Billeo !</text></g></g>
+        <text x="470" y="34" font-family="Caveat" font-weight="700" font-size="26" fill="#F4F1EA" stroke="none" transform="rotate(-4 470 34)">Tikalo !</text></g></g>
     ${marDecor(WY)}
     ${leaves}
     <g filter="url(#mrl-chalk)" opacity=".55">
@@ -14273,7 +14274,7 @@ document.addEventListener("keydown", e=>{
 
 // compte à rebours du sachet gratuit
 let wasStock = freeStock(), recreLater = false;
-// Driiing ! Le stock de sachets gratuits est plein. La sonnerie retentit même si Billeo est dans un autre onglet
+// Driiing ! Le stock de sachets gratuits est plein. La sonnerie retentit même si Tikalo est dans un autre onglet
 // (le titre de l'onglet le signale aussi) ; le message, lui, attend que le joueur revienne.
 function recre(){ Sound.bell(); toast(`Driiing ! C'est la récré : ${FREE_MAX} sachets gratuits t'attendent !`) }
 let recreTitle = null;
@@ -14622,7 +14623,7 @@ const AuthFx = (()=>{
       c.fillStyle = "rgba(255,250,240,.12)"; c.fillText(n, x*s+s/2, -(y+.5)*s);
     });
     c.restore();
-    c.save(); c.font = `700 ${Math.min(46,W*.05)}px ${hand}`; c.fillStyle="rgba(255,250,240,.1)"; c.translate(W*.86,H*.9); c.rotate(-.08); c.fillText("Billeo ♥", 0, 0); c.restore();
+    c.save(); c.font = `700 ${Math.min(46,W*.05)}px ${hand}`; c.fillStyle="rgba(255,250,240,.1)"; c.translate(W*.86,H*.9); c.rotate(-.08); c.fillText("Tikalo ♥", 0, 0); c.restore();
     chalk(()=>{ const x=W*.6, y=H*.12; for(let i=0;i<=10;i++){ const a=i*Math.PI*4/5-Math.PI/2, rr=i%2?9:22; i ? c.lineTo(x+Math.cos(a)*22, y+Math.sin(a)*22) : c.moveTo(x+Math.cos(a)*22, y+Math.sin(a)*22) } }, .09, 2.5);
     // la consigne, écrite à la craie à côté du rond
     if(!off && W>=880 && matchMedia("(pointer:fine)").matches){
@@ -14892,7 +14893,7 @@ function authShow(screen, opts){
     <div class="auth-wrap"><div class="auth-pitch">${authPitch()}</div><div class="auth-slot"></div></div>
     <button class="auth-balls" data-action="auth-balls">${authBallsLabel()}</button>`;
   const slot = box.querySelector(".auth-slot"), again = !!slot.firstChild;
-  slot.innerHTML = `<div class="auth-card" role="dialog" aria-modal="true" aria-label="Compte Billeo"${again?` style="animation:none"`:""}>${close}${body}</div>`;
+  slot.innerHTML = `<div class="auth-card" role="dialog" aria-modal="true" aria-label="Compte Tikalo"${again?` style="animation:none"`:""}>${close}${body}</div>`;
   const tabs = slot.querySelector(".auth-tabs"); if(tabs) requestAnimationFrame(()=>tabs.dataset.tab = auth.tab);
   auth.prevTab = auth.tab;
   box.hidden = false;
@@ -14908,7 +14909,7 @@ const AUTH_SPECS = {
   shiny: {seed:hash("accueil-s"), type:"bille", family:0, pal:4, shiny:2},
 };
 function authPitch(){
-  return `<div class="logo" role="img" aria-label="Billeo"><span class="lw" aria-hidden="true"><span class="lt">B</span><span class="lt i">ı<img src="${marbleURL(LOGO_SPEC,96)}" alt=""></span><span class="lt">l</span><span class="lt">l</span><span class="lt">e</span><span class="lt">o</span></span></div>
+  return `<div class="logo" role="img" aria-label="Tikalo"><span class="lw" aria-hidden="true"><span class="lt">T</span><span class="lt i">ı<img src="${marbleURL(LOGO_SPEC,96)}" alt=""></span><span class="lt">k</span><span class="lt">a</span><span class="lt">l</span><span class="lt">o</span></span></div>
     <h1>Ta cour de récré,<br> <em>en billes.</em></h1>
     <p class="auth-hand">Ouvre des sachets, complète ton album, joue avec les copains.</p>
     <ul class="auth-feats">
@@ -15042,7 +15043,7 @@ const TUTO = [
   {go:"sacs", target:'[data-action="open-free"]', txt:"Voici tes sachets gratuits : un nouveau toutes les 10 minutes. <b>Ouvre ton premier sachet</b>, et secoue-le pour entendre les billes !", btn:"Ouvrir", act:()=>{ tutoHide(); openBag("gratuit") }},
   {go:"collection", target:".bx-bar", txt:"Tes billes sont rangées dans <b>ta boîte à billes</b>. Le point rouge veut dire « nouvelle ». Ta bille de départ y est aussi, avec son étoile. Il reste des centaines de billes à trouver !"},
   {go:"tir", target:"#g-canvas", txt:"Essaie le Tir avec ta bille : <b>tire en arrière, vise le trou, et relâche</b>. Chaque jeu de la cour te rapporte des bonbecs.", btn:"Suivant"},
-  {go:"cour", target:"#ami-form", txt:"Billeo, c'est mieux à plusieurs ! Tape le <b>pseudo d'un copain</b> pour l'ajouter : vous pourrez troquer vos doubles."},
+  {go:"cour", target:"#ami-form", txt:"Tikalo, c'est mieux à plusieurs ! Tape le <b>pseudo d'un copain</b> pour l'ajouter : vous pourrez troquer vos doubles."},
   {go:"accueil", target:"#mj-rail,#hm-day", txt:"Chaque jour, de nouvelles choses t'attendent dans <b>Ma journée</b> : le bonbec du jour, des sachets gratuits, des quêtes et des jeux. <b>Reviens demain !</b>", btn:"Terminer"},
   {go:"accueil", modal:"end"},
 ];

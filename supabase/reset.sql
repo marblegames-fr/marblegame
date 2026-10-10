@@ -1,5 +1,5 @@
 -- =====================================================================
---  BILLEO : tout remettre à zéro (le jour du lancement)
+--  TIKALO : tout remettre à zéro (le jour du lancement)
 --  À coller dans Supabase > SQL Editor > New query > Run.
 --  ATTENTION : irréversible. Les billes, les bonbecs, les copains, les trocs et le marché
 --  de TOUS les joueurs sont effacés.

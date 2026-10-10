@@ -1,5 +1,5 @@
 -- =====================================================================
---  BILLEO : chaque « Signaler un bug » arrive aussi par mail (10 octobre 2026)
+--  TIKALO : chaque « Signaler un bug » arrive aussi par mail (10 octobre 2026)
 --  À installer après signalements.sql.
 --
 --  Après chaque nouveau signalement, la base envoie un mail à marblegamesfr@gmail.com par Resend
@@ -35,9 +35,9 @@ begin
     url := 'https://api.resend.com/emails',
     headers := jsonb_build_object('Authorization', 'Bearer ' || cle, 'Content-Type', 'application/json'),
     body := jsonb_build_object(
-      'from', 'Billeo <onboarding@resend.dev>',
+      'from', 'Tikalo <onboarding@resend.dev>',
       'to', jsonb_build_array('marblegamesfr@gmail.com'),
-      'subject', '[Billeo] ' || cat || ' de ' || coalesce(new.pseudo, '?') || ' : ' || left(regexp_replace(new.texte, '\s+', ' ', 'g'), 60),
+      'subject', '[Tikalo] ' || cat || ' de ' || coalesce(new.pseudo, '?') || ' : ' || left(regexp_replace(new.texte, '\s+', ' ', 'g'), 60),
       'html', corps));
   return new;
 exception when others then

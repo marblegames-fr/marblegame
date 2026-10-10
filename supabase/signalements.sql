@@ -1,5 +1,5 @@
 -- =====================================================================
---  BILLEO : « Signaler un bug » (7 octobre 2026)
+--  TIKALO : « Signaler un bug » (7 octobre 2026)
 --  À installer après serveur.sql (utilise public.testeurs).
 --
 --  Un joueur connecté envoie un message (catégorie + texte) ; le jeu y joint tout seul quelques détails

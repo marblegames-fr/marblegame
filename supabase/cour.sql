@@ -1,5 +1,5 @@
 -- =====================================================================
---  BILLEO : la cour de récré (copains, troc, marché)
+--  TIKALO : la cour de récré (copains, troc, marché)
 --  À coller dans Supabase > SQL Editor > New query > Run, APRÈS schema.sql et serveur.sql.
 --  Le script peut être relancé sans danger.
 --

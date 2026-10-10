@@ -1650,6 +1650,48 @@ canvas.gr-foil{touch-action:none}
 .fz-warn{grid-column:1/-1}
 .m-card[aria-pressed="true"]{box-shadow:0 0 0 3px var(--blue);transform:translateY(-2px)}
 .m-card .dup-tag{position:absolute;top:7px;left:8px;font-size:10px;font-weight:900;background:var(--green-soft);color:var(--green);border-radius:999px;padding:1px 7px;text-transform:uppercase;letter-spacing:.04em}
+/* (10 octobre 2026) la fusion au chaudron */
+.cz-stage{--lq:#8E8898;--sk:1;position:relative;width:min(380px,90vw);height:400px;margin:6px auto 0}
+.cz-in{position:absolute;left:0;right:0;top:0;height:120px}
+.cz-in img{position:absolute;width:44px;height:44px;filter:drop-shadow(0 6px 6px rgba(0,0,0,.5));animation:cz-float 1.6s ease-in-out infinite;animation-delay:calc(var(--i) * -.17s)}
+@keyframes cz-float{50%{translate:0 -6px}}
+.cz-pot{position:absolute;left:50%;bottom:0;width:290px;margin-left:-145px;overflow:visible;filter:drop-shadow(0 16px 20px rgba(0,0,0,.5))}
+.cz-stage.plop .cz-pot{animation:cz-plop .22s ease-out}
+@keyframes cz-plop{50%{transform:scaleY(.97) translateY(2px)}}
+.cz-liq{transition:fill .3s}
+.cz-stage .cz-liq{filter:drop-shadow(0 0 calc(6px * var(--sk)) var(--lq))}
+.cz-bub{fill:var(--lq);opacity:0}
+.cz-stage.boil .cz-bub{animation:cz-bub calc(1.3s / var(--sk)) ease-out infinite;animation-delay:var(--d)}
+@keyframes cz-bub{0%{opacity:0;transform:translate(0,4px) scale(.4)}30%{opacity:1}100%{opacity:0;transform:translate(var(--x),-26px) scale(1.2)}}
+.cz-stage.boil .cz-pot{animation:cz-shake calc(.5s / var(--sk)) ease-in-out infinite}
+.cz-stage.up .cz-pot{animation:cz-up .35s cubic-bezier(.2,1.8,.4,1)}
+@keyframes cz-shake{25%{transform:rotate(calc(-.6deg * var(--sk)))}75%{transform:rotate(calc(.6deg * var(--sk)))}}
+@keyframes cz-up{40%{transform:scale(1.06,.94)}}
+.cz-fire{transform-origin:120px 196px;animation:cz-fire .35s ease-in-out infinite alternate}
+@keyframes cz-fire{to{transform:scale(1.08,.88)}}
+.cz-steam{position:absolute;left:50%;bottom:205px;width:160px;margin-left:-80px;height:90px;pointer-events:none;opacity:0;transition:opacity .4s}
+.cz-stage.boil .cz-steam{opacity:.55}.cz-stage.hot .cz-steam{opacity:.9}
+.cz-steam i{position:absolute;bottom:0;width:46px;height:46px;border-radius:50%;background:radial-gradient(circle,color-mix(in srgb,var(--lq) 50%,#fff) 0,transparent 70%);animation:cz-steam 1.8s ease-out infinite}
+.cz-steam i:nth-child(1){left:10px}.cz-steam i:nth-child(2){left:57px;animation-delay:.6s}.cz-steam i:nth-child(3){left:104px;animation-delay:1.2s}
+@keyframes cz-steam{from{transform:translateY(10px) scale(.5);opacity:.9}to{transform:translateY(-70px) scale(1.6);opacity:0}}
+.cz-tier{position:absolute;left:0;right:0;top:132px;text-align:center;font-family:"Lilita One",sans-serif;font-size:30px;letter-spacing:.5px;color:var(--tc,#fff);text-shadow:0 3px 12px rgba(0,0,0,.6);opacity:0}
+.cz-tier.pop{animation:cz-pop .45s cubic-bezier(.2,1.8,.4,1) forwards}
+@keyframes cz-pop{from{opacity:0;transform:scale(.6)}to{opacity:1;transform:none}}
+.cz-stage.dark{--lq:#15121C!important}
+.cz-stage.dark .cz-pot{animation:cz-shake .12s linear infinite;--sk:3}
+.ov:has(.cz-stage.dark)::before{background:rgba(0,0,0,.6)}
+.cz-stage.sh1 .cz-liq{animation:cz-iri 1.2s linear infinite}
+@keyframes cz-iri{to{filter:hue-rotate(360deg) drop-shadow(0 0 14px #C78BFF)}}
+.cz-stage.sh2 .cz-liq,.cz-stage.sh3 .cz-liq{filter:drop-shadow(0 0 22px var(--lq))}
+.cz-rise{position:absolute;left:50%;bottom:140px;translate:-50% 0;opacity:0;pointer-events:none}
+.cz-rise img{display:block;filter:drop-shadow(0 0 24px var(--lq))}
+.cz-stage.rise .cz-tier{transition:opacity .3s;opacity:0!important;animation:none}
+.cz-stage.rise .cz-rise{animation:cz-rise 1.1s cubic-bezier(.2,.9,.3,1) forwards}
+@keyframes cz-rise{from{opacity:0;transform:translateY(40px) scale(.2)}35%{opacity:1}to{opacity:1;transform:translateY(-110px) scale(1)}}
+.cz-demo{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px;margin-top:14px}
+.cz-demo .btn{justify-content:flex-start;gap:10px}
+.cz-demo i{width:14px;height:14px;border-radius:50%;background:var(--c)}
+@media (prefers-reduced-motion:reduce){ .cz-stage *{animation:none!important} }
 .fuse-ring{position:relative;width:300px;height:300px;max-width:100%}
 .fuse-ring img{position:absolute;left:50%;top:50%;width:46px;height:46px;margin:-23px;filter:drop-shadow(0 6px 6px rgba(0,0,0,.5));
   transform:rotate(var(--a)) translateX(125px) rotate(calc(-1*var(--a))) scale(1);animation:fuse 1.7s cubic-bezier(.55,0,.85,.35) var(--d) forwards}
@@ -1779,6 +1821,42 @@ canvas.gr-foil{touch-action:none}
 .pgo .btn-xl{width:100%;justify-content:center;margin-top:6px}
 @keyframes pgo-in{from{opacity:0}}
 @media (prefers-reduced-motion:reduce){ .pgo-scrim,.pgo{animation:none} }
+/* (10 octobre 2026, le soir) la bande du haut de la page des jeux : les 3 jeux du jour à gauche, la Course et la Loterie à droite */
+.gm-strip{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,300px);gap:14px 22px;align-items:center;margin-bottom:18px;padding:16px 18px;
+  background:linear-gradient(110deg,color-mix(in srgb,#FFC93F 10%,var(--panel)),var(--panel) 55%)}
+.gm-strip.all-done{background:linear-gradient(110deg,color-mix(in srgb,var(--green) 12%,var(--panel)),var(--panel) 55%)}
+.gs-top{display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap}
+.gs-goal{display:grid;grid-template-columns:auto minmax(0,1fr);align-items:center;gap:12px;margin:10px 0 12px}
+.gs-goal b{display:block;font-family:var(--display);font-weight:400;font-size:21px;line-height:1.1;margin-bottom:7px}
+.gs-goal .gp-bar{display:block;height:8px;border-radius:99px;background:var(--line);overflow:hidden}
+.gs-goal .gp-bar > i{display:block;height:100%;border-radius:inherit;background:linear-gradient(90deg,#FFC93F,#F2AE12)}
+.gm-strip.all-done .gs-goal .gp-bar > i{background:var(--green)}
+.gs-bag{display:grid;place-items:center;width:46px;height:52px}
+.gs-bag svg{width:46px;height:auto}
+.gs-days{display:flex;flex-wrap:wrap;gap:6px}
+.gs-d{display:inline-flex;align-items:center;gap:6px;height:32px;padding:0 12px;border-radius:999px;border:1.5px dashed var(--line-2);background:var(--panel-2);font-size:13px;font-weight:800;color:var(--ink)}
+.gs-d:hover{border-color:var(--ink-2)}
+.gs-d.done{border-style:solid;border-color:var(--green-line);background:var(--green-soft);color:var(--green)}
+.gs-rdv{display:grid;gap:8px}
+.gs-pill{display:grid;grid-template-columns:auto minmax(0,1fr) auto;align-items:center;gap:10px;padding:9px 12px;border-radius:14px;background:var(--panel-2);border:1px solid var(--line);text-align:left;color:var(--ink)}
+.gs-pill:hover{border-color:var(--line-2)}
+.gs-pill > svg{color:var(--muted)}
+.gs-pill small{display:block;font-size:11px;font-weight:900;letter-spacing:.04em;text-transform:uppercase;color:var(--muted)}
+.gs-pill b{display:block;font-size:14px;font-weight:900;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.gs-pill em{font-style:normal;font-size:12px;font-weight:900;padding:5px 10px;border-radius:999px;background:var(--yellow);color:#2B2233;white-space:nowrap}
+.gs-pill > svg:last-child{color:var(--green)}
+.gm-strip + .games-grid{margin-bottom:18px}
+.gt-kind{font-size:10.5px;font-weight:900;letter-spacing:.07em;text-transform:uppercase;color:var(--muted)}
+/* les jeux faits à fond : une ligne de petites vignettes dorées, en bas */
+.gt-fonds{display:flex;flex-wrap:wrap;align-items:center;gap:8px;margin-top:6px}
+.gtf-l{display:inline-flex;align-items:center;gap:6px;margin-right:4px;font-size:12px;font-weight:900;letter-spacing:.06em;text-transform:uppercase;color:#D99A0E}
+.gtf{position:relative;display:inline-flex;align-items:center;gap:8px;padding:4px 12px 4px 4px;border-radius:999px;background:var(--panel);border:1.5px solid #E9B23A;color:var(--ink);font-size:13px;font-weight:800}
+.gtf:hover{background:color-mix(in srgb,#FFC93F 12%,var(--panel))}
+.gtf-art{display:block;width:44px;height:28px;border-radius:999px;overflow:hidden}
+.gtf-art > svg{display:block;width:100%;height:100%}
+.gtf-ok{display:grid;place-items:center;width:18px;height:18px;border-radius:50%;background:linear-gradient(180deg,#FFD866,#F2AE12);color:#3A2600}
+@media (max-width:760px){ .gm-strip{grid-template-columns:minmax(0,1fr)} }
+@media (max-width:560px){ .games-grid .gt-art{height:116px} .games-grid .gt-body.gt-foot{padding:12px 16px} }
 /* (10 octobre 2026) les jeux déjà joués aujourd'hui : une petite ligne chacun, sous les grandes cartes */
 .gs-sub{margin:20px 0 10px;font-size:13px;font-weight:900;letter-spacing:.06em;text-transform:uppercase;color:var(--muted)}
 .games-sec > .gs-sub:nth-child(2){margin-top:0}
@@ -7481,39 +7559,126 @@ function evFuse(key, again){
     done(makeSpec(TK[t+1], {family:+f, pal:+pal, shiny:Math.random()<SHINY_RATE*n ? rollShiny() : 0, src:"fusion"}));
   });
 }
-function showCraft(inputs, out, pxp){
-  const ov = document.getElementById("ov"), k = pullScore(out);
-  ovState = {craft:true, results:[{s:out}], opened:new Set()};
-  ov.style.setProperty("--bc", RARITY[tierOf(out)].c);
-  ov.style.removeProperty("--flash");
-  document.getElementById("ov-body").classList.remove("six");
-  document.getElementById("ov-body").innerHTML = `<span class="ov-kicker">La Confiserie · Fusion</span><div class="ov-title">Fusion en cours…</div>
-    <div class="fuse-ring" style="--tc:${scoreCol(k)}">${inputs.map((s,i)=>`<img src="${marbleURL(s,120)}" alt="" style="--a:${i*36}deg;--d:${i*50}ms">`).join("")}<span class="fuse-core"></span></div>`;
-  ov.hidden = false;
-  document.body.style.overflow = "hidden";
+// (10 octobre 2026) la fusion au chaudron, avec du suspense comme à l'ouverture d'un sachet :
+// 1. les billes tombent une à une dans le chaudron (un « ploc » et une éclaboussure à leur couleur) ;
+// 2. il bouillonne et change de couleur palier par palier (Commun → … → la rareté du motif obtenu), une note à chaque palier,
+//    et tremble de plus en plus ; 3. une shiny : il s'éteint… puis repart à la couleur de la shiny ;
+// 4. la bille monte hors du chaudron, puis elle s'ouvre comme dans un sachet (même son « Égrené », mêmes effets).
+// demo : la démo du compte admin (rien n'est gagné, « Revoir » relance le même cas)
+const CZ_SH = [null, "#C78BFF", "#FFC93F", "#EAFBFF"];
+function czPot(){
+  let bub = ""; for(let i=0;i<9;i++) bub += `<circle class="cz-bub" cx="${62+i*15}" cy="62" r="${3+(i*7)%5}" style="--d:${(i*.23).toFixed(2)}s;--x:${((i%3)-1)*4}px"/>`;
+  return `<svg class="cz-pot" viewBox="0 0 240 210" aria-hidden="true"><defs>
+      <radialGradient id="czL" cx=".5" cy=".4" r=".7"><stop offset="0" stop-color="#fff" stop-opacity=".55"/><stop offset=".45" stop-color="var(--lq)"/><stop offset="1" stop-color="var(--lq)"/></radialGradient>
+      <linearGradient id="czI" x1="0" x2="1"><stop offset="0" stop-color="#1A1A22"/><stop offset=".35" stop-color="#4A4A58"/><stop offset=".55" stop-color="#2E2E38"/><stop offset="1" stop-color="#121218"/></linearGradient></defs>
+    <g class="cz-fire"><path d="M80 196 Q86 170 98 182 Q102 156 118 176 Q124 150 138 178 Q146 160 152 184 Q162 172 162 196 Z" fill="#FF8A1F"/><path d="M96 198 Q102 182 110 190 Q116 172 126 188 Q134 176 142 198 Z" fill="#FFE14D"/></g>
+    <path d="M70 186 l-10 18 M170 186 l10 18" stroke="#1A1A22" stroke-width="8" stroke-linecap="round"/>
+    <path d="M36 70 Q30 180 120 186 Q210 180 204 70 Z" fill="url(#czI)" stroke="#0C0C12" stroke-width="3"/>
+    <path d="M52 92 Q54 150 92 168" stroke="#fff" stroke-width="6" stroke-linecap="round" fill="none" opacity=".12"/>
+    <ellipse class="cz-liq" cx="120" cy="66" rx="80" ry="17" fill="url(#czL)"/>
+    <g class="cz-bubs">${bub}</g>
+    <ellipse cx="120" cy="64" rx="90" ry="20" fill="none" stroke="#3A3A46" stroke-width="10"/>
+    <ellipse cx="120" cy="62" rx="90" ry="20" fill="none" stroke="#5A5A6A" stroke-width="3" opacity=".7"/>
+  </svg>`;
+}
+function showCraft(inputs, out, pxp, demo){
+  const ov = document.getElementById("ov"), body = document.getElementById("ov-body"), k = pullScore(out);
+  const dr = Math.max(0, decorRar(out)), sh = out.shiny||0;
+  ovState = {craft:true, results:[{s:out}], opened:new Set(), demo};
+  const st = ovState, alive = () => ovState===st && !ov.hidden, wait = ms => new Promise(r=>setTimeout(r, ms));
+  ov.style.setProperty("--bc", RARITY[tierOf(out)].c); ov.style.removeProperty("--flash"); ov.classList.remove("dim");
+  body.classList.remove("six");
+  body.innerHTML = `<span class="ov-kicker">La Confiserie · Fusion</span><div class="ov-title" id="cz-title">Dans le chaudron…</div>
+    <div class="cz-stage" id="cz-stage" style="--lq:${DECOR_RAR[0].c}">
+      <div class="cz-in">${inputs.map((s,i,l)=>{ const a = Math.PI*(1.08 + .84*i/Math.max(1,l.length-1)); return `<img src="${marbleURL(s,96)}" alt="" style="--i:${i};left:calc(50% - 22px + ${(Math.cos(a)*150).toFixed(0)}px);top:${(118 + Math.sin(a)*92).toFixed(0)}px">` }).join("")}</div>
+      <div class="cz-tier" id="cz-tier"></div><div class="cz-steam"><i></i><i></i><i></i></div>${czPot()}
+      <div class="cz-rise" id="cz-rise">${mImg(out,300,Math.round(130*scaleOf(out.type)),"")}</div>
+    </div>`;
+  ov.hidden = false; document.body.style.overflow = "hidden";
   FX.fit(); FX.setDust(true);
-  const reduce = FX.reduce();
-  [0,500,1000].forEach((d,i)=>setTimeout(()=>Sound.shake(.8+i*.2), reduce?0:d));
-  setTimeout(()=>{
-    Sound.whoosh();
-    const [x,y] = FX.at(document.querySelector(".fuse-core"));
-    FX.burst(x,y, scoreCols(k), 60+k*16, 1.2+k*.08); FX.ring(x,y, scoreCol(k));
-    if(out.shiny){ FX.burst(x,y, SHINY_COLS, 90, 1.5); FX.fireworks(SHINY_COLS, 8) }
-    ov.style.setProperty("--flash", rgba(scoreCol(k), .6));
-    FX.setDust(false);
-    document.getElementById("ov-body").innerHTML = `<div class="ov-title">${out.shiny?"Une shiny !":"Fusion réussie !"}</div>
-      <p class="ov-sub">${esc(specName(out))} rejoint ta boîte à billes.</p>
-      <div class="reveal-row"><button class="slot is-open ${k>=BIG?"big":""} ${out.shiny?"shiny":""}" data-action="zoom" data-id="${out.id}" aria-label="Agrandir ${esc(specName(out))}" style="--tc:${scoreCol(k)};${tstyle(out.type)}">
+  const stage = document.getElementById("cz-stage"), tier = document.getElementById("cz-tier"), title = document.getElementById("cz-title");
+  const potAt = () => { const r = stage.querySelector(".cz-pot").getBoundingClientRect(); return [r.left + r.width/2, r.top + r.height*.3] };
+  const bump = c => { stage.classList.remove(c); void stage.offsetWidth; stage.classList.add(c) };
+  if(FX.reduce()){ craftFinal(inputs, out, pxp, k); return }
+  (async()=>{
+    // 1. les billes tombent dans le chaudron
+    await wait(350);
+    const imgs = [...stage.querySelectorAll(".cz-in img")], [px, py] = potAt();
+    for(const [i, im] of imgs.entries()){
+      if(!alive()) return;
+      const r = im.getBoundingClientRect(), dx = px - (r.left + r.width/2), dy = py - (r.top + r.height/2), col = PALETTES[inputs[i].pal]?.[1] || "#fff";
+      im.animate([{transform:"translate(0,0) scale(1)", opacity:1}, {transform:`translate(${dx*.6}px,${dy*.35 - 40}px) scale(.85)`, opacity:1, offset:.55}, {transform:`translate(${dx}px,${dy}px) scale(.35)`, opacity:0}],
+        {duration:520, easing:"cubic-bezier(.4,0,.8,.6)", fill:"forwards"});
+      setTimeout(()=>{ if(!alive()) return; Sound.tap(0, .55, 1.2+Math.random()*.3); FX.burst(px, py, [col, shade(col,.4), "#FFFFFF"], 10, .45); bump("plop") }, 500);
+      await wait(Math.max(90, 190 - i*10));
+    }
+    await wait(650); if(!alive()) return;
+    FX.setDust(false); title.textContent = "Ça bouillonne…"; stage.classList.add("boil");
+    // 2. palier par palier jusqu'à la rareté du motif
+    for(let i=0;i<=dr;i++){
+      await wait(i ? 380 + i*170 + (i===dr ? 240 : 0) : 250); if(!alive()) return;
+      const c = DECOR_RAR[i].c; stage.style.setProperty("--lq", c); stage.style.setProperty("--sk", (1+i*.6).toFixed(1));
+      tier.style.setProperty("--tc", c); tier.textContent = DECOR_RAR[i].name; bump("up"); tier.classList.remove("pop"); void tier.offsetWidth; tier.classList.add("pop");
+      Sound.distStep(i); const [x,y] = potAt(); FX.burst(x, y, [c, shade(c,.45), "#FFF3D6"], 12+i*10, .5+i*.12); if(i) FX.ring(x, y, c);
+      if(i>=3) stage.classList.add("hot");
+    }
+    // 3. une shiny : le chaudron s'éteint… puis repart à sa couleur
+    if(sh){
+      await wait(700); if(!alive()) return;
+      stage.classList.add("dark"); title.textContent = "Mais… ?"; tier.classList.remove("pop");
+      if(sh===3){ Sound.lumSwell(0); await wait(1400) } else await wait(900);
+      if(!alive()) return;
+      stage.classList.remove("dark"); stage.classList.add("sh"+sh); stage.style.setProperty("--lq", CZ_SH[sh]);
+      tier.style.setProperty("--tc", CZ_SH[sh]); tier.textContent = `${SHINIES[sh].name} !`; tier.classList.add("pop"); title.textContent = "Une shiny !";
+      Sound.distStep(dr+1); Sound.distStep(dr+2); const [x,y] = potAt();
+      FX.burst(x, y, sh===2 ? GOLD_COLS : sh===3 ? ["#FFFFFF","#DFF8FF","#9FE6FF"] : SHINY_COLS, 60, 1); FX.ring(x, y, CZ_SH[sh]);
+    }
+    // 4. la bille monte hors du chaudron
+    await wait(sh ? 1000 : 700); if(!alive()) return;
+    title.textContent = sh ? "Une shiny !" : "La voilà !"; stage.classList.add("rise"); Sound.whoosh();
+    await wait(1100); if(!alive()) return;
+    craftFinal(inputs, out, pxp, k);
+  })();
+}
+// le résultat de la fusion : la bille s'ouvre comme dans un sachet (mêmes effets que reveal(), même son « Égrené »)
+function craftFinal(inputs, out, pxp, k){
+  const ov = document.getElementById("ov"), demo = ovState?.demo, dr = decorRar(out);
+  FX.setDust(false); ov.style.setProperty("--flash", rgba(scoreCol(k), .6));
+  document.getElementById("ov-body").innerHTML = `<div class="ov-title">${out.shiny?"Une shiny !":"Fusion réussie !"}</div>
+      <p class="ov-sub">${demo ? "Démo : cette bille n'est pas dans ta boîte." : `${esc(specName(out))} rejoint ta boîte à billes.`}</p>
+      <div class="reveal-row"><button class="slot is-open ${k>=BIG?"big":""} ${out.shiny?"shiny":""}" data-action="${demo?"":"zoom"}" data-id="${out.id}" aria-label="${esc(specName(out))}" style="--tc:${scoreCol(k)};${tstyle(out.type)}">
         ${bannerOf(out,k)?`<span class="slot-banner">${bannerOf(out,k)}</span>`:""}
         <div class="slot-ball"><span class="rays"></span>${mImg(out,300,Math.round(150*scaleOf(out.type)),"")}</div>
         <div class="slot-info"><b${motifCol(out)}>${esc(specName(out))}</b><span style="display:flex;gap:4px;flex-wrap:wrap;justify-content:center">${typePill(out.type,true)}${shinyPill(out)}</span>${tierTag(out)}${decStamp(out)}</div>
       </button></div>
-      <div class="ov-actions"><span class="ov-xp" style="flex-basis:100%;justify-content:center">${ic("ticket",18)} +${pxp} XP de saison</span>
+      <div class="ov-actions">${demo ? `<button class="btn btn-yellow" data-action="fuse-demo" data-r="${demo.r}" data-sh="${demo.sh}">Revoir</button><button class="btn btn-ghost" data-action="fuse-demo-menu">Un autre cas</button><button class="btn btn-ghost" data-action="close-ov">Fermer</button>`
+        : `<span class="ov-xp" style="flex-basis:100%;justify-content:center">${ic("ticket",18)} +${pxp} XP de saison</span>
         ${eventOf(out) ? "" : ui.craft && craftPool(ui.craft.t).length>=craftN(ui.craft.t)?`<button class="btn btn-yellow" data-action="craft-again">Préparer une autre fusion</button>`:""}
         <button class="btn btn-ghost" data-action="craft-see" data-id="${out.id}">Voir la fiche</button>
-        <button class="btn btn-ghost" data-action="close-ov">Retour à la Confiserie</button></div>`;
-    Sound.reveal(FMT_TIER[out.type], out.shiny||0);
-  }, reduce?50:1900);
+        <button class="btn btn-ghost" data-action="close-ov">Retour à la Confiserie</button>`}</div>`;
+  const el = document.querySelector("#ov-body .slot"); if(!el) return;
+  const [x,y] = FX.at(el.querySelector(".slot-ball"));
+  if(!(out.shiny>=2)){ FX.burst(x,y, scoreCols(k), 18+k*14, .6+k*.12); if(k>=FMT_TIER.calot) FX.ring(x,y, scoreCol(k)) }
+  if(out.shiny) shinyFX(out, el, x, y);
+  else if(k===FMT_TIER.mammouth){ FX.burst(x,y, scoreCols(k), 120, 1.6); setTimeout(()=>FX.ring(x,y, "#FFE3B0"), 180) }
+  if(k>=BIG){ const b = document.getElementById("ov-body"); b.classList.remove("quake"); void b.offsetWidth; b.classList.add("quake") }
+  Sound.opening(out.shiny||0, Math.max(0, dr));
+  if(dr>=3) setTimeout(()=>{ const c = DECOR_RAR[dr].c; FX.burst(x,y, [c, shade(c,.45), "#FFF3D6"], dr===4 ? 90 : 45, dr===4 ? 1.3 : .9); if(dr===4) FX.ring(x,y, c) }, 520);
+}
+// la démo du compte admin : 10 billes au hasard dans le chaudron, et le cas choisi en sortie (rien n'est gagné)
+function fuseDemo(r, sh){
+  const fam = r => { const L = FAMILIES.map((f,i)=>i).filter(i=>FAMILIES[i].rar===r && !extraFam(i)); return L[Math.floor(Math.random()*L.length)] };
+  const inputs = Array.from({length:10}, ()=>makeSpec("bille", {src:"test"}));
+  const out = makeSpec("chinoise", {family:fam(r), shiny:sh, src:"test"});
+  closeModal(); FX.stop(); showCraft(inputs, out, 0, {r, sh});
+}
+function fuseDemoMenu(){
+  const el = document.getElementById("modal");
+  const cases = [[0,0],[1,0],[2,0],[3,0],[4,0],[2,1],[2,2],[2,3]];
+  el.innerHTML = `<div class="modal" role="dialog" aria-modal="true" aria-label="Démo de la fusion"><button class="close-x" data-action="close-modal" aria-label="Fermer">×</button>
+    <h2>Démo de la fusion</h2><p class="meta">Choisis ce qui sort du chaudron. Rien n'est gagné.</p>
+    <div class="cz-demo">${cases.map(([r,sh])=>`<button class="btn btn-ghost" data-action="fuse-demo" data-r="${r}" data-sh="${sh}" style="--c:${sh ? CZ_SH[sh] : DECOR_RAR[r].c}"><i></i>${sh ? `Shiny ${SHINIES[sh].name}` : DECOR_RAR[r].name}</button>`).join("")}</div></div>`;
+  el.hidden = false;
 }
 
 /* =====================================================================
@@ -10141,7 +10306,7 @@ function viewGames(){
     const st = paid ? `${ic("candy",14)} Encore ${n} partie${n>1?"s":""} à acheter` : c.state;
     return `<article class="panel game-tile${paid?" paid":c.ok?"":" played"}${m?" maxed":""}">${m?`<span class="gt-fond">${ic("star",13,2.6)} Fait à fond !</span>`:""}
     <button class="gt-art" data-action="nav" data-view="${c.v}" aria-label="${c.ok?"Jouer":paid?"Rejouer":"Voir"} : ${c.t}">${c.art}${jdj.has(c.v)?`<span class="gt-jdj">${ic("star",12,2.6)} Jeu du jour</span>`:""}<span class="gt-max">${c.prize ? `jusqu'à ${c.prize}` : `${COIN} jusqu'à ${c.max}`}</span><span class="gt-state ${c.ok?"ok":paid?"paid":""}">${st}</span></button>
-    <div class="gt-body gt-foot"><div class="gt-ttl"><h2>${c.t}</h2>${pips(c.v)}</div><button class="btn ${c.ok?"btn-blue":paid?"btn-ghost gt-again":"btn-ghost"}" data-action="nav" data-view="${c.v}">${c.ok?`${ic("play",16)} Jouer`:paid?`${ic("play",16)} Rejouer`:"Voir"}</button></div>
+    <div class="gt-body gt-foot"><div class="gt-ttl"><span class="gt-kind">${CHANCE_KEYS.includes(c.v) ? "Jeu de chance" : "Jeu d'adresse"}</span><h2>${c.t}</h2>${pips(c.v)}</div><button class="btn ${c.ok?"btn-blue":paid?"btn-ghost gt-again":"btn-ghost"}" data-action="nav" data-view="${c.v}">${c.ok?`${ic("play",16)} Jouer`:paid?`${ic("play",16)} Rejouer`:"Voir"}</button></div>
   </article>` };
   const state = k => { const g = dayGame(k);
     return !g ? `${ic("gift",14)} Partie du jour à jouer` : !g.done ? `${ic("play",14)} Partie en cours : à finir` : `${ic("check",14,3)} Joué aujourd'hui${g.done&&g.st!=null?` · ${"★".repeat(g.st)}${"☆".repeat(3-g.st)}`:""}${g.rew?` · +${g.rew}`:""}` };
@@ -10166,48 +10331,28 @@ function viewGames(){
   [solo, multi, chance].forEach(l=>l.sort((a,b)=>(b.ok-a.ok) || (jdj.has(b.v)-jdj.has(a.v))));   // ceux qui restent à jouer aujourd'hui d'abord, les jeux du jour en tête
   // (10 octobre 2026) un jeu déjà joué aujourd'hui n'a plus de grande carte : il passe en petite ligne sous « Déjà joués aujourd'hui »
   // (doré quand il est fait à fond, sinon on voit les parties qu'il reste à acheter) ; les fait à fond en dernier
-  // (10 octobre 2026) un jeu fait à fond (plus aucune partie à jouer ni à acheter) passe en petite ligne dorée, en bas ;
-  // on peut toujours l'ouvrir : « Pour le plaisir » aux jeux d'adresse (sans récompense), « Voir » aux jeux de chance
-  const row = c => { const fun = !CHANCE_KEYS.includes(c.v);
-    return `<button class="gt-row maxed" data-action="nav" data-view="${c.v}" aria-label="${c.t} : fait à fond aujourd'hui${fun?", rejouer pour le plaisir":""}">
-      <span class="gtr-art">${c.art}</span>
-      <span class="gtr-txt"><b>${c.t}</b><small>${ic("check",12,3)} ${c.v==="tir" ? "Trou du jour réussi" : dayGame(c.v)?.rew ? `Fait à fond · +${fmt(dayGame(c.v).rew)} ${CUR.many}` : "Fait à fond aujourd'hui"}</small>${pips(c.v)}</span>
-      <span class="gtr-go">${fun ? `${ic("play",13)} Pour le plaisir` : "Voir"}</span></button>` };
-  const sec = (title, l) => { const todo = l.filter(c=>!maxed(c.v)).sort((a,b)=>b.ok-a.ok), done = l.filter(c=>maxed(c.v));
-    return `<section class="games-sec"><div class="gs-head"><h2>${title}</h2></div>
-    ${todo.length ? `<div class="games-grid">${todo.map(tile).join("")}</div>` : `<p class="gs-all">${ic("check",16,3)} Tout est fait à fond ici aujourd'hui : bravo !</p>`}
-    ${done.length ? `<h3 class="gs-sub">${ic("star",13,2.6)} Faits à fond aujourd'hui</h3><div class="gt-done">${done.map(row).join("")}</div>` : ""}</section>` };
+  // (10 octobre 2026, le soir) la page allégée : une bande en haut (les 3 jeux du jour, la Grande Course, la Loterie),
+  // UNE grille de jeux (à jouer d'abord, puis ceux qui ont encore des parties à acheter), et une ligne de vignettes dorées
+  // pour les jeux faits à fond. Plus de sections « cour » / « chance » : une étiquette sur chaque carte suffit.
+  const all = [...solo, ...multi, ...chance];
+  const todo = all.filter(c=>!maxed(c.v)).sort((a,b)=>(b.ok-a.ok) || (jdj.has(b.v)-jdj.has(a.v))), done = all.filter(c=>maxed(c.v));
+  const bag = BAG_BY[GAMES_BONUS], gcIn = !!gc.etat?.inscrit, L = srvOn() ? lot.data : null; if(srvOn()) lotLoad();
   return `<div class="page-head"><div><h1>Jeux de la cour</h1></div></div>
-  <section class="panel games-hero${left?"":" all-done"}">
-    <div class="gh-txt"><span class="gh-kick">${ic("star",14)} Les 3 jeux du jour</span>
-      <h2>${left ? `${left} jeu${left>1?"x":""} pour gagner un ${BAG_BY[GAMES_BONUS].name}` : P.bonus ? "Sachet gagné : bravo !" : "Tout est joué : bravo !"}</h2>
-</div>
-    <small class="gh-time">${ic("clock",13)} Nouveaux jeux dans <b data-quest-timer>${untilMidnight()}</b></small>
-    <div class="gh-board" role="list">
-      ${keys.map(k=>{ const d = isDone(k), g = k==="tir" ? null : dayGame(k), live = g && !g.done, name = JEUX_NOM[k], DG = DAY_GAMES[k];
-        const gain = k==="tir" ? (d ? "Réussi" : `${COIN}jusqu'à ${TIR_MAX}`) : !DG ? (d ? "Joué" : "Partie offerte") : d ? (DG.prize ? "Joué" : `${COIN}+${fmt(g.rew||0)}`) : DG.prize ? `Jusqu'à ${DG.prize}` : `${COIN}jusqu'à ${DG.max}`;
-        return `<button class="gh-cell${d?" done":live?" live":""}" role="listitem" data-action="nav" data-view="${k}" title="${name}">
-          ${d?`<span class="ok">${ic("check",11,3.4)}</span>`:""}<span class="gc-ic">${ic(GAME_ICON[k],22)}</span><b>${name}</b><small>${live?"À finir":gain}</small></button>` }).join("")}
-      <span class="gh-plus" aria-hidden="true">${ic("chev",18)}</span>
-      <div class="gh-cell prize${P.bonus?" got":doneN===keys.length?" ready":""}" role="listitem" style="--bc:${BAG_BY[GAMES_BONUS].color}">
-        <span class="gp-bag">${bagSVG(BAG_BY[GAMES_BONUS])}</span><b>${BAG_BY[GAMES_BONUS].name}</b>
-        <small>${P.bonus ? `${ic("check",11,3.4)} Gagné !` : `${doneN} / ${keys.length} jeux finis`}</small>
-        <i class="gp-bar"><i style="width:${doneN/keys.length*100}%"></i></i></div>
+  <section class="panel gm-strip${left?"":" all-done"}">
+    <div class="gs-day">
+      <div class="gs-top"><span class="gh-kick">${ic("star",14)} Les 3 jeux du jour</span><small class="gh-time">${ic("clock",13)} Nouveaux dans <b data-quest-timer>${untilMidnight()}</b></small></div>
+      <div class="gs-goal"><span class="gs-bag" style="--bc:${bag.color}">${bagSVG(bag)}</span>
+        <span><b>${left ? `Encore ${left} jeu${left>1?"x":""} pour un ${bag.name}` : P.bonus ? `${bag.name} gagné : bravo !` : "Tout est joué : bravo !"}</b>
+        <i class="gp-bar"><i style="width:${doneN/keys.length*100}%"></i></i></span></div>
+      <div class="gs-days">${keys.map(k=>`<button class="gs-d${isDone(k)?" done":""}" data-action="nav" data-view="${k}">${isDone(k) ? ic("check",14,3) : ic(GAME_ICON[k],15)}${JEUX_NOM[k]}</button>`).join("")}</div>
+    </div>
+    <div class="gs-rdv">
+      <button class="gs-pill" data-action="nav" data-view="grandecourse">${ic("flag",18)}<span><small>La Grande Course</small><b>${gcIn ? "Inscrit · départ" : "Départ"} dans <span data-gc-timer>${gcLeft(gcNext().depart-Date.now())}</span></b></span>${gcIn ? ic("check",16,3) : `<em>M'inscrire</em>`}</button>
+      <button class="gs-pill" data-action="nav" data-view="loterie">${ic("ticket",18)}<span><small>La Loterie · dimanche 21 h</small><b>Tirage dans <span data-lot-timer>${lotLeft(L?.heure || lotNext())}</span></b></span>${L && !L.aujourdhui ? `<em>Mon ticket</em>` : L?.aujourdhui ? ic("check",16,3) : ""}</button>
     </div>
   </section>
-  <div class="gm-duo">
-    <button class="panel gm-gc" data-action="nav" data-view="grandecourse">
-      <span class="gm-kick">${ic("flag",14)} ${gcWhen(gcNext(), true)}</span>
-      <b class="gm-gc-t">La Grande Course</b>
-      <span class="gm-gc-clock"><small>Départ dans</small><b data-gc-timer>${gcLeft(gcNext().depart-Date.now())}</b></span>
-      ${(()=>{ const b = gcMine() || gcDefault(); return b ? `<span class="gm-gc-ball">${mImg(b,200,Math.round(30*scaleOf(b.type)+58),"")}<span><small>${gc.etat?.inscrit ? "Tu cours avec" : "Ta bille pour la course"}</small><b>${esc(specName(b))}</b></span></span>` : "" })()}
-      <span class="gm-gc-st${gc.etat?.inscrit?" ok":""}">${gc.etat?.inscrit ? `${ic("check",14,3)} Tu es inscrit` : "À 12 h et à 20 h. Inscription gratuite : 50 bonbecs et un Sachet Collector pour le gagnant"}</span>
-      <span class="btn btn-yellow">${gc.etat?.inscrit ? "Voir la course" : "M'inscrire"}</span>
-    </button>
-    ${lotBanner()}
-  </div>
-  ${sec("Les jeux de la cour", [...solo, ...multi])}
-  ${sec("Les jeux de chance", chance)}`;
+  ${todo.length ? `<div class="games-grid">${todo.map(tile).join("")}</div>` : `<p class="gs-all">${ic("check",16,3)} Tout est fait à fond aujourd'hui : bravo ! Reviens demain.</p>`}
+  ${done.length ? `<div class="gt-fonds"><span class="gtf-l">${ic("star",14,2.6)} Faits à fond</span>${done.map(c=>`<button class="gtf" data-action="nav" data-view="${c.v}" title="${c.t} : fait à fond aujourd'hui${CHANCE_KEYS.includes(c.v) ? "" : " · rejouer pour le plaisir"}"><span class="gtf-art">${c.art}</span><b>${c.t}</b><span class="gtf-ok">${ic("check",11,3.4)}</span></button>`).join("")}</div>` : ""}`;
 }
 // Avant de jouer (5 octobre 2026) : une fenêtre « Avec quelle bille tu joues ? », une fois par visite d'un mini-jeu.
 // On garde sa bille d'un clic, ou on en touche une autre, et la partie part tout de suite. Fermer la fenêtre garde la bille actuelle.
@@ -12827,6 +12972,7 @@ function viewSoon(){
           <button class="btn btn-ghost" data-action="pity-max">Garantie Boulet au prochain sachet</button>
           <button class="btn btn-ghost" data-action="shiny-demo">${ic("star",16)} Ouverture shiny (démo)</button>
           <button class="btn btn-ghost" data-action="sound-demo">${ic("star",16)} Sons d'ouverture : chaque cas (démo)</button>
+          <button class="btn btn-ghost" data-action="fuse-demo-menu">${ic("flask",16)} Fusion au chaudron (démo)</button>
           ${COLORIS_MAQUETTES.length ? `<button class="btn btn-ghost" data-action="lab-open">${ic("star",16)} Maquettes de coloris</button>` : ""}
         </div>
       </section>
@@ -13363,10 +13509,9 @@ function courTroc(){
   const vide = {recu:"Aucune offre reçue pour l'instant.", envoye:"Tu n'as pas d'offre en attente.", fini:"Pas encore de troc terminé."}[kind];
   return `<div class="cour-grid">
     <section class="panel tr-new"><div class="panel-head"><h3>${ic("swap",18)} Proposer un troc</h3></div>
-      ${amis.length ? `<form class="tr-pick" id="troc-ami-form"><span class="cp-search tr-q">${ic("search",16)}<input type="search" id="troc-q" placeholder="Écris le pseudo de ton copain" aria-label="Pseudo de ton copain" autocomplete="off" spellcheck="false" enterkeyhint="go"></span>
-          <button class="btn btn-yellow" type="submit">${ic("swap",17)} Proposer</button></form>
+      ${amis.length ? `<form class="tr-pick" id="troc-ami-form"><span class="cp-search tr-q">${ic("search",16)}<input type="search" id="troc-q" placeholder="Écris le pseudo de ton copain" aria-label="Pseudo de ton copain" autocomplete="off" spellcheck="false" enterkeyhint="go"></span></form>
         <div class="tr-found" id="troc-found" aria-live="polite"></div>
-        <p class="meta">Écris son pseudo (le début suffit), touche-le, puis choisis les billes à échanger.</p>`
+        <p class="meta">Écris le début de son pseudo, puis touche ton copain pour lui proposer un troc.</p>`
         : `<p class="cour-lead">Pour troquer, ajoute d'abord des copains dans l'onglet Copains.</p>`}</section>
     <div class="chips tr-tabs">${st("recus","Offres reçues",T.recus.length)}${st("envoyes","Offres envoyées",T.envoyes.length)}${st("finis","Terminés")}</div>
     <section class="panel">${list.length ? list.map(t=>trocCard(t,kind)).join("") : `<p class="empty">${vide}</p>`}</section>
@@ -13980,6 +14125,8 @@ document.addEventListener("click", e=>{
     case "sound-demo": { const fam = r => { const L = FAMILIES.map((f,i)=>i).filter(i=>FAMILIES[i].rar===r && !extraFam(i)); return L[Math.floor(Math.random()*L.length)] };
       const results = [[0,0],[1,0],[2,0],[3,0],[4,0],[2,1],[2,2],[2,3]].map(([r,sh])=>({s:makeSpec("bille",{family:fam(r), shiny:sh, src:"test"}), isNew:false, newColor:false}));
       FX.stop(); ovState = {bag:BAG_BY.premium, results, opened:new Set(), gift:false, forced:false, demo:true, demoAct:"sound-demo", pxp:0}; showBagStage(); break }
+    case "fuse-demo": fuseDemo(+t.dataset.r, +t.dataset.sh); break;
+    case "fuse-demo-menu": closeOv(); fuseDemoMenu(); break;
     case "tuto-next": { const T = TUTO[S.tuto?.step]; if(T?.act) T.act(); else tutoNext(); break }
     case "tuto-skip": tutoSkip(); break;
     case "tuto-gift": tutoEnd(); closeModal(); openBag("premium", true); break;
@@ -14160,7 +14307,7 @@ var eco = {ready:false, q:Promise.resolve(), testeur:false, busy:false, retry:fa
 // outils de test : pour les comptes testeurs, ou quand le jeu tourne sur l'ordinateur (pas en ligne)
 const DEV_HOST = location.protocol==="file:" || /^(localhost|127\.0\.0\.1|)$/.test(location.hostname);
 const devTools = () => sync.on ? eco.testeur : DEV_HOST;
-const DEV_ACTIONS = ["add-jetons","refill-free","give-shiny","pass-xp","daily-reset","pity-max","shiny-demo","sound-demo","reset"];
+const DEV_ACTIONS = ["add-jetons","refill-free","give-shiny","pass-xp","daily-reset","pity-max","shiny-demo","sound-demo","fuse-demo","fuse-demo-menu","reset"];
 function srvOn(){ return !!(sync.on && eco.ready) }
 // (7 octobre 2026) une bille ne vient que du serveur : sans lui, pas de sachet, de fusion, de jeu de chance ni de récompense en bille.
 // On prévient le joueur et on retente la connexion au serveur.

@@ -606,7 +606,7 @@ create or replace function interne.scores() returns table (joueur uuid, total in
     from b group by j, t, d),
   -- les shiny du passe de saison (coloris de saison) ne comptent pas
   sh as (select j, sum((interne.pts_shiny())[sh])::int p from (select distinct j, t, d, c, sh from b where sh > 0 and interne.coloris_normal(c)) x group by j),
-  my as (select distinct j, 500 p from b where (interne.decor_rarete())[d+1] = 6),   -- (10 octobre 2026) le motif mythique : 500 points dès le premier Vortex (SCORE.mythique)
+  my as (select distinct j, 500 p from b where (interne.decor_rarete())[d+1] = 6),   -- (10 octobre 2026) le motif mythique : 500 points dès le premier motif mythique, l'Œil du Dragon (SCORE.mythique)
   sd as (select j, sum(round(200 * m))::int p, count(*)::int n from (select j, d, max(m) m from k group by j, d having count(*) = 6) x group by j),
   st as (select j, sum(20 * pt)::int p, count(*)::int n from (select j, t, max(pt) pt from k group by j, t
            having count(*) filter (where (interne.decor_rarete())[d+1] <> 6) = (select count(*) from unnest(interne.decor_rarete()) x where x not in (5, 6))) x group by j),   -- (10 octobre 2026) sans le mythique

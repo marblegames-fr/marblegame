@@ -1,4 +1,4 @@
-/* Extrait automatique de index.html du 2026-10-10 (outils/extraire-rendu.mjs) : données, rendu WebGL des billes, icônes, sachets,
+/* Extrait automatique de index.html du 2026-10-11 (outils/extraire-rendu.mjs) : données, rendu WebGL des billes, icônes, sachets,
    aperçus des jeux, marelle, distributeur, chaudron. Ne pas modifier à la main : relancer l'extraction. */
 /* =====================================================================
    DONNÉES DU JEU
@@ -25,28 +25,29 @@ const scaleOf = t => .5 + .5*(TYPES[t].mm-10)/30;   // taille d'affichage propor
 const DECOR_RAR = [
   {name:"Commun",     w:10, c:"#8E8898"},
   {name:"Peu commun", w:5,  c:"#2F8F45"},
-  {name:"Rare",       w:2.5,c:"#2E6BE6"},
-  {name:"Épique",     w:.8, c:"#8A4AD6"},
+  {name:"Rare",       w:3.5,c:"#2E6BE6"},   // (10 octobre 2026, le soir) 2,5 → 3,5 et 0,8 → 1,2 : avec les 13 nouveaux motifs, les rares et les épiques sortaient trop peu
+  {name:"Épique",     w:1.2, c:"#8A4AD6"},
   {name:"Légendaire", w:.2, c:"#D97E06"},
+  {name:"Mythique",   w:.02, c:"#E0182D"},   // (10 octobre 2026) un seul motif, l'Œil du Dragon (le Vortex jusqu'au 11 octobre) : 10 fois plus rare qu'un légendaire (6 dans supabase/serveur.sql, 5 y étant les événements)
 ];
 // Familles de motif (chacune a son propre rendu). L'ordre ne doit pas changer : il sert d'identifiant.
 const FAMILIES = [
   {name:"Œil-de-chat", rar:0, desc:"Des pétales de verre coloré pris au cœur de la bille."},
   {name:"Tourbillon",  rar:0, desc:"De fins filets de couleur qui s'enroulent en spirale sous la surface."},
   {name:"Galaxie",     rar:4, desc:"Une galaxie spirale qui tourne au cœur d'un verre sombre, entourée de nébuleuses et d'étoiles."},
-  {name:"Agate",       rar:2, desc:"Une pierre opaque, veinée comme une vraie agate."},
-  {name:"Opaline",     rar:1, desc:"Un verre laiteux qui garde la lumière."},
+  {name:"Agate",       rar:1, desc:"Une pierre opaque, veinée comme une vraie agate."},
+  {name:"Opaline",     rar:0, desc:"Un verre laiteux qui garde la lumière."},
   {name:"Pailletée",   rar:2, desc:"Un verre teinté rempli de paillettes qui scintillent à la lumière."},
   {name:"Oignon",      rar:0, desc:"Une couche colorée étirée juste sous la surface."},
-  {name:"Berlingot",   rar:1, desc:"Des rayures de sucre d'orge, opaques et brillantes."},
+  {name:"Berlingot",   rar:0, desc:"Des rayures de sucre d'orge, opaques et brillantes."},
   {name:"Terre",       rar:2, desc:"La bille des grands-parents : de l'argile cuite, peinte à la main."},
-  {name:"Acier",       rar:3, desc:"Une bille de roulement en acier poli, lourde et brillante comme un miroir."},
+  {name:"Acier",       rar:2, desc:"Une bille de roulement en acier poli, lourde et brillante comme un miroir."},
   {name:"Nacrée",      rar:3, desc:"Un reflet de perle qui change de couleur selon l'angle."},
-  {name:"Cristal",     rar:1, desc:"Un verre clair où sont restées prisonnières de petites bulles d'air."},
-  {name:"Arlequin",    rar:2, desc:"Des taches de couleur opaques cousues comme un patchwork."},
+  {name:"Cristal",     rar:2, desc:"Un verre clair où sont restées prisonnières de petites bulles d'air."},
+  {name:"Arlequin",    rar:1, desc:"Des taches de couleur opaques cousues comme un patchwork."},
   {name:"Ruban",       rar:1, desc:"Un large ruban blanc torsadé en plein cœur du verre, rayé de fins filets de couleur."},
-  {name:"Millefiori",  rar:2, desc:"Des centaines de petites fleurs de verre, comme à Venise."},
-  {name:"Givrée",      rar:1, desc:"Un verre dépoli, doux comme le givre sur une vitre."},
+  {name:"Millefiori",  rar:1, desc:"Des centaines de petites fleurs de verre, comme à Venise."},
+  {name:"Givrée",      rar:2, desc:"Un verre dépoli, doux comme le givre sur une vitre."},
   {name:"Fumée",       rar:2, desc:"Des volutes de fumée prisonnières du verre."},
   {name:"Lave",        rar:3, desc:"Une roche sombre traversée de fissures brûlantes."},
   {name:"Marbre",      rar:2, desc:"Une pierre blanche veinée, comme un escalier de palais."},
@@ -66,7 +67,7 @@ const FAMILIES = [
   // motifs d'événement : jamais dans les sachets ni dans l'album, on ne les trouve que pendant leur événement
   {name:"Pirate",      rar:4, event:"pirates", desc:"Le drapeau noir des flibustiers : une tête de mort et ses deux os, cerclée d'or comme un coffre au trésor."},
   // nouveaux motifs (après le Pirate : les numéros ne bougent jamais)
-  {name:"Vitrail",     rar:2, desc:"Des éclats de verre coloré sertis de plomb, comme les vitraux d'une cathédrale : la lumière passe au travers."},
+  {name:"Vitrail",     rar:1, desc:"Des éclats de verre coloré sertis de plomb, comme les vitraux d'une cathédrale : la lumière passe au travers."},
   {name:"Trou noir",   rar:4, desc:"Un horizon noir d'où rien ne ressort, entouré d'un disque de matière brûlante qui tourne sans fin."},
   // motifs de saison (un par mois, en édition limitée) : seulement dans le passe de saison, jamais dans les sachets ni dans les cases de l'album
   {name:"Givre",         rar:4, season:0,  desc:"Des fougères de glace ont poussé contre la paroi d'un verre glacé."},
@@ -89,6 +90,20 @@ const FAMILIES = [
   {name:"Prisme",        rar:3, face:true, desc:"Un prisme de cristal au cœur d'un verre profond : un rayon de lumière blanche le traverse et ressort en arc-en-ciel."},
   {name:"Orage",         rar:3, desc:"Un ciel d'orage enfermé dans le verre, traversé d'éclairs qui l'illuminent de l'intérieur."},
   {name:"Méduse",        rar:3, face:true, desc:"Une méduse lumineuse flotte dans un verre d'eau profonde, ses longs filaments qui ondulent sous elle."},
+  // (10 octobre 2026) la nouvelle tier list : 12 nouveaux motifs (52 à 63) et le motif mythique (64), toujours à la fin
+  {name:"Étoilée",       rar:0, desc:"Des petites étoiles à cinq branches semées sur toute la bille, comme un ciel de pyjama."},
+  {name:"Cœurs",         rar:0, desc:"De petits cœurs de toutes les tailles sur un fond clair : la bille qu'on offre à son copain ou sa copine."},
+  {name:"Bicolore",      rar:0, face:true, desc:"Deux moitiés de deux couleurs, séparées par une ligne bien nette : simple et efficace, comme un ballon."},
+  {name:"Vagues",        rar:0, desc:"Des bandes en vagues bien rondes qui font le tour de la bille, l'une au-dessus de l'autre."},
+  {name:"Zigzag",        rar:0, desc:"Des bandes en dents de scie, comme sur un pull d'hiver ou une couronne de papier."},
+  {name:"Tricot",        rar:1, desc:"Des mailles de laine tricotées serré, rang par rang, comme un bonnet de mamie."},
+  {name:"Nuages",        rar:1, desc:"Un ciel où passent de gros nuages blancs tout ronds : un après-midi de récré au soleil."},
+  {name:"Mouchetée",     rar:1, desc:"Un fond clair couvert de petites taches, comme un œuf de caille."},
+  {name:"Jean",          rar:2, desc:"La toile de jean, avec sa trame en diagonale un peu délavée et une double couture au fil doré."},
+  {name:"Ambre",         rar:3, face:true, desc:"Une résine limpide où une feuille fossile est prise depuis des millions d'années, avec de petites bulles d'air."},
+  {name:"Circuit",       rar:1, desc:"Une carte électronique : ses pistes s'allument et la lumière y court d'un point à l'autre."},
+  {name:"Feu d'artifice", rar:4, desc:"Des bouquets de lumière qui éclatent dans un verre de nuit, chacun de sa couleur."},
+  {name:"Œil du Dragon", rar:5, face:true, myth:true, desc:"Le motif mythique : un œil de dragon te regarde depuis le fond du verre. Son iris brûle, sa pupille fendue s'ouvre et se resserre, il cligne… Sa peau, son iris et le feu de sa pupille prennent les 3 couleurs du coloris."},   // (11 octobre 2026) remplace le Vortex, même numéro 64
 ];
 const FAM_W = FAMILIES.map(f=>f.event || f.season!=null || f.beta ? 0 : DECOR_RAR[f.rar].w);
 // motifs hors album : ceux des événements et ceux des saisons
@@ -105,7 +120,7 @@ const FMT_TIER = {mini:0, bille:1, chinoise:2, calot:3, boulet:4, mammouth:5};
 const BIG = FMT_TIER.boulet;   // "un gros" : Boulet ou Mammouth
 const tierOf = s => FMT_TIER[s.type];
 const SHINY_COLS = ["#FF6FB5","#FFB547","#6FE3A8","#5AB8FF","#B07BFF"];
-const OPAQUE_FAMS = [3,7,8,9,10,12,14,17,18,19,20,21,22,23,24,25,26,27,28,29,33];   // les motifs de saison sont tous en verre ; le Pirate aussi depuis le 3 octobre 2026   // les motifs de saison sont tous en verre
+const OPAQUE_FAMS = [3,7,8,9,10,12,14,17,18,19,20,21,22,23,24,25,26,27,28,29,33,52,53,54,55,56,57,58,59,60,62];   // les motifs de saison sont tous en verre ; le Pirate aussi depuis le 3 octobre 2026   // les motifs de saison sont tous en verre
 const FIGURES = ["étoile","cœur","lune","fleur"];
 
 const PALETTES = [
@@ -263,8 +278,10 @@ const SHINY_RATE = .0005;
 const RECYCLE = {mini:1, bille:2, chinoise:4, calot:8, boulet:20, mammouth:50};   // 6 octobre 2026 : chaque taille vaut environ le double de la précédente (un Classique revendu rend ~54 % de son prix)
 // une shiny (tirée dans un sachet ou une fusion) vaut 10 fois sa taille, plus une prime selon son éclat ; celles du passe, non
 const SHINY_RECYCLE_MULT = 10, SHINY_BONUS = [0, 200, 500, 1500];
+// (10 octobre 2026) selon la rareté du motif : épique ×2, légendaire ×5, mythique ×20 (même chose dans supabase/serveur.sql, echanger_billes)
+const DECOR_RECYCLE_MULT = [1, 1, 1, 2, 5, 20];
 // avec un compte, seules les billes tirées par le serveur rapportent (pas les billes de départ ni celles d'une partie sans compte)
-const recycleValue = s => srvOn() && !s.srv ? 0 : s.shiny && !isSeason(s) ? RECYCLE[s.type]*SHINY_RECYCLE_MULT + SHINY_BONUS[s.shiny] : RECYCLE[s.type];
+const recycleValue = s => srvOn() && !s.srv ? 0 : (s.shiny && !isSeason(s) ? RECYCLE[s.type]*SHINY_RECYCLE_MULT + SHINY_BONUS[s.shiny] : RECYCLE[s.type]) * (DECOR_RECYCLE_MULT[decorRar(s)] || 1);
 
 // Quêtes du jour : (8 octobre 2026) les 4 mêmes chaque jour, dans cet ordre (avant : 4 tirées au hasard parmi 19, trop faciles).
 // Les récompenses sont aussi dans supabase/serveur.sql (public.gagner, source 'quete') : à garder pareilles.
@@ -358,7 +375,7 @@ function specParams(s){
   const P = PALETTES[s.pal];
   let tint = hex01(P[4]);
   const opaque = OPAQUE_FAMS.includes(s.family);
-  if(s.family===2||s.family===30||s.family===34||s.family===42||s.family===44||s.family===47||s.family===49||s.family===50||s.family===51) tint = hex01(shade(P[1],-.1)).map(v=>Math.max(.08,v*.8));
+  if(s.family===2||s.family===30||s.family===34||s.family===42||s.family===44||s.family===47||s.family===49||s.family===50||s.family===51||s.family===63||s.family===64) tint = hex01(shade(P[1],-.1)).map(v=>Math.max(.08,v*.8));
   const p = {
     seed:[r(),r(),r(),r()],
     par:[(r()-.5)*5, [3,4,4,5,6][Math.floor(r()*5)], .05+r()*.07, 2+Math.floor(r()*4)],
@@ -1147,6 +1164,202 @@ vec4 fam(vec3 q, out vec3 e){
     vec3 col=mix(uC1*0.8,uC2,smoothstep(0.3,0.8,sw));
     return vec4(mix(col,vec3(1.0,0.9,0.7),sp), 0.7+sp*40.0+smoothstep(0.55,0.85,sw)*1.4);
   }
+#elif MODE==52
+  { // étoilée : de petites étoiles à cinq branches semées sur toute la bille
+    vec3 u=normalize(q); vec3 g=u*3.4+so; vec3 id=floor(g), f=fract(g)-0.5;
+    vec3 t1=normalize(cross(u,vec3(0.0,1.0,0.013))), t2=cross(u,t1);
+    float a=h31(id+5.0)*6.2831853; vec2 p=vec2(dot(f,t1),dot(f,t2)); p=vec2(cos(a)*p.x-sin(a)*p.y, sin(a)*p.x+cos(a)*p.y);
+    float sz=0.19+0.11*h31(id+3.0);
+    float st=smoothstep(0.015,-0.015,sdStar(p/sz)*sz)*step(0.22,h31(id));
+    vec3 sc=h31(id+2.0)<0.6?vec3(0.99,0.95,0.8):uC3;
+    return vec4(mix(uC1,sc,st), 200.0);
+  }
+#elif MODE==53
+  { // cœurs : de petits cœurs de toutes les tailles sur un fond clair
+    vec3 u=normalize(q); vec3 g=u*2.6+so; vec3 id=floor(g), f=fract(g)-0.5;
+    vec3 t1=normalize(cross(u,vec3(0.0,1.0,0.013))), t2=cross(u,t1);
+    float a=(h31(id+5.0)-0.5)*1.2; vec2 p=vec2(dot(f,t1),dot(f,t2)); p=vec2(cos(a)*p.x-sin(a)*p.y, sin(a)*p.x+cos(a)*p.y);
+    float sz=0.27+0.08*h31(id+3.0);
+    float hc=smoothstep(0.015,-0.015,sdHeart(vec2(p.x,-p.y)/sz)*sz)*step(0.12,h31(id));
+    vec3 bg=mix(uC3,vec3(0.99,0.97,0.96),0.7);
+    vec3 hcol=h31(id+2.0)<0.65?uC1:uC2*0.85;
+    return vec4(mix(bg,hcol,hc), 200.0);
+  }
+#elif MODE==54
+  { // bicolore : deux moitiés de deux couleurs, séparées par une ligne nette qui ondule à peine
+    vec3 u=normalize(q); float y=u.y+0.05*sin(atan(u.z,u.x)*2.0+so.x);
+    vec3 c=y>0.0?uC1:mix(uC3,vec3(0.97,0.96,0.93),0.45);
+    c=mix(c,uC2*0.55,smoothstep(0.03,0.012,abs(y)));
+    return vec4(c, 200.0);
+  }
+#elif MODE==55
+  { // vagues : des bandes en vagues bien rondes qui font le tour de la bille
+    vec3 u=normalize(q); float lon=atan(u.z,u.x);
+    float y=u.y*(4.5+nb)+0.38*sin(lon*(4.0+nb)+so.x);
+    float m=mod(floor(y),3.0); vec3 c=m<1.0?uC1:(m<2.0?vec3(0.97,0.96,0.93):uC2);
+    c*=mix(0.8,1.0,smoothstep(0.0,0.14,fract(y)));
+    return vec4(c, 200.0);
+  }
+#elif MODE==56
+  { // zigzag : des bandes en dents de scie, comme sur un pull d'hiver
+    vec3 u=normalize(q); float s=atan(u.z,u.x)/6.2831853*(8.0+nb*2.0);
+    float zz=abs(fract(s)-0.5)*2.0;
+    float y=u.y*(3.5+nb*0.5)+zz*0.6;
+    float m=mod(floor(y),4.0); vec3 c=m<1.0?uC1:(m<2.0?uC3:(m<3.0?uC1:vec3(0.97,0.95,0.9)));
+    c*=mix(0.82,1.0,smoothstep(0.0,0.1,fract(y)));
+    return vec4(c, 200.0);
+  }
+#elif MODE==57
+  { // tricot : des mailles de laine en V, rang par rang, avec quelques rangs d'une autre couleur
+    vec3 u=normalize(q); vec2 s=sph(u); float n=16.0+nb*2.0;
+    vec2 p=vec2(s.x*n, s.y*n*0.62); vec2 id=floor(p), f=fract(p)-0.5;
+    vec2 g=vec2(abs(f.x)-0.23, f.y+abs(f.x)*0.85-0.1);
+    float leg=length(g*vec2(1.9,1.0))-0.3;
+    float sh=smoothstep(0.1,-0.06,leg);
+    float row=mod(id.y+floor(so.x),7.0);
+    vec3 yarn=row<2.0?uC2:(row<3.0?vec3(0.96,0.94,0.9):uC1);
+    vec3 c=yarn*(0.4+0.65*sh)*(0.9+0.18*noise(vec3(p*7.0,so.x)));
+    return vec4(c, 200.0);
+  }
+#elif MODE==58
+  { // nuages : un ciel de la couleur du coloris où passent de gros nuages blancs bien ronds
+    vec3 u=normalize(q); float n=fbm(u*vec3(2.0,3.4,2.0)+so)+0.3*fbm(u*6.0+so+3.0);
+    float cl=smoothstep(0.6,0.68,n);
+    vec3 sky=mix(uC1,mix(uC1,vec3(1.0),0.5),u.y*0.5+0.5);
+    vec3 cloud=mix(vec3(0.78,0.83,0.92),vec3(1.0),smoothstep(0.64,0.86,n));
+    return vec4(mix(sky,cloud,cl), 200.0);
+  }
+#elif MODE==59
+  { // mouchetée : un fond clair couvert de petites taches, comme un œuf de caille
+    vec3 u=normalize(q); vec3 base=mix(uC3,vec3(0.97,0.95,0.9),0.65)*(0.92+0.1*noise(u*20.0+so));
+    float sp=0.0; vec3 sc=uC1;
+    for(int i=0;i<2;i++){ float sc2=i==0?5.0:11.0; vec3 g=u*sc2+so+float(i)*7.0; vec3 id=floor(g), f=fract(g)-0.5;
+      vec3 off=vec3(h31(id+1.0),h31(id+2.0),h31(id+3.0))-0.5;
+      float rr=(i==0?0.26:0.2)*(0.5+h31(id+4.0)); float d=length((f-off*0.5)*vec3(1.0,1.3,1.0))+0.06*noise(g*4.0);
+      float m=smoothstep(rr,rr*0.65,d)*step(0.3,h31(id+6.0));
+      if(m>sp){ sp=m; sc=h31(id+8.0)<0.6?uC1*0.6:uC2*0.75; } }
+    return vec4(mix(base,sc,sp), 200.0);
+  }
+#elif MODE==60
+  { // jean : la toile de jean (sa trame en diagonale, un peu délavée) et une double couture au fil doré
+    vec3 u=normalize(q); vec2 s=sph(u);
+    float tw2=fract((s.x*2.0+s.y)*55.0);
+    float fade=smoothstep(0.45,0.75,fbm(u*2.0+so));
+    vec3 den=mix(uC1*0.45,mix(uC1,vec3(0.9),0.25),smoothstep(0.35,0.65,tw2));
+    den=mix(den,mix(uC1,vec3(0.92,0.94,0.97),0.6),fade*0.7);
+    den*=0.88+0.22*noise(u*70.0+so);
+    float y=u.y+0.04*sin(atan(u.z,u.x)*2.0+so.x);
+    den=mix(den,den*0.7,smoothstep(0.065,0.04,abs(y)));
+    float lon=atan(u.z,u.x)/6.2831853*80.0;
+    float stitch=step(0.4,fract(lon))*smoothstep(0.02,0.01,abs(abs(y)-0.085));
+    return vec4(mix(den,vec3(0.93,0.64,0.24),stitch), 200.0);
+  }
+#elif MODE==61
+  { // ambre : une résine limpide de la couleur du coloris, plus foncée vers le bord ; au cœur, une feuille fossile
+    // bien nette (ses nervures se voient), et quelques petites bulles d'air
+    float r=length(q);
+    vec3 res=mix(mix(uC1,uC2,0.6),uC1*0.75,smoothstep(0.3,0.95,r));
+    vec2 p=q.xy; float ca=0.8, sa=0.6; p=vec2(ca*p.x-sa*p.y, sa*p.x+ca*p.y);
+    float lw=0.19*sqrt(max(0.0,1.0-pow(p.y/0.46,2.0)))*(1.0-0.3*p.y);
+    float lz=smoothstep(0.04,0.02,abs(q.z));
+    float leaf=smoothstep(0.01,-0.01,abs(p.x)-lw)*lz*step(abs(p.y),0.46);
+    float stem=smoothstep(0.014,0.007,abs(p.x))*step(p.y,-0.4)*step(-0.68,p.y)*lz;
+    float vein=max(smoothstep(0.014,0.004,abs(p.x)), smoothstep(0.06,0.02,abs(fract((p.y-abs(p.x)*1.1)*8.0)-0.5))*step(abs(p.x),lw*0.9));
+    vec3 g=q*7.0+so; vec3 id=floor(g), fc=fract(g)-0.5; float rb=0.04+0.05*h31(id+1.3);
+    float bub=step(0.7,h31(id))*smoothstep(0.025,0.0,abs(length(fc-(vec3(h31(id+3.1),h31(id+7.7),h31(id+1.9))-0.5)*0.4)-rb))*smoothstep(0.88,0.7,r)*(1.0-lz);
+    e=mix(uC2,uC3,0.5)*0.35*smoothstep(0.7,0.0,r)+vec3(1.0,0.95,0.8)*bub*1.2;   // la lumière qui reste prise au cœur
+    float lf=max(leaf,stem);
+    if(lf>0.01){ vec3 lc=mix(uC1*0.3,vec3(0.26,0.15,0.05),0.6)*(1.0-0.6*vein); e*=0.2; return vec4(lc, 70.0*lf); }
+    return vec4(res, 0.55+bub*25.0);
+  }
+#elif MODE==62
+  { // circuit : une carte électronique sombre ; ses pistes s'allument et la lumière y court d'un point à l'autre
+    vec3 u=normalize(q); vec2 s=sph(u); float n=9.0+nb*2.0;
+    vec2 p=vec2(s.x*n*2.0, s.y*n); vec2 id=floor(p), f=fract(p);
+    float hk=h31(vec3(id,so.x)), hk2=h31(vec3(id,so.y+4.0));
+    float dH=abs(f.y-0.5)+(hk<0.5?0.0:9.0);
+    float dV=abs(f.x-0.5)+(hk2<0.42?0.0:9.0);
+    float dd=min(dH,dV);
+    float tr=smoothstep(0.08,0.045,dd);
+    float pad=smoothstep(0.21,0.16,length(f-0.5))*step(0.7,h31(vec3(id,so.z+9.0)));
+    float hole=smoothstep(0.085,0.055,length(f-0.5))*pad;
+    float pulse=pow(0.5+0.5*sin((p.x+p.y)*0.9-uTime*2.5+hk*6.0),6.0);
+    vec3 board=mix(vec3(0.03,0.06,0.07),uC1*0.25,0.6)*(0.85+0.2*noise(u*40.0+so));
+    vec3 lc=mix(uC2,vec3(1.0),0.35);
+    e=(lc*(tr*(0.5+2.5*pulse)+pad*1.1)*(1.0-hole)+lc*smoothstep(0.32,0.0,dd)*0.2)*1.4;
+    vec3 c=mix(board,mix(uC2,vec3(0.85,0.75,0.4),0.3),max(tr,pad)*(1.0-hole));
+    return vec4(c, 200.0);
+  }
+#elif MODE==63
+  { // feu d'artifice : des bouquets de lumière qui éclatent dans un verre de nuit, chacun de sa couleur
+    float r=length(q); e=vec3(0.0);
+    for(int i=0;i<3;i++){ float fi=float(i);
+      vec3 c=(vec3(h31(so+fi*3.1),h31(so+fi*5.7),h31(so+fi*8.3))-0.5)*0.8;
+      float R=0.34+0.16*h31(so+fi*2.3);
+      vec3 d=q-c; float L=length(d); vec3 dir=d/max(L,1e-4);
+      // les rayons : la sphère des directions est découpée en bandes de latitude, et chaque case porte un rayon qui
+      // reste tout entier dans sa case (avant, une grille cubique : 9 rayons sur 10 étaient coupés net par le bord de leur case)
+      vec3 dd=i==0?dir:(i==1?dir.yzx:dir.zxy);
+      float DB=3.14159265/12.0, ph0=fi*2.1+so.x;
+      float th=acos(clamp(dd.z,-1.0,1.0)), ph=mod(atan(dd.y,dd.x)+ph0,6.2831853);
+      float b=min(floor(th/DB),11.0);
+      float nl=(b<0.5||b>10.5)?1.0:floor(24.0*sin((b+0.5)*DB)+0.5), w=6.2831853/nl;
+      vec3 id=vec3(b,floor(ph/w),fi*17.0)+so;
+      float thr=(b<0.5)?0.0:((b>10.5)?3.14159265:(b+0.5)*DB+(h31(id+1.0)-0.5)*(DB-0.2));
+      float sIn=max(sin(min(b,11.0-b)*DB),1e-3);   // le bord le plus étroit de la bande (côté pôle)
+      float phr=(floor(ph/w)+0.5)*w+(h31(id+2.0)-0.5)*max(0.0,w-0.2/sIn)-ph0;
+      vec3 cd=vec3(sin(thr)*cos(phr),sin(thr)*sin(phr),cos(thr));
+      float ang=length(dd-cd);
+      float ray=smoothstep(0.06,0.014,ang)*step(0.25,h31(id+4.0));
+      float along=smoothstep(0.03,0.14,L)*smoothstep(R,R*0.6,L);
+      float tip=smoothstep(0.07,0.0,abs(L-R*0.82))*smoothstep(0.08,0.02,ang)*step(0.25,h31(id+4.0));
+      vec3 col=i==0?mix(uC2,vec3(1.0),0.2):(i==1?mix(uC3,vec3(1.0),0.2):vec3(1.0,0.85,0.45));
+      e+=col*(ray*along*7.0+tip*14.0)+mix(col,vec3(1.0),0.5)*exp(-L*28.0)*4.0;
+    }
+    vec3 g=q*16.0+so; vec3 fc=fract(g)-0.5;
+    e+=vec3(step(0.97,h31(floor(g)))*smoothstep(0.2,0.0,length(fc)))*4.0;
+    e*=smoothstep(0.95,0.85,r);
+    return vec4(uC1*0.12, 1.2);
+  }
+#elif MODE==64
+  { // (11 octobre 2026, remplace le Vortex) œil du dragon : un œil de reptile au milieu du verre. La pupille fendue s'ouvre et se ferme, le regard se promène,
+    // les paupières clignent une fois par boucle. Les 3 couleurs du coloris : la peau d'écailles et le cercle de l'iris (la 1re),
+    // l'iris (la 2e), la couronne de feu autour de la pupille, les éclats de l'iris et le bord des paupières (la 3e)
+    float t=mod(uTime,3.9269908), lp=t*1.6;   // lp fait un tour complet (2π) par boucle : tout ce qui bouge en dépend
+    float h=q.z; vec2 p=q.xy;
+    float lay=exp(-h*h/0.02);
+    float bl=pow(max(0.0,cos(lp-2.4)),80.0);   // le clignement : très court
+    float op=1.0-bl;
+    float ax=clamp(abs(p.x)/0.92,0.0,1.0);
+    float lid=0.47*op*pow(1.0-ax*ax,0.75);
+    float inE=smoothstep(0.015,-0.015,abs(p.y)-lid)*step(abs(p.x),0.92);
+    vec2 c=vec2(0.18*sin(lp),0.06*sin(lp*2.0));
+    vec2 ip=p-c; float ir=length(ip); float ia=atan(ip.y,ip.x);
+    float iris=smoothstep(0.42,0.39,ir);
+    vec3 wob=vec3(cos(lp),sin(lp),0.0)*0.7;
+    float fib=noise(vec3(cos(ia)*9.0,sin(ia)*9.0,ir*3.0)+so)*0.55+noise(vec3(cos(ia)*24.0,sin(ia)*24.0,ir*5.0)+so+wob)*0.45;
+    float pw=0.045+0.05*(0.5+0.5*sin(lp*2.0+1.0));
+    float pup=smoothstep(1.0,0.85,length(vec2(ip.x/pw,ip.y/0.4)));
+    vec3 c1g=uC1/max(max(uC1.r,max(uC1.g,uC1.b)),0.35);   // la 1re couleur, éclaircie pour briller (elle est souvent très foncée)
+    float fl3=smoothstep(0.55,0.75,noise(vec3(cos(ia)*14.0,sin(ia)*14.0,ir*2.0)+so+3.0));   // des éclats de la 3e couleur dans l'iris
+    vec3 ic=mix(uC2,uC3,fl3*0.85);
+    float pr=length(vec2(ip.x/pw,ip.y/0.4));
+    float crown=smoothstep(3.2,1.2,pr);   // la couronne autour de la pupille
+    ic=mix(ic,uC3,crown*0.9);
+    float limb=smoothstep(0.27,0.39,ir);
+    ic=mix(ic,c1g*0.6,limb*0.85);   // le cercle de l'iris, de la 1re couleur
+    float ring=exp(-pow((pr-1.15)/0.25,2.0));   // le feu juste au bord de la pupille
+    vec3 eyeE=(ic*(0.45+1.3*fib)+mix(uC3,vec3(1.0),0.35)*ring*1.2)*iris*(1.0-pup);
+    vec2 sg=p*vec2(7.0,8.5); sg.x+=mod(floor(sg.y),2.0)*0.5; vec2 sf=fract(sg)-0.5;
+    float edgeS=smoothstep(0.3,0.5,length(sf*vec2(1.0,1.3)));
+    float rim=exp(-pow((abs(p.y)-lid)/0.022,2.0))*step(abs(p.x),0.9)*op;
+    vec2 hl=p-c-vec2(-0.16,0.17);
+    e=eyeE*6.0*inE*lay + c1g*0.35*(1.0-iris)*inE*lay + mix(uC3,vec3(1.0),0.15)*rim*lay*4.0
+     + c1g*edgeS*(1.0-inE)*lay*1.4 + vec3(1.0)*exp(-dot(hl,hl)/0.0018)*inE*lay*7.0;
+    vec3 skin=mix(uC1*0.6,uC1*0.18,edgeS);
+    float skinA=(1.0-inE)*lay*30.0*smoothstep(0.98,0.9,length(q));
+    return vec4(mix(uC1*0.2,skin,clamp(skinA,0.0,1.0)), 0.9+pup*iris*inE*lay*80.0+skinA);
+  }
 #else
   { // à pois
     vec3 g=q*2.6+so; vec3 id=floor(g); vec3 f=fract(g)-0.5;
@@ -1284,7 +1497,7 @@ void main(){
 #if MODE==49
     const int GSTEPS=96;   // le Prisme : des faces nettes, sans grain (pas réguliers)
     float jit=0.5;
-#elif MODE==32 || MODE==48 || MODE==50 || MODE==51
+#elif MODE==32 || MODE==48 || MODE==50 || MODE==51 || MODE==61 || MODE==63 || MODE==64
     const int GSTEPS=64;
     float jit=fract(sin(dot(gl_FragCoord.xy,vec2(12.9898,78.233)))*43758.5453);   // pas décalés d'un pixel à l'autre : pas de stries
 #else
@@ -1387,13 +1600,13 @@ class MarbleGL{
     if(this.cur!==p){ gl.useProgram(p.pr); gl.enableVertexAttribArray(p.loc); gl.vertexAttribPointer(p.loc,2,gl.FLOAT,false,0,0); this.cur=p }
     return p.u;
   }
-  draw(s,size,rot=I3){
+  draw(s,size,rot=I3,time){   // time : le moment de l'animation (sinon l'heure), pour les images du motif mythique
     const gl=this.gl,P=specParams(s),u=this.use(P.mode,P.opaque);
     if(this.cv.width!==size||this.cv.height!==size){this.cv.width=this.cv.height=size}   // (10 octobre 2026) la hauteur aussi : un canevas neuf fait 300 × 150, une première bille en 300 px sortait écrasée
     gl.viewport(0,0,size,size); gl.clearColor(0,0,0,0); gl.clear(gl.COLOR_BUFFER_BIT);
     gl.uniform2f(u.uRes,size,size); gl.uniform4fv(u.uSeed,P.seed); gl.uniform4fv(u.uPar,P.par);
     gl.uniform1f(u.uPorc,P.porc);
-    gl.uniform1f(u.uShiny,P.shiny); gl.uniform1f(u.uSulf,P.sulf); gl.uniform1f(u.uFig,P.fig); gl.uniform1f(u.uR,.9); gl.uniform1f(u.uTime,(performance.now()/1000)%600); gl.uniform1f(u.uAsp,P.asp);
+    gl.uniform1f(u.uShiny,P.shiny); gl.uniform1f(u.uSulf,P.sulf); gl.uniform1f(u.uFig,P.fig); gl.uniform1f(u.uR,.9); gl.uniform1f(u.uTime,time ?? (performance.now()/1000)%600); gl.uniform1f(u.uAsp,P.asp);
     gl.uniform3fv(u.uC1,P.c1); gl.uniform3fv(u.uC2,P.c2); gl.uniform3fv(u.uC3,P.c3); gl.uniform3fv(u.uTint,P.tint);
     gl.uniformMatrix3fv(u.uRot,false,rot); gl.uniformMatrix3fv(u.uSRot,false,P.srot);
     gl.drawArrays(gl.TRIANGLE_STRIP,0,4);
@@ -1432,6 +1645,23 @@ function marbleURL(s,size=160){
     u=URL.createObjectURL(new Blob([a],{type:"image/png"})) }catch(e){}
   urlCache.set(k,u); return u;
 }
+// (11 octobre 2026) la même chose sans bloquer la page : le dessin est copié tout de suite dans un petit canevas à lui
+// (le canevas WebGL peut redessiner une autre bille aussitôt), et le PNG est fabriqué en arrière-plan par le navigateur
+const urlPend = new Map();
+function snapBlobURL(draw, size){
+  return new Promise(res=>{ try{ draw(); const c = document.createElement("canvas"); c.width = c.height = size; c.getContext("2d").drawImage(mainGL.cv, 0, 0);
+    c.toBlob(b=>res(b ? URL.createObjectURL(b) : null), "image/png") }catch(e){ res(null) } });
+}
+function marbleURLAsync(s,size){
+  const k=urlKey(s,size);
+  if(urlCache.has(k)) return Promise.resolve(urlCache.get(k));
+  if(!mainGL) return Promise.resolve(marbleURL(s,size));
+  if(!urlPend.has(k)) urlPend.set(k, snapBlobURL(()=>mainGL.draw(s,size), size).then(u=>{ urlPend.delete(k);
+    if(urlCache.has(k)){ if(u) URL.revokeObjectURL(u); return urlCache.get(k) }   // dessinée entre-temps par marbleURL
+    if(!u) return marbleURL(s,size);
+    urlCache.set(k,u); return u }));
+  return urlPend.get(k);
+}
 // b) les billes pas encore dessinées le sont seulement quand elles arrivent à l'écran, quelques-unes par image (la page reste fluide)
 const LAZY_PX = "data:image/gif;base64,R0lGODlhAQABAAAAACH5BAEKAAEALAAAAAABAAEAAAICTAEAOw==";
 const lazyTodo = new Map(); let lazyN = 0, lazyQ = [], lazyBusy = false, lazyTok = 0;
@@ -1441,7 +1671,8 @@ function lazyRun(){
   lazyBusy = true; const tok = ++lazyTok;
   const step = () => { if(tok!==lazyTok) return; lazyTok++; lazyBusy = false; const t0 = performance.now();
     while(lazyQ.length && performance.now()-t0 < 12){ const im = lazyQ.shift(), j = lazyTodo.get(im.dataset.mq); lazyTodo.delete(im.dataset.mq);
-      if(j && im.isConnected){ im.src = marbleURL(j.s, j.size); im.removeAttribute("data-mq") } }
+      if(j && im.isConnected){ im.removeAttribute("data-mq");
+        marbleURLAsync(j.s, j.size).then(u=>{ if(u && im.getAttribute("src")===LAZY_PX) im.src = u }) } }   // (le motif mythique a peut-être déjà mis sa propre image)
     lazyRun() };
   requestAnimationFrame(step); setTimeout(step, 120);
 }
@@ -1468,9 +1699,40 @@ function lazySrc(s,size){
 // les Lumineuses rayonnent : lueur CSS qui suit la forme ronde de la bille
 const lumAttr = s => s.shiny===3 ? ` data-lum style="--lc:${PALETTES[s.pal][2]}"` : s.shiny===2 ? " data-gold" : "";
 function mImg(s,size=160,px,alt){
-  const w = Math.round(px ?? size/2), lum = s.shiny===3;
+  const w = Math.round(px ?? size/2), lum = s.shiny===3, my = isMyth(s) && size<=360 ? urlKey(s,size) : "";
+  if(my) mythReg.set(my, {s:{seed:s.seed, type:s.type, family:s.family, pal:s.pal, shiny:s.shiny||0}, size});
   // hauteur automatique : si la case est plus étroite que prévu, la bille rétrécit sans devenir ovale
-  return `<img ${lazySrc(s,size)} alt="${alt===undefined?esc(specName(s)):alt}" width="${w}" height="${w}"${lum?" data-lum":s.shiny===2?" data-gold":""} style="width:${w}px;height:auto;aspect-ratio:1${lum?`;--lc:${PALETTES[s.pal][2]}`:""}">`;
+  return `<img ${lazySrc(s,size)}${my?` data-myth="${my}"`:""} alt="${alt===undefined?esc(specName(s)):alt}" width="${w}" height="${w}"${lum?" data-lum":s.shiny===2?" data-gold":""} style="width:${w}px;height:auto;aspect-ratio:1${lum?`;--lc:${PALETTES[s.pal][2]}`:""}">`;
+}
+// (10 octobre 2026) le motif mythique (l'Œil du Dragon, le Vortex avant le 11 octobre) : il bouge partout où on le voit. Les petites images sont une boucle
+// de MYTH_N images (MYTH_T secondes, la même boucle que dans son shader), dessinées à la demande puis gardées
+const isMyth = s => !!FAMILIES[s?.family]?.myth;
+const MYTH_T = 2*Math.PI/1.6, MYTH_N = 48, MYTH_COLS = ["#FF2E44","#FF8A3D","#FFFFFF","#B0122A","#FFD1D6"];
+const mythReg = new Map(), mythFrames = new Map();
+const mythURL = (s, size, j) => snapBlobURL(()=>mainGL.draw(s, size, I3, j*MYTH_T/MYTH_N), size);   // (11 octobre 2026) PNG en arrière-plan
+setInterval(()=>{
+  if(document.hidden || !mainGL || matchMedia("(prefers-reduced-motion: reduce)").matches) return;
+  const imgs = document.querySelectorAll("img[data-myth]"); if(!imgs.length) return;
+  const want = Math.floor((performance.now()/1000 % MYTH_T)/MYTH_T*MYTH_N); let budget = 2;
+  imgs.forEach(im=>{
+    const r = im.getBoundingClientRect(); if(!r.width || r.bottom<0 || r.top>innerHeight) return;
+    const k = im.dataset.myth, R = mythReg.get(k); if(!R) return;
+    let F = mythFrames.get(k); if(!F){ F = []; mythFrames.set(k, F) }
+    // F[j] : l’adresse de l’image, 1 pendant qu’elle se fabrique, 0 si elle a raté (on réessaiera)
+    if(!F[want] && budget>0){ const w = want; F[w] = 1; budget--; mythURL(R.s, R.size, w).then(u=>{ F[w] = u||0 }) }
+    let j = want; for(let n=0; n<MYTH_N && typeof F[j]!=="string"; n++) j = (j+MYTH_N-1)%MYTH_N;
+    if(typeof F[j]==="string" && im.getAttribute("src")!==F[j]){ im.removeAttribute("data-mq"); im.src = F[j] }
+  });
+}, 1000/12);
+// l'apparition d'une bille mythique, où qu'elle sorte (sachet, mini-jeu, fusion) : un éclair rouge, le grand tourbillon, des gerbes rouges
+function mythFX(x, y){
+  Sound.mythBoom?.();
+  if(FX.reduce()) return;
+  const f = document.createElement("div"); f.className = "ov-flash myth"; document.body.appendChild(f); setTimeout(()=>f.remove(), 900);
+  const v = document.createElement("div"); v.className = "myth-vortex"; document.body.appendChild(v); setTimeout(()=>v.remove(), 4500);
+  [0,140,280,420].forEach((d,j)=>setTimeout(()=>FX.ring(x, y, MYTH_COLS[j%3]), d));
+  FX.burst(x, y, MYTH_COLS, 180, 1.8); setTimeout(()=>FX.burst(x, y, MYTH_COLS, 120, 1.3), 650);
+  FX.fireworks(MYTH_COLS, 12);
 }
 // bille "fantôme" pour les emplacements vides
 // La bille d'exemple : partout où on illustre une bille qui n'est pas dans ta boîte, c'est un Œil-de-chat Azur

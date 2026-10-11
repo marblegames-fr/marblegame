@@ -3841,7 +3841,7 @@ const DECOR_RAR = [
   {name:"Rare",       w:3.5,c:"#2E6BE6"},   // (10 octobre 2026, le soir) 2,5 → 3,5 et 0,8 → 1,2 : avec les 13 nouveaux motifs, les rares et les épiques sortaient trop peu
   {name:"Épique",     w:1.2, c:"#8A4AD6"},
   {name:"Légendaire", w:.2, c:"#D97E06"},
-  {name:"Mythique",   w:.02, c:"#E0182D"},   // (10 octobre 2026) un seul motif, le Vortex : 10 fois plus rare qu'un légendaire (6 dans supabase/serveur.sql, 5 y étant les événements)
+  {name:"Mythique",   w:.02, c:"#E0182D"},   // (10 octobre 2026) un seul motif, l'Œil du Dragon (le Vortex jusqu'au 11 octobre) : 10 fois plus rare qu'un légendaire (6 dans supabase/serveur.sql, 5 y étant les événements)
 ];
 // Familles de motif (chacune a son propre rendu). L'ordre ne doit pas changer : il sert d'identifiant.
 const FAMILIES = [
@@ -3916,7 +3916,7 @@ const FAMILIES = [
   {name:"Ambre",         rar:3, face:true, desc:"Une résine limpide où une feuille fossile est prise depuis des millions d'années, avec de petites bulles d'air."},
   {name:"Circuit",       rar:1, desc:"Une carte électronique : ses pistes s'allument et la lumière y court d'un point à l'autre."},
   {name:"Feu d'artifice", rar:4, desc:"Des bouquets de lumière qui éclatent dans un verre de nuit, chacun de sa couleur."},
-  {name:"Vortex",        rar:5, face:true, myth:true, desc:"Le motif mythique : un tourbillon de lumière qui tourne sans fin autour d'un œil noir et aspire les étincelles. Chacun de ses bras prend une couleur du coloris."},
+  {name:"Œil du Dragon", rar:5, face:true, myth:true, desc:"Le motif mythique : un œil de dragon te regarde depuis le fond du verre. Son iris brûle, sa pupille fendue s'ouvre et se resserre, il cligne… Sa peau, son iris et le feu de sa pupille prennent les 3 couleurs du coloris."},   // (11 octobre 2026) remplace le Vortex, même numéro 64
 ];
 const FAM_W = FAMILIES.map(f=>f.event || f.season!=null || f.beta ? 0 : DECOR_RAR[f.rar].w);
 // motifs hors album : ceux des événements et ceux des saisons
@@ -5590,30 +5590,43 @@ vec4 fam(vec3 q, out vec3 e){
     return vec4(uC1*0.12, 1.2);
   }
 #elif MODE==64
-  { // vortex : un tourbillon de lumière qui tourne vraiment sur lui-même et aspire des étincelles vers son œil noir.
-    // Les 3 couleurs du coloris : le verre et ses volutes (la 1re), et les bras du tourbillon, chacun de sa couleur
-    // (la 2e, la 3e, et la 1re éclaircie) : deux coloris proches ne donnent pas le même vortex.
-    float r=length(q), t=mod(uTime,3.9269908);   // une boucle de 2π/1,6 s (MYTH_T dans le code du jeu)
-    // le tourbillon nous fait face (la bille est posée « de face ») : la spirale est dessinée dans une couche épaisse du verre
-    float h=q.z; vec2 ip=q.xy; float rr=length(ip)+1e-4; float ang=atan(ip.y,ip.x);
-    float sw=ang+log(rr)*2.8-t*1.6;   // la spirale tourne
-    float s3=sw*3.0/6.2831853+fbm(q*3.0+so)*0.25;
-    float arm=pow(0.5+0.5*cos(s3*6.2831853),2.0);
-    float k=mod(floor(s3+0.5),3.0);
-    vec3 ac=k<1.0?uC2:(k<2.0?uC3:mix(uC1,vec3(1.0),0.4));
-    float thick=0.16+0.12*rr;
-    float disk=exp(-h*h/(thick*thick))*smoothstep(0.92,0.3,rr)*smoothstep(0.04,0.14,rr);
-    vec2 pp=vec2((ang-t*1.6)*12.0/6.2831853, log(rr)*4.0+t*1.5278875); vec2 id=floor(pp), f=fract(pp)-0.5;
-    float hk=h31(vec3(id,so.x));
-    float sp=step(0.65,hk)*smoothstep(0.32,0.06,length(f))*exp(-h*h/(thick*thick*0.5))*smoothstep(0.95,0.5,rr);
-    vec3 spc=hk<0.8?mix(uC3,vec3(1.0),0.5):mix(uC2,vec3(1.0),0.5);
-    float eye=exp(-pow((rr-0.09)/0.025,2.0))*exp(-h*h*80.0);
-    float neb=fbm(q*2.2+so);   // les volutes du verre, de la 1re couleur
-    e=ac*disk*(0.12+arm)*5.5+spc*sp*9.0+mix(uC3,vec3(1.0),0.5)*eye*12.0
-     +mix(uC1,vec3(1.0),0.15)*smoothstep(0.5,0.8,neb)*(1.0-disk)*0.9;
-    float hole=smoothstep(0.09,0.06,length(q));
-    e*=(1.0-hole)*smoothstep(0.97,0.88,r);
-    return vec4(uC1*0.2, 0.9+hole*80.0+disk*arm*2.0);
+  { // (11 octobre 2026, remplace le Vortex) œil du dragon : un œil de reptile au milieu du verre. La pupille fendue s'ouvre et se ferme, le regard se promène,
+    // les paupières clignent une fois par boucle. Les 3 couleurs du coloris : la peau d'écailles et le cercle de l'iris (la 1re),
+    // l'iris (la 2e), la couronne de feu autour de la pupille, les éclats de l'iris et le bord des paupières (la 3e)
+    float t=mod(uTime,3.9269908), lp=t*1.6;   // lp fait un tour complet (2π) par boucle : tout ce qui bouge en dépend
+    float h=q.z; vec2 p=q.xy;
+    float lay=exp(-h*h/0.02);
+    float bl=pow(max(0.0,cos(lp-2.4)),80.0);   // le clignement : très court
+    float op=1.0-bl;
+    float ax=clamp(abs(p.x)/0.92,0.0,1.0);
+    float lid=0.47*op*pow(1.0-ax*ax,0.75);
+    float inE=smoothstep(0.015,-0.015,abs(p.y)-lid)*step(abs(p.x),0.92);
+    vec2 c=vec2(0.18*sin(lp),0.06*sin(lp*2.0));
+    vec2 ip=p-c; float ir=length(ip); float ia=atan(ip.y,ip.x);
+    float iris=smoothstep(0.42,0.39,ir);
+    vec3 wob=vec3(cos(lp),sin(lp),0.0)*0.7;
+    float fib=noise(vec3(cos(ia)*9.0,sin(ia)*9.0,ir*3.0)+so)*0.55+noise(vec3(cos(ia)*24.0,sin(ia)*24.0,ir*5.0)+so+wob)*0.45;
+    float pw=0.045+0.05*(0.5+0.5*sin(lp*2.0+1.0));
+    float pup=smoothstep(1.0,0.85,length(vec2(ip.x/pw,ip.y/0.4)));
+    vec3 c1g=uC1/max(max(uC1.r,max(uC1.g,uC1.b)),0.35);   // la 1re couleur, éclaircie pour briller (elle est souvent très foncée)
+    float fl3=smoothstep(0.55,0.75,noise(vec3(cos(ia)*14.0,sin(ia)*14.0,ir*2.0)+so+3.0));   // des éclats de la 3e couleur dans l'iris
+    vec3 ic=mix(uC2,uC3,fl3*0.85);
+    float pr=length(vec2(ip.x/pw,ip.y/0.4));
+    float crown=smoothstep(3.2,1.2,pr);   // la couronne autour de la pupille
+    ic=mix(ic,uC3,crown*0.9);
+    float limb=smoothstep(0.27,0.39,ir);
+    ic=mix(ic,c1g*0.6,limb*0.85);   // le cercle de l'iris, de la 1re couleur
+    float ring=exp(-pow((pr-1.15)/0.25,2.0));   // le feu juste au bord de la pupille
+    vec3 eyeE=(ic*(0.45+1.3*fib)+mix(uC3,vec3(1.0),0.35)*ring*1.2)*iris*(1.0-pup);
+    vec2 sg=p*vec2(7.0,8.5); sg.x+=mod(floor(sg.y),2.0)*0.5; vec2 sf=fract(sg)-0.5;
+    float edgeS=smoothstep(0.3,0.5,length(sf*vec2(1.0,1.3)));
+    float rim=exp(-pow((abs(p.y)-lid)/0.022,2.0))*step(abs(p.x),0.9)*op;
+    vec2 hl=p-c-vec2(-0.16,0.17);
+    e=eyeE*6.0*inE*lay + c1g*0.35*(1.0-iris)*inE*lay + mix(uC3,vec3(1.0),0.15)*rim*lay*4.0
+     + c1g*edgeS*(1.0-inE)*lay*1.4 + vec3(1.0)*exp(-dot(hl,hl)/0.0018)*inE*lay*7.0;
+    vec3 skin=mix(uC1*0.6,uC1*0.18,edgeS);
+    float skinA=(1.0-inE)*lay*30.0*smoothstep(0.98,0.9,length(q));
+    return vec4(mix(uC1*0.2,skin,clamp(skinA,0.0,1.0)), 0.9+pup*iris*inE*lay*80.0+skinA);
   }
 #else
   { // à pois
@@ -5855,7 +5868,7 @@ class MarbleGL{
     if(this.cur!==p){ gl.useProgram(p.pr); gl.enableVertexAttribArray(p.loc); gl.vertexAttribPointer(p.loc,2,gl.FLOAT,false,0,0); this.cur=p }
     return p.u;
   }
-  draw(s,size,rot=I3,time){   // time : le moment de l'animation (sinon l'heure), pour les images du Vortex
+  draw(s,size,rot=I3,time){   // time : le moment de l'animation (sinon l'heure), pour les images du motif mythique
     const gl=this.gl,P=specParams(s),u=this.use(P.mode,P.opaque);
     if(this.cv.width!==size||this.cv.height!==size){this.cv.width=this.cv.height=size}   // (10 octobre 2026) la hauteur aussi : un canevas neuf fait 300 × 150, une première bille en 300 px sortait écrasée
     gl.viewport(0,0,size,size); gl.clearColor(0,0,0,0); gl.clear(gl.COLOR_BUFFER_BIT);
@@ -5927,7 +5940,7 @@ function lazyRun(){
   const step = () => { if(tok!==lazyTok) return; lazyTok++; lazyBusy = false; const t0 = performance.now();
     while(lazyQ.length && performance.now()-t0 < 12){ const im = lazyQ.shift(), j = lazyTodo.get(im.dataset.mq); lazyTodo.delete(im.dataset.mq);
       if(j && im.isConnected){ im.removeAttribute("data-mq");
-        marbleURLAsync(j.s, j.size).then(u=>{ if(u && im.getAttribute("src")===LAZY_PX) im.src = u }) } }   // (le Vortex a peut-être déjà mis sa propre image)
+        marbleURLAsync(j.s, j.size).then(u=>{ if(u && im.getAttribute("src")===LAZY_PX) im.src = u }) } }   // (le motif mythique a peut-être déjà mis sa propre image)
     lazyRun() };
   requestAnimationFrame(step); setTimeout(step, 120);
 }
@@ -5959,7 +5972,7 @@ function mImg(s,size=160,px,alt){
   // hauteur automatique : si la case est plus étroite que prévu, la bille rétrécit sans devenir ovale
   return `<img ${lazySrc(s,size)}${my?` data-myth="${my}"`:""} alt="${alt===undefined?esc(specName(s)):alt}" width="${w}" height="${w}"${lum?" data-lum":s.shiny===2?" data-gold":""} style="width:${w}px;height:auto;aspect-ratio:1${lum?`;--lc:${PALETTES[s.pal][2]}`:""}">`;
 }
-// (10 octobre 2026) le motif mythique (le Vortex) : sa spirale tourne partout où on le voit. Les petites images sont une boucle
+// (10 octobre 2026) le motif mythique (l'Œil du Dragon, le Vortex avant le 11 octobre) : il bouge partout où on le voit. Les petites images sont une boucle
 // de MYTH_N images (MYTH_T secondes, la même boucle que dans son shader), dessinées à la demande puis gardées
 const isMyth = s => !!FAMILIES[s?.family]?.myth;
 const MYTH_T = 2*Math.PI/1.6, MYTH_N = 48, MYTH_COLS = ["#FF2E44","#FF8A3D","#FFFFFF","#B0122A","#FFD1D6"];
@@ -6487,7 +6500,7 @@ const SRC_LABEL = {depart:"Choisie au premier lancement", gratuit:"Dans un Sache
 // motifs à trouver dans chaque taille (les gros formats dans un motif légendaire sont quasi introuvables)
 const FMT_GOAL = [N_DECORS-1,N_DECORS-1,36,33,28,24];   // Mini et Bille : tous les motifs (sauf le mythique) ; (10 octobre 2026) 50 motifs : les autres paliers relevés
 // tailles à réunir pour un motif, selon sa rareté (de la Mini bille jusqu'à…)
-const FAM_SIZES = [6,6,5,4,2], FAM_REW = [45,75,55,85,50];   // (le motif mythique a son succès à lui, « L'œil du Vortex »)
+const FAM_SIZES = [6,6,5,4,2], FAM_REW = [45,75,55,85,50];   // (le motif mythique a son succès à lui, « L'Œil du Dragon »)
 const upTo = n => ({bille:"à la Bille", chinoise:"à la Bille chinoise", calot:"au Calot", boulet:"au Boulet", mammouth:"au Mammouth"})[TK[n-1]];
 // les succès ne comptent pas les billes secrètes (trop faciles à avoir : elles ont leur succès à elles, « Détective de la cour »)
 // ni celles des événements (hors album)
@@ -6574,7 +6587,7 @@ const CHALLENGES = [
   // --- les grandes trouvailles : motifs rares et shiny (une échelle chacun)
   {id:"epic1", cat:"rare", icon:"star", title:"Trésor épique", desc:"Trouve une bille au motif épique (Nacrée, Lave, Prisme, Ambre…).", goal:1, prog:()=>SC().filter(s=>FAMILIES[s.family].rar===3).length, rew:{j:30}},
   {id:"leg1", cat:"rare", icon:"star", title:"Légende de poche", desc:"Trouve une bille au motif légendaire (Galaxie, Aurore, Trou noir ou Feu d'artifice).", goal:1, prog:()=>SC().filter(s=>FAMILIES[s.family].rar>=4).length, rew:{j:50}},
-  {id:"myth1", cat:"rare", icon:"trophy", title:"L'œil du Vortex", desc:"Trouve une bille au motif mythique : le Vortex.", goal:1, prog:()=>SC().filter(isMyth).length, rew:{j:500, bag:"collector", title:"Mythique"}},
+  {id:"myth1", cat:"rare", icon:"trophy", title:"L'Œil du Dragon", desc:"Trouve une bille au motif mythique : l'Œil du Dragon.", goal:1, prog:()=>SC().filter(isMyth).length, rew:{j:500, bag:"collector", title:"Mythique"}},
   {id:"legmam", cat:"rare", icon:"trophy", title:"Légende de la cour", desc:"Un Mammouth au motif légendaire.", goal:1, prog:()=>SC().filter(s=>s.type==="mammouth"&&FAMILIES[s.family].rar>=4).length, rew:{j:500, title:"Légende de la cour"}},
   {id:"mythmam", cat:"rare", icon:"trophy", title:"L'œil du cyclone", desc:"Un Mammouth au motif mythique : la bille la plus rare de la cour.", goal:1, prog:()=>SC().filter(s=>s.type==="mammouth"&&isMyth(s)).length, rew:{j:1000, bag:"collector", title:"L'œil du cyclone"}},
   {id:"shiny1", cat:"rare", icon:"star", title:"Premier éclat", desc:"Trouve ta première bille shiny dans un sachet ou une fusion.", goal:1, prog:()=>SC().filter(s=>s.shiny&&!isSeason(s)).length, rew:{j:100}},
@@ -13933,7 +13946,7 @@ function buyAnnonce(id){
 
 // ---------- le classement : des points pour la collection (calculés par le serveur, supabase/cour.sql) ----------
 // mêmes valeurs que dans supabase/cour.sql (pts_taille, mult_decor, pts_shiny, grandes collections)
-const SCORE = {taille:[10,15,20,30,60,120], decor:[1,1.5,2,3,5,15], shiny:[150,300,600], serieDecor:200, serie:20, mythique:500};   // mythique : une fois, dès qu'on a un Vortex
+const SCORE = {taille:[10,15,20,30,60,120], decor:[1,1.5,2,3,5,15], shiny:[150,300,600], serieDecor:200, serie:20, mythique:500};   // mythique : une fois, dès qu'on a un Œil du Dragon
 const rangTxt = r => r===1 ? "1er" : `${r}e`;
 // les grandes collections presque finies : de quoi viser le prochain palier (d'après les billes de la boîte qui comptent)
 function scoreGoals(){
@@ -13995,7 +14008,7 @@ function courClassement(){
           <li><b>Chaque motif de l'album, dans chaque taille</b><span>${TK.map(t=>`${TYPES[t].label} ${SCORE.taille[TIDX[t]]}`).join(" · ")}</span><small>× la rareté du motif : ${DECOR_RAR.map((r,i)=>`${r.name.toLowerCase()} ×${String(SCORE.decor[i]).replace(".",",")}`).join(", ")}</small></li>
           <li><b>Chaque coloris en plus</b><span>un cinquième des points de la taille</span><small>Les doubles (même coloris) ne comptent pas.</small></li>
           <li><b>Chaque shiny différente</b><span>${SHINIES.slice(1).map((x,i)=>`${x.name} ${SCORE.shiny[i]}`).join(" · ")}</span></li>
-          <li><b>Le motif mythique</b><span>${SCORE.mythique} dès ton premier Vortex</span><small>En plus des points de sa case (×${SCORE.decor[5]}).</small></li>
+          <li><b>Le motif mythique</b><span>${SCORE.mythique} dès ton premier Œil du Dragon</span><small>En plus des points de sa case (×${SCORE.decor[5]}).</small></li>
           <li><b>Les grandes collections</b><span>un motif dans les 6 tailles : ${SCORE.serieDecor} × la rareté du motif</span><small>Une taille dans tous les motifs (le mythique n'est pas demandé), ou un motif complet (ses ${BASE_PALS} coloris) : ${SCORE.serie} × les points de la taille.</small></li>
         </ul><p class="meta">Les billes de départ et les secrètes ne comptent pas.</p></section>
     </div>

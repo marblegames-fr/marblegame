@@ -2379,6 +2379,10 @@ button.gh-cell:hover{transform:translateY(-2px)}
 .m-card b .nb-dot.col{color:#2A9FD6;filter:drop-shadow(0 0 2px rgba(42,159,214,.6))}
 /* un doublon : rien à dire, la bille est juste un peu plus discrète */
 .slot.dupe.is-open .slot-info b{color:#D9CBBB;font-weight:800}
+/* (11 octobre 2026) la bille aussi : elle arrive normalement, puis s'efface un peu (une shiny garde tout son éclat) */
+.slot.dupe:not(.shiny).is-open .slot-ball img{animation:dupefade .7s .9s ease-out forwards}
+@keyframes dupefade{to{opacity:.5;filter:grayscale(.4) drop-shadow(0 14px 12px rgba(0,0,0,.35))}}
+@media (prefers-reduced-motion:reduce){.slot.dupe:not(.shiny).is-open .slot-ball img{animation:none;opacity:.5}}
 .nb-leg{flex-basis:100%;display:flex;justify-content:center;gap:16px;flex-wrap:wrap;font-size:13px;font-weight:800;color:#E8D6C2}
 .nb-leg > span{display:inline-flex;align-items:center;gap:6px}
 .bag-sum-grid .ball{position:relative}

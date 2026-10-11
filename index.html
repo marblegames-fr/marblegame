@@ -5917,6 +5917,9 @@ function marbleURL(s,size=160){
 // (le canevas WebGL peut redessiner une autre bille aussitôt), et le PNG est fabriqué en arrière-plan par le navigateur
 const urlPend = new Map();
 function snapBlobURL(draw, size){
+  // (11 octobre 2026) OffscreenCanvas quand il existe : son PNG est fabriqué tout de suite, à côté, alors que toBlob attend que la page soit au repos
+  if(typeof OffscreenCanvas==="function") try{ draw(); const c = new OffscreenCanvas(size, size); c.getContext("2d").drawImage(mainGL.cv, 0, 0);
+    return c.convertToBlob({type:"image/png"}).then(b=>b ? URL.createObjectURL(b) : null).catch(()=>null) }catch(e){}
   return new Promise(res=>{ try{ draw(); const c = document.createElement("canvas"); c.width = c.height = size; c.getContext("2d").drawImage(mainGL.cv, 0, 0);
     c.toBlob(b=>res(b ? URL.createObjectURL(b) : null), "image/png") }catch(e){ res(null) } });
 }
@@ -5973,25 +5976,39 @@ function mImg(s,size=160,px,alt){
   return `<img ${lazySrc(s,size)}${my?` data-myth="${my}"`:""} alt="${alt===undefined?esc(specName(s)):alt}" width="${w}" height="${w}"${lum?" data-lum":s.shiny===2?" data-gold":""} style="width:${w}px;height:auto;aspect-ratio:1${lum?`;--lc:${PALETTES[s.pal][2]}`:""}">`;
 }
 // (10 octobre 2026) le motif mythique (l'Œil du Dragon, le Vortex avant le 11 octobre) : il bouge partout où on le voit. Les petites images sont une boucle
-// de MYTH_N images (MYTH_T secondes, la même boucle que dans son shader), dessinées à la demande puis gardées
+// de MYTH_N images (MYTH_T secondes, la même boucle que dans son shader), dessinées à la demande puis gardées (96 images : 24 par seconde depuis le 11 octobre 2026)
 const isMyth = s => !!FAMILIES[s?.family]?.myth;
-const MYTH_T = 2*Math.PI/1.6, MYTH_N = 48, MYTH_COLS = ["#FF2E44","#FF8A3D","#FFFFFF","#B0122A","#FFD1D6"];
+const MYTH_T = 2*Math.PI/1.6, MYTH_N = 96, MYTH_COLS = ["#FF2E44","#FF8A3D","#FFFFFF","#B0122A","#FFD1D6"];
 const mythReg = new Map(), mythFrames = new Map();
 const mythURL = (s, size, j) => snapBlobURL(()=>mainGL.draw(s, size, I3, j*MYTH_T/MYTH_N), size);   // (11 octobre 2026) PNG en arrière-plan
+// (11 octobre 2026) plus de saccades : avant, les images se fabriquaient au fil de l'animation (2 par tour pour tout l'écran),
+// et l'œil sautait d'une image à l'autre pendant de longues secondes. Maintenant on fabrique la boucle entière d'abord
+// (plusieurs images par tour, dans le temps qui reste), l'image fixe reste affichée pendant ce temps, puis l'œil s'anime d'un coup, fluide.
+// Les images sont fabriquées à la taille où on les voit (une petite bille de 30 px n'a pas besoin de 120 px), et décodées d'avance.
 setInterval(()=>{
   if(document.hidden || !mainGL || matchMedia("(prefers-reduced-motion: reduce)").matches) return;
   const imgs = document.querySelectorAll("img[data-myth]"); if(!imgs.length) return;
-  const want = Math.floor((performance.now()/1000 % MYTH_T)/MYTH_T*MYTH_N); let budget = 2;
+  const now = performance.now(), want = Math.floor((now/1000 % MYTH_T)/MYTH_T*MYTH_N), t0 = now;
   imgs.forEach(im=>{
     const r = im.getBoundingClientRect(); if(!r.width || r.bottom<0 || r.top>innerHeight) return;
     const k = im.dataset.myth, R = mythReg.get(k); if(!R) return;
-    let F = mythFrames.get(k); if(!F){ F = []; mythFrames.set(k, F) }
-    // F[j] : l’adresse de l’image, 1 pendant qu’elle se fabrique, 0 si elle a raté (on réessaiera)
-    if(!F[want] && budget>0){ const w = want; F[w] = 1; budget--; mythURL(R.s, R.size, w).then(u=>{ F[w] = u||0 }) }
-    let j = want; for(let n=0; n<MYTH_N && typeof F[j]!=="string"; n++) j = (j+MYTH_N-1)%MYTH_N;
-    if(typeof F[j]==="string" && im.getAttribute("src")!==F[j]){ im.removeAttribute("data-mq"); im.src = F[j] }
+    let F = mythFrames.get(k);
+    // F.u[j] : l'adresse de l'image (prête et décodée), 1 pendant qu'elle se fabrique, 0 si elle a raté (on réessaiera)
+    if(!F){ F = {u:[], keep:[], ok:0, sz:Math.min(R.size, Math.max(48, Math.ceil(r.width*pxRatio()/8)*8))}; mythFrames.set(k, F) }
+    F.seen = now;
+    // tant que la boucle n'est pas complète : on en fabrique autant que possible en ~10 ms (partagées entre les billes à l'écran)
+    for(let j=0; j<MYTH_N && F.ok<MYTH_N && performance.now()-t0<10; j++){
+      if(F.u[j]) continue; const w = j; F.u[w] = 1;
+      mythURL(R.s, F.sz, w).then(u=>{ if(!u){ F.u[w] = 0; return }
+        const pre = new Image(); pre.src = u; F.keep[w] = pre;   // décodée d'avance : pas d'à-coup quand elle s'affiche
+        (pre.decode ? pre.decode() : Promise.resolve()).catch(()=>{}).then(()=>{ F.u[w] = u; F.ok++ }) });
+    }
+    if(F.ok<MYTH_N) return;   // pas encore toute la boucle : l'image fixe reste
+    if(im.getAttribute("src")!==F.u[want]){ im.removeAttribute("data-mq"); im.src = F.u[want] }
   });
-}, 1000/12);
+  // on ne garde pas en mémoire les boucles des billes qu'on ne voit plus depuis une minute
+  if(mythFrames.size>12) mythFrames.forEach((F,k)=>{ if(now-F.seen>60000){ F.u.forEach(u=>typeof u==="string" && URL.revokeObjectURL(u)); mythFrames.delete(k) } });
+}, 1000/24);   // 24 images par seconde : le clignement, très court, ne saute plus
 // l'apparition d'une bille mythique, où qu'elle sorte (sachet, mini-jeu, fusion) : un éclair rouge, le grand tourbillon, des gerbes rouges
 function mythFX(x, y){
   Sound.mythBoom?.();

@@ -201,8 +201,9 @@ language sql stable as $$
   select e.nom, v.debut, v.fin, v.decor, v.coloris from unnest(array['pirates','superheros']) e(nom), interne.evenement(e.nom) v
   where now() between v.debut and v.fin limit 1
 $$;
+-- (11 octobre 2026) 0,5 → 0,25 : la case cochée, 1 bille sur 4 d'événement (la dernière du sachet toujours)
 create or replace function interne.taux_evenement(s text) returns numeric language sql immutable as $$
-  select case when s in ('classique', 'premium', 'collector') then 0.5 else 0 end::numeric $$;
+  select case when s in ('classique', 'premium', 'collector') then 0.25 else 0 end::numeric $$;
 
 -- la date du jour, à l'heure française (les quêtes et le bonbec du jour changent à minuit)
 create or replace function interne.aujourdhui() returns date language sql stable as

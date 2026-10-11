@@ -4060,10 +4060,10 @@ const isBeta = s => s?.secret==="beta";
 const eventOf = s => FAMILIES[s.family]?.event ? EVENTS[FAMILIES[s.family].event] : null;
 const eventLive = E => !!E && Date.now()>=E.start && Date.now()<=E.end;
 // Billes d'événement (3 octobre 2026) : plus de sachet d'événement en vente. Pendant l'événement, le joueur coche (ou non)
-// « billes d'événement » sur les sachets Classique, Premium et Collector : case cochée, chaque bille a 50 % de chances d'être une
+// « billes d'événement » sur les sachets Classique, Premium et Collector : case cochée, chaque bille a 25 % de chances (50 % jusqu'au 11 octobre 2026) d'être une
 // bille de l'événement et la vedette (la 5e) l'est toujours ; case décochée, aucune. Le choix est retenu (S.evOpt).
 // Mêmes valeurs dans serveur.sql (taux_evenement, ouvrir_sac).
-const EV_DROP = {classique:.5, premium:.5, collector:.5};
+const EV_DROP = {classique:.25, premium:.25, collector:.25};   // (11 octobre 2026) 50 % → 25 % par bille (la collection se finissait trop vite) ; la dernière du sachet reste toujours une bille d'événement
 const evOptOn = bagId => !!(S.evOpt && EV_DROP[bagId] && liveEventKey());
 // un événement pas encore commencé reste une surprise (Billepedia, album, Confiserie) : seule l'accueil l'annonce, billes floutées, 7 jours avant
 const evSoon = E => Date.now() < E.start;

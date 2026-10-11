@@ -85,7 +85,7 @@ const FAMILIES = [
   // la bille des bêta-testeurs : jamais dans les sachets ni dans l'album
   {name:"Bêta",          rar:4, beta:true, desc:"Un β d'or qui brille au cœur d'un verre précieux (une pierre différente pour chaque taille), cerclé d'un anneau d'or : la bille de ceux qui ont testé Tikalo avant tout le monde."},
   // événement de novembre 2026 « Super-héros ! » (numéro 48 : toujours à la fin, les numéros ne bougent jamais)
-  {name:"Super-héros",   rar:4, event:"superheros", desc:"Le blason d'un héros de la cour, frappé d'un éclair, et les rayons d'une case de bande dessinée. Chaque coloris est un héros différent."},
+  {name:"Super-héros",   rar:4, event:"superheros", desc:"Chaque coloris est un héros de la cour, avec son blason derrière les rayons d'une case de bande dessinée : l'écusson de Capitaine Éclair, les ailes de Fulgura, le masque d'Ombre violette, le poing du Titan vert et la flamme de Flamme écarlate."},
   // (7 octobre 2026) nouveaux motifs : un légendaire (49, le Prisme, qui remplace l'Œil de dragon du même jour ; épique depuis le 8 octobre) et deux épiques (50, 51)
   {name:"Prisme",        rar:3, face:true, desc:"Un prisme de cristal au cœur d'un verre profond : un rayon de lumière blanche le traverse et ressort en arc-en-ciel."},
   {name:"Orage",         rar:3, desc:"Un ciel d'orage enfermé dans le verre, traversé d'éclairs qui l'illuminent de l'intérieur."},
@@ -383,6 +383,8 @@ function specParams(s){
     srot: FAMILIES[s.family]?.season!=null || FAMILIES[s.family]?.beta || FAMILIES[s.family]?.event==="superheros" || FAMILIES[s.family]?.face ? rotAxis(1,0,0,-.22) : rotAxis(r()-.5,r()-.5,r()-.5,r()*TAU),
     c1:hex01(P[1]), c2:hex01(P[2]), c3:hex01(P[3]), tint,
     mode:s.family, opaque:opaque?1:0, porc:0, sulf:0, fig:s.family%4, shiny:s.shiny||0, asp:s.type==="chinoise"?1.45:1,
+    // (11 octobre 2026) Super-héros : un blason par héros (coloris 79 à 83), chacun son petit programme (#define HERO)
+    hero: FAMILIES[s.family]?.event==="superheros" ? Math.max(0, EVENTS.superheros.palIdx.indexOf(s.pal)) : 0,
   };
   paramCache.set(key,p); return p;
 }
@@ -422,6 +424,24 @@ float sdBeta(vec2 p){   // la lettre β : une hampe et deux panses
   float d=sdSeg2(p,vec2(-0.2,-0.66),vec2(-0.2,0.27));
   if(p.x>-0.2) d=min(d,min(abs(length(p-vec2(-0.02,0.27))-0.18),abs(length(p-vec2(0.01,-0.1))-0.21)));
   return d;
+}
+#endif
+#if MODE==48
+#ifndef HERO
+#define HERO 0
+#endif
+float sdEll(vec2 p, vec2 r){ return (length(p/r)-1.0)*min(r.x,r.y); }   // une ellipse (distance approchée, assez bonne pour un dessin)
+float sdRBox(vec2 p, vec2 b, float r){ vec2 d=abs(p)-b+r; return length(max(d,0.0))+min(max(d.x,d.y),0.0)-r; }
+float sdDrop(vec2 p, float r, float h){   // une goutte pointue vers le haut : un rond de rayon r, une pointe à la hauteur h
+  float y=p.y, w=y<0.0 ? sqrt(max(0.0,r*r-y*y)) : r*pow(max(0.0,1.0-y/h),1.3)*(1.0+0.6*y/h);
+  return max(max(abs(p.x)-w,-(y+r)),y-h);
+}
+float sdFlame(vec2 p, float k){   // une flamme : une grande langue au milieu, deux plus petites sur les côtés, penchées vers l'extérieur
+  p/=k; vec2 w=vec2(abs(p.x),p.y);
+  float d=sdDrop(p-vec2(0.03*sin(p.y*5.0),-0.3),0.36,1.05);
+  vec2 s=w-vec2(0.2,-0.4); s=vec2(0.94*s.x-0.34*s.y,0.34*s.x+0.94*s.y);
+  d=min(d,sdDrop(s,0.22,0.62));
+  return d*k;
 }
 #endif
 #if MODE==22
@@ -1033,14 +1053,61 @@ vec4 fam(vec3 q, out vec3 e){
     float dens=0.26+0.2*n;
     // la bille chinoise se regarde par le dessus : le blason y est couché à plat (comme le β de la Bêta)
     bool couche=uAsp>1.2; vec2 p=(couche?vec2(q.x,-q.z):q.xy)*1.7; float bz=couche?q.y:q.z;
+    // (11 octobre 2026) chaque héros a son blason : shield = la silhouette, det = ses détails ; body/detc : leurs couleurs
+    float shield, det, glow=0.0; vec3 body=uC2, detc=uC3;
+#if HERO==1
+    // Fulgura, la plus rapide de la cour : des ailes aux pieds, comme le casque ailé du messager des dieux ; au centre, un éclair
+    vec2 w=vec2(abs(p.x),p.y);
+    shield=length(p)-0.22;
+    for(int i=0;i<3;i++){ float fi=float(i), a=0.3+fi*0.5, L=0.72-fi*0.14;
+      shield=min(shield, sdSeg2(w,vec2(0.12,-0.05),vec2(0.12,-0.05)+L*vec2(cos(a),sin(a)))-(0.09-fi*0.012)); }
+    float bolt=min(min(sdSeg2(p,vec2(0.07,0.15),vec2(-0.04,0.0)), sdSeg2(p,vec2(-0.04,0.0),vec2(0.05,0.0))), sdSeg2(p,vec2(0.05,0.0),vec2(-0.06,-0.16)))-0.035;
+    det=max(length(p)-0.17,-bolt);
+    for(int i=0;i<3;i++){ float fi=float(i), a=0.3+fi*0.5;   // le trait de chaque plume
+      det=min(det, sdSeg2(w,vec2(0.12,-0.05)+0.3*vec2(cos(a),sin(a)),vec2(0.12,-0.05)+(0.68-fi*0.14)*vec2(cos(a),sin(a)))-0.014); }
+#elif HERO==2
+    // Ombre violette, justicier de la nuit : le loup (le masque des justiciers masqués) et deux yeux qui brillent dans le noir
+    vec2 w=vec2(abs(p.x),p.y);
+    vec2 m=w-vec2(0.3,0.02); m=vec2(m.x, m.y+0.22*m.x);   // les deux moitiés du loup, un peu relevées vers l'extérieur
+    shield=min(sdEll(m,vec2(0.42,0.27)), sdRBox(p-vec2(0.0,0.06),vec2(0.2,0.14),0.08));
+    shield=max(shield, -sdEll(p-vec2(0.0,-0.2),vec2(0.12,0.12)));   // l'échancrure du nez
+    shield=min(shield, sdSeg2(w,vec2(0.66,0.04),vec2(0.86,-0.28))-0.055);   // les bouts du ruban
+    float eye=sdEll(vec2(m.x+0.02,m.y-0.02),vec2(0.19,0.085));
+    det=eye; detc=vec3(1.0); glow=smoothstep(0.02,-0.05,eye)*1.5;
+#elif HERO==3
+    // Titan vert, le colosse en colère : son poing serré, vert, avec un liseré violet
+    float f=1e3;
+    for(int i=0;i<4;i++){ f=min(f, sdRBox(p-vec2(-0.33+float(i)*0.22,0.2-0.03*abs(float(i)-1.5)),vec2(0.108,0.2),0.1)); }
+    float th=sdSeg2(p,vec2(-0.4,-0.08),vec2(0.12,-0.08))-0.115;   // le pouce, replié devant
+    float palm=sdRBox(p-vec2(0.0,-0.24),vec2(0.44,0.24),0.14);
+    shield=min(min(f,th),palm);
+    det=min(abs(f)-0.014, abs(th)-0.014);
+    det=max(det,-(th+0.01));   // les doigts passent derrière le pouce
+    body=uC3; detc=uC1*0.6;
+#elif HERO==4
+    // Flamme écarlate, l'enfant de feu : une flamme vive, avec son cœur jaune qui rayonne
+    shield=sdFlame(p,1.0);
+    float core=sdFlame(p-vec2(0.0,-0.14),0.55);
+    det=core; glow=smoothstep(0.03,-0.08,core)*0.8;
+#else
+    // Capitaine Éclair : l'écusson frappé d'un éclair
     float hw=p.y>-0.12 ? 0.5 : 0.5*clamp((p.y+0.8)/0.68,0.0,1.0);   // l'écusson : le haut droit, le bas en pointe
-    float shield=max(abs(p.x)-hw, abs(p.y+0.13)-0.67);
-    float bolt=min(min(sdSeg2(p,vec2(0.18,0.42),vec2(-0.1,0.0)), sdSeg2(p,vec2(-0.1,0.0),vec2(0.11,0.0))), sdSeg2(p,vec2(0.11,0.0),vec2(-0.15,-0.52)))-0.07;
+    shield=max(abs(p.x)-hw, abs(p.y+0.13)-0.67);
+    det=min(min(sdSeg2(p,vec2(0.18,0.42),vec2(-0.1,0.0)), sdSeg2(p,vec2(-0.1,0.0),vec2(0.11,0.0))), sdSeg2(p,vec2(0.11,0.0),vec2(-0.15,-0.52)))-0.07;
+#endif
     float rim=abs(shield+0.06)-0.03;
+#if HERO==3
+    rim=abs(shield+0.04)-0.045;
+    vec3 rimc=uC2;   // le liseré violet du Titan
+#else
+    vec3 rimc=uC3;
+#endif
     float sh=smoothstep(0.02,-0.02,shield)*smoothstep(0.13,0.06,abs(bz));
     if(sh>0.01){
-      vec3 c=uC2*(0.82+0.25*n);
-      c=mix(c, uC3*(0.95+0.1*n), smoothstep(0.015,-0.015,min(bolt,rim)));
+      vec3 c=body*(0.82+0.25*n);
+      c=mix(c, rimc*(0.95+0.1*n), smoothstep(0.015,-0.015,rim));
+      c=mix(c, detc*(0.95+0.1*n), smoothstep(0.015,-0.015,det));
+      e=detc*glow*sh*1.5;
       return vec4(mix(glass,c,sh), mix(dens,90.0,sh));
     }
     float ang=atan(p.y,p.x), rx=length(p)/1.7;
@@ -1581,8 +1648,8 @@ class MarbleGL{
   }
   // un petit programme par famille × (verre|opaque), compilé à la demande :
   // un seul gros shader met plusieurs minutes à compiler sous Windows (ANGLE/D3D) et fige le navigateur
-  use(mode,opaque){
-    const gl=this.gl, key=mode*2+opaque;
+  use(mode,opaque,hero=0){
+    const gl=this.gl, key=mode*2+opaque+hero*1000;
     let p=this.progs.get(key);
     if(!p){
       const sh=(t,src)=>{const o=gl.createShader(t);gl.shaderSource(o,src);gl.compileShader(o);if(!gl.getShaderParameter(o,gl.COMPILE_STATUS))throw new Error(gl.getShaderInfoLog(o));return o};
@@ -1590,6 +1657,7 @@ class MarbleGL{
       gl.attachShader(pr,sh(gl.VERTEX_SHADER,"attribute vec2 p;void main(){gl_Position=vec4(p,0.0,1.0);}"));
       gl.attachShader(pr,sh(gl.FRAGMENT_SHADER,`#define MODE ${mode}
 #define OPAQUE ${opaque}
+#define HERO ${hero}
 `+FS));
       gl.linkProgram(pr);
       if(!gl.getProgramParameter(pr,gl.LINK_STATUS)) throw new Error(gl.getProgramInfoLog(pr));
@@ -1601,7 +1669,7 @@ class MarbleGL{
     return p.u;
   }
   draw(s,size,rot=I3,time){   // time : le moment de l'animation (sinon l'heure), pour les images du motif mythique
-    const gl=this.gl,P=specParams(s),u=this.use(P.mode,P.opaque);
+    const gl=this.gl,P=specParams(s),u=this.use(P.mode,P.opaque,P.hero);
     if(this.cv.width!==size||this.cv.height!==size){this.cv.width=this.cv.height=size}   // (10 octobre 2026) la hauteur aussi : un canevas neuf fait 300 × 150, une première bille en 300 px sortait écrasée
     gl.viewport(0,0,size,size); gl.clearColor(0,0,0,0); gl.clear(gl.COLOR_BUFFER_BIT);
     gl.uniform2f(u.uRes,size,size); gl.uniform4fv(u.uSeed,P.seed); gl.uniform4fv(u.uPar,P.par);
@@ -1649,6 +1717,9 @@ function marbleURL(s,size=160){
 // (le canevas WebGL peut redessiner une autre bille aussitôt), et le PNG est fabriqué en arrière-plan par le navigateur
 const urlPend = new Map();
 function snapBlobURL(draw, size){
+  // (11 octobre 2026) OffscreenCanvas quand il existe : son PNG est fabriqué tout de suite, à côté, alors que toBlob attend que la page soit au repos
+  if(typeof OffscreenCanvas==="function") try{ draw(); const c = new OffscreenCanvas(size, size); c.getContext("2d").drawImage(mainGL.cv, 0, 0);
+    return c.convertToBlob({type:"image/png"}).then(b=>b ? URL.createObjectURL(b) : null).catch(()=>null) }catch(e){}
   return new Promise(res=>{ try{ draw(); const c = document.createElement("canvas"); c.width = c.height = size; c.getContext("2d").drawImage(mainGL.cv, 0, 0);
     c.toBlob(b=>res(b ? URL.createObjectURL(b) : null), "image/png") }catch(e){ res(null) } });
 }
@@ -1705,25 +1776,39 @@ function mImg(s,size=160,px,alt){
   return `<img ${lazySrc(s,size)}${my?` data-myth="${my}"`:""} alt="${alt===undefined?esc(specName(s)):alt}" width="${w}" height="${w}"${lum?" data-lum":s.shiny===2?" data-gold":""} style="width:${w}px;height:auto;aspect-ratio:1${lum?`;--lc:${PALETTES[s.pal][2]}`:""}">`;
 }
 // (10 octobre 2026) le motif mythique (l'Œil du Dragon, le Vortex avant le 11 octobre) : il bouge partout où on le voit. Les petites images sont une boucle
-// de MYTH_N images (MYTH_T secondes, la même boucle que dans son shader), dessinées à la demande puis gardées
+// de MYTH_N images (MYTH_T secondes, la même boucle que dans son shader), dessinées à la demande puis gardées (96 images : 24 par seconde depuis le 11 octobre 2026)
 const isMyth = s => !!FAMILIES[s?.family]?.myth;
-const MYTH_T = 2*Math.PI/1.6, MYTH_N = 48, MYTH_COLS = ["#FF2E44","#FF8A3D","#FFFFFF","#B0122A","#FFD1D6"];
+const MYTH_T = 2*Math.PI/1.6, MYTH_N = 96, MYTH_COLS = ["#FF2E44","#FF8A3D","#FFFFFF","#B0122A","#FFD1D6"];
 const mythReg = new Map(), mythFrames = new Map();
 const mythURL = (s, size, j) => snapBlobURL(()=>mainGL.draw(s, size, I3, j*MYTH_T/MYTH_N), size);   // (11 octobre 2026) PNG en arrière-plan
+// (11 octobre 2026) plus de saccades : avant, les images se fabriquaient au fil de l'animation (2 par tour pour tout l'écran),
+// et l'œil sautait d'une image à l'autre pendant de longues secondes. Maintenant on fabrique la boucle entière d'abord
+// (plusieurs images par tour, dans le temps qui reste), l'image fixe reste affichée pendant ce temps, puis l'œil s'anime d'un coup, fluide.
+// Les images sont fabriquées à la taille où on les voit (une petite bille de 30 px n'a pas besoin de 120 px), et décodées d'avance.
 setInterval(()=>{
   if(document.hidden || !mainGL || matchMedia("(prefers-reduced-motion: reduce)").matches) return;
   const imgs = document.querySelectorAll("img[data-myth]"); if(!imgs.length) return;
-  const want = Math.floor((performance.now()/1000 % MYTH_T)/MYTH_T*MYTH_N); let budget = 2;
+  const now = performance.now(), want = Math.floor((now/1000 % MYTH_T)/MYTH_T*MYTH_N), t0 = now;
   imgs.forEach(im=>{
     const r = im.getBoundingClientRect(); if(!r.width || r.bottom<0 || r.top>innerHeight) return;
     const k = im.dataset.myth, R = mythReg.get(k); if(!R) return;
-    let F = mythFrames.get(k); if(!F){ F = []; mythFrames.set(k, F) }
-    // F[j] : l’adresse de l’image, 1 pendant qu’elle se fabrique, 0 si elle a raté (on réessaiera)
-    if(!F[want] && budget>0){ const w = want; F[w] = 1; budget--; mythURL(R.s, R.size, w).then(u=>{ F[w] = u||0 }) }
-    let j = want; for(let n=0; n<MYTH_N && typeof F[j]!=="string"; n++) j = (j+MYTH_N-1)%MYTH_N;
-    if(typeof F[j]==="string" && im.getAttribute("src")!==F[j]){ im.removeAttribute("data-mq"); im.src = F[j] }
+    let F = mythFrames.get(k);
+    // F.u[j] : l'adresse de l'image (prête et décodée), 1 pendant qu'elle se fabrique, 0 si elle a raté (on réessaiera)
+    if(!F){ F = {u:[], keep:[], ok:0, sz:Math.min(R.size, Math.max(48, Math.ceil(r.width*pxRatio()/8)*8))}; mythFrames.set(k, F) }
+    F.seen = now;
+    // tant que la boucle n'est pas complète : on en fabrique autant que possible en ~10 ms (partagées entre les billes à l'écran)
+    for(let j=0; j<MYTH_N && F.ok<MYTH_N && performance.now()-t0<10; j++){
+      if(F.u[j]) continue; const w = j; F.u[w] = 1;
+      mythURL(R.s, F.sz, w).then(u=>{ if(!u){ F.u[w] = 0; return }
+        const pre = new Image(); pre.src = u; F.keep[w] = pre;   // décodée d'avance : pas d'à-coup quand elle s'affiche
+        (pre.decode ? pre.decode() : Promise.resolve()).catch(()=>{}).then(()=>{ F.u[w] = u; F.ok++ }) });
+    }
+    if(F.ok<MYTH_N) return;   // pas encore toute la boucle : l'image fixe reste
+    if(im.getAttribute("src")!==F.u[want]){ im.removeAttribute("data-mq"); im.src = F.u[want] }
   });
-}, 1000/12);
+  // on ne garde pas en mémoire les boucles des billes qu'on ne voit plus depuis une minute
+  if(mythFrames.size>12) mythFrames.forEach((F,k)=>{ if(now-F.seen>60000){ F.u.forEach(u=>typeof u==="string" && URL.revokeObjectURL(u)); mythFrames.delete(k) } });
+}, 1000/24);   // 24 images par seconde : le clignement, très court, ne saute plus
 // l'apparition d'une bille mythique, où qu'elle sorte (sachet, mini-jeu, fusion) : un éclair rouge, le grand tourbillon, des gerbes rouges
 function mythFX(x, y){
   Sound.mythBoom?.();

@@ -579,7 +579,7 @@ begin
       if nq < 4 then raise exception 'pas_fini'; end if;
       k := today || '|premium';
     when 'jeu' then     -- une récompense par jour et par jeu (au Tir : par trou)
-      maxi := case when cle ~ '^tir\|[0-5]$' then 25 when cle = 'pot' then 25 when cle = 'chateau' then 34
+      maxi := case when cle ~ '^tir\|[0-5]$' then 25 when cle = 'pot' then 25 when cle = 'chateau' then 25
                    when cle in ('course','tic') then 20 end;   -- une partie par jour et par jeu (DAY_GAMES dans index.html)
       if maxi is null or montant > maxi or sac is not null then raise exception 'montant_invalide'; end if;
       k := today || '|' || cle;

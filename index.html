@@ -9321,7 +9321,7 @@ const ballGL = makeGL(ballCanvas);
 let feltCanvas = null;
 
 function starsFor(strokes,par){ return strokes<=par?3:strokes===par+1?2:1 }
-// le trou du jour rapporte autant que les autres jeux : 60, 120 ou 200 selon les étoiles, +50 pour un trou en un (TIR_MAX = 250 ; même plafond dans serveur.sql)
+// le trou du jour rapporte autant que les autres jeux : 6, 12 ou 20 selon les étoiles, +5 pour un trou en un (TIR_MAX = 25 ; même plafond dans serveur.sql)
 const TIR_REW = [0,6,12,20], TIR_ACE = 5, TIR_MAX = TIR_REW[3]+TIR_ACE;
 function rewardFor(strokes,par){ const st=starsFor(strokes,par); return TIR_REW[st] + (strokes===1?TIR_ACE:0) }
 
@@ -9353,11 +9353,12 @@ function viewGame(){
       <section class="panel">
         <div class="panel-head"><h3>Récompenses</h3></div>
         <ul class="rewards-list">
-          <li><span>Au par ou mieux (3 étoiles)</span><b>${TIR_REW[3]} ${CUR.many}</b></li>
-          <li><span>Par + 1 (2 étoiles)</span><b>${TIR_REW[2]} ${CUR.many}</b></li>
-          <li><span>Au-delà (1 étoile)</span><b>${TIR_REW[1]} ${CUR.many}</b></li>
-          <li><span>Trou en un (bonus)</span><b>+${TIR_ACE} ${CUR.many}</b></li>
-          <li><span>Une seule tentative par jour (les coups restent comptés si tu quittes)</span><b>↻ minuit</b></li>
+          <li><span>Trou en un</span><b>${TIR_MAX} ${CUR.many}</b></li>
+          <li><span>Au par, ou moins</span><b>${TIR_REW[3]} ${CUR.many}</b></li>
+          <li><span>Un coup de plus que le par</span><b>${TIR_REW[2]} ${CUR.many}</b></li>
+          <li><span>Plus de coups</span><b>${TIR_REW[1]} ${CUR.many}</b></li>
+          <li><span>Pas dans le trou en 10 coups</span><b>0</b></li>
+          <li><span>Un essai par jour : si tu quittes, tes coups restent comptés</span><b>↻ minuit</b></li>
         </ul>
       </section>
     </aside>
@@ -11417,7 +11418,7 @@ function fxDraw(c){
 // Gains maximum (mêmes plafonds dans supabase/serveur.sql, public.gagner, source 'jeu').
 const DAY_GAMES = {
   pot:     {title:"Le Pot", max:25},
-  chateau: {title:"Le Château", max:34},
+  chateau: {title:"Le Château", max:25},
   roue:    {title:"La Roue", max:0, prize:"un Mammouth"},   // le tour gratuit du jour (supabase/serveur.sql, public.roue) ; le Casse-briques est retiré
   pachinko:{title:"Le Plinko", max:0, prize:"une bille"},   // la bille gratuite du jour (supabase/serveur.sql, public.pachinko)
   tic:     {title:"La Tic", max:20},
@@ -11445,10 +11446,11 @@ function gamesBonus(){
 }
 const DAY_INFO = {
   pot:     {goal:"Un maximum de billes dans le pot en 5 lancers.", rew:[["Chaque bille dans le pot","3"],["1, 3 ou 5 billes : 1, 2 ou 3 étoiles","+2 · +5 · +10"]]},
-  chateau: {goal:"Sors les 10 billes du cercle en 3 tirs.", rew:[["Chaque bille sortie du cercle","1"],["3, 6 ou 10 billes : 1, 2 ou 3 étoiles","+2 · +4 · +8"],["Les 10 sorties / en 2 tirs","+6 · +12"],["Rasé en un seul tir","+16 et un Mammouth !"]]},
+  // (11 octobre 2026) les récompenses en totaux, du meilleur au moins bon (avant : des bonus à additionner)
+  chateau: {goal:"Sors les 10 billes du cercle en 3 tirs.", rew:[["Les 10 en un seul tir, et un Mammouth en plus !","25"],["Les 10 en 2 tirs","25"],["Les 10 en 3 tirs","20"],["6 à 9 billes sorties","10 à 13"],["3 à 5 billes sorties","5 à 7"],["1 ou 2 billes sorties","1 à 2"]]},
   casse:   {goal:"Casse les murs de briques de 3 niveaux, sans laisser tomber ta bille. 3 vies pour toute la partie, et des niveaux nouveaux chaque jour, de plus en plus durs.", rew:[["Chaque niveau réussi (3 niveaux)","10"],["1, 2 ou 3 niveaux : 1, 2 ou 3 étoiles","+3 · +8 · +15"]]},
   course:  {goal:"Une course contre 3 joueurs de la cour, une pichenette chacun son tour. Le premier qui passe la ligne a gagné !", rew:[["1re place","20"],["2e place","12"],["3e place","7"],["4e place","3"]]},
-  tic:     {goal:"Touche sa bille avant qu'il touche la tienne.", rew:[["Victoire","20"],["Match nul","8"],["Défaite","4"]]},
+  tic:     {goal:"Touche sa bille avant qu'il touche la tienne.", rew:[["Tu touches sa bille en premier","20"],["Personne ne touche en 5 tirs","8"],["Il touche ta bille en premier","4"]]},
 };
 function playedToday(){ if(!S.played || S.played.day!==dayKey()) S.played = {day:dayKey(), tir:{}}; return S.played }
 const soloReady = key => !playedToday()[key];
@@ -11482,7 +11484,7 @@ function dayCard(key, el){
   if(!el) return;
   const g = dayGame(key), I = DAY_INFO[key];
   el.innerHTML = !g ? `<div class="g-card day-card"><span class="dc-kick">${ic("gift",14)} Ta partie du jour</span><h2>${DAY_GAMES[key].title}</h2><p>${I.goal}</p>
-      <ul class="dc-rew">${I.rew.map(([l,v])=>`<li><span>${l}</span><b>${/^\d+$/.test(v)?`${COIN}${v}`:v}</b></li>`).join("")}</ul>
+      <ul class="dc-rew">${I.rew.map(([l,v])=>`<li><span>${l}</span><b>${/^\d+( à \d+)?$/.test(v)?`${COIN}${v}`:v}</b></li>`).join("")}</ul>
       <button class="btn btn-yellow btn-xl" data-action="game-go" data-g="${key}">${ic("play",18)} C'est parti !</button>
       <small class="meta">Une partie par jour.</small></div>`
     : !g.done ? `<div class="g-card day-card"><span class="dc-kick">${ic("play",14)} Partie pas finie</span><h2>${DAY_GAMES[key].title}</h2>
@@ -11538,7 +11540,7 @@ function phoneGo(){
 }
 // le panneau « Récompenses » à droite de chaque jeu (comme au Tir)
 const dayRewards = key => DAY_INFO[key] ? `<section class="panel"><div class="panel-head"><h3>Récompenses</h3></div><ul class="rewards-list">
-  ${DAY_INFO[key].rew.map(([l,v])=>`<li><span>${l}${/Mammouth/.test(v) ? ` ${oddsBtn(key)}` : ""}</span><b>${/^[\d +·]+$/.test(v) ? `${v} ${CUR.many}` : v}</b></li>`).join("")}
+  ${DAY_INFO[key].rew.map(([l,v])=>`<li><span>${l}${/Mammouth/.test(l+v) ? ` ${oddsBtn(key)}` : ""}</span><b>${/^[\d +·]+$|^\d+ à \d+$/.test(v) ? `${v} ${CUR.many}` : v}</b></li>`).join("")}
   <li><span>Ta partie du jour rapporte</span><b>↻ minuit</b></li></ul></section>` : "";
 // fin de la partie du jour : on paie (une fois), on montre le résultat
 function dayFinish(key, st, rew, title, text, resId="a-result"){
@@ -11644,11 +11646,12 @@ const SETUP = {
     A.onShot = ()=>{ A.shots-- };
     A.onRest = ()=>{
       A.castle.forEach(b=>{ const w = Math.hypot(b.x-A.circle.x,b.y-A.circle.y)>A.circle.r;
-        if(w && !b.won){ fxText(b.x, b.y-b.r-14, "+12"); fxBurst(b.x, b.y, "#BFF5C4", 10, 2) } b.won = w });
+        if(w && !b.won){ fxText(b.x, b.y-b.r-14, "+1"); fxBurst(b.x, b.y, "#BFF5C4", 10, 2) } b.won = w });
       A.out = A.castle.filter(b=>b.won).length;
       if(A.shots>0 && A.out<10){ next(); updArenaHud(); return }
-      // les 10 sorties : +60 en 3 tirs, +120 en 2 tirs ; rasé en un seul tir : +160 et un Mammouth (plafond 340, même valeur dans serveur.sql)
-      const n=A.out, used = 3-A.shots, st = n>=10?3:n>=6?2:n>=3?1:0, fast = n>=10 ? [0,16,12,6][used] : 0, rew = n+[0,2,4,8][st]+fast;
+      // 1 par bille sortie, +2/+4/+8 selon les étoiles ; les 10 sorties : 20 en 3 tirs, 25 en 2 tirs, 25 et un Mammouth en un seul tir
+      // (11 octobre 2026 : rééquilibré sur le Tir et la Tic, avant 24/30/34 ; plafond 25, même valeur dans serveur.sql)
+      const n=A.out, used = 3-A.shots, st = n>=10?3:n>=6?2:n>=3?1:0, fast = n>=10 ? [0,7,7,2][used] : 0, rew = n+[0,2,4,8][st]+fast;
       S.stats.castle += n;
       let prize = "";
       if(st===3 && used===1 && gameLive("chateau")){
@@ -11658,7 +11661,7 @@ const SETUP = {
         if(srvOn()) srv(()=>Cloud.eco.marble("chateau","")).then(r=>{ applyEco(r.eco); won(srvAdopt([r.bille])[0]) }, srvFail);
         else srvNeed();
       }
-      dayFinish("chateau", st, rew, n>=10?(used===1?"En un seul tir !!":"Château rasé !"):n>=6?"Belle démolition !":n?"Quelques briques en moins":"Le château tient bon", `${n} bille${n>1?"s":""} sortie${n>1?"s":""} du cercle sur 10${n>=10?` en ${used} tir${used>1?"s":""} (bonus +${fast})`:""}.${prize}`);
+      dayFinish("chateau", st, rew, n>=10?(used===1?"En un seul tir !!":"Château rasé !"):n>=6?"Belle démolition !":n?"Quelques briques en moins":"Le château tient bon", `${n} bille${n>1?"s":""} sortie${n>1?"s":""} du cercle sur 10${n>=10?` en ${used} tir${used>1?"s":""}`:""}.${prize}`);
     };
     A.hud = ()=>[["Château du jour",{triangle:"Triangle",carre:"Carré",ligne:"Ligne",cercle:"Cercle",croix:"Croix"}[A.shape]],["Tirs restants",A.shots],["Billes sorties",`${A.out} / 10`]];
     spawnMine(120, 150+hash(dayKey()+"|chateau-depart")%220);   // le premier tir part d'un endroit différent chaque jour

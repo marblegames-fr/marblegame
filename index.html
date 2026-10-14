@@ -3196,6 +3196,9 @@ button.cp-who:hover b{text-decoration:underline}
 .cl-pager .btn[disabled]{opacity:.35;cursor:default}
 .cl-gap{text-align:center;color:var(--muted);font-weight:900;letter-spacing:.3em}
 .cl-goals{display:grid;gap:14px}
+.cl-vues{margin:0 0 14px}
+.cl-fin{font-size:13px;font-weight:700;color:var(--muted)!important;display:flex;align-items:center;gap:5px;flex-wrap:wrap}
+.cl-champ{display:inline-flex;align-items:center;gap:2px;padding:0 6px;border-radius:999px;background:var(--gold-bg);border:1px solid var(--gold-line);color:#C07A0C;font-weight:900;margin-right:2px}
 .cl-goal .g-top{display:flex;justify-content:space-between;gap:10px;align-items:baseline}
 .cl-goal b{font-weight:900;font-size:14px}
 .g-pts{font-family:var(--display);font-size:18px;color:var(--green);white-space:nowrap}
@@ -7543,7 +7546,7 @@ function homeCour(){
   if(!srvOn()) return `<section class="panel hm-cour off"><span class="hc-ic">${ic("cour",26)}</span><div><b>La cour de récré</b>
       <p class="meta">Avec un compte, ajoute tes copains, troque tes billes, vends-les au marché et grimpe au classement.</p></div>
       ${window.Cloud?.available ? `<button class="btn btn-yellow btn-sm" data-action="acct-signup">Créer un compte</button>` : ""}</section>`;
-  courLoad("moi"); courLoad("encheres"); courLoad("classement");
+  courLoad("moi"); courLoad("encheres"); courLoad("classement"); courLoad("semaine");   // (la semaine : pour la fenêtre des lots du lundi)
   const M = cour.moi, E = cour.encheres||[], dep = E.filter(x=>!x.en_tete).length, C = cour.classement?.moi, req = (M?.recues||[]).length;
   const tile = (tab, icon, titre, txt, hot) => `<button class="hc-t${hot?" hot":""}" data-action="cour-go" data-tab="${tab}">${ic(icon,20,2.2)}<b>${titre}</b><small>${txt}</small></button>`;
   return `<section class="panel hm-cour"><div class="panel-head"><h2>Ta cour de récré</h2><button class="see-all" data-action="cour-go" data-tab="copains">Y aller ${ic("chev",14)}</button></div>
@@ -13777,15 +13780,17 @@ function courFail(e){ console.warn("Cour :", e); toast(COUR_ERR[e?.code] || "Oup
 const courCount = () => cour.moi ? (cour.moi.trocs||0) + (cour.moi.recues||[]).length + (cour.unread||0) : 0;
 // charge une partie de la cour, puis réaffiche si on y est toujours
 // le classement bouge tout seul (les autres ouvrent des sachets) : au-delà de 20 s, on le redemande au prochain affichage
-const COUR_FRAIS = {classement:20000};
+const COUR_FRAIS = {classement:20000, semaine:20000, palmares:60000};
 function courLoad(kind, force){
   if(!srvOn() || cour.loading[kind] || (cour[kind] && !force && !(COUR_FRAIS[kind] && Date.now()-(cour.at[kind]||0) > COUR_FRAIS[kind]))) return;
   cour.loading[kind] = true; cour.at[kind] = Date.now();
   const f = {moi:()=>Cloud.cour.moi(), fil:()=>Cloud.cour.fil(), trocs:()=>Cloud.cour.trocs(),
     marche:()=>Cloud.cour.marche(cour.f), annonces:()=>Cloud.cour.annonces(), journal:()=>Cloud.cour.journal(0, 120),
-    encheres:()=>Cloud.cour.encheres(), classement:()=>Cloud.cour.classement(ui.clPortee, ui.clPage||0)}[kind];
+    encheres:()=>Cloud.cour.encheres(), classement:()=>Cloud.cour.classement(ui.clPortee, ui.clPage||0),
+    semaine:()=>Cloud.cour.semaine(ui.semPortee), palmares:()=>Cloud.cour.palmares()}[kind];
   f().then(d=>{ const prev = cour[kind]; cour[kind] = d; cour.ok = true; if(kind==="classement" && !cour.clAgain) cour.clWait = false; if(kind==="moi") netMark("cour", true);
       if(kind==="moi") courMoiNews(prev, d);
+      if(kind==="semaine") semaineLots(d);
       if(ui.view==="cour" || (["fil","moi","encheres","classement"].includes(kind) && ui.view==="accueil")) renderView();
       if(kind==="moi") renderNav();
       if(kind==="moi" || kind==="journal") renderBell() },
@@ -13849,7 +13854,7 @@ setTimeout(eventGifts, 2500);
 setInterval(eventGifts, 60000);
 setInterval(()=>{ if(srvOn() && document.visibilityState==="visible"){ courLoad("moi", true); ecoRefresh(); syncMarbles(true); courNews(false) } }, 60000);
 // sur l'onglet Classement, il se met à jour tout seul (sans F5)
-setInterval(()=>{ if(srvOn() && document.visibilityState==="visible" && ui.view==="cour" && ui.courTab==="classement" && !cour.absent.classement) courLoad("classement") }, 25000);
+setInterval(()=>{ if(srvOn() && document.visibilityState==="visible" && ui.view==="cour" && ui.courTab==="classement"){ const k = {semaine:"semaine", palmares:"palmares"}[ui.clVue||"semaine"] || "classement"; if(!cour.absent[k]) courLoad(k) } }, 25000);
 
 // ---------- le journal : l'historique du troc et du marché, et les nouvelles ----------
 // ce qui mérite d'être annoncé : ce que les autres ont fait (pas ce qu'on a fait soi-même)
@@ -14044,7 +14049,7 @@ const SCORE = {taille:[10,15,20,30,60,120], decor:[1,1.5,2,3,5,15], shiny:[150,3
 const rangTxt = r => r===1 ? "1er" : `${r}e`;
 // les grandes collections presque finies : de quoi viser le prochain palier (d'après les billes de la boîte qui comptent)
 function scoreGoals(){
-  const mine = S.specs.filter(s=>s.srv && !s.secret && s.src!=="test");
+  const mine = S.specs.filter(s=>s.srv && !s.secret && s.src!=="test" && !extraFam(s.family));   // (14 octobre 2026) sans les motifs d'événement et de saison : ils ne comptent pas au classement
   const parDecor = new Map(), parTaille = new Map(), cases = new Set(mine.map(slotKey));
   mine.forEach(s=>{ if(!parDecor.has(s.family)) parDecor.set(s.family, new Set()); parDecor.get(s.family).add(s.type);
     if(!parTaille.has(s.type)) parTaille.set(s.type, new Set()); parTaille.get(s.type).add(s.family) });
@@ -14059,7 +14064,96 @@ function scoreGoals(){
   if(g.length<3) g.push({titre:"Un nouveau motif dans l'album", n:cases.size, of:TOTAL_SLOTS, pts:SCORE.taille[0], manque:"Chaque nouvelle taille ou nouveau motif rapporte des points (et bien plus s'il est rare)"});
   return g.slice(0,3);
 }
+// (14 octobre 2026) trois vues : le classement de la semaine (remis à zéro chaque lundi, lots pour le podium), le général, le palmarès
+const SEMAINE_LOTS = [{de:1, a:1, sac:"collector", titre:"Champion de la semaine"}, {de:2, a:2, sac:"premium"}, {de:3, a:3, sac:"classique"}];   // mêmes lots que dans supabase/cour.sql (interne.lots_semaine)
+const SEMAINE_TITRE = "Champion de la semaine";
+const semLotTxt = l => [l.sac && BAG_BY[l.sac] ? BAG_BY[l.sac].name : "", l.bonbecs>0 ? `${fmt(l.bonbecs)} ${CUR.many}` : ""].filter(Boolean).join(" + ");
+const placesTxt = l => l.de===l.a ? rangTxt(l.de) : `${rangTxt(l.de)} à ${rangTxt(l.a)}`;
+// « du 12 au 18 octobre »
+function semTxt(d){ const a = new Date(d+"T12:00:00"), b = new Date(a); b.setDate(a.getDate()+6);
+  const f = (x, m) => x.toLocaleDateString("fr-FR", m ? {day:"numeric", month:"long"} : {day:"numeric"});
+  return `du ${f(a, a.getMonth()!==b.getMonth())} au ${f(b, true)}` }
+function finTxt(ms){ const s = Math.max(0, ms-Date.now())/1000, j = Math.floor(s/86400), h = Math.floor(s%86400/3600), m = Math.floor(s%3600/60);
+  return j ? `${j} j ${h} h` : h ? `${h} h ${m} min` : `${m} min` }
+const clFace = (x, px) => x.active ? mImg(x.active,160,Math.round(px*(.55+.45*scaleOf(x.active.type))),"") : avatarIni(x.pseudo, Math.round(px*.8));
+const clVoir = x => x.id ? ` data-action="ami-voir" data-id="${x.id}" role="button" tabindex="0" title="${x.moi?"Voir ma fiche, comme les autres la voient":"Voir sa collection"}"` : "";
+const clChamp = x => x.champion>0 ? `<span class="cl-champ" title="${x.champion} fois champion de la semaine">${ic("trophy",11,2.4)}${x.champion>1?`×${x.champion}`:""}</span>` : "";
+// les lots du lundi : une fenêtre par semaine gagnée (le serveur a déjà versé les sachets)
+function semaineLots(d){
+  const l = (d?.a_voir||[]).filter(x=>!(cour.semVu||=new Set()).has(x.semaine)); if(!l.length) return;
+  l.forEach(x=>cour.semVu.add(x.semaine));
+  if(l.some(x=>x.rang===1) && !S.titles.includes(SEMAINE_TITRE)){ S.titles.push(SEMAINE_TITRE); save() }
+  ecoRefresh();
+  (async()=>{ for(const x of l){
+    Sound.coin();
+    const voir = await ask({title:x.rang===1 ? "Champion de la semaine !" : `Tu as fini ${rangTxt(x.rang)} de la semaine !`,
+      text:`Semaine ${semTxt(x.semaine)} : ${fmt(x.pts)} pts. Ton lot : <b>${esc(semLotTxt(x))}</b>${x.sac?", rangé dans tes sachets offerts":""}.${x.rang===1?` Et le titre « ${SEMAINE_TITRE} », à choisir dans ton profil.`:""}`,
+      ok:"Super !", no:"Voir le palmarès"});
+    srv(()=>Cloud.cour.semaineVu(x.semaine)).catch(()=>{});
+    if(!voir){ ui.courTab = "classement"; ui.clVue = "palmares"; go("cour"); break }
+  } })();
+}
 function courClassement(){
+  const V = ui.clVue || "semaine", vb = (k,l,i) => `<button class="chip" data-action="cl-vue" data-v="${k}" aria-pressed="${V===k}">${ic(i,14)} ${l}</button>`;
+  const vues = `<div class="chips cl-vues">${vb("semaine","Cette semaine","clock")}${vb("general","Général","trophy")}${vb("palmares","Palmarès","star")}</div>`;
+  return vues + (V==="general" ? clGeneral() : V==="palmares" ? clPalmares() : clSemaine());
+}
+function clSemaine(){
+  if(cour.absent.semaine) return `<section class="panel cour-lock">${ic("clock",40)}<h2>Le classement de la semaine arrive bientôt</h2><p class="cour-lead">Il est prêt, il reste juste à l'installer sur le serveur.</p></section>`;
+  courLoad("semaine");
+  const C = cour.semaine; if(!C) return courWait();
+  const P = ui.semPortee || "tous", M = C.moi, lots = C.lots?.length ? C.lots : SEMAINE_LOTS;
+  const chip = (k,l) => `<button class="chip" data-action="sem-portee" data-p="${k}" aria-pressed="${P===k}">${l}</button>`;
+  const top = C.liste.slice(0,3), podium = [top[1], top[0], top[2]].filter(Boolean), liste = C.liste.slice(3);
+  const sub = x => `${fmt(x.billes)} bille${x.billes>1?"s":""} · ${fmt(x.nouvelles)} nouvelle${x.nouvelles>1?"s":""}`;
+  const row = x => `<div class="cl-row${x.moi?" me":""}"${clVoir(x)}><span class="cl-rank">${x.rang}</span><span class="cl-face">${clFace(x,40)}</span>
+      <span class="who">${esc(x.pseudo)}${x.moi?` <em>toi</em>`:""}<small>${clChamp(x)}${sub(x)}</small></span>
+      <span class="cl-pts">${fmt(x.total)}<small>pts</small></span></div>`;
+  const lot = r => lots.find(l=>r>=l.de && r<=l.a);
+  return `<div class="cour-grid">
+    <section class="panel cl-me">
+      <div class="cl-me-top"><div class="cl-medal r${M?Math.min(M.rang,4):4}"><b>${M?rangTxt(M.rang):"–"}</b><small>${M?`sur ${C.nb}`:"pas encore"}</small></div>
+        <div class="cl-score"><small>Tes points de la semaine</small><b>${fmt(M?.total||0)}<span> pts</span></b>
+          <p>${!M ? "Ouvre un sachet pour entrer dans la course !" : M.rang>1 && C.devant ? `Plus que <b>${fmt(C.devant.total - M.total + 1)} pts</b> pour passer devant ${esc(C.devant.pseudo)} !` : M.rang===1 && C.nb>1 ? "Tu es en tête ! Garde ta place jusqu'à lundi." : ""}</p>
+          <p class="cl-fin">${ic("clock",14)} Fin dans <b>${finTxt(C.fin)}</b> (lundi à minuit)${M && lot(M.rang) ? ` · si ça s'arrêtait maintenant : <b>${esc(semLotTxt(lot(M.rang)))}</b>` : ""}</p></div>
+        <div class="chips">${chip("tous","Tout le monde")}${chip("copains","Mes copains")}</div></div>
+    </section>
+    ${podium.length ? `<section class="panel cl-podium-wrap"><div class="cl-podium">${podium.map(x=>`<div class="cl-pod p${x.rang<=3?x.rang:3}${x.moi?" me":""}"${clVoir(x)}>
+        <span class="cl-face">${clFace(x, x.rang===1?84:66)}</span><b>${esc(x.pseudo)}</b><span class="cl-pts">${fmt(x.total)}<small>pts</small></span>
+        <span class="cl-step"><i>${x.rang}</i></span></div>`).join("")}</div>
+      ${liste.length ? `<div class="cl-list">${liste.map(row).join("")}</div>` : ""}
+      ${M && M.pos>50 ? `<div class="cl-list"><div class="cl-gap">…</div>${row(Object.assign({pseudo:S.name, moi:true, active:specById(S.active)}, M))}</div>` : ""}
+    </section>` : `<section class="panel"><p class="empty">Personne n'a encore tiré de bille cette semaine. Ouvre un sachet et prends la tête !</p></section>`}
+    <div class="row-2">
+      <section class="panel"><div class="panel-head"><h3>${ic("gift",18)} À gagner lundi</h3></div>
+        <ul class="cl-rules">${lots.map(l=>`<li><b>${placesTxt(l)}</b><span>${esc(semLotTxt(l))}</span>${(l.titre || (l.de===1 && SEMAINE_LOTS[0].titre)) ? `<small>+ le titre « ${SEMAINE_TITRE} »</small>` : ""}</li>`).join("")}</ul>
+        <p class="meta">Les lots arrivent tout seuls dans tes sachets offerts, lundi après minuit.</p></section>
+      <section class="panel"><div class="panel-head"><h3>${ic("quest",18)} Comment gagner des points</h3></div>
+        <ul class="cl-rules">
+          <li><b>Chaque bille tirée cette semaine</b><span>${TK.map(t=>`${TYPES[t].label} ${SCORE.taille[TIDX[t]]}`).join(" · ")}</span><small>× la rareté du motif, même pour un double.</small></li>
+          <li><b>Une case vide remplie</b><span>la bille compte double</span><small>Un nouveau motif dans une taille que tu n'avais pas.</small></li>
+          <li><b>Une shiny</b><span>${SHINIES.slice(1).map((x,i)=>`${x.name} +${SCORE.shiny[i]}`).join(" · ")}</span></li>
+        </ul><p class="meta">Ne comptent pas : les billes reçues par troc ou au marché, celles des fusions, d'événement et de saison. Tout repart à zéro chaque lundi à minuit.</p></section>
+    </div>
+  </div>`;
+}
+function clPalmares(){
+  if(cour.absent.palmares) return `<section class="panel cour-lock">${ic("star",40)}<h2>Le palmarès arrive bientôt</h2></section>`;
+  courLoad("palmares");
+  const C = cour.palmares; if(!C) return courWait();
+  const row = x => `<div class="cl-row${x.moi?" me":""}"${clVoir(x)}><span class="cl-rank">${x.rang}</span><span class="cl-face">${clFace(x,40)}</span>
+      <span class="who">${esc(x.pseudo)}${x.moi?` <em>toi</em>`:""}<small>${clChamp(x)}${x.sac && BAG_BY[x.sac] ? `${ic("gift",11,2.4)} ${esc(BAG_BY[x.sac].name)}` : ""}</small></span>
+      <span class="cl-pts">${fmt(x.total)}<small>pts</small></span></div>`;
+  return `<div class="cour-grid">
+    <section class="panel cl-me"><div class="cl-me-top"><div class="cl-medal r${C.victoires?1:4}"><b>${C.victoires}</b><small>victoire${C.victoires>1?"s":""}</small></div>
+      <div class="cl-score"><small>Ton palmarès</small><b>${C.podiums}<span> podium${C.podiums>1?"s":""}</span></b><p>Les 3 premiers de chaque semaine, depuis le début.</p></div></div></section>
+    ${C.semaines.length ? C.semaines.map(s=>`<section class="panel"><div class="panel-head"><h3>${ic("trophy",18)} Semaine ${semTxt(s.semaine)}</h3>
+        <span class="meta">${s.nb} joueur${s.nb>1?"s":""}${s.moi ? ` · toi : <b>${rangTxt(s.moi.rang)}</b> (${fmt(s.moi.total)} pts)` : ""}</span></div>
+        <div class="cl-list">${s.podium.map(row).join("")}</div></section>`).join("")
+      : `<section class="panel"><p class="empty">Aucune semaine terminée pour l'instant. La première se termine lundi à minuit : à toi de jouer !</p></section>`}
+  </div>`;
+}
+function clGeneral(){
   if(cour.absent.classement) return `<section class="panel cour-lock">${ic("trophy",40)}<h2>Le classement arrive bientôt</h2><p class="cour-lead">Il est prêt, il reste juste à l'installer sur le serveur.</p></section>`;
   courLoad("classement");
   const C = cour.classement; if(!C) return courWait();
@@ -14077,7 +14171,7 @@ function courClassement(){
   const pager = pgs>1 ? `<div class="cp-pager cl-pager">${pbtn(1,"chevll","Première page",pg<=1)}${pbtn(pg-1,"chevl","Page précédente",pg<=1)}
       <span>Page <b>${pg}</b> / ${pgs}</span>${pbtn(pg+1,"chev","Page suivante",pg>=pgs)}${pbtn(pgs,"chevrr","Dernière page",pg>=pgs)}</div>` : "";
   const row = x => `<div class="cl-row${x.moi?" me":""}"${voir(x)}><span class="cl-rank">${x.rang}</span><span class="cl-face">${face(x,40)}</span>
-      <span class="who">${esc(x.pseudo)}${x.moi?` <em>toi</em>`:""}<small>${x.titre ? `${ic("trophy",11,2.4)} ${esc(x.titre)} · ` : ""}${fmt(x.cases)} motif${x.cases>1?"s":""}</small></span>
+      <span class="who">${esc(x.pseudo)}${x.moi?` <em>toi</em>`:""}<small>${clChamp(x)}${x.titre ? `${ic("trophy",11,2.4)} ${esc(x.titre)} · ` : ""}${fmt(x.cases)} motif${x.cases>1?"s":""}</small></span>
       <span class="cl-pts">${fmt(x.total)}<small>pts</small></span></div>`;
   return `<div class="cour-grid">
     <section class="panel cl-me">
@@ -14100,7 +14194,7 @@ function courClassement(){
       <section class="panel"><div class="panel-head"><h3>${ic("quest",18)} Comment gagner des points</h3></div>
         <ul class="cl-rules">
           <li><b>Chaque motif de l'album, dans chaque taille</b><span>${TK.map(t=>`${TYPES[t].label} ${SCORE.taille[TIDX[t]]}`).join(" · ")}</span><small>× la rareté du motif : ${DECOR_RAR.map((r,i)=>`${r.name.toLowerCase()} ×${String(SCORE.decor[i]).replace(".",",")}`).join(", ")}</small></li>
-          <li><b>Chaque coloris en plus</b><span>un cinquième des points de la taille</span><small>Les doubles (même coloris) ne comptent pas.</small></li>
+          <li><b>Chaque coloris en plus</b><span>un cinquième des points de la taille × la rareté du motif</span><small>Jusqu'à 5 coloris par case. Les doubles (même coloris) ne comptent pas.</small></li>
           <li><b>Chaque shiny différente</b><span>${SHINIES.slice(1).map((x,i)=>`${x.name} ${SCORE.shiny[i]}`).join(" · ")}</span></li>
           <li><b>Le motif mythique</b><span>${SCORE.mythique} dès ton premier Œil du Dragon</span><small>En plus des points de sa case (×${SCORE.decor[5]}).</small></li>
           <li><b>Les grandes collections</b><span>un motif dans les 6 tailles : ${SCORE.serieDecor} × la rareté du motif</span><small>Une taille dans tous les motifs (le mythique n'est pas demandé), ou un motif complet (ses ${BASE_PALS} coloris) : ${SCORE.serie} × les points de la taille.</small></li>
@@ -14695,6 +14789,8 @@ document.addEventListener("click", e=>{
     case "news-see": closeModal(); ui.courTab = "journal"; cour.compose = null; cour.sell = null; courSeeJournal(); if(ui.view!=="cour") go("cour"); else renderView(); break;
     case "jr-filt": ui.jf = t.dataset.f; renderView(); break;
     case "cl-portee": ui.clPortee = t.dataset.p; ui.clPage = 0; cour.classement = null; courRefresh("classement"); renderView(); break;
+    case "cl-vue": ui.clVue = t.dataset.v; renderView(); break;
+    case "sem-portee": ui.semPortee = t.dataset.p; cour.semaine = null; courRefresh("semaine"); renderView(); break;
     case "cl-page": clGo(+t.dataset.p); break;
     case "tab": if(t.dataset.tab==="defis"){ closeModal(); go("succes"); break }
       if(ui.view==="collection" && ui.tab!==t.dataset.tab) Sound.page();

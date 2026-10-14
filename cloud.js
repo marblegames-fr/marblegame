@@ -144,6 +144,10 @@
       encherir: (annonce, montant) => rpc("encherir", {annonce, montant}),
       // page : 0 = la page où je suis, 1 = la première… (sans page : les 50 premiers, comme avant le 10 octobre 2026)
       classement: (portee, page) => rpc("classement", page==null ? {portee:portee||"tous"} : {portee:portee||"tous", page}),
+      // (14 octobre 2026) le classement de la semaine, le palmarès des semaines closes, et « j'ai vu mon lot »
+      semaine: portee => rpc("classement_semaine", {portee:portee||"tous"}),
+      palmares: () => rpc("palmares_semaines"),
+      semaineVu: s => rpc("semaine_vu", {s}),
       annonces: () => rpc("mes_annonces"),
       journal: (depuis, limite) => rpc("cour_journal", {depuis:depuis||0, limite:limite||80}),
       stats: () => rpc("cour_stats"),

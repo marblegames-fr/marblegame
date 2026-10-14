@@ -134,9 +134,32 @@ create or replace function interne.pseudo(qui uuid) returns text language sql st
 $$ select pseudo from public.profils where id = qui $$;
 
 -- ce que le joueur montre aux copains (lu dans sa sauvegarde) : titre et bille active
+-- (14 octobre 2026) le palmarès du classement de la semaine (voir plus bas, CLASSEMENT DE LA SEMAINE)
+create table if not exists public.semaines (
+  semaine   date primary key,                  -- le lundi
+  close_le  timestamptz not null default now()
+);
+create table if not exists public.palmares (
+  semaine   date not null,
+  joueur    uuid not null,
+  rang      int  not null,
+  pts       int  not null,
+  billes    int  not null,
+  nouvelles int  not null,
+  sac       text,                              -- le lot (sachet offert), s'il y en a un
+  bonbecs   int  not null default 0,
+  vu_le     timestamptz,                       -- le joueur a vu la fenêtre « Tu as fini 1er… »
+  primary key (semaine, joueur)
+);
+create index if not exists palmares_joueur on public.palmares (joueur);
+alter table public.semaines enable row level security;
+alter table public.palmares enable row level security;
+revoke all on public.semaines, public.palmares from anon, authenticated;
+
 create or replace function interne.carte(qui uuid) returns jsonb language sql stable as $$
   select jsonb_build_object('id', qui, 'pseudo', interne.pseudo(qui),
     'titre', s.donnees->>'title',
+    'champion', (select count(*) from public.palmares p where p.joueur = qui and p.rang = 1),   -- fois 1er de la semaine
     'active', (select interne.bille_json(b) from public.billes b where b.id::text = s.donnees->>'active' and b.proprietaire = qui and b.detruite_le is null))
   from (select qui) x left join public.sauvegardes s on s.joueur = qui
 $$;
@@ -580,7 +603,8 @@ end $$;
 --  Seules les billes tirées par le serveur comptent (pas les billes de départ, ni les secrètes, ni les billes de test).
 --  Barème (mêmes valeurs dans index.html : SCORE) :
 --    - chaque case (une taille + un décor) : points de la taille × multiplicateur de rareté du décor
---    - chaque coloris en plus dans une case : un cinquième des points de la taille
+--    - chaque coloris en plus dans une case : un cinquième des points de la taille × multiplicateur du décor, jusqu'à 5 coloris par case
+--      (14 octobre 2026 ; avant : sans la rareté et sans limite, ce qui aurait fini par écraser tout le reste)
 --    - chaque shiny différente : 150 (Irisée), 300 (Dorée), 600 (Lumineuse)
 --    - un décor dans les 6 tailles : 200 × multiplicateur du décor
 --    - une taille dans tous les décors : 20 × les points de la taille
@@ -611,7 +635,7 @@ create or replace function interne.scores() returns table (joueur uuid, total in
   st as (select j, sum(20 * pt)::int p, count(*)::int n from (select j, t, max(pt) pt from k group by j, t
            having count(*) filter (where (interne.decor_rarete())[d+1] <> 6) = (select count(*) from unnest(interne.decor_rarete()) x where x not in (5, 6))) x group by j),   -- (10 octobre 2026) sans le mythique
   sc as (select j, sum(20 * pt)::int p, count(*)::int n from k where nb >= interne.nb_coloris() group by j),
-  tot as (select j, count(*)::int cases, sum(round(pt * m))::int pc, sum((pt / 5) * (nc - 1))::int pk from k group by j),
+  tot as (select j, count(*)::int cases, sum(round(pt * m))::int pc, sum(round((pt / 5) * m * (least(nc, 5) - 1)))::int pk from k group by j),
   x as (select tot.*, coalesce(sh.p,0) + coalesce(my.p,0) psh,
           coalesce(sd.p,0) + coalesce(st.p,0) + coalesce(sc.p,0) pse,
           coalesce(sd.n,0) + coalesce(st.n,0) + coalesce(sc.n,0) nse
@@ -653,6 +677,112 @@ begin
            'devant', (select jsonb_build_object('pseudo', interne.pseudo(r.joueur), 'total', r.total) from r, m where r.pos = m.pos - 1)) end
     from nb, pg);
 end $$;
+
+-- =====================================================================
+--  CLASSEMENT DE LA SEMAINE (14 octobre 2026) : « la pêche de la semaine »
+--  Du lundi 0 h au lundi suivant 0 h (heure de Paris). Chaque bille tirée dans la semaine rapporte sa valeur,
+--  qu'elle soit nouvelle ou en double : points de la taille × multiplicateur du décor (le même barème que le classement),
+--  ×2 si elle remplit une case vide de la collection, + les points de shiny (shiny d'un coloris de base).
+--  Ne comptent pas : les billes reçues par troc ou au marché (elles comptent pour celui qui les a tirées), celles qui sortent
+--  d'une fusion (leurs billes de départ ont déjà compté), les billes d'événement, de saison, secrètes, de départ, de test,
+--  et les comptes de test (table testeurs).
+--  Le lundi, la semaine passée est close au premier passage d'un joueur (comme la Grande Course) : palmarès + lots versés.
+--  Le résultat est le même que s'il était calculé à minuit pile : on ne regarde que les billes tirées dans la semaine.
+--  Les lots (mêmes valeurs dans index.html : SEMAINE_LOTS) sont donnés par tranche de places, pour pouvoir en ajouter (4 à 10, 11 à 50…).
+-- =====================================================================
+create index if not exists billes_historique_vers on public.billes_historique (vers);
+create index if not exists billes_historique_le on public.billes_historique (le);
+
+create or replace function interne.semaine_premiere() returns date language sql immutable as $$ select date '2026-10-12' $$;
+create or replace function interne.semaine_debut(t timestamptz default now()) returns date language sql stable as $$
+  select date_trunc('week', t at time zone 'Europe/Paris')::date $$;
+create or replace function interne.semaine_t(d date) returns timestamptz language sql stable as $$
+  select d::timestamp at time zone 'Europe/Paris' $$;
+create or replace function interne.lots_semaine() returns table (de int, a int, sac text, bonbecs int) language sql immutable as $$
+  values (1, 1, 'collector', 0), (2, 2, 'premium', 0), (3, 3, 'classique', 0) $$;
+
+create or replace function interne.semaine_pts(d date) returns table (joueur uuid, pts int, billes int, nouvelles int) language sql stable as $$
+  with wk as (   -- les billes tirées dans la semaine (la ligne « trouvee » de l'historique : qui l'a tirée, et quand)
+    select h.id hid, h.vers j, b.coloris, b.shiny,
+      round((interne.pts_taille())[interne.rang(b.taille)+1] * (interne.mult_decor())[(interne.decor_rarete())[b.decor+1]+1])::int v
+    from public.billes_historique h join public.billes b on b.id = h.bille
+    where h.motif = 'trouvee' and h.le >= interne.semaine_t(d) and h.le < interne.semaine_t(d + 7)
+      and b.origine = 'serveur' and b.secrete is null and coalesce(b.donnees->>'src', '') not in ('test', 'fusion')
+      and coalesce((interne.decor_rarete())[b.decor+1], 5) <> 5
+      and h.vers not in (select t.joueur from public.testeurs t)),
+  -- la première bille de chaque case (taille + décor) arrivée chez le joueur, tirée ou reçue : c'est elle qui a rempli la case
+  prem as (select distinct on (h.vers, b.taille, b.decor) h.id
+    from public.billes_historique h join public.billes b on b.id = h.bille
+    where h.motif in ('trouvee', 'echange', 'vente') and h.vers in (select distinct wk.j from wk)
+      and b.origine = 'serveur' and b.secrete is null and coalesce(b.donnees->>'src', '') <> 'test'
+    order by h.vers, b.taille, b.decor, h.le, h.id)
+  select wk.j, sum(wk.v * case when p.id is null then 1 else 2 end
+      + case when wk.shiny > 0 and interne.coloris_normal(wk.coloris) then (interne.pts_shiny())[wk.shiny] else 0 end)::int,
+    count(*)::int, count(p.id)::int
+  from wk left join prem p on p.id = wk.hid group by wk.j
+$$;
+
+-- clore les semaines passées (une seule fois chacune) : palmarès et lots
+create or replace function interne.semaine_cloturer() returns void language plpgsql as $$
+declare d date;
+begin
+  for d in select g::date from generate_series(interne.semaine_premiere()::timestamp, (interne.semaine_debut() - 7)::timestamp, interval '7 days') g
+           where not exists (select 1 from public.semaines s where s.semaine = g::date) order by 1 loop
+    insert into public.semaines (semaine) values (d) on conflict do nothing;
+    if not found then continue; end if;   -- un autre joueur est en train de la clore
+    insert into public.palmares (semaine, joueur, rang, pts, billes, nouvelles, sac, bonbecs)
+      select d, p.joueur, p.rang, p.pts, p.billes, p.nouvelles, l.sac, coalesce(l.bonbecs, 0)
+      from (select s.*, rank() over (order by s.pts desc)::int rang from interne.semaine_pts(d) s where s.pts > 0) p
+      left join interne.lots_semaine() l on p.rang between l.de and l.a;
+    perform interne.crediter(p.joueur, p.bonbecs, p.sac) from public.palmares p where p.semaine = d and (p.sac is not null or p.bonbecs > 0);
+  end loop;
+end $$;
+
+-- le classement de la semaine en cours (tout le monde, ou moi et mes copains) + mes lots pas encore vus
+create or replace function public.classement_semaine(portee text default 'tous') returns jsonb language plpgsql security definer set search_path = public as $$
+declare moi uuid := auth.uid(); d date;
+begin
+  if moi is null then raise exception 'connexion_requise'; end if;
+  perform interne.semaine_cloturer();
+  d := interne.semaine_debut();
+  return (with r as (
+      select s.joueur, s.pts, s.billes, s.nouvelles, rank() over (order by s.pts desc)::int rang,
+        row_number() over (order by s.pts desc, s.nouvelles desc, s.joueur)::int pos
+      from interne.semaine_pts(d) s where s.pts > 0
+        and (portee <> 'copains' or s.joueur = moi or s.joueur in (select ami from amis where joueur = moi))),
+    m as (select r.* from r where r.joueur = moi)
+    select jsonb_build_object('semaine', d, 'fin', floor(extract(epoch from interne.semaine_t(d + 7))*1000)::bigint,
+      'nb', (select count(*) from r),
+      'liste', coalesce((select jsonb_agg(interne.carte(r.joueur) || jsonb_build_object('rang', r.rang, 'pos', r.pos, 'total', r.pts,
+                 'billes', r.billes, 'nouvelles', r.nouvelles, 'moi', r.joueur = moi) order by r.pos) from r where r.pos <= 50), '[]'),
+      'moi', (select jsonb_build_object('rang', m.rang, 'pos', m.pos, 'total', m.pts, 'billes', m.billes, 'nouvelles', m.nouvelles) from m),
+      'devant', (select jsonb_build_object('pseudo', interne.pseudo(r.joueur), 'total', r.pts) from r, m where r.pos = m.pos - 1),
+      'lots', (select jsonb_agg(jsonb_build_object('de', l.de, 'a', l.a, 'sac', l.sac, 'bonbecs', l.bonbecs) order by l.de) from interne.lots_semaine() l),
+      'a_voir', coalesce((select jsonb_agg(jsonb_build_object('semaine', p.semaine, 'rang', p.rang, 'pts', p.pts, 'sac', p.sac, 'bonbecs', p.bonbecs) order by p.semaine)
+                 from palmares p where p.joueur = moi and p.vu_le is null and (p.sac is not null or p.bonbecs > 0)), '[]')));
+end $$;
+
+-- le palmarès : les semaines closes (les plus récentes d'abord), leur podium et ma place
+create or replace function public.palmares_semaines() returns jsonb language plpgsql security definer set search_path = public as $$
+declare moi uuid := auth.uid();
+begin
+  if moi is null then raise exception 'connexion_requise'; end if;
+  perform interne.semaine_cloturer();
+  return jsonb_build_object(
+    'victoires', (select count(*) from palmares where joueur = moi and rang = 1),
+    'podiums', (select count(*) from palmares where joueur = moi and rang <= 3),
+    'semaines', coalesce((select jsonb_agg(jsonb_build_object('semaine', s.semaine,
+        'nb', (select count(*) from palmares p where p.semaine = s.semaine),
+        'podium', coalesce((select jsonb_agg(interne.carte(p.joueur) || jsonb_build_object('rang', p.rang, 'total', p.pts, 'sac', p.sac, 'moi', p.joueur = moi) order by p.rang, p.pts desc)
+                   from palmares p where p.semaine = s.semaine and p.rang <= 3), '[]'),
+        'moi', (select jsonb_build_object('rang', p.rang, 'total', p.pts) from palmares p where p.semaine = s.semaine and p.joueur = moi))
+      order by s.semaine desc) from (select semaine from semaines order by semaine desc limit 26) s), '[]'));
+end $$;
+
+-- la fenêtre « Tu as fini 1er de la semaine » a été vue
+create or replace function public.semaine_vu(s date) returns void language sql security definer set search_path = public as $$
+  update palmares set vu_le = now() where joueur = auth.uid() and semaine = s and vu_le is null
+$$;
 
 -- une seule fois : les billes déjà échangées ou vendues retrouvent leur provenance (voir transferer_bille dans schema.sql)
 do $$ begin
@@ -712,7 +842,8 @@ do $$ declare f text; begin
   foreach f in array array['cour_moi()','ami_demander(text)','ami_repondre(uuid,boolean)','ami_retirer(uuid)','profil_joueur(uuid)',
     'billes_echangeables(uuid)','fil_amis()','troc_proposer(uuid,uuid[],uuid[],text,bigint,int,int)','troc_repondre(bigint,boolean)','troc_annuler(bigint)',
     'mes_trocs()','vendre(uuid,int,int,int)','retirer_annonce(bigint)','acheter(bigint)','marche(text,int,int,boolean,text,int,text)','mes_annonces()','cour_journal(bigint,int)',
-    'mettre_aux_encheres(uuid,int,int)','encherir(bigint,int)','mes_encheres()','classement(text,int)','cour_stats()'] loop
+    'mettre_aux_encheres(uuid,int,int)','encherir(bigint,int)','mes_encheres()','classement(text,int)','cour_stats()',
+    'classement_semaine(text)','palmares_semaines()','semaine_vu(date)'] loop
     execute format('revoke all on function public.%s from public, anon', f);
     execute format('grant execute on function public.%s to authenticated', f);
   end loop;

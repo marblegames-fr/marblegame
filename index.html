@@ -14080,7 +14080,7 @@ function buyAnnonce(id){
 
 // ---------- le classement : des points pour la collection (calculés par le serveur, supabase/cour.sql) ----------
 // mêmes valeurs que dans supabase/cour.sql (pts_taille, mult_decor, pts_shiny, grandes collections)
-const SCORE = {taille:[10,15,20,30,60,120], decor:[1,1.5,2,3,5,15], shiny:[150,300,600], serieDecor:200, serie:20, mythique:500};   // mythique : une fois, dès qu'on a un Œil du Dragon
+const SCORE = {taille:[10,15,20,30,60,120], decor:[1,1.5,2,3,5,15], shiny:[500,1000,2500], serieDecor:200, serie:20, mythique:500};   // mythique : une fois, dès qu'on a un Œil du Dragon
 const rangTxt = r => r===1 ? "1er" : `${r}e`;
 // les grandes collections presque finies : de quoi viser le prochain palier (d'après les billes de la boîte qui comptent)
 function scoreGoals(){

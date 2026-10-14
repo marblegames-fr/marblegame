@@ -611,7 +611,7 @@ end $$;
 --    - chaque case (une taille + un décor) : points de la taille × multiplicateur de rareté du décor
 --    - chaque coloris en plus dans une case : un cinquième des points de la taille × multiplicateur du décor, jusqu'à 5 coloris par case
 --      (14 octobre 2026 ; avant : sans la rareté et sans limite, ce qui aurait fini par écraser tout le reste)
---    - chaque shiny différente : 150 (Irisée), 300 (Dorée), 600 (Lumineuse)
+--    - chaque shiny différente : 500 (Irisée), 1000 (Dorée), 2500 (Lumineuse) (14 octobre 2026 ; avant 150, 300, 600 : une shiny est ~8 fois plus rare qu'un Mammouth)
 --    - un décor dans les 6 tailles : 200 × multiplicateur du décor
 --    - une taille dans tous les décors : 20 × les points de la taille
 --    - une case avec les 48 coloris de base : 20 × les points de la taille
@@ -619,7 +619,7 @@ end $$;
 -- =====================================================================
 create or replace function interne.pts_taille() returns int[] language sql immutable as $$ select array[10,15,20,30,60,120] $$;
 create or replace function interne.mult_decor() returns numeric[] language sql immutable as $$ select array[1,1.5,2,3,5,0,15]::numeric[] $$;   -- 6e : événements (ne comptent pas) ; 7e : mythique (10 octobre 2026, SCORE.decor dans index.html)
-create or replace function interne.pts_shiny() returns int[] language sql immutable as $$ select array[150,300,600] $$;
+create or replace function interne.pts_shiny() returns int[] language sql immutable as $$ select array[500,1000,2500] $$;
 
 drop function if exists interne.series();
 drop function if exists interne.pts_grands();

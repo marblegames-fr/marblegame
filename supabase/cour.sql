@@ -682,7 +682,7 @@ end $$;
 --  CLASSEMENT DE LA SEMAINE (14 octobre 2026) : « la pêche de la semaine »
 --  Du lundi 0 h au lundi suivant 0 h (heure de Paris). Chaque bille tirée dans la semaine rapporte sa valeur,
 --  qu'elle soit nouvelle ou en double : points de la taille × multiplicateur du décor (le même barème que le classement),
---  ×2 si elle remplit une case vide de la collection, + les points de shiny (shiny d'un coloris de base).
+--  ×2 si elle remplit une case vide de la collection, + les points de shiny (shiny d'un coloris de base) ; le tout divisé par 10.
 --  Ne comptent pas : les billes reçues par troc ou au marché (elles comptent pour celui qui les a tirées), celles qui sortent
 --  d'une fusion (leurs billes de départ ont déjà compté), les billes d'événement, de saison, secrètes, de départ, de test,
 --  et les comptes de test (table testeurs).
@@ -716,8 +716,9 @@ create or replace function interne.semaine_pts(d date) returns table (joueur uui
     where h.motif in ('trouvee', 'echange', 'vente') and h.vers in (select distinct wk.j from wk)
       and b.origine = 'serveur' and b.secrete is null and coalesce(b.donnees->>'src', '') <> 'test'
     order by h.vers, b.taille, b.decor, h.le, h.id)
-  select wk.j, sum(wk.v * case when p.id is null then 1 else 2 end
-      + case when wk.shiny > 0 and interne.coloris_normal(wk.coloris) then (interne.pts_shiny())[wk.shiny] else 0 end)::int,
+  -- (14 octobre 2026) le total est divisé par 10 : on compte aussi les doubles, sans ça la semaine affichait plus de points que le classement général
+  select wk.j, round(sum(wk.v * case when p.id is null then 1 else 2 end
+      + case when wk.shiny > 0 and interne.coloris_normal(wk.coloris) then (interne.pts_shiny())[wk.shiny] else 0 end) / 10.0)::int,
     count(*)::int, count(p.id)::int
   from wk left join prem p on p.id = wk.hid group by wk.j
 $$;

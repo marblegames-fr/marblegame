@@ -14130,9 +14130,9 @@ function clSemaine(){
         <p class="meta">Les lots arrivent tout seuls dans tes sachets offerts, lundi après minuit.</p></section>
       <section class="panel"><div class="panel-head"><h3>${ic("quest",18)} Comment gagner des points</h3></div>
         <ul class="cl-rules">
-          <li><b>Chaque bille tirée cette semaine</b><span>${TK.map(t=>`${TYPES[t].label} ${SCORE.taille[TIDX[t]]}`).join(" · ")}</span><small>× la rareté du motif, même pour un double.</small></li>
+          <li><b>Chaque bille tirée cette semaine</b><span>${TK.map(t=>`${TYPES[t].label} ${String(SCORE.taille[TIDX[t]]/10).replace(".",",")}`).join(" · ")}</span><small>× la rareté du motif, même pour un double.</small></li>
           <li><b>Une case vide remplie</b><span>la bille compte double</span><small>Un nouveau motif dans une taille que tu n'avais pas.</small></li>
-          <li><b>Une shiny</b><span>${SHINIES.slice(1).map((x,i)=>`${x.name} +${SCORE.shiny[i]}`).join(" · ")}</span></li>
+          <li><b>Une shiny</b><span>${SHINIES.slice(1).map((x,i)=>`${x.name} +${SCORE.shiny[i]/10}`).join(" · ")}</span></li>
         </ul><p class="meta">Ne comptent pas : les billes reçues par troc ou au marché, celles des fusions, d'événement et de saison. Tout repart à zéro chaque lundi à minuit.</p></section>
     </div>
   </div>`;

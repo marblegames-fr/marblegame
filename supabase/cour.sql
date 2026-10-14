@@ -134,6 +134,7 @@ create or replace function interne.pseudo(qui uuid) returns text language sql st
 $$ select pseudo from public.profils where id = qui $$;
 
 -- ce que le joueur montre aux copains (lu dans sa sauvegarde) : titre et bille active
+-- (14 octobre 2026) la bille de profil choisie (« avatar ») passe avant la bille active ; une photo de profil n'est jamais montrée
 -- (14 octobre 2026) le palmarès du classement de la semaine (voir plus bas, CLASSEMENT DE LA SEMAINE)
 create table if not exists public.semaines (
   semaine   date primary key,                  -- le lundi
@@ -160,7 +161,9 @@ create or replace function interne.carte(qui uuid) returns jsonb language sql st
   select jsonb_build_object('id', qui, 'pseudo', interne.pseudo(qui),
     'titre', s.donnees->>'title',
     'champion', (select count(*) from public.palmares p where p.joueur = qui and p.rang = 1),   -- fois 1er de la semaine
-    'active', (select interne.bille_json(b) from public.billes b where b.id::text = s.donnees->>'active' and b.proprietaire = qui and b.detruite_le is null))
+    'active', coalesce(
+      (select interne.bille_json(b) from public.billes b where b.id::text = s.donnees->>'avatar' and b.proprietaire = qui and b.detruite_le is null),
+      (select interne.bille_json(b) from public.billes b where b.id::text = s.donnees->>'active' and b.proprietaire = qui and b.detruite_le is null)))
   from (select qui) x left join public.sauvegardes s on s.joueur = qui
 $$;
 

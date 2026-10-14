@@ -70,7 +70,7 @@ ul.items p{margin:0;color:var(--ink-2);font-weight:600}
 
 /* les nouveaux circuits */
 .lead{margin:0 0 14px;color:var(--ink-2);font-weight:700}
-.moments{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px;margin-bottom:14px}
+.moments{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px;margin-bottom:14px;align-items:start}
 .moment{border-radius:18px;padding:14px 14px 12px;color:#fff;position:relative;overflow:hidden}
 .moment.day{background:linear-gradient(180deg,#3F8EF0,#8CC6FF 70%,#7DB35F 70%)}
 .moment.night{background:linear-gradient(180deg,#141833,#2A1E4A)}
@@ -125,7 +125,7 @@ ul.items li .scale,ul.items li .podium{margin-bottom:2px}
   <div class="logo">Tikalo</div>
   <span class="kick">Mise à jour · 14 octobre 2026</span>
   <h1>Quoi de neuf dans la cour&nbsp;?</h1>
-  <p>Un classement de la semaine avec des lots, 6 nouveaux circuits de jour et de nuit, une cloche toute neuve… et plein d'autres choses !</p>
+  <p>16 nouveaux circuits pour la Grande Course, un classement de la semaine avec des lots, une cloche toute neuve… et plein d'autres choses !</p>
   <div class="garland" aria-hidden="true"><svg viewBox="0 0 400 30" preserveAspectRatio="none">
     <path d="M0 6 Q50 26 100 8 T200 8 T300 8 T400 6" fill="none" stroke="rgba(255,255,255,.35)" stroke-width="1.2"/>
     <g>
@@ -141,9 +141,62 @@ ul.items li .scale,ul.items li .podium{margin-bottom:2px}
 
 <main>
   <nav class="toc" aria-label="Sommaire">
-    <a href="#classement">🏆 Classements</a><a href="#course">🏁 Grande Course</a><a href="#cloche">🔔 Cloche</a>
+    <a href="#course">🏁 Grande Course</a><a href="#classement">🏆 Classements</a><a href="#cloche">🔔 Cloche</a>
     <a href="#troc">🔁 Troc et marché</a><a href="#joli">🎨 Plus joli</a>
   </nav>
+
+  <section class="card" id="course">
+    <div class="sec-head"><span class="chip" style="background:var(--red)">🏁</span><h2>La Grande Course fait peau neuve<small>16 nouveaux circuits, 7 formes de course, de jour et de nuit</small></h2></div>
+    <p class="lead">Fini les descentes qui se ressemblent : la Grande Course compte maintenant <b>22 circuits</b> de <b>7 formes différentes</b>, et deux courses à la suite n'ont jamais la même forme. À midi on court en plein jour, le soir sous les étoiles comme dans une fête foraine.</p>
+    <div class="moments">
+      <div class="moment day">
+        <h3>☀️ À midi</h3><p>En plein jour, sous le soleil</p>
+        <div class="tracks">
+          <div class="track"><span class="e">🌊</span>Le Toboggan aquatique<em>Nouveau</em></div>
+          <div class="track"><span class="e">🌲</span>La Forêt<em>Nouveau</em></div>
+          <div class="track"><span class="e">🌀</span>Le Tourbillon<em>Nouveau</em></div>
+          <div class="track"><span class="e">🌋</span>Le Volcan<em>Nouveau</em></div>
+          <div class="track"><span class="e">☁️</span>Les Nuages<em>Nouveau</em></div>
+          <div class="track"><span class="e">⛷️</span>La Piste de ski<em>Nouveau</em></div>
+          <div class="track"><span class="e">🌿</span>Le Labyrinthe<em>Nouveau</em></div>
+          <div class="track"><span class="e">💧</span>La Cascade<em>Nouveau</em></div>
+          <div class="track"><span class="e">🎱</span>Le Billard géant<em>Nouveau</em></div>
+          <div class="track"><span class="e">🎯</span>Le Grand Plinko, les Lacets, le Toboggan</div>
+        </div>
+      </div>
+      <div class="moment night">
+        <h3>🌙 Le soir</h3><p>La nuit, comme une fête foraine</p>
+        <div class="tracks">
+          <div class="track"><span class="e">🛷</span>Le Bobsleigh<em>Nouveau</em></div>
+          <div class="track"><span class="e">⛏️</span>La Mine<em>Nouveau</em></div>
+          <div class="track"><span class="e">💜</span>Les Entonnoirs néon<em>Nouveau</em></div>
+          <div class="track"><span class="e">🎡</span>La Grande Roue<em>Nouveau</em></div>
+          <div class="track"><span class="e">🎪</span>Le Cirque<em>Nouveau</em></div>
+          <div class="track"><span class="e">🕹️</span>Le Pinball néon<em>Nouveau</em></div>
+          <div class="track"><span class="e">👻</span>Le Train fantôme<em>Nouveau</em></div>
+          <div class="track"><span class="e">🌪️</span>L'Entonnoir, les Moulins, le Flipper</div>
+        </div>
+      </div>
+    </div>
+    <h3 class="sub">Les 7 formes de course</h3>
+    <ul class="items">
+      <li><span class="ic">🌊</span><div><b>La goulotte qui serpente</b> <span class="tag new">Nouveau</span><p>Une seule longue piste avec des virages relevés où les billes montent sur le bord, et des tourniquets, des champignons et des plots dans les lignes droites. (Toboggan aquatique, Bobsleigh)</p></div></li>
+      <li><span class="ic">🌲</span><div><b>Les chemins qui se séparent</b> <span class="tag new">Nouveau</span><p>Deux fourches : à chacune, la bille part au hasard vers un raccourci plein d'obstacles ou un grand détour. Quatre chemins possibles, et le premier peut se retrouver dernier ! (La Forêt, La Mine)</p></div></li>
+      <li><span class="ic">🌀</span><div><b>Les entonnoirs en cascade</b> <span class="tag new">Nouveau</span><p>Les billes tourbillonnent dans de grandes soucoupes semées de champignons, tombent par le trou au milieu et recommencent dans la suivante. (Le Tourbillon, Les Entonnoirs néon)</p></div></li>
+      <li><span class="ic">🎪</span><div><b>Les trampolines</b> <span class="tag new">Nouveau</span><p>Quatre étages en zigzag : des trampolines décalés à gauche et à droite, des boules qui renvoient les billes en l'air, et celles qui ratent leur saut continuent par la piste du dessous. (Les Nuages, Le Cirque)</p></div></li>
+      <li><span class="ic">🌋</span><div><b>La spirale</b><p>La piste tourne autour d'une tour ou d'un volcan, semée de rochers et de champignons. (Le Volcan, L'Entonnoir)</p></div></li>
+      <li><span class="ic">🎡</span><div><b>Le mur</b><p>Un grand mur de plots entre deux vitres… et pour la Grande Roue, deux roues géantes qui attrapent les billes et les lâchent n'importe où. (La Grande Roue, Le Grand Plinko)</p></div></li>
+      <li><span class="ic">🎢</span><div><b>Les rampes en zigzag</b><p>Les descentes de toujours, avec chacune ses pièges : portes de slalom, haies du labyrinthe tirées au sort, boules de billard, bumpers, tunnels hantés… (10 circuits)</p></div></li>
+    </ul>
+    <h3 class="sub">Et aussi</h3>
+    <ul class="items">
+      <li><span class="ic">🎥</span><div><b>La caméra libre</b> <span class="tag new">Nouveau</span><p>Pendant la course, touche « Caméra libre » : glisse pour tourner autour de la course, pince ou fais tourner la molette pour zoomer. Touche un nom dans le classement pour tourner autour de sa bille, et « Caméra auto » pour revenir.</p></div></li>
+      <li><span class="ic">📅</span><div><b>Une seule inscription pour la journée</b> <span class="tag chg">Modifié</span><p>Inscris-toi le matin, et ta bille court à midi ET le soir. Ma journée affiche « Inscrit aux 2 courses de la journée ».</p></div></li>
+      <li><span class="ic">🎲</span><div><b>Plus de suspense</b> <span class="tag chg">Modifié</span><p>Chaque circuit a été réglé pour que les billes se doublent souvent : rien n'est joué avant la ligne d'arrivée !</p></div></li>
+      <li><span class="ic">🛷</span><div><b>Le Toboggan est réparé</b> <span class="tag fix">Corrigé</span><p>Les billes ne restent plus coincées derrière les rondins roses.</p></div></li>
+      <li><span class="ic">🔉</span><div><b>Des chocs plus doux</b><p>Le « clic clac » des billes pendant la course est moins fort.</p></div></li>
+    </ul>
+  </section>
 
   <section class="card" id="classement">
     <div class="sec-head"><span class="chip" style="background:var(--yellow-2)">🏆</span><h2>Le classement de la semaine<small>Nouveau : une course aux points chaque semaine, avec des lots</small></h2></div>
@@ -167,35 +220,7 @@ ul.items li .scale,ul.items li .podium{margin-bottom:2px}
     </ul>
   </section>
 
-  <section class="card" id="course">
-    <div class="sec-head"><span class="chip" style="background:var(--red)">🏁</span><h2>La Grande Course fait peau neuve<small>6 nouveaux circuits, de jour et de nuit</small></h2></div>
-    <p class="lead">Midi et soir ne se ressemblent plus : chaque moment a maintenant ses propres circuits et sa propre ambiance.</p>
-    <div class="moments">
-      <div class="moment day">
-        <h3>☀️ À midi</h3><p>En plein jour, sous le soleil</p>
-        <div class="tracks">
-          <div class="track"><span class="e">⛷️</span>La Piste de ski<em>Nouveau</em></div>
-          <div class="track"><span class="e">🌿</span>Le Labyrinthe<em>Nouveau</em></div>
-          <div class="track"><span class="e">💧</span>La Cascade<em>Nouveau</em></div>
-          <div class="track"><span class="e">🎱</span>Le Billard géant<em>Nouveau</em></div>
-        </div>
-      </div>
-      <div class="moment night">
-        <h3>🌙 Le soir</h3><p>La nuit, comme une fête foraine</p>
-        <div class="tracks">
-          <div class="track"><span class="e">🕹️</span>Le Pinball néon<em>Nouveau</em></div>
-          <div class="track"><span class="e">👻</span>Le Train fantôme<em>Nouveau</em></div>
-        </div>
-      </div>
-    </div>
-    <ul class="items">
-      <li><span class="ic">🌀</span><div><b>Le Labyrinthe change à chaque course</b><p>Ses passages sont tirés au sort : impossible de connaître le bon chemin à l'avance !</p></div></li>
-      <li><span class="ic">✨</span><div><b>Le soir, tout brille</b><p>Ciel étoilé, guirlandes d'ampoules le long des pistes et plots qui s'illuminent.</p></div></li>
-      <li><span class="ic">📅</span><div><b>Une seule inscription pour la journée</b> <span class="tag chg">Modifié</span><p>Inscris-toi le matin, et ta bille court à midi ET le soir. Ma journée affiche « Inscrit aux 2 courses de la journée ».</p></div></li>
-      <li><span class="ic">🛷</span><div><b>Le Toboggan est réparé</b> <span class="tag fix">Corrigé</span><p>Les billes ne restent plus coincées derrière les rondins roses.</p></div></li>
-      <li><span class="ic">🔉</span><div><b>Des chocs plus doux</b><p>Le « clic clac » des billes pendant la course est moins fort.</p></div></li>
-    </ul>
-  </section>
+
 
   <section class="card" id="cloche">
     <div class="sec-head"><span class="chip" style="background:var(--blue)">🔔</span><h2>La cloche et la cour<small>Ne rate plus rien</small></h2></div>

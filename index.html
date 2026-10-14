@@ -12466,12 +12466,13 @@ function gcPrevSVG(cid="lacets"){
   const tray = (x, y) => `<rect x="${x}" y="${y}" width="170" height="22" rx="6" fill="${T.tray}"/>${flag(x+10, y-34)}`;
   if(C.form==="serpent") return frame(lane("M60 60 C 250 40, 300 140, 150 150 S 120 260, 330 240 S 620 200, 540 300 S 440 330, 470 330", T.ramp, 26)
     + tray(440, 330) + [[150,52],[262,118],[180,200],[420,232],[560,268]].map(([x,y],i)=>ball(x,y,i)).join(""));
-  if(C.form==="fourche") return frame(lane("M40 70 L 220 110", T.ramp, 24) + lane("M220 110 C 300 120, 330 140, 420 200", T.ramp, 24)
-    + lane("M220 110 C 260 200, 120 260, 220 300 S 380 280, 420 220", T.ramp, 24)
-    + Array.from({length:6},(_,i)=>{ const t = i/5, x = 240+t*170, y = 115+t*80; return `<circle cx="${x}" cy="${y}" r="4" fill="${T.peg||"#fff"}"/>` }).join("")
-    + `<path d="M380 190 L470 300 L560 190 Z" fill="${cbShade(T.ramp,-20)}"/>` + lane("M470 300 L560 330", T.ramp, 24) + tray(500, 332)
-    + `<text x="300" y="150" font-size="18" font-weight="900" fill="#fff" opacity=".8">raccourci</text><text x="120" y="320" font-size="18" font-weight="900" fill="#fff" opacity=".8">détour</text>`
-    + [[100,82],[300,140],[170,270],[350,160]].map(([x,y],i)=>ball(x,y,i)).join(""));
+  // (14 octobre 2026, le soir) deux fourches à la suite : 4 chemins
+  if(C.form==="fourche"){ const fork = (x, y) => lane(`M${x} ${y} L ${x+40} ${y+6}`, T.ramp, 18) + lane(`M${x+40} ${y+6} C ${x+80} ${y+8}, ${x+110} ${y+20}, ${x+150} ${y+50}`, T.ramp, 18)
+      + lane(`M${x+40} ${y+6} C ${x+60} ${y+70}, ${x-10} ${y+110}, ${x+60} ${y+120} S ${x+140} ${y+100}, ${x+150} ${y+60}`, T.ramp, 18)
+      + Array.from({length:4},(_,i)=>`<circle cx="${x+60+i*22}" cy="${y+10+i*9}" r="4" fill="${T.peg||"#fff"}"/>`).join("");
+    return frame(lane("M20 40 L 70 52", T.ramp, 18) + fork(70, 50) + `<path d="M210 95 L265 175 L320 95 Z" fill="${cbShade(T.ramp,-20)}"/>` + lane("M265 175 L 330 190", T.ramp, 22)
+      + fork(330, 188) + tray(440, 336) + `<text x="120" y="38" font-size="16" font-weight="900" fill="#fff" opacity=".85">2 fourches · 4 chemins</text>`
+      + [[100,60],[160,70],[118,150],[400,205],[370,290]].map(([x,y],i)=>ball(x,y,i)).join("")) }
   if(C.form==="entonnoirs") return frame([[150,110],[340,190],[530,270]].map(([x,y],j)=>`<ellipse cx="${x}" cy="${y}" rx="95" ry="34" fill="${cbShade(T.ramp,-40)}"/>
       <path d="M${x-95} ${y} L${x-14} ${y+44} L${x+14} ${y+44} L${x+95} ${y} Z" fill="${T.ramp}"/><ellipse cx="${x}" cy="${y}" rx="95" ry="34" fill="none" stroke="${cbShade(T.ramp,35)}" stroke-width="4"/>
       <ellipse cx="${x}" cy="${y+2}" rx="60" ry="20" fill="none" stroke="#fff" stroke-width="2" stroke-dasharray="6 8" opacity=".6"/>${ball(x-50, y-4, j)}${ball(x+30, y+10, j+3)}`).join("")
@@ -12485,10 +12486,12 @@ function gcPrevSVG(cid="lacets"){
     ${[[340,120,20],[340,268,-25]].map(([x,y,r0])=>`<g transform="rotate(${r0} ${x} ${y})">${Array.from({length:6},(_,i)=>`<rect x="${x}" y="${y-4}" width="74" height="8" rx="4" fill="${T.spin}" transform="rotate(${i*60} ${x} ${y})"/>`).join("")}</g><circle cx="${x}" cy="${y}" r="12" fill="${T.peg}"/>`).join("")}
     ${Array.from({length:5},(_,row)=>Array.from({length:9},(_,c)=>`<circle cx="${190+c*36+(row%2?18:0)}" cy="${30+row*12}" r="3.4" fill="${T.peg}"/>`).join("")).join("")}
     <rect x="180" y="352" width="320" height="12" rx="4" fill="${T.tray}"/>${[[300,60],[392,112],[300,200],[380,300]].map(([x,y],i)=>ball(x,y,i)).join("")}`);
-  if(C.form==="trampo") return frame(Array.from({length:9},(_,i)=>{ const x = 60+i*62, y = 70+i*28; return `<rect x="${x}" y="${y}" width="50" height="9" rx="4" fill="${T.tramp}"/><path d="M${x+6} ${y+9} v14 M${x+44} ${y+9} v14" stroke="${cbShade(T.ramp,-30)}" stroke-width="3"/>` }).join("")
-    + `<path d="M40 150 L620 330" stroke="${T.ramp}" stroke-width="12" stroke-linecap="round" opacity=".8"/>`
-    + [[90,40],[150,58],[215,88],[275,114],[340,140]].map(([x,y],i)=>`<path d="M${x-30} ${y+30} Q${x} ${y-20} ${x+30} ${y+30}" fill="none" stroke="#fff" stroke-width="2" stroke-dasharray="4 6" opacity=".5"/>${ball(x,y,i)}`).join("")
-    + tray(480, 340));
+  // (14 octobre 2026, le soir) 4 étages en zigzag : trampolines décalés, boules suspendues, piste du dessous
+  if(C.form==="trampo") return frame(Array.from({length:4},(_,L)=>{ const y0 = 52+L*78, d = L%2 ? -1 : 1, x0 = d>0 ? 70 : 610;
+      return `<path d="M${x0} ${y0+30} L${x0+d*540} ${y0+48}" stroke="${T.ramp}" stroke-width="7" stroke-linecap="round" opacity=".75"/>`
+        + Array.from({length:8},(_,i)=>{ const x = x0+d*(i*68), y = y0+i*3-(i%2?6:0); return `<rect x="${x-20}" y="${y}" width="40" height="7" rx="3" fill="${i ? T.tramp : cbShade(T.ramp,25)}"/>` }).join("")
+        + [2,4,6].map(i=>`<circle cx="${x0+d*(i*68+34)}" cy="${y0-14}" r="7" fill="${T.bump||"#FF4F7A"}"/>`).join("") }).join("")
+    + [[120,40],[260,46],[520,120],[300,200],[180,276]].map(([x,y],i)=>ball(x,y,i)).join("") + tray(470, 345));
   return gcPrevLacets();
 }
 function gcPrevLacets(){
@@ -14300,7 +14303,7 @@ function bugDetails(){
 let bugKeep = null;   // un message qui n'est pas parti : il est reproposé au prochain clic
 // (14 octobre 2026) le dernier patchnote : changer id, txt (et la page nouveautes.html) à chaque mise à jour annoncée
 // on:false cache le bouton (pendant qu'on prépare la mise à jour) ; on:true le remet, avec la pastille si l'id a changé
-const NEWS = {on:false, id:"2026-10-14", url:"/nouveautes.html", txt:"Mise à jour du 14 oct."};
+const NEWS = {on:true, id:"2026-10-14b", url:"/nouveautes.html", txt:"Mise à jour du 14 oct."};   // (2026-10-14b : le patchnote complété avec les circuits, la pastille revient chez tout le monde)
 const newsUnseen = () => lsGet("billeo-news-vu")!==NEWS.id;
 async function bugReport(prev){
   if(!sync.on){ toast("Connecte-toi à ton compte pour envoyer un message."); return }

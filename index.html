@@ -3023,6 +3023,7 @@ button.cp-who:hover b{text-decoration:underline}
 .tr-dbl{display:flex;align-items:baseline;gap:8px;flex-wrap:wrap;margin:0 0 12px;font-weight:800;font-size:14px;cursor:pointer}
 .tr-dbl input{accent-color:#E8743B;width:17px;height:17px;align-self:center;margin:0}
 .tr-dbls{display:flex;flex-wrap:wrap;gap:0 18px}
+.sell-why{display:inline-flex;align-items:center;gap:6px;padding:7px 12px;border-radius:12px;background:var(--panel-2);border:1px dashed var(--line-2);color:var(--ink-2);font-size:13px;font-weight:800}
 /* (14 octobre 2026) Mes billes : une bille en vente, aux enchères ou dans un troc en cours */
 .m-card.busy{--bzc:#E0A417;outline:2.5px dashed var(--bzc);outline-offset:-6px}
 .m-card.bz-ench{--bzc:#E8743B}.m-card.bz-troc{--bzc:#2FA35A}
@@ -8755,7 +8756,10 @@ function openModal(id, pv, reveal=false){
       </dl>
       ${pv&&pv.cour?`<p class="meta">${esc(pv.cour)}</p>`:pv?`<p class="meta">Aperçu Billepedia · ${S.specs.some(x=>slotKey(x)===slotKey(s))?"tu as déjà ce format dans ce motif.":"pas encore dans ta boîte à billes."}</p>`:`<div class="modal-actions">
         ${S.vitrine.includes(s.id)?`<button class="btn btn-ghost" data-action="vit-rm" data-id="${s.id}">${ic("layers",16)} Retirer de la vitrine</button>`:`<button class="btn btn-ghost" data-action="vit-add" data-id="${s.id}">${ic("layers",16)} Mettre en vitrine</button>`}
-        ${srvOn() && s.srv && !s.secret && !estLiee(s) ? `<button class="btn btn-ghost" data-action="cour-sell-this" data-id="${s.id}">${ic("cour",16)} Vendre au marché</button>` : ""}
+        ${(()=>{ if(!srvOn()) return "";
+          // (14 octobre 2026) une bille qui ne peut pas être vendue dit pourquoi (avant, le bouton disparaissait sans explication)
+          const why = s.secret ? (isDepart(s) ? "" : "Les billes secrètes ne se vendent pas") : estLiee(s) ? `Vendable à partir du ${new Date(lieeJusqu(s)).toLocaleDateString("fr-FR",{day:"numeric", month:"long"})} (cadeau de bienvenue)` : !s.srv ? "Pas encore enregistrée sur le serveur : réessaie dans un instant" : "";
+          return why ? `<span class="sell-why">${ic("lock",14,2.4)} ${why}</span>` : s.secret ? "" : `<button class="btn btn-ghost" data-action="cour-sell-this" data-id="${s.id}">${ic("cour",16)} Vendre au marché</button>` })()}
         
         ${S.active===s.id||s.secret?"":`<button class="btn btn-ghost" data-action="recycle" data-id="${s.id}">${ic("candy",16)} Échanger · +${fmt(recycleValue(s))} ${CUR.many}</button>`}
         ${sib.length>1 && keepOf(sib).id!==s.id?`<button class="btn btn-ghost" data-action="keep-copy" data-id="${s.id}">${ic("check",16)} Garder cet exemplaire</button>`:""}
@@ -14042,10 +14046,14 @@ async function syncMarbles(quiet){
   if(!srvOn()) return;
   let list; try{ list = await srv(()=>Cloud.billes(sync.uid)) }catch(e){ return }
   const there = new Map(list.map(x=>[x.id,x])), here = new Set(S.specs.map(x=>x.id));
-  S.specs.forEach(x=>{ const y = there.get(x.id); if(y && y.via && !x.via) Object.assign(x, {via:y.via, at:y.at, found:y.found}) });
+  let fixed = 0;
+  S.specs.forEach(x=>{ const y = there.get(x.id); if(y && y.via && !x.via) Object.assign(x, {via:y.via, at:y.at, found:y.found});
+    // (14 octobre 2026) une copie gardée sur l'appareil pouvait avoir perdu la marque « bille du serveur » : le bouton « Vendre au marché » disparaissait
+    if(y){ const k = `${!!x.srv}|${x.no}|${x.lie}`; if(y.srv) x.srv = true; if(y.no && !x.no) x.no = y.no; if(y.lie!=null) x.lie = y.lie; else if(x.lie!=null) delete x.lie;
+      if(k!==`${!!x.srv}|${x.no}|${x.lie}`) fixed++ } });
   const gone = new Set(S.specs.filter(x=>sync.known.has(x.id) && !there.has(x.id)).map(x=>x.id));
   const come = list.filter(x=>!here.has(x.id));
-  if(!gone.size && !come.length) return;
+  if(!gone.size && !come.length){ if(fixed){ save(); if(ui.view!=="cour" && document.getElementById("ov").hidden) renderView() } return }
   S.specs = S.specs.filter(x=>!gone.has(x.id)); gone.forEach(id=>sync.known.delete(id));
   S.unseen = S.unseen.filter(id=>!gone.has(id));
   S.vitrine = S.vitrine.map(id=>gone.has(id) ? null : id);
@@ -15629,6 +15637,7 @@ async function cloudStart0(user){
     if(dirty && cached && P.sauvegarde.appareil===DEVICE){
       adoptState(cached);   // cet appareil a joué après son dernier envoi : sa copie est la plus récente
       S.specs = S.specs.filter(s=>cloudIds.has(s.id));   // (7 octobre 2026) mais ses billes, seulement celles de la base
+      { const C = new Map(P.billes.map(b=>[b.id, b])); S.specs.forEach(x=>{ const y = C.get(x.id); if(y?.srv) x.srv = true; if(y?.no && !x.no) x.no = y.no; if(y && y.lie!=null) x.lie = y.lie }) }   // (14 octobre 2026) la marque « bille du serveur »
       // billes gagnées ailleurs entre-temps
       const mine = new Set(S.specs.map(s=>s.id)), prev = new Set(prevKnown);
       P.billes.forEach(s=>{ if(!mine.has(s.id) && !prev.has(s.id)) S.specs.push(s) });

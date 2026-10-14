@@ -2835,12 +2835,20 @@ body:has(#view .game-wrap) .mj-btn{display:none}
 .np-head b{display:inline-flex;align-items:center;gap:7px;font-size:15px;font-weight:900}
 .np-head .linkish{font-size:12.5px;font-weight:800;color:var(--blue-2)}
 .np-list{display:grid;gap:4px}
-.np-item{display:flex;align-items:center;gap:10px;width:100%;padding:8px 10px;border-radius:12px;text-align:left;font-size:13px;font-weight:700;line-height:1.3;color:var(--ink-2)}
+.np-item{display:flex;align-items:center;gap:10px;width:100%;padding:8px 6px 8px 10px;border-radius:12px;text-align:left;font-size:13px;font-weight:700;line-height:1.3;color:var(--muted);cursor:pointer;transition:background .3s,color .3s}
 .np-item:hover{background:var(--panel-2)}
-.np-item.new{background:color-mix(in srgb,var(--yellow) 13%,var(--panel));color:var(--ink)}
-.np-item.new .np-txt::after{content:"";position:absolute;top:4px;right:0;width:8px;height:8px;border-radius:50%;background:#E5484D}
+.np-item.new{background:color-mix(in srgb,var(--blue-2) 16%,var(--panel));color:var(--ink);box-shadow:inset 3px 0 0 var(--blue-2)}
+.np-item.new:hover{background:color-mix(in srgb,var(--blue-2) 22%,var(--panel))}
+.np-item:not(.new) .np-txt b{color:var(--ink-2)}
+.np-dot{flex:none;width:22px;height:22px;border-radius:50%;display:grid;place-items:center;opacity:0;transition:opacity .2s}
+.np-dot::before{content:"";width:9px;height:9px;border-radius:50%;border:2px solid var(--muted)}
+.np-item:hover .np-dot,.np-dot:focus-visible{opacity:1}
+.np-item.new .np-dot{opacity:1}
+.np-item.new .np-dot::before{background:var(--blue-2);border-color:var(--blue-2)}
+.np-dot:hover{background:var(--panel-2)}
+.np-nb{font-size:11px;font-weight:900;padding:1px 7px;border-radius:999px;background:#E5484D;color:#fff}
 .np-ic{flex:none;width:36px;height:36px;display:grid;place-items:center;border-radius:50%;background:var(--panel-2);color:var(--ink-2)}
-.np-txt{position:relative;flex:1;min-width:0;padding-right:14px}
+.np-txt{position:relative;flex:1;min-width:0}
 .np-txt b{color:var(--ink);font-weight:900}
 .np-txt small{display:block;margin-top:2px;font-size:11.5px;font-weight:700;color:var(--muted)}
 .np-empty{display:grid;justify-items:center;gap:8px;padding:22px 12px;text-align:center;font-size:13px;font-weight:700;color:var(--muted)}
@@ -13929,9 +13937,9 @@ function courNews(welcome){
     if(news.some(e=>["vendue","depasse","gagnee"].includes(e.k) || (e.k==="troc" && e.statut==="accepte" && (e.bonbecs_recus||e.bonbecs_donnes)))) ecoRefresh();
     if(news.some(e=>e.k==="gagnee")) syncMarbles(true);
     renderNav(); if(ui.view==="cour") renderView();
-    const free = document.getElementById("modal").hidden && document.getElementById("ov").hidden && document.getElementById("ask").hidden;
-    if(welcome && (dailyDue() || document.querySelector("#modal .daily"))) heldNews = news;   // après le calendrier
-    else if(welcome && free) openNews(news);
+    // (14 octobre 2026) en arrivant : toujours la fenêtre « Du nouveau dans la cour ! », dans la file des fenêtres de démarrage
+    // (avant, si une autre fenêtre était ouverte, on n'avait qu'un petit message en bas de l'écran)
+    if(welcome){ heldNews = (heldNews||[]).concat(news); showHeldNews() }
     else { const tmp = document.createElement("div"); tmp.innerHTML = journalInfo(news[0]).txt;
       toast(news.length>1 ? `${news.length} nouveautés dans la cour : va voir l'historique !` : tmp.textContent + (news[0].k==="vendue" ? ` : +${fmt(news[0].prix||0)} ${CUR.many}` : "") + (news[0].k==="troc"&&news[0].statut==="accepte" ? " : tes nouvelles billes sont dans ta boîte !" : ".")) }
   }, ()=>{}).finally(()=>{ cour.newsBusy = false });
@@ -13979,7 +13987,17 @@ function notifList(){
   if(L) out.push({le:+new Date(L.tirage+"T21:00:00"), ic:"ticket", txt:`Le tirage de la Loterie a eu lieu : <b>viens voir tes numéros</b>`, go:{view:"loterie"}});
   return out.sort((a,b)=>b.le-a.le).slice(0,40);
 }
-const notifUnread = () => notifList().filter(n=>n.le > (S.notifVu||0)).length;
+// (14 octobre 2026) chaque notification est lue ou pas lue : pas lue = plus récente que S.notifVu (« Tout marquer comme lu »),
+// sauf si on l'a marquée à la main (S.notifEtat : 1 lue, 0 pas lue). Ouvrir la cloche ne marque plus tout comme lu :
+// une notification devient lue quand on clique dessus, quand la souris reste dessus un instant, ou avec sa pastille.
+const notifKey = n => n.le.toString(36) + hash(n.txt).toString(36);
+const notifNew = n => { const e = (S.notifEtat||{})[notifKey(n)]; return e!==undefined ? e===0 : n.le > (S.notifVu||0) };
+function notifMark(n, lu){
+  const E = S.notifEtat = S.notifEtat||{}; E[notifKey(n)] = lu ? 1 : 0;
+  const keys = Object.keys(E); if(keys.length>200){ const live = new Set(notifList().map(notifKey)); keys.forEach(k=>{ if(!live.has(k)) delete E[k] }) }
+  save(); renderBell();
+}
+const notifUnread = () => notifList().filter(notifNew).length;
 function renderBell(){
   const w = document.getElementById("notif-wrap"); if(!w) return;
   w.hidden = !srvOn(); if(w.hidden) return;
@@ -13991,10 +14009,11 @@ function renderBell(){
   if(!document.getElementById("notif-pop").hidden) renderBellPop();
 }
 function renderBellPop(){
-  const L = cour.notifs = notifList(), vu = cour.notifHl ?? (S.notifVu||0);
-  document.getElementById("notif-pop").innerHTML = `<div class="np-head"><b>${ic("bell",16)} Notifications</b><button class="linkish" data-action="nav" data-view="cour">La cour de récré</button></div>
-    ${L.length ? `<div class="np-list">${L.map((n,i)=>`<button class="np-item${n.le>vu?" new":""}" data-action="notif-go" data-i="${i}">
-        <span class="np-ic">${n.ball ? mImg(n.ball,72,30,"") : ic(n.ic,17)}</span><span class="np-txt">${n.txt}<small>${timeAgo(n.le)}</small></span></button>`).join("")}</div>`
+  const L = cour.notifs = notifList(), nb = L.filter(notifNew).length;
+  document.getElementById("notif-pop").innerHTML = `<div class="np-head"><b>${ic("bell",16)} Notifications${nb ? ` <span class="np-nb">${nb}</span>` : ""}</b>${nb ? `<button class="linkish" data-action="notif-all">Tout marquer comme lu</button>` : ""}</div>
+    ${L.length ? `<div class="np-list">${L.map((n,i)=>{ const nw = notifNew(n); return `<div class="np-item${nw?" new":""}" data-action="notif-go" data-i="${i}" role="button" tabindex="0">
+        <span class="np-ic">${n.ball ? mImg(n.ball,72,30,"") : ic(n.ic,17)}</span><span class="np-txt">${n.txt}<small>${timeAgo(n.le)}</small></span>
+        <button class="np-dot" data-action="notif-lu" data-i="${i}" title="${nw?"Marquer comme lue":"Marquer comme pas lue"}" aria-label="${nw?"Marquer comme lue":"Marquer comme pas lue"}"></button></div>` }).join("")}</div>`
       : `<p class="np-empty">${ic("bell",28)}<span>Rien de nouveau pour l'instant.</span></p>`}`;
 }
 function toggleBell(open){
@@ -14003,15 +14022,25 @@ function toggleBell(open){
   if(open){
     toggleProfPop(false);
     courLoad("journal"); if(!cour.moi) courLoad("moi");
-    cour.notifHl = S.notifVu || 0;   // ce qui était nouveau reste souligné tant que la liste est ouverte
-    renderBellPop(); S.notifVu = Date.now(); cour.unread = 0; save();
-  } else cour.notifHl = null;
+    renderBellPop();
+  }
   pop.hidden = !open; btn.setAttribute("aria-expanded", open); renderBell(); renderNav();
 }
 document.addEventListener("click", e=>{ if(!e.target.closest(".notif-wrap")) { const p = document.getElementById("notif-pop"); if(p && !p.hidden) toggleBell(false) } }, true);
 document.addEventListener("keydown", e=>{ if(e.key==="Escape"){ const p = document.getElementById("notif-pop"); if(p && !p.hidden) toggleBell(false) } });
+// la souris reste un instant sur une notification pas lue : elle devient lue (sans redessiner la liste, pour ne pas la faire sauter)
+let npHover = null;
+document.addEventListener("mouseover", e=>{
+  const it = e.target.closest?.("#notif-pop .np-item.new");
+  if(it===npHover?.el) return; clearTimeout(npHover?.t); npHover = null; if(!it) return;
+  npHover = {el:it, t:setTimeout(()=>{ const n = cour.notifs?.[+it.dataset.i]; if(n && notifNew(n)){ notifMark(n, true); it.classList.remove("new");
+    const d = it.querySelector(".np-dot"); d.title = d.ariaLabel = "Marquer comme pas lue"; npHeadNb() } }, 900)};
+});
+function npHeadNb(){ const h = document.querySelector("#notif-pop .np-head"); if(!h) return; const nb = (cour.notifs||[]).filter(notifNew).length;
+  h.innerHTML = `<b>${ic("bell",16)} Notifications${nb ? ` <span class="np-nb">${nb}</span>` : ""}</b>${nb ? `<button class="linkish" data-action="notif-all">Tout marquer comme lu</button>` : ""}` }
 function notifGo(i){
   const n = cour.notifs?.[i]; toggleBell(false); if(!n) return;
+  if(notifNew(n)) notifMark(n, true);
   const G = n.go;
   if(G.bille){ if(specById(G.bille)) openModal(G.bille); else go("collection"); return }
   if(G.view){ go(G.view); return }
@@ -14775,7 +14804,8 @@ document.addEventListener("click", e=>{
     case "troc-tab": ui.trocTab = t.dataset.t; renderView(); break;
     case "notif-pop": toggleBell(); break;
     case "notif-go": notifGo(+t.dataset.i); break;
-    case "notif-all": S.notifVu = Date.now(); save(); renderBell(); break;
+    case "notif-all": S.notifVu = Date.now(); S.notifEtat = {}; cour.unread = 0; save(); renderBell(); renderNav(); break;
+    case "notif-lu": { const n = cour.notifs?.[+t.dataset.i]; if(n){ notifMark(n, notifNew(n)); renderBellPop() } break }
     case "cour-copy": (navigator.clipboard ? navigator.clipboard.writeText(S.name) : Promise.reject()).then(()=>toast(`Pseudo copié : colle-le à tes copains pour qu'ils t'ajoutent !`), ()=>toast(`Ton pseudo : ${S.name}`)); break;
     case "cour-sell-this": sellStart(t.dataset.id); break;
     case "mk-close": cour.sell = null; renderView(); break;

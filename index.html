@@ -14305,6 +14305,15 @@ let bugKeep = null;   // un message qui n'est pas parti : il est reproposé au p
 // on:false cache le bouton (pendant qu'on prépare la mise à jour) ; on:true le remet, avec la pastille si l'id a changé
 const NEWS = {on:true, id:"2026-10-14b", url:"/nouveautes.html", txt:"Mise à jour du 14 oct."};   // (2026-10-14b : le patchnote complété avec les circuits, la pastille revient chez tout le monde)
 const newsUnseen = () => lsGet("billeo-news-vu")!==NEWS.id;
+// (14 octobre 2026) à l'arrivée, une fenêtre annonce la mise à jour, une seule fois par mise à jour et par compte (S.newsPop, gardé
+// dans la partie : elle ne revient pas sur un autre appareil) ; on choisit d'aller voir les nouveautés, ou pas
+const newsPopDue = () => NEWS.on && sync.on && S.newsPop!==NEWS.id;
+async function newsPop(){
+  S.newsPop = NEWS.id; save();
+  const oui = await ask({title:"Du nouveau dans Tikalo !", ok:"Voir les nouveautés", no:"Plus tard",
+    text:`Une mise à jour vient d'arriver : 16 nouveaux circuits pour la Grande Course, un classement de la semaine avec des lots, une cloche toute neuve et plein d'autres choses.<br><small class="meta">Tu peux la revoir quand tu veux avec le bouton « Nouveautés ».</small>`});
+  if(oui){ lsSet("billeo-news-vu", NEWS.id); window.open(NEWS.url, "_blank", "noopener"); renderNav() }
+}
 async function bugReport(prev){
   if(!sync.on){ toast("Connecte-toi à ton compte pour envoyer un message."); return }
   prev = prev || bugKeep; bugKeep = null;
@@ -16749,6 +16758,7 @@ function bootPopups(){
   if(tutoDue()){ tutoStart(); return }
   if(tutoOn()) return;   // pendant le premier lancement : pas de bonbec du jour ni de nouvelles par-dessus
   if(departDue()){ departPick(); return }
+  if(newsPopDue()){ newsPop(); return }   // (14 octobre 2026) une nouvelle mise à jour : la première fenêtre à l'arrivée, une seule fois
   if(onbPopup()) return;
   if(winsAtBoot?.length && winsPopup()) return;
   const P = S.pendingBag;
@@ -16765,7 +16775,7 @@ setTimeout(bootPopups, 800);
 // une fenêtre déjà ouverte (ou un sachet en cours) : on repasse dès qu'elle se ferme ; au retour sur l'onglet après minuit aussi
 // le premier lancement en cours sans bulle ni fenêtre (fenêtre fermée par erreur, sachet qui n'a pas pu s'ouvrir…) : on la remet
 setInterval(()=>{ if(tutoOn() && document.visibilityState==="visible" && !document.getElementById("tuto") && popupsFree()) tutoShow() }, 2500);
-setInterval(()=>{ if(document.visibilityState==="visible" && (tutoDue() || departDue() || S.onb?.pop || dailyDue() || heldNews || gcDue() || lotDue()) && popupsFree() && !inGame()) bootPopups() }, 2000);
+setInterval(()=>{ if(document.visibilityState==="visible" && (tutoDue() || departDue() || newsPopDue() || S.onb?.pop || dailyDue() || heldNews || gcDue() || lotDue()) && popupsFree() && !inGame()) bootPopups() }, 2000);
 setInterval(()=>{ if(onbOn()) onbCheck() }, 5000);   // « Reviens demain » : on regarde de temps en temps si on a changé de jour
 // petits secrets
 document.getElementById("logo-marble").addEventListener("click", e=>{

@@ -12,3 +12,7 @@ Copies versionnées des outils rangés dans le dossier personnel (`C:\Users\ptit
   - `remplacer [dossier] --oui` : export de sécurité, puis remplacement de toutes les tables en une seule transaction.
   - `nettoyer` : supprime le schéma `restauration`.
   Ne remet pas les comptes (mots de passe gérés par Supabase) : ne jamais supprimer le projet Supabase.
+- `banc-course.mjs` : banc d'essai de la Grande Course. Fait tourner la vraie physique des circuits (celle de `index.html`) sans navigateur
+  et dit, pour chaque circuit : temps du gagnant et du dernier, billes jamais arrivées, pichenettes (billes calées plus de 4 s) et où.
+  `node outils/banc-course.mjs [circuit,circuit…|tous] [nombre de courses] [chemin de cannon-es.js]`
+  (cannon-es 0.20.0 à télécharger une fois : https://cdn.jsdelivr.net/npm/cannon-es@0.20.0/dist/cannon-es.js). À lancer après chaque nouveau circuit.

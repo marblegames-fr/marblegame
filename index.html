@@ -880,6 +880,9 @@ button.rw:hover{transform:translateY(-2px)}
 .cp-doodles .dd-blot path{fill:currentColor;stroke:none}
 .cp-doodles .dd-heart{right:14px;top:16px;width:30px;transform:rotate(10deg);color:#D9465F}
 .cahier-page[data-paper="pedia"] .cp-doodles{color:#7A5524}
+/* (14 octobre 2026) les blocs de la Billepedia un ton plus sombre que le papier (ils se confondaient avec la page beige) */
+.cahier-page[data-paper="pedia"]{--panel:color-mix(in srgb,var(--old) 86%,#7A5524);--panel-2:color-mix(in srgb,var(--old) 77%,#7A5524);
+  --line:color-mix(in srgb,var(--old) 60%,#7A5524);--line-2:color-mix(in srgb,var(--old) 48%,#7A5524)}
 /* l'album : chaque bille trouvée est scotchée sur sa carte ; une bille à trouver est juste dessinée au crayon */
 .cahier-page[data-paper="album"] .m-card.case::before{content:"";position:absolute;top:-9px;left:50%;z-index:2;width:50px;height:17px;margin-left:-25px;background:rgba(241,224,170,.88);border-left:2px dotted rgba(255,255,255,.7);border-right:2px dotted rgba(255,255,255,.7);box-shadow:0 1px 2px rgba(0,0,0,.12);transform:rotate(-4deg)}
 .cahier-page[data-paper="album"] .m-card.case:nth-child(even)::before{transform:rotate(3deg)}
@@ -3015,6 +3018,11 @@ button.cp-who:hover b{text-decoration:underline}
 .bb-chip .coin{width:18px;height:18px}
 .tr-dbl{display:flex;align-items:baseline;gap:8px;flex-wrap:wrap;margin:0 0 12px;font-weight:800;font-size:14px;cursor:pointer}
 .tr-dbl input{accent-color:#E8743B;width:17px;height:17px;align-self:center;margin:0}
+.tr-dbls{display:flex;flex-wrap:wrap;gap:0 18px}
+/* (14 octobre 2026) Mes billes : une bille en vente, aux enchères ou dans un troc en cours */
+.m-card.busy{--bzc:#E0A417;outline:2.5px dashed var(--bzc);outline-offset:-6px}
+.m-card.bz-ench{--bzc:#E8743B}.m-card.bz-troc{--bzc:#2FA35A}
+.bz-tag{position:absolute;left:50%;bottom:-9px;z-index:3;transform:translateX(-50%);display:inline-flex;align-items:center;gap:4px;white-space:nowrap;padding:2px 8px;border-radius:999px;background:var(--bzc);color:#fff;font-size:10.5px;font-weight:900;letter-spacing:.02em;box-shadow:0 2px 6px rgba(0,0,0,.2)}
 .bb-in{display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin-top:14px;padding-top:14px;border-top:1px dashed var(--line-2);font-weight:800;font-size:14px}
 .bb-in input{width:110px;height:36px;padding:0 10px;border-radius:10px;border:1.5px solid var(--line-2);background:var(--panel-2);color:var(--ink);font:inherit;font-weight:900}
 .bb-in input:focus{outline:none;border-color:var(--yellow)}
@@ -7834,8 +7842,15 @@ function viewCollection(){
         <p>Même taille, motif et coloris. Tu en gardes toujours un ; les autres peuvent partir à la Confiserie.</p></div>
       <button class="btn btn-ghost" data-action="nav" data-view="confiserie">Aller à la Confiserie ${ic("arrow",16)}</button>
     </section>` };
-  const ballCard = (x, grp=[x]) => { const nw = grp.filter(y=>unseenIds.has(y.id)).map(y=>y.id);
-    return `<button class="m-card${x.shiny?" is-shiny":""}" data-action="spec" data-id="${x.id}"${nw.length?` data-unseen="${nw.join(",")}"`:""}>
+  // (14 octobre 2026) les billes en vente au marché (ou aux enchères) et celles d'un troc en cours : un contour pointillé et une étiquette
+  const busy = new Map();
+  if(srvOn() && ui.tab==="billes"){ courLoad("annonces"); courLoad("trocs");
+    (cour.annonces||[]).filter(a=>!a.vendue).forEach(a=>a.bille?.id && busy.set(a.bille.id, a.enchere ? "ench" : "vente"));
+    [...(cour.trocs?.envoyes||[]).flatMap(t=>t.donne||[]), ...(cour.trocs?.recus||[]).flatMap(t=>t.demande||[])].forEach(b=>{ if(b?.id && !busy.has(b.id)) busy.set(b.id, "troc") }) }
+  const BUSY = {vente:"En vente", ench:"Aux enchères", troc:"Dans un troc"};
+  const ballCard = (x, grp=[x]) => { const nw = grp.filter(y=>unseenIds.has(y.id)).map(y=>y.id), bz = grp.map(y=>busy.get(y.id)).find(Boolean);
+    return `<button class="m-card${x.shiny?" is-shiny":""}${bz?` busy bz-${bz}`:""}" data-action="spec" data-id="${x.id}"${nw.length?` data-unseen="${nw.join(",")}"`:""}${bz?` title="${BUSY[bz]}${grp.length>1?" (un des exemplaires)":""}"`:""}>
+      ${bz?`<span class="bz-tag">${ic(bz==="troc"?"swap":bz==="ench"?"gavel":"candy",11,2.4)} ${BUSY[bz]}</span>`:""}
       <span class="m-tags">${x.shiny?shinyPill(x):""}${show==="dups"?(keep.has(x.id)?`<span class="keep-tag">Gardée</span>`:`<span class="dup-tag">Double</span>`):""}<i class="m-tags-sp"></i>${nw.length&&show!=="dups"?`<span class="new">Nouveau</span>`:""}${grp.length>1?`<span class="x-n" title="Tu as ${grp.length} exemplaires de cette bille">×${grp.length}</span>`:""}</span>
       <span class="ball">${mImg(x,160,Math.round(84*scaleOf(x.type)+6))}</span><b>${esc(specName(x))}</b>${ui.type==="all"?typePill(x.type):""}</button>` };
   const EMPTY = {new:"Aucune nouveauté : tu as tout regardé !", dups:"Aucun doublon pour l'instant. Ouvre des sachets pour en trouver.", shiny:"Pas encore de shiny ici. Elles sont très rares : bonne chance !", season:"Pas encore de bille de saison ici. Le passe de saison en donne à certains paliers.", all:"Aucune bille dans ce format."};
@@ -12334,6 +12349,8 @@ function gcClaim(D, quiet){
 function viewGrandeCourse(){
   gcLoad();
   const E = gc.etat, N = gcNext(), when = gcWhen(N), whenS = gcWhen(N, true), cN = g3CircuitOf(N);
+  // (14 octobre 2026) l'inscription vaut pour la journée : avant midi, pour la course de midi et celle du soir
+  const both = N.heure===12, whenAll = both ? (N.jour===isoDay() ? "ce midi et ce soir" : "demain midi et demain soir") : when;
   const pick = (gc.pick && specById(gc.pick)) || gcMine() || gcDefault();
   const D = E?.derniere, me = D ? gcMeIn(D.resultats) : -1;
   const prize = (k,l) => `<div><b>${l}</b>${COIN} ${COURSE_PRIX[k].j}${COURSE_PRIX[k].sac?` + ${BAG_BY[COURSE_PRIX[k].sac].name}`:""}</div>`;
@@ -12341,11 +12358,12 @@ function viewGrandeCourse(){
   if(sync.on && !eco.ready) reg = `<div class="gc-reg off">${ic("flag",18)} Connexion au serveur… ton inscription s'affiche dans un instant.</div>`;
   else if(!srvOn()) reg = `<div class="gc-reg off">${ic("user",18)} Crée ton compte (c'est gratuit) pour t'inscrire à la Grande Course.</div>
     ${window.Cloud?.available && !sync.on ? `<button class="btn btn-yellow" data-action="acct-signup">Créer mon compte</button>` : ""}`;
-  else if(E?.inscrit) reg = `<div class="gc-reg on">${pick?mImg(pick,96,44,""):""}<div><b>Tu es inscrit pour ${when} !</b><small>Tu cours avec ${pick?esc(specName(pick)):"ta bille"}. Rendez-vous à ${N.heure} h.</small></div></div>
+  else if(E?.inscrit) reg = `<div class="gc-reg on">${pick?mImg(pick,96,44,""):""}<div><b>Tu es inscrit pour ${whenAll} !</b><small>Tu cours avec ${pick?esc(specName(pick)):"ta bille"}. Rendez-vous à ${both ? "12 h et à 20 h" : `${N.heure} h`}.</small></div></div>
     <div class="btns"><button class="btn btn-ghost" data-action="gc-pickopen">Changer de bille</button><button class="btn btn-ghost" data-action="gc-unreg">Me désinscrire</button></div>`;
   else reg = `<div class="gc-pickrow"><button class="gc-ball" data-action="gc-pickopen" aria-label="Choisir ma bille">${pick?mImg(pick,120,56,""):""}<span>Changer</span></button>
       <div><small>Ta bille pour la course</small><b>${pick?esc(specName(pick)):"—"}</b></div></div>
-    <button class="btn btn-yellow btn-xl" data-action="gc-reg">${ic("flag",18)} M'inscrire pour ${when}</button>`;
+    <button class="btn btn-yellow btn-xl" data-action="gc-reg">${ic("flag",18)} M'inscrire pour ${whenAll}</button>
+    ${both ? `<p class="meta">Une seule inscription pour la journée : tu cours à midi et le soir.</p>` : ""}`;
   const live = D && Date.now() < D.depart + GC_DUR*1000;
   return `<div class="page-head"><div><button class="back-link" data-action="nav" data-view="jeux">${ic("chevl",14)} Tous les jeux</button><h1>La Grande Course</h1>
     <p>À 12 h et à 20 h. Toutes les billes ont la même chance.</p></div></div>
@@ -12406,6 +12424,26 @@ function gcPrevSVG(cid="lacets"){
     return `<rect x="${x-40}" y="${y-14}" width="80" height="8" rx="4" fill="${T.spin}" transform="rotate(${r-90+50} ${x} ${y-10})"/><circle cx="${x}" cy="${y-10}" r="5" fill="#8A8FA3"/>` }).join("") + ball(...at(.58).map((v,j)=>j ? v-12 : v), i)));
   if(cid==="flipper") return frame(zig(4, (i, at, a)=>Array.from({length:5},(_,s)=>{ const [x,y] = at(.1+s*.18); return `<path d="M${x-30} ${y-6}h${a*0+60}" stroke="${cbShade(T.ramp,40)}" stroke-width="2" opacity=".6"/>` }).join("")
     + [.25,.45,.65].map((f,j)=>{ const [x,y] = at(f); return `<circle cx="${x}" cy="${y-16}" r="10" fill="${T.bump}"/><circle cx="${x}" cy="${y-16}" r="4" fill="#fff" opacity=".8"/>` }).join("") + ball(...at(.8).map((v,j)=>j ? v-12 : v), i)));
+  // (14 octobre 2026) les nouveaux circuits
+  const up = (at, f, d=12) => { const [x,y] = at(f); return [x, y-d] };
+  if(cid==="ski") return frame(zig(5, (i, at)=>[.14,.32,.5,.68,.86].map((f,j)=>{ const [x,y] = at(f), o = (i+j)%2 ? 8 : -8;
+      return `<path d="M${x-7+o} ${y-4}v-22M${x+7+o} ${y-4}v-22" stroke="${T.peg}" stroke-width="3"/><path d="M${x-7+o} ${y-26}l8 4-8 4" fill="${T.peg}"/>` }).join("")
+    + [.23,.59].map(f=>{ const [x,y] = at(f); return `<ellipse cx="${x}" cy="${y-6}" rx="16" ry="5" fill="${T.bump}"/>` }).join("") + ball(...up(at,.45), i)));
+  if(cid==="labyrinthe") return frame(zig(4, (i, at)=>[.26,.43,.6,.77].map((f,j)=>{ const [x,y] = at(f), g = (i*3+j)%3;
+      return [-1,1].map(sd=>`<path d="M${x-sd*12} ${y-8}l${sd*10} -10" stroke="${T.maze}" stroke-width="7" stroke-linecap="round"/>`).join("") + (g ? `<path d="M${x+22} ${y-8}l8 -10" stroke="${T.maze}" stroke-width="7" stroke-linecap="round"/>` : "") }).join("") + ball(...up(at,.52), i)));
+  if(cid==="cascade") return frame(zig(4, (i, at)=>Array.from({length:9},(_,s)=>{ const [x,y] = at(.06+s*.105); return `<path d="M${x} ${y-6}v-6" stroke="${cbShade(T.ramp,-40)}" stroke-width="2"/>` }).join("")
+    + [.3,.7].map(f=>{ const [x,y] = at(f); return `<circle cx="${x}" cy="${y-12}" r="8" fill="${T.rock}"/>` }).join("")
+    + (()=>{ const [x1,y1] = at(0), [x2,y2] = at(1); return `<path d="M${x1} ${y1-12}L${x2} ${y2-12}" stroke="#5EC8FF" stroke-width="6" opacity=".35"/>` })() + ball(...up(at,.5), i)));
+  if(cid==="billard") return frame(zig(4, (i, at)=>[.3,.62].map(f=>{ const [x,y] = at(f);
+      return [[0,0],[12,-5],[12,5],[24,-10],[24,0],[24,10]].map(([dx,dz],j)=>`<circle cx="${x+dx*(i%2?-1:1)}" cy="${y-10+dz*.5}" r="6" fill="${j%2?T.pool2:T.pool}"/>`).join("") }).join("") + ball(...up(at,.85), i)));
+  if(cid==="pinball") return frame(zig(4, (i, at)=>[.32,.6].map(f=>{ const [x,y] = at(f);
+      return [[0,0],[14,-6],[14,6]].map(([dx,dz])=>`<circle cx="${x+dx*(i%2?-1:1)}" cy="${y-12+dz*.6}" r="8" fill="${T.bump}"/><circle cx="${x+dx*(i%2?-1:1)}" cy="${y-12+dz*.6}" r="3" fill="#fff"/>`).join("") }).join("")
+    + (()=>{ const [x,y] = at(.86); return `<path d="M${x-14} ${y-6}l14 -12l14 12" stroke="${T.sling}" stroke-width="4" fill="none"/>` })() + ball(...up(at,.45), i)));
+  if(cid==="fantome") return frame(zig(5, (i, at)=>{ const [x1,y1] = at(.3), [x2,y2] = at(.66);
+      return `<path d="M${x1} ${y1-30}L${x2} ${y2-30}L${x2} ${y2-4}L${x1} ${y1-4}Z" fill="${T.roof}" opacity=".9"/>`
+        + [.2,.82].map(f=>{ const [x,y] = at(f); return `<rect x="${x-3}" y="${y-32}" width="6" height="26" rx="3" fill="${T.spin}"/>` }).join("")
+        + (()=>{ const [x,y] = at(.5); return `<path d="M${x-10} ${y-40}q10 -22 20 0v12l-5 -4l-5 4l-5 -4l-5 4z" fill="${T.ghost}" opacity=".85"/><circle cx="${x-4}" cy="${y-40}" r="2" fill="#241A33"/><circle cx="${x+4}" cy="${y-40}" r="2" fill="#241A33"/>` })()
+        + ball(...up(at,.9), i) }));
   return gcPrevLacets();
 }
 function gcPrevLacets(){
@@ -12449,7 +12487,7 @@ document.addEventListener("input", e=>{
 function gcRegister(){
   const s = (gc.pick && specById(gc.pick)) || gcDefault(), bid = s && sync.known?.has(s.id) ? s.id : null;
   const was = gc.etat?.inscrit;
-  srv(()=>Cloud.course.inscrire(bid)).then(e=>{ gc.etat = e; gc.pick = null; renderView(); renderNav(); toast(was ? `C'est noté : tu cours avec ${s ? specName(s) : "ta bille"}.` : `Inscrit ! Rendez-vous ${gcWhen({jour:e.jour, heure:e.heure||20})}.`); Sound.ding() }, srvFail);
+  srv(()=>Cloud.course.inscrire(bid)).then(e=>{ gc.etat = e; gc.pick = null; renderView(); renderNav(); toast(was ? `C'est noté : tu cours avec ${s ? specName(s) : "ta bille"}.` : `Inscrit ! Rendez-vous ${(e.heure||20)===12 ? (e.jour===isoDay() ? "ce midi et ce soir" : "demain midi et demain soir") : gcWhen({jour:e.jour, heure:e.heure||20})}.`); Sound.ding() }, srvFail);
 }
 // toutes les secondes : le compte à rebours ; au départ (12 h ou 20 h), la course commence pour les inscrits qui sont sur le site
 setInterval(()=>{
@@ -12731,15 +12769,23 @@ async function g3Load(){
 // où partent les billes (starts), où est l'arrivée (finishY), le chemin suivi (path : pour le classement en direct, la caméra
 // et les pichenettes), et d'où la caméra regarde (cam). Un circuit par course : celui de midi et celui du soir sont toujours différents.
 // Les pièces qui bougent (moulins) tournent à vitesse fixe : tout le monde voit exactement la même course.
-const G3_ORDER = ["lacets","plinko","spirale","toboggan","moulins","flipper"];
+const G3_ORDER = ["lacets","plinko","spirale","toboggan","moulins","flipper","ski","labyrinthe","cascade","billard","pinball","fantome"];
+// (14 octobre 2026) chaque moment a ses circuits : ceux de midi en plein air, ceux du soir dans une ambiance de fête foraine la nuit
+const G3_MIDI = ["lacets","plinko","toboggan","ski","labyrinthe","cascade","billard"], G3_SOIR = ["spirale","moulins","flipper","pinball","fantome"];
 // le circuit d'une course : tiré au hasard d'après le jour (le même pour tout le monde), jamais le même le midi et le soir.
 // G3_FORCE : une course dont on a choisi le circuit à la main (le Grand Plinko pour la première course de midi avec les circuits).
 const G3_FORCE = {"2026-10-03|12":"plinko"};
 function g3CircuitOf(race){
   if(G3C[race.circuit]) return race.circuit;
   const jour = race.jour || "2026-10-03", h = race.heure || 20, f = G3_FORCE[jour+"|"+h]; if(f) return f;
-  const N = G3_ORDER.length, midi = G3_FORCE[jour+"|12"] ? G3_ORDER.indexOf(G3_FORCE[jour+"|12"]) : hash(jour+"|midi") % N;
-  return G3_ORDER[h===12 ? midi : (midi + 1 + hash(jour+"|soir") % (N-1)) % N];
+  // avant le 15 octobre 2026 : l'ancien tirage (les rediffusions gardent leur circuit)
+  if(jour < "2026-10-15"){ const O = G3_ORDER.slice(0, 6), N = 6, midi = G3_FORCE[jour+"|12"] ? O.indexOf(G3_FORCE[jour+"|12"]) : hash(jour+"|midi") % N;
+    return O[h===12 ? midi : (midi + 1 + hash(jour+"|soir") % (N-1)) % N] }
+  // un circuit différent de la veille au même moment (le tirage est fait jour après jour depuis une date fixe)
+  const L = h===12 ? G3_MIDI : G3_SOIR, d0 = Date.UTC(2026, 9, 15), [y, m, dd] = jour.split("-").map(Number), nd = Math.round((Date.UTC(y, m-1, dd) - d0)/864e5);
+  let prev = -1;
+  for(let d=0; d<=nd; d++){ let c = hash(`${d}|${h}`) % L.length; if(c===prev) c = (c+1) % L.length; prev = c }
+  return L[prev];
 }
 
 // quaternion à partir de trois axes (colonnes d'une matrice de rotation)
@@ -12777,6 +12823,11 @@ function g3Kit(CANNON, world){
     // un plot entre deux vitres : pour la physique une petite sphère (la bille ne bouge pas en profondeur), dessiné comme un cylindre
     pin:(r, h, pos, kind="peg", mat) => { const b = new CANNON.Body({mass:0, material:M[mat||"piste"], shape:new CANNON.Sphere(r)}); b.position.set(...pos); b.aabbNeedsUpdate = true; world.addBody(b);
       statics.push({kind, shape:"cyl", size:[r,h], pos, quat:[Math.SQRT1_2,0,0,Math.SQRT1_2]}); return b },
+    // une boule fixe (rochers, boules de billard)
+    ball:(r, pos, kind="rock", mat) => put(new CANNON.Sphere(r), {shape:"sph", size:[r]}, pos, null, kind, mat),
+    // un muret droit entre deux points, posé sur la piste (N : le dessus de la piste), de hauteur h
+    seg:(A, B, N, h, kind="maze", mat) => { const Z = v3.norm(v3.sub(B, A)), X = v3.norm(v3.cross(N, Z)), Y = v3.cross(Z, X), L = Math.hypot(...v3.sub(B, A));
+      return put(new CANNON.Box(new CANNON.Vec3(.15, h/2, L/2)), {shape:"box", size:[.3, h, L]}, v3.add(v3.mul(v3.add(A, B), .5), v3.mul(Y, h/2)), g3Basis(X, Y, Z), kind, mat) },
     // du décor seulement (pas de choc)
     look:(shape, size, pos, quat, kind) => statics.push({kind, shape, size, pos, quat:quat||[0,0,0,1]}),
     spin:(size, pos, rot, w) => put(new CANNON.Box(new CANNON.Vec3(size[0]/2, size[1]/2, size[2]/2)), {shape:"box", size}, pos, rot, "spin", "piste", w)};
@@ -12823,6 +12874,13 @@ function g3ZigStart(k, o, n, r){
 }
 // la caméra des rampes : sur le côté de la piste, un peu en arrière de la bille
 const g3ZigCam = (p, T) => [p[0] - 4*Math.sign(T[0]||1), p[1]+3, p[2]+14];
+// la caméra des rampes larges (Labyrinthe, Billard, Pinball) : plus haut, pour voir le plateau
+const g3TableCam = (p, T) => [p[0] - 5*Math.sign(T[0]||1), p[1]+8, p[2]+12];
+// un rondin couché sur une rampe (angle rot), en biais de ph (sg : de quel côté il penche)
+function g3Log(k, rot, sg, ph, rad, len, pos, kind, mat){
+  const Xr = [Math.cos(rot), Math.sin(rot), 0], N = [-Math.sin(rot), Math.cos(rot), 0], d = v3.norm(v3.add(v3.mul(Xr, sg*Math.sin(ph)), [0, 0, Math.cos(ph)]));
+  return k.cyl(rad, len, pos, g3Basis(N, d, v3.cross(N, d)), kind, mat);
+}
 
 const G3C = {
   // Cinq rampes en zigzag et des plots qui font rebondir les billes dans tous les sens
@@ -12906,10 +12964,15 @@ const G3C = {
     theme:{bg:"#1E1410", ramp:"#E8743B", tray:"#2FA35A"},
     build(k, r, n){ const o = {RAMPS:4, LEN:34, WID:6, STEP:9, ANG:11*Math.PI/180, wall:8, holes:i=>({f:.9, side:i%2 ? -1 : 1, w:1.2}), wallBumps:[.19,.36,.53,.7]};
       const z = g3Zigzag(k, o, (i, {dir, sY, rot})=>{
-        // deux tremplins par rampe, et des bosses rondes en travers
+        // deux tremplins par rampe, et des rondins
+        // (14 octobre 2026) tremplins moins hauts, et rondins en biais avec un passage au bout (d'un côté puis de l'autre) :
+        // posés droits en travers, ils retenaient les billes lentes (une bille arrêtée roule maintenant le long du rondin jusqu'au trou)
         [.35,.7].forEach((f, j)=>{ const x = -dir*o.LEN/2 + dir*f*o.LEN;
-          k.cyl(2.2, o.WID, [x, sY(x)+.2-2.2+.3, 0], [Math.PI/2,0,0], "kick") });
-        [.18,.52,.86].forEach(f=>{ const x = -dir*o.LEN/2 + dir*f*o.LEN; k.cyl(.35, o.WID, [x, sY(x), 0], [Math.PI/2,0,0], "bump") });
+          k.cyl(2.2, o.WID, [x, sY(x)+.2-2.2+.18, 0], [Math.PI/2,0,0], "kick") });
+        [.18,.52,.86].forEach((f, j)=>{ const x = -dir*o.LEN/2 + dir*f*o.LEN, g = (i+j)%2 ? 1 : -1, PH = 22*Math.PI/180, GAP = 1.4;
+          const Xr = [Math.cos(rot), Math.sin(rot), 0], N = [-Math.sin(rot), Math.cos(rot), 0], sg = g*dir;
+          const d = v3.norm(v3.add(v3.mul(Xr, sg*Math.sin(PH)), [0, 0, Math.cos(PH)])), len = (o.WID-GAP)/Math.cos(PH);
+          k.cyl(.35, len, [x, sY(x), -g*GAP/2], g3Basis(N, d, v3.cross(N, d)), "bump") });
         // des rangées de plots entre les bosses (3 puis 2, en quinconce), et un champignon à ressort au bout de chaque rampe
         [.1,.27,.44,.61,.79].forEach((f, j)=>{ const x = -dir*o.LEN/2 + dir*f*o.LEN;
           (j%2 ? [-.8,.8] : [-1.55,0,1.55]).forEach(zz=>k.cyl(.22, 1.4, [x, sY(x)+.7, zz + (r()-.5)*.1])) });
@@ -12942,6 +13005,84 @@ const G3C = {
         for(let j=0;j<5;j++){ const f = .2 + j*.13, x = -dir*o.LEN/2 + dir*f*o.LEN, zs = j%2 ? [-1.3, 1.3] : [-2.3, 0, 2.3];
           zs.forEach(zz=>k.cyl(.45, 1.2, [x, sY(x)+.4, zz + (r()-.5)*.3], null, "bump", "rebond")) }
 });
+      return {...z, ...g3ZigStart(k, o, n, r), cam:g3ZigCam} }},
+  // ---------- (14 octobre 2026) les nouveaux circuits : midi en plein air, le soir comme une fête foraine ----------
+  // Une piste de ski : des portes de slalom (deux piquets rouges) d'un côté puis de l'autre, et des bosses de neige en biais
+  ski:{name:"La Piste de ski", desc:"Cinq pistes enneigées, des portes de slalom d'un côté puis de l'autre et des bosses partout : il faut savoir tourner !",
+    theme:{bg:"#1C2A40", ramp:"#EEF4FF", tray:"#2E8CFF", peg:"#E8414B", bump:"#CFE0F5"},
+    build(k, r, n){ const o = {RAMPS:5, LEN:30, WID:7, STEP:9.5, ANG:12*Math.PI/180, wall:4.5, wallBumps:[.23,.59]};   // (les bosses des murs loin des piquets)
+      const z = g3Zigzag(k, o, (i, {dir, sY, rot})=>{ const xf = f => -dir*o.LEN/2 + dir*f*o.LEN;
+        [.14,.32,.5,.68,.86].forEach((f, j)=>{ const x = xf(f), zc = ((i+j)%2 ? 1 : -1)*1.5;
+          [-.85,.85].forEach(dz=>k.cyl(.12, 1.8, [x, sY(x)+.9, zc+dz], [0,0,rot], "peg")) });
+        // (les bosses restent loin des murs : une bille se coinçait entre une bosse et le mur)
+        [.23,.41,.59,.77].forEach((f, j)=>{ const x = xf(f), zz = ((i+j)%2 ? -1 : 1)*.9 + (r()-.5)*.4;
+          g3Log(k, rot, j%2 ? 1 : -1, 30*Math.PI/180, .32, 1.4, [x, sY(x)-.04, zz], "bump") }) });
+      return {...z, ...g3ZigStart(k, o, n, r), cam:g3ZigCam} }},
+
+  // Un plateau penché coupé de haies en biais : chaque rangée a deux passages, tirés au sort à chaque course
+  labyrinthe:{name:"Le Labyrinthe", desc:"Quatre grands plateaux en bois coupés de haies : à chaque rangée, deux passages seulement, et jamais au même endroit d'une course à l'autre !",
+    theme:{bg:"#1A2414", ramp:"#D9B47A", tray:"#5AB8FF", maze:"#5E8C34"},
+    build(k, r, n){ const o = {RAMPS:4, LEN:34, WID:9, STEP:8.5, ANG:11*Math.PI/180, wall:3};
+      const z = g3Zigzag(k, o, (i, {dir, sY, rot})=>{ const xf = f => -dir*o.LEN/2 + dir*f*o.LEN, N = [-Math.sin(rot), Math.cos(rot), 0], W = o.WID/2 - .05;
+        const top = (x, zz) => [x, sY(x)+.2, zz];
+        // un muret en biais (25°) : il finit au passage, une bille arrêtée contre lui roule jusqu'au trou
+        const seg = (x0, za, zb) => k.seg(top(x0 - dir*Math.abs(zb-za)*.47, za), top(x0, zb), N, 1.2, "maze");
+        [.26,.43,.6,.77,.93].forEach((f, j)=>{ if(i===0 && j===0) return;   // pas de haie juste après le départ : le peloton s'y bouchait
+          const x0 = xf(f), skip = Math.floor(r()*3), g = [-2.9, 0, 2.9].filter((_,j)=>j!==skip), m = (g[0]+g[1])/2;
+          seg(x0, -W, g[0]-.95); seg(x0, m, g[0]+.95); seg(x0, m, g[1]-.95); seg(x0, W, g[1]+.95) }) });
+      return {...z, ...g3ZigStart(k, o, n, r), cam:g3TableCam} }},
+
+  // Des terrasses de pierre en escalier, sous une nappe d'eau, et des rochers posés çà et là
+  cascade:{name:"La Cascade", desc:"Des dizaines de terrasses de pierre sous l'eau : les billes dégringolent de marche en marche et ricochent sur les rochers.",
+    theme:{bg:"#0E2230", ramp:"#7FA7B8", tray:"#2FA35A", rock:"#8C949C"},
+    build(k, r, n){ const o = {RAMPS:4, LEN:34, WID:7, STEP:9.5, ANG:12*Math.PI/180, noRamp:true, wallBumps:[.33,.66]};
+      const z = g3Zigzag(k, o, (i, {dir, y, rot, cx, sY})=>{
+        const ext = 2.6, L = o.LEN+ext, x0 = cx - dir*L/2, NS = 10, sl = L/NS;
+        for(let s=0;s<NS;s++){ const xc = x0 + dir*(s+.5)*sl; k.box([sl+.3, .4, o.WID], [xc, sY(xc), 0], [0,0,rot*.35], "ramp") }
+        // les rochers : sur 4 terrasses au hasard (jamais la première), à gauche ou à droite
+        for(let j=0;j<4;j++){ const s = 1 + Math.floor(r()*(NS-3)), xc = x0 + dir*(s+.5)*sl; k.ball(.42, [xc, sY(xc)+.4, (r()<.5 ? -1 : 1)*r()*1.2], "rock") }
+        k.look("box", [o.LEN, .05, o.WID-.1], [cx, y+.75, 0], [0, 0, Math.sin(rot/2), Math.cos(rot/2)], "water") });
+      return {...z, ...g3ZigStart(k, o, n, r), cam:g3ZigCam} }},
+
+  // Un billard en pente : des boules rangées en triangle, des bandes, et une poche-raccourci au bout de chaque tapis
+  billard:{name:"Le Billard géant", desc:"Quatre tapis verts en pente, des triangles de boules à contourner, et au bout de chaque tapis une poche qui fait gagner du terrain.",
+    theme:{bg:"#10201A", ramp:"#1F7A4A", tray:"#7A4A22", pool:"#F2C230", pool2:"#C8312E"},
+    build(k, r, n){ const o = {RAMPS:4, LEN:34, WID:10, STEP:7, ANG:8.5*Math.PI/180, wall:2.2, holes:i=>({f:.88, side:i%2 ? 1 : -1, w:1.6}), wallBumps:[.15,.4,.65]};
+      const z = g3Zigzag(k, o, (i, {dir, sY})=>{ const xf = f => -dir*o.LEN/2 + dir*f*o.LEN;
+        [.3,.62].forEach((f, t)=>{ const x0 = xf(f), zc = ((i+t)%2 ? 1 : -1)*1.2;
+          for(let row=0; row<3; row++) for(let j=0; j<=row; j++){ const x = x0 + dir*row*1.15;
+            k.ball(.5, [x, sY(x)+.68, zc + (j - row/2)*1.25], (row+j)%2 ? "pool2" : "pool") } }) });
+      return {...z, ...g3ZigStart(k, o, n, r), cam:g3TableCam} }},
+
+  // Un flipper à plat, la nuit : des bumpers qui renvoient fort, des couloirs au départ et des lance-billes au bout
+  pinball:{name:"Le Pinball néon", desc:"Quatre plateaux de pinball qui brillent dans le noir : des bumpers qui renvoient les billes très loin, des couloirs et des lance-billes.",
+    theme:{bg:"#0B0620", ramp:"#2A1E5C", tray:"#FF2E88", bump:"#39E6FF", sling:"#FF2E88", peg:"#FFD34D"},
+    build(k, r, n){ const o = {RAMPS:4, LEN:34, WID:9, STEP:8, ANG:10*Math.PI/180, wall:2.5, wallBumps:[.2,.45,.7]};
+      const z = g3Zigzag(k, o, (i, {dir, sY, rot})=>{ const xf = f => -dir*o.LEN/2 + dir*f*o.LEN, N = [-Math.sin(rot), Math.cos(rot), 0], W = o.WID/2;
+        const top = (x, zz) => [x, sY(x)+.2, zz];
+        // les couloirs du départ de chaque plateau
+        [-1.6, 1.6].forEach(zz=>k.seg(top(xf(.1), zz), top(xf(.17), zz), N, .7, "rail"));
+        // deux triangles de bumpers
+        [[.32, -1], [.6, 1]].forEach(([f, sd], t)=>{ const x0 = xf(f), zc = sd*((i%2) ? -1 : 1)*1.3;
+          [[0, 0], [2.2, -1.6], [2.2, 1.6]].forEach(([dx, dz])=>{ const x = x0 + dir*dx; k.cyl(.6, 1.2, [x, sY(x)+.6, zc+dz], [0,0,rot], "bump", "rebond") }) });
+        // les lance-billes : deux bandes en biais qui renvoient vers le milieu
+        [-1, 1].forEach(sd=>k.seg(top(xf(.8), sd*(W-.1)), top(xf(.92), sd*(W-1.9)), N, .8, "sling", "rebond")) });
+      return {...z, ...g3ZigStart(k, o, n, r), cam:g3TableCam} }},
+
+  // Le train fantôme : des tunnels noirs, des portes qui tournent et des fantômes qui flottent au-dessus de la piste
+  fantome:{name:"Le Train fantôme", desc:"Cinq rampes qui plongent dans des tunnels noirs, des portes qui tournent sans arrêt et des fantômes qui flottent… Qui osera sortir la première ?",
+    theme:{bg:"#0E0A18", ramp:"#4A3A5E", tray:"#7CE59A", spin:"#E8E8F0", roof:"#241A33", tunnel:"#1A1226", ghost:"#E6F0FF"},
+    build(k, r, n){ const o = {RAMPS:5, LEN:30, WID:5.5, STEP:9.5, ANG:12*Math.PI/180, wall:4.5, wallBumps:[.15,.85]};
+      const z = g3Zigzag(k, o, (i, {dir, sY, rot})=>{ const xf = f => -dir*o.LEN/2 + dir*f*o.LEN, N = [-Math.sin(rot), Math.cos(rot), 0];
+        const q = [0, 0, Math.sin(rot/2), Math.cos(rot/2)], up = (x, h) => v3.add([x, sY(x), 0], v3.mul(N, h));
+        // le tunnel : un toit (vrai) et des côtés noirs (du décor)
+        const xa = xf(.3), xb = xf(.66), xm = (xa+xb)/2, tl = Math.abs(xb-xa)/Math.cos(rot);
+        k.box([tl, .3, o.WID+.8], up(xm, 2.75), [0,0,rot], "roof");
+        [-1, 1].forEach(sd=>k.look("box", [tl, 2.6, .2], v3.add(up(xm, 1.45), [0, 0, sd*(o.WID/2+.45)]), q, "tunnel"));
+        // les portes qui tournent : elles poussent les billes vers l'avant en passant
+        [.2,.5,.82].forEach((f, j)=>{ const x = xf(f); k.spin([.3, 2.2, o.WID-.4], up(x, 1.55), [0,0,rot], [0, 0, dir*(.8+.2*j)]) });
+        // les fantômes (du décor)
+        for(let j=0;j<2;j++){ const x = xf(.15+r()*.7); k.look("sph", [.55], v3.add(up(x, 3.8+r()*1.2), [0, 0, (r()-.5)*4]), null, "ghost") } });
       return {...z, ...g3ZigStart(k, o, n, r), cam:g3ZigCam} }},
 };
 
@@ -13050,10 +13191,16 @@ async function gcWatch3D(race){
   renderer.setPixelRatio(Math.min(2, devicePixelRatio)); renderer.setSize(stage.clientWidth, stage.clientHeight);
   renderer.shadowMap.enabled = true; renderer.shadowMap.type = THREE.PCFSoftShadowMap; renderer.toneMapping = THREE.ACESFilmicToneMapping;
   stage.appendChild(renderer.domElement);
-  const scene = new THREE.Scene(); scene.background = new THREE.Color(TH.bg); scene.fog = new THREE.Fog(TH.bg, 40, 120);
-  const camera = new THREE.PerspectiveCamera(50, stage.clientWidth/stage.clientHeight, .1, 300);
-  scene.add(new THREE.HemisphereLight("#FFE9C9", "#2A1E3A", 1.1));
-  const sun = new THREE.DirectionalLight("#FFF4DE", 2.2); sun.position.set(-20,40,25); sun.castShadow = true;
+  // (14 octobre 2026) midi et soir ne se ressemblent plus : la course de midi en plein jour (ciel bleu, soleil, herbe),
+  // celle du soir la nuit comme une fête foraine (ciel étoilé, clair de lune, guirlandes d'ampoules, plots et champignons qui brillent)
+  const night = (race.heure||20)!==12;
+  const scene = new THREE.Scene(), camera = new THREE.PerspectiveCamera(50, stage.clientWidth/stage.clientHeight, .1, 300);
+  if(night){ const bgN = cbShade(TH.bg, -6); scene.background = new THREE.Color(bgN); scene.fog = new THREE.Fog(bgN, 45, 130) }
+  else { const c = document.createElement("canvas"); c.width = 4; c.height = 256; const x = c.getContext("2d"), g = x.createLinearGradient(0,0,0,256);
+    g.addColorStop(0, "#3F8EF0"); g.addColorStop(.6, "#8CC6FF"); g.addColorStop(1, "#DDF0FF"); x.fillStyle = g; x.fillRect(0,0,4,256);
+    const sky = new THREE.CanvasTexture(c); sky.colorSpace = THREE.SRGBColorSpace; scene.background = sky; scene.fog = new THREE.Fog("#CBE6FF", 60, 170) }
+  scene.add(night ? new THREE.HemisphereLight("#8FA6FF", "#1A1230", .55) : new THREE.HemisphereLight("#E4F2FF", "#6B8F4E", 1.35));
+  const sun = new THREE.DirectionalLight(night ? "#A9BEFF" : "#FFF8E6", night ? 1 : 2.8); sun.position.set(-20,40,25); sun.castShadow = true;
   // l'ombre couvre tout le circuit, quelle que soit sa forme
   const bb = [[1e9,1e9,1e9],[-1e9,-1e9,-1e9]]; W.statics.forEach(s=>s.pos.forEach((p,j)=>{ bb[0][j] = Math.min(bb[0][j], p); bb[1][j] = Math.max(bb[1][j], p) }));
   const mid = bb[0].map((p,j)=>(p+bb[1][j])/2), half = Math.max(...bb[0].map((p,j)=>(bb[1][j]-p)/2)) + 8;
@@ -13064,16 +13211,46 @@ async function gcWatch3D(race){
   const MAT = {ramp:new THREE.MeshStandardMaterial({color:TH.ramp, roughness:.65}), tray:new THREE.MeshStandardMaterial({color:TH.tray, roughness:.5}),
     wall:glass(.28), inner:glass(.22), end:glass(.4), glass:glass(.12), wall2:new THREE.MeshStandardMaterial({color:TH.ramp, roughness:.5}),
     back:new THREE.MeshStandardMaterial({color:cbShade(TH.bg, 18), roughness:.9}),
-    peg:new THREE.MeshStandardMaterial({color:TH.peg||"#F4E3C2", roughness:.35, metalness:.2}),
-    kick:new THREE.MeshStandardMaterial({color:cbShade(TH.ramp, 25), roughness:.5}), bump:new THREE.MeshStandardMaterial({color:TH.bump||"#FF4F7A", roughness:.3, metalness:.1, emissive:TH.bump||"#FF4F7A", emissiveIntensity:.25}),
+    peg:new THREE.MeshStandardMaterial({color:TH.peg||"#F4E3C2", roughness:.35, metalness:.2, ...(night ? {emissive:TH.peg||"#FFE7B0", emissiveIntensity:.45} : {})}),
+    kick:new THREE.MeshStandardMaterial({color:cbShade(TH.ramp, 25), roughness:.5}), bump:new THREE.MeshStandardMaterial({color:TH.bump||"#FF4F7A", roughness:.3, metalness:.1, emissive:TH.bump||"#FF4F7A", emissiveIntensity:night ? 1 : .25}),
     spin:new THREE.MeshStandardMaterial({color:TH.spin||"#FFD34D", roughness:.35, metalness:.3}), axle:new THREE.MeshStandardMaterial({color:"#8A8FA3", roughness:.3, metalness:.6}),
-    tower:new THREE.MeshStandardMaterial({color:cbShade(TH.ramp, -25), roughness:.8})};
-  const piece = s => { const m = new THREE.Mesh(s.shape==="cyl" ? new THREE.CylinderGeometry(s.size[0], s.size[0], s.size[1], 20) : new THREE.BoxGeometry(...s.size), MAT[s.kind] || MAT.ramp);
-    m.position.set(...s.pos); m.quaternion.set(...s.quat); m.castShadow = !/wall|inner|end|glass|back/.test(s.kind); m.receiveShadow = true; scene.add(m); return m };
+    tower:new THREE.MeshStandardMaterial({color:cbShade(TH.ramp, -25), roughness:.8}),
+    // (14 octobre 2026) les pièces des nouveaux circuits
+    maze:new THREE.MeshStandardMaterial({color:TH.maze||cbShade(TH.ramp, -30), roughness:.8}), rock:new THREE.MeshStandardMaterial({color:TH.rock||"#8C949C", roughness:.9}),
+    pool:new THREE.MeshStandardMaterial({color:TH.pool||"#F2C230", roughness:.15, metalness:.1}), pool2:new THREE.MeshStandardMaterial({color:TH.pool2||"#C8312E", roughness:.15, metalness:.1}),
+    sling:new THREE.MeshStandardMaterial({color:TH.sling||"#FF2E88", roughness:.3, emissive:TH.sling||"#FF2E88", emissiveIntensity:night ? 1 : .3}),
+    rail:new THREE.MeshStandardMaterial({color:TH.peg||"#FFD34D", roughness:.3, metalness:.4, ...(night ? {emissive:TH.peg||"#FFD34D", emissiveIntensity:.5} : {})}),
+    roof:new THREE.MeshStandardMaterial({color:TH.roof||"#241A33", roughness:.9}), tunnel:new THREE.MeshStandardMaterial({color:TH.tunnel||"#1A1226", roughness:.9}),
+    ghost:new THREE.MeshStandardMaterial({color:TH.ghost||"#E6F0FF", emissive:TH.ghost||"#E6F0FF", emissiveIntensity:night ? .8 : .3, transparent:true, opacity:.7}),
+    water:new THREE.MeshPhysicalMaterial({color:"#5EC8FF", roughness:.05, transparent:true, opacity:.28, depthWrite:false})};
+  const piece = s => { const m = new THREE.Mesh(s.shape==="cyl" ? new THREE.CylinderGeometry(s.size[0], s.size[0], s.size[1], 20) : s.shape==="sph" ? new THREE.SphereGeometry(s.size[0], 24, 16) : new THREE.BoxGeometry(...s.size), MAT[s.kind] || MAT.ramp);
+    m.position.set(...s.pos); m.quaternion.set(...s.quat); m.castShadow = !/wall|inner|end|glass|back|water|ghost/.test(s.kind); m.receiveShadow = true; scene.add(m); return m };
   W.statics.forEach(piece);
   const kinM = W.kin.map(piece);   // les pièces qui tournent (moulins) : replacées à chaque image
-  const floor = new THREE.Mesh(new THREE.PlaneGeometry(400,400), new THREE.MeshStandardMaterial({color:cbShade(TH.bg, 10), roughness:1}));
+  const floor = new THREE.Mesh(new THREE.PlaneGeometry(400,400), new THREE.MeshStandardMaterial({color:night ? cbShade(TH.bg, 6) : "#7DB35F", roughness:1}));
   floor.rotation.x = -Math.PI/2; floor.position.y = W.floorY-1; floor.receiveShadow = true; scene.add(floor);
+  // le soir : des étoiles tout autour, des guirlandes d'ampoules sur les bords de la piste, et une lampe qui suit l'action
+  let lamp = null;
+  if(night){
+    const sr = rng(7), sp = [];
+    for(let i=0;i<700;i++){ const a = sr()*TAU, e = .08+sr()*1.3, R = 170; sp.push(mid[0]+R*Math.cos(e)*Math.cos(a), mid[1]-20+R*Math.sin(e), mid[2]+R*Math.cos(e)*Math.sin(a)) }
+    const sg = new THREE.BufferGeometry(); sg.setAttribute("position", new THREE.Float32BufferAttribute(sp, 3));
+    scene.add(new THREE.Points(sg, new THREE.PointsMaterial({color:"#FFFFFF", size:.9, fog:false})));
+    // les ampoules : le long des murs (bord haut), une tous les 2,5 environ, aux couleurs d'une fête foraine
+    const pts = [], up = new THREE.Vector3(), ax = new THREE.Vector3(), q4 = new THREE.Quaternion(), p0 = new THREE.Vector3();
+    W.statics.forEach(s=>{ if(s.shape!=="box" || !/^(wall|end)$/.test(s.kind)) return;
+      const [a, b] = s.size, long = Math.max(a, s.size[2]); if(long<1.2 || b>a*3) return;   // pas les vitres debout du Plinko
+      q4.set(...s.quat); ax.set(a>=s.size[2] ? 1 : 0, 0, a>=s.size[2] ? 0 : 1).applyQuaternion(q4); up.set(0, 1, 0).applyQuaternion(q4);
+      const m = Math.max(1, Math.round(long/2.5));
+      for(let j=0;j<m;j++){ p0.set(...s.pos).addScaledVector(ax, ((j+.5)/m-.5)*long).addScaledVector(up, b/2+.12); pts.push(p0.clone()) } });
+    // le Plinko (des vitres debout) : des ampoules sur le cadre
+    if(!pts.length) W.statics.forEach(s=>{ if(s.kind==="wall2" && s.shape==="box") for(let y=W.floorY; y<bb[1][1]; y+=2.2) pts.push(new THREE.Vector3(s.pos[0], y, s.pos[2]+s.size[2]/2+.15)) });
+    const BULB = ["#FFD34D","#FF6FB5","#5AB8FF","#7CE59A","#FF9F43"], bulbs = new THREE.InstancedMesh(new THREE.SphereGeometry(.13, 10, 8), new THREE.MeshBasicMaterial({color:"#FFFFFF"}), Math.min(pts.length, 900));
+    const mx = new THREE.Matrix4(), col = new THREE.Color();
+    for(let i=0;i<bulbs.count;i++){ mx.makeTranslation(pts[i].x, pts[i].y, pts[i].z); bulbs.setMatrixAt(i, mx); bulbs.setColorAt(i, col.set(BULB[i%BULB.length])) }
+    scene.add(bulbs);
+    lamp = new THREE.PointLight("#FFD9A0", 60, 24, 1.6); scene.add(lamp);
+  }
   // Les billes : la vraie bille de chaque joueur, dessinée par le même moteur que partout sur le site (motif, coloris, shiny),
   // tournée selon la physique et vue depuis la caméra. Une sphère invisible garde l'ombre portée sur la piste.
   // (sans le moteur de billes, on retombe sur une sphère aux couleurs du coloris)
@@ -13137,6 +13314,7 @@ async function gcWatch3D(race){
     const dtf = Math.min(30, (now-(G3V.lastNow||now))/16.67); G3V.lastNow = now;
     if(G3V.snap){ camPos.copy(v); camLook.set(...at); G3V.snap = false } else { camPos.lerp(v, 1-Math.pow(.95, dtf)); camLook.lerp(v.set(...at), 1-Math.pow(.92, dtf)) }
     camera.position.copy(camPos); camera.lookAt(camLook); camera.updateMatrixWorld();
+    if(lamp) lamp.position.set(camLook.x, camLook.y+6, camLook.z+3);
     // les billes vues depuis la caméra (les plus proches redessinées à chaque image, les autres moins souvent)
     if(sprites.length){
       mc.extractRotation(camera.matrixWorld).transpose();
@@ -13154,7 +13332,8 @@ async function gcWatch3D(race){
         const near = Math.max(0, 1 - camera.position.distanceTo(meshes[h[2]].position)/45);
         hb = Math.max(hb, h[0]*near); hd = Math.max(hd, h[1]*near) }
       hb = Math.min(1, hb/5); hd = Math.min(1, hd/9);
-      if(now-G3V.lastHit>45){ if(hb>.04){ Sound.hit(.15+hb*.85); G3V.lastHit = now } else if(hd>.05){ Sound.wall(hd*.6); G3V.lastHit = now } } }
+      // (14 octobre 2026) plus doux et moins serré : le « clic clac » continu des billes donnait mal à la tête (avant : .15+hb*.85, .6, toutes les 45 ms)
+      if(now-G3V.lastHit>90){ if(hb>.06){ Sound.hit(.07+hb*.38); G3V.lastHit = now } else if(hd>.08){ Sound.wall(hd*.32); G3V.lastHit = now } } }
     G3V.lastF = f;
     // les noms au-dessus des billes
     const SW = stage.clientWidth, SH = stage.clientHeight;
@@ -13640,7 +13819,7 @@ function gcTest(cid){
   const names = [...FEED_NAMES].sort(()=>Math.random()-.5).slice(0,7);
   GC_ME = sync.uid ? null : "__moi";
   const list = [{joueur:sync.uid||GC_ME, pseudo:S.name, bille:(gc.pick && specById(gc.pick)) || gcMine() || gcDefault(), prix:0}, ...names.map(n=>({bot:true, nom:n, graine:randU32()}))].sort(()=>Math.random()-.5);
-  gcWatch({jour:isoDay(), graine:randU32(), depart:Date.now(), resultats:list, test:true, circuit:cid || g3CircuitOf(gcNext())});
+  gcWatch({jour:isoDay(), graine:randU32(), depart:Date.now(), resultats:list, test:true, circuit:cid || g3CircuitOf(gcNext()), heure:cid ? (G3_MIDI.includes(cid) ? 12 : 20) : gcNext().heure});
 }
 
 /* =====================================================================
@@ -13811,7 +13990,7 @@ function courLoad(kind, force){
   f().then(d=>{ const prev = cour[kind]; cour[kind] = d; cour.ok = true; if(kind==="classement" && !cour.clAgain) cour.clWait = false; if(kind==="moi") netMark("cour", true);
       if(kind==="moi") courMoiNews(prev, d);
       if(kind==="semaine") semaineLots(d);
-      if(ui.view==="cour" || (["fil","moi","encheres","classement"].includes(kind) && ui.view==="accueil")) renderView();
+      if(ui.view==="cour" || (["fil","moi","encheres","classement"].includes(kind) && ui.view==="accueil") || (["annonces","trocs"].includes(kind) && ui.view==="collection" && ui.tab==="billes")) renderView();
       if(kind==="moi") renderNav();
       if(kind==="moi" || kind==="journal" || kind==="semaine") renderBell() },
     e=>{ if(kind==="classement") cour.clWait = false; if(e.code==="serveur_absent"){ if(kind==="moi") cour.ok = false; else cour.absent[kind] = true } else { if(kind==="moi") netMark("cour", false); if(ui.view==="cour") courFail(e) } if(ui.view==="cour") renderView() })
@@ -14180,7 +14359,8 @@ function clSemaine(){
           <li><b>Chaque bille tirée cette semaine</b><span>${TK.map(t=>`${TYPES[t].label} ${String(SCORE.taille[TIDX[t]]/10).replace(".",",")}`).join(" · ")}</span><small>× la rareté du motif, même pour un double.</small></li>
           <li><b>Une case vide remplie</b><span>la bille compte double</span><small>Un nouveau motif dans une taille que tu n'avais pas.</small></li>
           <li><b>Une shiny</b><span>${SHINIES.slice(1).map((x,i)=>`${x.name} +${SCORE.shiny[i]/10}`).join(" · ")}</span></li>
-        </ul><p class="meta">Ne comptent pas : les billes reçues par troc ou au marché, celles des fusions, d'événement et de saison. Tout repart à zéro chaque lundi à minuit.</p></section>
+          <li><b>Une bille troquée ou achetée au marché</b><span>comme une bille tirée</span><small>Seulement si c'est ton premier exemplaire de cette bille (pas un double).</small></li>
+        </ul><p class="meta">Ne comptent pas : les doubles reçus par troc ou au marché, les billes des fusions, d'événement et de saison. Tout repart à zéro chaque lundi à minuit.</p></section>
     </div>
   </div>`;
 }
@@ -14469,6 +14649,13 @@ const ownTag = o => o.n ? `<span class="mk-own">${ic("check",12,3)} Déjà dans 
   : `<span class="mk-own miss${o.dec?"":" col"}">${SPARK} ${o.dec?"Motif qui te manque":"Coloris qui te manque"}</span>`;
 const pickTxt = x => { try{ return pickText(x) }catch(e){ return fold(specName(x)) } };
 // chez un copain, ce qui te manque brille d'un halo : doré = motif que tu n'as pas dans cette taille, bleu = coloris que tu n'as pas (comme l'éclat à l'ouverture)
+// (14 octobre 2026) les doubles d'un autre joueur : ses billes en plusieurs exemplaires (même coloris, même shiny), sauf la plus belle qu'il garde
+function dupsIn(list){
+  const by = new Map(), out = new Set();
+  list.forEach(s=>{ const k = dupKey(s); if(!by.has(k)) by.set(k,[]); by.get(k).push(s) });
+  by.forEach(l=>{ if(l.length>1){ const k = [...l].sort(tierSort)[0]; l.forEach(s=>{ if(s.id!==k.id) out.add(s.id) }) } });
+  return out;
+}
 function missOf(){
   const sk = new Set(S.specs.map(slotKey)), ck = new Set(S.specs.map(colorKey));
   return x => !sk.has(slotKey(x)) ? "dec" : !ck.has(colorKey(x)) ? "col" : "";
@@ -14503,8 +14690,10 @@ function trocCompose(){
     <div class="compose">
       <section class="panel cmp give"><div class="panel-head"><h3>${ic("swap",18)} Tu donnes</h3>${dots(C.give.length)}</div>${C.mine?.length ? `<label class="tr-dbl"><input type="checkbox" data-action="troc-dbl"${C.dbl?" checked":""}> Seulement mes doubles</label>` : ""}
         <div style="--tc:#E8743B">${C.dbl && C.mine && !C.mine.some(x=>trocDups().has(x.id)) ? `<p class="empty">Tu n'as aucun double à troquer.</p>` : pickList(C.dbl && C.mine ? C.mine.filter(x=>trocDups().has(x.id)) : C.mine, "give", C.give, C.fg)}</div></section>
-      <section class="panel cmp want"><div class="panel-head"><h3>${ic("arrow",18)} Tu demandes à ${esc(C.pseudo)}</h3>${dots(C.want.length)}</div>${C.theirs?.length ? `<label class="tr-dbl"><input type="checkbox" data-action="troc-manque"${C.manque?" checked":""}> Seulement celles qui me manquent</label>` : ""}
-        <div style="--tc:var(--green)">${C.manque && C.theirs && !C.theirs.some(missOf()) ? `<p class="empty">${esc(C.pseudo)} n'a aucune bille qui te manque.</p>` : pickList(C.manque && C.theirs ? C.theirs.filter(missOf()) : C.theirs, "want", C.want, C.fw)}</div></section>
+      <section class="panel cmp want"><div class="panel-head"><h3>${ic("arrow",18)} Tu demandes à ${esc(C.pseudo)}</h3>${dots(C.want.length)}</div>${C.theirs?.length ? `<div class="tr-dbls"><label class="tr-dbl"><input type="checkbox" data-action="troc-manque"${C.manque?" checked":""}> Seulement celles qui me manquent</label><label class="tr-dbl"><input type="checkbox" data-action="troc-sdbl"${C.sdbl?" checked":""}> Seulement ses doubles</label></div>` : ""}
+        <div style="--tc:var(--green)">${(()=>{ if(!C.theirs) return pickList(C.theirs, "want", C.want, C.fw);
+          const miss = missOf(), dup = C.sdbl ? dupsIn(C.theirs) : null, L = C.theirs.filter(x=>(!C.manque || miss(x)) && (!dup || dup.has(x.id)));
+          return (C.manque || C.sdbl) && !L.length ? `<p class="empty">${esc(C.pseudo)} n'a aucune bille ${C.manque && C.sdbl ? "qui te manque en double" : C.manque ? "qui te manque" : "en double"}.</p>` : pickList(L, "want", C.want, C.fw) })()}</div></section>
     </div>
     <section class="panel cmp-send"><div class="cmp-sum">${sd("give","Tu donnes",C.mine,C.give)}${ic("swap",18)}${sd("get","Tu reçois",C.theirs,C.want)}</div>
       <form class="cour-form" id="troc-form"><input type="text" id="troc-mot" maxlength="140" placeholder="Un petit mot pour ${esc(C.pseudo)} (facultatif)" value="${esc(C.mot||"")}" aria-label="Petit mot">
@@ -14782,6 +14971,7 @@ document.addEventListener("click", e=>{
     case "sell-dbl": { const X = cour.sell; if(!X) break; X.dbl = t.checked; renderView(); break }
     case "troc-dbl": { const C = cour.compose; if(!C) break; C.dbl = t.checked; C.mot = document.getElementById("troc-mot")?.value || C.mot; renderView(); break }
     case "troc-manque": { const C = cour.compose; if(!C) break; C.manque = t.checked; C.mot = document.getElementById("troc-mot")?.value || C.mot; renderView(); break }
+    case "troc-sdbl": { const C = cour.compose; if(!C) break; C.sdbl = t.checked; C.mot = document.getElementById("troc-mot")?.value || C.mot; renderView(); break }
     case "troc-pick": {
       if(t.dataset.side==="sell"){ cour.sell.pick = t.dataset.id; renderView(); document.getElementById("sell-prix")?.focus(); break }
       const C = cour.compose, list = t.dataset.side==="give" ? C.give : C.want, i = list.indexOf(t.dataset.id);

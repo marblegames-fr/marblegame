@@ -708,14 +708,19 @@ create or replace function interne.lots_semaine() returns table (de int, a int, 
   values (1, 1, 'collector', 0), (2, 2, 'premium', 0), (3, 3, 'classique', 0) $$;
 
 create or replace function interne.semaine_pts(d date) returns table (joueur uuid, pts int, billes int, nouvelles int) language sql stable as $$
-  with wk as (   -- les billes tirées dans la semaine (la ligne « trouvee » de l'historique : qui l'a tirée, et quand)
-    select h.id hid, h.vers j, b.coloris, b.shiny,
+  with wk0 as (   -- les billes arrivées dans la semaine : tirées (« trouvee »), ou (14 octobre 2026) reçues par troc ou achetées au marché
+    select h.id hid, h.vers j, h.motif, h.le, b.taille, b.decor, b.coloris, b.shiny,
       round((interne.pts_taille())[interne.rang(b.taille)+1] * (interne.mult_decor())[(interne.decor_rarete())[b.decor+1]+1])::int v
     from public.billes_historique h join public.billes b on b.id = h.bille
-    where h.motif = 'trouvee' and h.le >= interne.semaine_t(d) and h.le < interne.semaine_t(d + 7)
+    where h.motif in ('trouvee', 'echange', 'vente') and h.le >= interne.semaine_t(d) and h.le < interne.semaine_t(d + 7)
       and b.origine = 'serveur' and b.secrete is null and coalesce(b.donnees->>'src', '') not in ('test', 'fusion')
       and coalesce((interne.decor_rarete())[b.decor+1], 5) <> 5
       and h.vers not in (select t.joueur from public.testeurs t)),
+  -- une bille reçue ou achetée ne compte que si c'est le premier exemplaire de ce modèle (taille, motif, coloris, shiny) arrivé chez le joueur
+  wk as (select * from wk0 w where w.motif = 'trouvee' or not exists (
+      select 1 from public.billes_historique h2 join public.billes b2 on b2.id = h2.bille
+      where h2.vers = w.j and h2.motif in ('trouvee', 'echange', 'vente') and (h2.le, h2.id) < (w.le, w.hid)
+        and b2.taille = w.taille and b2.decor = w.decor and b2.coloris = w.coloris and coalesce(b2.shiny, 0) = coalesce(w.shiny, 0))),
   -- la première bille de chaque case (taille + décor) arrivée chez le joueur, tirée ou reçue : c'est elle qui a rempli la case
   prem as (select distinct on (h.vers, b.taille, b.decor) h.id
     from public.billes_historique h join public.billes b on b.id = h.bille

@@ -118,6 +118,8 @@ begin
 end $$;
 
 -- s'inscrire (ou changer de bille) pour la prochaine course
+-- (14 octobre 2026) on s'inscrit à la journée : avant 11 h 59, l'inscription vaut pour la course de midi ET celle du soir
+-- (après midi, seulement pour celle du soir). Se désinscrire retire les deux.
 create or replace function public.course_inscrire(bid uuid default null) returns jsonb language plpgsql security definer set search_path = public as $$
 declare qui uuid := interne.moi(); c record;
 begin
@@ -125,13 +127,17 @@ begin
   if bid is not null and not exists (select 1 from billes where id = bid and proprietaire = qui and detruite_le is null) then raise exception 'bille_invalide'; end if;
   insert into course_inscrits (jour, heure, joueur, bille) values (c.jour, c.heure, qui, bid)
     on conflict (jour, heure, joueur) do update set bille = excluded.bille;
+  if c.heure = 12 then
+    insert into course_inscrits (jour, heure, joueur, bille) values (c.jour, 20, qui, bid)
+      on conflict (jour, heure, joueur) do update set bille = excluded.bille;
+  end if;
   return public.course_etat();
 end $$;
 create or replace function public.course_desinscrire() returns jsonb language plpgsql security definer set search_path = public as $$
 declare qui uuid := interne.moi(); c record;
 begin
   select * into c from interne.course_suivante();
-  delete from course_inscrits where jour = c.jour and heure = c.heure and joueur = qui;
+  delete from course_inscrits where jour = c.jour and joueur = qui and (heure = c.heure or (c.heure = 12 and heure = 20));
   return public.course_etat();
 end $$;
 

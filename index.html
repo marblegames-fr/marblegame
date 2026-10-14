@@ -15322,6 +15322,15 @@ async function ecoStart(){
 function eventGifts(){}
 function ecoRefresh(){ if(srvOn()) srv(()=>Cloud.eco.state()).then(applyEco, ()=>{}) }
 // une fois connecté au serveur : les nouvelles de la cour (demandes, trocs) et les billes reçues entre-temps
+// (14 octobre 2026) au démarrage : le voile de chargement attend aussi la cour, la Grande Course, la loterie et ce qu'affiche l'accueil
+// (avant, l'accueil se remplissait encore quelques secondes après le voile) ; 6 secondes au plus, le reste arrive ensuite
+async function bootLoads(){
+  if(!srvOn()) return;
+  courStart(); courLoad("fil"); courLoad("encheres"); courLoad("classement");
+  const busy = () => Object.values(cour.loading).some(Boolean) || gc.busy || lot.loading || cour.newsBusy;
+  const t0 = Date.now(); await new Promise(r=>setTimeout(r, 50));
+  while(busy() && Date.now()-t0 < 6000) await new Promise(r=>setTimeout(r, 100));
+}
 function courStart(){ if(!srvOn()) return; if(S.notifVu==null){ S.notifVu = S.courVu || Date.now(); save() } courLoad("moi", true); courLoad("journal"); courLoad("semaine"); syncMarbles(true); courNews(true); gcLoad(true); lotLoad(true); courListen(); renderBell() }
 const DEVICE = (()=>{ try{ let d = localStorage.getItem("billeo-device"); if(!d){ d = newId(); localStorage.setItem("billeo-device", d) } return d }catch(e){ return newId() } })();
 const lsGet = k => { try{ return localStorage.getItem(k) }catch(e){ return null } };
@@ -15424,7 +15433,8 @@ async function cloudStart0(user){
     if(P.profil) S.name = P.profil.pseudo;
     sync.on = true; save();
     await ecoStart();
-    authHide(); rerenderAll(); courStart();
+    await bootLoads();
+    authHide(); rerenderAll();
     return;
   }
   // premier passage de ce compte : on récupère (ou pas) la collection jouée sans compte

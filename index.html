@@ -6967,7 +6967,7 @@ function renderNav(){
       n[0]==="jeux"&&games?'<span class="ready" aria-label="Récompense du jour à gagner"></span>':""}${
       n[0]==="cour"&&courCount()?`<span class="cnt" aria-label="${courCount()} nouveauté${courCount()>1?"s":""} dans la cour">${courCount()}</span>`:""}</button>`
   ).join("")
-    + `<button class="side-bug side-news" data-action="news">${ic("star",18)}<span><b>Nouveautés</b><small>${NEWS.txt}</small></span>${newsUnseen()?'<i class="news-dot" aria-label="Pas encore lu"></i>':""}</button>`
+    + (!NEWS.on ? "" : `<button class="side-bug side-news" data-action="news">${ic("star",18)}<span><b>Nouveautés</b><small>${NEWS.txt}</small></span>${newsUnseen()?'<i class="news-dot" aria-label="Pas encore lu"></i>':""}</button>`)
     + (sync.on ? `<button class="side-bug" data-action="bug-report">${ic("bug",18)}<span><b>Un souci ?</b><small>Signaler un bug</small></span></button>` : "");
   const tab = (v,l,i,dot) => `<button class="tb" data-action="nav" data-view="${v}" ${cur===v?'aria-current="page"':""}>${ic(i,24)}${l}${dot?'<span class="dot"></span>':""}</button>`;
   // 7 onglets : le sachet au milieu
@@ -7273,7 +7273,7 @@ function renderProfPop(){
       <button data-action="nav" data-view="succes">${ic("trophy",16)} Succès</button>
       <button data-action="stats">${ic("chart",16)} Mes statistiques</button>
       <button data-action="nav" data-view="parametres">${ic("gear",16)} Paramètres</button>
-      <button data-action="news">${ic("star",16)} Nouveautés${newsUnseen()?' <i class="news-dot" aria-label="Pas encore lu"></i>':""}</button>
+      ${NEWS.on ? `<button data-action="news">${ic("star",16)} Nouveautés${newsUnseen()?' <i class="news-dot" aria-label="Pas encore lu"></i>':""}</button>` : ""}
       ${sync.on ? `<button class="pp-bug" data-action="bug-report">${ic("bug",16)} Signaler un bug</button>` : ""}
     </div>
     <div class="pp-toggles"><button id="theme-btn" data-action="theme"></button><button id="sound-btn" data-action="sound"></button></div>
@@ -13870,7 +13870,8 @@ function bugDetails(){
 }
 let bugKeep = null;   // un message qui n'est pas parti : il est reproposé au prochain clic
 // (14 octobre 2026) le dernier patchnote : changer id, txt (et la page nouveautes.html) à chaque mise à jour annoncée
-const NEWS = {id:"2026-10-14", url:"/nouveautes.html", txt:"Mise à jour du 14 oct."};
+// on:false cache le bouton (pendant qu'on prépare la mise à jour) ; on:true le remet, avec la pastille si l'id a changé
+const NEWS = {on:false, id:"2026-10-14", url:"/nouveautes.html", txt:"Mise à jour du 14 oct."};
 const newsUnseen = () => lsGet("billeo-news-vu")!==NEWS.id;
 async function bugReport(prev){
   if(!sync.on){ toast("Connecte-toi à ton compte pour envoyer un message."); return }

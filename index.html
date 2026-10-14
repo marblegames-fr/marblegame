@@ -13013,6 +13013,8 @@ function g3TroughEnd(k, P, path, o){
   k.box([S, .4, S], c, q, "tray");
   [[1,0],[0,1],[0,-1]].forEach(([a, b])=>{ const p = v3.add(c, v3.add(v3.mul(Xh, a*S/2), v3.mul(v3.cross(Xh, [0,1,0]), b*S/2)));   // (pas de bord du côté où arrive la piste)
     k.box(a ? [.4, 3, S] : [S, 3, .4], v3.add(p, [0, 1.5, 0]), q, a===-1 ? "glass" : "wall") });
+  // un bord bas du côté où arrive la piste (une bille qui roulait en arrière dans le bac retombait par là)
+  k.box([.4, 1.4, S], v3.add(c, v3.add(v3.mul(Xh, -S/2), [0, .7, 0])), q, "glass");
   path.push(v3.add(c, [0, 1, 0]));
   return {finishY:c[1]+1.2, floorY:c[1]-2, trayR:8};
 }
@@ -13022,7 +13024,8 @@ function g3TroughEnd(k, P, path, o){
 function g3Fourche(k, r, n, o){
   const WID = 3.2, p = o.pente || .1, yf = 0;
   // la goulotte de départ, jusqu'à la fourche (en x = 0)
-  const P0 = g3Trace([["S", 28]], {pente:p, from:[-28, yf + 28*p, 0]});
+  // (14 octobre 2026) plus long (le raccourci gagnait en 30 s) ; tout droit : une courbe en S avant la fourche faisait des bouchons
+  const P0 = g3Trace([["S", 40]], {pente:p, from:[-40, yf + 40*p, 0]});
   const main = g3Trough(k, P0, {WID, mur:1.5, kind:o.kind}).path;
   const st = g3TroughStart(k, P0, {WID}, n, r);
   // la fourche : un plateau large, un éperon qui sépare à gauche ou à droite, des bords
@@ -13046,7 +13049,7 @@ function g3Fourche(k, r, n, o){
   k.box([.4, 4, 17], [x0 - .2, yb + 1.5, 0], [0,0,0], "wall");
   [-1, 1].forEach(sd=>{ k.box([L, 4, .4], [x0 + L/2, yb + .8, sd*8.4], [0,0,0], "wall"); k.box([.4, 3, 5.6], [x0 + L + .2, yo + 1.5, sd*5.6], [0,0,0], "wall") });
   // la dernière goulotte (plus large au début : 24 billes sortent de l'entonnoir en même temps), juste après le bord de l'entonnoir, un peu plus bas
-  const PC = g3Trace([["S", 20]], {pente:p, from:[x0 + L + .1, yo - .6, 0]});
+  const PC = g3Trace([["S", 34]], {pente:p, from:[x0 + L + .1, yo - .6, 0]});
   const fin = g3Trough(k, PC, {WID:5.2, mur:1.5, kind:o.kind}).path;
   // le chemin : départ, puis le détour (le plus long), l'entonnoir, la fin ; le raccourci est une branche
   const path = [...main, ...brB, [x0 + 4, yb + .6, 0], [x0 + L - 1, yo + .6, 0], ...fin], iF = main.length, iM = main.length + brB.length;
@@ -13365,17 +13368,17 @@ const G3C = {
   // ---------- (14 octobre 2026) les entonnoirs en cascade ----------
   // Le tourbillon, à midi : trois grands entonnoirs d'eau, les billes tournent, tournent… et plongent dans le trou
   tourbillon:{name:"Le Tourbillon", desc:"Trois grands entonnoirs bleus : les billes y entrent en tournant, font des tours et des tours… puis plongent par le trou vers le suivant !",
-    theme:{bg:"#0D2733", ramp:"#36C2D8", tray:"#FFD34D"}, form:"entonnoirs",
+    theme:{bg:"#0D2733", ramp:"#36C2D8", tray:"#FFD34D"}, form:"entonnoirs", patience:7,
     build(k, r, n){ return g3Entonnoirs(k, r, n, {nb:3, RO:6.5}) }},
   // Les trois entonnoirs, le soir : plus grands, en néon
   entonnoirs:{name:"Les Entonnoirs néon", desc:"Trois entonnoirs géants qui brillent dans la nuit : les billes tourbillonnent les unes contre les autres avant de tomber dans le suivant.",
-    theme:{bg:"#120A26", ramp:"#7B4FD6", tray:"#FF4FD8"}, form:"entonnoirs",
-    build(k, r, n){ return g3Entonnoirs(k, r, n, {nb:3, RO:7.5, pente:20*Math.PI/180}) }},
+    theme:{bg:"#120A26", ramp:"#7B4FD6", tray:"#FF4FD8"}, form:"entonnoirs", patience:7,
+    build(k, r, n){ return g3Entonnoirs(k, r, n, {nb:3, RO:7.5, RI:1.85, pente:20*Math.PI/180}) }},
 
   // ---------- (14 octobre 2026) la spirale qui s'élargit ----------
   // Le volcan : une piste de roche qui fait trois tours autour d'un cône, de plus en plus large en descendant, avec des rochers
   volcan:{name:"Le Volcan", desc:"Une piste de roche qui tourne trois fois autour d'un volcan, de plus en plus large en descendant, semée de rochers. En bas, le lac de lave !",
-    theme:{bg:"#2A1410", ramp:"#6A5A52", tray:"#FF5A1F", rock:"#3A2E2A", tower:"#4A3A34"}, form:"spirale",
+    theme:{bg:"#2A1410", ramp:"#B39276", tray:"#FF5A1F", rock:"#4A3A34", tower:"#6A4A3E"}, form:"spirale",
     build(k, r, n){ const o = {WID:3.2, mur:1.5}, T = 3, A = T*TAU, R0 = 6, R1 = 13, drop = 23, NS = 150, P = [];
       // le départ : tout droit, puis la spirale (dans le sens des aiguilles d'une montre vue d'en haut)
       const at = a => { const R = R0 + (R1-R0)*a/A; return [R*Math.cos(a), -drop*a/A, R*Math.sin(a)] };
@@ -13480,7 +13483,8 @@ function g3Simulate(CANNON, seed, n, cid){
     // reçoit une pichenette dans le sens de la piste, de plus en plus forte si ça ne suffit pas
     if(f%30===0) W.balls.forEach((b,i)=>{ if(fin[i]!=null || t<4) return; const {s, T} = g3Where(W, b.position.x, b.position.y, b.position.z);
       if(b.best==null || s > b.best+.5){ b.best = s; b.bestT = t; b.kicks = 0; return }
-      if(t-b.bestT>4){ b.bestT = t; b.kicks = (b.kicks||0)+1; const side = i%2 ? 1 : -1, p = Math.min(2.5, 1+.5*(b.kicks-1));   // plafonnée : une bille ne doit jamais sauter hors de la piste
+      // (14 octobre 2026) patience : plus longue dans les entonnoirs, où une bille qui tourne n'est pas bloquée
+      if(t-b.bestT>(W.C.patience||4)){ b.bestT = t; b.kicks = (b.kicks||0)+1; const side = i%2 ? 1 : -1, p = Math.min(2.5, 1+.5*(b.kicks-1));   // plafonnée : une bille ne doit jamais sauter hors de la piste
         // dans le sens de la piste, et sur le côté (sur une piste qui descend tout droit, comme le Plinko, c'est le côté qui débloque)
         const L = Math.hypot(T[0], T[2]) > .3 ? v3.norm([T[2], 0, -T[0]]) : [1, 0, 0];
         b.applyImpulse(new CANNON.Vec3(T[0]*1.2*p + side*L[0]*.8*p, .5, T[2]*1.2*p + side*L[2]*.8*p)) } });
@@ -13558,7 +13562,7 @@ async function gcWatch3D(race){
     peg:new THREE.MeshStandardMaterial({color:TH.peg||"#F4E3C2", roughness:.35, metalness:.2, ...(night ? {emissive:TH.peg||"#FFE7B0", emissiveIntensity:.45} : {})}),
     kick:new THREE.MeshStandardMaterial({color:cbShade(TH.ramp, 25), roughness:.5}), bump:new THREE.MeshStandardMaterial({color:TH.bump||"#FF4F7A", roughness:.3, metalness:.1, emissive:TH.bump||"#FF4F7A", emissiveIntensity:night ? 1 : .25}),
     spin:new THREE.MeshStandardMaterial({color:TH.spin||"#FFD34D", roughness:.35, metalness:.3}), axle:new THREE.MeshStandardMaterial({color:"#8A8FA3", roughness:.3, metalness:.6}),
-    tower:new THREE.MeshStandardMaterial({color:cbShade(TH.ramp, -25), roughness:.8}),
+    tower:new THREE.MeshStandardMaterial({color:TH.tower || cbShade(TH.ramp, -25), roughness:.8}),
     // (14 octobre 2026) les pièces des nouveaux circuits
     maze:new THREE.MeshStandardMaterial({color:TH.maze||cbShade(TH.ramp, -30), roughness:.8}), rock:new THREE.MeshStandardMaterial({color:TH.rock||"#8C949C", roughness:.9}),
     pool:new THREE.MeshStandardMaterial({color:TH.pool||"#F2C230", roughness:.15, metalness:.1}), pool2:new THREE.MeshStandardMaterial({color:TH.pool2||"#C8312E", roughness:.15, metalness:.1}),

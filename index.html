@@ -3157,6 +3157,10 @@ button.cp-who:hover b{text-decoration:underline}
 .bug-form textarea{width:100%;resize:vertical;min-height:110px;padding:12px;border-radius:14px;border:1.5px solid var(--line-2);background:var(--panel-2);color:var(--ink);font:inherit;font-size:14.5px;font-weight:600;line-height:1.4}
 .bug-form textarea:focus{outline:none;border-color:var(--blue)}
 .bug-form .meta{font-size:12px;line-height:1.35}
+/* (14 octobre 2026) « Nouveautés » : le patchnote (nouveautes.html), avec une pastille tant qu'on ne l'a pas ouvert */
+.side-news{position:relative}.side-news + .side-bug{margin-top:8px}
+.news-dot{display:inline-block;width:9px;height:9px;border-radius:50%;background:var(--red,#EF5B60);box-shadow:0 0 0 2px var(--panel)}
+.side-news .news-dot{position:absolute;top:8px;right:10px}
 .side-bug{display:flex;align-items:center;gap:10px;margin-top:auto;padding:10px 12px;border-radius:14px;border:1.5px dashed var(--line-2);color:var(--ink-2);text-align:left}
 .side-bug:hover{background:var(--panel-2);border-style:solid}
 .side-bug svg{flex:none;color:var(--muted)}
@@ -6963,6 +6967,7 @@ function renderNav(){
       n[0]==="jeux"&&games?'<span class="ready" aria-label="Récompense du jour à gagner"></span>':""}${
       n[0]==="cour"&&courCount()?`<span class="cnt" aria-label="${courCount()} nouveauté${courCount()>1?"s":""} dans la cour">${courCount()}</span>`:""}</button>`
   ).join("")
+    + `<button class="side-bug side-news" data-action="news">${ic("star",18)}<span><b>Nouveautés</b><small>${NEWS.txt}</small></span>${newsUnseen()?'<i class="news-dot" aria-label="Pas encore lu"></i>':""}</button>`
     + (sync.on ? `<button class="side-bug" data-action="bug-report">${ic("bug",18)}<span><b>Un souci ?</b><small>Signaler un bug</small></span></button>` : "");
   const tab = (v,l,i,dot) => `<button class="tb" data-action="nav" data-view="${v}" ${cur===v?'aria-current="page"':""}>${ic(i,24)}${l}${dot?'<span class="dot"></span>':""}</button>`;
   // 7 onglets : le sachet au milieu
@@ -7268,6 +7273,7 @@ function renderProfPop(){
       <button data-action="nav" data-view="succes">${ic("trophy",16)} Succès</button>
       <button data-action="stats">${ic("chart",16)} Mes statistiques</button>
       <button data-action="nav" data-view="parametres">${ic("gear",16)} Paramètres</button>
+      <button data-action="news">${ic("star",16)} Nouveautés${newsUnseen()?' <i class="news-dot" aria-label="Pas encore lu"></i>':""}</button>
       ${sync.on ? `<button class="pp-bug" data-action="bug-report">${ic("bug",16)} Signaler un bug</button>` : ""}
     </div>
     <div class="pp-toggles"><button id="theme-btn" data-action="theme"></button><button id="sound-btn" data-action="sound"></button></div>
@@ -13863,6 +13869,9 @@ function bugDetails(){
     theme: document.documentElement.dataset.theme || "", serveur: !!eco.ready, billes: S.specs.length, erreurs: BUG_LOG.slice(-8), url: location.pathname + location.search};
 }
 let bugKeep = null;   // un message qui n'est pas parti : il est reproposé au prochain clic
+// (14 octobre 2026) le dernier patchnote : changer id, txt (et la page nouveautes.html) à chaque mise à jour annoncée
+const NEWS = {id:"2026-10-14", url:"/nouveautes.html", txt:"Mise à jour du 14 oct."};
+const newsUnseen = () => lsGet("billeo-news-vu")!==NEWS.id;
 async function bugReport(prev){
   if(!sync.on){ toast("Connecte-toi à ton compte pour envoyer un message."); return }
   prev = prev || bugKeep; bugKeep = null;
@@ -15085,6 +15094,7 @@ document.addEventListener("click", e=>{
     case "set-avatar": { const pub = t.dataset.pub==="1"; if(!pub) delete S.photo; if(t.dataset.id) S.avatar = t.dataset.id; else delete S.avatar; save(); closeModal(); renderTop(); renderView();
       toast(pub ? "C'est la bille que voient les autres joueurs !" : "C'est ta nouvelle photo de profil !"); break }
     case "bug-report": toggleProfPop(false); bugReport(); break;
+    case "news": lsSet("billeo-news-vu", NEWS.id); toggleProfPop(false); window.open(NEWS.url, "_blank", "noopener"); renderNav(); break;
     case "bug-list": bugAdm.tous = t.dataset.tous==="1"; bugLoad(); break;
     case "bug-regle": bugRegle(+t.dataset.id, t.dataset.oui==="1"); break;
     case "stats": toggleProfPop(false); courStats = null; go("profil"); setTimeout(()=>document.getElementById("stats")?.scrollIntoView({behavior:"smooth", block:"start"}), 60); break;

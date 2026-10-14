@@ -96,6 +96,27 @@ ul.items p{margin:0;color:var(--ink-2);font-weight:600}
   .moments{grid-template-columns:minmax(0,1fr)}
   .sec-head h2{font-size:22px}
 }
+/* le sommaire */
+.toc{display:flex;flex-wrap:wrap;justify-content:center;gap:8px;margin:0 0 18px}
+.toc a{display:inline-flex;align-items:center;gap:6px;padding:7px 13px;border-radius:999px;background:var(--panel);border:1px solid var(--line);box-shadow:var(--shadow);font-weight:900;font-size:14px;text-decoration:none}
+.toc a:hover{border-color:var(--ink-2)}
+.card{scroll-margin-top:16px}
+.tag{display:inline-block;margin-left:6px;padding:1px 8px;border-radius:999px;font-size:10.5px;font-weight:900;letter-spacing:.06em;text-transform:uppercase;vertical-align:2px}
+.tag.new{background:var(--yellow);color:#2B2233}
+.tag.chg{background:color-mix(in srgb,var(--blue) 18%,var(--panel));color:var(--blue)}
+.tag.fix{background:color-mix(in srgb,var(--green) 18%,var(--panel));color:var(--green)}
+h3.sub{margin:20px 0 10px;font-family:var(--display);font-weight:400;font-size:19px}
+/* les barèmes */
+.scale{display:grid;grid-template-columns:repeat(6,minmax(0,1fr));gap:6px;margin:10px 0 4px}
+.scale div{padding:8px 4px;border-radius:12px;background:var(--panel);border:1px solid var(--line);text-align:center}
+.scale small{display:block;font-size:11.5px;font-weight:800;color:var(--muted);line-height:1.2}
+.scale b{display:block;font-family:var(--display);font-weight:400;font-size:20px;line-height:1.2}
+.podium{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px;margin-top:10px}
+.podium div{padding:12px 8px;border-radius:14px;text-align:center;font-weight:800;font-size:13.5px;color:#2B2233}
+.podium b{display:block;font-family:var(--display);font-weight:400;font-size:24px}
+.podium .p1{background:linear-gradient(180deg,#FFE27A,#F2AE12)}.podium .p2{background:linear-gradient(180deg,#E9EDF5,#B9C3D6)}.podium .p3{background:linear-gradient(180deg,#F6C9A0,#D98A4E)}
+ul.items li .scale,ul.items li .podium{margin-bottom:2px}
+@media (max-width:560px){ .scale{grid-template-columns:repeat(3,minmax(0,1fr))} }
 </style>
 </head>
 <body>
@@ -104,7 +125,7 @@ ul.items p{margin:0;color:var(--ink-2);font-weight:600}
   <div class="logo">Tikalo</div>
   <span class="kick">Mise à jour · 14 octobre 2026</span>
   <h1>Quoi de neuf dans la cour&nbsp;?</h1>
-  <p>6 nouveaux circuits, des courses de jour et de nuit, et plein de petites choses en plus !</p>
+  <p>Un classement de la semaine avec des lots, 6 nouveaux circuits de jour et de nuit, une cloche toute neuve… et plein d'autres choses !</p>
   <div class="garland" aria-hidden="true"><svg viewBox="0 0 400 30" preserveAspectRatio="none">
     <path d="M0 6 Q50 26 100 8 T200 8 T300 8 T400 6" fill="none" stroke="rgba(255,255,255,.35)" stroke-width="1.2"/>
     <g>
@@ -119,8 +140,35 @@ ul.items p{margin:0;color:var(--ink-2);font-weight:600}
 </header>
 
 <main>
-  <section class="card">
-    <div class="sec-head"><span class="chip" style="background:var(--red)">🏁</span><h2>La Grande Course fait peau neuve<small>La plus grosse nouveauté du jour</small></h2></div>
+  <nav class="toc" aria-label="Sommaire">
+    <a href="#classement">🏆 Classements</a><a href="#course">🏁 Grande Course</a><a href="#cloche">🔔 Cloche</a>
+    <a href="#troc">🔁 Troc et marché</a><a href="#joli">🎨 Plus joli</a>
+  </nav>
+
+  <section class="card" id="classement">
+    <div class="sec-head"><span class="chip" style="background:var(--yellow-2)">🏆</span><h2>Le classement de la semaine<small>Nouveau : une course aux points chaque semaine, avec des lots</small></h2></div>
+    <p class="lead">Dans La cour, l'onglet Classement a maintenant trois parties : <b>Général</b>, <b>Cette semaine</b> et <b>Palmarès</b>. Chaque lundi à minuit, le classement de la semaine repart à zéro… et les trois premiers gagnent des lots !</p>
+    <ul class="items">
+      <li><span class="ic">🎯</span><div><b>Comment gagner des points</b><p>Chaque bille tirée du lundi au dimanche rapporte des points selon sa taille, multipliés par la rareté de son motif (Commun ×1, Peu commun ×1,5, Rare ×2, Épique ×3, Légendaire ×5, Mythique ×15). Même un double compte !</p>
+        <div class="scale"><div><small>Mini</small><b>1</b></div><div><small>Bille</small><b>1,5</b></div><div><small>Chinoise</small><b>2</b></div><div><small>Calot</small><b>3</b></div><div><small>Boulet</small><b>6</b></div><div><small>Mammouth</small><b>12</b></div></div></div></li>
+      <li><span class="ic">✨</span><div><b>Les gros bonus</b><p>Une bille qui remplit une case vide de ton album (un nouveau motif dans une taille que tu n'avais pas) compte <b>double</b>. Une shiny rapporte en plus : Irisée +50, Dorée +100, Lumineuse +250.</p></div></li>
+      <li><span class="ic">🔁</span><div><b>Les billes troquées ou achetées comptent aussi</b><p>Une bille reçue par troc ou achetée au marché rapporte des points comme une bille tirée, si c'est ton premier exemplaire de cette bille. Ne comptent pas : les doubles reçus, les billes des fusions, d'événement et de saison.</p></div></li>
+      <li><span class="ic">🎁</span><div><b>Les lots du lundi</b><p>Ils arrivent tout seuls dans tes sachets offerts, et une fenêtre te félicite à ta prochaine visite.</p>
+        <div class="podium"><div class="p1"><b>1er</b>Sachet Collector<br>+ titre « Champion de la semaine »</div><div class="p2"><b>2e</b>Sachet Premium</div><div class="p3"><b>3e</b>Sachet Classique</div></div></div></li>
+      <li><span class="ic">📜</span><div><b>Le Palmarès et le badge de champion</b><p>Le Palmarès garde les podiums des semaines passées. Les champions de la semaine ont un petit trophée 🏆 à côté de leur nom dans les classements (×2, ×3… s'ils ont gagné plusieurs fois).</p></div></li>
+      <li><span class="ic">🔔</span><div><b>Ton résultat dans la cloche</b><p>Le lundi, tous les classés reçoivent une notification : « tu as fini 2e sur 9 et tu gagnes un Sachet Premium ».</p></div></li>
+    </ul>
+
+    <h3 class="sub">Le classement général <span class="tag chg">Modifié</span></h3>
+    <ul class="items">
+      <li><span class="ic">🎨</span><div><b>Les coloris valent plus selon le motif</b><p>Chaque coloris en plus dans une case rapporte selon la rareté du motif, jusqu'à 5 coloris par case.</p></div></li>
+      <li><span class="ic">🌈</span><div><b>Les shiny valent beaucoup plus</b><p>Chaque shiny différente : Irisée 500 points, Dorée 1 000, Lumineuse 2 500 (avant 150, 300 et 600). Une shiny est environ 8 fois plus rare qu'un Mammouth !</p></div></li>
+      <li><span class="ic">🖼️</span><div><b>Ta bille dans le classement</b><p>Le classement montre ta bille de profil. Tu as mis une photo ? Elle reste privée, et tu choisis dans ton profil la bille que voient les autres joueurs.</p></div></li>
+    </ul>
+  </section>
+
+  <section class="card" id="course">
+    <div class="sec-head"><span class="chip" style="background:var(--red)">🏁</span><h2>La Grande Course fait peau neuve<small>6 nouveaux circuits, de jour et de nuit</small></h2></div>
     <p class="lead">Midi et soir ne se ressemblent plus : chaque moment a maintenant ses propres circuits et sa propre ambiance.</p>
     <div class="moments">
       <div class="moment day">
@@ -143,35 +191,37 @@ ul.items p{margin:0;color:var(--ink-2);font-weight:600}
     <ul class="items">
       <li><span class="ic">🌀</span><div><b>Le Labyrinthe change à chaque course</b><p>Ses passages sont tirés au sort : impossible de connaître le bon chemin à l'avance !</p></div></li>
       <li><span class="ic">✨</span><div><b>Le soir, tout brille</b><p>Ciel étoilé, guirlandes d'ampoules le long des pistes et plots qui s'illuminent.</p></div></li>
-      <li><span class="ic">📅</span><div><b>Une seule inscription pour la journée</b><p>Inscris-toi le matin, et ta bille court à midi ET le soir.</p></div></li>
-      <li><span class="ic">🛷</span><div><b>Le Toboggan est réparé</b><p>Les billes ne restent plus coincées derrière les rondins roses.</p></div></li>
+      <li><span class="ic">📅</span><div><b>Une seule inscription pour la journée</b> <span class="tag chg">Modifié</span><p>Inscris-toi le matin, et ta bille court à midi ET le soir. Ma journée affiche « Inscrit aux 2 courses de la journée ».</p></div></li>
+      <li><span class="ic">🛷</span><div><b>Le Toboggan est réparé</b> <span class="tag fix">Corrigé</span><p>Les billes ne restent plus coincées derrière les rondins roses.</p></div></li>
       <li><span class="ic">🔉</span><div><b>Des chocs plus doux</b><p>Le « clic clac » des billes pendant la course est moins fort.</p></div></li>
     </ul>
   </section>
 
-  <section class="card">
+  <section class="card" id="cloche">
+    <div class="sec-head"><span class="chip" style="background:var(--blue)">🔔</span><h2>La cloche et la cour<small>Ne rate plus rien</small></h2></div>
+    <ul class="items">
+      <li><span class="ic">🔵</span><div><b>Notifications lues ou pas lues</b> <span class="tag new">Nouveau</span><p>Une notification pas encore lue a un fond bleu et une pastille. Elle devient lue quand tu cliques dessus (ou quand la souris reste dessus). Une pastille permet de la remettre en « pas lue », et « Tout marquer comme lu » fait tout d'un coup. Ouvrir la cloche ne marque plus tout comme lu.</p></div></li>
+      <li><span class="ic">📬</span><div><b>« Du nouveau dans la cour ! » attend son tour</b><p>Le récap à l'arrivée attend que les autres fenêtres soient fermées, au lieu de se réduire à un petit message.</p></div></li>
+      <li><span class="ic">💎</span><div><b>Des trouvailles rares plus intéressantes</b> <span class="tag chg">Modifié</span><p>Les trouvailles rares des copains et les « dernières belles trouvailles » sur la fiche d'un joueur montrent les Mammouths, les shiny, les motifs légendaires et mythiques de toutes tailles, et les épiques à partir du Calot, avec leur étiquette de rareté. Plus de Boulets communs, ni de billes secrètes, d'événement ou de saison.</p></div></li>
+    </ul>
+  </section>
+
+  <section class="card" id="troc">
     <div class="sec-head"><span class="chip" style="background:var(--green)">🔁</span><h2>Troc et marché</h2></div>
     <ul class="items">
-      <li><span class="ic">🎯</span><div><b>Nouvelle case « Seulement ses doubles »</b><p>Quand tu proposes un troc, coche-la avec « Seulement celles qui me manquent » : tu ne vois que les billes qui te manquent et que ton copain a en double.</p></div></li>
-      <li><span class="ic">💰</span><div><b>« Vendre au marché » réparé</b><p>Le bouton ne disparaît plus par erreur sur certaines billes. Et quand une bille ne peut vraiment pas être vendue, sa fiche dit pourquoi : bille secrète, ou cadeau de bienvenue pas encore échangeable (avec la date).</p></div></li>
-      <li><span class="ic">🏷️</span><div><b>Tes billes occupées se voient</b><p>Dans Mes billes, une bille en vente, aux enchères ou dans un troc en cours a maintenant un contour et une petite étiquette.</p></div></li>
+      <li><span class="ic">🌈</span><div><b>Une shiny n'est plus un double</b> <span class="tag chg">Modifié</span><p>Une shiny et la version normale d'une même bille ne sont plus des doubles : partout (Confiserie, fusion, troc, marché, Mes billes, filtre Doublons), elles comptent comme deux billes différentes.</p></div></li>
+      <li><span class="ic">🎯</span><div><b>Nouvelle case « Seulement ses doubles »</b> <span class="tag new">Nouveau</span><p>Quand tu proposes un troc, coche-la avec « Seulement celles qui me manquent » : tu ne vois que les billes qui te manquent et que ton copain a en double.</p></div></li>
+      <li><span class="ic">🏷️</span><div><b>Tes billes occupées se voient</b> <span class="tag new">Nouveau</span><p>Dans Mes billes, une bille en vente, aux enchères ou dans un troc en cours a maintenant un contour et une petite étiquette.</p></div></li>
+      <li><span class="ic">💰</span><div><b>« Vendre au marché » réparé</b> <span class="tag fix">Corrigé</span><p>Le bouton ne disparaît plus par erreur sur certaines billes. Et quand une bille ne peut vraiment pas être vendue, sa fiche dit pourquoi : bille secrète, ou cadeau de bienvenue pas encore échangeable (avec la date).</p></div></li>
     </ul>
   </section>
 
-  <section class="card">
-    <div class="sec-head"><span class="chip" style="background:var(--yellow-2)">🏆</span><h2>Classement de la semaine</h2></div>
-    <ul class="items">
-      <li><span class="ic">⭐</span><div><b>Les billes troquées ou achetées comptent</b><p>Une bille reçue par troc ou achetée au marché rapporte des points, si c'est ton premier exemplaire de cette bille.</p></div></li>
-    </ul>
-  </section>
-
-  <section class="card">
+  <section class="card" id="joli">
     <div class="sec-head"><span class="chip" style="background:var(--violet)">🎨</span><h2>Plus joli, plus clair</h2></div>
     <ul class="items">
-      <li><span class="ic">⏳</span><div><b>Un vrai écran de chargement</b><p>À l'arrivée sur le site, « Chargement de ta collection… » s'affiche jusqu'à ce que tout soit prêt : plus de mauvais nombre de sachets pendant quelques secondes.</p></div></li>
+      <li><span class="ic">⏳</span><div><b>Un vrai écran de chargement</b> <span class="tag fix">Corrigé</span><p>À l'arrivée sur le site, « Chargement de ta collection… » s'affiche jusqu'à ce que tout soit prêt : plus de mauvais nombre de sachets ni de drapeau rouge pendant quelques secondes.</p></div></li>
       <li><span class="ic">🎮</span><div><b>Page des mini-jeux mieux rangée</b><p>Les jeux « faits à fond » sont bien alignés, et la Grande Course et la Loterie se voient mieux.</p></div></li>
       <li><span class="ic">📖</span><div><b>Billepedia plus lisible</b><p>Les fiches se détachent mieux du papier du cahier.</p></div></li>
-      <li><span class="ic">🖼️</span><div><b>Ta bille dans le classement</b><p>Le classement montre maintenant ta bille de profil. Tu as mis une photo ? Elle reste privée, et tu choisis dans ton profil la bille que voient les autres joueurs.</p></div></li>
     </ul>
   </section>
 

@@ -1,0 +1,182 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Tikalo · Nouveautés</title>
+<meta name="description" content="La mise à jour du 14 octobre 2026 : 6 nouveaux circuits pour la Grande Course, midi en plein jour et le soir sous les étoiles, et plein d'autres nouveautés.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Gluten:wght@900&family=Lilita+One&family=Nunito:wght@600;700;800;900&family=Caveat:wght@700&display=swap">
+<style>
+:root{
+  --bg:#F2E9D7; --panel:#FAF5EB; --panel-2:#F3EADA; --line:#E6D9C1;
+  --ink:#24253D; --ink-2:#56546B; --muted:#8E8898;
+  --yellow:#FFC93F; --yellow-2:#F2AE12; --red:#EF5B60; --violet:#8A63D2; --green:#2FA35A; --blue:#2E6BE6; --orange:#E8743B;
+  --night-1:#141833; --night-2:#2A1E4A;
+  --display:"Lilita One","Arial Rounded MT Bold","Trebuchet MS",sans-serif;
+  --body:"Nunito","Segoe UI",system-ui,sans-serif;
+  --shadow:0 14px 30px -18px rgba(40,30,20,.45);
+}
+@media (prefers-color-scheme:dark){ :root:not([data-theme="light"]){
+  --bg:#12151F; --panel:#1B1F2C; --panel-2:#232838; --line:#2C3244; --ink:#F3F0EA; --ink-2:#BFC2CF; --muted:#858A9C; --shadow:0 14px 30px -18px rgba(0,0,0,.8) } }
+:root[data-theme="dark"]{ --bg:#12151F; --panel:#1B1F2C; --panel-2:#232838; --line:#2C3244; --ink:#F3F0EA; --ink-2:#BFC2CF; --muted:#858A9C; --shadow:0 14px 30px -18px rgba(0,0,0,.8) }
+*{box-sizing:border-box}
+html,body{margin:0}
+body{background:var(--bg);color:var(--ink);font-family:var(--body);font-size:16px;line-height:1.55;-webkit-font-smoothing:antialiased}
+a{color:inherit}
+
+/* le haut : la cour la nuit, les étoiles et des billes qui roulent */
+.hero{position:relative;overflow:hidden;color:#fff;text-align:center;padding:46px 16px 92px;
+  background:radial-gradient(ellipse at 50% 120%,#4A2E7A 0%,transparent 60%),linear-gradient(180deg,var(--night-1),var(--night-2))}
+.hero::before{content:"";position:absolute;inset:0;opacity:.85;pointer-events:none;
+  background-image:radial-gradient(1.5px 1.5px at 12% 22%,#fff 50%,transparent 51%),radial-gradient(1px 1px at 28% 64%,#fff 50%,transparent 51%),
+  radial-gradient(1.5px 1.5px at 44% 14%,#fff 50%,transparent 51%),radial-gradient(1px 1px at 61% 42%,#fff 50%,transparent 51%),
+  radial-gradient(2px 2px at 78% 18%,#FFE9A8 50%,transparent 51%),radial-gradient(1px 1px at 88% 60%,#fff 50%,transparent 51%),
+  radial-gradient(1.5px 1.5px at 6% 78%,#fff 50%,transparent 51%),radial-gradient(1px 1px at 52% 80%,#fff 50%,transparent 51%),
+  radial-gradient(1.5px 1.5px at 94% 34%,#fff 50%,transparent 51%),radial-gradient(1px 1px at 36% 36%,#fff 50%,transparent 51%)}
+.hero > *{position:relative}
+.logo{font-family:"Gluten",var(--display);font-weight:900;font-size:clamp(46px,11vw,72px);line-height:1;letter-spacing:.01em;color:var(--yellow);
+  text-shadow:0 4px 0 #B3790A,0 10px 24px rgba(0,0,0,.45)}
+.kick{display:inline-block;margin:18px 0 8px;padding:5px 14px;border-radius:999px;background:rgba(255,255,255,.12);border:1px solid rgba(255,255,255,.22);
+  font-weight:900;font-size:13px;letter-spacing:.08em;text-transform:uppercase}
+.hero h1{margin:0;font-family:var(--display);font-weight:400;font-size:clamp(30px,7vw,46px);line-height:1.05}
+.hero p{margin:12px auto 0;max-width:34ch;color:rgba(255,255,255,.8);font-weight:700;font-size:17px}
+.garland{position:absolute;left:0;right:0;bottom:46px;height:30px}
+.garland svg{width:100%;height:100%;display:block}
+.bulb{animation:blink 2.4s ease-in-out infinite}
+.bulb:nth-child(3n){animation-delay:.8s}.bulb:nth-child(3n+1){animation-delay:1.6s}
+@keyframes blink{50%{opacity:.35}}
+.balls{position:absolute;left:0;right:0;bottom:0;height:46px}
+.ball{position:absolute;bottom:10px;width:26px;height:26px;border-radius:50%;box-shadow:inset -4px -5px 0 rgba(0,0,0,.22),inset 4px 4px 0 rgba(255,255,255,.35);animation:roll 14s linear infinite}
+.ball:nth-child(1){background:var(--yellow);animation-delay:0s}
+.ball:nth-child(2){background:#5AB8FF;animation-delay:-3.5s;width:20px;height:20px}
+.ball:nth-child(3){background:#FF6FB5;animation-delay:-7s}
+.ball:nth-child(4){background:#7CE59A;animation-delay:-10.5s;width:22px;height:22px}
+@keyframes roll{from{left:-40px;transform:rotate(0)}to{left:calc(100% + 40px);transform:rotate(1080deg)}}
+@media (prefers-reduced-motion:reduce){ .ball,.bulb{animation:none} .ball:nth-child(1){left:20%}.ball:nth-child(2){left:42%}.ball:nth-child(3){left:64%}.ball:nth-child(4){left:82%} }
+
+main{max-width:760px;margin:-40px auto 0;padding:0 16px 56px;position:relative}
+.card{background:var(--panel);border:1px solid var(--line);border-radius:22px;box-shadow:var(--shadow);padding:22px 20px;margin-bottom:18px}
+.sec-head{display:flex;align-items:center;gap:12px;margin-bottom:14px}
+.chip{flex:none;display:grid;place-items:center;width:44px;height:44px;border-radius:14px;color:#fff;font-size:22px;box-shadow:0 8px 16px -10px currentColor}
+.sec-head h2{margin:0;font-family:var(--display);font-weight:400;font-size:25px;line-height:1.1}
+.sec-head small{display:block;font-family:var(--body);font-weight:800;font-size:13px;color:var(--muted);letter-spacing:.02em}
+ul.items{list-style:none;margin:0;padding:0;display:grid;gap:10px}
+ul.items li{display:grid;grid-template-columns:28px minmax(0,1fr);gap:10px;align-items:start;padding:12px 14px;border-radius:14px;background:var(--panel-2)}
+ul.items li .ic{font-size:20px;line-height:1.3;text-align:center}
+ul.items b{font-weight:900}
+ul.items p{margin:0;color:var(--ink-2);font-weight:600}
+
+/* les nouveaux circuits */
+.lead{margin:0 0 14px;color:var(--ink-2);font-weight:700}
+.moments{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px;margin-bottom:14px}
+.moment{border-radius:18px;padding:14px 14px 12px;color:#fff;position:relative;overflow:hidden}
+.moment.day{background:linear-gradient(180deg,#3F8EF0,#8CC6FF 70%,#7DB35F 70%)}
+.moment.night{background:linear-gradient(180deg,#141833,#2A1E4A)}
+.moment.night::after{content:"";position:absolute;inset:0;pointer-events:none;opacity:.8;
+  background-image:radial-gradient(1px 1px at 20% 30%,#fff 50%,transparent 51%),radial-gradient(1.5px 1.5px at 70% 20%,#fff 50%,transparent 51%),radial-gradient(1px 1px at 85% 55%,#fff 50%,transparent 51%),radial-gradient(1px 1px at 40% 60%,#fff 50%,transparent 51%)}
+.moment > *{position:relative;z-index:1}
+.moment h3{margin:0 0 2px;font-family:var(--display);font-weight:400;font-size:21px;text-shadow:0 2px 6px rgba(0,0,0,.25)}
+.moment p{margin:0 0 10px;font-weight:800;font-size:13.5px;text-shadow:0 1px 4px rgba(0,0,0,.35)}
+.tracks{display:grid;gap:6px}
+.track{display:flex;align-items:center;gap:8px;padding:8px 10px;border-radius:12px;background:rgba(255,255,255,.9);color:#24253D;font-weight:900;font-size:14px}
+.moment.night .track{background:rgba(255,255,255,.1);color:#fff;border:1px solid rgba(255,255,255,.18)}
+.track .e{font-size:18px}
+.track em{margin-left:auto;font-style:normal;font-size:10.5px;font-weight:900;letter-spacing:.06em;text-transform:uppercase;padding:2px 7px;border-radius:999px;background:var(--yellow);color:#2B2233}
+
+.foot{text-align:center;padding:10px 0 0}
+.cta{display:inline-flex;align-items:center;gap:8px;padding:14px 26px;border-radius:999px;background:var(--yellow);color:#2B2233;font-weight:900;font-size:17px;text-decoration:none;
+  box-shadow:0 5px 0 var(--yellow-2),0 14px 24px -12px rgba(0,0,0,.4);transition:transform .15s}
+.cta:hover{transform:translateY(-2px)}
+.sign{margin:16px 0 0;font-family:"Caveat",cursive;font-weight:700;font-size:24px;color:var(--ink-2)}
+
+@media (max-width:560px){
+  .card{padding:18px 14px}
+  .moments{grid-template-columns:minmax(0,1fr)}
+  .sec-head h2{font-size:22px}
+}
+</style>
+</head>
+<body>
+
+<header class="hero">
+  <div class="logo">Tikalo</div>
+  <span class="kick">Mise à jour · 14 octobre 2026</span>
+  <h1>Quoi de neuf dans la cour&nbsp;?</h1>
+  <p>6 nouveaux circuits, des courses de jour et de nuit, et plein de petites choses en plus !</p>
+  <div class="garland" aria-hidden="true"><svg viewBox="0 0 400 30" preserveAspectRatio="none">
+    <path d="M0 6 Q50 26 100 8 T200 8 T300 8 T400 6" fill="none" stroke="rgba(255,255,255,.35)" stroke-width="1.2"/>
+    <g>
+      <circle class="bulb" cx="20" cy="13" r="3.2" fill="#FFD34D"/><circle class="bulb" cx="50" cy="17" r="3.2" fill="#FF6FB5"/>
+      <circle class="bulb" cx="80" cy="13" r="3.2" fill="#5AB8FF"/><circle class="bulb" cx="120" cy="12" r="3.2" fill="#7CE59A"/>
+      <circle class="bulb" cx="150" cy="17" r="3.2" fill="#FF9F43"/><circle class="bulb" cx="180" cy="12" r="3.2" fill="#FFD34D"/>
+      <circle class="bulb" cx="220" cy="12" r="3.2" fill="#FF6FB5"/><circle class="bulb" cx="250" cy="17" r="3.2" fill="#5AB8FF"/>
+      <circle class="bulb" cx="280" cy="12" r="3.2" fill="#7CE59A"/><circle class="bulb" cx="320" cy="12" r="3.2" fill="#FF9F43"/>
+      <circle class="bulb" cx="350" cy="17" r="3.2" fill="#FFD34D"/><circle class="bulb" cx="380" cy="11" r="3.2" fill="#FF6FB5"/>
+    </g></svg></div>
+  <div class="balls" aria-hidden="true"><span class="ball"></span><span class="ball"></span><span class="ball"></span><span class="ball"></span></div>
+</header>
+
+<main>
+  <section class="card">
+    <div class="sec-head"><span class="chip" style="background:var(--red)">🏁</span><h2>La Grande Course fait peau neuve<small>La plus grosse nouveauté du jour</small></h2></div>
+    <p class="lead">Midi et soir ne se ressemblent plus : chaque moment a maintenant ses propres circuits et sa propre ambiance.</p>
+    <div class="moments">
+      <div class="moment day">
+        <h3>☀️ À midi</h3><p>En plein jour, sous le soleil</p>
+        <div class="tracks">
+          <div class="track"><span class="e">⛷️</span>La Piste de ski<em>Nouveau</em></div>
+          <div class="track"><span class="e">🌿</span>Le Labyrinthe<em>Nouveau</em></div>
+          <div class="track"><span class="e">💧</span>La Cascade<em>Nouveau</em></div>
+          <div class="track"><span class="e">🎱</span>Le Billard géant<em>Nouveau</em></div>
+        </div>
+      </div>
+      <div class="moment night">
+        <h3>🌙 Le soir</h3><p>La nuit, comme une fête foraine</p>
+        <div class="tracks">
+          <div class="track"><span class="e">🕹️</span>Le Pinball néon<em>Nouveau</em></div>
+          <div class="track"><span class="e">👻</span>Le Train fantôme<em>Nouveau</em></div>
+        </div>
+      </div>
+    </div>
+    <ul class="items">
+      <li><span class="ic">🌀</span><div><b>Le Labyrinthe change à chaque course</b><p>Ses passages sont tirés au sort : impossible de connaître le bon chemin à l'avance !</p></div></li>
+      <li><span class="ic">✨</span><div><b>Le soir, tout brille</b><p>Ciel étoilé, guirlandes d'ampoules le long des pistes et plots qui s'illuminent.</p></div></li>
+      <li><span class="ic">📅</span><div><b>Une seule inscription pour la journée</b><p>Inscris-toi le matin, et ta bille court à midi ET le soir.</p></div></li>
+      <li><span class="ic">🛷</span><div><b>Le Toboggan est réparé</b><p>Les billes ne restent plus coincées derrière les rondins roses.</p></div></li>
+      <li><span class="ic">🔉</span><div><b>Des chocs plus doux</b><p>Le « clic clac » des billes pendant la course est moins fort.</p></div></li>
+    </ul>
+  </section>
+
+  <section class="card">
+    <div class="sec-head"><span class="chip" style="background:var(--green)">🔁</span><h2>Troc et marché</h2></div>
+    <ul class="items">
+      <li><span class="ic">🎯</span><div><b>Nouvelle case « Seulement ses doubles »</b><p>Quand tu proposes un troc, coche-la avec « Seulement celles qui me manquent » : tu ne vois que les billes qui te manquent et que ton copain a en double.</p></div></li>
+      <li><span class="ic">🏷️</span><div><b>Tes billes occupées se voient</b><p>Dans Mes billes, une bille en vente, aux enchères ou dans un troc en cours a maintenant un contour et une petite étiquette.</p></div></li>
+    </ul>
+  </section>
+
+  <section class="card">
+    <div class="sec-head"><span class="chip" style="background:var(--yellow-2)">🏆</span><h2>Classement de la semaine</h2></div>
+    <ul class="items">
+      <li><span class="ic">⭐</span><div><b>Les billes troquées ou achetées comptent</b><p>Une bille reçue par troc ou achetée au marché rapporte des points, si c'est ton premier exemplaire de cette bille.</p></div></li>
+    </ul>
+  </section>
+
+  <section class="card">
+    <div class="sec-head"><span class="chip" style="background:var(--violet)">🎨</span><h2>Plus joli, plus clair</h2></div>
+    <ul class="items">
+      <li><span class="ic">⏳</span><div><b>Un vrai écran de chargement</b><p>À l'arrivée sur le site, « Chargement de ta collection… » s'affiche jusqu'à ce que tout soit prêt : plus de mauvais nombre de sachets pendant quelques secondes.</p></div></li>
+      <li><span class="ic">🎮</span><div><b>Page des mini-jeux mieux rangée</b><p>Les jeux « faits à fond » sont bien alignés, et la Grande Course et la Loterie se voient mieux.</p></div></li>
+      <li><span class="ic">📖</span><div><b>Billepedia plus lisible</b><p>Les fiches se détachent mieux du papier du cahier.</p></div></li>
+    </ul>
+  </section>
+
+  <div class="foot">
+    <a class="cta" href="https://www.tikalo.fr/">🎲 Jouer à Tikalo</a>
+    <p class="sign">Bonne course à tous, et à bientôt dans la cour !</p>
+  </div>
+</main>
+</body>
+</html>

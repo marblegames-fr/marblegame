@@ -7013,8 +7013,10 @@ function dayHTML(inSheet, wide){
       text: L.aujourdhui && last ? `Tes numéros : ${last.join(" · ")} · tirage dimanche à 21 h` : "Gratuit · tirage dimanche à 21 h",
       btn: L.aujourdhui ? "" : `<button class="btn btn-ghost" data-action="lot-go">Prendre</button>`, act:'data-action="nav" data-view="loterie"'})) }
   if(srvOn() && gc.etat){ const N = gcNext();
-    rows3.push(mjRow({icon:"flag", title: gc.etat.inscrit ? `Inscrit à la Grande Course` : `La Grande Course ${gcWhen(N)}`, done:gc.etat.inscrit,
-      text: gc.etat.inscrit ? `Départ ${gcWhen(N)}` : "Inscription gratuite : un Sachet Collector pour le gagnant", act:'data-action="nav" data-view="grandecourse"'})) }
+    // (14 octobre 2026) avant midi, l'inscription vaut pour les deux courses de la journée
+    const both = N.heure===12, deux = N.jour===isoDay() ? "ce midi et ce soir" : "demain midi et demain soir";
+    rows3.push(mjRow({icon:"flag", title: gc.etat.inscrit ? (both ? "Inscrit aux 2 courses de la journée" : "Inscrit à la Grande Course") : `La Grande Course ${both ? deux : gcWhen(N)}`, done:gc.etat.inscrit,
+      text: gc.etat.inscrit ? (both ? `Départs ${deux} (12 h et 20 h)` : `Départ ${gcWhen(N)}`) : `Inscription gratuite${both ? " pour les 2 courses" : ""} : un Sachet Collector pour le gagnant`, act:'data-action="nav" data-view="grandecourse"'})) }
   // succès réussis
   const nc = chalClaimable(), rows4 = [];
   if(nc) rows4.push(mjRow({icon:"trophy", title:`${nc} succès réussi${nc>1?"s":""}`, text:"Ta récompense t'attend", ready:true, act:'data-action="nav" data-view="succes"'}));

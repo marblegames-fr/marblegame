@@ -275,6 +275,7 @@ begin
 end $$;
 
 -- les belles trouvailles des copains (Boulets, Mammouths, shiny), tirées depuis moins d'un mois
+-- (14 octobre 2026) + les motifs légendaires et mythiques de toutes tailles, et les épiques à partir du Calot
 create or replace function public.fil_amis() returns jsonb language plpgsql security definer set search_path = public as $$
 declare moi uuid := auth.uid();
 begin
@@ -283,7 +284,8 @@ begin
     select jsonb_build_object('who', interne.pseudo(h.vers), 'at', floor(extract(epoch from h.le)*1000)::bigint, 's', interne.bille_json(b)) j
     from billes_historique h join billes b on b.id = h.bille
     where h.motif = 'trouvee' and h.vers in (select ami from amis where joueur = moi)
-      and h.le > now() - interval '30 days' and (interne.rang(b.taille) >= 4 or b.shiny > 0)
+      and h.le > now() - interval '30 days' and (interne.rang(b.taille) >= 4 or b.shiny > 0
+        or (interne.decor_rarete())[b.decor+1] in (4, 6) or ((interne.decor_rarete())[b.decor+1] = 3 and interne.rang(b.taille) >= 3))
     order by h.le desc limit 60) x), '[]');   -- 60 depuis le 10 octobre 2026 : la cour montre 72 h de trouvailles rares, par pages
 end $$;
 

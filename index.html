@@ -14287,6 +14287,9 @@ function courHero(){
 }
 
 const CP_PAGE = 10, RARES_PAGE = 4, RARES_H = 72;
+// la rareté du motif d'une trouvaille (-1 pour un motif d'événement ou de saison) et son étiquette, à partir d'Épique
+const rarOf = s => extraFam(s.family) ? -1 : FAMILIES[s.family]?.rar ?? -1;
+const rarPill = s => rarOf(s)>=3 ? `<span class="dec-pill" style="--dc:${DECOR_RAR[rarOf(s)].c}">${DECOR_RAR[rarOf(s)].name}</span>` : "";
 // Les copains (allégés le 4 octobre 2026) : une liste compacte qu'on peut filtrer, et à côté les demandes,
 // l'ajout d'un copain et seulement les trouvailles rares (Mammouths et shiny)
 function courCopains(){
@@ -14302,7 +14305,6 @@ function courCopains(){
       <button class="btn btn-ghost btn-sm" data-action="ami-retirer" data-id="${r.id}">Annuler</button></div>`;
   // (10 octobre 2026) les trouvailles rares restent 72 h, 4 par page ; les copains 10 par page (la recherche cherche dans tous)
   // (14 octobre 2026) + les motifs légendaires et mythiques de toutes tailles, et les épiques à partir du Calot (pas les motifs d'événement ni de saison)
-  const rarOf = s => extraFam(s.family) ? -1 : FAMILIES[s.family]?.rar ?? -1;
   const rares = (cour.fil||[]).filter(e=>(e.s.type==="mammouth" || e.s.shiny || rarOf(e.s)>=4 || (rarOf(e.s)===3 && TIDX[e.s.type]>=TIDX.calot)) && Date.now()-e.at < RARES_H*36e5);
   const pg = (n, per, k) => { const max = Math.max(0, Math.ceil(n/per)-1); ui[k] = Math.min(ui[k]||0, max); return {p:ui[k], max} };
   const A = pg(amis.length, CP_PAGE, "cpPage"), F = pg(rares.length, RARES_PAGE, "rarPage");
@@ -14324,7 +14326,7 @@ function courCopains(){
         <small class="meta">Entre copains, vous voyez vos vitrines et vous pouvez troquer.</small></section>
       ${rares.length ? `<section class="panel cp-finds"><div class="panel-head"><h3>${ic("star",16)} Trouvailles rares</h3><span class="sample-tag">Mammouths, shiny, légendaires…</span></div>
         ${rares.slice(F.p*RARES_PAGE, (F.p+1)*RARES_PAGE).map(e=>`<div class="cp-find" style="${tstyle(e.s.type)}"><span class="fb">${courBall(e.s,Math.round(10*scaleOf(e.s.type)+30),`Trouvée par ${e.who}.`)}</span>
-          <span class="cp-who"><b>${esc(courName(e.s))}</b><small><b>${esc(e.who)}</b> · ${timeAgo(e.at)}</small></span>${shinyPill(e.s)}${rarOf(e.s)>=3 ? `<span class="dec-pill" style="--dc:${DECOR_RAR[rarOf(e.s)].c}">${DECOR_RAR[rarOf(e.s)].name}</span>` : ""}</div>`).join("")}${pager(F,"rarPage","Trouvailles")}</section>` : ""}
+          <span class="cp-who"><b>${esc(courName(e.s))}</b><small><b>${esc(e.who)}</b> · ${timeAgo(e.at)}</small></span>${shinyPill(e.s)}${rarPill(e.s)}</div>`).join("")}${pager(F,"rarPage","Trouvailles")}</section>` : ""}
     </div>
   </div>`;
 }
@@ -14375,7 +14377,7 @@ async function openProfil(id){
         <div class="pf2-sizes">${TK.map((t,i)=>`<div style="${tstyle(t)}">${mImg(SHOWCASE[i],80,Math.round(16*scaleOf(t)+14),"")}<b>${fmt(T[t]||0)}</b><small>${TYPES[t].pl.replace("Mini billes","Minis").replace("Billes chinoises","Chinoises")}</small></div>`).join("")}</div>
         ${evs ? `<div class="pf2-evs">${evs}</div>` : ""}</section>
       ${P.trouvailles?.length ? `<section class="pf2-sec"><h3>${ic("gift",16)} ${me?"Tes":"Ses"} dernières belles trouvailles</h3>
-        <div class="pf2-finds">${P.trouvailles.map(x=>`<div class="pf2-find" style="${tstyle(x.type)}">${courBall(x, Math.round(14*scaleOf(x.type)+24), me ? "Une de tes belles trouvailles." : `Une belle trouvaille de ${P.pseudo}.`)}<span><b>${esc(courName(x))}</b>${shinyPill(x)}</span><small>${x.le ? timeAgo(x.le) : ""}</small></div>`).join("")}</div></section>` : ""}
+        <div class="pf2-finds">${P.trouvailles.map(x=>`<div class="pf2-find" style="${tstyle(x.type)}">${courBall(x, Math.round(14*scaleOf(x.type)+24), me ? "Une de tes belles trouvailles." : `Une belle trouvaille de ${P.pseudo}.`)}<span><b>${esc(courName(x))}</b>${shinyPill(x)}${rarPill(x)}</span><small>${x.le ? timeAgo(x.le) : ""}</small></div>`).join("")}</div></section>` : ""}
       ${P.moi ? `<p class="meta">C’est ta fiche, telle que les autres joueurs la voient.</p>` : P.ami===false ? `<div class="troc-act"><button class="btn btn-yellow" data-action="ami-ajouter-pseudo" data-pseudo="${esc(P.pseudo)}">${ic("plus",18)} L'ajouter à mes copains</button></div><p class="meta">Pour lui proposer un troc, ajoutez-vous d'abord comme copains.</p>`
         : `<div class="troc-act"><button class="btn btn-yellow" data-action="troc-new" data-id="${P.id}">${ic("swap",18)} Lui proposer un troc</button>
         <button class="btn btn-ghost" data-action="ami-retirer" data-id="${P.id}" data-pseudo="${esc(P.pseudo)}">Retirer de mes copains</button></div>`}

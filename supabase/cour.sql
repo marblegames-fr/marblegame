@@ -256,7 +256,11 @@ begin
     'evenements', (select coalesce(jsonb_object_agg(d, n), '{}') from (select b.decor d, count(distinct (b.taille, b.coloris)) n from billes b
                 where b.proprietaire = qui and b.detruite_le is null and interne.decor_evenement(b.decor) group by b.decor) x),
     'trouvailles', coalesce((select jsonb_agg(x.j order by x.le desc) from (select interne.bille_json(b) || jsonb_build_object('le', floor(extract(epoch from b.obtenue_le)*1000)::bigint) j, b.obtenue_le le
-                 from billes b where b.proprietaire = qui and b.detruite_le is null and (interne.rang(b.taille) >= 4 or b.shiny > 0)
+                 -- (14 octobre 2026) la même règle que les trouvailles rares de la cour : Mammouths, shiny, motifs légendaires et mythiques,
+                 -- épiques à partir du Calot ; jamais une bille secrète, d'événement ou de saison, ni de test
+                 from billes b where b.proprietaire = qui and b.detruite_le is null and b.secrete is null and coalesce(b.donnees->>'src', '') <> 'test'
+                   and (interne.decor_rarete())[b.decor+1] <> 5 and (interne.rang(b.taille) = 5 or b.shiny > 0
+                     or (interne.decor_rarete())[b.decor+1] in (4, 6) or ((interne.decor_rarete())[b.decor+1] = 3 and interne.rang(b.taille) >= 3))
                  order by b.obtenue_le desc limit 6) x), '[]')
   );
 end $$;

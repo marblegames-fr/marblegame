@@ -6163,6 +6163,8 @@ function slotsOwned(list=S.specs){ const m=new Map(); list.forEach(s=>{ if(extra
 const TOTAL_SLOTS = TK.length*N_DECORS;              // cases de l'album : une par taille × motif
 // Chaque case se remplit coloris par coloris : l'album compte toutes les billes différentes (taille × motif × coloris)
 const colorKey = s => s.type+"|"+s.family+"|"+s.pal;
+// (14 octobre 2026) une même bille pour les doubles : même taille, motif, coloris ET même shiny (une shiny et la version normale ne sont pas des doubles)
+const dupKey = s => colorKey(s)+"|"+(s.shiny||0);
 const ALBUM_TOTAL = TOTAL_SLOTS*BASE_PALS;
 function albumFound(list=S.specs){ const set=new Set(); list.forEach(s=>{ if(isBasePal(s.pal)) set.add(colorKey(s)) }); return set }
 const casePals = list => new Set(list.filter(x=>isBasePal(x.pal)).map(x=>x.pal)).size;
@@ -6234,10 +6236,10 @@ function questSet(id, v){
 /* ---------- recyclage ---------- */
 // Doubles recyclables : on garde la meilleure bille de chaque emplacement, les shiny et la bille active
 // Chaque bille a sa propre empreinte : parmi plusieurs exemplaires d'un même modèle, on garde celui que le joueur a choisi (sinon sa shiny, sinon le plus récent)
-function keepOf(list){ const pin=(S.keep||{})[colorKey(list[0])]; return list.find(x=>x.id===pin) || [...list].sort(tierSort)[0] }
+function keepOf(list){ const K=S.keep||{}, pin=K[dupKey(list[0])] ?? K[colorKey(list[0])]; return list.find(x=>x.id===pin) || [...list].sort(tierSort)[0] }
 function recyclableDups(){
   const out = [];
-  const byColor=new Map(); S.specs.forEach(s=>{ const k=colorKey(s); if(!byColor.has(k)) byColor.set(k,[]); byColor.get(k).push(s) });
+  const byColor=new Map(); S.specs.forEach(s=>{ const k=dupKey(s); if(!byColor.has(k)) byColor.set(k,[]); byColor.get(k).push(s) });
   byColor.forEach(list=>{ const k=keepOf(list); list.filter(s=>s.id!==k.id).forEach(s=>{ if(!s.shiny && !s.secret && s.id!==S.active && !S.vitrine.includes(s.id)) out.push(s) }) });
   return out;
 }
@@ -7760,7 +7762,7 @@ function viewCollection(){
   const types = TK.filter(t=>ui.type==="all"||ui.type===t);
   // « Afficher » : le même filtre pour l'Album (par case) et pour Mes billes (bille par bille)
   const show = ui.show || "all";
-  const byColor = new Map(); S.specs.forEach(x=>{ const k=colorKey(x); if(!byColor.has(k)) byColor.set(k,[]); byColor.get(k).push(x) });
+  const byColor = new Map(); S.specs.forEach(x=>{ const k=dupKey(x); if(!byColor.has(k)) byColor.set(k,[]); byColor.get(k).push(x) });
   const unseenIds = new Set(S.unseen), dupKeys = new Set([...byColor].filter(([k,l])=>l.length>1).map(([k])=>k));
   const keep = new Set([...byColor.values()].map(l=>keepOf(l).id));   // l'exemplaire gardé de chaque bille
   const inType = x => ui.type==="all" || x.type===ui.type;
@@ -7768,7 +7770,7 @@ function viewCollection(){
   const SHOW = [
     ["all","Tout",null,null],
     ["new","Nouveautés","star",x=>unseenIds.has(x.id)],
-    ["dups","Doublons","layers",x=>dupKeys.has(colorKey(x))],
+    ["dups","Doublons","layers",x=>dupKeys.has(dupKey(x))],
     ["shiny","Shiny",null,x=>x.shiny],
     ["season","Passe de saison","ticket",isSeason],
     ["event","Événement","flag",x=>!!eventOf(x)],
@@ -7883,7 +7885,7 @@ function viewCollection(){
       slot:(a,b)=>TIDX[b.type]-TIDX[a.type] || a.family-b.family || a.pal-b.pal || (keep.has(b.id)?1:0)-(keep.has(a.id)?1:0) || tierSort(a,b)};
     // les exemplaires d'une même bille sont regroupés sur une seule carte (« ×2 ») ; le filtre Doublons les montre un par un
     const grps = new Map();
-    if(show!=="dups"){ const g = new Map(); list.forEach(x=>{ const k=colorKey(x); if(!g.has(k)) g.set(k,[]); g.get(k).push(x) });
+    if(show!=="dups"){ const g = new Map(); list.forEach(x=>{ const k=dupKey(x); if(!g.has(k)) g.set(k,[]); g.get(k).push(x) });
       list = [...g.values()].map(l=>{ const b=[...l].sort(tierSort)[0]; grps.set(b.id,l); return b }) }
     list.sort(by[srt]);
     body = (show==="dups" && recyclableDups().length ? dupsBar() : "") + (list.length ? `<div class="card-grid">${list.map(x=>ballCard(x, grps.get(x.id))).join("")}</div>` : `<p class="empty">${qw.length?"Aucune bille ne correspond à ta recherche.":EMPTY[show]||EMPTY.all}</p>`);
@@ -8043,7 +8045,7 @@ const RAR_F  = TK.map(t=>TYPES[t].label);
 const RAR_PL = TK.map(t=>TYPES[t].pl);
 // billes qu'on peut fusionner : jamais les shiny, la bille active, la vitrine ni les billes de saison
 const craftPool = t => S.specs.filter(s=>tierOf(s)===t && !s.shiny && !s.secret && s.id!==S.active && !S.vitrine.includes(s.id) && isBasePal(s.pal) && (!srvOn() || s.srv));
-const slotCounts = () => { const c={}; S.specs.forEach(s=>{ const k=colorKey(s); c[k]=(c[k]||0)+1 }); return c };   // exemplaires de chaque bille (doubles stricts)
+const slotCounts = () => { const c={}; S.specs.forEach(s=>{ const k=dupKey(s); c[k]=(c[k]||0)+1 }); return c };   // exemplaires de chaque bille (doubles stricts)
 // la taille au-dessus ; le motif et le coloris sont tirés au hasard avec leurs chances habituelles
 function craftResult(T){
   return makeSpec(TK[T],{shiny:Math.random()<craftShiny(T-1) ? rollShiny() : 0, src:"fusion"});
@@ -8054,15 +8056,15 @@ function craftResult(T){
 const craftFilt = s => { const F = ui.craftF||{}; return (F.rar==null || F.rar==="" || FAMILIES[s.family].rar===+F.rar) && (!F.q || fold(specName(s)).includes(fold(F.q))) };
 function craftAuto(t, keep=[]){
   const cnt = slotCounts(), pool = craftPool(t).filter(craftFilt), sel = keep.filter(id=>pool.some(s=>s.id===id)).slice(0, craftN(t));
-  sel.forEach(id=>cnt[colorKey(specById(id))]--);
-  const rest = pool.filter(s=>!sel.includes(s.id)).sort((a,b)=>cnt[colorKey(b)]-cnt[colorKey(a)] || a.at-b.at);
-  for(const s of rest){ if(sel.length>=craftN(t)) break; const k=colorKey(s); if(cnt[k]>1){ sel.push(s.id); cnt[k]-- } }
+  sel.forEach(id=>cnt[dupKey(specById(id))]--);
+  const rest = pool.filter(s=>!sel.includes(s.id)).sort((a,b)=>cnt[dupKey(b)]-cnt[dupKey(a)] || a.at-b.at);
+  for(const s of rest){ if(sel.length>=craftN(t)) break; const k=dupKey(s); if(cnt[k]>1){ sel.push(s.id); cnt[k]-- } }
   return sel;
 }
 // remplissage au hasard avec des billes qu'on n'a qu'en un exemplaire (elles quitteront l'album)
 function craftSingles(t, keep=[]){
   const cnt = slotCounts(), pool = craftPool(t).filter(craftFilt), sel = keep.filter(id=>pool.some(s=>s.id===id)).slice(0, craftN(t));
-  const singles = pool.filter(s=>!sel.includes(s.id) && cnt[colorKey(s)]===1);
+  const singles = pool.filter(s=>!sel.includes(s.id) && cnt[dupKey(s)]===1);
   for(let i=singles.length-1;i>0;i--){ const j=Math.floor(Math.random()*(i+1)); [singles[i],singles[j]]=[singles[j],singles[i]] }
   return sel.concat(singles.slice(0, craftN(t)-sel.length).map(s=>s.id));
 }
@@ -8120,7 +8122,7 @@ const FUSION_EV = [3,3,2,2,2];
 const evPool = () => S.specs.filter(s=>eventOf(s) && !s.shiny && !s.secret && s.id!==S.active && !S.vitrine.includes(s.id) && (!srvOn() || s.srv));
 // Pour chaque bille d'événement à fusionner : combien on en a en tout (vitrine, bille active et shiny comprises).
 // Si la fusion en laisse au moins une, elle ne prend que des doubles ; sinon elle emporte le dernier exemplaire (avertissement).
-const evKey = s => `${s.type}|${s.family}|${s.pal}`;
+const evKey = dupKey;
 const evTotal = k => S.specs.filter(s=>evKey(s)===k).length;
 function evFusionPanel(){
   const pool = evPool(); if(!pool.length && !liveEvents().length) return "";
@@ -8321,7 +8323,7 @@ function fuseDemoMenu(){
 // les billes qu'on n'a qu'en un exemplaire et qu'on peut quand même échanger (jamais proposées par défaut)
 function recyclableSingles(){
   const cnt = slotCounts();
-  return S.specs.filter(x=>cnt[colorKey(x)]===1 && !x.shiny && !x.secret && !isSeason(x) && x.id!==S.active && !S.vitrine.includes(x.id) && (!srvOn() || x.srv));
+  return S.specs.filter(x=>cnt[dupKey(x)]===1 && !x.shiny && !x.secret && !isSeason(x) && x.id!==S.active && !S.vitrine.includes(x.id) && (!srvOn() || x.srv));
 }
 // regroupe des billes par modèle (taille, motif, coloris), les plus grosses d'abord
 function byModel(list){
@@ -8678,7 +8680,7 @@ function openModal(id, pv, reveal=false){
   liveSpec = s;
   Sound.click(TIDX[s.type]);
   const caseList = pv ? [] : S.specs.filter(x=>slotKey(x)===slotKey(s));
-  const sib = caseList.filter(x=>colorKey(x)===colorKey(s)).sort(tierSort);   // exemplaires de cette même bille
+  const sib = caseList.filter(x=>dupKey(x)===dupKey(s)).sort(tierSort);   // exemplaires de cette même bille
   const fromSheet = ui.fromSheet && ui.sheet && ui.sheet.t===s.type && ui.sheet.f===s.family; ui.fromSheet = false;
   const el = document.getElementById("modal");
   const F = FAMILIES[s.family], T = TYPES[s.type];
@@ -14308,15 +14310,15 @@ function trocFind(){
 // les doubles qu'on peut troquer : tous les exemplaires d'une bille sauf celui qu'on garde (le même que pour la Confiserie)
 function trocDups(){
   const byColor = new Map(), out = new Set();
-  S.specs.forEach(s=>{ const k = colorKey(s); if(!byColor.has(k)) byColor.set(k,[]); byColor.get(k).push(s) });
+  S.specs.forEach(s=>{ const k = dupKey(s); if(!byColor.has(k)) byColor.set(k,[]); byColor.get(k).push(s) });
   byColor.forEach(list=>{ if(list.length>1){ const k = keepOf(list); list.forEach(s=>{ if(s.id!==k.id) out.add(s.id) }) } });
   return out;
 }
 // (7 octobre 2026) ce que tu as déjà : combien d'exemplaires de cette bille (même taille, motif et coloris) et si le motif te manque dans cette taille
 function ownInfo(){
   const n = new Map(), sk = new Set();
-  S.specs.forEach(s=>{ const k = colorKey(s); n.set(k, (n.get(k)||0)+1); sk.add(slotKey(s)) });
-  return x => ({n:n.get(colorKey(x))||0, dec:!sk.has(slotKey(x))});
+  S.specs.forEach(s=>{ const k = dupKey(s); n.set(k, (n.get(k)||0)+1); sk.add(slotKey(s)) });
+  return x => ({n:n.get(dupKey(x))||0, dec:!sk.has(slotKey(x))});
 }
 const ownTag = o => o.n ? `<span class="mk-own">${ic("check",12,3)} Déjà dans ta boîte${o.n>1?` · ×${o.n}`:""}</span>`
   : `<span class="mk-own miss${o.dec?"":" col"}">${SPARK} ${o.dec?"Motif qui te manque":"Coloris qui te manque"}</span>`;
@@ -14581,7 +14583,7 @@ document.addEventListener("click", e=>{
     case "recycle-ids": {
       const l = t.dataset.ids.split(",").map(specById).filter(Boolean); if(!l.length) break;
       const tot = l.reduce((n,x)=>n+recycleValue(x),0);
-      ask({title:`Échanger ces ${l.length} billes ?`, balls:l, ok:`Échanger · +${fmt(tot)}`, text:`Tu reçois ${fmt(tot)} ${CUR.many}.${l.some(x=>slotCounts()[colorKey(x)]<=l.filter(y=>colorKey(y)===colorKey(x)).length)?" Tu n'en garderas aucune de ce modèle : il quittera ton album.":""}`})
+      ask({title:`Échanger ces ${l.length} billes ?`, balls:l, ok:`Échanger · +${fmt(tot)}`, text:`Tu reçois ${fmt(tot)} ${CUR.many}.${l.some(x=>S.specs.filter(y=>colorKey(y)===colorKey(x)).length<=l.filter(y=>colorKey(y)===colorKey(x)).length)?" Tu n'en garderas aucune de ce modèle : il quittera ton album.":""}`})
         .then(ok=>{ if(!ok) return; const ids = l.map(x=>x.id).filter(id=>specById(id)); if(!ids.length) return;
           const got = recycleSpecs(ids); renderView(); toast(`${ids.length} billes échangées : +${fmt(got)} ${CUR.many}.`) });
       break;
@@ -14705,7 +14707,7 @@ document.addEventListener("click", e=>{
     case "spec": ui.fromSheet = !!t.dataset.fromSheet; openModal(t.dataset.id); break;
     case "sheet": openSheet(t.dataset.type, +t.dataset.fam); break;
     case "sheet-back": if(ui.sheet) openSheet(ui.sheet.t, ui.sheet.f); break;
-    case "keep-copy": { const x=specById(t.dataset.id); if(!x) break; S.keep=S.keep||{}; S.keep[colorKey(x)]=x.id; save(); toast("C'est cet exemplaire que tu gardes. Les autres restent échangeables à la Confiserie."); ui.fromSheet = !!document.querySelector(".sheet-back"); openModal(x.id); if(ui.view==="collection"||ui.view==="confiserie") renderView(); break }
+    case "keep-copy": { const x=specById(t.dataset.id); if(!x) break; S.keep=S.keep||{}; S.keep[dupKey(x)]=x.id; save(); toast("C'est cet exemplaire que tu gardes. Les autres restent échangeables à la Confiserie."); ui.fromSheet = !!document.querySelector(".sheet-back"); openModal(x.id); if(ui.view==="collection"||ui.view==="confiserie") renderView(); break }
     case "cover": { const x=specById(t.dataset.id); if(!x) break; S.cover=S.cover||{}; S.cover[slotKey(x)]=x.id; save(); Sound.click(); toast(`${PALETTES[x.pal][0]} s'affiche maintenant dans l'album.`); openSheet(x.type,x.family); if(ui.view==="collection") renderView(); break }
     case "preview": openModal(null, pedia[+t.dataset.k]); break;
     case "theme": Theme.toggle(); renderThemeBtn(); break;

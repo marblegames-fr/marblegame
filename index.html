@@ -13854,7 +13854,7 @@ setTimeout(eventGifts, 2500);
 setInterval(eventGifts, 60000);
 setInterval(()=>{ if(srvOn() && document.visibilityState==="visible"){ courLoad("moi", true); ecoRefresh(); syncMarbles(true); courNews(false) } }, 60000);
 // sur l'onglet Classement, il se met à jour tout seul (sans F5)
-setInterval(()=>{ if(srvOn() && document.visibilityState==="visible" && ui.view==="cour" && ui.courTab==="classement"){ const k = {semaine:"semaine", palmares:"palmares"}[ui.clVue||"semaine"] || "classement"; if(!cour.absent[k]) courLoad(k) } }, 25000);
+setInterval(()=>{ if(srvOn() && document.visibilityState==="visible" && ui.view==="cour" && ui.courTab==="classement"){ const k = {semaine:"semaine", palmares:"palmares"}[ui.clVue||"general"] || "classement"; if(!cour.absent[k]) courLoad(k) } }, 25000);
 
 // ---------- le journal : l'historique du troc et du marché, et les nouvelles ----------
 // ce qui mérite d'être annoncé : ce que les autres ont fait (pas ce qu'on a fait soi-même)
@@ -14094,8 +14094,8 @@ function semaineLots(d){
   } })();
 }
 function courClassement(){
-  const V = ui.clVue || "semaine", vb = (k,l,i) => `<button class="chip" data-action="cl-vue" data-v="${k}" aria-pressed="${V===k}">${ic(i,14)} ${l}</button>`;
-  const vues = `<div class="chips cl-vues">${vb("semaine","Cette semaine","clock")}${vb("general","Général","trophy")}${vb("palmares","Palmarès","star")}</div>`;
+  const V = ui.clVue || "general", vb = (k,l,i) => `<button class="chip" data-action="cl-vue" data-v="${k}" aria-pressed="${V===k}">${ic(i,14)} ${l}</button>`;
+  const vues = `<div class="chips cl-vues">${vb("general","Général","trophy")}${vb("semaine","Cette semaine","clock")}${vb("palmares","Palmarès","star")}</div>`;
   return vues + (V==="general" ? clGeneral() : V==="palmares" ? clPalmares() : clSemaine());
 }
 function clSemaine(){

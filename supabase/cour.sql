@@ -697,7 +697,8 @@ end $$;
 --  et les comptes de test (table testeurs).
 --  Le lundi, la semaine passée est close au premier passage d'un joueur (comme la Grande Course) : palmarès + lots versés.
 --  Le résultat est le même que s'il était calculé à minuit pile : on ne regarde que les billes tirées dans la semaine.
---  Les lots (mêmes valeurs dans index.html : SEMAINE_LOTS) sont donnés par tranche de places, pour pouvoir en ajouter (4 à 10, 11 à 50…).
+--  Les lots (mêmes valeurs dans index.html : SEMAINE_LOTS) sont donnés par tranche de places, pour pouvoir en ajouter (4 à 10, 11 à 50…) ;
+--  une tranche peut être dégressive (« pas » : 4e 20 bonbecs, 5e 19… 23e 1).
 -- =====================================================================
 create index if not exists billes_historique_vers on public.billes_historique (vers);
 create index if not exists billes_historique_le on public.billes_historique (le);
@@ -707,8 +708,10 @@ create or replace function interne.semaine_debut(t timestamptz default now()) re
   select date_trunc('week', t at time zone 'Europe/Paris')::date $$;
 create or replace function interne.semaine_t(d date) returns timestamptz language sql stable as $$
   select d::timestamp at time zone 'Europe/Paris' $$;
-create or replace function interne.lots_semaine() returns table (de int, a int, sac text, bonbecs int) language sql immutable as $$
-  values (1, 1, 'collector', 0), (2, 2, 'premium', 0), (3, 3, 'classique', 0) $$;
+-- (14 octobre 2026) « pas » : les bonbecs baissent de « pas » à chaque place de la tranche (4e 20, 5e 19… 23e 1)
+drop function if exists interne.lots_semaine();
+create or replace function interne.lots_semaine() returns table (de int, a int, sac text, bonbecs int, pas int) language sql immutable as $$
+  values (1, 1, 'collector', 0, 0), (2, 2, 'premium', 0, 0), (3, 3, 'classique', 0, 0), (4, 23, null, 20, 1) $$;
 
 create or replace function interne.semaine_pts(d date) returns table (joueur uuid, pts int, billes int, nouvelles int) language sql stable as $$
   with wk0 as (   -- les billes arrivées dans la semaine : tirées (« trouvee »), ou (14 octobre 2026) reçues par troc ou achetées au marché
@@ -746,7 +749,7 @@ begin
     insert into public.semaines (semaine) values (d) on conflict do nothing;
     if not found then continue; end if;   -- un autre joueur est en train de la clore
     insert into public.palmares (semaine, joueur, rang, pts, billes, nouvelles, sac, bonbecs)
-      select d, p.joueur, p.rang, p.pts, p.billes, p.nouvelles, l.sac, coalesce(l.bonbecs, 0)
+      select d, p.joueur, p.rang, p.pts, p.billes, p.nouvelles, l.sac, greatest(0, coalesce(l.bonbecs - (p.rang - l.de) * l.pas, 0))
       from (select s.*, rank() over (order by s.pts desc)::int rang from interne.semaine_pts(d) s where s.pts > 0) p
       left join interne.lots_semaine() l on p.rang between l.de and l.a;
     perform interne.crediter(p.joueur, p.bonbecs, p.sac) from public.palmares p where p.semaine = d and (p.sac is not null or p.bonbecs > 0);
@@ -772,7 +775,7 @@ begin
                  'billes', r.billes, 'nouvelles', r.nouvelles, 'moi', r.joueur = moi) order by r.pos) from r where r.pos <= 50), '[]'),
       'moi', (select jsonb_build_object('rang', m.rang, 'pos', m.pos, 'total', m.pts, 'billes', m.billes, 'nouvelles', m.nouvelles) from m),
       'devant', (select jsonb_build_object('pseudo', interne.pseudo(r.joueur), 'total', r.pts) from r, m where r.pos = m.pos - 1),
-      'lots', (select jsonb_agg(jsonb_build_object('de', l.de, 'a', l.a, 'sac', l.sac, 'bonbecs', l.bonbecs) order by l.de) from interne.lots_semaine() l),
+      'lots', (select jsonb_agg(jsonb_build_object('de', l.de, 'a', l.a, 'sac', l.sac, 'bonbecs', l.bonbecs, 'pas', l.pas) order by l.de) from interne.lots_semaine() l),
       'a_voir', coalesce((select jsonb_agg(jsonb_build_object('semaine', p.semaine, 'rang', p.rang, 'pts', p.pts, 'sac', p.sac, 'bonbecs', p.bonbecs) order by p.semaine)
                  from palmares p where p.joueur = moi and p.vu_le is null and (p.sac is not null or p.bonbecs > 0)), '[]'),
       -- (14 octobre 2026) ma place la dernière semaine close (la notification de la cloche, pour tous les classés)

@@ -2872,8 +2872,27 @@ body:has(#view .game-wrap) .mj-btn{display:none}
 .np-empty{display:grid;justify-items:center;gap:8px;padding:22px 12px;text-align:center;font-size:13px;font-weight:700;color:var(--muted)}
 @media (max-width:560px){ .notif-pop{position:fixed;top:64px;left:12px;right:12px;width:auto} #notif-btn{width:34px} }
 /* ---------- copains : une liste compacte ---------- */
-.cp-layout{display:grid;grid-template-columns:minmax(0,1fr) 340px;gap:16px;align-items:start}
-@media (max-width:1100px){ .cp-layout{grid-template-columns:minmax(0,1fr)} }
+.cp-layout{display:grid;grid-template-columns:minmax(0,1fr) 320px;gap:16px;align-items:start;margin-top:16px}
+/* (14 octobre 2026) les trouvailles rares en vitrine, les copains en tuiles */
+.cp-finds .panel-head h3{display:flex;align-items:center;gap:8px}
+.cpf-grid{display:grid;grid-template-columns:repeat(6,minmax(0,1fr));gap:12px}
+@media (max-width:1250px){ .cpf-grid{grid-template-columns:repeat(3,minmax(0,1fr))} }
+.cpf{--rc:#8E8898;--dc:#8E8898;position:relative;display:flex;flex-direction:column;align-items:center;text-align:center;gap:4px;padding:12px 10px;border-radius:16px;
+  border:1.5px solid color-mix(in srgb,var(--dc) 45%,var(--line));background:linear-gradient(180deg,color-mix(in srgb,var(--dc) 14%,var(--panel)),var(--panel-2) 70%);min-width:0;overflow:hidden}
+.cpf::before{content:"";position:absolute;inset:0 0 auto;height:4px;background:var(--dc)}
+.cpf-ball{width:100%;height:96px;display:grid;place-items:center;background:radial-gradient(circle,color-mix(in srgb,var(--dc) 38%,transparent),transparent 62%)}
+.cpf-ball img{filter:drop-shadow(0 6px 6px rgba(0,0,0,.32))}
+.cpf-name{font-size:14px;font-weight:900;line-height:1.2;max-width:100%;overflow:hidden;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical}
+.cpf-pills{display:flex;flex-wrap:wrap;justify-content:center;gap:4px}
+.cpf-pills .dec-pill{margin-top:0}
+.cpf small{font-size:12px;font-weight:700;color:var(--muted);max-width:100%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.cpf small b{color:var(--ink-2)}
+.cp-amis,.cp-env{grid-template-columns:repeat(auto-fill,minmax(185px,1fr));gap:10px}
+.cp-amis .cp-row,.cp-env .cp-row,.cp-amis .cp-row:first-child,.cp-env .cp-row:first-child{border:1px solid var(--line);border-radius:14px;background:var(--panel-2);padding:8px 10px}
+.cp-amis .cp-row:hover{border-color:var(--line-2)}
+.cp-troc{flex:none;width:36px;padding:0;justify-content:center}
+@media (max-width:560px){ .cpf-grid{grid-template-columns:repeat(2,minmax(0,1fr))} .cp-amis,.cp-env{grid-template-columns:minmax(0,1fr)} }
+@media (max-width:1100px){ .cp-layout{grid-template-columns:minmax(0,1fr)} .cp-side{order:-1} }
 .cp-side{display:grid;gap:16px}
 .cp-main .panel-head{gap:12px;flex-wrap:wrap}
 .cp-main .panel-head h3{white-space:nowrap}
@@ -14907,7 +14926,7 @@ function viewCour(){
   courLoad("moi"); if(!cour.absent.classement) courLoad("classement");
   const tab = ui.courTab || "copains", M = cour.moi;
   const tb = (k,l,icon,n) => `<button class="cn-tab" role="tab" data-action="cour-tab" data-tab="${k}" aria-selected="${tab===k}">${ic(icon,20,2.2)}<span>${l}</span>${n?`<span class="n">${n}</span>`:""}</button>`;
-  const tabs = `<div class="cour-nav" role="tablist">${tb("copains","Copains","users",(M?.recues||[]).length)}${tb("troc","Troc","swap",M?.trocs||0)}${tb("marche","Marché","candy")}${tb("journal","Historique","clock",cour.unread||0)}${tb("classement","Classement","trophy")}</div>`;
+  const tabs = `<div class="cour-nav" role="tablist">${tb("copains","Copains","users",(M?.recues||[]).length)}${tb("troc","Troc","swap",M?.trocs||0)}${tb("marche","Marché","candy")}${tb("classement","Classement","trophy")}${tb("journal","Historique","clock",cour.unread||0)}</div>`;
   const body = tab==="troc" ? courTroc() : tab==="marche" ? courMarche() : tab==="journal" ? courJournal() : tab==="classement" ? courClassement() : courCopains();
   return courHero() + tabs + body;
 }
@@ -14945,10 +14964,12 @@ function courHero(){
   </section>`;
 }
 
-const CP_PAGE = 10, RARES_PAGE = 4, RARES_H = 72;
+const CP_PAGE = 12, RARES_PAGE = 6, RARES_H = 72;
 // la rareté du motif d'une trouvaille (-1 pour un motif d'événement ou de saison) et son étiquette, à partir d'Épique
 const rarOf = s => extraFam(s.family) ? -1 : FAMILIES[s.family]?.rar ?? -1;
 const rarPill = s => rarOf(s)>=3 ? `<span class="dec-pill" style="--dc:${DECOR_RAR[rarOf(s)].c}">${DECOR_RAR[rarOf(s)].name}</span>` : "";
+// (14 octobre 2026) la valeur d'une trouvaille, pour montrer les plus belles d'abord (le barème du classement : taille × rareté du motif + shiny)
+const findVal = s => SCORE.taille[TIDX[s.type]] * SCORE.decor[Math.max(0, rarOf(s))] + (s.shiny ? SCORE.shiny[s.shiny-1] : 0);
 // Les copains (allégés le 4 octobre 2026) : une liste compacte qu'on peut filtrer, et à côté les demandes,
 // l'ajout d'un copain et seulement les trouvailles rares (Mammouths et shiny)
 function courCopains(){
@@ -14959,22 +14980,32 @@ function courCopains(){
   const row = (a, i) => `<div class="cp-row" data-q="${esc(fold(a.pseudo))}"${Math.floor(i/CP_PAGE)!==A.p?" data-off hidden":""}${a.active?` style="${tstyle(a.active.type)}"`:""}>
       <button class="cp-face" data-action="ami-voir" data-id="${a.id}" aria-label="Voir la fiche de ${esc(a.pseudo)}">${face(a)}</button>
       <button class="cp-who" data-action="ami-voir" data-id="${a.id}"><b>${esc(a.pseudo)}</b>${a.active ? `<small>${esc(specName(a.active))}</small>` : ""}</button>
-      <button class="btn btn-yellow btn-sm" data-action="troc-new" data-id="${a.id}">${ic("swap",15)} <span>Troquer</span></button></div>`;
+      <button class="btn btn-yellow btn-sm cp-troc" data-action="troc-new" data-id="${a.id}" title="Proposer un troc à ${esc(a.pseudo)}" aria-label="Proposer un troc à ${esc(a.pseudo)}">${ic("swap",16)}</button></div>`;
   const wait = r => `<div class="cp-row wait"><span class="cp-face">${avatarIni(r.pseudo,36)}</span><span class="cp-who"><b>${esc(r.pseudo)}</b><small>${ic("clock",12,2.4)} N'a pas encore répondu</small></span>
       <button class="btn btn-ghost btn-sm" data-action="ami-retirer" data-id="${r.id}">Annuler</button></div>`;
   // (10 octobre 2026) les trouvailles rares restent 72 h, 4 par page ; les copains 10 par page (la recherche cherche dans tous)
   // (14 octobre 2026) + les motifs légendaires et mythiques de toutes tailles, et les épiques à partir du Calot (pas les motifs d'événement ni de saison)
-  const rares = (cour.fil||[]).filter(e=>(e.s.type==="mammouth" || e.s.shiny || rarOf(e.s)>=4 || (rarOf(e.s)===3 && TIDX[e.s.type]>=TIDX.calot)) && Date.now()-e.at < RARES_H*36e5);
+  // (14 octobre 2026, refait) les plus belles d'abord (à valeur égale, la plus récente), 6 par page, en vitrine en haut de la page
+  const rares = (cour.fil||[]).filter(e=>(e.s.type==="mammouth" || e.s.shiny || rarOf(e.s)>=4 || (rarOf(e.s)===3 && TIDX[e.s.type]>=TIDX.calot)) && Date.now()-e.at < RARES_H*36e5)
+    .sort((x,y)=>findVal(y.s)-findVal(x.s) || y.at-x.at);
   const pg = (n, per, k) => { const max = Math.max(0, Math.ceil(n/per)-1); ui[k] = Math.min(ui[k]||0, max); return {p:ui[k], max} };
   const A = pg(amis.length, CP_PAGE, "cpPage"), F = pg(rares.length, RARES_PAGE, "rarPage");
   const pager = (P, k, lbl) => P.max ? `<div class="cp-pager" data-k="${k}"><button class="btn btn-ghost btn-sm" data-action="cp-page" data-k="${k}" data-d="-1" ${P.p?"":"disabled"} aria-label="${lbl} : page précédente">${ic("chevl",15,2.6)}</button>
       <span>Page <b>${P.p+1}</b> / ${P.max+1}</span><button class="btn btn-ghost btn-sm" data-action="cp-page" data-k="${k}" data-d="1" ${P.p<P.max?"":"disabled"} aria-label="${lbl} : page suivante">${ic("chev",15,2.6)}</button></div>` : "";
-  return `<div class="cp-layout">
+  const fc = e => e.s.shiny && rarOf(e.s)<4 ? "#E0A800" : rarOf(e.s)>=3 ? DECOR_RAR[rarOf(e.s)].c : "#8E8898";
+  const find = e => `<div class="cpf" style="${tstyle(e.s.type)};--dc:${fc(e)}"><span class="cpf-ball">${courBall(e.s,Math.round(22*scaleOf(e.s.type)+50),`Trouvée par ${e.who}.`)}</span>
+      <b class="cpf-name">${esc(specName(e.s))}</b><span class="cpf-pills">${typePill(e.s.type)}${shinyPill(e.s)}${rarPill(e.s)}</span>
+      <small><b>${esc(e.who)}</b> · ${timeAgo(e.at)}</small></div>`;
+  return `<section class="panel cp-finds"><div class="panel-head"><h3>${ic("star",18)} Trouvailles rares${rares.length?`<span class="cnt-n">${rares.length}</span>`:""}</h3><span class="sample-tag">Les plus belles de tes copains · 3 derniers jours</span></div>
+      ${rares.length ? `<div class="cpf-grid">${rares.slice(F.p*RARES_PAGE, (F.p+1)*RARES_PAGE).map(find).join("")}</div>${pager(F,"rarPage","Trouvailles")}`
+        : `<p class="empty">${amis.length ? "Pas de trouvaille rare chez tes copains ces 3 derniers jours. Les Mammouths, les shiny, les légendaires… apparaîtront ici." : "Ajoute des copains : leurs Mammouths, shiny et légendaires apparaîtront ici."}</p>`}
+    </section>
+    <div class="cp-layout">
     <section class="panel cp-main"><div class="panel-head"><h3>Mes copains<span class="cnt-n">${amis.length}</span></h3>
         ${amis.length ? `<div class="cp-search">${ic("search",15)}<input type="search" id="cp-q" placeholder="Chercher un copain" aria-label="Chercher un copain" autocomplete="off" spellcheck="false"></div>` : ""}</div>
       ${amis.length ? `<div class="cp-list cp-amis">${amis.map(row).join("")}</div><p class="meta cp-none" hidden>Aucun copain ne s'appelle comme ça.</p>${pager(A,"cpPage","Copains")}`
         : `<p class="empty">Pas encore de copain : ajoute-en un avec son pseudo, ou donne-lui le tien (<b>${esc(S.name)}</b>).</p>`}
-      ${env.length ? `<h4 class="cp-sub">Demandes envoyées</h4><div class="cp-list">${env.map(wait).join("")}</div>` : ""}
+      ${env.length ? `<h4 class="cp-sub">Demandes envoyées</h4><div class="cp-list cp-env">${env.map(wait).join("")}</div>` : ""}
     </section>
     <div class="cp-side">
       ${rec.length ? `<section class="panel cp-req"><div class="panel-head"><h3>Demandes reçues<span class="cnt-n">${rec.length}</span></h3></div>
@@ -14983,9 +15014,6 @@ function courCopains(){
       <section class="panel cp-add"><div class="panel-head"><h3>${ic("plus",17,2.6)} Ajouter un copain</h3></div>
         <form id="ami-form"><input type="text" id="ami-pseudo" maxlength="20" placeholder="Son pseudo" autocomplete="off" aria-label="Pseudo de ton copain"><button class="btn btn-yellow btn-sm" type="submit">Ajouter</button></form>
         <small class="meta">Entre copains, vous voyez vos vitrines et vous pouvez troquer.</small></section>
-      ${rares.length ? `<section class="panel cp-finds"><div class="panel-head"><h3>${ic("star",16)} Trouvailles rares</h3><span class="sample-tag">Mammouths, shiny, légendaires…</span></div>
-        ${rares.slice(F.p*RARES_PAGE, (F.p+1)*RARES_PAGE).map(e=>`<div class="cp-find" style="${tstyle(e.s.type)}"><span class="fb">${courBall(e.s,Math.round(10*scaleOf(e.s.type)+30),`Trouvée par ${e.who}.`)}</span>
-          <span class="cp-who"><b>${esc(courName(e.s))}</b><small><b>${esc(e.who)}</b> · ${timeAgo(e.at)}</small></span>${shinyPill(e.s)}${rarPill(e.s)}</div>`).join("")}${pager(F,"rarPage","Trouvailles")}</section>` : ""}
     </div>
   </div>`;
 }

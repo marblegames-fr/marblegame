@@ -13141,19 +13141,24 @@ function g3Trampo(k, r, n, o){
     const dir = L%2 ? -1 : 1, yL = -L*STEP, X = i => dir>0 ? x0 + i*pas : xe - i*pas, Y = i => yL - i*dy;
     const q = [0, 0, Math.sin(-dir*tilt/2), Math.cos(-dir*tilt/2)];
     for(let i=0;i<np;i++){ const z = i===0 ? 0 : (i%2 ? 1 : -1)*(.95 + .25*r());
-      // le premier : toute la largeur, et plus long vers le mur du bout de l'étage d'avant (tout ce qui tombe de là-haut atterrit dessus)
-      if(i===0 && L>0) k.box([PL + 3.4, .3, CW - .2], [X(0) - dir*1.7, Y(0), 0], q, "tramp", "tramp");
-      else k.box([PL, .3, i===0 ? CW - .2 : PW], [X(i), Y(i), z], q, "tramp", "tramp");
+      // le premier : une rampe bien penchée sur toute la largeur (et, à partir du 2e étage, plus longue vers le mur du bout de l'étage
+      // d'avant : tout ce qui tombe de là-haut atterrit dessus) ; (14 octobre 2026, le soir) presque plate, les billes s'y arrêtaient
+      if(i===0){ const t0 = 11*Math.PI/180, q0 = [0, 0, Math.sin(-dir*t0/2), Math.cos(-dir*t0/2)], Lr = L>0 ? PL + 3.4 : PL + .6;
+        k.box([Lr, .3, CW - .2], [X(0) - dir*(L>0 ? 1.7 : .3), Y(0) + .25, 0], q0, "ramp") }
+      else k.box([PL, .3, PW], [X(i), Y(i), z], q, "tramp", "tramp");
       path.push([X(i), Y(i) + 1, 0]);
-      if(i%4===2) k.ball(.5, [X(i) + dir*pas*.5, Y(i) + 2.1, -z*.6], "bump", "rebond") }   // une boule suspendue entre deux trampolines
+      // une boule suspendue toutes les deux plateformes, du côté où il n'y a pas de trampoline : une bille qui file le long du bord la percute
+      if(i>0 && i%2===0) k.ball(.5, [X(i) + dir*pas*.5, Y(i) + 1.6, -z*1.1], "bump", "rebond") }
     // la piste du dessous (pente vers le bout de l'étage), avec des plots
     const yf = i => Y(i) - 3, ang = Math.atan(dy/pas), lot = [];
     for(let i=0;i<np;i++) lot.push({size:[pas + .25, .3, CW - .1], pos:[X(i), yf(i), 0], quat:[0, 0, Math.sin(-dir*ang/2), Math.cos(-dir*ang/2)], kind:"ramp"});
     k.boxes(lot);
-    for(let i=1;i<np-1;i++) k.cyl(.2, 1, [X(i) + dir*pas*.5, yf(i) - dy*.5 + .62, (i%2 ? 1 : -1)*(.8 + (r()-.5)*.3)], [0, 0, -dir*ang], "peg");   // un plot par morceau, à gauche puis à droite
+    // des rangées de plots sur toute la largeur, en quinconce (3 puis 2) ; un passage d'au moins une bille partout, bords compris
+    for(let i=1;i<np-1;i++) (i%2 ? [-1.5, 0, 1.5] : [-.75, .75]).forEach(zz=>k.cyl(.2, 1, [X(i) + dir*pas*.5, yf(i) - dy*.5 + .62, zz + (r()-.5)*.1], [0, 0, -dir*ang], "peg"));
     // les murs de l'étage, le bout (où l'on tombe sur l'étage suivant) et le début (fermé)
     const xm = (x0 + xe)/2, ym = (Y(0) + yf(np-1))/2;
-    [-1, 1].forEach(sd=>k.box([xe - x0 + 6, STEP + 1, .3], [xm, ym + .5, sd*(CW/2 + .15)], [0, 0, -dir*ang], "wall"));
+    // (des murs hauts : les boules suspendues envoient parfois une bille bien au-dessus des trampolines)
+    [-1, 1].forEach(sd=>k.box([xe - x0 + 6, STEP + 6, .3], [xm, ym + 3, sd*(CW/2 + .15)], [0, 0, -dir*ang], "wall"));
     // le mur du bout : de haut en bas, jusqu'à l'étage suivant (sinon une bille lancée passait dessous et tombait dans le vide)
     k.box([.3, STEP + 6, CW], [dir>0 ? xe + pas*.5 + 1.4 : x0 - pas*.5 - 1.4, Y(np-1) - STEP/2 + 1.5, 0], [0,0,0], "end");
     if(L>0) k.box([.3, 4, CW], [dir>0 ? x0 - pas*.5 - 1.2 : xe + pas*.5 + 1.2, Y(0) + 1.5, 0], [0,0,0], "end");

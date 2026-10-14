@@ -13008,6 +13008,9 @@ function g3Trough(k, P, o){
   const vr = Math.min(.05, .45*(o.pente || .1)/(WID/2));
   for(let i=1;i<bk.length;i++) bk[i] = bk[i-1] + Math.max(-vr, Math.min(vr, bk[i]-bk[i-1]));
   for(let i=bk.length-2;i>=0;i--) bk[i] = bk[i+1] + Math.max(-vr, Math.min(vr, bk[i]-bk[i+1]));
+  // (14 octobre 2026) o.plat0 : la goulotte part à plat d'un plateau (les fourches) puis se relève sur ses 5 premiers morceaux.
+  // Sans ça le détour, qui tourne tout de suite, commençait déjà relevé (0,29) : son bord intérieur faisait une marche de 0,5 qui calait les billes.
+  if(o.plat0) for(let i=0;i<Math.min(5, bk.length);i++) bk[i] *= i/5;
   let lot = []; const frames = [];
   for(let i=0;i<N-1;i++){
     const A = P[i], B = P[i+1], X = v3.norm(v3.sub(B, A)), len = Math.hypot(...v3.sub(B, A)), bank = bk[i];
@@ -13057,16 +13060,22 @@ function g3Fourche(k, r, n, o){
   const st = g3TroughStart(k, P0, {WID}, n, r);
   // une section : la fourche en (x0, y0), le raccourci (tout droit) et le détour (une boucle) ; puis l'entonnoir en V et sa sortie,
   // ou, pour la dernière, le bac d'arrivée
-  const section = (x0, y0, obsA, obsB, derniere) => {
+  // wIn : la largeur de la goulotte qui arrive (les murs du fond du plateau commencent à son bord)
+  const section = (x0, y0, obsA, obsB, derniere, wIn = WID) => {
     const X = v3.norm([1, -p, 0]), Y = v3.norm([p, 1, 0]), q = g3Basis(X, Y, v3.cross(X, Y)), top = (x, z) => [x0 + x, y0 - p*x + .18, z];
     k.box([3.8, .35, 2*(LZ + WID/2) + .4], [x0 + 1.6, y0 - p*1.6, 0], q, o.kind || "ramp");
-    [-1, 1].forEach(sd=>{ k.seg(top(1.3, 0), top(3.3, sd*.6), Y, 1.3, "rail");
+    // (14 octobre 2026) le séparateur finit DERRIÈRE le mur intérieur de chaque branche (z ±0,42, x 3,6) : avant il finissait en z ±0,6,
+    // son coin dépassait de 0,15 dans la piste juste où le mur commence et calait les billes (le « petit rebord » à l'entrée des branches)
+    [-1, 1].forEach(sd=>{ k.seg(top(1.3, 0), top(3.6, sd*.42), Y, 1.3, "rail");
       k.box([3.8, 1.5, .25], v3.add(top(1.6, sd*(LZ + WID/2 + .3)), [0, .6, 0]), q, "wall");
-      k.box([.25, 1.5, LZ + .5], v3.add(top(-.1, sd*(WID/2 + (LZ + .5)/2)), [0, .6, 0]), q, "wall") });
+      // (14 octobre 2026) avant, ces murs partaient de WID/2 : à la 2e fourche (goulotte d'arrivée de 5,2) ils dépassaient de 0,7 dans la piste
+      // et faisaient un rebord qui bloquait les billes du bord de la goulotte
+      const zi = wIn/2 + .15, ze = LZ + WID/2 + .4;
+      k.box([.25, 1.5, ze - zi], v3.add(top(-.1, sd*(zi + ze)/2), [0, .6, 0]), q, "wall") });
     const PA = g3Trace([["S", 36]], {pente:p, from:[x0 + 3.4, y0 - p*3.4, LZ]});
-    const A = g3Trough(k, PA, {WID, mur:1.5, kind:o.kind});
+    const A = g3Trough(k, PA, {WID, mur:1.5, kind:o.kind, plat0:true});
     const PB = g3Trace([["S",3],["G",6,90],["S",8],["D",6,90],["S",10],["D",6,90],["S",8],["G",6,90],["S",2]], {pente:p, from:[x0 + 3.4, y0 - p*3.4, -LZ]});
-    const B = g3Trough(k, PB, {WID, mur:1.5, kind:o.kind});
+    const B = g3Trough(k, PB, {WID, mur:1.5, kind:o.kind, plat0:true});
     // les obstacles : sur le raccourci tous les 5 morceaux à partir du 4e ; sur le détour au milieu de ses lignes droites
     g3Obstacles(k, A.frames, WID, obsA.map((t, j)=>[4 + j*Math.floor((A.frames.length - 8)/Math.max(1, obsA.length - 1)), t]), r);
     const SB = PB.parts.filter(x=>x.c[0]==="S" && x.c[1]>=8);
@@ -13096,7 +13105,7 @@ function g3Fourche(k, r, n, o){
   const PM = g3Trace([["S", 16]], {pente:p, from:[s1.x, s1.y, 0]});
   path.push(...g3Trough(k, PM, {WID:5.2, mur:1.5, kind:o.kind}).path);
   // la deuxième fourche : son plateau prend la suite, un peu plus bas
-  const e = PM.at(-1), end = section(e[0] + .2, e[1] - .25, o.obs.A2, o.obs.B2, true);
+  const e = PM.at(-1), end = section(e[0] + .2, e[1] - .25, o.obs.A2, o.obs.B2, true, 5.2);
   return {path, branches, ...st, ...end, cam:g3ChaseCam};
 }
 // Un entonnoir : un cône de rayon RO (le bord) à RI (le trou au milieu), en pente de « pente » vers le trou, avec un rebord tout autour.
@@ -13710,7 +13719,9 @@ async function gcWatch3D(race){
     m.castShadow = true; scene.add(m);
     if(useSpr){ const c = document.createElement("canvas"); c.width = c.height = SPR; const tx = new THREE.CanvasTexture(c); tx.colorSpace = THREE.SRGBColorSpace;
       const sp = new THREE.Sprite(new THREE.SpriteMaterial({map:tx, transparent:true, depthWrite:false})), k = 2*G3.R/.9; sp.scale.set(k,k,1); scene.add(sp);
-      sprites[i] = {c, x:c.getContext("2d"), tx, sp, last:-99} }
+      // (14 octobre 2026) la bille chinoise est une pépite aplatie, dessinée au milieu de l'image : son dessous est à 0,61 du centre au lieu de 1,
+      // elle avait l'air de flotter au-dessus de la piste. On la descend d'autant (0,39 × le rayon) : elle se pose sur la piste.
+      sprites[i] = {c, x:c.getContext("2d"), tx, sp, last:-99, dy:o.spec?.type==="chinoise" ? .39*G3.R : 0} }
     // (6 octobre 2026) une shiny garde son aura pendant la course : arc-en-ciel (Irisée), or (Dorée), sa couleur (Lumineuse)
     if(o.spec?.shiny){ const tx = new THREE.CanvasTexture(g3Aura(o.spec)); tx.colorSpace = THREE.SRGBColorSpace;
       const au = new THREE.Sprite(new THREE.SpriteMaterial({map:tx, transparent:true, depthWrite:false, blending:THREE.AdditiveBlending})), k = 2*G3.R/.9*2.1;
@@ -13741,7 +13752,7 @@ async function gcWatch3D(race){
     const cd = t<1 ? "3" : t<2 ? "2" : t<3 ? "1" : "go";
     if(cd!==G3V.cd){ G3V.cd = cd; big(cd==="go" ? "Partez !" : cd); if(cd==="go") Sound.ding(); else Sound.tap?.(0,.5) }
     for(let i=0;i<n;i++){ meshes[i].position.set(F[i*7],F[i*7+1],F[i*7+2]); meshes[i].quaternion.set(F[i*7+3],F[i*7+4],F[i*7+5],F[i*7+6]) }
-    auras.forEach(({au, i})=>{ au.position.copy(meshes[i].position); au.material.opacity = .7 + .3*Math.sin(now/260 + i*1.7); au.material.rotation = now/900 });
+    auras.forEach(({au, i})=>{ au.position.copy(meshes[i].position); if(sprites[i]) au.position.y -= sprites[i].dy; au.material.opacity = .7 + .3*Math.sin(now/260 + i*1.7); au.material.rotation = now/900 });
     if(kinM.length){ const K = sim.kf[f]; kinM.forEach((m,j)=>m.quaternion.set(K[j*4],K[j*4+1],K[j*4+2],K[j*4+3])) }
     const tt = f*G3.DT, rank = who.map((o,i)=>({o, i, done:sim.fin[i]<=tt, pr:g3Where(W, F[i*7],F[i*7+1],F[i*7+2]).s}))
       .sort((a,b)=> (a.done&&b.done) ? sim.fin[a.i]-sim.fin[b.i] : a.done ? -1 : b.done ? 1 : b.pr-a.pr);
@@ -13772,7 +13783,7 @@ async function gcWatch3D(race){
     // les billes vues depuis la caméra (les plus proches redessinées à chaque image, les autres moins souvent)
     if(sprites.length){
       mc.extractRotation(camera.matrixWorld).transpose();
-      for(let i=0;i<n;i++){ const S2 = sprites[i]; S2.sp.position.copy(meshes[i].position);
+      for(let i=0;i<n;i++){ const S2 = sprites[i]; S2.sp.position.copy(meshes[i].position); S2.sp.position.y -= S2.dy;
         const d = camera.position.distanceTo(meshes[i].position), every = d<16 ? 1 : d<35 ? 3 : 12;
         if(f-S2.last<every && f>=S2.last) continue; S2.last = f;
         qq.set(F[i*7+3],F[i*7+4],F[i*7+5],F[i*7+6]); mq.makeRotationFromQuaternion(qq).premultiply(mc); const e = mq.elements;

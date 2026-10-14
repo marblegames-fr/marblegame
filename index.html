@@ -12965,7 +12965,8 @@ function g3Log(k, rot, sg, ph, rad, len, pos, kind, mat){
 // avoir sa pente (3e ou 4e valeur, sinon o.pente). Renvoie des points tous les « pas » environ, qui descendent avec la pente.
 function g3Trace(cmds, o){
   const pas = o.pas || 1, pts = [[...(o.from||[0,0,0])]]; let h = o.cap || 0, [x, y, z] = o.from || [0,0,0];
-  cmds.forEach(c=>{
+  pts.parts = [];   // (14 octobre 2026) où commence et finit chaque morceau du tracé (pour poser des obstacles au milieu des lignes droites)
+  cmds.forEach(c=>{ pts.parts.push({c, i0:pts.length-1, i1:pts.length-1 + Math.max(1, Math.round((c[0]==="S" ? c[1] : c[1]*c[2]*Math.PI/180)/pas))});
     const droit = c[0]==="S", pente = (droit ? c[2] : c[3]) ?? o.pente, L = droit ? c[1] : c[1]*c[2]*Math.PI/180, nb = Math.max(1, Math.round(L/pas));
     const dh = droit ? 0 : (c[0]==="G" ? -1 : 1)*c[2]*Math.PI/180/nb;
     for(let j=0;j<nb;j++){ const l = L/nb; h += dh/2; x += Math.cos(h)*l; z += Math.sin(h)*l; h += dh/2; y -= pente*l; pts.push([x, y, z]) }
@@ -12981,9 +12982,11 @@ function g3Trough(k, P, o){
   for(let i=0;i<N-1;i++){ const Xa = v3.norm(v3.sub(P[i+1], P[Math.max(0,i-1)])), Xb = v3.norm(v3.sub(P[Math.min(N-1,i+2)], P[i]));
     bk.push(Math.max(-BM, Math.min(BM, (o.relief ?? 6)*v3.cross(Xa, Xb)[1]/Math.max(.5, Math.hypot(...v3.sub(P[i+1], P[i])))))) }
   for(let pass=0; pass<4; pass++) bk = bk.map((b,i)=>{ let s = 0, c = 0; for(let j=-3;j<=3;j++){ const v = bk[i+j]; if(v!=null){ s += v; c++ } } return s/c });
-  for(let i=1;i<bk.length;i++) bk[i] = bk[i-1] + Math.max(-.05, Math.min(.05, bk[i]-bk[i-1]));
-  for(let i=bk.length-2;i>=0;i--) bk[i] = bk[i+1] + Math.max(-.05, Math.min(.05, bk[i]-bk[i+1]));
-  let lot = [];
+  // (le relevé change d'au plus « vr » par morceau : sur le bord d'une piste large, il ne doit jamais remonter plus que la pente ne descend)
+  const vr = Math.min(.05, .45*(o.pente || .1)/(WID/2));
+  for(let i=1;i<bk.length;i++) bk[i] = bk[i-1] + Math.max(-vr, Math.min(vr, bk[i]-bk[i-1]));
+  for(let i=bk.length-2;i>=0;i--) bk[i] = bk[i+1] + Math.max(-vr, Math.min(vr, bk[i]-bk[i+1]));
+  let lot = []; const frames = [];
   for(let i=0;i<N-1;i++){
     const A = P[i], B = P[i+1], X = v3.norm(v3.sub(B, A)), len = Math.hypot(...v3.sub(B, A)), bank = bk[i];
     const Z0 = v3.norm([-X[2], 0, X[0]]), Y0 = v3.norm(v3.cross(Z0, X));
@@ -12993,8 +12996,9 @@ function g3Trough(k, P, o){
     [-1, 1].forEach(sd=>lot.push({size:[Lp, mur, .25], pos:v3.add(M, v3.add(v3.mul(Z, sd*(WID/2+.12)), v3.mul(Y, mur/2-.1))), quat:q, kind:o.murKind || "wall"}));
     if(lot.length>=18 || i===N-2){ k.boxes(lot); lot = [] }   // 6 morceaux de piste par corps
     if(i%2===0) path.push(v3.add(M, v3.mul(Y, .5)));
+    frames.push({M:v3.add(M, v3.mul(Y, .175)), X, Y, Z, q, bank});   // le dessus du fond, au milieu du morceau
   }
-  return {path};
+  return {path, frames};
 }
 // le départ d'une goulotte : les billes en files sur le début (tout droit), derrière une barrière
 function g3TroughStart(k, P, o, n, r){
@@ -13022,46 +13026,63 @@ function g3TroughEnd(k, P, path, o){
 // (o.obstacles(k, at, len) pose ce qu'on veut dessus) et un grand détour sans obstacles ; les deux retombent dans un grand entonnoir
 // en V qui mène à la dernière goulotte et au bac. Le raccourci est une « branche » du chemin (pour le classement en direct).
 function g3Fourche(k, r, n, o){
-  const WID = 3.2, p = o.pente || .1, yf = 0;
-  // la goulotte de départ, jusqu'à la fourche (en x = 0)
-  // (14 octobre 2026) plus long (le raccourci gagnait en 30 s) ; tout droit : une courbe en S avant la fourche faisait des bouchons
-  const P0 = g3Trace([["S", 40]], {pente:p, from:[-40, yf + 40*p, 0]});
-  const main = g3Trough(k, P0, {WID, mur:1.5, kind:o.kind}).path;
+  // (14 octobre 2026, le soir) deux fourches à la suite (4 chemins possibles), des pistes plus larges, des obstacles sur les 4 branches.
+  // o.obs : pour chaque branche (A1 raccourci, B1 détour, A2, B2), la liste des obstacles (types de g3Obstacles) posés tout du long.
+  const WID = 3.8, p = o.pente || .1, LZ = 2.5, path = [], branches = [];
+  // la goulotte de départ, jusqu'à la première fourche (en x = 0, y = 0)
+  const P0 = g3Trace([["S", 40]], {pente:p, from:[-40, 40*p, 0]});
+  path.push(...g3Trough(k, P0, {WID, mur:1.5, kind:o.kind}).path);
   const st = g3TroughStart(k, P0, {WID}, n, r);
-  // la fourche : un plateau large, un éperon qui sépare à gauche ou à droite, des bords
-  const X = v3.norm([1, -p, 0]), Y = v3.norm([p, 1, 0]), q = g3Basis(X, Y, v3.cross(X, Y)), top = (x, z) => [x, yf - p*x + .18, z];
-  k.box([3.8, .35, 8], [1.6, yf - p*1.6, 0], q, o.kind || "ramp");
-  [-1, 1].forEach(sd=>{ k.seg(top(1.3, 0), top(3.3, sd*.6), Y, 1.3, "rail");
-    k.box([3.8, 1.5, .25], v3.add(top(1.6, sd*4.1), [0, .6, 0]), q, "wall");
-    k.box([.25, 1.5, 2.4], v3.add(top(-.1, sd*2.9), [0, .6, 0]), q, "wall") });
-  // le raccourci (à gauche) : tout droit, avec ses obstacles ; le détour (à droite) : une grande boucle
-  const PA = g3Trace([["S", 36]], {pente:p, from:[3.4, yf - p*3.4, 2.2]});
-  const brA = g3Trough(k, PA, {WID, mur:1.5, kind:o.kind}).path;
-  const at = d => ({P:[3.4 + d, yf - p*(3.4 + d), 2.2], X, Y, Z:v3.cross(X, Y), q});
-  o.obstacles && o.obstacles(k, at, 36);
-  const PB = g3Trace([["S",3],["G",6,90],["S",8],["D",6,90],["S",10],["D",6,90],["S",8],["G",6,90],["S",2]], {pente:p, from:[3.4, yf - p*3.4, -2.2]});
-  const brB = g3Trough(k, PB, {WID, mur:1.5, kind:o.kind}).path;
-  // l'entonnoir en V : deux moitiés qui penchent vers le milieu (z = 0) et descendent vers la sortie
-  const yb = Math.min(PA.at(-1)[1], PB.at(-1)[1]) - 2.2, x0 = 32, L = 15, a5 = 7*Math.PI/180, a9 = 10*Math.PI/180, Xp = v3.norm([1, -Math.tan(a5), 0]);
-  [-1, 1].forEach(sd=>{ const Zh = v3.norm([0, Math.tan(a9), sd]), Yh0 = v3.norm(v3.cross(Zh, Xp)), Yh = Yh0[1] < 0 ? v3.mul(Yh0, -1) : Yh0;   // chaque moitié monte vers son bord
-    k.box([L, .35, 8.4], [x0 + L/2, yb - Math.tan(a5)*L/2 + 4*Math.tan(a9), sd*4], g3Basis(Xp, Yh, v3.cross(Xp, Yh)), o.kind || "ramp") });
-  const yo = yb - Math.tan(a5)*L;
-  k.box([.4, 4, 17], [x0 - .2, yb + 1.5, 0], [0,0,0], "wall");
-  [-1, 1].forEach(sd=>{ k.box([L, 4, .4], [x0 + L/2, yb + .8, sd*8.4], [0,0,0], "wall"); k.box([.4, 3, 5.6], [x0 + L + .2, yo + 1.5, sd*5.6], [0,0,0], "wall") });
-  // la dernière goulotte (plus large au début : 24 billes sortent de l'entonnoir en même temps), juste après le bord de l'entonnoir, un peu plus bas
-  const PC = g3Trace([["S", 34]], {pente:p, from:[x0 + L + .1, yo - .6, 0]});
-  const fin = g3Trough(k, PC, {WID:5.2, mur:1.5, kind:o.kind}).path;
-  // le chemin : départ, puis le détour (le plus long), l'entonnoir, la fin ; le raccourci est une branche
-  const path = [...main, ...brB, [x0 + 4, yb + .6, 0], [x0 + L - 1, yo + .6, 0], ...fin], iF = main.length, iM = main.length + brB.length;
-  const end = g3TroughEnd(k, PC, path, {WID:5.2});
-  return {path, branches:[{path:brA, from:iF, to:iM}], ...st, ...end, cam:g3ChaseCam};
+  // une section : la fourche en (x0, y0), le raccourci (tout droit) et le détour (une boucle) ; puis l'entonnoir en V et sa sortie,
+  // ou, pour la dernière, le bac d'arrivée
+  const section = (x0, y0, obsA, obsB, derniere) => {
+    const X = v3.norm([1, -p, 0]), Y = v3.norm([p, 1, 0]), q = g3Basis(X, Y, v3.cross(X, Y)), top = (x, z) => [x0 + x, y0 - p*x + .18, z];
+    k.box([3.8, .35, 2*(LZ + WID/2) + .4], [x0 + 1.6, y0 - p*1.6, 0], q, o.kind || "ramp");
+    [-1, 1].forEach(sd=>{ k.seg(top(1.3, 0), top(3.3, sd*.6), Y, 1.3, "rail");
+      k.box([3.8, 1.5, .25], v3.add(top(1.6, sd*(LZ + WID/2 + .3)), [0, .6, 0]), q, "wall");
+      k.box([.25, 1.5, LZ + .5], v3.add(top(-.1, sd*(WID/2 + (LZ + .5)/2)), [0, .6, 0]), q, "wall") });
+    const PA = g3Trace([["S", 36]], {pente:p, from:[x0 + 3.4, y0 - p*3.4, LZ]});
+    const A = g3Trough(k, PA, {WID, mur:1.5, kind:o.kind});
+    const PB = g3Trace([["S",3],["G",6,90],["S",8],["D",6,90],["S",10],["D",6,90],["S",8],["G",6,90],["S",2]], {pente:p, from:[x0 + 3.4, y0 - p*3.4, -LZ]});
+    const B = g3Trough(k, PB, {WID, mur:1.5, kind:o.kind});
+    // les obstacles : sur le raccourci tous les 5 morceaux à partir du 4e ; sur le détour au milieu de ses lignes droites
+    g3Obstacles(k, A.frames, WID, obsA.map((t, j)=>[4 + j*Math.floor((A.frames.length - 8)/Math.max(1, obsA.length - 1)), t]), r);
+    const SB = PB.parts.filter(x=>x.c[0]==="S" && x.c[1]>=8);
+    g3Obstacles(k, B.frames, WID, obsB.map((t, j)=>[SB[j % SB.length] ? Math.round((SB[j % SB.length].i0 + SB[j % SB.length].i1)/2) : 10, t]), r);
+    const yb = Math.min(PA.at(-1)[1], PB.at(-1)[1]) - 2.2, xa = x0 + 32, L = 15;
+    path.push(...B.path); branches.push({path:A.path, from:path.length - B.path.length, to:path.length});
+    if(derniere){   // le bac d'arrivée, sous les deux branches
+      // (assez bas : le détour revient au-dessus de son bord)
+      const yt = yb - 2.6, c = [xa + L/2, yt, 0];
+      k.box([L + 1, .4, 18], c, [0,0,0], "tray");
+      [[-1, 0, .4, 18], [1, 0, .4, 18], [0, -1, L + 1, .4], [0, 1, L + 1, .4]].forEach(([a, b2, sx, sz])=>k.box([sx, 2.2, sz], [c[0] + a*(L/2 + .5), yt + 1.1, b2*9], [0,0,0], a ? "glass" : "wall"));
+      path.push([c[0], yt + 1, 0]);
+      return {finishY:yt + 1.2, floorY:yt - 3, trayR:10};
+    }
+    // l'entonnoir en V : deux moitiés qui penchent vers le milieu (z = 0) et descendent vers la sortie
+    const a5 = 7*Math.PI/180, a9 = 10*Math.PI/180, Xp = v3.norm([1, -Math.tan(a5), 0]);
+    [-1, 1].forEach(sd=>{ const Zh = v3.norm([0, Math.tan(a9), sd]), Yh0 = v3.norm(v3.cross(Zh, Xp)), Yh = Yh0[1] < 0 ? v3.mul(Yh0, -1) : Yh0;
+      k.box([L, .35, 8.4], [xa + L/2, yb - Math.tan(a5)*L/2 + 4*Math.tan(a9), sd*4], g3Basis(Xp, Yh, v3.cross(Xp, Yh)), o.kind || "ramp") });
+    const yo = yb - Math.tan(a5)*L;
+    k.box([.4, 4, 17], [xa - .2, yb + 1.5, 0], [0,0,0], "wall");
+    [-1, 1].forEach(sd=>{ k.box([L, 4, .4], [xa + L/2, yb + .8, sd*8.4], [0,0,0], "wall"); k.box([.4, 3, 5.6], [xa + L + .2, yo + 1.5, sd*5.6], [0,0,0], "wall") });
+    path.push([xa + 4, yb + .6, 0], [xa + L - 1, yo + .6, 0]);
+    return {x:xa + L + .1, y:yo - .6};
+  };
+  const s1 = section(0, 0, o.obs.A1, o.obs.B1, false);
+  // entre les deux fourches : une goulotte large (24 billes sortent de l'entonnoir en même temps)
+  const PM = g3Trace([["S", 16]], {pente:p, from:[s1.x, s1.y, 0]});
+  path.push(...g3Trough(k, PM, {WID:5.2, mur:1.5, kind:o.kind}).path);
+  // la deuxième fourche : son plateau prend la suite, un peu plus bas
+  const e = PM.at(-1), end = section(e[0] + .2, e[1] - .25, o.obs.A2, o.obs.B2, true);
+  return {path, branches, ...st, ...end, cam:g3ChaseCam};
 }
 // Un entonnoir : un cône de rayon RO (le bord) à RI (le trou au milieu), en pente de « pente » vers le trou, avec un rebord tout autour.
 // C : le centre du trou (sa hauteur : le bas de la pente). Renvoie la hauteur du bord (le haut de la pente).
 function g3Funnel(k, C, RO, RI, pente, kind, o={}){
   const tp = Math.tan(pente), lot = [], ring = (r1, r2, NS) => { for(let j=0;j<NS;j++){ const a = (j+.5)*TAU/NS, rad = [Math.cos(a), 0, Math.sin(a)], rc = (r1+r2)/2;
     const X = v3.norm([rad[0]*Math.cos(pente), Math.sin(pente), rad[2]*Math.cos(pente)]), Z = [-Math.sin(a), 0, Math.cos(a)], Y = v3.cross(Z, X);
-    lot.push({size:[(r2-r1)/Math.cos(pente) + .15, .3, 2*r2*Math.sin(Math.PI/NS)*1.18], pos:v3.add(C, [rad[0]*rc, (rc-RI)*tp - .15, rad[2]*rc]), quat:g3Basis(X, Y, Z), kind:kind || "ramp"}) } };
+    lot.push({size:[(r2-r1)/Math.cos(pente) + .15, .3, 2*r2*Math.sin(Math.PI/NS)*1.18], pos:v3.add(C, [rad[0]*rc, (rc-RI)*tp - .15, rad[2]*rc]), quat:g3Basis(X, Y, Z), kind:"funnel"}) } };
   ring(RI, RI + (RO-RI)*.42, 20); ring(RI + (RO-RI)*.42, RO, 40);
   const NW = 40, yb = (RO-RI)*tp;
   for(let j=0;j<NW;j++){ const a = (j+.5)*TAU/NW, Z = [-Math.sin(a), 0, Math.cos(a)], X = [Math.cos(a), 0, Math.sin(a)];
@@ -13072,6 +13093,10 @@ function g3Funnel(k, C, RO, RI, pente, kind, o={}){
     const X = v3.norm([rad[0]*Math.cos(pente), Math.sin(pente), rad[2]*Math.cos(pente)]), Z = [-Math.sin(a), 0, Math.cos(a)], Y = v3.cross(Z, X);
     lot.push({size:[(r2-r1)/Math.cos(pente), .55, .22], pos:v3.add(v3.add(C, [rad[0]*rc, (rc-RI)*tp, rad[2]*rc]), v3.mul(Y, .27)), quat:g3Basis(X, Y, Z), kind:"rail"}) }
   for(let i=0;i<lot.length;i+=20) k.boxes(lot.slice(i, i+20));
+  // (14 octobre 2026, le soir) des champignons rebondissants sur la soucoupe : une bille qui tourne les percute et repart n'importe où
+  for(let j=0;j<(o.champis ?? 3);j++){ const a = Math.PI/2 + (o.nerv||0) + (j+1)*TAU/((o.champis ?? 3)+1), rad = [Math.cos(a), 0, Math.sin(a)], rc = RI + (RO-RI)*(j%2 ? .62 : .4);
+    const X = v3.norm([rad[0]*Math.cos(pente), Math.sin(pente), rad[2]*Math.cos(pente)]), Z = [-Math.sin(a), 0, Math.cos(a)], Y = v3.cross(Z, X);
+    k.cyl(.42, 1, v3.add(v3.add(C, [rad[0]*rc, (rc-RI)*tp, rad[2]*rc]), v3.mul(Y, .5)), g3Basis(X, Y, Z), "bump", "rebond") }
   return C[1] + yb;
 }
 // Les entonnoirs en cascade : une goulotte de départ arrive en biais dans le premier entonnoir (la bille tourne), elle tombe par le trou
@@ -13081,7 +13106,7 @@ function g3Entonnoirs(k, r, n, o){
   // le premier entonnoir : son centre en (0, 0, 0) ; la goulotte arrive sur la ligne z = -off, vers +x, au-dessus du rebord
   let C = [0, 0, 0], st = null;
   for(let f=0; f<nb; f++){
-    const top = g3Funnel(k, C, RO, RI, pente, o.kind), yIn = top + 3.5;
+    const top = g3Funnel(k, C, RO, RI, pente, o.kind, {champis:o.champis}), yIn = top + 3.5;
     // la goulotte qui arrive : elle finit au-dessus de l'entonnoir, à côté du centre, en biais (le long du bord)
     const xe = C[0] - 1.2, len = f===0 ? 20 : null;
     if(f===0){ const P = g3Trace([["S", len]], {pente:p, from:[xe - len, yIn + p*len, C[2] - off]});
@@ -13100,36 +13125,69 @@ function g3Entonnoirs(k, r, n, o){
   }
 }
 // la caméra des entonnoirs : derrière la bille dans les goulottes ; au-dessus et un peu de côté dans un entonnoir (le chemin y descend tout droit)
-const g3FunnelCam = (p, T) => { const h = Math.hypot(T[0], T[2]); return h < .3 ? [p[0], p[1]+9, p[2]-7] : [p[0] - T[0]/h*7, p[1]+6, p[2] - T[2]/h*7] };
+const g3FunnelCam = (p, T) => { const h = Math.hypot(T[0], T[2]); return h < .3 ? [p[0], p[1]+10, p[2]-9] : [p[0] - T[0]/h*4 + T[2]/h*11, p[1]+2.5, p[2] - T[2]/h*4 - T[0]/h*11] };
 // Les trampolines : une suite de trampolines qui descend (penchés vers l'avant), dans un couloir vitré. Une bille qui tombe entre deux
 // tombe sur la piste du dessous, plus lente, qui mène aussi au bac : deux étages, des dépassements. o.np trampolines, o.pas entre eux.
 function g3Trampo(k, r, n, o){
-  const np = o.np || 44, pas = o.pas || 3, dy = o.dy || .8, PL = o.long || 2.4, WID = 3.6, H = 4.2, tilt = o.tilt ?? 2*Math.PI/180;
-  const padY = i => -i*dy, padX = i => 3 + i*pas, L = padX(np) + 2;
-  // la goulotte de départ (elle arrive au-dessus du premier trampoline)
-  const P0 = g3Trace([["S", 16]], {pente:.1, from:[-15, 2.6 + 1.6, 0]});
-  const st = g3TroughStart(k, P0, {WID:3.2}, n, r), path = g3Trough(k, P0, {WID:3.2, mur:1.4}).path;
-  const q = [0, 0, Math.sin(-tilt/2), Math.cos(-tilt/2)];
-  for(let i=0;i<np;i++){ k.box([PL, .3, WID-.1], [padX(i), padY(i), 0], q, "tramp", "tramp"); path.push([padX(i), padY(i) + 1, 0]) }
-  // la piste du dessous : sous tous les trampolines, en pente douce, avec des plots
-  const yl = x => -1.9 - (x - 3)*dy/pas, ang = Math.atan(dy/pas), lot = [];
-  for(let x=1; x<L; x+=4){ const c = x + 2; lot.push({size:[4.15, .3, WID-.1], pos:[c, yl(c), 0], quat:[0, 0, Math.sin(-ang/2), Math.cos(-ang/2)], kind:"ramp"}) }
-  k.boxes(lot);
-  for(let x=9; x<L-4; x+=7){ const z = (r()-.5)*1.2; k.cyl(.2, 1, [x, yl(x) + .65, z], [0, 0, -ang], "peg") }
-  // le couloir : deux grands murs (par morceaux, ils suivent la pente), et un toit vitré au-dessus des trampolines
-  for(let x=-1; x<L; x+=6){ const c = x + 3, yc = (padY((c-3)/pas) + yl(c))/2 + 1.3;
-    [-1, 1].forEach(sd=>k.box([6.2, H + 2.4, .3], [c, yc, sd*(WID/2+.15)], [0, 0, -ang], "wall"));
-    k.box([6.2, .2, WID+.6], [c, padY((c-3)/pas) + 3.6, 0], [0, 0, -ang], "glass") }
-  // le bac : les deux étages y arrivent
-  const yt = Math.min(padY(np-1), yl(L)) - 3.5, xt = L + 4;
+  // (14 octobre 2026, le soir) plus une ligne droite : NL étages en zigzag. Sur chaque étage, des trampolines décalés à gauche puis à
+  // droite (les billes rebondissent en biais, certaines ratent leur saut), des boules rebondissantes suspendues, et en dessous une piste
+  // de secours avec des plots qui mène aussi à l'étage suivant. Au bout d'un étage, tout le monde tombe sur le début du suivant.
+  const NL = o.etages || 4, np = o.np || 11, pas = o.pas || 3.3, dy = o.dy || .55, PL = 2.4, PW = 2.7, CW = 5.2, STEP = o.step || 11.5;
+  const tilt = 2*Math.PI/180, x0 = 3, xe = x0 + (np-1)*pas, path = [];
+  // la goulotte de départ, qui arrive au-dessus du premier trampoline
+  const P0 = g3Trace([["S", 16]], {pente:.1, from:[x0 - 18, 3.2 + 1.6, 0]});
+  const st = g3TroughStart(k, P0, {WID:3.2}, n, r); path.push(...g3Trough(k, P0, {WID:3.2, mur:1.4}).path);
+  for(let L=0; L<NL; L++){
+    const dir = L%2 ? -1 : 1, yL = -L*STEP, X = i => dir>0 ? x0 + i*pas : xe - i*pas, Y = i => yL - i*dy;
+    const q = [0, 0, Math.sin(-dir*tilt/2), Math.cos(-dir*tilt/2)];
+    for(let i=0;i<np;i++){ const z = i===0 ? 0 : (i%2 ? 1 : -1)*(.95 + .25*r());
+      // le premier : toute la largeur, et plus long vers le mur du bout de l'étage d'avant (tout ce qui tombe de là-haut atterrit dessus)
+      if(i===0 && L>0) k.box([PL + 3.4, .3, CW - .2], [X(0) - dir*1.7, Y(0), 0], q, "tramp", "tramp");
+      else k.box([PL, .3, i===0 ? CW - .2 : PW], [X(i), Y(i), z], q, "tramp", "tramp");
+      path.push([X(i), Y(i) + 1, 0]);
+      if(i%4===2) k.ball(.5, [X(i) + dir*pas*.5, Y(i) + 2.1, -z*.6], "bump", "rebond") }   // une boule suspendue entre deux trampolines
+    // la piste du dessous (pente vers le bout de l'étage), avec des plots
+    const yf = i => Y(i) - 3, ang = Math.atan(dy/pas), lot = [];
+    for(let i=0;i<np;i++) lot.push({size:[pas + .25, .3, CW - .1], pos:[X(i), yf(i), 0], quat:[0, 0, Math.sin(-dir*ang/2), Math.cos(-dir*ang/2)], kind:"ramp"});
+    k.boxes(lot);
+    for(let i=1;i<np-1;i++) k.cyl(.2, 1, [X(i) + dir*pas*.5, yf(i) - dy*.5 + .62, (i%2 ? 1 : -1)*(.8 + (r()-.5)*.3)], [0, 0, -dir*ang], "peg");   // un plot par morceau, à gauche puis à droite
+    // les murs de l'étage, le bout (où l'on tombe sur l'étage suivant) et le début (fermé)
+    const xm = (x0 + xe)/2, ym = (Y(0) + yf(np-1))/2;
+    [-1, 1].forEach(sd=>k.box([xe - x0 + 6, STEP + 1, .3], [xm, ym + .5, sd*(CW/2 + .15)], [0, 0, -dir*ang], "wall"));
+    // le mur du bout : de haut en bas, jusqu'à l'étage suivant (sinon une bille lancée passait dessous et tombait dans le vide)
+    k.box([.3, STEP + 6, CW], [dir>0 ? xe + pas*.5 + 1.4 : x0 - pas*.5 - 1.4, Y(np-1) - STEP/2 + 1.5, 0], [0,0,0], "end");
+    if(L>0) k.box([.3, 4, CW], [dir>0 ? x0 - pas*.5 - 1.2 : xe + pas*.5 + 1.2, Y(0) + 1.5, 0], [0,0,0], "end");
+  }
+  // le bac : sous le bout du dernier étage
+  const dirL = (NL-1)%2 ? -1 : 1, yt = -(NL-1)*STEP - (np-1)*dy - 7, xt = dirL>0 ? xe + 4 : x0 - 4;
   k.box([12, .4, 10], [xt, yt, 0], [0,0,0], "tray");
-  [[0, 5.2, 12, .4], [0, -5.2, 12, .4], [6, 0, .4, 10.8]].forEach(([dx, dz, sx, sz])=>k.box([sx, 7, sz], [xt + dx, yt + 3.5, dz], [0,0,0], "wall"));
-  k.box([.4, 2.2, 10.8], [xt - 6, yt + 1.1, 0], [0,0,0], "glass");   // le bord d'entrée, bas : les billes ne repartent plus en arrière
+  [[0, 5.2, 12, .4], [0, -5.2, 12, .4], [6*dirL, 0, .4, 10.8], [-6*dirL, 0, .4, 10.8]].forEach(([dx, dz, sx, sz], j)=>k.box([sx, j===3 ? 2 : 6, sz], [xt + dx, yt + (j===3 ? 1 : 3), dz], [0,0,0], j===3 ? "glass" : "wall"));
   path.push([xt, yt + 1, 0]);
-  return {path, ...st, finishY:yt + 1.2, floorY:yt - 3, trayR:7, cam:(p, T)=>[p[0] - 3, p[1] + 4, p[2] + 15]};
+  return {path, ...st, finishY:yt + 1.2, floorY:yt - 3, trayR:7, cam:(p, T)=>[p[0] - 4*Math.sign(T[0]||1), p[1] + 5, p[2] + 15]};
+}
+// (14 octobre 2026) des obstacles sur une goulotte (frames : les repères des morceaux, renvoyés par g3Trough), pour le suspense :
+//  « moulin » un tourniquet à plat qui balaie la piste, « porte » une porte qui tourne en travers, « champis » deux champignons
+//  rebondissants, « plots » une rangée de plots, « bosse » un champignon au milieu. liste : [[indice du morceau, type], …]
+// (14 octobre 2026) où poser les obstacles d'une goulotte : au milieu de chaque ligne droite du tracé (sauf la première et la dernière),
+// un type de la liste T chacun son tour ; les virages restent libres (un obstacle dans un virage relevé coinçait les billes)
+function g3Semis(P, T, r){ const out = [], S = P.parts.filter(x=>x.c[0]==="S").slice(1, -1); let j = Math.floor(r()*T.length);
+  S.forEach(x=>{ const t = T[j++ % T.length], m = Math.round((x.i0 + x.i1)/2);
+    if(t==="plots") out.push([x.i0 + 3, t], [m, "bosse"], [x.i1 - 3, t]); else out.push([m, t]) });
+  return out;
+}
+function g3Obstacles(k, frames, WID, liste, r){
+  liste.forEach(([i, type], j)=>{ const F = frames[Math.max(0, Math.min(frames.length-1, i))]; if(!F) return; const {M, X, Y, Z, q} = F, at = (z, h) => v3.add(M, v3.add(v3.mul(Z, z), v3.mul(Y, h)));
+    const sens = j%2 ? 1 : -1;
+    if(type==="moulin") k.spin([Math.min(2.6, WID-1.8), .45, .45], at(0, .5), q, v3.mul(Y, sens*(1.1 + .4*r())));   // un passage reste le long des bords
+    else if(type==="porte") k.spin([.3, 2.1, WID-.5], at(0, 1.45), q, v3.mul(Z, .9 + .5*r()));
+    else if(type==="champis") [-1, 1].forEach(sd=>k.cyl(.42, 1, at(sd*(WID/2-1.35), .5), q, "bump", "rebond"));
+    else if(type==="bosse") k.cyl(.5, 1, at((r()-.5)*.6, .5), q, "bump", "rebond");
+    // les deux plots : à mi-chemin entre le milieu et le bord (un passage d'au moins une bille partout ; trop près du bord, une bille s'y coinçait)
+    else if(type==="plots") [-1, 1].forEach(sd=>k.cyl(.17, 1.1, at(sd*(WID/2 - .5)/2 + (r()-.5)*.1, .55), q, "peg"));
+  });
 }
 // la caméra des goulottes : derrière la bille et au-dessus, dans le sens de la piste
-const g3ChaseCam = (p, T) => { const h = Math.hypot(T[0], T[2]) || 1; return [p[0] - T[0]/h*7, p[1]+6, p[2] - T[2]/h*7] };
+const g3ChaseCam = (p, T) => { const h = Math.hypot(T[0], T[2]) || 1; return [p[0] - T[0]/h*10, p[1]+8.5, p[2] - T[2]/h*10] };   // (14 octobre 2026) un peu plus loin
 
 const G3C = {
   // Cinq rampes en zigzag et des plots qui font rebondir les billes dans tous les sens
@@ -13334,36 +13392,37 @@ const G3C = {
         for(let j=0;j<2;j++){ const x = xf(.15+r()*.7); k.look("sph", [.55], v3.add(up(x, 3.8+r()*1.2), [0, 0, (r()-.5)*4]), null, "ghost") } });
       return {...z, ...g3ZigStart(k, o, n, r), cam:g3ZigCam} }},
   // ---------- (14 octobre 2026) les goulottes : des pistes qui serpentent, sans rampes en zigzag ----------
-  // Un toboggan aquatique : une longue goulotte bleue qui serpente, des virages relevés où les billes montent sur le bord
-  aquatique:{name:"Le Toboggan aquatique", desc:"Une seule longue piste bleue qui serpente : des virages relevés où les billes grimpent sur le bord, et ça va de plus en plus vite !",
-    theme:{bg:"#0E2A3A", ramp:"#3FB6E8", tray:"#FFD34D"}, form:"serpent",
-    build(k, r, n){ const o = {WID:3.2, mur:1.5, pente:.11};
-      const P = g3Trace([["S",12],["D",7,120],["S",6],["G",7,200],["S",6],["D",6,200],["S",8],["G",7,180],["S",6],["D",6,180],["S",10],["G",8,160],["S",6],["D",6,190],["S",12]], o);
-      const {path} = g3Trough(k, P, o);
+  // Un toboggan aquatique : une longue goulotte bleue qui serpente, des virages relevés, et (le soir même, 14 octobre) des obstacles
+  // tout du long pour le suspense : tourniquets, portes qui tournent, champignons, plots
+  aquatique:{name:"Le Toboggan aquatique", desc:"Une longue piste bleue qui serpente : des virages relevés, des tourniquets qui balaient la piste, des champignons qui renvoient les billes et des plots. Rien n'est joué !",
+    theme:{bg:"#0E2A3A", ramp:"#3FB6E8", tray:"#FFD34D", spin:"#FFD34D", bump:"#FF6FB5", peg:"#FFFFFF"}, form:"serpent",
+    build(k, r, n){ const o = {WID:4.4, mur:1.6, pente:.14};
+      const P = g3Trace([["S",14],["D",7,110],["S",12],["G",7,180],["S",12],["D",6,180],["S",12],["G",7,180],["S",12],["D",6,180],["S",12],["G",8,160],["S",12],["D",6,180],["S",14]], o);
+      const {path, frames} = g3Trough(k, P, o), L = g3Semis(P, ["champis","moulin","plots","bosse","moulin","champis"], r);
+      g3Obstacles(k, frames, o.WID, L, r);
       return {path, ...g3TroughStart(k, P, o, n, r), ...g3TroughEnd(k, P, path, o), cam:g3ChaseCam} }},
 
-  // Un bobsleigh la nuit : une piste de glace étroite, des virages serrés et très relevés
-  bobsleigh:{name:"Le Bobsleigh", desc:"Une piste de glace étroite qui file dans la nuit : des virages serrés et très relevés où les billes montent presque à la verticale !",
-    theme:{bg:"#0B1430", ramp:"#DCEBFF", tray:"#5AB8FF"}, form:"serpent",
-    build(k, r, n){ const o = {WID:2.7, mur:1.7, pente:.12, relief:9, bankMax:.6};
-      const P = g3Trace([["S",14],["G",10,90],["S",10],["D",8,160],["S",6],["G",9,150],["D",7,120],["S",14],["G",6,200],["S",8],["D",10,120],["G",8,140],["S",16]], o);
-      const {path} = g3Trough(k, P, o);
+  // Un bobsleigh la nuit : une piste de glace, des virages serrés et très relevés, et des obstacles qui brillent
+  bobsleigh:{name:"Le Bobsleigh", desc:"Une piste de glace qui file dans la nuit : des virages très relevés, des champignons lumineux et des plots partout. Une erreur et on perd sa place !",
+    theme:{bg:"#0B1430", ramp:"#DCEBFF", tray:"#5AB8FF", spin:"#5AB8FF", bump:"#FF4F7A", peg:"#FFD34D"}, form:"serpent",
+    build(k, r, n){ const o = {WID:4, mur:1.8, pente:.15, relief:6, bankMax:.34};
+      const P = g3Trace([["S",16],["G",10,90],["S",12],["D",8,150],["S",12],["G",9,150],["S",12],["D",7,140],["S",12],["G",6,180],["S",12],["D",10,120],["S",12],["G",8,130],["S",16]], o);
+      const {path, frames} = g3Trough(k, P, o), L = g3Semis(P, ["champis","plots","bosse","champis","plots","bosse"], r);   // (pas de tourniquet : sur cette piste plus étroite, une bille se coinçait à côté)
+      g3Obstacles(k, frames, o.WID, L, r);
       return {path, ...g3TroughStart(k, P, o, n, r), ...g3TroughEnd(k, P, path, o), cam:g3ChaseCam} }},
 
   // ---------- (14 octobre 2026) les chemins qui se séparent ----------
   // La forêt : à la fourche, un raccourci plein de racines (plots) et de souches, ou un grand détour tranquille sous les arbres
-  foret:{name:"La Forêt", desc:"À la fourche, chaque bille part d'un côté : le raccourci plein de racines et de souches, ou le grand détour tranquille. Lequel est le plus rapide ?",
+  foret:{name:"La Forêt", desc:"Deux fourches : à chacune, les billes partent d'un côté ou de l'autre, entre raccourcis pleins de racines et de troncs qui tournent, et grands détours. Quatre chemins, une seule gagnante !",
     theme:{bg:"#13261A", ramp:"#9B7348", tray:"#7CC46A", peg:"#5E3F22", rock:"#6E5034"}, form:"fourche",
-    build(k, r, n){ return g3Fourche(k, r, n, {pente:.085, obstacles:(k, at, len)=>{
-      // une racine au milieu tous les 2,4 (jamais près d'un bord : une bille se coincerait entre la racine et le bord)
-      for(let d=4; d<len-2; d+=2.4){ const {P, Y, Z, q} = at(d); k.cyl(.17, 1.2, v3.add(P, v3.add(v3.mul(Z, (r()-.5)*.6), v3.mul(Y, .78))), q, "peg") }
-      [13, 25].forEach(d=>{ const {P, Y, Z, q} = at(d); k.cyl(.45, .9, v3.add(P, v3.add(v3.mul(Z, (r()-.5)*.3), v3.mul(Y, .6))), q, "rock") }) }}) }},
+    build(k, r, n){ return g3Fourche(k, r, n, {pente:.09, obs:{A1:["plots","bosse","plots","bosse","plots","champis","plots"], B1:["champis","plots","bosse"],
+      A2:["moulin","plots","moulin","bosse","moulin"], B2:["plots","champis","plots"]}}) }},
 
   // La mine, le soir : le raccourci passe par des portes qui tournent (les wagonnets !), le détour fait le tour de la galerie
-  mine:{name:"La Mine", desc:"Une mine éclairée aux lanternes : le raccourci passe par des portes qui tournent sans arrêt, le détour fait tout le tour de la galerie.",
+  mine:{name:"La Mine", desc:"Une mine éclairée aux lanternes, deux fourches et quatre galeries : des portes qui tournent, des wagonnets qui balaient la voie… Quel chemin sera le bon ?",
     theme:{bg:"#140E0A", ramp:"#6B5440", tray:"#FFB547", spin:"#C9A36B", peg:"#FFB547"}, form:"fourche",
-    build(k, r, n){ return g3Fourche(k, r, n, {pente:.085, obstacles:(k, at, len)=>{
-      [7, 17, 27].forEach((d, j)=>{ const {P, Y, Z, q} = at(d); k.spin([.3, 2.1, 2.8], v3.add(P, v3.mul(Y, 1.35)), q, v3.mul(Z, .9 + .25*j)) }) }}) }},
+    build(k, r, n){ return g3Fourche(k, r, n, {pente:.09, obs:{A1:["porte","plots","porte","bosse","porte"], B1:["moulin","champis","plots"],
+      A2:["moulin","champis","porte","plots","moulin"], B2:["bosse","moulin","bosse"]}}) }},
 
   // ---------- (14 octobre 2026) les entonnoirs en cascade ----------
   // Le tourbillon, à midi : trois grands entonnoirs d'eau, les billes tournent, tournent… et plongent dans le trou
@@ -13377,17 +13436,22 @@ const G3C = {
 
   // ---------- (14 octobre 2026) la spirale qui s'élargit ----------
   // Le volcan : une piste de roche qui fait trois tours autour d'un cône, de plus en plus large en descendant, avec des rochers
-  volcan:{name:"Le Volcan", desc:"Une piste de roche qui tourne trois fois autour d'un volcan, de plus en plus large en descendant, semée de rochers. En bas, le lac de lave !",
+  volcan:{name:"Le Volcan", desc:"Une piste de roche qui tourne trois fois autour d'un volcan, de plus en plus large en descendant, semée de rochers et de gros boulets. En bas, le lac de lave !",
     theme:{bg:"#2A1410", ramp:"#B39276", tray:"#FF5A1F", rock:"#4A3A34", tower:"#6A4A3E"}, form:"spirale",
-    build(k, r, n){ const o = {WID:3.2, mur:1.5}, T = 3, A = T*TAU, R0 = 6, R1 = 13, drop = 23, NS = 150, P = [];
+    build(k, r, n){ const o = {WID:3.8, mur:1.5}, T = 3, A = T*TAU, R0 = 6, R1 = 13, drop = 23, NS = 150, P = [];
       // le départ : tout droit, puis la spirale (dans le sens des aiguilles d'une montre vue d'en haut)
       const at = a => { const R = R0 + (R1-R0)*a/A; return [R*Math.cos(a), -drop*a/A, R*Math.sin(a)] };
       for(let i=10;i>0;i--) P.push([R0, drop*.012*i, -i*1.05]);
       for(let i=0;i<=NS;i++) P.push(at(i*A/NS));
-      const {path} = g3Trough(k, P, o);
-      // les rochers : sur la piste, un peu à gauche ou à droite du milieu (jamais près d'un bord)
-      for(let j=0;j<7;j++){ const a = (.12 + j*.13)*A + (r()-.5)*.3, p0 = at(a), rad = v3.norm([p0[0], 0, p0[2]]), up = [0, 1, 0];
-        k.ball(.36, v3.add(v3.add(p0, v3.mul(rad, (r()<.5?-1:1)*.25)), v3.mul(up, .55)), "rock") }
+      const {path, frames} = g3Trough(k, P, o);
+      // des champignons rebondissants (et des plots) à mi-chemin entre deux rochers : ils renvoient les billes bien plus loin qu'un rocher
+      // (un double champignon à côté d'un rocher fermait presque la piste)
+      g3Obstacles(k, frames, o.WID, [33, 50, 75, 92, 117, 134].map((i, j)=>[i, j%2 ? "plots" : "bosse"]), r);
+      // (14 octobre 2026, le soir) beaucoup plus de rochers : des petits à gauche ou à droite, des gros au milieu ; toujours un passage
+      // d'au moins une bille entre un rocher et le bord (sur 1,9 de chaque côté du milieu)
+      for(let j=0;j<16;j++){ const a = (.07 + j*.056)*A + (r()-.5)*.15, p0 = at(a), rad = v3.norm([p0[0], 0, p0[2]]), up = [0, 1, 0], kind = j%3;
+        const R = kind===2 ? .55 : .38, off = kind===2 ? (r()-.5)*.2 : (kind ? 1 : -1)*(.45 + r()*.1);
+        k.ball(R, v3.add(v3.add(p0, v3.mul(rad, off)), v3.mul(up, .17 + R*.85)), "rock") }
       // le cône du volcan (du décor), au milieu de la spirale
       k.look("cone", [R0-1.9, R1-2.4, drop+2], [0, -drop/2, 0], null, "tower");
       return {path, ...g3TroughStart(k, P, o, n, r), ...g3TroughEnd(k, P, path, o), cam:g3ChaseCam} }},
@@ -13419,13 +13483,13 @@ const G3C = {
 
   // ---------- (14 octobre 2026) les trampolines ----------
   // Le cirque, le soir : une suite de trampolines rouges sous les projecteurs ; une bille qui rate son saut finit par la piste du dessous
-  cirque:{name:"Le Cirque", desc:"Une suite de trampolines sous les projecteurs : les billes rebondissent de l'un à l'autre… et celles qui ratent leur saut continuent par la piste du dessous !",
+  cirque:{name:"Le Cirque", desc:"Quatre étages de trampolines sous les projecteurs, décalés à gauche et à droite, des boules qui renvoient les billes en l'air… et celles qui ratent leur saut continuent par la piste du dessous !",
     theme:{bg:"#1A0B14", ramp:"#3A2A5E", tray:"#FFD34D", tramp:"#EF3B4F", peg:"#FFD34D"}, form:"trampo", tramp:.62,
     build(k, r, n){ return g3Trampo(k, r, n, {}) }},
   // Les nuages, à midi : des trampolines blancs comme des nuages, en plein ciel
-  nuages:{name:"Les Nuages", desc:"Des nuages qui font trampoline en plein ciel : les billes sautent de nuage en nuage, et gare à celles qui tombent à l'étage du dessous !",
+  nuages:{name:"Les Nuages", desc:"Des nuages qui font trampoline en plein ciel, sur quatre étages : les billes sautent de nuage en nuage en zigzag, et gare à celles qui tombent à l'étage du dessous !",
     theme:{bg:"#4A7BC0", ramp:"#9FC3EA", tray:"#FFD34D", tramp:"#FFFFFF", peg:"#FFB547"}, form:"trampo", tramp:.6,
-    build(k, r, n){ return g3Trampo(k, r, n, {pas:3.2, dy:.85, long:2.6}) }},
+    build(k, r, n){ return g3Trampo(k, r, n, {pas:3.4, dy:.6}) }},
 };
 
 // l'aura d'une shiny dans la Grande Course : un halo (anneau arc-en-ciel pour l'Irisée, or pour la Dorée, la couleur de la bille pour la Lumineuse)
@@ -13526,6 +13590,7 @@ async function gcWatch3D(race){
     <div class="gc-top"><div class="chip"><small>${new Date(race.depart).toLocaleDateString("fr-FR",{weekday:"long", day:"numeric"})}${race.test?" · course d'essai":""}${gcManche(race)}</small><b>${esc(C.name)}</b></div>
       <div class="chip" id="gc-chrono"><small>Temps</small><b>—</b></div><span class="sp"></span>
       <button class="btn btn-yellow gc-skip" data-action="g3-cam" id="g3-cam" hidden>${ic("flag",14)} La tête de course</button>
+      <button class="btn btn-ghost gc-skip" data-action="g3-libre" id="g3-libre" title="Tourner, zoomer et déplacer la vue soi-même">${ic("target",14)} Caméra libre</button>
       <button class="btn btn-ghost gc-skip" data-action="g3-skip" id="g3-skip">Voir l'arrivée</button>
       <button class="gc-x" data-action="gc-close" aria-label="Quitter la course">×</button></div>
     <div class="gc-board" id="gc-board"></div><div class="gc-big" id="gc-big"></div><div class="gc-end" id="gc-end" hidden></div>
@@ -13571,6 +13636,7 @@ async function gcWatch3D(race){
     roof:new THREE.MeshStandardMaterial({color:TH.roof||"#241A33", roughness:.9}), tunnel:new THREE.MeshStandardMaterial({color:TH.tunnel||"#1A1226", roughness:.9}),
     ghost:new THREE.MeshStandardMaterial({color:TH.ghost||"#E6F0FF", emissive:TH.ghost||"#E6F0FF", emissiveIntensity:night ? .8 : .3, transparent:true, opacity:.7}),
     tramp:new THREE.MeshStandardMaterial({color:TH.tramp||"#FF4F7A", roughness:.4, emissive:TH.tramp||"#FF4F7A", emissiveIntensity:night ? .7 : .15}),
+    funnel:new THREE.MeshStandardMaterial({color:TH.ramp, roughness:.35, transparent:true, opacity:.72, depthWrite:false, side:THREE.DoubleSide}),
     water:new THREE.MeshPhysicalMaterial({color:"#5EC8FF", roughness:.05, transparent:true, opacity:.28, depthWrite:false})};
   const piece = s => { if(s.shape==="group"){ const g = new THREE.Group();
       s.parts.forEach(q=>g.add(piece({...q, kind:q.kind || s.kind, add:false}))); g.position.set(...s.pos); g.quaternion.set(...s.quat); scene.add(g); return g }
@@ -13626,14 +13692,14 @@ async function gcWatch3D(race){
   addEventListener("resize", onResize);
   // la caméra suit la bille qu'on touche dans le classement (on la retouche, ou « Suivre la tête de course », pour revenir à la tête)
   document.getElementById("gc-board").addEventListener("pointerdown", e=>{ const r = e.target.closest(".gcr"); if(!r) return; const b = +r.dataset.b;
-    G3V.follow = G3V.follow===b ? null : b; G3V.lb = 0; g3CamBtn() });
+    G3V.follow = G3V.follow===b ? null : b; G3V.lb = 0; if(G3V.libre) g3Libre(false); g3CamBtn() });
   // même en retard, chacun regarde la course depuis le compte à rebours (4 octobre 2026 : on ne rate plus le départ)
   const since = 0, live = false;
   const camPos = new THREE.Vector3(-30,10,22), camLook = new THREE.Vector3();
   cancelAnimationFrame(GCV.raf);
   Object.keys(GCV).forEach(k=>{ if(k!=="raf") delete GCV[k] });
   Object.assign(GCV, {race, R, T:{th:{name:C.name}}, done:false, g3:true});
-  const G3V = {t0:performance.now() - (live ? since*1000 : 0), follow:null, said:{}, renderer, onResize, sim, who, lastF:-1, lastHit:0, snap:true};
+  const G3V = {t0:performance.now() - (live ? since*1000 : 0), follow:null, said:{}, renderer, onResize, sim, who, lastF:-1, lastHit:0, snap:true, camera, THREE};
   GCV.g3v = G3V;
   // pas de bruit de roulement continu ici : avec toutes les billes, il sonnait comme un vent qui fait mal aux oreilles
   const big = t => { const b = document.getElementById("gc-big"); if(!b) return; b.innerHTML = `<span>${t}</span>`; setTimeout(()=>{ if(b.textContent===t) b.innerHTML = "" }, 1000) };
@@ -13665,8 +13731,11 @@ async function gcWatch3D(race){
     v.set(...W.cam(P, g3Where(W, x, y, z).T));
     // (la même vitesse de suivi quel que soit le nombre d'images par seconde)
     const dtf = Math.min(30, (now-(G3V.lastNow||now))/16.67); G3V.lastNow = now;
-    if(G3V.snap){ camPos.copy(v); camLook.set(...at); G3V.snap = false } else { camPos.lerp(v, 1-Math.pow(.95, dtf)); camLook.lerp(v.set(...at), 1-Math.pow(.92, dtf)) }
-    camera.position.copy(camPos); camera.lookAt(camLook); camera.updateMatrixWorld();
+    // (14 octobre 2026) caméra libre : le joueur tourne, zoome et déplace la vue (OrbitControls) ; sinon la caméra suit la course
+    if(G3V.libre && G3V.ctl){ G3V.ctl.update(); camPos.copy(camera.position); camLook.copy(G3V.ctl.target) }
+    else { if(G3V.snap){ camPos.copy(v); camLook.set(...at); G3V.snap = false } else { camPos.lerp(v, 1-Math.pow(.95, dtf)); camLook.lerp(v.set(...at), 1-Math.pow(.92, dtf)) }
+      camera.position.copy(camPos); camera.lookAt(camLook) }
+    camera.updateMatrixWorld();
     if(lamp) lamp.position.set(camLook.x, camLook.y+6, camLook.z+3);
     // les billes vues depuis la caméra (les plus proches redessinées à chaque image, les autres moins souvent)
     if(sprites.length){
@@ -13699,9 +13768,21 @@ async function gcWatch3D(race){
   GCV.raf = requestAnimationFrame(loop);
 }
 function g3Free(G = GCV.g3v){
-  if(!G || G.freed) return; G.freed = true;
+  if(!G || G.freed) return; G.freed = true; try{ G.ctl?.dispose() }catch(e){}
   removeEventListener("resize", G.onResize);
   try{ G.renderer.dispose(); G.renderer.forceContextLoss() }catch(e){}
+}
+// (14 octobre 2026) la caméra libre : chargée à la demande (three/addons, comme three.js) ; un second appui rend la caméra qui suit la course
+async function g3Libre(on){
+  const G = GCV.g3v; if(!G) return; on = on ?? !G.libre;
+  if(on && !G.ctl){ try{ const {OrbitControls} = await import("three/addons/controls/OrbitControls.js");
+      G.ctl = new OrbitControls(G.camera, G.renderer.domElement); G.ctl.enableDamping = true; G.ctl.dampingFactor = .12; G.ctl.maxDistance = 120 }
+    catch(e){ toast("La caméra libre n'a pas pu se charger."); return } }
+  if(on){ const d = new G.THREE.Vector3(); G.camera.getWorldDirection(d); G.ctl.target.copy(G.camera.position).addScaledVector(d, 12); G.ctl.update() }
+  G.libre = on; if(G.ctl) G.ctl.enabled = on; if(!on) G.snap = false;
+  const b = document.getElementById("g3-libre"); if(b){ b.innerHTML = `${ic(on ? "flag" : "target",14)} ${on ? "Caméra auto" : "Caméra libre"}`; b.classList.toggle("on", on) }
+  const h = document.getElementById("gc-hint");
+  if(on && h){ h.textContent = "Glisse pour tourner, pince ou molette pour zoomer, deux doigts ou clic droit pour déplacer."; h.classList.remove("bye"); setTimeout(()=>h.classList.add("bye"), 5000) }
 }
 function g3CamBtn(){ const b = document.getElementById("g3-cam"); if(b) b.hidden = GCV.g3v?.follow==null }
 // revenir sur la tête de course
@@ -15495,6 +15576,7 @@ document.addEventListener("click", e=>{
     case "gc-claim-pod": t.disabled = true; gcPodClaim(); break;
     case "gc-replay": gcWatch({...GCV.race, replay:true}); break;
     case "g3-cam": g3Cam(); break;
+    case "g3-libre": g3Libre(); break;
     case "g3-skip": g3Skip(); break;
     case "gc-close": gcClose(); break;
     case "gc-vue": GCV.vue = GCV.vue==='tv' ? 'ciel' : 'tv'; lsSet("billeo-gc-vue", GCV.vue); V_vueBtn(); break;

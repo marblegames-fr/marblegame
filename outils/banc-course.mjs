@@ -16,7 +16,7 @@ function decl(nom){
   let b = a + 1; while(b < L.length && !DEBUT.test(L[b])) b++;
   return L.slice(a, b).join("\n");
 }
-const NOMS = ["TAU","hash","rng","v3","g3Basis","G3","g3Kit","g3Zigzag","g3ZigStart","g3ZigCam","g3TableCam","g3Log","g3Trace","g3Trough","g3TroughStart","g3TroughEnd","g3Fourche","g3Funnel","g3Entonnoirs","g3FunnelCam","g3Trampo","g3ChaseCam","G3_ORDER","G3C","g3World","g3Where","g3Simulate"];
+const NOMS = ["TAU","hash","rng","v3","g3Basis","G3","g3Kit","g3Zigzag","g3ZigStart","g3ZigCam","g3TableCam","g3Log","g3Trace","g3Trough","g3TroughStart","g3TroughEnd","g3Semis","g3Obstacles","g3Fourche","g3Funnel","g3Entonnoirs","g3FunnelCam","g3Trampo","g3ChaseCam","G3_ORDER","G3C","g3World","g3Where","g3Simulate"];
 const code = NOMS.map(decl).join("\n\n") + "\nreturn {G3C, G3_ORDER, g3Simulate, g3Where, G3};";
 
 const [quels, nb = "30", lib = "cannon-es.js"] = process.argv.slice(2);
@@ -37,13 +37,23 @@ for(const id of ids){
     kicks = [];
     const sim = J.g3Simulate(CANNON, seed, n, id);
     const ok = sim.fin.filter(x => x < 900);
-    res.push({n, win:Math.min(...ok), last:Math.max(...ok), dnf:n-ok.length, kicks:kicks.length});
+    // le suspense : le classement toutes les demi-secondes (de 6 s jusqu'à l'arrivée du gagnant), comme à l'écran pendant la course
+    const tWin = Math.min(...ok), DTs = J.G3.DT; let prev = null, tete = 0, places = 0;
+    for(let f = Math.round(6/DTs); f*DTs < tWin; f += Math.round(.5/DTs)){
+      const F = sim.frames[Math.min(f, sim.frames.length-1)], t = f*DTs;
+      const rank = Array.from({length:n}, (_, i)=>({i, done:sim.fin[i] <= t, s:J.g3Where(sim.W, F[i*7], F[i*7+1], F[i*7+2]).s}))
+        .sort((a, b)=> (a.done && b.done) ? sim.fin[a.i]-sim.fin[b.i] : a.done ? -1 : b.done ? 1 : b.s-a.s).map(x=>x.i);
+      if(prev){ if(rank[0]!==prev[0]) tete++; const pos = []; rank.forEach((b, k)=>pos[b] = k); prev.forEach((b, k)=>places += Math.abs(pos[b]-k)) }
+      prev = rank;
+    }
+    res.push({n, win:tWin, last:Math.max(...ok), dnf:n-ok.length, kicks:kicks.length, tete, places:places/2/n});
     kicks.forEach(p => { const key = p.map(v => Math.round(v/2)*2).join(","); lieux.set(key, (lieux.get(key)||0) + 1) });
   }
   const moy = f => (res.reduce((a, r) => a + f(r), 0) / res.length);
   const top = [...lieux].sort((a, b) => b[1] - a[1]).slice(0, 5).map(([k, v]) => `(${k})×${v}`).join(" ");
   console.log(`${id.padEnd(12)} ${res.length} courses en ${((Date.now()-t0)/1000).toFixed(0)} s · gagnant ${moy(r=>r.win).toFixed(1)} s (min ${Math.min(...res.map(r=>r.win)).toFixed(1)}, max ${Math.max(...res.map(r=>r.win)).toFixed(1)})`
     + ` · dernier ${moy(r=>r.last).toFixed(1)} s (max ${Math.max(...res.map(r=>r.last)).toFixed(1)}) · pas arrivées ${res.reduce((a,r)=>a+r.dnf,0)}`
-    + ` · pichenettes ${moy(r=>r.kicks).toFixed(1)}/course (max ${Math.max(...res.map(r=>r.kicks))})`);
+    + ` · pichenettes ${moy(r=>r.kicks).toFixed(1)}/course (max ${Math.max(...res.map(r=>r.kicks))})`
+    + ` · SUSPENSE : ${moy(r=>r.tete).toFixed(1)} changements de tête, ${moy(r=>r.places).toFixed(1)} places gagnées ou perdues par bille`);
   if(top) console.log(`${"".padEnd(12)} pichenettes surtout vers ${top}`);
 }

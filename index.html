@@ -13077,6 +13077,7 @@ function g3Fourche(k, r, n, o){
     const PB = g3Trace([["S",3],["G",6,90],["S",8],["D",6,90],["S",10],["D",6,90],["S",8],["G",6,90],["S",2]], {pente:p, from:[x0 + 3.4, y0 - p*3.4, -LZ]});
     const B = g3Trough(k, PB, {WID, mur:1.5, kind:o.kind, plat0:true});
     // les obstacles : sur le raccourci tous les 5 morceaux à partir du 4e ; sur le détour au milieu de ses lignes droites
+    obsA = obsA.map(t=>t==="champis" ? "champi" : t); obsB = obsB.map(t=>t==="champis" ? "champi" : t);
     g3Obstacles(k, A.frames, WID, obsA.map((t, j)=>[4 + j*Math.floor((A.frames.length - 8)/Math.max(1, obsA.length - 1)), t]), r);
     const SB = PB.parts.filter(x=>x.c[0]==="S" && x.c[1]>=8);
     g3Obstacles(k, B.frames, WID, obsB.map((t, j)=>[SB[j % SB.length] ? Math.round((SB[j % SB.length].i0 + SB[j % SB.length].i1)/2) : 10, t]), r);
@@ -13216,6 +13217,9 @@ function g3Obstacles(k, frames, WID, liste, r){
     const sens = j%2 ? 1 : -1;
     if(type==="moulin") k.spin([Math.min(2.6, WID-1.8), .45, .45], at(0, .5), q, v3.mul(Y, sens*(1.1 + .4*r())));   // un passage reste le long des bords
     else if(type==="porte") k.spin([.3, 2.1, WID-.5], at(0, 1.45), q, v3.mul(Z, .9 + .5*r()));
+    // (14 octobre 2026) un seul champignon, au milieu : sur les pistes étroites des fourches (3,8), les deux champignons ne laissaient que 0,93
+    // le long des murs (une bille fait 0,84) et, la piste étant relevée dans les virages, les billes s'y calaient
+    else if(type==="champi") k.cyl(.5, 1, at(0, .5), q, "bump", "rebond");
     else if(type==="champis") [-1, 1].forEach(sd=>k.cyl(.42, 1, at(sd*(WID/2-1.35), .5), q, "bump", "rebond"));
     else if(type==="bosse") k.cyl(.5, 1, at((r()-.5)*.6, .5), q, "bump", "rebond");
     // les deux plots : à mi-chemin entre le milieu et le bord (un passage d'au moins une bille partout ; trop près du bord, une bille s'y coinçait)

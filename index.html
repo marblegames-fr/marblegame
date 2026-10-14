@@ -13793,7 +13793,7 @@ function courLoad(kind, force){
       if(kind==="semaine") semaineLots(d);
       if(ui.view==="cour" || (["fil","moi","encheres","classement"].includes(kind) && ui.view==="accueil")) renderView();
       if(kind==="moi") renderNav();
-      if(kind==="moi" || kind==="journal") renderBell() },
+      if(kind==="moi" || kind==="journal" || kind==="semaine") renderBell() },
     e=>{ if(kind==="classement") cour.clWait = false; if(e.code==="serveur_absent"){ if(kind==="moi") cour.ok = false; else cour.absent[kind] = true } else { if(kind==="moi") netMark("cour", false); if(ui.view==="cour") courFail(e) } if(ui.view==="cour") renderView() })
     .finally(()=>{ cour.loading[kind] = false;
       // on a changé de page du classement pendant un chargement : on charge la bonne page
@@ -13854,6 +13854,8 @@ setTimeout(eventGifts, 2500);
 setInterval(eventGifts, 60000);
 setInterval(()=>{ if(srvOn() && document.visibilityState==="visible"){ courLoad("moi", true); ecoRefresh(); syncMarbles(true); courNews(false) } }, 60000);
 // sur l'onglet Classement, il se met à jour tout seul (sans F5)
+// (14 octobre 2026) la semaine se termine lundi à minuit : on redemande le classement de la semaine (fenêtre des lots + cloche), même hors de la cour
+setInterval(()=>{ if(srvOn() && document.visibilityState==="visible" && !cour.absent.semaine && (!cour.semaine || Date.now() > cour.semaine.fin + 5000)) courLoad("semaine", true) }, 60000);
 setInterval(()=>{ if(srvOn() && document.visibilityState==="visible" && ui.view==="cour" && ui.courTab==="classement"){ const k = {semaine:"semaine", palmares:"palmares"}[ui.clVue||"general"] || "classement"; if(!cour.absent[k]) courLoad(k) } }, 25000);
 
 // ---------- le journal : l'historique du troc et du marché, et les nouvelles ----------
@@ -13968,6 +13970,10 @@ function notifList(){
   const N = gcNext(), rem = N.depart - GC_REMIND;
   if(Date.now()>=rem && Date.now()<N.depart) out.push({le:rem, ic:"flag", go:{view:"grandecourse"},
     txt:`La Grande Course ${gcSlotName(N.heure)} part <b>dans moins d'une heure</b> : ${gc.etat?.inscrit ? "tu es inscrit, prépare-toi !" : "inscris-toi, c'est gratuit !"}`});
+  // (14 octobre 2026) la semaine passée est close : ma place (et mon lot) dans la cloche
+  const D = cour.semaine?.derniere;
+  if(D) out.push({le:D.fin, ic:"trophy", go:{tab:"classement", vue:"palmares"},
+    txt:`Le classement de la semaine est fini : tu as fini <b>${rangTxt(D.rang)} sur ${D.nb}</b>${D.sac||D.bonbecs>0 ? ` et tu gagnes <b>${D.sac && !(D.bonbecs>0) ? "un " : ""}${esc(semLotTxt(D))}</b>` : ""}`});
   const L = lotDraw();
   // sans rien dévoiler : on découvre ses numéros (et ses lots) dans la fenêtre ou sur la page de la Loterie
   if(L) out.push({le:+new Date(L.tirage+"T21:00:00"), ic:"ticket", txt:`Le tirage de la Loterie a eu lieu : <b>viens voir tes numéros</b>`, go:{view:"loterie"}});
@@ -14009,7 +14015,7 @@ function notifGo(i){
   const G = n.go;
   if(G.bille){ if(specById(G.bille)) openModal(G.bille); else go("collection"); return }
   if(G.view){ go(G.view); return }
-  ui.courTab = G.tab; cour.compose = null; cour.sell = null;
+  ui.courTab = G.tab; cour.compose = null; cour.sell = null; if(G.vue) ui.clVue = G.vue;
   if(G.troc) ui.trocTab = G.troc; if(G.mk) ui.mkTab = G.mk;
   if(G.tab==="troc") courRefresh("trocs"); if(G.tab==="marche") courRefresh("marche","annonces","encheres"); if(G.tab==="journal") courSeeJournal();
   cour.focus = G.id ? "troc-"+G.id : null;
@@ -15281,7 +15287,7 @@ async function ecoStart(){
 function eventGifts(){}
 function ecoRefresh(){ if(srvOn()) srv(()=>Cloud.eco.state()).then(applyEco, ()=>{}) }
 // une fois connecté au serveur : les nouvelles de la cour (demandes, trocs) et les billes reçues entre-temps
-function courStart(){ if(!srvOn()) return; if(S.notifVu==null){ S.notifVu = S.courVu || Date.now(); save() } courLoad("moi", true); courLoad("journal"); syncMarbles(true); courNews(true); gcLoad(true); lotLoad(true); courListen(); renderBell() }
+function courStart(){ if(!srvOn()) return; if(S.notifVu==null){ S.notifVu = S.courVu || Date.now(); save() } courLoad("moi", true); courLoad("journal"); courLoad("semaine"); syncMarbles(true); courNews(true); gcLoad(true); lotLoad(true); courListen(); renderBell() }
 const DEVICE = (()=>{ try{ let d = localStorage.getItem("billeo-device"); if(!d){ d = newId(); localStorage.setItem("billeo-device", d) } return d }catch(e){ return newId() } })();
 const lsGet = k => { try{ return localStorage.getItem(k) }catch(e){ return null } };
 const lsSet = (k,v) => { try{ v==null ? localStorage.removeItem(k) : localStorage.setItem(k,v) }catch(e){} };

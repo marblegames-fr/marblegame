@@ -760,7 +760,11 @@ begin
       'devant', (select jsonb_build_object('pseudo', interne.pseudo(r.joueur), 'total', r.pts) from r, m where r.pos = m.pos - 1),
       'lots', (select jsonb_agg(jsonb_build_object('de', l.de, 'a', l.a, 'sac', l.sac, 'bonbecs', l.bonbecs) order by l.de) from interne.lots_semaine() l),
       'a_voir', coalesce((select jsonb_agg(jsonb_build_object('semaine', p.semaine, 'rang', p.rang, 'pts', p.pts, 'sac', p.sac, 'bonbecs', p.bonbecs) order by p.semaine)
-                 from palmares p where p.joueur = moi and p.vu_le is null and (p.sac is not null or p.bonbecs > 0)), '[]')));
+                 from palmares p where p.joueur = moi and p.vu_le is null and (p.sac is not null or p.bonbecs > 0)), '[]'),
+      -- (14 octobre 2026) ma place la dernière semaine close (la notification de la cloche, pour tous les classés)
+      'derniere', (select jsonb_build_object('semaine', p.semaine, 'rang', p.rang, 'pts', p.pts, 'sac', p.sac, 'bonbecs', p.bonbecs,
+                     'nb', (select count(*) from palmares q where q.semaine = p.semaine), 'fin', floor(extract(epoch from interne.semaine_t(p.semaine + 7))*1000)::bigint)
+                   from palmares p where p.joueur = moi and p.semaine = (select max(semaine) from semaines))));
 end $$;
 
 -- le palmarès : les semaines closes (les plus récentes d'abord), leur podium et ma place

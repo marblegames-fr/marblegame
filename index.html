@@ -3182,6 +3182,20 @@ button.cp-who:hover b{text-decoration:underline}
 .mk .price{display:inline-flex;align-items:center;gap:6px;font-family:var(--display);font-size:25px;line-height:1;margin-top:4px}
 .mk .price .coin{width:24px;height:24px}
 .mk .avg{font-size:11.5px;font-weight:700;color:var(--muted)}
+/* (16 octobre 2026) les niveaux bonus du passe */
+.pass-bonus{display:grid;grid-template-columns:auto minmax(0,1fr) auto;align-items:center;gap:16px;border:2px dashed color-mix(in srgb,var(--s2) 45%,var(--line));opacity:.85}
+.pass-bonus.on{border-style:solid;opacity:1;background:linear-gradient(100deg,color-mix(in srgb,var(--s2) 14%,var(--panel)),var(--panel) 70%)}
+.pb-ic{display:grid;place-items:center;width:56px;height:56px;border-radius:18px;background:linear-gradient(180deg,var(--s2),var(--s1));color:#fff;box-shadow:0 4px 0 color-mix(in srgb,var(--s1) 70%,#000)}
+.pb-main h2{display:flex;align-items:center;gap:8px;margin:0 0 2px}
+.pb-n{display:inline-grid;place-items:center;min-width:30px;height:30px;padding:0 8px;border-radius:999px;background:var(--s2);color:#fff;font-size:17px}
+.pb-main p{margin:0 0 8px;color:var(--ink-2);font-weight:700;font-size:14px}
+.pb-main .pass-bar{margin:0 0 8px}
+.pb-rw{display:flex;flex-wrap:wrap;gap:6px 16px;font-size:13px;font-weight:800;color:var(--ink-2)}
+.pb-rw span{display:inline-flex;align-items:center;gap:5px}
+.pb-rw b{color:var(--ink);font-weight:900}
+.pb-rw .off{opacity:.6}
+.pb-got{color:color-mix(in srgb,var(--green) 80%,var(--ink))}
+@media (max-width:640px){ .pass-bonus{grid-template-columns:auto minmax(0,1fr)} .pass-bonus .btn{grid-column:1 / -1;justify-content:center} }
 /* (16 octobre 2026) l'historique des prix */
 .avg-btn{display:inline-flex;align-items:center;gap:5px;padding:3px 10px;border-radius:999px;border:1.5px solid var(--line-2);background:var(--panel-2);color:var(--ink-2);font:inherit;font-weight:800;cursor:pointer;transition:border-color .15s,color .15s}
 .avg-btn:hover{border-color:#E0A417;color:var(--ink)}
@@ -6924,6 +6938,13 @@ const PASS_TIERS = 30, PASS_PRICE = "2,99 €";
 const TIER_COST = t => t<=10 ? 600 : t<=20 ? 1000 : 1300;
 const XP_AT = [0,0]; for(let t=2;t<=PASS_TIERS;t++) XP_AT[t] = XP_AT[t-1]+TIER_COST(t);   // XP totale pour atteindre le palier t
 const PASS_MAX_XP = XP_AT[PASS_TIERS];
+// (16 octobre 2026) après le palier 30 : des niveaux bonus pour les plus fidèles, 1 300 XP chacun, 20 bonbecs (gratuit) et 40 (premium) par niveau.
+// Un niveau bonus b est le « palier » 30 + b (récompenses rangées dans P.free / P.prem, clé « 2026-10|free|31 » pour le serveur)
+const BONUS_COST = 1300, BONUS_MAX = 99, PASS_BONUS_J = {free:20, prem:40};
+const xpAt = t => t<=PASS_TIERS ? XP_AT[t] : PASS_MAX_XP + (t-PASS_TIERS)*BONUS_COST;
+const PASS_CAP_XP = xpAt(PASS_TIERS + BONUS_MAX);
+const passLevelOf = xp => { const t = tierOfXP(xp); return t<PASS_TIERS ? t : PASS_TIERS + Math.min(BONUS_MAX, Math.floor(((xp||0)-PASS_MAX_XP)/BONUS_COST)) };
+const passLevel = () => passLevelOf(ensurePass().xp);
 // où on en est dans le palier en cours : [XP déjà faite, XP à faire]
 const tierProg = (xp, tier) => tier>=PASS_TIERS ? [1,1] : [xp-XP_AT[tier], TIER_COST(tier+1)];
 // L'XP des sachets (3 octobre 2026) : plus de plafond par jour, mais deux fois moins d'XP qu'avant (0,1 XP par bonbec dépensé).
@@ -6960,7 +6981,7 @@ function ensurePass(){
   // XP perdue (le 2 octobre 2026 : une XP « pas un nombre » enregistrée comme vide, l'XP repartait de 0 mais les paliers
   // récupérés restaient) : on a forcément eu l'XP du plus haut palier récupéré, on la rend en plus de ce qu'on a gagné depuis
   const P = S.pass, top = Math.max(0, ...(P.free||[]), ...(P.prem||[])), xp = Number.isFinite(P.xp) ? P.xp : 0;
-  if(top>1 && xp < XP_AT[top]){ P.xp = Math.min(PASS_MAX_XP, XP_AT[top] + xp); save() }
+  if(top>1 && xp < xpAt(top)){ P.xp = Math.min(PASS_CAP_XP, xpAt(top) + xp); save() }
   else if(!Number.isFinite(P.xp)){ P.xp = xp; save() }
   return P;
 }
@@ -6968,7 +6989,7 @@ function ensurePass(){
 // (si on revient dans les 7 premiers jours ; le serveur accepte le mois d'avant pendant ce temps-là).
 function passRollover(P){
   if(new Date().getDate() > PASS_GRACE) return;
-  const se = seasonOf(P.id), tier = tierOfXP(P.xp);
+  const se = seasonOf(P.id), tier = passLevelOf(P.xp);   // niveaux bonus compris
   if(se.id===seasonNow().id) return;
   let n = 0;
   for(let t=1; t<=tier; t++) ["free","prem"].forEach(tr=>{
@@ -6988,6 +7009,7 @@ const seasonStyle = se => { const P=PALETTES[se.pal]; return `--s1:${P[1]};--s2:
 // et les billes de la saison aux paliers ronds (10, 20, 30). Palier 1 : une Mini de saison pour bien démarrer.
 const PASS_J = {free:[10,15,20], prem:[20,30,40]};
 function passReward(track,t,se=seasonNow()){
+  if(t>PASS_TIERS) return {k:"jetons", n:PASS_BONUS_J[track], bonus:true};   // un niveau bonus
   const fam = se.def.fam, stage = Math.floor((t-1)/10);
   const M = (type,shiny=0) => ({k:"marble", type, fam, shiny});
   if(track==="free"){
@@ -7020,14 +7042,14 @@ function rewardLabel(r){
   return `${TYPES[r.type].label} ${FAMILIES[r.fam].name}${r.shiny?" "+SHINIES[r.shiny].name:""} de saison`;
 }
 function passClaimable(){
-  const P = ensurePass(), tier = passTier(); let n = 0;
+  const P = ensurePass(), tier = passLevel(); let n = 0;
   for(let t=1;t<=tier;t++){ if(!P.free.includes(t)) n++; if(P.premium && !P.prem.includes(t)) n++ }
   return n;
 }
 function grantReward(track,t){
   if(!srvNeed()) return null;
   const P = ensurePass();
-  if(t>passTier() || (track==="prem" && !P.premium) || P[track].includes(t)) return null;
+  if(t>passLevel() || (track==="prem" && !P.premium) || P[track].includes(t)) return null;
   return grantPassReward(P, seasonNow(), track, t);
 }
 // verse la récompense d'un palier (du passe en cours, ou du mois d'avant lors du changement de saison)
@@ -7043,11 +7065,11 @@ function grantPassReward(P, se, track, t){
   return r;
 }
 function passXP(n){
-  const P = ensurePass(), before = passTier();
+  const P = ensurePass(), before = passLevel();
   if(!Number.isFinite(n) || n<=0) return 0;
-  P.xp = Math.min(PASS_MAX_XP, P.xp+n); save();
-  const after = passTier();
-  if(after>before){ note(`Passe de saison : palier ${after} atteint !`, "end", 400); renderNav() }
+  P.xp = Math.min(PASS_CAP_XP, P.xp+n); save();
+  const after = passLevel();
+  if(after>before){ note(after>PASS_TIERS ? `Passe de saison : niveau bonus ${after-PASS_TIERS} atteint !` : `Passe de saison : palier ${after} atteint !`, "end", 400); renderNav() }
   return n;
 }
 const giftCount = () => Object.values(S.bagInv).reduce((a,b)=>a+b,0);
@@ -8151,6 +8173,24 @@ function rewardInner(track,t,r){
   const s = rewardSpec(track,t,r);
   return `<span class="rw-ic">${mImg(s,140,52,"")}</span><b>${TYPES[r.type].label}</b>${r.shiny?`<span class="rw-shiny">${SPARK}</span>`:""}`;
 }
+// (16 octobre 2026) les niveaux bonus : après le palier 30, chaque 1 300 XP rapporte 20 bonbecs (gratuit) et 40 (premium)
+function passBonusCard(P, se){
+  const lvl = passLevelOf(P.xp), b = Math.max(0, lvl-PASS_TIERS), done = tierOfXP(P.xp)>=PASS_TIERS;
+  const into = done ? P.xp - xpAt(lvl) : 0, maxed = b>=BONUS_MAX;
+  let nf = 0, np = 0; for(let t=PASS_TIERS+1; t<=lvl; t++){ if(!P.free.includes(t)) nf++; if(P.premium && !P.prem.includes(t)) np++ }
+  const gotB = P.free.filter(t=>t>PASS_TIERS).length*PASS_BONUS_J.free + P.prem.filter(t=>t>PASS_TIERS).length*PASS_BONUS_J.prem;
+  return `<section class="panel pass-bonus${done?" on":""}" style="${seasonStyle(se)}">
+    <div class="pb-ic">${ic("star",26,2.2)}</div>
+    <div class="pb-main">
+      <h2>Niveaux bonus ${done ? `<span class="pb-n">${b}</span>` : ""}</h2>
+      <p>${done ? (maxed ? "Tu as atteint tous les niveaux bonus de la saison : bravo, quelle fidélité !" : `Encore ${fmt(BONUS_COST-into)} XP avant le niveau bonus ${b+1}.`)
+        : `Après le palier ${PASS_TIERS}, chaque niveau de ${fmt(BONUS_COST)} XP rapporte encore des ${CUR.many}, jusqu'à la fin de la saison.`}</p>
+      ${done && !maxed ? `<div class="bar pass-bar"><i style="width:${into/BONUS_COST*100}%"></i></div>` : ""}
+      <div class="pb-rw"><span>${COIN} <b>+${PASS_BONUS_J.free}</b> par niveau · gratuit</span><span class="${P.premium?"":"off"}">${ic("star",13)} <b>+${PASS_BONUS_J.prem}</b> par niveau · premium${P.premium?"":` ${ic("lock",12,2.4)}`}</span>${gotB?`<span class="pb-got">${fmt(gotB)} ${CUR.many} gagnés en bonus</span>`:""}</div>
+    </div>
+    ${nf+np ? `<button class="btn btn-yellow" data-action="pass-all">${ic("gift",18)} Récupérer · +${fmt(nf*PASS_BONUS_J.free + np*PASS_BONUS_J.prem)}</button>` : ""}
+  </section>`;
+}
 function viewPass(){
   pedia = [];
   const P = ensurePass(), se = seasonNow(), tier = passTier(), claim = passClaimable();
@@ -8190,7 +8230,7 @@ function viewPass(){
       <h2>${se.def.name}</h2>
       <div class="ph-tier"><b>Palier ${tier}</b><span>/ ${PASS_TIERS}</span></div>
       <div class="bar pass-bar"><i style="width:${into/need*100}%"></i></div>
-      <p>${tier>=PASS_TIERS?"Tu as terminé le passe, chapeau !":`${fmt(into)} / ${fmt(need)} XP avant le palier ${tier+1}`}</p>
+      <p>${tier>=PASS_TIERS?`Tu as terminé le passe, chapeau !${passLevel()>PASS_TIERS?` Niveau bonus ${passLevel()-PASS_TIERS}.`:""} Continue pour les niveaux bonus.`:`${fmt(into)} / ${fmt(need)} XP avant le palier ${tier+1}`}</p>
       <div class="ph-actions">
         ${claim?`<button class="btn btn-yellow" data-action="pass-all">${ic("gift",18)} Tout récupérer (${claim})</button>`:""}
         ${P.premium?`<span class="prem-badge">${ic("star",16)} Passe premium actif</span>`:`<button class="btn btn-light" data-action="buy-pass">${ic("star",18)} Débloquer le premium · ${PASS_PRICE}</button><span class="prem-gift">${ic("gift",15)} + un Sachet Collector offert tout de suite</span>`}
@@ -8206,6 +8246,7 @@ function viewPass(){
     <div class="track-labels"><span>Gratuit</span><span></span><span class="pl">${ic("star",14)} Premium</span></div>
     <div class="track-scroll" id="track">${cols}</div>
   </section>
+  ${passBonusCard(P, se)}
   <div class="row-2">
     <section class="panel">
       <div class="panel-head"><h2>Gagner de l'XP de saison</h2></div>
@@ -8862,7 +8903,8 @@ function viewPedia(){
   // les motifs de saison : un par mois, dans le passe de saison
   const MOIS = ["Janvier","Février","Mars","Avril","Mai","Juin","Juillet","Août","Septembre","Octobre","Novembre","Décembre"];
   const seasons = SEASON_FAMS.map(f=>{ const F=FAMILIES[f];
-    if(!seasonSeen(F.season)) return `<div class="sh-tile secret"><span class="sec-ball">?</span><b>Surprise</b><small>${MOIS[F.season]}</small></div>`;
+    // (16 octobre 2026) les Crayons (septembre) : personne ne les a depuis la remise à zéro, ils reviennent en septembre 2027
+    if(!seasonSeen(F.season) || (F.season===8 && Date.now() < Date.parse("2027-09-01T00:00:00+02:00"))) return `<div class="sh-tile secret"><span class="sec-ball">?</span><b>Surprise</b><small>${MOIS[F.season]}</small></div>`;
     const x={seed:hash("season"+f), type:"calot", family:f, pal:SEASON_PAL0+F.season, shiny:0}, i=pv({...x, cour:`Motif de saison · ${MOIS[F.season]}. Seulement dans le passe de saison de ce mois-là.`});
     return `<button class="sh-tile${seasonNow().m===F.season?" now":""}" data-action="preview" data-k="${i}">${mImg(x,200,70)}<b>${F.name}</b><small>${MOIS[F.season]}</small></button>` }).join("");
   // allégé le 6 octobre 2026 : les explications se déplient sur le petit « ? » à côté du titre
@@ -15321,13 +15363,14 @@ function trocDups(){
   return out;
 }
 // (7 octobre 2026) ce que tu as déjà : combien d'exemplaires de cette bille (même taille, motif et coloris) et si le motif te manque dans cette taille
+// (16 octobre 2026) col : coloris absent ; une shiny dont on a la version normale (ni dec ni col) est « une shiny qui te manque »
 function ownInfo(){
-  const n = new Map(), sk = new Set();
-  S.specs.forEach(s=>{ const k = dupKey(s); n.set(k, (n.get(k)||0)+1); sk.add(slotKey(s)) });
-  return x => ({n:n.get(dupKey(x))||0, dec:!sk.has(slotKey(x))});
+  const n = new Map(), sk = new Set(), ck = new Set();
+  S.specs.forEach(s=>{ const k = dupKey(s); n.set(k, (n.get(k)||0)+1); sk.add(slotKey(s)); ck.add(colorKey(s)) });
+  return x => ({n:n.get(dupKey(x))||0, dec:!sk.has(slotKey(x)), col:!ck.has(colorKey(x)), sh:!!x.shiny});
 }
 const ownTag = o => o.n ? `<span class="mk-own">${ic("check",12,3)} Déjà dans ta boîte${o.n>1?` · ×${o.n}`:""}</span>`
-  : `<span class="mk-own miss${o.dec?"":" col"}">${SPARK} ${o.dec?"Motif qui te manque":"Coloris qui te manque"}</span>`;
+  : `<span class="mk-own miss${o.dec?"":" col"}">${SPARK} ${o.dec?"Motif qui te manque":o.col?"Coloris qui te manque":o.sh?"Shiny qui te manque":"Version normale qui te manque"}</span>`;
 const pickTxt = x => { try{ return pickText(x) }catch(e){ return fold(specName(x)) } };
 // chez un copain, ce qui te manque brille d'un halo : doré = motif que tu n'as pas dans cette taille, bleu = coloris que tu n'as pas (comme l'éclat à l'ouverture)
 // (14 octobre 2026) les doubles d'un autre joueur : ses billes en plusieurs exemplaires (même coloris, même shiny), sauf la plus belle qu'il garde
@@ -15423,8 +15466,9 @@ function courMarche(){
   if(cour.sell) return sellView();
   courLoad("marche"); courLoad("annonces"); courLoad("encheres");
   mkCard.own = ownInfo();   // calculé une fois pour toutes les cartes
-  // (16 octobre 2026) « Seulement celles qui me manquent » : un motif ou un coloris qu'on n'a pas encore (filtré ici, sur les annonces chargées)
-  const L0 = cour.marche, f = cour.f, L = L0 && f.manque ? (()=>{ const m = missOf(); return L0.filter(a=>!a.moi && m(a.bille)) })() : L0;
+  // (16 octobre 2026) « Seulement celles qui me manquent » : une bille dont on n'a aucun exemplaire (même coloris, même shiny : une shiny compte
+  // même si on a la version normale) ; filtré ici, sur les annonces chargées
+  const L0 = cour.marche, f = cour.f, L = L0 && f.manque ? (()=>{ const o = ownInfo(); return L0.filter(a=>!a.moi && !o(a.bille).n) })() : L0;
   const A = cour.annonces, aucOK = !cour.absent.encheres, ME = aucOK ? (cour.encheres||[]) : [];
   const sel = (id, opts, v) => `<select id="${id}" aria-label="${id}">${opts.map(([k,l])=>`<option value="${k}"${v===k?" selected":""}>${l}</option>`).join("")}</select>`;
   const mine = (A||[]).filter(a=>!a.vendue), sold = 0, mkTab = ui.mkTab || "acheter";
@@ -15894,7 +15938,7 @@ document.addEventListener("click", e=>{
     }
     case "pass-all": {
       const P = ensurePass(), got = [], before = snapGains();
-      for(let k=1;k<=passTier();k++) ["free","prem"].forEach(tr=>{ const r=grantReward(tr,k); if(r) got.push(r) });
+      for(let k=1;k<=passLevel();k++) ["free","prem"].forEach(tr=>{ const r=grantReward(tr,k); if(r) got.push(r) });
       if(!got.length) break;
       save(); Sound.coin(); Sound.ding(); renderTop(); renderNav(); renderView();
       showRecap(before, [`${got.length} palier${got.length>1?"s":""} du passe ${seasonNow().label}`], "Passe de saison");

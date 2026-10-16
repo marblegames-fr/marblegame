@@ -605,6 +605,15 @@ begin
       raise exception 'deja';   -- 'deja' : les anciens clients ne montrent pas d'erreur, et le serveur corrige leur compte de sachets
     when 'passe' then   -- paliers de la saison en cours seulement
       if not interne.saison_valide(split_part(cle, '|', 1)) or montant > 40 then raise exception 'montant_invalide'; end if;
+      -- (16 octobre 2026) les niveaux bonus (paliers 31 à 129) : 20 bonbecs sur la piste gratuite, 40 sur la premium (PASS_BONUS_J dans index.html)
+      -- (« 2026-10|achat » : le Sachet Collector offert avec le premium)
+      if split_part(cle, '|', 2) = 'achat' then
+        if montant <> 0 or sac is distinct from 'collector' then raise exception 'montant_invalide'; end if;
+      elsif split_part(cle, '|', 3) !~ '^[0-9]{1,3}$' or split_part(cle, '|', 2) not in ('free','prem') then raise exception 'montant_invalide';
+      elsif split_part(cle, '|', 3)::int > 129
+         or (split_part(cle, '|', 3)::int > 30 and (sac is not null or montant > case split_part(cle, '|', 2) when 'free' then 20 else 40 end)) then
+        raise exception 'montant_invalide';
+      end if;
       k := cle;
     when 'depart' then  -- (8 octobre 2026) la fin du premier lancement guidé : un Sachet Premium, une fois par compte
       if montant <> 0 or sac is distinct from 'premium' then raise exception 'montant_invalide'; end if;

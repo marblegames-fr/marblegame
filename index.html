@@ -15434,8 +15434,10 @@ function missOf(){
   const sk = new Set(S.specs.map(slotKey)), ck = new Set(S.specs.map(colorKey));
   return x => !sk.has(slotKey(x)) ? "dec" : !ck.has(colorKey(x)) ? "col" : "";
 }
-// (16 octobre 2026) la lueur derrière une bille qui manque prend la couleur de la rareté de son motif (blanche pour un commun) ; l'étoile du coin garde doré = motif, bleu = coloris
-const pickGlow = x => { const r = decorRar(x); return r>=1 ? MOTIF_COL[r] : r===0 ? "#FFFFFF" : mvBg(x).c };
+// (16 octobre 2026) la lueur derrière une bille qui manque prend la couleur de la rareté de son motif (blanche pour un commun) ; l'étoile du coin garde doré = motif, bleu = coloris.
+// Événement : rose, saison : turquoise (couleurs à part : le Pirate était rouge comme le mythique, les Super-héros bleus comme le rare)
+const pickGlow = x => { const F = FAMILIES[x.family], r = decorRar(x);
+  return F?.event ? "#FF5FD2" : F?.season!=null || isSeason(x) ? "#2EE6C8" : r>=1 ? MOTIF_COL[r] : r===0 ? "#FFFFFF" : mvBg(x).c };
 const pickCard = (x, side, on, hid, nw, cnt) => `<button class="pick${nw?` miss ${nw}`:""}"${nw?` style="--gc:${pickGlow(x)}"`:""} data-action="troc-pick" data-q="${esc(pickTxt(x))}"${hid?" hidden":""} data-side="${side}" data-id="${x.id}" aria-pressed="${on}">${cnt||""}<span class="ball">${mImg(x,120,Math.round(28*scaleOf(x.type)+18),"")}</span>${nw?`<span class="miss-sp" title="${side==="give" ? (nw==="dec"?"Un motif que ton copain n'a pas dans cette taille":"Un coloris que ton copain n'a pas") : nw==="dec"?"Un motif que tu n'as pas dans cette taille":"Un coloris que tu n'as pas"}">${SPARK}</span>`:""}${esc(specName(x))}<small class="meta">${TYPES[x.type].label}</small></button>`;
 // la recherche (par nom, shiny, rareté…) cache les billes sans tout redessiner ; elle est gardée dans PQ pour les redessins
 const PQ = {};

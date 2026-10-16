@@ -13939,21 +13939,21 @@ async function gcWatch3D(race){
   stage.appendChild(renderer.domElement);
   // (14 octobre 2026) midi et soir ne se ressemblent plus : la course de midi en plein jour (ciel bleu, soleil, herbe),
   // celle du soir la nuit comme une fête foraine (ciel étoilé, clair de lune, guirlandes d'ampoules, plots et champignons qui brillent)
-  // (16 octobre 2026) le rendu studio (P) : le midi dans un studio blanc (façon MoreBalls), le soir toujours la fête foraine ; les deux avec
-  // les reflets d'une pièce éclairée, les pièces arrondies en plastique satiné, le vrai verre et l'ombre qui suit l'action
-  const night = (race.heure||20)!==12, FX = L.FX, P = !!FX, studio = P && !night;
+  // (16 octobre 2026) le rendu studio (P) : les reflets d'une pièce éclairée, les pièces arrondies en plastique satiné, l'ombre qui suit l'action,
+  // et le vrai verre le midi. (16 octobre, le soir) le midi garde son plein jour (ciel bleu, herbe, couleurs du circuit) : le studio blanc
+  // de la maquette effaçait la différence entre midi et soir, et toutes les maps se ressemblaient
+  const night = (race.heure||20)!==12, FX = L.FX, P = !!FX, vitre = P && !night;
   const scene = new THREE.Scene(), camera = new THREE.PerspectiveCamera(50, stage.clientWidth/stage.clientHeight, .1, 300);
   const grad = stops => { const c = document.createElement("canvas"); c.width = 4; c.height = 256; const x = c.getContext("2d"), g = x.createLinearGradient(0,0,0,256);
     stops.forEach(([p, col])=>g.addColorStop(p, col)); x.fillStyle = g; x.fillRect(0,0,4,256); const t = new THREE.CanvasTexture(c); t.colorSpace = THREE.SRGBColorSpace; return t };
   if(night){ const bgN = cbShade(TH.bg, -6); scene.background = new THREE.Color(bgN); scene.fog = new THREE.Fog(bgN, 45, 130) }
-  else if(studio){ scene.background = grad([[0,"#FFFFFF"],[.55,"#EEF0F4"],[1,"#D9DDE5"]]); scene.fog = new THREE.Fog("#E8EBF0", 70, 230) }
   else { scene.background = grad([[0,"#3F8EF0"],[.6,"#8CC6FF"],[1,"#DDF0FF"]]); scene.fog = new THREE.Fog("#CBE6FF", 60, 170) }
   let env = null;
   if(P){ const pm = new THREE.PMREMGenerator(renderer); env = pm.fromScene(new FX.RoomEnvironment(), .04).texture; pm.dispose(); scene.environment = env }
-  renderer.toneMappingExposure = studio ? .88 : 1;
+  renderer.toneMappingExposure = 1;
   const envK = night ? .25 : 1;
-  scene.add(night ? new THREE.HemisphereLight("#8FA6FF", "#1A1230", .55) : studio ? new THREE.HemisphereLight("#FFFFFF", "#C8CDD8", .3) : new THREE.HemisphereLight("#E4F2FF", "#6B8F4E", 1.35));
-  const sun = new THREE.DirectionalLight(night ? "#A9BEFF" : studio ? "#FFFFFF" : "#FFF8E6", night ? 1 : studio ? 2.7 : 2.8); sun.position.set(-20,40,25); sun.castShadow = true;
+  scene.add(night ? new THREE.HemisphereLight("#8FA6FF", "#1A1230", .55) : new THREE.HemisphereLight("#E4F2FF", "#6B8F4E", 1.35));
+  const sun = new THREE.DirectionalLight(night ? "#A9BEFF" : "#FFF8E6", night ? 1 : 2.8); sun.position.set(-20,40,25); sun.castShadow = true;
   const bb = [[1e9,1e9,1e9],[-1e9,-1e9,-1e9]]; W.statics.forEach(s=>s.pos.forEach((p,j)=>{ bb[0][j] = Math.min(bb[0][j], p); bb[1][j] = Math.max(bb[1][j], p) }));
   const mid = bb[0].map((p,j)=>(p+bb[1][j])/2), half = Math.max(...bb[0].map((p,j)=>(bb[1][j]-p)/2)) + 8;
   sun.shadow.mapSize.set(2048,2048);
@@ -13961,14 +13961,14 @@ async function gcWatch3D(race){
   if(P){ sun.position.set(mid[0]-14, mid[1]+30, mid[2]+10); Object.assign(sun.shadow.camera, {left:-16, right:16, top:16, bottom:-16, near:1, far:120}); sun.shadow.bias = -.0004; sun.shadow.normalBias = .02 }
   else { sun.position.set(mid[0]-20, mid[1]+40, mid[2]+25); Object.assign(sun.shadow.camera, {left:-half, right:half, top:half, bottom:-half, near:1, far:half*2+90}) }
   sun.target.position.set(...mid); scene.add(sun.target); scene.add(sun);
-  // les matières de chaque pièce, aux couleurs du circuit (rendu studio : plastique satiné, couleurs éclaircies le midi, vrai verre)
+  // les matières de chaque pièce, aux couleurs du circuit (rendu studio : plastique satiné, vrai verre le midi)
   const std = o => P ? new THREE.MeshPhysicalMaterial({roughness:.38, clearcoat:.35, clearcoatRoughness:.25, envMapIntensity:envK, ...o}) : new THREE.MeshStandardMaterial(o);
-  const rampC = studio ? "#" + new THREE.Color(TH.ramp).lerp(new THREE.Color("#FFFFFF"), .62).getHexString() : TH.ramp;
-  const glass = (o) => studio ? new THREE.MeshPhysicalMaterial({color:"#FFFFFF", transmission:.92, thickness:.06, ior:1.45, roughness:0, attenuationColor:"#D6EEFF", attenuationDistance:6, envMapIntensity:envK*.8})
+  const rampC = TH.ramp;
+  const glass = (o) => vitre ? new THREE.MeshPhysicalMaterial({color:"#FFFFFF", transmission:.92, thickness:.06, ior:1.45, roughness:0, attenuationColor:"#D6EEFF", attenuationDistance:6, envMapIntensity:envK*.8})
     : new THREE.MeshPhysicalMaterial({color:"#BFE6FF", roughness:.1, transparent:true, opacity:o, depthWrite:false, envMapIntensity:0});   // (la nuit, sans le reflet de la pièce : il voilait les vitres)
-  const MAT = {ramp:std({color:rampC, roughness:P ? .38 : .65}), tray:std({color:studio ? cbShade(TH.tray, 60) : TH.tray, roughness:.5}),
+  const MAT = {ramp:std({color:rampC, roughness:P ? .38 : .65}), tray:std({color:TH.tray, roughness:.5}),
     wall:glass(.28), inner:glass(.22), end:glass(.4), glass:glass(.12), wall2:std({color:rampC, roughness:.5}),
-    back:std({color:studio ? "#F2F3F6" : cbShade(TH.bg, 18), roughness:.9}),
+    back:std({color:cbShade(TH.bg, 18), roughness:.9}),
     peg:std({color:TH.peg||"#F4E3C2", roughness:.35, metalness:P ? .05 : .2, ...(night ? {emissive:TH.peg||"#FFE7B0", emissiveIntensity:.45} : {})}),
     kick:std({color:cbShade(TH.ramp, 25), roughness:.5}), bump:std({color:TH.bump||"#FF4F7A", roughness:.3, metalness:.1, emissive:TH.bump||"#FF4F7A", emissiveIntensity:night ? 1 : .25}),
     spin:std({color:TH.spin||"#FFD34D", roughness:.35, metalness:.3}), axle:std({color:"#8A8FA3", roughness:.3, metalness:P ? .8 : .6}),
@@ -13992,7 +13992,7 @@ async function gcWatch3D(race){
     m.position.set(...s.pos); m.quaternion.set(...s.quat); m.castShadow = !/wall|inner|end|glass|back|water|ghost/.test(s.kind); m.receiveShadow = true; if(s.add!==false) scene.add(m); return m };
   W.statics.forEach(piece);
   const kinM = W.kin.map(piece);   // les pièces qui tournent (moulins) : replacées à chaque image
-  const floor = new THREE.Mesh(new THREE.PlaneGeometry(studio ? 600 : 400, studio ? 600 : 400), new THREE.MeshStandardMaterial({color:night ? cbShade(TH.bg, 6) : studio ? "#E4E7EC" : "#7DB35F", roughness:studio ? .8 : 1}));
+  const floor = new THREE.Mesh(new THREE.PlaneGeometry(400,400), new THREE.MeshStandardMaterial({color:night ? cbShade(TH.bg, 6) : "#7DB35F", roughness:1}));
   floor.rotation.x = -Math.PI/2; floor.position.y = W.floorY-1; floor.receiveShadow = true; scene.add(floor);
   // le soir : des étoiles tout autour, des guirlandes d'ampoules sur les bords de la piste, et une lampe qui suit l'action
   let lamp = null;
@@ -14654,7 +14654,7 @@ let bugKeep = null;   // un message qui n'est pas parti : il est reproposé au p
 // on:false cache le bouton (pendant qu'on prépare la mise à jour) ; on:true le remet, avec la pastille si l'id a changé
 // (16 octobre 2026) deux repères : dot = la pastille rouge du bouton, à changer à CHAQUE mise en ligne qui ajoute une ligne au patchnote
 // (avec txt : la date du jour) ; id = la fenêtre d'annonce à l'arrivée, seulement pour les très gros jours
-const NEWS = {on:true, id:"2026-10-14b", dot:"2026-10-16-1830", url:"/nouveautes.html", txt:"Mise à jour du 16 oct."};
+const NEWS = {on:true, id:"2026-10-14b", dot:"2026-10-16-1900", url:"/nouveautes.html", txt:"Mise à jour du 16 oct."};
 const newsUnseen = () => lsGet("billeo-news-vu")!==NEWS.dot;
 // (14 octobre 2026) à l'arrivée, une fenêtre annonce la mise à jour, une seule fois par mise à jour et par compte (S.newsPop, gardé
 // dans la partie : elle ne revient pas sur un autre appareil) ; on choisit d'aller voir les nouveautés, ou pas

@@ -14047,7 +14047,11 @@ async function gcWatch3D(race){
   let comp = null, gtao = null;
   if(P) try{ comp = new FX.EffectComposer(renderer); comp.addPass(new FX.RenderPass(scene, camera));
     if(G3HQ){ gtao = new FX.GTAOPass(scene, camera, stage.clientWidth, stage.clientHeight); gtao.blendIntensity = .9;
-      gtao.updateGtaoMaterial({radius:.55, distanceExponent:1.4, thickness:1.2, scale:1.1, samples:16}); comp.addPass(gtao) }
+      gtao.updateGtaoMaterial({radius:.55, distanceExponent:1.4, thickness:1.2, scale:1.1, samples:16}); comp.addPass(gtao);
+      // (16 octobre 2026, le soir) les halos des shiny cachés pendant le calcul des ombres de contact : il ne connaît pas la transparence,
+      // le carré de l'image du halo y devenait un panneau plein, et un carré sombre coupait la bille en deux
+      const aoRender = gtao.render.bind(gtao);
+      gtao.render = (...a) => { auras.forEach(o=>o.au.visible = false); try{ aoRender(...a) } finally { auras.forEach(o=>o.au.visible = true) } } }
     comp.addPass(new FX.UnrealBloomPass(new THREE.Vector2(stage.clientWidth, stage.clientHeight), .14, .35, 1));
     comp.addPass(new FX.OutputPass()) }catch(e){ console.warn("Effets indisponibles :", e); comp = null; gtao = null }
   const labels = document.getElementById("g3-labels");

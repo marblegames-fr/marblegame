@@ -7973,7 +7973,9 @@ function viewCollection(){
   if(ui.tab==="beta"){ ui.tab = "billes"; ui.show = "beta" }
   const types = TK.filter(t=>ui.type==="all"||ui.type===t);
   // « Afficher » : le même filtre pour l'Album (par case) et pour Mes billes (bille par bille)
+  if(ui.show==="new") ui.show = "all";   // le filtre Nouveautés a été retiré le 16 octobre 2026
   const show = ui.show || "all";
+  pruneUnseen();
   const byColor = new Map(); S.specs.forEach(x=>{ const k=dupKey(x); if(!byColor.has(k)) byColor.set(k,[]); byColor.get(k).push(x) });
   const unseenIds = new Set(S.unseen), dupKeys = new Set([...byColor].filter(([k,l])=>l.length>1).map(([k])=>k));
   const keep = new Set([...byColor.values()].map(l=>keepOf(l).id));   // l'exemplaire gardé de chaque bille
@@ -7981,7 +7983,6 @@ function viewCollection(){
   const count = f => S.specs.filter(x=>inType(x)&&f(x)).length;
   const SHOW = [
     ["all","Tout",null,null],
-    ["new","Nouveautés","star",x=>unseenIds.has(x.id)],
     ["dups","Doubles","layers",x=>dupKeys.has(dupKey(x))],
     ["shiny","Shiny",null,x=>x.shiny],
     ["season","Passe de saison","ticket",isSeason],
@@ -8105,7 +8106,7 @@ function viewCollection(){
     const by = {recent:(a,b)=>b.at-a.at, size:(a,b)=>tierSort(a,b), decor:(a,b)=>FAMILIES[a.family].name.localeCompare(FAMILIES[b.family].name,"fr")||tierSort(a,b),
       rar:(a,b)=>FAMILIES[b.family].rar-FAMILIES[a.family].rar || FAMILIES[a.family].name.localeCompare(FAMILIES[b.family].name,"fr") || tierSort(a,b),
       color:(a,b)=>PALETTES[a.pal][0].localeCompare(PALETTES[b.pal][0],"fr")||tierSort(a,b),
-      slot:(a,b)=>TIDX[b.type]-TIDX[a.type] || a.family-b.family || a.pal-b.pal || (keep.has(b.id)?1:0)-(keep.has(a.id)?1:0) || tierSort(a,b)};
+      slot:(a,b)=>byColor.get(dupKey(b)).length-byColor.get(dupKey(a)).length || TIDX[b.type]-TIDX[a.type] || a.family-b.family || a.pal-b.pal || (keep.has(b.id)?1:0)-(keep.has(a.id)?1:0) || tierSort(a,b)};
     // les exemplaires d'une même bille sont regroupés sur une seule carte (« ×2 ») ; le filtre Doubles les montre un par un
     const grps = new Map();
     if(show!=="dups"){ const g = new Map(); list.forEach(x=>{ const k=dupKey(x); if(!g.has(k)) g.set(k,[]); g.get(k).push(x) });
@@ -8324,6 +8325,13 @@ function craftSingles(t, keep=[]){
   const singles = pool.filter(s=>!sel.includes(s.id) && cnt[dupKey(s)]===1);
   for(let i=singles.length-1;i>0;i--){ const j=Math.floor(Math.random()*(i+1)); [singles[i],singles[j]]=[singles[j],singles[i]] }
   return sel.concat(singles.slice(0, craftN(t)-sel.length).map(s=>s.id));
+}
+// (16 octobre 2026) « Nouveau » seulement pour un coloris qu'on n'avait pas encore : une bille pas vue dont un autre
+// exemplaire du même coloris (shiny ou pas) a déjà été vu est un double, elle perd sa marque
+function pruneUnseen(){
+  const un = new Set(S.unseen), seen = new Set(S.specs.filter(x=>!un.has(x.id)).map(colorKey));
+  const keep = S.unseen.filter(id=>{ const x = specById(id); return x && !seen.has(colorKey(x)) });
+  if(keep.length!==S.unseen.length){ S.unseen = keep; save() }
 }
 function viewCraft(){
   const C = ui.craft || (ui.craft = {t:0, sel:[]});

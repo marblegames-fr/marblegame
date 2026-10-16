@@ -154,7 +154,8 @@ create or replace function interne.nb_coloris() returns int language sql immutab
 -- Rubis, Émeraude, Saphir, Améthyste, Onyx, Diamant ; BETA dans index.html).
 -- Elles sont rangées avec les billes secrètes (secrete = 'beta') : ni troc, ni marché, ni recyclage, ni classement.
 -- supabase/reset.sql les garde. Au lancement : remplacer true par false (et BETA.open:false dans index.html).
-create or replace function interne.beta_ouverte() returns boolean language sql immutable as $$ select true $$;
+-- (16 octobre 2026) la bêta se ferme toute seule le 1er novembre 2026 à 0 h, heure de Paris (BETA.end dans index.html)
+create or replace function interne.beta_ouverte() returns boolean language sql stable as $$ select now() < timestamptz '2026-11-01 00:00:00 Europe/Paris' $$;
 create or replace function interne.taux_shiny() returns numeric language sql immutable as $$ select 0.0005::numeric $$;   -- sac gratuit et fusions ; Classique ×2, Premium et Pirate ×4, Collector ×10 (interne.sac) ; 1 sur 2 000 (relevé le 2 octobre 2026 : 1 sur 10 000, c'était presque jamais)
 create or replace function interne.revente() returns int[] language sql immutable as $$ select array[1,2,4,8,20,50] $$;   -- 6 octobre 2026 : toute la monnaie divisée par 10 (supabase/division10.sql)
 create or replace function interne.prime_shiny() returns int[] language sql immutable as $$ select array[200,500,1500] $$;
@@ -409,6 +410,7 @@ declare qui uuid := interne.moi(); total int := 0; lie int := 0; v int; n int :=
 begin
   perform 1 from portefeuilles where joueur = qui for update;
   for b in select * from billes where id = any(ids) and proprietaire = qui and detruite_le is null and secrete is null and not verrouillee for update loop   -- (16 octobre 2026) sauf les verrouillées
+    continue when interne.en_vente(b.id) or interne.dans_troc(b.id);   -- (16 octobre 2026) ni celles en vente ou dans un troc en attente (avant, l'annonce était retirée sans prévenir)
     if b.origine = 'serveur' then
       v := case when b.shiny > 0 and interne.coloris_normal(b.coloris)
         then (interne.revente())[interne.rang(b.taille)+1] * 10 + (interne.prime_shiny())[b.shiny]

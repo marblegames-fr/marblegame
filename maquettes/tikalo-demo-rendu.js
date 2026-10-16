@@ -1,4 +1,4 @@
-/* Extrait automatique de index.html du 2026-10-11 (outils/extraire-rendu.mjs) : données, rendu WebGL des billes, icônes, sachets,
+/* Extrait automatique de index.html du 2026-10-16 (outils/extraire-rendu.mjs) : données, rendu WebGL des billes, icônes, sachets,
    aperçus des jeux, marelle, distributeur, chaudron. Ne pas modifier à la main : relancer l'extraction. */
 /* =====================================================================
    DONNÉES DU JEU
@@ -196,7 +196,7 @@ const EVENTS = {
           ["Rhum ambré","#7A3B0C","#1D1410","#F6E3C0","#8A4A18"]]},
   // novembre 2026 : un héros par coloris (des héros de la cour, inventés pour Tikalo). late : coloris rangés après ceux des joueurs (79 à 83)
   superheros: {name:"Super-héros !", fam:"Super-héros", color:"#2E5BFF", late:true,
-    start:Date.parse("2026-11-01T00:00:00+01:00"), end:Date.parse("2026-11-14T23:59:59+01:00"),
+    start:Date.parse("2026-11-01T00:00:00+01:00"), end:Date.parse("2026-11-15T23:59:59+01:00"),   // (16 octobre 2026) les événements suivent les demi-mois : 1-15 ou 16-fin
     desc:"Deux semaines de billes Super-héros : coche la case sur un sachet payant.",
     pals:[["Capitaine Éclair","#1E4FD8","#E5303A","#FFD23F","#1A3FA8"],
           ["Fulgura","#1A1A22","#FFD23F","#E5303A","#24242C"],
@@ -209,7 +209,8 @@ Object.values(EVENTS).filter(E=>!E.late).forEach(E=>{ E.palIdx = E.pals.map(P=>{
 // Le serveur la range avec les billes secrètes (secret « beta ») : elle ne s'échange pas, ne se vend pas et ne compte pas au classement.
 // Au lancement : open:false ici et interne.beta_ouverte() à false dans supabase/serveur.sql.
 // Un verre précieux par taille (Mini → Mammouth), toujours avec le β d'or : coloris 70 à 75, dans l'ordre des tailles (même règle dans serveur.sql).
-const BETA = {fam:47, open:true, ed:"Bêta 2026", pals:[
+// (16 octobre 2026) la bêta se ferme toute seule le 1er novembre 2026 à 0 h (Paris) : plus rien à faire le jour J (serveur : interne.beta_ouverte)
+const BETA = {fam:47, end:Date.parse("2026-11-01T00:00:00+01:00"), get open(){ return Date.now() < this.end }, ed:"Bêta 2026", pals:[
   ["Rubis","#5E0B1A","#D7263D","#FFC94A","#FFE3E6"],
   ["Émeraude","#06402B","#1FA463","#FFC94A","#DDF7EA"],
   ["Saphir","#0A1F5C","#2F6BEA","#FFC94A","#DFE8FF"],
@@ -247,10 +248,10 @@ const isBeta = s => s?.secret==="beta";
 const eventOf = s => FAMILIES[s.family]?.event ? EVENTS[FAMILIES[s.family].event] : null;
 const eventLive = E => !!E && Date.now()>=E.start && Date.now()<=E.end;
 // Billes d'événement (3 octobre 2026) : plus de sachet d'événement en vente. Pendant l'événement, le joueur coche (ou non)
-// « billes d'événement » sur les sachets Classique, Premium et Collector : case cochée, chaque bille a 50 % de chances d'être une
+// « billes d'événement » sur les sachets Classique, Premium et Collector : case cochée, chaque bille a 25 % de chances (50 % jusqu'au 11 octobre 2026) d'être une
 // bille de l'événement et la vedette (la 5e) l'est toujours ; case décochée, aucune. Le choix est retenu (S.evOpt).
 // Mêmes valeurs dans serveur.sql (taux_evenement, ouvrir_sac).
-const EV_DROP = {classique:.5, premium:.5, collector:.5};
+const EV_DROP = {classique:.25, premium:.25, collector:.25};   // (11 octobre 2026) 50 % → 25 % par bille (la collection se finissait trop vite) ; la dernière du sachet reste toujours une bille d'événement
 const evOptOn = bagId => !!(S.evOpt && EV_DROP[bagId] && liveEventKey());
 // un événement pas encore commencé reste une surprise (Billepedia, album, Confiserie) : seule l'accueil l'annonce, billes floutées, 7 jours avant
 const evSoon = E => Date.now() < E.start;
@@ -620,9 +621,12 @@ vec4 fam(vec3 q, out vec3 e){
     float n=fbm(q*3.0+so);
     float k2=abs(fbm(q*3.6+so*1.3)-0.5);
     float crack=smoothstep(0.045,0.0,k2);
-    vec3 glow=mix(uC2,mix(uC3,vec3(1.0),0.25),crack*0.7);
-    e=glow*crack*2.2;
-    return vec4(mix(vec3(0.07,0.06,0.06)+uC1*0.12*n, glow, crack), 200.0);
+    // (16 octobre 2026) les 3 couleurs du coloris se voient : la roche prend la 1re, le bord des fissures et leur halo la 2e, le cœur brûlant la 3e
+    float core=smoothstep(0.018,0.0,k2), halo=smoothstep(0.11,0.0,k2);
+    vec3 rock=mix(vec3(0.05,0.045,0.045), uC1*0.5, 0.35+0.45*n);
+    vec3 glow=mix(uC2, mix(uC3,vec3(1.0),0.15), core);
+    e=glow*crack*2.2 + uC2*halo*(1.0-crack)*0.35;
+    return vec4(mix(mix(rock, uC2*0.6, halo*0.35), glow, crack), 200.0);
   }
 #elif MODE==18
   { // marbre : pierre claire et veines
@@ -756,8 +760,10 @@ vec4 fam(vec3 q, out vec3 e){
       if(dd<md){ md2=md; md=dd; } else if(dd<md2) md2=dd;
     }
     float crack=smoothstep(0.035,0.0,sqrt(md2)-sqrt(md))*smoothstep(0.93,0.7,length(q));
-    e=mix(vec3(1.0),uC3,0.3)*crack*2.0;
-    return vec4(mix(uC2,vec3(1.0),0.5), 0.2+crack*30.0);
+    // (16 octobre 2026) les 3 couleurs du coloris se voient : le verre prend la 1re, les fêlures la 2e ou la 3e selon les zones
+    vec3 cc=mix(uC2, uC3, smoothstep(0.42,0.58,noise(q*2.4+so+5.0)));
+    e=mix(cc,vec3(1.0),0.3)*crack*2.4;
+    return vec4(mix(mix(uC1,vec3(1.0),0.3), cc, crack*0.7), 0.3+crack*30.0);
   }
 #elif MODE==32
   { // pirate (en verre depuis le 3 octobre 2026) : un verre fumé de la couleur du coloris ; au cœur, comme une bille sulfure,
@@ -1047,7 +1053,7 @@ vec4 fam(vec3 q, out vec3 e){
   }
 #elif MODE==48
   { // super-héros (événement de novembre 2026) : un verre teinté de la couleur du héros ; au cœur, comme une bille sulfure,
-    // son blason (un écusson frappé d'un éclair, cerclé d'un liseré) ; derrière, les rayons d'une case de bande dessinée
+    // son blason, un par héros (HERO, voir plus bas), cerclé d'un liseré ; derrière, les rayons d'une case de bande dessinée
     float n=fbm(q*4.0+so), r=length(q);
     vec3 glass=mix(uC1, uC2, 0.12)*(0.6+0.3*n);
     float dens=0.26+0.2*n;
@@ -1138,22 +1144,25 @@ vec4 fam(vec3 q, out vec3 e){
     float th=0.015+L*0.11;
     float fan=smoothstep(a0-0.04,a0+0.04,an)*smoothstep(a1+0.04,a1-0.04,an)*smoothstep(th,th*0.3,abs(pr.z))*step(0.0,tri)*smoothstep(0.0,0.08,L);
     vec3 rb=0.5+0.5*cos(6.2831*(vec3(0.0,0.33,0.67)+0.95-hue*0.8));
+    // (16 octobre 2026) l'éventail prend les couleurs du coloris (de la 2e à la 3e), avec un reste d'arc-en-ciel : chaque coloris se reconnaît
+    rb=mix(rb, mix(uC2,uC3,hue), 0.5);
     float lines=0.7+0.3*smoothstep(0.3,1.0,sin(hue*46.0));   // de fines raies dans le spectre
     // de la poussière de lumière qui scintille dans l'éventail, et l'arc-en-ciel qui s'écrase sur la paroi
     vec3 g=q*15.0+so; vec3 fc=fract(g)-0.5;
     float dust=step(0.86,h31(floor(g)))*smoothstep(0.14,0.02,length(fc));
     float wall=smoothstep(0.8,0.92,r);
     // dans le prisme, la lumière se sépare déjà : un dégradé arc-en-ciel vers la face de sortie
-    vec3 inside=0.5+0.5*cos(6.2831*(vec3(0.0,0.33,0.67)+t.y*1.6+0.2));
-    e=vec3(1.0,0.98,0.93)*beam*7.0
-     +rb*lines*fan*(10.0/(1.0+L*2.0)+dust*12.0+wall*5.0)
-     +mix(uC3,vec3(1.0),0.65)*edges*7.0
-     +inP*(mix(uC2,vec3(1.0),0.5)*0.35+inside*smoothstep(-0.1,0.13,t.x)*0.9);
+    vec3 inside=mix(0.5+0.5*cos(6.2831*(vec3(0.0,0.33,0.67)+t.y*1.6+0.2)), uC3, 0.55);
+    e=mix(vec3(1.0,0.98,0.93),uC3,0.3)*beam*7.0
+     +rb*lines*fan*(6.5/(1.0+L*2.0)+dust*10.0+wall*4.0)
+     +mix(uC3,vec3(1.0),0.25)*edges*7.0
+     +inP*(mix(uC2,vec3(1.0),0.15)*0.9+inside*smoothstep(-0.1,0.13,t.x)*0.8)
+     +uC2*0.35*smoothstep(0.95,0.4,r)*(1.0-inP);   // le verre profond s'éclaire de la 2e couleur
     // quelques éclats blancs dans le verre
     vec3 gs=q*11.0+so+3.0; vec3 fs=fract(gs)-0.5;
     e+=vec3(step(0.975,h31(floor(gs)))*smoothstep(0.1,0.0,length(fs)))*4.0*(1.0-inP);
-    if(inP>0.5) return vec4(mix(uC2,vec3(1.0),0.55), 2.5);
-    return vec4(uC1*0.16, 0.32);
+    if(inP>0.5) return vec4(mix(uC2,vec3(1.0),0.25), 2.5);
+    return vec4(uC1*0.34, 0.32);
   }
 #elif MODE==50
   { // orage : un ciel d'orage pris dans le verre ; des éclairs ramifiés le traversent et l'illuminent de l'intérieur

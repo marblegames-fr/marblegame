@@ -99,9 +99,9 @@ p{margin:0}
 
 /* ---------- top bar ---------- */
 .topbar{position:sticky;top:calc(var(--rib,0px) + env(safe-area-inset-top,0px));z-index:30;display:flex;align-items:center;gap:16px;height:68px;padding-inline:24px;background:var(--topbar);backdrop-filter:blur(8px);border-bottom:1px solid var(--line)}
-/* le logo « Ça roule » (8 octobre 2026, maquettes/maquette-logo-polices.html) : « Bille » en Gluten, une police gonflée
+/* le logo « Ça roule » (8 octobre 2026, maquettes/archives/maquette-logo-polices.html) : « Bille » en Gluten, une police gonflée
    comme écrite à la main, jaune avec une tranche caramel ; les lettres sautillent comme des billes qui rebondissent,
-   et la bille du logo fait le point du « i » (le « o » est écrit, sinon on lisait « Bille » : maquettes/maquette-logo-o.html).
+   et la bille du logo fait le point du « i » (le « o » est écrit, sinon on lisait « Bille » : maquettes/archives/maquette-logo-o.html).
    « ı » = i sans point. Tout est en em : il suffit de changer font-size. */
 .logo{display:flex;align-items:flex-end;font-family:"Gluten",var(--display);font-weight:900;font-size:38px;line-height:1;letter-spacing:.02em}
 .logo .lw{display:flex;align-items:flex-end}
@@ -4399,7 +4399,7 @@ const Sound = (()=>{
   function chime(t,f,a,dur=1.4){ osc(t,"sine",f,a,.004,dur); osc(t,"sine",f*2.005,a*.25,.004,dur*.6); osc(t,"triangle",f*3.01,a*.06,.004,dur*.3) }
 
   /* (9 octobre 2026) la boîte à musique des papillotes : la taille fait le corps du son, le motif colore l'accord final,
-     la shiny signe par-dessus, et les croisements (coup double, jackpot, l'ultime). Le même code que maquettes/maquette-sons-papillote.html,
+     la shiny signe par-dessus, et les croisements (coup double, jackpot, l'ultime). Le même code que maquettes/archives/maquette-sons-papillote.html,
      avec sa propre réverbération ; chaque ouverture a son bus, et la fin de la précédente s'efface quand la suivante arrive */
   const MB = (()=>{
     let revIn = null, last = null;
@@ -7450,7 +7450,7 @@ function renderView(){
 }
 
 /* =====================================================================
-   LE DÉMARRAGE PAR ÉTAPES (10 octobre 2026, maquettes/maquette-demarrage.html)
+   LE DÉMARRAGE PAR ÉTAPES (10 octobre 2026, maquettes/archives/maquette-demarrage.html)
    Un nouveau joueur ne voit d'abord que l'Accueil, les Sachets et sa Boîte ; le reste se débloque une étape à la fois, avec un
    objectif en haut de l'accueil et une fenêtre « Nouveau ! » pour chaque nouveauté. Ordinateur : les menus pas encore ouverts sont
    gris avec un cadenas ; téléphone : ils n'apparaissent pas. S.onb = {step, done, jeu, conf, cour, day, pop} ; sans S.onb (joueurs
@@ -17064,7 +17064,7 @@ document.addEventListener("pointerout", e=>{
 // le calendrier passe toujours en premier : les nouvelles de la cour attendent qu'il soit fermé
 const dailyDue = () => dailyReady() && S.dailySeen!==dayKey() && onbOk("journee");
 /* =====================================================================
-   LE PREMIER LANCEMENT GUIDÉ (8 octobre 2026, maquettes/maquette-premier-lancement.html)
+   LE PREMIER LANCEMENT GUIDÉ (8 octobre 2026, maquettes/archives/maquette-premier-lancement.html)
    Pour un compte tout neuf : bienvenue, la bille de départ, le premier sachet, la boîte à billes, le Tir, la cour, Ma journée,
    puis un Sachet Premium offert. Une bulle montre où toucher ; « Passer » mène directement à la fin. L'étape est gardée dans S.tuto.
    ===================================================================== */

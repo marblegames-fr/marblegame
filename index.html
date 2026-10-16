@@ -13219,7 +13219,11 @@ function g3Trough(k, P, o){
     const Z0 = v3.norm([-X[2], 0, X[0]]), Y0 = v3.norm(v3.cross(Z0, X));
     const Z = v3.add(v3.mul(Z0, Math.cos(bank)), v3.mul(Y0, Math.sin(bank))), Y = v3.sub(v3.mul(Y0, Math.cos(bank)), v3.mul(Z0, Math.sin(bank)));
     const q = g3Basis(X, Y, Z), M = v3.mul(v3.add(A, B), .5), Lp = len*1.08 + .3;
-    lot.push({size:[Lp, .35, WID], pos:M, quat:q, kind:o.kind || "ramp"});
+    // (16 octobre 2026) o.trous[i] = côté (1 ou -1 sur Z) : le fond est plus étroit sur ce morceau, une trappe le long du bord
+    // (le Volcan : la bille qui tombe atterrit sur le tour du dessous)
+    const tr = o.trous?.[i], hw = o.trouW || 1.1;
+    if(tr) lot.push({size:[Lp, .35, WID-hw], pos:v3.add(M, v3.mul(Z, -tr*hw/2)), quat:q, kind:o.kind || "ramp"});
+    else lot.push({size:[Lp, .35, WID], pos:M, quat:q, kind:o.kind || "ramp"});
     [-1, 1].forEach(sd=>lot.push({size:[Lp, mur, .25], pos:v3.add(M, v3.add(v3.mul(Z, sd*(WID/2+.12)), v3.mul(Y, mur/2-.1))), quat:q, kind:o.murKind || "wall"}));
     if(lot.length>=18 || i===N-2){ k.boxes(lot); lot = [] }   // 6 morceaux de piste par corps
     if(i%2===0) path.push(v3.add(M, v3.mul(Y, .5)));
@@ -13466,10 +13470,12 @@ const G3C = {
         cam:p=>[p[0]*.5, p[1]-1, 23], look:p=>[p[0]*.8, p[1]-3, 0]} }},
 
   // Une grande spirale qui tourne autour d'une tour : les billes collent au bord en prenant de la vitesse
-  spirale:{name:"L'Entonnoir", desc:"Une grande spirale autour d'une tour, semée de plots et de pales qui tournent : elles retiennent une bille, en laissent filer une autre… Rien n'est joué avant le fond !",
+  // (16 octobre 2026) trop « simple » comme le Volcan : une piste plus large (4,2 au lieu de 2,8) pour doubler, autour d'une tour plus grosse,
+  // et des champignons rebondissants entre les pales. Banc : 7 changements de tête (avant 4), 13,5 places par bille (avant 10), deux fois moins de pichenettes
+  spirale:{name:"L'Entonnoir", desc:"Une grande spirale autour d'une tour, semée de plots, de champignons qui renvoient les billes et de pales qui tournent : elles retiennent une bille, en laissent filer une autre… Rien n'est joué avant le fond !",
     theme:{bg:"#0E1A2B", ramp:"#3FB6A8", tray:"#FFB547"}, axis:1,
     build(k, r, n){
-      const RM = 7, WID = 2.8, TURNS = 2.5, NS = 28, DROP = 12, BANK = 9*Math.PI/180, path = [];
+      const RM = 8, WID = 4.2, TURNS = 2.5, NS = 32, DROP = 12, BANK = 9*Math.PI/180, path = [];
       const dA = TAU/NS, N = TURNS*NS, slope = DROP/(TAU*RM), RO = RM+WID/2, len = 2*RO*Math.sin(dA/2)*1.04;
       const at = a => [RM*Math.cos(a), -a/TAU*DROP, RM*Math.sin(a)];
       for(let j=0;j<N;j++){ const a = (j+.5)*dA, P = at(a), rad = [Math.cos(a),0,Math.sin(a)];
@@ -13491,6 +13497,7 @@ const G3C = {
           // une pale tous les quarts de tour (elle retient une bille au hasard, en laisse filer une autre), un plot entre deux
           if(j%14===3) k.spin([.4, .45, WID-.7], v3.add(P, v3.mul(up, .5)), q, v3.mul(up, (j%14<7 ? 1 : -1)*(1.8+.6*r())));
           else if(j%7===6 || j%14===10) k.cyl(.24, 1.2, v3.add(P, v3.add(v3.mul(rad, (j%14<7 ? .3 : -.05)), v3.mul(up, .75))), q);
+          else if(j%14===0 || j%14===8) k.cyl(.45, 1, v3.add(P, v3.add(v3.mul(rad, (r()-.5)*1.2), v3.mul(up, .5))), q, "bump", "rebond");
         }
       }
       const yEnd = at(N*dA)[1];
@@ -13677,26 +13684,52 @@ const G3C = {
     build(k, r, n){ return g3Entonnoirs(k, r, n, {nb:3, RO:7.5, RI:1.85, pente:20*Math.PI/180}) }},
 
   // ---------- (14 octobre 2026) la spirale qui s'élargit ----------
-  // Le volcan : une piste de roche qui fait trois tours autour d'un cône, de plus en plus large en descendant, avec des rochers
-  volcan:{name:"Le Volcan", desc:"Une piste de roche qui tourne trois fois autour d'un volcan, de plus en plus large en descendant, semée de rochers et de gros boulets. En bas, le lac de lave !",
-    theme:{bg:"#2A1410", ramp:"#B39276", tray:"#FF5A1F", rock:"#4A3A34", tower:"#6A4A3E"}, form:"spirale",
-    build(k, r, n){ const o = {WID:3.8, mur:1.5}, T = 3, A = T*TAU, R0 = 6, R1 = 13, drop = 23, NS = 150, P = [];
-      // le départ : tout droit, puis la spirale (dans le sens des aiguilles d'une montre vue d'en haut)
+  // Le volcan : une piste de roche qui tourne autour d'un cône, de plus en plus large en descendant, avec des rochers.
+  // (16 octobre 2026) trop « simple » (la tête filait seule, personne ne doublait ; banc : 5 places gagnées ou perdues par bille, le plus bas) :
+  // un cratère en haut (un entonnoir qui mélange le peloton), une piste plus large (5,4 au lieu de 3,8) pour doubler, moins de pente,
+  // un obstacle tous les sixièmes de tour (portes, tourniquets, champignons, plots), deux crevasses qui font sauter un tour aux chanceuses,
+  // des rochers des deux côtés. Banc : 12 places par bille, 5 changements de tête, gagnant vers 72 s (avant 51 s)
+  volcan:{name:"Le Volcan", desc:"Les billes plongent dans le cratère, tourbillonnent, puis dévalent une large piste de roche autour du volcan : rochers, portes de lave, tourniquets… et des crevasses qui font sauter un tour aux chanceuses. Personne n'est à l'abri jusqu'au lac de lave !",
+    theme:{bg:"#2A1410", ramp:"#B39276", tray:"#FF5A1F", rock:"#4A3A34", tower:"#6A4A3E", spin:"#FF5A1F", bump:"#FF8A3D", peg:"#FFD34D"}, form:"spirale",
+    build(k, r, n){ const NTR = 2, o = {WID:5.4, mur:1.6, pente:.1}, T = 3, A = T*TAU, R0 = 7, R1 = 14.5, drop = 20, NS = 180;
+      // la spirale (dans le sens des aiguilles d'une montre vue d'en haut)
       const at = a => { const R = R0 + (R1-R0)*a/A; return [R*Math.cos(a), -drop*a/A, R*Math.sin(a)] };
-      for(let i=10;i>0;i--) P.push([R0, drop*.012*i, -i*1.05]);
-      for(let i=0;i<=NS;i++) P.push(at(i*A/NS));
+      // (16 octobre 2026) le cratère : la goulotte de départ arrive dans un entonnoir en haut du volcan, les billes y tournent
+      // et se mélangent, tombent par le trou sur une goulotte qui tourne et rejoint la spirale
+      const RO = 6.5, RI = 1.5, pf = 22*Math.PI/180, C = [-2, 0, -5], off = RO - 2.2;
+      const top = g3Funnel(k, C, RO, RI, pf, null, {champis:3}), yIn = top + 3.5, xe = C[0] - 1.2, L0 = 18;
+      const P0 = g3Trace([["S", L0]], {pente:.1, from:[xe - L0, yIn + .1*L0, C[2] - off]});
+      const S0 = g3Trough(k, P0, {WID:3, mur:1.4}), st = g3TroughStart(k, P0, {WID:3}, n, r);
+      // sous le trou : une goulotte étroite qui tourne (rayon 5) et arrive sur la spirale, en (R0, yS, 0) vers +z
+      k.box([.3, 2.2, 3.4], [C[0] - 2.15, C[1] - 2.2 + 1.1, C[2]], [0,0,0], "wall");
+      [-1, 1].forEach(sd=>k.box([5, 2, .25], [C[0] + .3, C[1] - 1.4, C[2] + sd*1.75], [0,0,0], "wall"));   // une bille qui tombe du trou ne saute pas hors de la goulotte
+      const P1 = g3Trace([["S", 6], ["D", 5, 90]], {pente:.1, from:[C[0] - 2, C[1] - 2.2, C[2]]}), S1 = g3Trough(k, P1, {WID:3.2, mur:1.6});
+      const yS = P1.at(-1)[1] - .08, P = [];
+      for(let i=0;i<=NS;i++){ const q = at(i*A/NS); P.push([q[0], q[1] + yS, q[2]]) }
+      const I0 = 0, iA = a => I0 + Math.round(a/A*NS);
+      // les crevasses : une trappe contre le bord extérieur à chaque tour (sauf le dernier) ; la bille qui tombe atterrit sur le tour du dessous
+      const TR = [1.6, 1.6+TAU+Math.PI*.8].map(iA); o.trous = {}; TR.forEach(i=>{ for(let d=0; d<NTR; d++) o.trous[i+d] = -1 });   // (Z pointe vers l'intérieur)
       const {path, frames} = g3Trough(k, P, o);
-      // des champignons rebondissants (et des plots) à mi-chemin entre deux rochers : ils renvoient les billes bien plus loin qu'un rocher
-      // (un double champignon à côté d'un rocher fermait presque la piste)
-      g3Obstacles(k, frames, o.WID, [33, 50, 75, 92, 117, 134].map((i, j)=>[i, j%2 ? "plots" : "bosse"]), r);
-      // (14 octobre 2026, le soir) beaucoup plus de rochers : des petits à gauche ou à droite, des gros au milieu ; toujours un passage
-      // d'au moins une bille entre un rocher et le bord (sur 1,9 de chaque côté du milieu)
-      for(let j=0;j<16;j++){ const a = (.07 + j*.056)*A + (r()-.5)*.15, p0 = at(a), rad = v3.norm([p0[0], 0, p0[2]]), up = [0, 1, 0], kind = j%3;
-        const R = kind===2 ? .55 : .38, off = kind===2 ? (r()-.5)*.2 : (kind ? 1 : -1)*(.45 + r()*.1);
-        k.ball(R, v3.add(v3.add(p0, v3.mul(rad, off)), v3.mul(up, .17 + R*.85)), "rock") }
+      // là où atterrit une bille tombée d'une crevasse (un tour plus bas, un peu plus loin) : de hauts murs de roche des deux côtés,
+      // sinon elle rebondissait par-dessus le bord
+      const L1 = Math.round(NS/T);
+      TR.forEach(t=>{ for(let i=t+L1-2; i<t+L1+9; i++){ const F = frames[i]; if(!F) continue;
+        [-1, 1].forEach(sd=>k.box([1.7, 4, .3], v3.add(F.M, v3.add(v3.mul(F.Z, sd*(o.WID/2+.3)), v3.mul(F.Y, 2))), F.q, "tower")) } });
+      // un obstacle tous les sixièmes de tour environ (pas près des crevasses) : portes qui tournent, tourniquets, champignons, plots
+      const OBS = ["champis","plots","moulin","bosse","champis","porte","plots","moulin","champis","bosse","moulin","plots","porte","champis","moulin","bosse","champis","porte","plots","moulin"];
+      const pos = OBS.map((t, j)=>[I0 + 22 + Math.round(j*(NS-32)/(OBS.length-1)), t]).filter(([i])=>!TR.some(t=>i>t-6 && i<t+NTR+4));
+      g3Obstacles(k, frames, o.WID, pos, r);
+      // des rochers entre les obstacles : des petits contre un bord ou l'autre, des gros au milieu ; toujours au moins une bille
+      // de passage entre un rocher et le bord, et jamais à moins de 5 morceaux d'un obstacle ou d'une crevasse
+      const near = i => pos.some(([p])=>Math.abs(p-i)<5) || TR.some(t=>i>t-5 && i<t+NTR+4);
+      for(let j=0;j<30;j++){ const a = (.06 + j*.031)*A + (r()-.5)*.1, i = iA(a); if(near(i)) continue;
+        const F = frames[Math.min(frames.length-1, i)], kind = j%3, R = kind===2 ? .55 : .38;
+        const off = kind===2 ? (r()-.5)*.4 : (kind ? 1 : -1)*(1.1 + r()*.15);
+        k.ball(R, v3.add(v3.add(F.M, v3.mul(F.Z, off)), v3.mul(F.Y, R*.85)), "rock") }
       // le cône du volcan (du décor), au milieu de la spirale
-      k.look("cone", [R0-1.9, R1-2.4, drop+2], [0, -drop/2, 0], null, "tower");
-      return {path, ...g3TroughStart(k, P, o, n, r), ...g3TroughEnd(k, P, path, o), cam:g3ChaseCam} }},
+      k.look("cone", [R0-2.6, R1-3.2, drop+2], [0, yS - drop/2 - 2, 0], null, "tower");   // (un peu plus bas : la goulotte sous le cratère passe au-dessus)
+      const end = g3TroughEnd(k, P, path, o);
+      return {path:[...S0.path, [C[0], top + .6, C[2]], [C[0], C[1] + .2, C[2]], ...S1.path, ...path], ...st, ...end, cam:(p, T)=>p[1] > yS + 1 ? g3FunnelCam(p, T) : g3ChaseCam(p, T)} }},
 
   // ---------- (14 octobre 2026) la grande roue ----------
   // Un mur entre deux vitres, comme le Plinko, mais coupé par deux grandes roues qui tournent en sens contraire :

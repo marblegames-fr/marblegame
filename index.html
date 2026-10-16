@@ -14577,8 +14577,10 @@ function bugDetails(){
 let bugKeep = null;   // un message qui n'est pas parti : il est reproposé au prochain clic
 // (14 octobre 2026) le dernier patchnote : changer id, txt (et la page nouveautes.html) à chaque mise à jour annoncée
 // on:false cache le bouton (pendant qu'on prépare la mise à jour) ; on:true le remet, avec la pastille si l'id a changé
-const NEWS = {on:true, id:"2026-10-14b", url:"/nouveautes.html", txt:"Mise à jour du 14 oct."};   // (2026-10-14b : le patchnote complété avec les circuits, la pastille revient chez tout le monde)
-const newsUnseen = () => lsGet("billeo-news-vu")!==NEWS.id;
+// (16 octobre 2026) deux repères : dot = la pastille rouge du bouton, à changer à CHAQUE mise en ligne qui ajoute une ligne au patchnote
+// (avec txt : la date du jour) ; id = la fenêtre d'annonce à l'arrivée, seulement pour les très gros jours
+const NEWS = {on:true, id:"2026-10-14b", dot:"2026-10-16-1545", url:"/nouveautes.html", txt:"Mise à jour du 16 oct."};
+const newsUnseen = () => lsGet("billeo-news-vu")!==NEWS.dot;
 // (14 octobre 2026) à l'arrivée, une fenêtre annonce la mise à jour, une seule fois par mise à jour et par compte (S.newsPop, gardé
 // dans la partie : elle ne revient pas sur un autre appareil) ; on choisit d'aller voir les nouveautés, ou pas
 const newsPopDue = () => NEWS.on && sync.on && S.newsPop!==NEWS.id;
@@ -14586,7 +14588,7 @@ async function newsPop(){
   S.newsPop = NEWS.id; save();
   const oui = await ask({title:"Du nouveau dans Tikalo !", ok:"Voir les nouveautés", no:"Plus tard",
     text:`Une mise à jour vient d'arriver : 16 nouveaux circuits pour la Grande Course, un classement de la semaine avec des lots, une cloche toute neuve et plein d'autres choses.<br><small class="meta">Tu peux la revoir quand tu veux avec le bouton « Nouveautés ».</small>`});
-  if(oui){ lsSet("billeo-news-vu", NEWS.id); window.open(NEWS.url, "_blank", "noopener"); renderNav() }
+  if(oui){ lsSet("billeo-news-vu", NEWS.dot); window.open(NEWS.url, "_blank", "noopener"); renderNav() }
 }
 async function bugReport(prev){
   if(!sync.on){ toast("Connecte-toi à ton compte pour envoyer un message."); return }
@@ -15960,7 +15962,7 @@ document.addEventListener("click", e=>{
     case "set-avatar": { const pub = t.dataset.pub==="1"; if(!pub) delete S.photo; if(t.dataset.id) S.avatar = t.dataset.id; else delete S.avatar; save(); closeModal(); renderTop(); renderView();
       toast(pub ? "C'est la bille que voient les autres joueurs !" : "C'est ta nouvelle photo de profil !"); break }
     case "bug-report": toggleProfPop(false); bugReport(); break;
-    case "news": lsSet("billeo-news-vu", NEWS.id); toggleProfPop(false); window.open(NEWS.url, "_blank", "noopener"); renderNav(); break;
+    case "news": lsSet("billeo-news-vu", NEWS.dot); toggleProfPop(false); window.open(NEWS.url, "_blank", "noopener"); renderNav(); break;
     case "bug-list": bugAdm.tous = t.dataset.tous==="1"; bugLoad(); break;
     case "bug-regle": bugRegle(+t.dataset.id, t.dataset.oui==="1"); break;
     case "stats": toggleProfPop(false); courStats = null; go("profil"); setTimeout(()=>document.getElementById("stats")?.scrollIntoView({behavior:"smooth", block:"start"}), 60); break;

@@ -439,6 +439,18 @@ create or replace function interne.annonce_json(a public.annonces, b public.bill
                 and b2.coloris = b.coloris and (b2.shiny > 0) = (b.shiny > 0)))
 $$;
 
+-- (16 octobre 2026) l'historique des prix d'un modèle (même taille, motif, coloris, shiny ou pas) : les ventes des 30 derniers jours,
+-- de la plus ancienne à la plus récente (le prix final pour une enchère) ; le marché en dessine la courbe
+create or replace function public.prix_modele(taille text, decor int, coloris int, shiny boolean) returns jsonb language plpgsql stable security definer set search_path = public as $$
+begin
+  if auth.uid() is null then raise exception 'connexion_requise'; end if;
+  return coalesce((select jsonb_agg(jsonb_build_object('le', floor(extract(epoch from x.vendue_le)*1000)::bigint, 'prix', x.prix) order by x.vendue_le) from (
+    select a.vendue_le, a.prix from annonces a join billes b on b.id = a.bille
+    where a.vendue_le > now() - interval '30 days' and b.taille = prix_modele.taille and b.decor = prix_modele.decor
+      and b.coloris = prix_modele.coloris and (b.shiny > 0) = prix_modele.shiny
+    order by a.vendue_le desc limit 200) x), '[]');
+end $$;
+
 drop function if exists public.vendre(uuid, int);
 drop function if exists public.vendre(uuid, int, int);
 -- durée : en jours (1, 3, 7) ou, si heures est donné, 3 h ou 12 h (ajouté le 2 octobre 2026)
@@ -882,7 +894,7 @@ do $$ declare f text; begin
   foreach f in array array['cour_moi()','ami_demander(text)','ami_repondre(uuid,boolean)','ami_retirer(uuid)','profil_joueur(uuid)',
     'billes_echangeables(uuid)','collection_copain(uuid)','fil_amis()','troc_proposer(uuid,uuid[],uuid[],text,bigint,int,int)','troc_repondre(bigint,boolean)','troc_annuler(bigint)',
     'mes_trocs()','vendre(uuid,int,int,int)','retirer_annonce(bigint)','acheter(bigint)','marche(text,int,int,boolean,text,int,text)','mes_annonces()','cour_journal(bigint,int)',
-    'mettre_aux_encheres(uuid,int,int)','encherir(bigint,int)','mes_encheres()','classement(text,int)','cour_stats()',
+    'mettre_aux_encheres(uuid,int,int)','prix_modele(text,int,int,boolean)','encherir(bigint,int)','mes_encheres()','classement(text,int)','cour_stats()',
     'classement_semaine(text)','palmares_semaines()','semaine_vu(date)'] loop
     execute format('revoke all on function public.%s from public, anon', f);
     execute format('grant execute on function public.%s to authenticated', f);

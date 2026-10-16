@@ -143,6 +143,7 @@
       marche: f => rpc("marche", Object.assign({taille:f.taille||null, decor:f.decor??null, coloris:f.coloris??null, shiny:f.shiny===""||f.shiny==null?null:f.shiny==="1", tri:f.tri||"recent", page:f.page||0}, f.genre ? {genre:f.genre} : {})),
       encheres: () => rpc("mes_encheres"),
       mettreAuxEncheres: (bille, prix, heures) => rpc("mettre_aux_encheres", {bille, prix, heures}),
+      prix: s => rpc("prix_modele", {taille:s.type, decor:s.family, coloris:s.pal, shiny:!!s.shiny}),   // (16 octobre 2026) les ventes des 30 derniers jours
       encherir: (annonce, montant) => rpc("encherir", {annonce, montant}),
       // page : 0 = la page où je suis, 1 = la première… (sans page : les 50 premiers, comme avant le 10 octobre 2026)
       classement: (portee, page) => rpc("classement", page==null ? {portee:portee||"tous"} : {portee:portee||"tous", page}),

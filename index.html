@@ -13037,7 +13037,13 @@ let G3LIB = null;
 async function g3Load(){
   if(G3LIB) return G3LIB;
   const [THREE, CANNON] = await Promise.all([import("three"), import("cannon-es")]);
-  return G3LIB = {THREE, CANNON};
+  // (16 octobre 2026) le rendu studio : la pièce éclairée qui se reflète, les pièces arrondies, les effets (ombres de contact, halo).
+  // S'ils ne se chargent pas, la course garde le rendu simple.
+  let FX = null;
+  try{ FX = Object.assign({}, ...await Promise.all(["environments/RoomEnvironment.js", "geometries/RoundedBoxGeometry.js", "postprocessing/EffectComposer.js",
+      "postprocessing/RenderPass.js", "postprocessing/GTAOPass.js", "postprocessing/UnrealBloomPass.js", "postprocessing/OutputPass.js"].map(f=>import("three/addons/"+f)))) }
+  catch(e){ console.warn("Rendu studio indisponible :", e) }
+  return G3LIB = {THREE, CANNON, FX};
 }
 // Les circuits de la Grande Course. Chacun pose ses pièces avec les outils de g3Kit et dit :
 // où partent les billes (starts), où est l'arrivée (finishY), le chemin suivi (path : pour le classement en direct, la caméra
@@ -13853,7 +13859,51 @@ function g3Texture(THREE, spec, k){
     const y0 = r()*128, a = 10+r()*20, f = 25+r()*30; x.moveTo(0,y0); for(let s=0;s<=256;s+=8) x.lineTo(s, y0+Math.sin(s/f+i)*a); x.stroke() }
   const tx = new THREE.CanvasTexture(c); tx.colorSpace = THREE.SRGBColorSpace; return tx;
 }
-
+// (16 octobre 2026) le rendu « studio » de la Grande Course (choisi sur maquettes/maquette-course-studio.html, façon MoreBalls) :
+// de vraies billes 3D vernies au lieu d'images redessinées. Chaque bille est photographiée par le moteur de billes sous K angles,
+// et les photos sont recollées sur une sphère (le motif et le coloris de la vraie bille, figés). Elles se fabriquent pendant le compte à rebours. Le collage (quelle photo et quel pixel
+// pour chaque point de la sphère) est le même pour toutes les billes : calculé une fois (G3LUT). Les textures sont gardées (G3TEX).
+// Ordinateur : textures fines et ombres de contact ; téléphone : plus léger.
+const G3HQ = !matchMedia("(pointer:coarse)").matches;
+const G3B = G3HQ ? {TW:1024, TH:512, PX:256, K:64} : {TW:512, TH:256, PX:160, K:40};
+let G3LUT = null;
+const G3TEX = new Map();
+function g3Lut(){
+  if(G3LUT) return G3LUT;
+  const {TW, TH, PX, K} = G3B, ga = Math.PI*(3-Math.sqrt(5)), V = [];
+  for(let k=0;k<K;k++){ const y = 1 - 2*(k+.5)/K, r = Math.sqrt(1-y*y), a = k*ga, v = [Math.cos(a)*r, y, Math.sin(a)*r], h = Math.abs(v[1]) < .9 ? [0,1,0] : [1,0,0];
+    let c0 = [h[1]*v[2]-h[2]*v[1], h[2]*v[0]-h[0]*v[2], h[0]*v[1]-h[1]*v[0]]; const l0 = Math.hypot(...c0); c0 = c0.map(x=>x/l0);
+    V.push([c0, [v[1]*c0[2]-v[2]*c0[1], v[2]*c0[0]-v[0]*c0[2], v[0]*c0[1]-v[1]*c0[0]], v]) }   // les colonnes de la rotation : vue x, vue y, le point face à la caméra
+  // pour chaque point de la sphère : la vue où il tombe un peu en bas à droite du centre (loin du reflet du moteur et du bord)
+  const sl = Math.hypot(.18, .18, 1), SW = [.18/sl, -.18/sl, 1/sl], off = new Uint32Array(TW*TH), uR = .9;
+  for(let r=0;r<TH;r++){ const th = Math.PI*(r+.5)/TH, st = Math.sin(th), ct = Math.cos(th);
+    for(let q=0;q<TW;q++){ const ph = TAU*(q+.5)/TW, d0 = -Math.cos(ph)*st, d1 = ct, d2 = Math.sin(ph)*st;   // la convention des UV de THREE.SphereGeometry
+      let best = -2, bk = 0, n0 = 0, n1 = 0;
+      for(let k=0;k<K;k++){ const M = V[k], a = M[0][0]*d0+M[0][1]*d1+M[0][2]*d2, b = M[1][0]*d0+M[1][1]*d1+M[1][2]*d2, c = M[2][0]*d0+M[2][1]*d1+M[2][2]*d2;
+        const sc = a*SW[0] + b*SW[1] + c*SW[2]; if(sc > best){ best = sc; bk = k; n0 = a; n1 = b } }
+      const px = Math.min(PX-1, Math.max(0, Math.round((n0*uR + 1)/2*PX))), py = Math.min(PX-1, Math.max(0, Math.round((n1*uR + 1)/2*PX)));
+      off[r*TW + q] = (bk*PX*PX + py*PX + px)*4 } }
+  return G3LUT = {off, rots:V.map(M=>[...M[0], ...M[1], ...M[2]]), buf:new Uint8Array(K*PX*PX*4)};
+}
+const g3Key = s => `${s.seed}|${s.type}|${s.family}|${s.pal}|${s.shiny||0}`;
+function g3Keep(key, tx){ if(G3TEX.size>=60){ const [k0, t0] = G3TEX.entries().next().value; t0.dispose(); G3TEX.delete(k0) } G3TEX.set(key, tx); return tx }
+function g3Bake(THREE, spec){
+  const key = g3Key(spec); if(G3TEX.has(key)) return G3TEX.get(key);
+  const {TW, TH, PX, K} = G3B, L = g3Lut(), gl = ballGL.gl, B = L.buf, off = L.off;
+  for(let k=0;k<K;k++){ ballGL.draw(spec, PX, L.rots[k], 3.3); gl.readPixels(0, 0, PX, PX, gl.RGBA, gl.UNSIGNED_BYTE, B.subarray(k*PX*PX*4, (k+1)*PX*PX*4)) }
+  const c = document.createElement("canvas"); c.width = TW; c.height = TH; const x = c.getContext("2d"), im = x.createImageData(TW, TH), D = im.data;
+  for(let j=0, n=TW*TH; j<n; j++){ const o = off[j], a = B[o+3] || 255, d = j*4;
+    D[d] = Math.min(255, B[o]*255/a); D[d+1] = Math.min(255, B[o+1]*255/a); D[d+2] = Math.min(255, B[o+2]*255/a); D[d+3] = 255 }
+  x.putImageData(im, 0, 0);
+  const tx = new THREE.CanvasTexture(c); tx.colorSpace = THREE.SRGBColorSpace; tx.anisotropy = 8; return g3Keep(key, tx);
+}
+// la bille chinoise : son image vue de dessus, posée à plat sur le dôme d'une pépite
+function g3BakeTop(THREE, spec){
+  const key = g3Key(spec)+"|top"; if(G3TEX.has(key)) return G3TEX.get(key);
+  ballGL.draw(spec, 256, [1,0,0, 0,0,-1, 0,1,0], 3.3);
+  const c = document.createElement("canvas"); c.width = c.height = 256; c.getContext("2d").drawImage(ballCanvas, 0, 0);
+  const tx = new THREE.CanvasTexture(c); tx.colorSpace = THREE.SRGBColorSpace; return g3Keep(key, tx);
+}
 async function gcWatch3D(race){
   const ov = document.getElementById("gc-ov");
   ov.innerHTML = `<div class="g3-load"><div class="auth-spin"></div><p>Les billes se mettent en place…</p></div>`;
@@ -13884,51 +13934,65 @@ async function gcWatch3D(race){
   // Sinon les contextes WebGL s'accumulent et le navigateur finit par couper le plus ancien… celui qui dessine les billes.
   g3Free();
   const renderer = new THREE.WebGLRenderer({antialias:true});
-  renderer.setPixelRatio(Math.min(2, devicePixelRatio)); renderer.setSize(stage.clientWidth, stage.clientHeight);
+  renderer.setPixelRatio(Math.min(G3HQ ? 2 : 1.5, devicePixelRatio)); renderer.setSize(stage.clientWidth, stage.clientHeight);
   renderer.shadowMap.enabled = true; renderer.shadowMap.type = THREE.PCFSoftShadowMap; renderer.toneMapping = THREE.ACESFilmicToneMapping;
   stage.appendChild(renderer.domElement);
   // (14 octobre 2026) midi et soir ne se ressemblent plus : la course de midi en plein jour (ciel bleu, soleil, herbe),
   // celle du soir la nuit comme une fête foraine (ciel étoilé, clair de lune, guirlandes d'ampoules, plots et champignons qui brillent)
-  const night = (race.heure||20)!==12;
+  // (16 octobre 2026) le rendu studio (P) : le midi dans un studio blanc (façon MoreBalls), le soir toujours la fête foraine ; les deux avec
+  // les reflets d'une pièce éclairée, les pièces arrondies en plastique satiné, le vrai verre et l'ombre qui suit l'action
+  const night = (race.heure||20)!==12, FX = L.FX, P = !!FX, studio = P && !night;
   const scene = new THREE.Scene(), camera = new THREE.PerspectiveCamera(50, stage.clientWidth/stage.clientHeight, .1, 300);
+  const grad = stops => { const c = document.createElement("canvas"); c.width = 4; c.height = 256; const x = c.getContext("2d"), g = x.createLinearGradient(0,0,0,256);
+    stops.forEach(([p, col])=>g.addColorStop(p, col)); x.fillStyle = g; x.fillRect(0,0,4,256); const t = new THREE.CanvasTexture(c); t.colorSpace = THREE.SRGBColorSpace; return t };
   if(night){ const bgN = cbShade(TH.bg, -6); scene.background = new THREE.Color(bgN); scene.fog = new THREE.Fog(bgN, 45, 130) }
-  else { const c = document.createElement("canvas"); c.width = 4; c.height = 256; const x = c.getContext("2d"), g = x.createLinearGradient(0,0,0,256);
-    g.addColorStop(0, "#3F8EF0"); g.addColorStop(.6, "#8CC6FF"); g.addColorStop(1, "#DDF0FF"); x.fillStyle = g; x.fillRect(0,0,4,256);
-    const sky = new THREE.CanvasTexture(c); sky.colorSpace = THREE.SRGBColorSpace; scene.background = sky; scene.fog = new THREE.Fog("#CBE6FF", 60, 170) }
-  scene.add(night ? new THREE.HemisphereLight("#8FA6FF", "#1A1230", .55) : new THREE.HemisphereLight("#E4F2FF", "#6B8F4E", 1.35));
-  const sun = new THREE.DirectionalLight(night ? "#A9BEFF" : "#FFF8E6", night ? 1 : 2.8); sun.position.set(-20,40,25); sun.castShadow = true;
-  // l'ombre couvre tout le circuit, quelle que soit sa forme
+  else if(studio){ scene.background = grad([[0,"#FFFFFF"],[.55,"#EEF0F4"],[1,"#D9DDE5"]]); scene.fog = new THREE.Fog("#E8EBF0", 70, 230) }
+  else { scene.background = grad([[0,"#3F8EF0"],[.6,"#8CC6FF"],[1,"#DDF0FF"]]); scene.fog = new THREE.Fog("#CBE6FF", 60, 170) }
+  let env = null;
+  if(P){ const pm = new THREE.PMREMGenerator(renderer); env = pm.fromScene(new FX.RoomEnvironment(), .04).texture; pm.dispose(); scene.environment = env }
+  renderer.toneMappingExposure = studio ? .88 : 1;
+  const envK = night ? .25 : 1;
+  scene.add(night ? new THREE.HemisphereLight("#8FA6FF", "#1A1230", .55) : studio ? new THREE.HemisphereLight("#FFFFFF", "#C8CDD8", .3) : new THREE.HemisphereLight("#E4F2FF", "#6B8F4E", 1.35));
+  const sun = new THREE.DirectionalLight(night ? "#A9BEFF" : studio ? "#FFFFFF" : "#FFF8E6", night ? 1 : studio ? 2.7 : 2.8); sun.position.set(-20,40,25); sun.castShadow = true;
   const bb = [[1e9,1e9,1e9],[-1e9,-1e9,-1e9]]; W.statics.forEach(s=>s.pos.forEach((p,j)=>{ bb[0][j] = Math.min(bb[0][j], p); bb[1][j] = Math.max(bb[1][j], p) }));
   const mid = bb[0].map((p,j)=>(p+bb[1][j])/2), half = Math.max(...bb[0].map((p,j)=>(bb[1][j]-p)/2)) + 8;
-  sun.position.set(mid[0]-20, mid[1]+40, mid[2]+25); sun.target.position.set(...mid); scene.add(sun.target);
-  sun.shadow.mapSize.set(2048,2048); Object.assign(sun.shadow.camera, {left:-half, right:half, top:half, bottom:-half, near:1, far:half*2+90}); scene.add(sun);
-  // les matières de chaque pièce, aux couleurs du circuit
-  const glass = (o) => new THREE.MeshPhysicalMaterial({color:"#BFE6FF", roughness:.1, transparent:true, opacity:o, depthWrite:false});
-  const MAT = {ramp:new THREE.MeshStandardMaterial({color:TH.ramp, roughness:.65}), tray:new THREE.MeshStandardMaterial({color:TH.tray, roughness:.5}),
-    wall:glass(.28), inner:glass(.22), end:glass(.4), glass:glass(.12), wall2:new THREE.MeshStandardMaterial({color:TH.ramp, roughness:.5}),
-    back:new THREE.MeshStandardMaterial({color:cbShade(TH.bg, 18), roughness:.9}),
-    peg:new THREE.MeshStandardMaterial({color:TH.peg||"#F4E3C2", roughness:.35, metalness:.2, ...(night ? {emissive:TH.peg||"#FFE7B0", emissiveIntensity:.45} : {})}),
-    kick:new THREE.MeshStandardMaterial({color:cbShade(TH.ramp, 25), roughness:.5}), bump:new THREE.MeshStandardMaterial({color:TH.bump||"#FF4F7A", roughness:.3, metalness:.1, emissive:TH.bump||"#FF4F7A", emissiveIntensity:night ? 1 : .25}),
-    spin:new THREE.MeshStandardMaterial({color:TH.spin||"#FFD34D", roughness:.35, metalness:.3}), axle:new THREE.MeshStandardMaterial({color:"#8A8FA3", roughness:.3, metalness:.6}),
-    tower:new THREE.MeshStandardMaterial({color:TH.tower || cbShade(TH.ramp, -25), roughness:.8}),
+  sun.shadow.mapSize.set(2048,2048);
+  // rendu studio : l'ombre suit l'action (replacée à chaque image), bien plus fine ; sinon elle couvre tout le circuit, quelle que soit sa forme
+  if(P){ sun.position.set(mid[0]-14, mid[1]+30, mid[2]+10); Object.assign(sun.shadow.camera, {left:-16, right:16, top:16, bottom:-16, near:1, far:120}); sun.shadow.bias = -.0004; sun.shadow.normalBias = .02 }
+  else { sun.position.set(mid[0]-20, mid[1]+40, mid[2]+25); Object.assign(sun.shadow.camera, {left:-half, right:half, top:half, bottom:-half, near:1, far:half*2+90}) }
+  sun.target.position.set(...mid); scene.add(sun.target); scene.add(sun);
+  // les matières de chaque pièce, aux couleurs du circuit (rendu studio : plastique satiné, couleurs éclaircies le midi, vrai verre)
+  const std = o => P ? new THREE.MeshPhysicalMaterial({roughness:.38, clearcoat:.35, clearcoatRoughness:.25, envMapIntensity:envK, ...o}) : new THREE.MeshStandardMaterial(o);
+  const rampC = studio ? "#" + new THREE.Color(TH.ramp).lerp(new THREE.Color("#FFFFFF"), .62).getHexString() : TH.ramp;
+  const glass = (o) => studio ? new THREE.MeshPhysicalMaterial({color:"#FFFFFF", transmission:.92, thickness:.06, ior:1.45, roughness:0, attenuationColor:"#D6EEFF", attenuationDistance:6, envMapIntensity:envK*.8})
+    : new THREE.MeshPhysicalMaterial({color:"#BFE6FF", roughness:.1, transparent:true, opacity:o, depthWrite:false, envMapIntensity:0});   // (la nuit, sans le reflet de la pièce : il voilait les vitres)
+  const MAT = {ramp:std({color:rampC, roughness:P ? .38 : .65}), tray:std({color:studio ? cbShade(TH.tray, 60) : TH.tray, roughness:.5}),
+    wall:glass(.28), inner:glass(.22), end:glass(.4), glass:glass(.12), wall2:std({color:rampC, roughness:.5}),
+    back:std({color:studio ? "#F2F3F6" : cbShade(TH.bg, 18), roughness:.9}),
+    peg:std({color:TH.peg||"#F4E3C2", roughness:.35, metalness:P ? .05 : .2, ...(night ? {emissive:TH.peg||"#FFE7B0", emissiveIntensity:.45} : {})}),
+    kick:std({color:cbShade(TH.ramp, 25), roughness:.5}), bump:std({color:TH.bump||"#FF4F7A", roughness:.3, metalness:.1, emissive:TH.bump||"#FF4F7A", emissiveIntensity:night ? 1 : .25}),
+    spin:std({color:TH.spin||"#FFD34D", roughness:.35, metalness:.3}), axle:std({color:"#8A8FA3", roughness:.3, metalness:P ? .8 : .6}),
+    tower:std({color:TH.tower || cbShade(TH.ramp, -25), roughness:.8}),
     // (14 octobre 2026) les pièces des nouveaux circuits
-    maze:new THREE.MeshStandardMaterial({color:TH.maze||cbShade(TH.ramp, -30), roughness:.8}), rock:new THREE.MeshStandardMaterial({color:TH.rock||"#8C949C", roughness:.9}),
-    pool:new THREE.MeshStandardMaterial({color:TH.pool||"#F2C230", roughness:.15, metalness:.1}), pool2:new THREE.MeshStandardMaterial({color:TH.pool2||"#C8312E", roughness:.15, metalness:.1}),
-    sling:new THREE.MeshStandardMaterial({color:TH.sling||"#FF2E88", roughness:.3, emissive:TH.sling||"#FF2E88", emissiveIntensity:night ? 1 : .3}),
-    rail:new THREE.MeshStandardMaterial({color:TH.peg||"#FFD34D", roughness:.3, metalness:.4, ...(night ? {emissive:TH.peg||"#FFD34D", emissiveIntensity:.5} : {})}),
-    roof:new THREE.MeshStandardMaterial({color:TH.roof||"#241A33", roughness:.9}), tunnel:new THREE.MeshStandardMaterial({color:TH.tunnel||"#1A1226", roughness:.9}),
+    maze:std({color:TH.maze||cbShade(TH.ramp, -30), roughness:.8}), rock:std({color:TH.rock||"#8C949C", roughness:.9}),
+    pool:std({color:TH.pool||"#F2C230", roughness:.15, metalness:.1}), pool2:std({color:TH.pool2||"#C8312E", roughness:.15, metalness:.1}),
+    sling:std({color:TH.sling||"#FF2E88", roughness:.3, emissive:TH.sling||"#FF2E88", emissiveIntensity:night ? 1 : .3}),
+    rail:std({color:TH.peg||"#FFD34D", roughness:.3, metalness:P ? .7 : .4, ...(night ? {emissive:TH.peg||"#FFD34D", emissiveIntensity:.5} : {})}),
+    roof:std({color:TH.roof||"#241A33", roughness:.9}), tunnel:std({color:TH.tunnel||"#1A1226", roughness:.9}),
     ghost:new THREE.MeshStandardMaterial({color:TH.ghost||"#E6F0FF", emissive:TH.ghost||"#E6F0FF", emissiveIntensity:night ? .8 : .3, transparent:true, opacity:.7}),
-    tramp:new THREE.MeshStandardMaterial({color:TH.tramp||"#FF4F7A", roughness:.4, emissive:TH.tramp||"#FF4F7A", emissiveIntensity:night ? .7 : .15}),
-    funnel:new THREE.MeshStandardMaterial({color:TH.ramp, roughness:.35, transparent:true, opacity:.72, depthWrite:false, side:THREE.DoubleSide}),
+    tramp:std({color:TH.tramp||"#FF4F7A", roughness:.4, emissive:TH.tramp||"#FF4F7A", emissiveIntensity:night ? .7 : .15}),
+    funnel:new THREE.MeshPhysicalMaterial({color:rampC, roughness:.35, clearcoat:P ? .4 : 0, transparent:true, opacity:.72, depthWrite:false, side:THREE.DoubleSide, envMapIntensity:envK}),
     water:new THREE.MeshPhysicalMaterial({color:"#5EC8FF", roughness:.05, transparent:true, opacity:.28, depthWrite:false})};
+  // rendu studio : les boîtes aux bords arrondis, les cylindres plus ronds
+  const boxGeo = sz => P ? new FX.RoundedBoxGeometry(sz[0], sz[1], sz[2], 3, Math.min(.1, Math.min(...sz)*.45)) : new THREE.BoxGeometry(...sz);
   const piece = s => { if(s.shape==="group"){ const g = new THREE.Group();
       s.parts.forEach(q=>g.add(piece({...q, kind:q.kind || s.kind, add:false}))); g.position.set(...s.pos); g.quaternion.set(...s.quat); scene.add(g); return g }
-    const m = new THREE.Mesh(s.shape==="cyl" ? new THREE.CylinderGeometry(s.size[0], s.size[0], s.size[1], 20) : s.shape==="sph" ? new THREE.SphereGeometry(s.size[0], 24, 16)
-      : s.shape==="cone" ? new THREE.CylinderGeometry(s.size[0], s.size[1], s.size[2], 40) : new THREE.BoxGeometry(...s.size), MAT[s.kind] || MAT.ramp);
+    const m = new THREE.Mesh(s.shape==="cyl" ? new THREE.CylinderGeometry(s.size[0], s.size[0], s.size[1], P ? 40 : 20) : s.shape==="sph" ? new THREE.SphereGeometry(s.size[0], P ? 32 : 24, P ? 20 : 16)
+      : s.shape==="cone" ? new THREE.CylinderGeometry(s.size[0], s.size[1], s.size[2], P ? 48 : 40) : boxGeo(s.size), MAT[s.kind] || MAT.ramp);
     m.position.set(...s.pos); m.quaternion.set(...s.quat); m.castShadow = !/wall|inner|end|glass|back|water|ghost/.test(s.kind); m.receiveShadow = true; if(s.add!==false) scene.add(m); return m };
   W.statics.forEach(piece);
   const kinM = W.kin.map(piece);   // les pièces qui tournent (moulins) : replacées à chaque image
-  const floor = new THREE.Mesh(new THREE.PlaneGeometry(400,400), new THREE.MeshStandardMaterial({color:night ? cbShade(TH.bg, 6) : "#7DB35F", roughness:1}));
+  const floor = new THREE.Mesh(new THREE.PlaneGeometry(studio ? 600 : 400, studio ? 600 : 400), new THREE.MeshStandardMaterial({color:night ? cbShade(TH.bg, 6) : studio ? "#E4E7EC" : "#7DB35F", roughness:studio ? .8 : 1}));
   floor.rotation.x = -Math.PI/2; floor.position.y = W.floorY-1; floor.receiveShadow = true; scene.add(floor);
   // le soir : des étoiles tout autour, des guirlandes d'ampoules sur les bords de la piste, et une lampe qui suit l'action
   let lamp = null;
@@ -13953,27 +14017,36 @@ async function gcWatch3D(race){
     scene.add(bulbs);
     lamp = new THREE.PointLight("#FFD9A0", 60, 24, 1.6); scene.add(lamp);
   }
-  // Les billes : la vraie bille de chaque joueur, dessinée par le même moteur que partout sur le site (motif, coloris, shiny),
-  // tournée selon la physique et vue depuis la caméra. Une sphère invisible garde l'ombre portée sur la piste.
-  // (sans le moteur de billes, on retombe sur une sphère aux couleurs du coloris)
-  const SPR = 128, sprites = [], auras = [], useSpr = !!ballGL && !ballGL.gl.isContextLost();
+  // Les billes : la vraie bille de chaque joueur, en 3D (motif, coloris, shiny : g3Bake), vernie et qui reflète la pièce.
+  // Elles partent avec une sphère aux couleurs du coloris, habillée dès que sa vraie texture est prête (pendant le compte à rebours).
+  // La bille chinoise est une pépite aplatie qui reste à plat et tourne sur elle-même (dessinée vue de dessus sur un dôme).
+  const flats = [], auras = [];
   const meshes = who.map((o,i)=>{
-    const m = new THREE.Mesh(new THREE.SphereGeometry(G3.R, 32, 24), useSpr ? new THREE.MeshBasicMaterial({colorWrite:false, depthWrite:false})
-      : new THREE.MeshPhysicalMaterial({map:g3Texture(THREE, o.spec, i), roughness:.08, clearcoat:1, clearcoatRoughness:.05}));
+    const m = new THREE.Mesh(new THREE.SphereGeometry(G3.R, 48, 32), new THREE.MeshPhysicalMaterial({map:g3Texture(THREE, o.spec, i), roughness:.06, clearcoat:1, clearcoatRoughness:.02, envMapIntensity:night ? .4 : .85}));
     m.castShadow = true; scene.add(m);
-    if(useSpr){ const c = document.createElement("canvas"); c.width = c.height = SPR; const tx = new THREE.CanvasTexture(c); tx.colorSpace = THREE.SRGBColorSpace;
-      const sp = new THREE.Sprite(new THREE.SpriteMaterial({map:tx, transparent:true, depthWrite:false})), k = 2*G3.R/.9; sp.scale.set(k,k,1); scene.add(sp);
-      // (14 octobre 2026) la bille chinoise est une pépite aplatie, dessinée au milieu de l'image : son dessous est à 0,61 du centre au lieu de 1,
-      // elle avait l'air de flotter au-dessus de la piste. On la descend d'autant (0,39 × le rayon) : elle se pose sur la piste.
-      sprites[i] = {c, x:c.getContext("2d"), tx, sp, last:-99, dy:o.spec?.type==="chinoise" ? .39*G3.R : 0} }
     // (6 octobre 2026) une shiny garde son aura pendant la course : arc-en-ciel (Irisée), or (Dorée), sa couleur (Lumineuse)
-    if(o.spec?.shiny){ const tx = new THREE.CanvasTexture(g3Aura(o.spec)); tx.colorSpace = THREE.SRGBColorSpace;
-      const au = new THREE.Sprite(new THREE.SpriteMaterial({map:tx, transparent:true, depthWrite:false, blending:THREE.AdditiveBlending})), k = 2*G3.R/.9*2.1;
+    if(o.spec?.shiny){ const at = new THREE.CanvasTexture(g3Aura(o.spec)); at.colorSpace = THREE.SRGBColorSpace;
+      const au = new THREE.Sprite(new THREE.SpriteMaterial({map:at, transparent:true, depthWrite:false, blending:THREE.AdditiveBlending})), k = 2*G3.R/.9*2.1;
       au.scale.set(k,k,1); au.renderOrder = -1; scene.add(au); auras.push({au, i}) }
     return m });
+  const dress = (i, tx) => { const m = meshes[i], spec = who[i].spec;
+    if(spec.type!=="chinoise"){ m.material.map.dispose(); m.material.map = tx; m.material.needsUpdate = true; return }
+    const g = new THREE.SphereGeometry(G3.R, 40, 20, 0, TAU, 0, Math.PI/2), uv = g.attributes.uv, ps = g.attributes.position;
+    for(let j=0;j<ps.count;j++) uv.setXY(j, .5 + ps.getX(j)/(2*G3.R)*.9, .5 - ps.getZ(j)/(2*G3.R)*.9);
+    const dome = new THREE.Mesh(g, new THREE.MeshPhysicalMaterial({map:tx, roughness:.08, clearcoat:1, clearcoatRoughness:.03, envMapIntensity:night ? .4 : .85}));
+    dome.scale.set(1, .62, 1); dome.castShadow = true;
+    const base = new THREE.Mesh(new THREE.CircleGeometry(G3.R, 40), new THREE.MeshStandardMaterial({color:PALETTES[spec.pal]?.[1] || "#888", roughness:.3})); base.rotation.x = Math.PI/2;
+    const grp = new THREE.Group(); grp.add(dome, base); scene.add(grp); flats[i] = grp; m.visible = false };   // la sphère ne garde que le centre (noms, sons, caméra, aura)
+  // les effets du rendu studio : ombres de contact (sur ordinateur), un léger halo sur les reflets les plus forts
+  let comp = null, gtao = null;
+  if(P) try{ comp = new FX.EffectComposer(renderer); comp.addPass(new FX.RenderPass(scene, camera));
+    if(G3HQ){ gtao = new FX.GTAOPass(scene, camera, stage.clientWidth, stage.clientHeight); gtao.blendIntensity = .9;
+      gtao.updateGtaoMaterial({radius:.55, distanceExponent:1.4, thickness:1.2, scale:1.1, samples:16}); comp.addPass(gtao) }
+    comp.addPass(new FX.UnrealBloomPass(new THREE.Vector2(stage.clientWidth, stage.clientHeight), .14, .35, 1));
+    comp.addPass(new FX.OutputPass()) }catch(e){ console.warn("Effets indisponibles :", e); comp = null; gtao = null }
   const labels = document.getElementById("g3-labels");
   labels.innerHTML = who.map((o,i)=>`<span class="g3-lbl${o.me?" me":""}" id="g3l${i}">${esc(nm(o))}</span>`).join("");
-  const onResize = () => { renderer.setSize(stage.clientWidth, stage.clientHeight); camera.aspect = stage.clientWidth/stage.clientHeight; camera.updateProjectionMatrix() };
+  const onResize = () => { renderer.setSize(stage.clientWidth, stage.clientHeight); comp?.setSize(stage.clientWidth, stage.clientHeight); camera.aspect = stage.clientWidth/stage.clientHeight; camera.updateProjectionMatrix() };
   addEventListener("resize", onResize);
   // la caméra suit la bille qu'on touche dans le classement (on la retouche, ou « Suivre la tête de course », pour revenir à la tête)
   document.getElementById("gc-board").addEventListener("pointerdown", e=>{ const r = e.target.closest(".gcr"); if(!r) return; const b = +r.dataset.b;
@@ -13984,19 +14057,25 @@ async function gcWatch3D(race){
   cancelAnimationFrame(GCV.raf);
   Object.keys(GCV).forEach(k=>{ if(k!=="raf") delete GCV[k] });
   Object.assign(GCV, {race, R, T:{th:{name:C.name}}, done:false, g3:true});
-  const G3V = {t0:performance.now() - (live ? since*1000 : 0), follow:null, said:{}, renderer, onResize, sim, who, lastF:-1, lastHit:0, snap:true, camera, THREE, look:camLook};
+  const G3V = {t0:performance.now() - (live ? since*1000 : 0), follow:null, said:{}, renderer, onResize, sim, who, lastF:-1, lastHit:0, snap:true, camera, THREE, look:camLook, comp, env};
   GCV.g3v = G3V;
+  // les vraies billes, une à une (sans moteur de billes : elles gardent leur sphère aux couleurs du coloris)
+  (async()=>{ if(!ballGL || ballGL.gl.isContextLost()) return;
+    for(let i=0;i<n;i++){ if(G3V.freed || GCV.g3v!==G3V) return; const sp = who[i].spec; if(!sp) continue;
+      try{ dress(i, sp.type==="chinoise" ? g3BakeTop(THREE, sp) : g3Bake(THREE, sp)) }catch(e){ console.warn("Bille 3D indisponible :", e); return }
+      await new Promise(r=>setTimeout(r, 0)) } })();
   // pas de bruit de roulement continu ici : avec toutes les billes, il sonnait comme un vent qui fait mal aux oreilles
   const big = t => { const b = document.getElementById("gc-big"); if(!b) return; b.innerHTML = `<span>${t}</span>`; setTimeout(()=>{ if(b.textContent===t) b.innerHTML = "" }, 1000) };
-  const v = new THREE.Vector3(), mq = new THREE.Matrix4(), mc = new THREE.Matrix4(), qq = new THREE.Quaternion();
+  const v = new THREE.Vector3(), vf = new THREE.Vector3();
   const loop = now => {
     if(!document.getElementById("g3-stage") || GCV.g3v!==G3V){ g3Free(G3V); Sound.rollStop(); return }
     GCV.raf = requestAnimationFrame(loop);
     const t = (now-G3V.t0)/1000 + (G3V.skip||0), f = Math.max(0, Math.min(sim.frames.length-1, Math.floor(t/G3.DT))), F = sim.frames[f];
     const cd = t<1 ? "3" : t<2 ? "2" : t<3 ? "1" : "go";
     if(cd!==G3V.cd){ G3V.cd = cd; big(cd==="go" ? "Partez !" : cd); if(cd==="go") Sound.ding(); else Sound.tap?.(0,.5) }
-    for(let i=0;i<n;i++){ meshes[i].position.set(F[i*7],F[i*7+1],F[i*7+2]); meshes[i].quaternion.set(F[i*7+3],F[i*7+4],F[i*7+5],F[i*7+6]) }
-    auras.forEach(({au, i})=>{ au.position.copy(meshes[i].position); if(sprites[i]) au.position.y -= sprites[i].dy; au.material.opacity = .7 + .3*Math.sin(now/260 + i*1.7); au.material.rotation = now/900 });
+    for(let i=0;i<n;i++){ meshes[i].position.set(F[i*7],F[i*7+1],F[i*7+2]); meshes[i].quaternion.set(F[i*7+3],F[i*7+4],F[i*7+5],F[i*7+6]);
+      if(flats[i]){ vf.set(1,0,0).applyQuaternion(meshes[i].quaternion); flats[i].position.set(F[i*7], F[i*7+1]-G3.R*.98, F[i*7+2]); flats[i].rotation.set(0, Math.atan2(-vf.z, vf.x), 0) } }
+    auras.forEach(({au, i})=>{ au.position.copy(meshes[i].position); if(flats[i]) au.position.y -= .39*G3.R; au.material.opacity = .7 + .3*Math.sin(now/260 + i*1.7); au.material.rotation = now/900 });
     if(kinM.length){ const K = sim.kf[f]; kinM.forEach((m,j)=>m.quaternion.set(K[j*4],K[j*4+1],K[j*4+2],K[j*4+3])) }
     const tt = f*G3.DT, rank = who.map((o,i)=>({o, i, done:sim.fin[i]<=tt, pr:g3Where(W, F[i*7],F[i*7+1],F[i*7+2]).s}))
       .sort((a,b)=> (a.done&&b.done) ? sim.fin[a.i]-sim.fin[b.i] : a.done ? -1 : b.done ? 1 : b.pr-a.pr);
@@ -14024,17 +14103,12 @@ async function gcWatch3D(race){
       camera.position.copy(camPos); camera.lookAt(camLook) }
     camera.updateMatrixWorld();
     if(lamp) lamp.position.set(camLook.x, camLook.y+6, camLook.z+3);
-    // les billes vues depuis la caméra (les plus proches redessinées à chaque image, les autres moins souvent)
-    if(sprites.length){
-      mc.extractRotation(camera.matrixWorld).transpose();
-      for(let i=0;i<n;i++){ const S2 = sprites[i]; S2.sp.position.copy(meshes[i].position); S2.sp.position.y -= S2.dy;
-        const d = camera.position.distanceTo(meshes[i].position), every = d<16 ? 1 : d<35 ? 3 : 12;
-        if(f-S2.last<every && f>=S2.last) continue; S2.last = f;
-        qq.set(F[i*7+3],F[i*7+4],F[i*7+5],F[i*7+6]); mq.makeRotationFromQuaternion(qq).premultiply(mc); const e = mq.elements;
-        ballGL.draw(who[i].spec, d<16 ? SPR : 64, [e[0],e[4],e[8], e[1],e[5],e[9], e[2],e[6],e[10]]);
-        S2.x.clearRect(0,0,SPR,SPR); S2.x.drawImage(ballCanvas, 0, 0, SPR, SPR); S2.tx.needsUpdate = true }
-    }
-    renderer.render(scene, camera);
+    // rendu studio : l'ombre suit ce que regarde la caméra
+    if(P){ sun.position.set(camLook.x-14, camLook.y+30, camLook.z+10); sun.target.position.copy(camLook) }
+    // un appareil qui peine (moins de 28 images par seconde juste après le départ) : sans les ombres de contact, en moins de pixels
+    if(gtao && !G3V.light){ if(t>4 && t<7) G3V.nf = (G3V.nf||0) + 1; else if(t>=7 && G3V.nf!=null){ G3V.light = true;
+      if(G3V.nf/3 < 28){ gtao.enabled = false; renderer.setPixelRatio(1); onResize() } } }
+    if(comp) comp.render(); else renderer.render(scene, camera);
     // les sons : les chocs entre billes et contre les plots, plus forts près de la caméra ; et le roulement des billes qu'on voit
     if(f>G3V.lastF && f-G3V.lastF<20){ let hb = 0, hd = 0;
       for(let k=G3V.lastF+1;k<=f;k++){ const h = sim.hits.get(k); if(!h) continue;
@@ -14057,6 +14131,7 @@ async function gcWatch3D(race){
 function g3Free(G = GCV.g3v){
   if(!G || G.freed) return; G.freed = true; try{ G.ctl?.dispose() }catch(e){}
   removeEventListener("resize", G.onResize);
+  try{ G.comp?.dispose?.(); G.env?.dispose() }catch(e){}
   try{ G.renderer.dispose(); G.renderer.forceContextLoss() }catch(e){}
 }
 // (14 octobre 2026) la caméra libre : chargée à la demande (three/addons, comme three.js) ; un second appui rend la caméra qui suit la course
@@ -14515,7 +14590,7 @@ function gcPodium(){
   const nm = o => esc(o.me ? "Toi !" : o.bot ? o.nom : o.pseudo);
   const step = i => R[i] ? `<div class="gcs"><img src="${marbleURL(R[i].spec,168)}" alt=""><b>${nm(R[i])}</b><span class="gcs-lot">${gcLotTxt(R[i],i)}</span><div class="blk">${i+1}</div></div>` : "";
   const rest = R.slice(3).map((o,j)=>`<li class="${o.me?"me":""}"><span>${j+4}e</span><b>${nm(o)}</b><em>${o.bot?"bille de la cour":gcLotTxt(o,j+3)}</em></li>`).join("");
-  el.innerHTML = `<div class="gc-pod"><span class="gh-kick">${ic("flag",14)} Résultats · ${esc(V.T.th.name)}</span><h2>${me===0?"Champion du soir !":me>0&&me<3?"Sur le podium !":"Et le gagnant est…"}</h2>
+  el.innerHTML = `<div class="gc-pod"><span class="gh-kick">${ic("flag",14)} Résultats · ${esc(V.T.th.name)}</span><h2>${me===0?`Champion ${(V.race?.heure||20)===12?"du midi":"du soir"} !`:me>0&&me<3?"Sur le podium !":"Et le gagnant est…"}</h2>
     <div class="gcs-row">${step(1)}${step(0)}${step(2)}</div>
     ${rest ? `<ol class="gc-rest">${rest}</ol>` : ""}
     <div id="gc-mylot">${me<0 ? "" : V.race.test ? `<div class="gc-mine">Course d'essai : tu finis <b>${me+1}${me?"e":"er"}</b>, rien à gagner. Pour de vrai, inscris-toi à la course de midi ou de 20 h !</div>`
@@ -14579,7 +14654,7 @@ let bugKeep = null;   // un message qui n'est pas parti : il est reproposé au p
 // on:false cache le bouton (pendant qu'on prépare la mise à jour) ; on:true le remet, avec la pastille si l'id a changé
 // (16 octobre 2026) deux repères : dot = la pastille rouge du bouton, à changer à CHAQUE mise en ligne qui ajoute une ligne au patchnote
 // (avec txt : la date du jour) ; id = la fenêtre d'annonce à l'arrivée, seulement pour les très gros jours
-const NEWS = {on:true, id:"2026-10-14b", dot:"2026-10-16-1545", url:"/nouveautes.html", txt:"Mise à jour du 16 oct."};
+const NEWS = {on:true, id:"2026-10-14b", dot:"2026-10-16-1830", url:"/nouveautes.html", txt:"Mise à jour du 16 oct."};
 const newsUnseen = () => lsGet("billeo-news-vu")!==NEWS.dot;
 // (14 octobre 2026) à l'arrivée, une fenêtre annonce la mise à jour, une seule fois par mise à jour et par compte (S.newsPop, gardé
 // dans la partie : elle ne revient pas sur un autre appareil) ; on choisit d'aller voir les nouveautés, ou pas

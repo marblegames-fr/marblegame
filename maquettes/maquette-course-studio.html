@@ -1,0 +1,336 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Course studio</title>
+<script type="importmap">{"imports":{"three":"https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.js","three/addons/":"https://cdn.jsdelivr.net/npm/three@0.160.0/examples/jsm/","cannon-es":"https://cdn.jsdelivr.net/npm/cannon-es@0.20.0/dist/cannon-es.js"}}</script>
+<style>
+/* (16 octobre 2026) Maquette : la Grande Course « façon studio » (inspirée des courses MoreBalls faites sous Blender).
+   Les circuits ne changent pas : seulement le rendu 3D, la lumière, les ombres, la caméra et (en option) une physique plus fine.
+   Chaque amélioration s'allume et s'éteint à part, pour voir ce qu'elle apporte et ce qu'elle coûte (images par seconde en haut à droite).
+   Circuits et physique : video-insta/course-moteur.js (le jeu) et course-moteur-fine.js (physique fine, fabriquer-course-fine.mjs). */
+:root{--bg:#0E1020;--panel:#171A33;--line:#2C3155;--ink:#E9EBFF;--muted:#9AA0D0;--yellow:#FFC93F;--blue:#6FCBDB}
+*{box-sizing:border-box;margin:0;padding:0}
+html,body{height:100%}
+body{background:var(--bg);color:var(--ink);font:600 14px/1.4 "Segoe UI",system-ui,sans-serif;display:flex;flex-direction:column}
+header{display:grid;gap:8px;padding:10px 16px;border-bottom:1px solid var(--line);background:var(--panel)}
+.row{display:flex;flex-wrap:wrap;align-items:center;gap:8px}
+h1{font-size:16px;margin-right:auto}
+button,select{height:34px;padding:0 12px;border-radius:9px;border:1px solid var(--line);background:#20244A;color:var(--ink);font:inherit;cursor:pointer}
+button.on{background:var(--yellow);color:#22243A;border-color:var(--yellow)}
+.preset{height:38px;padding:0 16px;font-weight:800}
+.preset.on{background:var(--blue);border-color:var(--blue);color:#06222A}
+.tg{height:30px;padding:0 10px;border-radius:999px;font-size:13px}
+.tg.on{background:color-mix(in srgb,var(--blue) 85%,#fff);border-color:var(--blue);color:#06222A}
+.lbl{color:var(--muted);font-size:12.5px;margin-right:2px}
+#fps{min-width:76px;text-align:right;color:var(--muted);font-variant-numeric:tabular-nums}
+.stage{position:relative;flex:1;min-height:0}
+.stage canvas{position:absolute;inset:0;width:100%;height:100%;display:block}
+.tag{position:absolute;left:12px;top:12px;z-index:2;padding:6px 12px;border-radius:999px;background:rgba(0,0,0,.55);font-size:13px;pointer-events:none}
+.board{position:absolute;right:12px;top:12px;z-index:2;display:grid;gap:3px;padding:8px 10px;border-radius:12px;background:rgba(10,12,28,.62);font-size:12.5px;pointer-events:none;min-width:150px}
+.board div{display:flex;align-items:center;gap:7px}
+.board b{width:16px;text-align:right;color:var(--muted)}
+.board img{width:18px;height:18px}
+.note{padding:8px 16px 10px;color:var(--muted);font-size:12.5px;line-height:1.5;border-top:1px solid var(--line);background:var(--panel)}
+.note b{color:var(--ink)}
+.loading{position:absolute;inset:0;display:grid;place-items:center;background:rgba(14,16,32,.86);z-index:9;font-size:16px}
+.loading[hidden]{display:none}
+</style>
+</head>
+<body>
+<header>
+  <div class="row">
+    <h1>Grande Course : rendu « studio »</h1>
+    <select id="circuit" aria-label="Circuit"></select>
+    <button id="b-play">⏸ Pause</button>
+    <button id="b-slow">Ralenti ×0,25</button>
+    <button id="b-restart">⏮ Recommencer</button>
+    <span id="fps">— im/s</span>
+  </div>
+  <div class="row">
+    <button class="preset" data-p="auj">Aujourd'hui</button>
+    <button class="preset on" data-p="studio">Proposition studio</button>
+    <span class="lbl" style="margin-left:10px">Ambiance</span>
+    <select id="amb"><option value="ciel">Ciel bleu (le midi)</option><option value="studio" selected>Studio blanc</option><option value="nuit">Nuit (le soir)</option></select>
+  </div>
+  <div class="row" id="toggles"></div>
+</header>
+<div class="stage" id="stage"><span class="tag" id="tag"></span><div class="board" id="board"></div><div class="loading" id="loading">La course se calcule et les billes se fabriquent…</div></div>
+<p class="note" id="note"></p>
+
+<script src="tikalo-demo-rendu.js"></script>
+<script src="video-insta/course-moteur.js"></script>
+<script src="course-moteur-fine.js"></script>
+<script type="module">
+import * as THREE from "three";
+import * as CANNON from "cannon-es";
+import {RoomEnvironment} from "three/addons/environments/RoomEnvironment.js";
+import {RoundedBoxGeometry} from "three/addons/geometries/RoundedBoxGeometry.js";
+import {EffectComposer} from "three/addons/postprocessing/EffectComposer.js";
+import {RenderPass} from "three/addons/postprocessing/RenderPass.js";
+import {GTAOPass} from "three/addons/postprocessing/GTAOPass.js";
+import {BokehPass} from "three/addons/postprocessing/BokehPass.js";
+import {UnrealBloomPass} from "three/addons/postprocessing/UnrealBloomPass.js";
+import {OutputPass} from "three/addons/postprocessing/OutputPass.js";
+
+const ENG = {jeu:window.COURSE, fine:window.COURSE_FINE};
+const {G3C, G3, g3Where} = ENG.jeu;
+
+/* ---------- les options : chacune s'allume à part ---------- */
+const OPTS = [
+  ["billes3d", "Billes 3D brillantes", "De vraies sphères en verre verni (le motif de la vraie bille collé dessus), qui reflètent la pièce, au lieu d'une image redessinée."],
+  ["reflets", "Reflets studio", "Une lumière de studio invisible (grandes boîtes à lumière) qui se reflète sur les billes et la piste : c'est ce qui donne l'effet « chromé » des vidéos MoreBalls."],
+  ["piste", "Piste arrondie + vrai verre", "Bords arrondis sur toutes les pièces, plastique satiné, et des murs en verre qui déforment la lumière au lieu d'être juste transparents."],
+  ["ombres", "Ombres nettes", "L'ombre suit l'action au lieu de couvrir tout le circuit : 8 fois plus de détails, chaque bille a une ombre bien posée sous elle."],
+  ["ao", "Ombres de contact", "Assombrit les coins, les creux et le dessous des billes (occlusion ambiante) : les objets ont l'air posés, plus flottants."],
+  ["dof", "Flou de profondeur", "La bille suivie est nette, l'avant et l'arrière-plan légèrement flous, comme une vraie caméra."],
+  ["bloom", "Halo des reflets", "Les reflets les plus forts débordent un peu, comme dans un film."],
+  ["cine", "Caméra cinéma", "Plans bas et proches qui changent toutes les 5 s (de dos, de côté, de face), ralenti automatique à l'arrivée. Sinon : la caméra du jeu."],
+  ["fine", "Physique fine", "2 calculs par image au lieu d'1, plus d'adhérence (les billes roulent vraiment au lieu de glisser), chocs entre billes plus vifs. Change les courses : au banc (6 courses par circuit), 18 circuits sur 22 restent bons, mais des billes restent coincées dans le Toboggan aquatique (33 sur 60), la Mine (23), la Forêt (12) et le Flipper (4) : ces 4 circuits seraient à régler."],
+];
+const PRESET = {auj:{amb:"ciel"}, studio:{amb:"studio", billes3d:1, reflets:1, piste:1, ombres:1, ao:1, dof:1, bloom:1, cine:1}};
+const O = {amb:"studio"}; Object.assign(O, PRESET.studio);
+const Q = new URLSearchParams(location.search);
+if(Q.has("p")) { OPTS.forEach(([k])=>O[k] = 0); Object.assign(O, PRESET[Q.get("p")] || {}) }
+OPTS.forEach(([k])=>{ if(Q.has(k)) O[k] = +Q.get(k) }); if(Q.has("amb")) O.amb = Q.get("amb");
+
+/* ---------- les billes : dix billes bien différentes, dont BCKC ---------- */
+const fam = n => FAMILIES.findIndex(f=>f.name===n), pal = n => PALETTES.findIndex(p=>p[0]===n);
+const SPECS = [
+  {type:"calot", family:fam("Galaxie"), pal:pal("Nuit"), shiny:0},
+  {type:"calot", family:fam("Œil-de-chat"), pal:pal("BCKC"), shiny:0},
+  {type:"calot", family:fam("Ruban"), pal:pal("Rubis"), shiny:0},
+  {type:"calot", family:fam("Tourbillon"), pal:pal("Citron"), shiny:2},
+  {type:"calot", family:fam("Méduse"), pal:pal("Lagon"), shiny:0},
+  {type:"calot", family:fam("Damier"), pal:pal("Pop"), shiny:0},
+  {type:"calot", family:fam("Lave"), pal:pal("Volcan"), shiny:0},
+  {type:"calot", family:fam("Agate"), pal:pal("Émeraude"), shiny:0},
+  {type:"calot", family:fam("Vagues"), pal:pal("Framboise"), shiny:0},
+  {type:"calot", family:fam("Aurore"), pal:pal("Féerie"), shiny:3},
+].map((s,i)=>({...s, seed:hash("maq-studio"+i)}));
+const N = SPECS.length;
+const nameOf = i => `${FAMILIES[SPECS[i].family].name} ${PALETTES[SPECS[i].pal][0]}`;
+const ICON = SPECS.map(s=>marbleURL(s, 40));
+
+/* ---------- les textures des billes 3D : la vraie bille photographiée sous 80 angles, recollée sur une sphère (comme maquette-billes-course) ---------- */
+const bakeGL = makeGL(document.createElement("canvas"));
+const VIEWS = (() => { const out = [], K = 80, ga = Math.PI*(3-Math.sqrt(5));
+  for(let k=0;k<K;k++){ const y = 1 - 2*(k+.5)/K, r = Math.sqrt(1-y*y), a = k*ga, v = [Math.cos(a)*r, y, Math.sin(a)*r];
+    const h = Math.abs(v[1]) < .9 ? [0,1,0] : [1,0,0];
+    let c0 = [h[1]*v[2]-h[2]*v[1], h[2]*v[0]-h[0]*v[2], h[0]*v[1]-h[1]*v[0]]; const l0 = Math.hypot(...c0); c0 = c0.map(x=>x/l0);
+    const c1 = [v[1]*c0[2]-v[2]*c0[1], v[2]*c0[0]-v[0]*c0[2], v[0]*c0[1]-v[1]*c0[0]];
+    out.push({M:[c0, c1, v]}) }
+  return out })();
+const SWEET = (() => { const s = [.18, -.18, 1], l = Math.hypot(...s); return s.map(x=>x/l) })();
+const texCache = [];
+function bakeSphere(spec, TW=1024, TH2=512, PX=320){
+  const gl = bakeGL.gl, shots = VIEWS.map(V=>{ const M = V.M, rot = [...M[0], ...M[1], ...M[2]];
+    bakeGL.draw(spec, PX, rot, 3.3); const px = new Uint8Array(PX*PX*4); gl.readPixels(0, 0, PX, PX, gl.RGBA, gl.UNSIGNED_BYTE, px); return px });
+  const c = document.createElement("canvas"); c.width = TW; c.height = TH2; const x = c.getContext("2d"), im = x.createImageData(TW, TH2), D = im.data, uR = .9;
+  for(let r=0;r<TH2;r++){ const th = Math.PI*(r+.5)/TH2, st = Math.sin(th), ct = Math.cos(th);
+    for(let q=0;q<TW;q++){ const ph = 2*Math.PI*(q+.5)/TW, d = [-Math.cos(ph)*st, ct, Math.sin(ph)*st];
+      let best = -2, bk = 0, bn = null;
+      for(let k=0;k<VIEWS.length;k++){ const M = VIEWS[k].M, n = [M[0][0]*d[0]+M[0][1]*d[1]+M[0][2]*d[2], M[1][0]*d[0]+M[1][1]*d[1]+M[1][2]*d[2], M[2][0]*d[0]+M[2][1]*d[1]+M[2][2]*d[2]];
+        const s = n[0]*SWEET[0] + n[1]*SWEET[1] + n[2]*SWEET[2]; if(s > best){ best = s; bk = k; bn = n } }
+      const px = Math.min(PX-1, Math.max(0, Math.round((bn[0]*uR + 1)/2*PX))), py = Math.min(PX-1, Math.max(0, Math.round((bn[1]*uR + 1)/2*PX)));
+      const S = shots[bk], o = (py*PX + px)*4, a = S[o+3] || 255, j = (r*TW + q)*4;
+      D[j] = Math.min(255, S[o]*255/a); D[j+1] = Math.min(255, S[o+1]*255/a); D[j+2] = Math.min(255, S[o+2]*255/a); D[j+3] = 255 } }
+  x.putImageData(im, 0, 0);
+  const tx = new THREE.CanvasTexture(c); tx.colorSpace = THREE.SRGBColorSpace; tx.anisotropy = 8; return tx;
+}
+const ballTex = i => texCache[i] || (texCache[i] = bakeSphere(SPECS[i]));
+
+/* ---------- les courses (calculées une fois par circuit et par physique) ---------- */
+const simCache = new Map();
+function getSim(cid, fine){ const k = cid + (fine ? "|f" : "");
+  if(!simCache.has(k)){ const S = (fine ? ENG.fine : ENG.jeu).g3Simulate(CANNON, 40, N, cid); S.order = S.fin.map((x,i)=>i).sort((a,b)=>S.fin[a]-S.fin[b]); simCache.set(k, S) }
+  return simCache.get(k) }
+
+/* ---------- le moteur 3D : un seul, gardé ; la scène est refaite quand une option change ---------- */
+const stage = document.getElementById("stage");
+const renderer = new THREE.WebGLRenderer({antialias:true, powerPreference:"high-performance"});
+renderer.setPixelRatio(Math.min(2, devicePixelRatio)); renderer.shadowMap.enabled = true; renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+renderer.toneMapping = THREE.ACESFilmicToneMapping; renderer.toneMappingExposure = 1;
+stage.prepend(renderer.domElement);
+const camera = new THREE.PerspectiveCamera(50, 1, .05, 400);
+const pmrem = new THREE.PMREMGenerator(renderer), ENV = pmrem.fromScene(new RoomEnvironment(), .04).texture;
+const sprGL = makeGL(document.createElement("canvas"));
+const shade = (hex, p) => { const c = new THREE.Color(hex), h = {}; c.getHSL(h); c.setHSL(h.h, h.s, Math.max(0, Math.min(1, h.l + p/100))); return "#" + c.getHexString() };
+const mix = (a, b, k) => "#" + new THREE.Color(a).lerp(new THREE.Color(b), k).getHexString();
+const gradTex = (stops) => { const c = document.createElement("canvas"); c.width = 4; c.height = 256; const x = c.getContext("2d"), g = x.createLinearGradient(0,0,0,256);
+  stops.forEach(([p, col])=>g.addColorStop(p, col)); x.fillStyle = g; x.fillRect(0,0,4,256); const t = new THREE.CanvasTexture(c); t.colorSpace = THREE.SRGBColorSpace; return t };
+
+let V = null;   // la scène en cours
+function build(){
+  const cid = document.getElementById("circuit").value, SIM = getSim(cid, O.fine), W = SIM.W, TH = G3C[cid].theme;
+  const amb = O.amb, night = amb==="nuit", studio = amb==="studio";
+  if(V) V.scene.traverse(o=>{ o.geometry?.dispose(); if(o.material && !o.userData.keep) [].concat(o.material).forEach(m=>m.dispose()) });
+  const scene = new THREE.Scene();
+  // le fond et la lumière
+  if(night){ const bg = shade(TH.bg, -6); scene.background = new THREE.Color(bg); scene.fog = new THREE.Fog(bg, 45, 130) }
+  else if(studio){ scene.background = gradTex([[0,"#FFFFFF"],[.55,"#EEF0F4"],[1,"#D9DDE5"]]); scene.fog = new THREE.Fog("#E8EBF0", 70, 230) }
+  else { scene.background = gradTex([[0,"#3F8EF0"],[.6,"#8CC6FF"],[1,"#DDF0FF"]]); scene.fog = new THREE.Fog("#CBE6FF", 60, 170) }
+  if(O.reflets) scene.environment = ENV;
+  renderer.toneMappingExposure = studio ? .88 : 1;
+  const envK = O.reflets ? (night ? .25 : studio ? 1 : .7) : 1;
+  scene.add(night ? new THREE.HemisphereLight("#8FA6FF", "#1A1230", .55)
+    : studio ? new THREE.HemisphereLight("#FFFFFF", "#C8CDD8", O.reflets ? .3 : 1.2) : new THREE.HemisphereLight("#E4F2FF", "#6B8F4E", O.reflets ? .8 : 1.35));
+  const sun = new THREE.DirectionalLight(night ? "#A9BEFF" : studio ? "#FFFFFF" : "#FFF8E6", night ? 1 : studio ? 2.7 : 2.8); sun.castShadow = true;
+  const bb = [[1e9,1e9,1e9],[-1e9,-1e9,-1e9]]; W.statics.forEach(s=>s.pos.forEach((p,j)=>{ bb[0][j] = Math.min(bb[0][j], p); bb[1][j] = Math.max(bb[1][j], p) }));
+  const mid = bb[0].map((p,j)=>(p+bb[1][j])/2), half = Math.max(...bb[0].map((p,j)=>(bb[1][j]-p)/2)) + 8;
+  const sunOff = studio ? [-14, 30, 10] : [-20, 40, 25];
+  if(O.ombres){ sun.shadow.mapSize.set(2048, 2048); Object.assign(sun.shadow.camera, {left:-14, right:14, top:14, bottom:-14, near:1, far:120}); sun.shadow.bias = -.0004; sun.shadow.normalBias = .02 }
+  else { sun.position.set(mid[0]+sunOff[0], mid[1]+sunOff[1], mid[2]+sunOff[2]); sun.target.position.set(...mid);
+    sun.shadow.mapSize.set(2048,2048); Object.assign(sun.shadow.camera, {left:-half, right:half, top:half, bottom:-half, near:1, far:half*2+90}) }
+  scene.add(sun, sun.target);
+  let lamp = null; if(night){ lamp = new THREE.PointLight("#FFD9A0", 60, 24, 1.6); scene.add(lamp) }
+  // les matières : celles du jeu, ou (piste arrondie) du plastique satiné et du vrai verre
+  const P = O.piste, std = (o) => P ? new THREE.MeshPhysicalMaterial({roughness:.38, clearcoat:.35, clearcoatRoughness:.25, envMapIntensity:envK, ...o}) : new THREE.MeshStandardMaterial(o);
+  const rampC = studio ? mix(TH.ramp, "#FFFFFF", .62) : TH.ramp;
+  const glass = (o) => P ? new THREE.MeshPhysicalMaterial({color:"#FFFFFF", transmission:.92, thickness:.06, ior:1.45, roughness:0, attenuationColor:"#D6EEFF", attenuationDistance:6, envMapIntensity:envK*.8})
+    : new THREE.MeshPhysicalMaterial({color:"#BFE6FF", roughness:.1, transparent:true, opacity:o, depthWrite:false});
+  const glow = (c, k) => night ? {emissive:c, emissiveIntensity:k} : {};
+  const MAT = {ramp:std({color:rampC, roughness:P ? .38 : .65}), tray:std({color:studio ? mix(TH.tray, "#FFFFFF", .5) : TH.tray, roughness:.5}),
+    wall:glass(.28), inner:glass(.22), end:glass(.4), glass:glass(.12), wall2:std({color:rampC, roughness:.5}),
+    back:std({color:studio ? "#F2F3F6" : shade(TH.bg, 18), roughness:.9}),
+    peg:std({color:TH.peg||"#F4E3C2", roughness:.3, metalness:P ? .05 : .2, ...glow(TH.peg||"#FFE7B0", .45)}),
+    kick:std({color:shade(TH.ramp, 25), roughness:.5}),
+    bump:std({color:TH.bump||"#FF4F7A", roughness:.3, metalness:.1, emissive:TH.bump||"#FF4F7A", emissiveIntensity:night ? 1 : .25}),
+    spin:std({color:TH.spin||"#FFD34D", roughness:.3, metalness:.3}), axle:std({color:"#8A8FA3", roughness:.25, metalness:.8}),
+    tower:std({color:TH.tower || shade(TH.ramp, -25), roughness:.8}), maze:std({color:TH.maze||shade(TH.ramp, -30), roughness:.8}),
+    rock:std({color:TH.rock||"#8C949C", roughness:.9}), pool:std({color:TH.pool||"#F2C230", roughness:.15, metalness:.1}), pool2:std({color:TH.pool2||"#C8312E", roughness:.15, metalness:.1}),
+    sling:std({color:TH.sling||"#FF2E88", roughness:.3, emissive:TH.sling||"#FF2E88", emissiveIntensity:night ? 1 : .3}),
+    rail:std({color:TH.peg||"#FFD34D", roughness:.25, metalness:P ? .7 : .4, ...glow(TH.peg||"#FFD34D", .5)}),
+    roof:std({color:TH.roof||"#241A33", roughness:.9}), tunnel:std({color:TH.tunnel||"#1A1226", roughness:.9}),
+    ghost:new THREE.MeshStandardMaterial({color:TH.ghost||"#E6F0FF", emissive:TH.ghost||"#E6F0FF", emissiveIntensity:night ? .8 : .3, transparent:true, opacity:.7}),
+    tramp:std({color:TH.tramp||"#FF4F7A", roughness:.4, emissive:TH.tramp||"#FF4F7A", emissiveIntensity:night ? .7 : .15}),
+    funnel:new THREE.MeshPhysicalMaterial({color:rampC, roughness:.3, clearcoat:P ? .4 : 0, transparent:true, opacity:.72, depthWrite:false, side:THREE.DoubleSide, envMapIntensity:envK}),
+    water:new THREE.MeshPhysicalMaterial({color:"#5EC8FF", roughness:.05, transparent:true, opacity:.28, depthWrite:false})};
+  const solid = [];
+  const boxGeo = (sz) => { if(!P) return new THREE.BoxGeometry(...sz); const m = Math.min(...sz); return new RoundedBoxGeometry(sz[0], sz[1], sz[2], 3, Math.min(.1, m*.45)) };
+  const piece = s => { if(s.shape==="group"){ const g = new THREE.Group();
+      s.parts.forEach(q=>g.add(piece({...q, kind:q.kind || s.kind, add:false}))); g.position.set(...s.pos); g.quaternion.set(...s.quat); scene.add(g); return g }
+    const seg = P ? 40 : 20;
+    const m = new THREE.Mesh(s.shape==="cyl" ? new THREE.CylinderGeometry(s.size[0], s.size[0], s.size[1], seg) : s.shape==="sph" ? new THREE.SphereGeometry(s.size[0], 32, 20)
+      : s.shape==="cone" ? new THREE.CylinderGeometry(s.size[0], s.size[1], s.size[2], 48) : boxGeo(s.size), MAT[s.kind] || MAT.ramp);
+    m.position.set(...s.pos); m.quaternion.set(...s.quat);
+    const see = /wall|inner|end|glass|water|ghost/.test(s.kind);
+    m.castShadow = !see || P; m.receiveShadow = true; if(!/water|ghost/.test(s.kind)) solid.push(m); if(s.add!==false) scene.add(m); return m };
+  W.statics.forEach(piece);
+  const kinM = W.kin.map(piece);
+  const floor = new THREE.Mesh(new THREE.PlaneGeometry(600,600), new THREE.MeshStandardMaterial({color:night ? shade(TH.bg, 6) : studio ? "#E4E7EC" : "#7DB35F", roughness:studio ? .8 : 1}));
+  floor.rotation.x = -Math.PI/2; floor.position.y = W.floorY-1; floor.receiveShadow = true; scene.add(floor);
+  // les billes
+  const balls = SPECS.map((spec, i)=>{
+    if(O.billes3d){ const m = new THREE.Mesh(new THREE.SphereGeometry(G3.R, 56, 40), new THREE.MeshPhysicalMaterial({map:ballTex(i), roughness:.06, clearcoat:1, clearcoatRoughness:.02, envMapIntensity:O.reflets ? .85 : 1}));
+      m.castShadow = true; m.receiveShadow = O.ao ? false : true; scene.add(m); return {m} }
+    const m = new THREE.Mesh(new THREE.SphereGeometry(G3.R, 24, 16), new THREE.MeshBasicMaterial({colorWrite:false, depthWrite:false})); m.castShadow = true; scene.add(m);
+    const c = document.createElement("canvas"); c.width = c.height = 128; const tx = new THREE.CanvasTexture(c); tx.colorSpace = THREE.SRGBColorSpace;
+    const sp = new THREE.Sprite(new THREE.SpriteMaterial({map:tx, transparent:true, depthWrite:false})), k = 2*G3.R/.9; sp.scale.set(k,k,1); sp.renderOrder = 1; scene.add(sp);
+    return {m, sp, c, x:c.getContext("2d"), tx, last:-99} });
+  // les effets (passes)
+  const composer = new EffectComposer(renderer);
+  composer.addPass(new RenderPass(scene, camera));
+  const r = stage.getBoundingClientRect(), w = Math.max(1, r.width), h = Math.max(1, r.height);
+  let gtao = null, bokeh = null;
+  if(O.ao){ gtao = new GTAOPass(scene, camera, w, h); gtao.blendIntensity = .9; gtao.updateGtaoMaterial({radius:.55, distanceExponent:1.4, thickness:1.2, scale:1.1, samples:16}); composer.addPass(gtao) }
+  if(O.dof){ bokeh = new BokehPass(scene, camera, {focus:6, aperture:.0012, maxblur:.004}); composer.addPass(bokeh) }
+  if(O.bloom) composer.addPass(new UnrealBloomPass(new THREE.Vector2(w, h), .14, .35, 1));
+  composer.addPass(new OutputPass());
+  V = {scene, SIM, W, sun, lamp, balls, kinM, composer, bokeh, solid, cid, cam:null, look:null, shot:0, shotT:0, frame:0};
+  resize();
+  document.getElementById("tag").textContent = `${G3C[cid].name} · ${O.fine ? "physique fine" : "physique du jeu"}`;
+}
+
+/* ---------- la lecture ---------- */
+let t = 2, playing = true, slow = false;
+const posAt = (S, tt, i) => { const F = S.frames, f = Math.max(0, Math.min(F.length-1.001, tt/G3.DT)), a = Math.floor(f), u = f - a, A = F[a], B = F[Math.min(F.length-1, a+1)];
+  return [0,1,2].map(j=>A[i*7+j]*(1-u) + B[i*7+j]*u) };
+const quatAt = (S, tt, i) => { const F = S.frames[Math.max(0, Math.min(S.frames.length-1, Math.round(tt/G3.DT)))]; return [F[i*7+3],F[i*7+4],F[i*7+5],F[i*7+6]] };
+function ranking(){ const S = V.SIM; return [...Array(N).keys()].map(i=>({i, done:S.fin[i] <= t, s:g3Where(V.W, ...posAt(S, t, i)).s}))
+  .sort((a,b)=> a.done && b.done ? S.fin[a.i]-S.fin[b.i] : a.done ? -1 : b.done ? 1 : b.s-a.s) }
+const ray = new THREE.Raycaster(), vA = new THREE.Vector3(), vB = new THREE.Vector3(), qq = new THREE.Quaternion(), mq = new THREE.Matrix4(), mc = new THREE.Matrix4();
+const norm = v => { const l = Math.hypot(...v) || 1; return v.map(x=>x/l) };
+// la caméra du jeu, ou la caméra cinéma (plans bas et proches, coupés toutes les 5 s ; ralenti à l'arrivée)
+function camera3(dt){
+  const S = V.SIM, rk = ranking(), lead = rk.find(q=>!q.done)?.i ?? rk[0].i;
+  let p = posAt(S, t, lead);
+  if(t < 5){ const c = [0,0,0]; for(let i=0;i<N;i++){ const q = posAt(S, t, i); c[0]+=q[0]/N; c[1]+=q[1]/N; c[2]+=q[2]/N }
+    const w = Math.max(0, Math.min(1, (t-3)/2)), k = w*w*(3-2*w); p = c.map((v,j)=>v + (p[j]-v)*k) }
+  const {T} = g3Where(V.W, ...p);
+  let want, lk, snap = false;
+  const gameCam = () => { want = V.W.cam(p, T); lk = V.W.look ? V.W.look(p) : p };
+  if(!O.cine) gameCam();
+  else {
+    if(t - V.shotT > 5 || t < V.shotT){ V.shot = (V.shot + 1) % 3; V.shotT = t; snap = true }
+    const h = Math.hypot(T[0], T[2]);
+    if(h < .35) gameCam();   // une descente presque verticale (entonnoir, Plinko) : la caméra du jeu, qui la montre en entier
+    else { const F = norm([T[0], 0, T[2]]), L = [F[2], 0, -F[0]];
+      if(V.shot===0){ want = [p[0]-F[0]*4.4, p[1]+1.6, p[2]-F[2]*4.4]; lk = [p[0]+F[0]*.9, p[1]+.1, p[2]+F[2]*.9] }        // de dos, au ras de la piste
+      else if(V.shot===1){ want = [p[0]+L[0]*4.6, p[1]+1.2, p[2]+L[2]*4.6]; lk = [p[0]+F[0]*.6, p[1], p[2]+F[2]*.6] }      // de côté, en travelling
+      else { want = [p[0]+F[0]*5.2, p[1]+1.3, p[2]+F[2]*5.2]; lk = [p[0]-F[0]*.8, p[1]+.1, p[2]-F[2]*.8] }                // de face : le peloton arrive sur nous
+      // pas à travers le décor : si une pièce cache la bille, la caméra se rapproche devant elle
+      vA.set(...lk); vB.set(...want).sub(vA); const d = vB.length(); ray.set(vA, vB.normalize()); ray.far = d;
+      const hit = ray.intersectObjects(V.solid, false)[0]; if(hit) want = vA.clone().addScaledVector(vB, Math.max(.8, hit.distance - .35)).toArray() } }
+  const k = snap || !V.cam ? 1 : 1 - Math.pow(O.cine ? .9 : .95, dt*60), kl = snap || !V.look ? 1 : 1 - Math.pow(O.cine ? .85 : .92, dt*60);
+  V.cam = V.cam ? V.cam.map((v,j)=>v + (want[j]-v)*k) : want; V.look = V.look ? V.look.map((v,j)=>v + (lk[j]-v)*kl) : lk;
+  camera.position.set(...V.cam); camera.lookAt(...V.look); camera.updateMatrixWorld();
+  if(V.bokeh) V.bokeh.uniforms.focus.value = camera.position.distanceTo(vA.set(...posAt(S, t, lead)));
+  if(O.ombres){ V.sun.position.set(V.look[0]-14, V.look[1]+30, V.look[2]+10); V.sun.target.position.set(...V.look) }
+  if(V.lamp) V.lamp.position.set(V.look[0], V.look[1]+6, V.look[2]+3);
+  return rk;
+}
+let lastNow = performance.now(), fpsN = 0, fpsT = 0, lastBoard = 0;
+function loop(now){
+  requestAnimationFrame(loop); if(!V) return;
+  const dt = Math.min(.05, (now - lastNow)/1000); lastNow = now; V.frame++;
+  const S = V.SIM, end = S.fin[S.order[0]], tEnd = Math.min(G3.MAXT, S.fin[S.order[N-1]] < 900 ? S.fin[S.order[N-1]] + 2 : end + 12);
+  // ralenti automatique à l'arrivée du premier (caméra cinéma)
+  const near = O.cine && t > end - 1.2 && t < end + .6 ? .3 : 1;
+  if(playing){ t += dt*(slow ? .25 : 1)*near; if(t > tEnd){ t = 2; V.cam = null; V.look = null } }
+  const rk = camera3(dt);
+  if(V.kinM.length && S.kf.length){ const kq = S.kf[Math.max(0, Math.min(S.kf.length-1, Math.round(t/G3.DT)))]; V.kinM.forEach((m,i)=>m.quaternion.set(kq[i*4],kq[i*4+1],kq[i*4+2],kq[i*4+3])) }
+  mc.extractRotation(camera.matrixWorld).transpose();
+  V.balls.forEach((B, i)=>{ const p = posAt(S, t, i), q = quatAt(S, t, i); B.m.position.set(...p); B.m.quaternion.set(...q);
+    if(B.sp){ B.sp.position.set(...p); const d = camera.position.distanceTo(B.m.position), every = d<16 ? 1 : d<35 ? 3 : 12;
+      if(V.frame - B.last >= every){ B.last = V.frame; qq.set(...q); mq.makeRotationFromQuaternion(qq).premultiply(mc); const e = mq.elements;
+        sprGL.draw(SPECS[i], d<16 ? 128 : 64, [e[0],e[4],e[8], e[1],e[5],e[9], e[2],e[6],e[10]]); B.x.clearRect(0,0,128,128); B.x.drawImage(sprGL.cv, 0, 0, 128, 128); B.tx.needsUpdate = true } } });
+  V.composer.render(dt);
+  if(now - lastBoard > 250){ lastBoard = now;
+    document.getElementById("board").innerHTML = rk.map((q,k)=>`<div><b>${k+1}</b><img src="${ICON[q.i]}" alt="">${nameOf(q.i)}${q.done?" ✓":""}</div>`).join("") }
+  fpsN++; if(now - fpsT > 1000){ document.getElementById("fps").textContent = `${Math.round(fpsN*1000/(now-fpsT))} im/s`; fpsN = 0; fpsT = now }
+}
+function resize(){ const r = stage.getBoundingClientRect(); renderer.setSize(r.width, r.height, false); camera.aspect = r.width/r.height; camera.updateProjectionMatrix();
+  if(V) V.composer.setSize(r.width, r.height) }
+addEventListener("resize", resize);
+
+/* ---------- les boutons ---------- */
+const sel = document.getElementById("circuit");
+sel.innerHTML = Object.entries(G3C).map(([k,c])=>`<option value="${k}">${c.name}</option>`).join("");
+sel.value = Q.get("c") || "lacets";
+const tg = document.getElementById("toggles");
+function ui(){
+  tg.innerHTML = OPTS.map(([k,l,d])=>`<button class="tg${O[k]?" on":""}" data-k="${k}" title="${d}">${O[k]?"✓ ":""}${l}</button>`).join("");
+  document.getElementById("amb").value = O.amb;
+  const P = Object.entries(PRESET).find(([,p])=>OPTS.every(([k])=>!!O[k]===!!p[k]) && O.amb===p.amb)?.[0];
+  document.querySelectorAll(".preset").forEach(b=>b.classList.toggle("on", b.dataset.p===P));
+  const on = OPTS.filter(([k])=>O[k]);
+  document.getElementById("note").innerHTML = on.length ? on.map(([,l,d])=>`<b>${l}</b> : ${d}`).join("<br>") : "<b>Aujourd'hui</b> : le rendu du jeu tel qu'il est (images des billes redessinées, ciel, lumière du soleil, caméra du jeu).";
+}
+let busy = false;
+function rebuild(){ if(busy) return; busy = true; ui(); const L = document.getElementById("loading"); L.hidden = false;
+  setTimeout(()=>{ try{ build() }catch(e){ console.error(e); L.textContent = "Erreur : " + e.message; busy = false; return } L.hidden = true; busy = false; window.__ready = true }, 30) }
+tg.onclick = e=>{ const b = e.target.closest("[data-k]"); if(!b) return; O[b.dataset.k] = O[b.dataset.k] ? 0 : 1; rebuild() };
+document.querySelectorAll(".preset").forEach(b=>b.onclick = ()=>{ OPTS.forEach(([k])=>O[k] = 0); Object.assign(O, PRESET[b.dataset.p]); rebuild() });
+document.getElementById("amb").onchange = e=>{ O.amb = e.target.value; rebuild() };
+sel.onchange = ()=>{ t = 2; rebuild() };
+document.getElementById("b-play").onclick = e=>{ playing = !playing; e.target.textContent = playing ? "⏸ Pause" : "▶ Lecture" };
+document.getElementById("b-slow").onclick = e=>{ slow = !slow; e.target.classList.toggle("on", slow) };
+document.getElementById("b-restart").onclick = ()=>{ t = 2; if(V){ V.cam = null; V.look = null } };
+if(Q.has("t")){ t = +Q.get("t"); playing = false }
+rebuild();
+requestAnimationFrame(loop);
+</script>
+</body>
+</html>

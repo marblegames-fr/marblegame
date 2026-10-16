@@ -1,0 +1,138 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Maquette · Prix au marché</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Lilita+One&family=Nunito:wght@600;700;800;900&display=swap">
+<style>
+:root{--bg:#12151F;--panel:#1B1F2C;--panel-2:#232838;--line:#2C3244;--line-2:#3A4158;--ink:#F3F0EA;--ink-2:#BFC2CF;--muted:#858A9C;
+  --gold:#F2AE12;--gold-soft:rgba(242,174,18,.16);--green:#3FC27A;--warn:#F08A6E;--display:"Lilita One",sans-serif;--body:"Nunito",system-ui,sans-serif}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);font-family:var(--body);padding:28px 16px 60px}
+.wrap{max-width:1040px;margin:auto}
+h1{font:400 30px var(--display);margin:0 0 4px}
+.lead{margin:0 0 26px;color:var(--ink-2);font-weight:700}
+h2{font:400 22px var(--display);margin:0 0 4px}
+h2 small{font:800 13px var(--body);color:var(--muted);margin-left:8px}
+.sec{margin-bottom:34px}
+.sec p.d{margin:0 0 14px;color:var(--ink-2);font-weight:700;font-size:14px}
+.row{display:flex;gap:22px;align-items:flex-start;flex-wrap:wrap}
+/* une carte du marché (comme dans le jeu) */
+.mk{width:210px;border-radius:18px;background:var(--panel);border:1px solid var(--line);overflow:hidden;text-align:center;position:relative}
+.mk-vis{height:128px;display:grid;place-items:center;background:radial-gradient(circle at 50% 56%,rgba(138,74,214,.35),transparent 60%),var(--panel-2);border-bottom:1px solid var(--line)}
+.ball{width:84px;height:84px;border-radius:50%;background:radial-gradient(circle at 34% 30%,#fff 0 6%,transparent 7%),radial-gradient(circle at 50% 50%,#B48CFF,#5B2A9E 70%,#2A1450);box-shadow:inset -8px -10px 18px rgba(0,0,0,.45),0 10px 14px -6px rgba(0,0,0,.6)}
+.mk-info{padding:10px 12px 14px;display:grid;gap:4px;justify-items:center}
+.mk-info b{font-weight:900;font-size:14.5px}
+.pill{font-size:11px;font-weight:900;padding:2px 9px;border-radius:999px;background:rgba(138,74,214,.2);color:#C9A8FF}
+.price{font:400 26px var(--display);display:flex;align-items:center;gap:6px}
+.price i{width:18px;height:18px;border-radius:50%;background:radial-gradient(circle at 35% 35%,#FFB6D9,#E8559A);display:inline-block}
+.avg{display:inline-flex;align-items:center;gap:6px;font-size:12.5px;font-weight:800;color:var(--ink-2);padding:4px 10px;border-radius:999px;border:1.5px solid var(--line-2);background:var(--panel-2);cursor:pointer}
+.avg.on{border-color:var(--gold);color:var(--ink)}
+.avg svg{width:42px;height:14px}
+.btn{margin-top:6px;height:34px;padding:0 16px;border-radius:999px;border:0;background:#FFC93F;color:#2B2233;font:900 14px var(--body);box-shadow:0 3px 0 #C98E0C}
+.rib{position:absolute;top:10px;left:10px;font-size:10.5px;font-weight:900;padding:3px 9px;border-radius:999px;background:var(--green);color:#0B2A18;display:flex;gap:4px;align-items:center}
+/* la bulle */
+.pop{width:340px;padding:16px 16px 14px;border-radius:18px;background:var(--panel);border:1.5px solid var(--line-2);box-shadow:0 18px 40px -16px rgba(0,0,0,.7);position:relative}
+.pop::before{content:"";position:absolute;left:-9px;top:150px;width:16px;height:16px;background:var(--panel);border-left:1.5px solid var(--line-2);border-bottom:1.5px solid var(--line-2);transform:rotate(45deg)}
+.pop h3{margin:0;font:400 18px var(--display)}
+.pop .sub{margin:2px 0 10px;font-size:12.5px;font-weight:700;color:var(--muted)}
+.verdict{display:inline-flex;align-items:center;gap:6px;margin:0 0 8px;padding:4px 10px;border-radius:999px;font-size:12.5px;font-weight:900;background:rgba(63,194,122,.14);color:#8FE3B4}
+.chart{position:relative}
+.chart svg{display:block;width:100%;height:auto;overflow:visible}
+.grid line{stroke:var(--line);stroke-width:1}
+.ax text{fill:var(--muted);font:700 10.5px var(--body)}
+.ref{stroke:var(--ink-2);stroke-width:1.5;stroke-dasharray:4 4}
+.ref-l{fill:var(--ink);font:900 10.5px var(--body)}
+.dot{fill:var(--gold);stroke:var(--panel);stroke-width:2}
+.hit{fill:transparent;cursor:pointer}
+.tip{position:absolute;pointer-events:none;transform:translate(-50%,-115%);padding:6px 10px;border-radius:10px;background:var(--ink);color:#1B1F2C;font-size:12px;font-weight:800;white-space:nowrap;opacity:0;transition:opacity .12s}
+.tip b{font-weight:900}
+.stats{display:grid;grid-template-columns:repeat(4,1fr);gap:6px;margin-top:10px}
+.stats div{padding:7px 4px;border-radius:12px;background:var(--panel-2);text-align:center}
+.stats small{display:block;font-size:10.5px;font-weight:800;color:var(--muted);text-transform:uppercase;letter-spacing:.04em}
+.stats b{font:400 17px var(--display)}
+/* B : le formulaire de vente */
+.sell{width:min(560px,100%);padding:18px;border-radius:18px;background:var(--panel);border:1px solid var(--line)}
+.sell .lbl{font-size:11.5px;font-weight:900;color:var(--muted);text-transform:uppercase;letter-spacing:.06em}
+.price-in{display:flex;align-items:center;gap:8px;height:46px;padding:0 14px;margin:6px 0 12px;border-radius:14px;border:1.5px solid var(--gold);background:var(--panel-2);font:400 22px var(--display);width:200px}
+.hint{display:grid;grid-template-columns:120px minmax(0,1fr);gap:14px;align-items:center;padding:12px;border-radius:14px;background:var(--gold-soft);border:1px dashed rgba(242,174,18,.5)}
+.hint p{margin:0;font-size:13.5px;font-weight:700;color:var(--ink-2)}
+.hint p b{color:var(--ink);font-weight:900}
+.chip{display:inline-block;margin-top:8px;padding:5px 12px;border-radius:999px;border:1.5px solid var(--gold);color:var(--ink);font-size:12.5px;font-weight:900;background:transparent}
+.note{margin-top:22px;padding:14px 16px;border-radius:14px;background:var(--panel);border:1px solid var(--line);color:var(--ink-2);font-weight:700;font-size:14px;line-height:1.5}
+.note b{color:var(--ink)}
+@media (max-width:640px){ .pop::before{display:none} .hint{grid-template-columns:1fr} }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <h1>Prix au marché</h1>
+  <p class="lead">Maquette : l'historique des prix des 30 derniers jours, sur une carte du marché et quand on vend.</p>
+
+  <section class="sec">
+    <h2>A · La bulle sur une carte <small>on touche « Prix moyen »</small></h2>
+    <p class="d">La petite courbe à côté du prix moyen donne déjà la tendance. Un toucher ouvre la bulle : chaque point est une vente (passe le doigt dessus), la ligne pointillée est le prix de cette annonce.</p>
+    <div class="row">
+      <div class="mk">
+        <span class="rib">★ Bonne affaire</span>
+        <div class="mk-vis"><span class="ball"></span></div>
+        <div class="mk-info"><b>Galaxie - Améthyste</b><span class="pill">Calot</span>
+          <span class="price"><i></i>90</span>
+          <span class="avg on">Prix moyen : 120 <svg id="spark" viewBox="0 0 42 14" aria-hidden="true"></svg></span>
+          <button class="btn">Acheter</button></div>
+      </div>
+      <div class="pop" role="dialog" aria-label="Prix des 30 derniers jours">
+        <h3>Galaxie - Améthyste · Calot</h3>
+        <p class="sub">14 ventes ces 30 derniers jours</p>
+        <span class="verdict">✓ 25 % moins cher que la moyenne</span>
+        <div class="chart" id="chart"></div>
+        <div class="stats"><div><small>Le − cher</small><b>80</b></div><div><small>Moyen</small><b>120</b></div><div><small>Le + cher</small><b>190</b></div><div><small>Ventes</small><b>14</b></div></div>
+      </div>
+    </div>
+  </section>
+
+  <section class="sec">
+    <h2>B · Quand on vend <small>dans « Vendre une bille »</small></h2>
+    <p class="d">Sous le prix, un rappel de ce que ce modèle vaut au marché, et un bouton pour prendre le prix moyen d'un coup.</p>
+    <div class="sell">
+      <span class="lbl">Ton prix</span>
+      <div class="price-in"><span style="width:18px;height:18px;border-radius:50%;background:radial-gradient(circle at 35% 35%,#FFB6D9,#E8559A)"></span>130</div>
+      <div class="hint"><svg id="spark2" viewBox="0 0 120 44" aria-hidden="true"></svg>
+        <p>Ce modèle s'est vendu en moyenne <b>120 bonbecs</b> ces 30 jours (de 80 à 190, 14 ventes).<br>Ton prix est <b>8 % au-dessus</b> : il partira peut-être moins vite.<br><span class="chip">Prendre le prix moyen · 120</span></p></div>
+    </div>
+  </section>
+
+  <div class="note"><b>Comment ça marcherait :</b> une fonction serveur renvoie les ventes des 30 derniers jours d'un modèle (même taille, motif, coloris et shiny), le jeu dessine la courbe lui-même. S'il n'y a encore aucune vente, la bulle dit simplement « Pas encore de vente pour ce modèle ». Rien à charger tant qu'on ne touche pas le prix moyen.</div>
+</div>
+<script>
+// 14 ventes sur 30 jours (jour, prix)
+const S = [[1,150],[3,190],[5,140],[7,130],[9,125],[11,135],[13,110],[15,120],[17,100],[19,115],[22,95],[24,105],[27,80],[29,95]];
+const REF = 90, W = 308, H = 150, P = {l:30, r:8, t:10, b:22}, ymin = 60, ymax = 200;
+const x = d => P.l + (d-1)/29*(W-P.l-P.r), y = v => P.t + (ymax-v)/(ymax-ymin)*(H-P.t-P.b);
+const line = S.map(([d,v],i)=>`${i?"L":"M"}${x(d).toFixed(1)},${y(v).toFixed(1)}`).join("");
+const area = line + `L${x(S.at(-1)[0])},${H-P.b}L${x(S[0][0])},${H-P.b}Z`;
+const ticks = [80,120,160,200];
+document.getElementById("chart").innerHTML = `<svg viewBox="0 0 ${W} ${H}" role="img" aria-label="Prix de vente sur 30 jours, de 190 à 80 bonbecs">
+  <defs><linearGradient id="g" x1="0" x2="0" y1="0" y2="1"><stop offset="0" stop-color="#F2AE12" stop-opacity=".32"/><stop offset="1" stop-color="#F2AE12" stop-opacity="0"/></linearGradient></defs>
+  <g class="grid">${ticks.map(t=>`<line x1="${P.l}" x2="${W-P.r}" y1="${y(t)}" y2="${y(t)}"/>`).join("")}</g>
+  <g class="ax">${ticks.map(t=>`<text x="${P.l-6}" y="${y(t)+3.5}" text-anchor="end">${t}</text>`).join("")}
+    <text x="${P.l}" y="${H-6}">il y a 30 j</text><text x="${W-P.r}" y="${H-6}" text-anchor="end">aujourd'hui</text></g>
+  <path d="${area}" fill="url(#g)"/>
+  <path d="${line}" fill="none" stroke="#F2AE12" stroke-width="2" stroke-linejoin="round" stroke-linecap="round"/>
+  <line class="ref" x1="${P.l}" x2="${W-P.r}" y1="${y(REF)}" y2="${y(REF)}"/>
+  <text class="ref-l" x="${P.l+6}" y="${y(REF)+14}">ce prix-ci · 90</text>
+  ${S.map(([d,v])=>`<circle class="dot" cx="${x(d)}" cy="${y(v)}" r="4.5"/><circle class="hit" data-d="${d}" data-v="${v}" cx="${x(d)}" cy="${y(v)}" r="11"/>`).join("")}
+</svg><div class="tip" id="tip"></div>`;
+const tip = document.getElementById("tip"), box = document.getElementById("chart");
+box.addEventListener("pointerover", e=>{ const c = e.target.closest(".hit"); if(!c) return;
+  const r = box.getBoundingClientRect(), cr = c.getBoundingClientRect();
+  tip.innerHTML = `<b>${c.dataset.v} bonbecs</b> · il y a ${30-+c.dataset.d} j`; tip.style.left = (cr.left+cr.width/2-r.left)+"px"; tip.style.top = (cr.top-r.top)+"px"; tip.style.opacity = 1 });
+box.addEventListener("pointerout", e=>{ if(e.target.closest(".hit")) tip.style.opacity = 0 });
+// les mini-courbes
+const spark = (id, w, h) => { const xs = d => 1+(d-1)/29*(w-2), ys = v => 1+(ymax-v)/(ymax-ymin)*(h-2);
+  document.getElementById(id).innerHTML = `<path d="${S.map(([d,v],i)=>`${i?"L":"M"}${xs(d).toFixed(1)},${ys(v).toFixed(1)}`).join("")}" fill="none" stroke="#F2AE12" stroke-width="${w>60?2:1.6}" stroke-linejoin="round" stroke-linecap="round"/>` };
+spark("spark", 42, 14); spark("spark2", 120, 44);
+</script>
+</body>
+</html>

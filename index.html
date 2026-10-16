@@ -15195,20 +15195,27 @@ function dupsIn(list){
   by.forEach(l=>{ if(l.length>1){ const k = [...l].sort(tierSort)[0]; l.forEach(s=>{ if(s.id!==k.id) out.add(s.id) }) } });
   return out;
 }
+// ce qui manque à un copain, d'après les clés de sa boîte (collection_copain) : "dec" = motif absent dans cette taille, "col" = coloris absent
+function hisMiss(keys){
+  const sk = new Set(), ck = new Set();
+  keys.forEach(k=>{ const [t,f,p] = k.split("|"); sk.add(t+"|"+f); ck.add(t+"|"+f+"|"+p) });
+  return x => !sk.has(slotKey(x)) ? "dec" : !ck.has(colorKey(x)) ? "col" : "";
+}
 function missOf(){
   const sk = new Set(S.specs.map(slotKey)), ck = new Set(S.specs.map(colorKey));
   return x => !sk.has(slotKey(x)) ? "dec" : !ck.has(colorKey(x)) ? "col" : "";
 }
-const pickCard = (x, side, on, hid, nw, cnt) => `<button class="pick${nw?` miss ${nw}`:""}" data-action="troc-pick" data-q="${esc(pickTxt(x))}"${hid?" hidden":""} data-side="${side}" data-id="${x.id}" aria-pressed="${on}">${cnt||""}<span class="ball">${mImg(x,120,Math.round(28*scaleOf(x.type)+18),"")}</span>${nw?`<span class="miss-sp" title="${nw==="dec"?"Un motif que tu n'as pas dans cette taille":"Un coloris que tu n'as pas"}">${SPARK}</span>`:""}${esc(specName(x))}<small class="meta">${TYPES[x.type].label}</small></button>`;
+const pickCard = (x, side, on, hid, nw, cnt) => `<button class="pick${nw?` miss ${nw}`:""}" data-action="troc-pick" data-q="${esc(pickTxt(x))}"${hid?" hidden":""} data-side="${side}" data-id="${x.id}" aria-pressed="${on}">${cnt||""}<span class="ball">${mImg(x,120,Math.round(28*scaleOf(x.type)+18),"")}</span>${nw?`<span class="miss-sp" title="${side==="give" ? (nw==="dec"?"Un motif que ton copain n'a pas dans cette taille":"Un coloris que ton copain n'a pas") : nw==="dec"?"Un motif que tu n'as pas dans cette taille":"Un coloris que tu n'as pas"}">${SPARK}</span>`:""}${esc(specName(x))}<small class="meta">${TYPES[x.type].label}</small></button>`;
 // la recherche (par nom, shiny, rareté…) cache les billes sans tout redessiner ; elle est gardée dans PQ pour les redessins
 const PQ = {};
 const pqWords = side => fold(PQ[side]||"").trim().split(/\s+/).filter(Boolean);
-function pickList(list, side, sel, filt){
+function pickList(list, side, sel, filt, missFn){
   if(!list) return courWait();
   const shown = list.filter(x=>!filt || x.type===filt), q = pqWords(side);
   const hid = x => !q.every(w=>pickTxt(x).includes(w)), none = shown.every(hid);
-  const miss = side==="want" ? missOf() : () => "", nd = list.filter(x=>miss(x)==="dec").length, nc = list.filter(x=>miss(x)==="col").length;
-  const leg = nd||nc ? `<p class="miss-leg">${nd?`<span class="dec">${SPARK} ${nd} motif${nd>1?"s":""} qui te manque${nd>1?"nt":""}</span>`:""}${nc?`<span class="col">${SPARK} ${nc} coloris qui te manque${nc>1?"nt":""}</span>`:""}</p>` : "";
+  const miss = missFn || (side==="want" ? missOf() : () => ""), nd = list.filter(x=>miss(x)==="dec").length, nc = list.filter(x=>miss(x)==="col").length;
+  const te = missFn ? "lui" : "te";   // (16 octobre 2026) côté « Tu donnes » : ce qui manque au copain
+  const leg = nd||nc ? `<p class="miss-leg">${nd?`<span class="dec">${SPARK} ${nd} motif${nd>1?"s":""} qui ${te} manque${nd>1?"nt":""}</span>`:""}${nc?`<span class="col">${SPARK} ${nc} coloris qui ${te} manque${nc>1?"nt":""}</span>`:""}</p>` : "";
   const search = list.length<6 ? "" : `<div class="cp-search pick-srch">${ic("search",15)}<input type="search" class="troc-q" data-side="${side}" value="${esc(PQ[side]||"")}" placeholder="Chercher : Galaxie, Rubis, shiny…" aria-label="Chercher une bille" autocomplete="off" spellcheck="false"></div>`;
   const chips = `<div class="pick-filters"><button class="chip" data-action="troc-filt" data-side="${side}" data-t="" aria-pressed="${!filt}">Toutes</button>${TK.filter(t=>list.some(x=>x.type===t)).map(t=>`<button class="chip" data-action="troc-filt" data-side="${side}" data-t="${t}" aria-pressed="${filt===t}">${TYPES[t].pl}</button>`).join("")}</div>`;
   // le nombre d'exemplaires : chez toi, ×2 et plus = un double ; chez le copain, ce que tu as déjà
@@ -15227,8 +15234,11 @@ function trocCompose(){
       ${C.remplace ? `<p class="cour-lead" style="margin:0 0 8px">Change les billes comme tu veux : ta proposition remplacera la sienne.</p>` : ""}
       <p class="cour-info">${ic("quest",16)}<span>Jusqu'à 6 billes de chaque côté. Pas les billes de départ ni les secrètes.</span></p></section>
     <div class="compose">
-      <section class="panel cmp give"><div class="panel-head"><h3>${ic("swap",18)} Tu donnes</h3>${dots(C.give.length)}</div>${C.mine?.length ? `<label class="tr-dbl"><input type="checkbox" data-action="troc-dbl"${C.dbl?" checked":""}> Seulement mes doubles</label>` : ""}
-        <div style="--tc:#E8743B">${C.dbl && C.mine && !C.mine.some(x=>trocDups().has(x.id)) ? `<p class="empty">Tu n'as aucun double à troquer.</p>` : pickList(C.dbl && C.mine ? C.mine.filter(x=>trocDups().has(x.id)) : C.mine, "give", C.give, C.fg)}</div></section>
+      <section class="panel cmp give"><div class="panel-head"><h3>${ic("swap",18)} Tu donnes</h3>${dots(C.give.length)}</div>${C.mine?.length ? `<div class="tr-dbls"><label class="tr-dbl"><input type="checkbox" data-action="troc-dbl"${C.dbl?" checked":""}> Seulement mes doubles</label>${C.coll ? `<label class="tr-dbl"><input type="checkbox" data-action="troc-lmanque"${C.lmanque?" checked":""}> Seulement celles qui lui manquent</label>` : ""}</div>` : ""}
+        <div style="--tc:#E8743B">${(()=>{ if(!C.mine) return pickList(C.mine, "give", C.give, C.fg);
+          // (16 octobre 2026) ce qui manque au copain, d'après toute sa boîte (C.coll) : halo doré = motif qu'il n'a pas dans cette taille, bleu = coloris qu'il n'a pas
+          const hm = C.coll ? hisMiss(C.coll) : null, dd = C.dbl ? trocDups() : null, L = C.mine.filter(x=>(!dd || dd.has(x.id)) && (!C.lmanque || !hm || hm(x)));
+          return (C.dbl || C.lmanque) && !L.length ? `<p class="empty">Tu n'as aucune bille ${C.dbl && C.lmanque ? `en double qui manque à ${esc(C.pseudo)}` : C.lmanque ? `qui manque à ${esc(C.pseudo)}` : "en double à troquer"}.</p>` : pickList(L, "give", C.give, C.fg, hm || undefined) })()}</div></section>
       <section class="panel cmp want"><div class="panel-head"><h3>${ic("arrow",18)} Tu demandes à ${esc(C.pseudo)}</h3>${dots(C.want.length)}</div>${C.theirs?.length ? `<div class="tr-dbls"><label class="tr-dbl"><input type="checkbox" data-action="troc-manque"${C.manque?" checked":""}> Seulement celles qui me manquent</label><label class="tr-dbl"><input type="checkbox" data-action="troc-sdbl"${C.sdbl?" checked":""}> Seulement ses doubles</label></div>` : ""}
         <div style="--tc:var(--green)">${(()=>{ if(!C.theirs) return pickList(C.theirs, "want", C.want, C.fw);
           const miss = missOf(), dup = C.sdbl ? dupsIn(C.theirs) : null, L = C.theirs.filter(x=>(!C.manque || miss(x)) && (!dup || dup.has(x.id)));
@@ -15256,6 +15266,7 @@ function trocStart(id, pre){
   // (une bille choisie d'avance qui n'est plus disponible est simplement retirée du troc)
   Cloud.cour.echangeables(sync.uid).then(l=>{ if(cour.compose===C){ C.mine = l.filter(x=>x.id!==S.active && !S.vitrine.includes(x.id)); C.give = C.give.filter(i=>C.mine.some(x=>x.id===i)); renderView() } }, courFail);
   Cloud.cour.echangeables(id).then(l=>{ if(cour.compose===C){ C.theirs = l; C.want = C.want.filter(i=>l.some(x=>x.id===i)); renderView() } }, courFail);
+  Cloud.cour.collection?.(id).then(l=>{ if(cour.compose===C){ C.coll = l||[]; renderView() } }, ()=>{});
 }
 
 // ---------- marché ----------
@@ -15521,6 +15532,7 @@ document.addEventListener("click", e=>{
     case "sell-dbl": { const X = cour.sell; if(!X) break; X.dbl = t.checked; renderView(); break }
     case "troc-dbl": { const C = cour.compose; if(!C) break; C.dbl = t.checked; C.mot = document.getElementById("troc-mot")?.value || C.mot; renderView(); break }
     case "troc-manque": { const C = cour.compose; if(!C) break; C.manque = t.checked; C.mot = document.getElementById("troc-mot")?.value || C.mot; renderView(); break }
+    case "troc-lmanque": { const C = cour.compose; if(!C) break; C.lmanque = t.checked; C.mot = document.getElementById("troc-mot")?.value || C.mot; renderView(); break }
     case "troc-sdbl": { const C = cour.compose; if(!C) break; C.sdbl = t.checked; C.mot = document.getElementById("troc-mot")?.value || C.mot; renderView(); break }
     case "troc-pick": {
       if(t.dataset.side==="sell"){ cour.sell.pick = t.dataset.id; renderView(); document.getElementById("sell-prix")?.focus(); break }

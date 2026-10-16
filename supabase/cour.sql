@@ -282,6 +282,17 @@ begin
     order by interne.rang(b.taille) desc, b.shiny desc, b.numero desc limit 5000) x), '[]');
 end $$;
 
+-- (16 octobre 2026) ce qu'un copain a déjà dans sa boîte, en clés « taille|motif|coloris|shiny » (toutes ses billes, même celles qu'il ne peut pas troquer) :
+-- au troc, « Seulement celles qui lui manquent » sur ce que tu donnes
+create or replace function public.collection_copain(qui uuid) returns jsonb language plpgsql security definer set search_path = public as $$
+declare moi uuid := auth.uid();
+begin
+  if moi is null then raise exception 'connexion_requise'; end if;
+  if qui <> moi and not interne.sont_amis(moi, qui) then raise exception 'pas_ami'; end if;
+  return coalesce((select jsonb_agg(distinct b.taille || '|' || b.decor || '|' || b.coloris || '|' || coalesce(b.shiny, 0))
+    from billes b where b.proprietaire = qui and b.detruite_le is null), '[]');
+end $$;
+
 -- les belles trouvailles des copains (Boulets, Mammouths, shiny), tirées depuis moins d'un mois
 -- (14 octobre 2026) + les motifs légendaires et mythiques de toutes tailles, et les épiques à partir du Calot
 create or replace function public.fil_amis() returns jsonb language plpgsql security definer set search_path = public as $$
@@ -863,7 +874,7 @@ end $$;
 -- droits : le site ne peut appeler que ces fonctions-là
 do $$ declare f text; begin
   foreach f in array array['cour_moi()','ami_demander(text)','ami_repondre(uuid,boolean)','ami_retirer(uuid)','profil_joueur(uuid)',
-    'billes_echangeables(uuid)','fil_amis()','troc_proposer(uuid,uuid[],uuid[],text,bigint,int,int)','troc_repondre(bigint,boolean)','troc_annuler(bigint)',
+    'billes_echangeables(uuid)','collection_copain(uuid)','fil_amis()','troc_proposer(uuid,uuid[],uuid[],text,bigint,int,int)','troc_repondre(bigint,boolean)','troc_annuler(bigint)',
     'mes_trocs()','vendre(uuid,int,int,int)','retirer_annonce(bigint)','acheter(bigint)','marche(text,int,int,boolean,text,int,text)','mes_annonces()','cour_journal(bigint,int)',
     'mettre_aux_encheres(uuid,int,int)','encherir(bigint,int)','mes_encheres()','classement(text,int)','cour_stats()',
     'classement_semaine(text)','palmares_semaines()','semaine_vu(date)'] loop

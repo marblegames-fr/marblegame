@@ -7559,7 +7559,8 @@ function heroSlides(){
   // les sachets : les gratuits et les offerts
   const inv = Object.entries(S.bagInv||{}).filter(([,n])=>n>0);
   const deco = [SHOWCASE[1], SHOWCASE[3], SHOWCASE[0], SHOWCASE[2]];
-  out.push({id:"sacs", label:"Tes sachets", score: st||gifts ? 100 : 10, html:`
+  // (16 octobre 2026) toujours la première diapo quand on arrive : ça pousse à ouvrir ses sachets offerts
+  out.push({id:"sacs", label:"Tes sachets", score:110, html:`
     <div class="hm-art sacs-art" aria-hidden="true">
       <span class="sa-glow"></span><span class="sa-shelf"></span>
       <div class="hm-bag">${bagSVG(!st && gifts ? BAG_BY[inv[0][0]] : FREE_BAG)}</div>
@@ -14717,7 +14718,7 @@ let bugKeep = null;   // un message qui n'est pas parti : il est reproposé au p
 // on:false cache le bouton (pendant qu'on prépare la mise à jour) ; on:true le remet, avec la pastille si l'id a changé
 // (16 octobre 2026) deux repères : dot = la pastille rouge du bouton, à changer à CHAQUE mise en ligne qui ajoute une ligne au patchnote
 // (avec txt : la date du jour) ; id = la fenêtre d'annonce à l'arrivée, seulement pour les très gros jours
-const NEWS = {on:true, id:"2026-10-14b", dot:"2026-10-16-2130", url:"/nouveautes.html", txt:"Mise à jour du 16 oct."};
+const NEWS = {on:true, id:"2026-10-14b", dot:"2026-10-16-2200", url:"/nouveautes.html", txt:"Mise à jour du 16 oct."};
 const newsUnseen = () => lsGet("billeo-news-vu")!==NEWS.dot;
 // (14 octobre 2026) à l'arrivée, une fenêtre annonce la mise à jour, une seule fois par mise à jour et par compte (S.newsPop, gardé
 // dans la partie : elle ne revient pas sur un autre appareil) ; on choisit d'aller voir les nouveautés, ou pas

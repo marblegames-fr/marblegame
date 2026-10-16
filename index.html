@@ -5024,9 +5024,12 @@ vec4 fam(vec3 q, out vec3 e){
     float n=fbm(q*3.0+so);
     float k2=abs(fbm(q*3.6+so*1.3)-0.5);
     float crack=smoothstep(0.045,0.0,k2);
-    vec3 glow=mix(uC2,mix(uC3,vec3(1.0),0.25),crack*0.7);
-    e=glow*crack*2.2;
-    return vec4(mix(vec3(0.07,0.06,0.06)+uC1*0.12*n, glow, crack), 200.0);
+    // (16 octobre 2026) les 3 couleurs du coloris se voient : la roche prend la 1re, le bord des fissures et leur halo la 2e, le cœur brûlant la 3e
+    float core=smoothstep(0.018,0.0,k2), halo=smoothstep(0.11,0.0,k2);
+    vec3 rock=mix(vec3(0.05,0.045,0.045), uC1*0.5, 0.35+0.45*n);
+    vec3 glow=mix(uC2, mix(uC3,vec3(1.0),0.15), core);
+    e=glow*crack*2.2 + uC2*halo*(1.0-crack)*0.35;
+    return vec4(mix(mix(rock, uC2*0.6, halo*0.35), glow, crack), 200.0);
   }
 #elif MODE==18
   { // marbre : pierre claire et veines

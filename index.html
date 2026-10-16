@@ -14677,7 +14677,7 @@ function courFail(e){ console.warn("Cour :", e); toast(COUR_ERR[e?.code] || "Oup
 const courCount = () => cour.moi ? (cour.moi.trocs||0) + (cour.moi.recues||[]).length + (cour.unread||0) : 0;
 // charge une partie de la cour, puis réaffiche si on y est toujours
 // le classement bouge tout seul (les autres ouvrent des sachets) : au-delà de 20 s, on le redemande au prochain affichage
-const COUR_FRAIS = {classement:20000, semaine:20000, palmares:60000};
+const COUR_FRAIS = {classement:20000, semaine:20000, palmares:60000, annonces:30000, trocs:30000};   // (16 octobre 2026) annonces et trocs aussi : une vente faite sur un autre appareil n'était jamais vue ici (la fusion la proposait)
 function courLoad(kind, force){
   if(!srvOn() || cour.loading[kind] || (cour[kind] && !force && !(COUR_FRAIS[kind] && Date.now()-(cour.at[kind]||0) > COUR_FRAIS[kind]))) return;
   cour.loading[kind] = true; cour.at[kind] = Date.now();
@@ -14688,8 +14688,8 @@ function courLoad(kind, force){
   f().then(d=>{ const prev = cour[kind]; cour[kind] = d; cour.ok = true; if(kind==="classement" && !cour.clAgain) cour.clWait = false; if(kind==="moi") netMark("cour", true);
       if(kind==="moi") courMoiNews(prev, d);
       if(kind==="semaine") semaineLots(d);
-      const same = kind==="fil" && JSON.stringify(prev)===JSON.stringify(d);   // le rechargement de chaque minute : rien de neuf, on ne redessine pas
-      if(!same && (ui.view==="cour" || (["fil","moi","encheres","classement"].includes(kind) && ui.view==="accueil") || (["annonces","trocs"].includes(kind) && ui.view==="collection" && ui.tab==="billes"))) renderView();
+      const same = ["fil","annonces","trocs"].includes(kind) && JSON.stringify(prev)===JSON.stringify(d);   // un rechargement sans rien de neuf : on ne redessine pas
+      if(!same && (ui.view==="cour" || (["fil","moi","encheres","classement"].includes(kind) && ui.view==="accueil") || (["annonces","trocs"].includes(kind) && ((ui.view==="collection" && ui.tab==="billes") || (ui.view==="confiserie" && document.getElementById("ov").hidden))))) renderView();
       if(kind==="moi") renderNav();
       if(kind==="moi" || kind==="journal" || kind==="semaine") renderBell() },
     e=>{ if(kind==="classement") cour.clWait = false; if(e.code==="serveur_absent"){ if(kind==="moi") cour.ok = false; else cour.absent[kind] = true } else { if(kind==="moi") netMark("cour", false); if(ui.view==="cour") courFail(e) } if(ui.view==="cour") renderView() })

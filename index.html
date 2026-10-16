@@ -13710,11 +13710,11 @@ const G3C = {
       // les crevasses : une trappe contre le bord extérieur à chaque tour (sauf le dernier) ; la bille qui tombe atterrit sur le tour du dessous
       const TR = [1.6, 1.6+TAU+Math.PI*.8].map(iA); o.trous = {}; TR.forEach(i=>{ for(let d=0; d<NTR; d++) o.trous[i+d] = -1 });   // (Z pointe vers l'intérieur)
       const {path, frames} = g3Trough(k, P, o);
-      // là où atterrit une bille tombée d'une crevasse (un tour plus bas, un peu plus loin) : de hauts murs de roche des deux côtés,
+      // là où atterrit une bille tombée d'une crevasse (un tour plus bas, un peu plus loin) : de hauts murs de verre des deux côtés,
       // sinon elle rebondissait par-dessus le bord
       const L1 = Math.round(NS/T);
       TR.forEach(t=>{ for(let i=t+L1-2; i<t+L1+9; i++){ const F = frames[i]; if(!F) continue;
-        [-1, 1].forEach(sd=>k.box([1.7, 4, .3], v3.add(F.M, v3.add(v3.mul(F.Z, sd*(o.WID/2+.3)), v3.mul(F.Y, 2))), F.q, "tower")) } });
+        [-1, 1].forEach(sd=>k.box([1.7, 4, .3], v3.add(F.M, v3.add(v3.mul(F.Z, sd*(o.WID/2+.3)), v3.mul(F.Y, 2))), F.q, "end")) } });
       // un obstacle tous les sixièmes de tour environ (pas près des crevasses) : portes qui tournent, tourniquets, champignons, plots
       const OBS = ["champis","plots","moulin","bosse","champis","porte","plots","moulin","champis","bosse","moulin","plots","porte","champis","moulin","bosse","champis","porte","plots","moulin"];
       const pos = OBS.map((t, j)=>[I0 + 22 + Math.round(j*(NS-32)/(OBS.length-1)), t]).filter(([i])=>!TR.some(t=>i>t-6 && i<t+NTR+4));

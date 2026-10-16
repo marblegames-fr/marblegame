@@ -4200,10 +4200,15 @@ const DEPART = [
   {k:"pelouse",  name:"Pelouse",  fam:3, txt:"Vert pelouse, veiné comme une agate.",       pal:["Pelouse","#1F5A2A","#4FB04A","#F2E3A8","#DFF7E9"]},
 ];
 DEPART.forEach(D=>{ D.palIdx = PALETTES.push(D.pal)-1 });
+// (16 octobre 2026) le 52e coloris normal, BCKC : bleu marine, bleu vif en vedette, détails turquoise (maquettes/maquette-nouveau-coloris.html).
+// Numéro 87, après tous les autres (un numéro de coloris ne change jamais). Même liste dans supabase/serveur.sql (interne.coloris_tirables)
+const PLAYER_PALS_2 = [
+  ["BCKC","#00294B","#0090DD","#6FCBDB","#B8E6F0"],
+].map(P=>PALETTES.push(P)-1);
 const isDepart = s => s?.secret==="depart";
 const departSpec = D => ({seed:hash("depart-"+D.k), type:"calot", family:D.fam, pal:D.palIdx, shiny:0});
 // les coloris qu'on peut tirer : les 48 d'origine et ceux des joueurs
-const BASE_PAL_IDS = [...Array(SEASON_PAL0).keys(), ...PLAYER_PALS], BASE_PALS = BASE_PAL_IDS.length, BASE_SET = new Set(BASE_PAL_IDS);
+const BASE_PAL_IDS = [...Array(SEASON_PAL0).keys(), ...PLAYER_PALS, ...PLAYER_PALS_2], BASE_PALS = BASE_PAL_IDS.length, BASE_SET = new Set(BASE_PAL_IDS);
 const isBasePal = p => BASE_SET.has(p);
 const randPal = r => BASE_PAL_IDS[Math.floor(r*BASE_PALS)];
 const isBeta = s => s?.secret==="beta";

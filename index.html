@@ -3168,7 +3168,8 @@ button.cp-who:hover b{text-decoration:underline}
 .mk-bar .cour-form{margin-top:14px;width:100%}
 /* (16 octobre 2026) la recherche du marché, sur toute la largeur au-dessus des filtres */
 .mk-srch{flex:1 1 100%}
-.mk-srch input{width:100%;height:42px;font-size:14.5px}
+.mk-manque{margin:0 0 0 4px;align-items:center}
+.mk-srch input{width:100%;height:42px;font-size:14.5px;padding-left:36px}
 .mk-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(188px,1fr));gap:14px}
 .mk{--rc:#8E8898;position:relative;display:flex;flex-direction:column;border-radius:var(--r-md);background:var(--panel);border:1px solid var(--line);overflow:hidden;text-align:center;box-shadow:var(--shadow);transition:transform .15s,box-shadow .15s}
 .mk:hover{transform:translateY(-3px)}
@@ -15422,7 +15423,9 @@ function courMarche(){
   if(cour.sell) return sellView();
   courLoad("marche"); courLoad("annonces"); courLoad("encheres");
   mkCard.own = ownInfo();   // calculé une fois pour toutes les cartes
-  const L = cour.marche, A = cour.annonces, f = cour.f, aucOK = !cour.absent.encheres, ME = aucOK ? (cour.encheres||[]) : [];
+  // (16 octobre 2026) « Seulement celles qui me manquent » : un motif ou un coloris qu'on n'a pas encore (filtré ici, sur les annonces chargées)
+  const L0 = cour.marche, f = cour.f, L = L0 && f.manque ? (()=>{ const m = missOf(); return L0.filter(a=>!a.moi && m(a.bille)) })() : L0;
+  const A = cour.annonces, aucOK = !cour.absent.encheres, ME = aucOK ? (cour.encheres||[]) : [];
   const sel = (id, opts, v) => `<select id="${id}" aria-label="${id}">${opts.map(([k,l])=>`<option value="${k}"${v===k?" selected":""}>${l}</option>`).join("")}</select>`;
   const mine = (A||[]).filter(a=>!a.vendue), sold = 0, mkTab = ui.mkTab || "acheter";
   const mt = (k,l,n) => `<button class="chip" data-action="mk-tab" data-t="${k}" aria-pressed="${mkTab===k}">${l}${n?` <span class="n">${n}</span>`:""}</button>`;
@@ -15444,13 +15447,14 @@ function courMarche(){
         ${decorSel(f.decor)}
         ${sel("mk-shiny", [["","Shiny ou pas"],["1","Shiny seulement"],["0","Sans shiny"]], f.shiny)}
         ${sel("mk-tri", [["recent","Plus récentes"],["prix","Moins chères"],["rare","Plus rares"], ...(aucOK?[["fin","Fin bientôt"]]:[])], f.tri)}
+        <label class="tr-dbl mk-manque"><input type="checkbox" data-action="mk-manque"${f.manque?" checked":""}> Seulement celles qui me manquent</label>
       </div>` : ""}
       <div class="chips mk-tabs">${mt("acheter",`${ic("bag",14)} Acheter`)}${mt("mine",`${ic("candy",14)} Mes annonces`,mine.length)}${aucOK?mt("ench",`${ic("gavel",14)} Mes enchères`,ME.length):""}</div></div>
       ${mkTab==="acheter" ? `<p class="cour-info" style="margin-top:12px">${ic("quest",16)}<span>Le prix moyen : ce que les joueurs ont payé ce modèle en 30 jours.${aucOK?` Enchères : au plus offrant à la fin.`:""}</span></p>` : ""}</section>
     ${mkTab==="ench" ? (ME.length ? `<section class="panel mes-ench"><div class="panel-head"><h3>${ic("gavel",18)} Mes enchères<span class="cnt-n">${ME.length}</span></h3><span class="sample-tag">${ME.filter(a=>a.en_tete).length} en tête</span></div>
       <div class="mk-grid">${ME.map(a=>mkCard(a, true)).join("")}</div></section>` : `<p class="empty">Tu n'enchéris sur aucune bille en ce moment.</p>`) : ""}
     ${mkTab!=="acheter" ? "" : L && L.length ? `<div class="mk-sec-h"><h3>${ic("candy",18)} En vente</h3><span class="sample-tag">${L.length} bille${L.length>1?"s":""}${L.some(a=>a.enchere)?` · dont ${L.filter(a=>a.enchere).length} aux enchères`:""}</span></div>` : ""}
-    ${mkTab!=="acheter" ? "" : !L ? courWait() : L.length ? `<div class="mk-grid mk-all">${L.map(a=>mkCard(a)).join("")}</div><p class="empty mk-none"${L.every(mkHid)?"":" hidden"}>Aucune bille en vente ne correspond à ta recherche.</p>` : `<p class="empty">Rien en vente avec ces filtres pour l'instant.${f.taille||f.decor!=null||f.shiny||f.genre ? `<br><button class="btn btn-ghost btn-sm" style="margin-top:12px" data-action="mk-reset">Effacer les filtres</button>` : ""}</p>`}
+    ${mkTab!=="acheter" ? "" : !L ? courWait() : L.length ? `<div class="mk-grid mk-all">${L.map(a=>mkCard(a)).join("")}</div><p class="empty mk-none"${L.every(mkHid)?"":" hidden"}>Aucune bille en vente ne correspond à ta recherche.</p>` : `<p class="empty">Rien en vente avec ces filtres pour l'instant.${f.manque && L0?.length ? " Toutes les billes en vente sont déjà dans ta boîte !" : ""}${f.taille||f.decor!=null||f.shiny||f.genre||f.manque ? `<br><button class="btn btn-ghost btn-sm" style="margin-top:12px" data-action="mk-reset">Effacer les filtres</button>` : ""}</p>`}
     ${mkTab!=="mine" ? "" : !A ? courWait() : !mine.length ? `<p class="empty">Tu n'as rien en vente. Touche « Vendre une bille » pour en proposer une.</p>` : `<section class="panel" id="mes-annonces"><div class="panel-head"><h3>Mes annonces<span class="cnt-n">${mine.length}</span></h3>${sold ? `<span class="sample-tag">${sold} vendue${sold>1?"s":""}</span>` : ""}</div>
       <div class="ann-list">${mine.map(ann).join("")}</div></section>`}
   </div>`;
@@ -15782,7 +15786,8 @@ document.addEventListener("click", e=>{
     case "cour-go": ui.courTab = t.dataset.tab; cour.compose = null; cour.sell = null; if(t.dataset.tab==="journal") courSeeJournal(); go("cour"); break;
     case "mk-encherir": bidAsk(+t.dataset.id); break;
     case "sell-mode": if(!cour.sell) break; cour.sell.prix = document.getElementById("sell-prix")?.value || cour.sell.prix; cour.sell.mode = t.dataset.m; renderView(); break;
-    case "mk-reset": Object.assign(cour.f, {taille:"", decor:null, shiny:"", genre:""}); courRefresh("marche"); renderView(); break;
+    case "mk-reset": Object.assign(cour.f, {taille:"", decor:null, shiny:"", genre:"", manque:false}); courRefresh("marche"); renderView(); break;
+    case "mk-manque": cour.f.manque = t.checked; renderView(); break;
     case "mk-tab": ui.mkTab = t.dataset.t; if(t.dataset.t!=="acheter") courRefresh("annonces","encheres"); renderView(); break;
     case "troc-tab": ui.trocTab = t.dataset.t; renderView(); break;
     case "notif-pop": toggleBell(); break;

@@ -268,7 +268,8 @@ begin
   );
 end $$;
 
--- les billes qu'un copain (ou soi-même) peut mettre dans un troc
+-- les billes qu'un copain (ou soi-même) peut mettre dans un troc (et ses billes à vendre au marché)
+-- (16 octobre 2026) limite 500 → 5000 : triées des plus grosses aux plus petites, les mini billes des grosses boîtes étaient coupées
 create or replace function public.billes_echangeables(qui uuid) returns jsonb language plpgsql security definer set search_path = public as $$
 declare moi uuid := auth.uid();
 begin
@@ -278,7 +279,7 @@ begin
     select interne.bille_json(b) j from billes b
     where b.proprietaire = qui and b.detruite_le is null and b.origine = 'serveur' and b.secrete is null and not interne.encore_liee(b.liee, b.proprietaire)
       and not interne.en_vente(b.id)
-    order by interne.rang(b.taille) desc, b.shiny desc, b.numero desc limit 500) x), '[]');
+    order by interne.rang(b.taille) desc, b.shiny desc, b.numero desc limit 5000) x), '[]');
 end $$;
 
 -- les belles trouvailles des copains (Boulets, Mammouths, shiny), tirées depuis moins d'un mois

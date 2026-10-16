@@ -3052,6 +3052,9 @@ button.cp-who:hover b{text-decoration:underline}
 .tr-dbl{display:flex;align-items:baseline;gap:8px;flex-wrap:wrap;margin:0 0 12px;font-weight:800;font-size:14px;cursor:pointer}
 .tr-dbl input{accent-color:#E8743B;width:17px;height:17px;align-self:center;margin:0}
 .tr-dbls{display:flex;flex-wrap:wrap;gap:0 18px}
+.lock-tag{display:inline-grid;place-items:center;width:20px;height:20px;border-radius:999px;background:var(--ink);color:var(--on-ink)}
+.lock-tag svg{width:11px;height:11px}
+.sell-why.lock-why{border-style:solid;border-color:color-mix(in srgb,var(--yellow-2,#F2AE12) 55%,var(--line));background:color-mix(in srgb,var(--yellow,#FFC93F) 14%,var(--panel-2));color:var(--ink)}
 .sell-why{display:inline-flex;align-items:center;gap:6px;padding:7px 12px;border-radius:12px;background:var(--panel-2);border:1px dashed var(--line-2);color:var(--ink-2);font-size:13px;font-weight:800}
 /* (14 octobre 2026) Mes billes : une bille en vente, aux enchères ou dans un troc en cours */
 .m-card.busy{--bzc:#E0A417;outline:2.5px dashed var(--bzc);outline-offset:-6px}
@@ -6319,12 +6322,12 @@ function keepOf(list){ const K=S.keep||{}, pin=K[dupKey(list[0])] ?? K[colorKey(
 function recyclableDups(){
   const out = [];
   const byColor=new Map(); S.specs.forEach(s=>{ const k=dupKey(s); if(!byColor.has(k)) byColor.set(k,[]); byColor.get(k).push(s) });
-  byColor.forEach(list=>{ const k=keepOf(list); list.filter(s=>s.id!==k.id).forEach(s=>{ if(!s.shiny && !s.secret && s.id!==S.active && !S.vitrine.includes(s.id)) out.push(s) }) });
+  byColor.forEach(list=>{ const k=keepOf(list); list.filter(s=>s.id!==k.id).forEach(s=>{ if(!s.shiny && !s.secret && !s.lock && s.id!==S.active && !S.vitrine.includes(s.id)) out.push(s) }) });
   return out;
 }
 function recycleSpecs(ids){
   const set = new Set(ids);
-  const gone = S.specs.filter(s=>set.has(s.id) && s.id!==S.active);
+  const gone = S.specs.filter(s=>set.has(s.id) && s.id!==S.active && !s.lock);   // (16 octobre 2026) une bille verrouillée ne part jamais
   if(!gone.length) return 0;
   const total = gone.reduce((a,s)=>a+recycleValue(s),0);
   gone.forEach(s=>sync.why[s.id]="recyclee");
@@ -7909,7 +7912,7 @@ function viewCollection(){
     const rb = rarBand(x);
     return `<button class="m-card${x.shiny?" is-shiny":""}${bz?` busy bz-${bz}`:""}${rb?" has-rb":""}" data-action="spec" data-id="${x.id}"${nw.length?` data-unseen="${nw.join(",")}"`:""}${bz?` title="${BUSY[bz]}${grp.length>1?" (un des exemplaires)":""}"`:""}>
       ${rb}${bz?`<span class="bz-tag">${ic(bz==="troc"?"swap":bz==="ench"?"gavel":"candy",11,2.4)} ${BUSY[bz]}</span>`:""}
-      <span class="m-tags">${x.shiny?shinyPill(x):""}${show==="dups"?(keep.has(x.id)?`<span class="keep-tag">Gardée</span>`:`<span class="dup-tag">Double</span>`):""}<i class="m-tags-sp"></i>${nw.length&&show!=="dups"?`<span class="new">Nouveau</span>`:""}${grp.length>1?`<span class="x-n" title="Tu as ${grp.length} exemplaires de cette bille">×${grp.length}</span>`:""}</span>
+      <span class="m-tags">${grp.some(y=>y.lock)?`<span class="lock-tag" title="${grp.length>1&&!grp.every(y=>y.lock)?"Un des exemplaires est verrouillé":"Verrouillée"}">${ic("lock",11,2.6)}</span>`:""}${x.shiny?shinyPill(x):""}${show==="dups"?(keep.has(x.id)?`<span class="keep-tag">Gardée</span>`:`<span class="dup-tag">Double</span>`):""}<i class="m-tags-sp"></i>${nw.length&&show!=="dups"?`<span class="new">Nouveau</span>`:""}${grp.length>1?`<span class="x-n" title="Tu as ${grp.length} exemplaires de cette bille">×${grp.length}</span>`:""}</span>
       <span class="ball">${mImg(x,160,Math.round(84*scaleOf(x.type)+6))}</span><b>${esc(specName(x))}</b>${ui.type==="all"?typePill(x.type):""}</button>` };
   const EMPTY = {new:"Aucune nouveauté : tu as tout regardé !", dups:"Aucun doublon pour l'instant. Ouvre des sachets pour en trouver.", shiny:"Pas encore de shiny ici. Elles sont très rares : bonne chance !", season:"Pas encore de bille de saison ici. Le passe de saison en donne à certains paliers.", all:"Aucune bille dans ce format."};
 
@@ -8140,7 +8143,7 @@ const craftShiny = t => SHINY_RATE*craftN(t);   // les chances de shiny des bill
 const RAR_F  = TK.map(t=>TYPES[t].label);
 const RAR_PL = TK.map(t=>TYPES[t].pl);
 // billes qu'on peut fusionner : jamais les shiny, la bille active, la vitrine ni les billes de saison
-const craftPool = t => S.specs.filter(s=>tierOf(s)===t && !s.shiny && !s.secret && s.id!==S.active && !S.vitrine.includes(s.id) && isBasePal(s.pal) && (!srvOn() || s.srv));
+const craftPool = t => S.specs.filter(s=>tierOf(s)===t && !s.shiny && !s.secret && !s.lock && s.id!==S.active && !S.vitrine.includes(s.id) && isBasePal(s.pal) && (!srvOn() || s.srv));
 const slotCounts = () => { const c={}; S.specs.forEach(s=>{ const k=dupKey(s); c[k]=(c[k]||0)+1 }); return c };   // exemplaires de chaque bille (doubles stricts)
 // la taille au-dessus ; le motif et le coloris sont tirés au hasard avec leurs chances habituelles
 function craftResult(T){
@@ -8215,7 +8218,7 @@ function viewCraft(){
 // Fusion d'événement : des billes d'événement d'une même taille et d'un même coloris donnent la taille au-dessus,
 // dans le même motif et le même coloris (le seul chemin réaliste vers un Mammouth Pirate). Même règle dans serveur.sql (fusion_evenement).
 const FUSION_EV = [3,3,2,2,2];
-const evPool = () => S.specs.filter(s=>eventOf(s) && !s.shiny && !s.secret && s.id!==S.active && !S.vitrine.includes(s.id) && (!srvOn() || s.srv));
+const evPool = () => S.specs.filter(s=>eventOf(s) && !s.shiny && !s.secret && !s.lock && s.id!==S.active && !S.vitrine.includes(s.id) && (!srvOn() || s.srv));
 // Pour chaque bille d'événement à fusionner : combien on en a en tout (vitrine, bille active et shiny comprises).
 // Si la fusion en laisse au moins une, elle ne prend que des doubles ; sinon elle emporte le dernier exemplaire (avertissement).
 const evKey = dupKey;
@@ -8419,7 +8422,7 @@ function fuseDemoMenu(){
 // les billes qu'on n'a qu'en un exemplaire et qu'on peut quand même échanger (jamais proposées par défaut)
 function recyclableSingles(){
   const cnt = slotCounts();
-  return S.specs.filter(x=>cnt[dupKey(x)]===1 && !x.shiny && !x.secret && !isSeason(x) && x.id!==S.active && !S.vitrine.includes(x.id) && (!srvOn() || x.srv));
+  return S.specs.filter(x=>cnt[dupKey(x)]===1 && !x.shiny && !x.secret && !x.lock && !isSeason(x) && x.id!==S.active && !S.vitrine.includes(x.id) && (!srvOn() || x.srv));
 }
 // regroupe des billes par modèle (taille, motif, coloris), les plus grosses d'abord
 function byModel(list){
@@ -8809,18 +8812,19 @@ function openModal(id, pv, reveal=false){
       </dl>
       ${pv&&pv.cour?`<p class="meta">${esc(pv.cour)}</p>`:pv?`<p class="meta">Aperçu Billepedia · ${S.specs.some(x=>slotKey(x)===slotKey(s))?"tu as déjà ce format dans ce motif.":"pas encore dans ta boîte à billes."}</p>`:`<div class="modal-actions">
         ${S.vitrine.includes(s.id)?`<button class="btn btn-ghost" data-action="vit-rm" data-id="${s.id}">${ic("layers",16)} Retirer de la vitrine</button>`:`<button class="btn btn-ghost" data-action="vit-add" data-id="${s.id}">${ic("layers",16)} Mettre en vitrine</button>`}
-        ${(()=>{ if(!srvOn()) return "";
+        ${s.secret ? "" : `<button class="btn ${s.lock?"btn-yellow":"btn-ghost"}" data-action="lock-toggle" data-id="${s.id}" aria-pressed="${!!s.lock}">${ic("lock",16,2.4)} ${s.lock?"Déverrouiller":"Verrouiller"}</button>`}
+        ${s.lock ? `<span class="sell-why lock-why">${ic("lock",14,2.4)} Verrouillée : elle ne peut être ni vendue, ni troquée, ni échangée, ni fusionnée</span>` : (()=>{ if(!srvOn()) return "";
           // (14 octobre 2026) une bille qui ne peut pas être vendue dit pourquoi (avant, le bouton disparaissait sans explication)
           const why = s.secret ? (isDepart(s) ? "" : "Les billes secrètes ne se vendent pas") : estLiee(s) ? `Vendable à partir du ${new Date(lieeJusqu(s)).toLocaleDateString("fr-FR",{day:"numeric", month:"long"})} (cadeau de bienvenue)` : !s.srv ? "Pas encore enregistrée sur le serveur : réessaie dans un instant" : "";
           return why ? `<span class="sell-why">${ic("lock",14,2.4)} ${why}</span>` : s.secret ? "" : `<button class="btn btn-ghost" data-action="cour-sell-this" data-id="${s.id}">${ic("cour",16)} Vendre au marché</button>` })()}
         
-        ${S.active===s.id||s.secret?"":`<button class="btn btn-ghost" data-action="recycle" data-id="${s.id}">${ic("candy",16)} Échanger · +${fmt(recycleValue(s))} ${CUR.many}</button>`}
+        ${S.active===s.id||s.secret||s.lock?"":`<button class="btn btn-ghost" data-action="recycle" data-id="${s.id}">${ic("candy",16)} Échanger · +${fmt(recycleValue(s))} ${CUR.many}</button>`}
         ${sib.length>1 && keepOf(sib).id!==s.id?`<button class="btn btn-ghost" data-action="keep-copy" data-id="${s.id}">${ic("check",16)} Garder cet exemplaire</button>`:""}
         ${fromSheet?"":`<button class="btn btn-ghost" data-action="sheet" data-type="${s.type}" data-fam="${s.family}">${ic("layers",16)} Tous ses coloris · ${casePals(caseList)} / ${BASE_PALS}</button>`}
       </div>
       ${sib.length>1 && keepOf(sib).id===s.id?`<p class="meta">C'est l'exemplaire que tu gardes.</p>`:""}
-      ${S.active!==s.id && sib.length===1 && isBasePal(s.pal)?`<p class="warn-note">C'est ton seul exemplaire de cette bille : l'échanger la retirera de ton album.</p>`:""}
-      ${S.active!==s.id && s.shiny?`<p class="warn-note">Attention, c'est une shiny !</p>`:""}`}
+      ${!s.lock && S.active!==s.id && sib.length===1 && isBasePal(s.pal)?`<p class="warn-note">C'est ton seul exemplaire de cette bille : l'échanger la retirera de ton album.</p>`:""}
+      ${!s.lock && S.active!==s.id && s.shiny?`<p class="warn-note">Attention, c'est une shiny !</p>`:""}`}
     </div>
   </div>`;
   if(reveal){
@@ -14562,8 +14566,9 @@ async function syncMarbles(quiet){
   let fixed = 0;
   S.specs.forEach(x=>{ const y = there.get(x.id); if(y && y.via && !x.via) Object.assign(x, {via:y.via, at:y.at, found:y.found});
     // (14 octobre 2026) une copie gardée sur l'appareil pouvait avoir perdu la marque « bille du serveur » : le bouton « Vendre au marché » disparaissait
-    if(y){ const k = `${!!x.srv}|${x.no}|${x.lie}`; if(y.srv) x.srv = true; if(y.no && !x.no) x.no = y.no; if(y.lie!=null) x.lie = y.lie; else if(x.lie!=null) delete x.lie;
-      if(k!==`${!!x.srv}|${x.no}|${x.lie}`) fixed++ } });
+    if(y){ const k = `${!!x.srv}|${x.no}|${x.lie}|${!!x.lock}`; if(y.srv) x.srv = true; if(y.no && !x.no) x.no = y.no; if(y.lie!=null) x.lie = y.lie; else if(x.lie!=null) delete x.lie;
+      if(y.lock) x.lock = true; else delete x.lock;   // (16 octobre 2026) le verrou (supabase/verrou.sql)
+      if(k!==`${!!x.srv}|${x.no}|${x.lie}|${!!x.lock}`) fixed++ } });
   const gone = new Set(S.specs.filter(x=>sync.known.has(x.id) && !there.has(x.id)).map(x=>x.id));
   const come = list.filter(x=>!here.has(x.id));
   if(!gone.size && !come.length){ if(fixed){ save(); if(ui.view!=="cour" && document.getElementById("ov").hidden) renderView() } return }
@@ -15625,6 +15630,7 @@ document.addEventListener("click", e=>{
     case "spec": ui.fromSheet = !!t.dataset.fromSheet; openModal(t.dataset.id); break;
     case "sheet": openSheet(t.dataset.type, +t.dataset.fam); break;
     case "sheet-back": if(ui.sheet) openSheet(ui.sheet.t, ui.sheet.f); break;
+    case "lock-toggle": { const x = specById(t.dataset.id); if(!x || x.secret) break; lockToggle(x); break }
     case "keep-copy": { const x=specById(t.dataset.id); if(!x) break; S.keep=S.keep||{}; S.keep[dupKey(x)]=x.id; save(); toast("C'est cet exemplaire que tu gardes. Les autres restent échangeables à la Confiserie."); ui.fromSheet = !!document.querySelector(".sheet-back"); openModal(x.id); if(ui.view==="collection"||ui.view==="confiserie") renderView(); break }
     case "cover": { const x=specById(t.dataset.id); if(!x) break; S.cover=S.cover||{}; S.cover[slotKey(x)]=x.id; save(); Sound.click(); toast(`${PALETTES[x.pal][0]} s'affiche maintenant dans l'album.`); openSheet(x.type,x.family); if(ui.view==="collection") renderView(); break }
     case "preview": openModal(null, pedia[+t.dataset.k]); break;
@@ -16065,6 +16071,16 @@ const libres = () => Math.max(0, S.jetons - Math.min(S.depart||0, S.jetons));
 const departTxt = () => S.depart ? ` (tes ${fmt(Math.min(S.depart, S.jetons))} ${CUR.many} de départ servent seulement à jouer)` : "";
 const ECO_ERR = {limite_jeu:`Tu as déjà acheté tes parties du jour : reviens demain !`, limite_plinko:`Tu as déjà lâché tes ${PACHI_MAX} billes du jour au Plinko : reviens demain !`, bonbecs_depart:`Les ${CUR.many} de ton cadeau de départ servent à ouvrir des sachets et à jouer, pas aux trocs ni au marché.`, evenement_fini:"L'événement est terminé : ce sachet n'est plus en vente.", pas_assez:`Il te manque des ${CUR.many}.`, pas_encore:"Ton sachet gratuit n'est pas encore prêt.", plus_de_sac:"Tu n'as plus de sachet offert de ce type.",
   reseau:"Pas de connexion : réessaie dans un instant.", fusion_invalide:"Cette fusion n'est pas possible.", reserve_aux_testeurs:"Ces outils sont réservés aux comptes de test."};
+// (16 octobre 2026) verrouiller une bille : ni vente, ni troc, ni Confiserie, ni fusion (le serveur le vérifie : supabase/verrou.sql)
+function lockToggle(x){
+  const v = !x.lock, fin = () => { if(v) x.lock = true; else delete x.lock; save();
+    ui.fromSheet = !!document.querySelector(".sheet-back"); openModal(x.id); if(ui.view==="collection"||ui.view==="confiserie") renderView();
+    const troc = v && [...(cour.trocs?.envoyes||[]).flatMap(t=>t.donne||[]), ...(cour.trocs?.recus||[]).flatMap(t=>t.demande||[])].some(b=>b?.id===x.id);
+    toast(v ? (troc ? "Bille verrouillée. Le troc en cours où elle est ne pourra plus être accepté." : "Bille verrouillée : elle ne peut plus être vendue, troquée, échangée ni fusionnée.") : "Bille déverrouillée.") };
+  if(!srvOn()) return fin();
+  if(!x.srv){ toast("Cette bille n'est pas encore enregistrée sur le serveur : réessaie dans un instant."); return }
+  srv(()=>Cloud.cour.verrouiller([x.id], v)).then(fin, e=>{ if(e?.code==="en_vente") toast("Elle est en vente au marché : retire d'abord son annonce, puis verrouille-la."); else srvFail(e) });
+}
 function srvFail(e){
   console.warn("Serveur :", e);
   if(e?.code!=="deja") toast(ECO_ERR[e?.code] || "Le serveur n'a pas pu enregistrer ça. Réessaie dans un instant.");
@@ -16203,7 +16219,7 @@ async function cloudStart0(user){
     if(dirty && cached && P.sauvegarde.appareil===DEVICE){
       adoptState(cached);   // cet appareil a joué après son dernier envoi : sa copie est la plus récente
       S.specs = S.specs.filter(s=>cloudIds.has(s.id));   // (7 octobre 2026) mais ses billes, seulement celles de la base
-      { const C = new Map(P.billes.map(b=>[b.id, b])); S.specs.forEach(x=>{ const y = C.get(x.id); if(y?.srv) x.srv = true; if(y?.no && !x.no) x.no = y.no; if(y && y.lie!=null) x.lie = y.lie }) }   // (14 octobre 2026) la marque « bille du serveur »
+      { const C = new Map(P.billes.map(b=>[b.id, b])); S.specs.forEach(x=>{ const y = C.get(x.id); if(y?.srv) x.srv = true; if(y?.no && !x.no) x.no = y.no; if(y && y.lie!=null) x.lie = y.lie; if(y?.lock) x.lock = true; else if(y) delete x.lock }) }   // (14 octobre 2026) la marque « bille du serveur »
       // billes gagnées ailleurs entre-temps
       const mine = new Set(S.specs.map(s=>s.id)), prev = new Set(prevKnown);
       P.billes.forEach(s=>{ if(!mine.has(s.id) && !prev.has(s.id)) S.specs.push(s) });

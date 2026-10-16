@@ -408,7 +408,7 @@ returns jsonb language plpgsql security definer set search_path = public as $$
 declare qui uuid := interne.moi(); total int := 0; lie int := 0; v int; n int := 0; b record;
 begin
   perform 1 from portefeuilles where joueur = qui for update;
-  for b in select * from billes where id = any(ids) and proprietaire = qui and detruite_le is null and secrete is null for update loop
+  for b in select * from billes where id = any(ids) and proprietaire = qui and detruite_le is null and secrete is null and not verrouillee for update loop   -- (16 octobre 2026) sauf les verrouillées
     if b.origine = 'serveur' then
       v := case when b.shiny > 0 and interne.coloris_normal(b.coloris)
         then (interne.revente())[interne.rang(b.taille)+1] * 10 + (interne.prime_shiny())[b.shiny]
@@ -431,7 +431,7 @@ returns jsonb language plpgsql security definer set search_path = public as $$
 declare qui uuid := interne.moi(); tailles text[]; rg int; nb int; b record; lie boolean;
 begin
   select array_agg(distinct taille), count(*), bool_or(interne.encore_liee(liee, qui)) into tailles, nb, lie from billes
-    where id = any(ids) and proprietaire = qui and detruite_le is null and secrete is null
+    where id = any(ids) and proprietaire = qui and detruite_le is null and secrete is null and not verrouillee
       and shiny = 0 and interne.coloris_normal(coloris) and origine = 'serveur';
   if tailles is null or array_length(tailles,1) <> 1 then raise exception 'fusion_invalide'; end if;
   rg := interne.rang(tailles[1]);
@@ -458,7 +458,7 @@ begin
   select count(*) nb, count(distinct taille) nt, count(distinct decor) nd, count(distinct coloris) nc, min(taille) taille, min(decor) decor, min(coloris) coloris,
     bool_or(interne.encore_liee(liee, qui)) lie
     into g from billes
-    where id = any(ids) and proprietaire = qui and detruite_le is null and secrete is null and shiny = 0 and origine = 'serveur';
+    where id = any(ids) and proprietaire = qui and detruite_le is null and secrete is null and not verrouillee and shiny = 0 and origine = 'serveur';
   if g.nb = 0 or g.nt <> 1 or g.nd <> 1 or g.nc <> 1 or g.nb <> array_length(ids,1) or not interne.decor_evenement(g.decor) then raise exception 'fusion_invalide'; end if;
   rg := interne.rang(g.taille);
   if rg >= 5 or g.nb <> (interne.fusion_ev_n())[rg+1] then raise exception 'fusion_invalide'; end if;

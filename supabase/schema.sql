@@ -124,6 +124,7 @@ begin
   with d as (
     update billes set detruite_le = now(), detruite_raison = left(raison, 30)
     where id = any(ids) and proprietaire = auth.uid() and detruite_le is null
+      and not coalesce(verrouillee, false)   -- (16 octobre 2026) une bille verrouillée n'est jamais retirée (verrou.sql)
     returning id
   ), h as (
     insert into billes_historique (bille, de, vers, motif) select id, auth.uid(), null, 'detruite' from d

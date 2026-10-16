@@ -3095,11 +3095,18 @@ button.cp-who:hover b{text-decoration:underline}
 .mk-own svg{width:12px;height:12px}
 .mk-own.miss{--mc:#C98A12;background:color-mix(in srgb,var(--mc) 16%,transparent);color:var(--mc)}
 .mk-own.miss.col{--mc:#2A93C4}
-.tb-own{position:relative;display:inline-flex}
-.tb-own > i{position:absolute;right:-2px;bottom:-2px;display:grid;place-items:center;min-width:17px;height:17px;padding:0 3px;border-radius:999px;font-style:normal;font-size:9.5px;font-weight:900;color:#fff;background:var(--green);border:2px solid var(--panel);pointer-events:none}
-.tb-own > i svg{width:9px;height:9px}
-.tb-own.dec > i{background:#E0A020}
-.tb-own.col > i{background:#3FB6E8}
+/* (16 octobre 2026) les billes d'un troc en cours, avec leur nom et une étiquette */
+.tb-list{display:grid;gap:6px}
+.tb-it{display:flex;align-items:center;gap:8px;min-width:0}
+.tb-it > span{display:grid;justify-items:start;min-width:0;line-height:1.2}
+.tb-it b{max-width:100%;font-size:13.5px;font-weight:900;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.tb-tg{--g:var(--muted);margin-top:3px;padding:1px 8px;border-radius:999px;font-style:normal;font-size:11px;font-weight:900;color:color-mix(in srgb,var(--g) 75%,var(--ink));background:color-mix(in srgb,var(--g) 16%,var(--panel))}
+.tb-tg.dec{--g:#E0A020}.tb-tg.col{--g:#3FB6E8}.tb-tg.sh{--g:#8A63D2}.tb-tg.dbl{--g:var(--green)}.tb-tg.last{--g:var(--warn)}
+.troc-bilan{display:flex;flex-wrap:wrap;gap:6px 14px;margin:0;font-size:13px;font-weight:800;color:var(--ink-2)}
+.troc-bilan span{display:inline-flex;align-items:center;gap:5px}
+.troc-bilan svg{width:11px;height:11px}
+.troc-bilan .ok{color:color-mix(in srgb,var(--green) 80%,var(--ink))}
+.troc-bilan .warn{color:var(--warn)}
 .miss-leg{display:flex;gap:14px;flex-wrap:wrap;margin:0 0 10px;font-size:12.5px;font-weight:800;color:var(--ink-2)}
 .miss-leg span{display:inline-flex;align-items:center;gap:5px}
 .miss-leg svg{width:13px;height:13px}
@@ -15096,18 +15103,39 @@ function trocCard(t, kind){
   const get = me==="vers" ? t.donne : t.demande, give = me==="vers" ? t.demande : t.donne;
   const getB = me==="vers" ? t.donne_bonbecs : t.demande_bonbecs, giveB = me==="vers" ? t.demande_bonbecs : t.donne_bonbecs;
   const other = me==="vers" ? t.de_pseudo : t.vers_pseudo;
-  const px = kind==="fini" ? 40 : 52, own = kind==="fini" ? null : ownInfo();
-  const mark = (x, cls) => { if(!own || cls!=="get") return courBall(x,px); const o = own(x);
-    return `<span class="tb-own${o.n?"":o.dec?" dec":" col"}" title="${o.n?`Déjà dans ta boîte${o.n>1?` (×${o.n})`:""}`:o.dec?"Un motif qui te manque":"Un coloris qui te manque"}">${courBall(x,px)}<i>${o.n ? (o.n>1?`×${o.n}`:ic("check",9,3.4)) : SPARK}</i></span>` };
-  const side = (cls, lbl, list, n) => `<div class="troc-side ${cls}"><small>${lbl}</small><div class="troc-balls">${list.map(x=>mark(x,cls)).join("")}${bbChip(n)}${!list.length && !(n>0) ? `<span class="meta">rien</span>` : ""}</div></div>`;
+  // (16 octobre 2026) pour un troc en cours, chaque bille a son nom et une étiquette : ce qu'elle t'apporte (tu reçois) ou ce que tu perds (tu donnes)
+  const px = kind==="fini" ? 40 : 44, info = kind==="fini" ? null : trocInfo();
+  const side = (cls, lbl, list, n) => { const its = info ? list.map(x=>info(x, cls)) : null;
+    return `<div class="troc-side ${cls}"><small>${lbl}</small>${its && list.length
+      ? `<div class="tb-list">${list.map((x,k)=>`<div class="tb-it">${courBall(x,px)}<span><b>${esc(courName(x))}</b><em class="tb-tg ${its[k].c}">${its[k].t}</em></span></div>`).join("")}</div>${n>0?`<div class="troc-balls">${bbChip(n)}</div>`:""}`
+      : `<div class="troc-balls">${list.map(x=>courBall(x,px)).join("")}${bbChip(n)}${!list.length && !(n>0) ? `<span class="meta">rien</span>` : ""}</div>`}</div>` };
+  // le bilan en une ligne, sous les deux côtés
+  const bilan = info ? (()=>{ const g = get.map(x=>info(x,"get").c), d = give.map(x=>info(x,"give").c), out = [];
+    const nn = g.filter(c=>c==="dec"||c==="col"||c==="sh").length;
+    if(get.length) out.push(nn ? `<span class="ok">${SPARK} ${nn===get.length && nn>1 ? "Que des billes qui te manquent" : `${nn} bille${nn>1?"s":""} qui te manque${nn>1?"nt":""}`}</span>` : `<span>Tu as déjà ${get.length>1?"toutes ces billes":"cette bille"}</span>`);
+    const nl = d.filter(c=>c==="last").length, n1 = d.filter(c=>c==="one").length;
+    if(give.length) out.push(nl ? `<span class="warn">${nl} bille${nl>1?"s":""} quitterai${nl>1?"en":""}t ton album</span>` : n1 ? `<span>${n1} bille${n1>1?"s":""} en un seul exemplaire</span>` : `<span class="ok">Tu ne donnes que des doubles</span>`);
+    return out.length ? `<p class="troc-bilan">${out.join("")}</p>` : "" })() : "";
   const who = kind==="fini" ? (t.de_pseudo===S.name ? t.vers_pseudo : t.de_pseudo) : other;
   return `<div class="troc ${kind}" id="troc-${t.id}">
     <div class="troc-head">${avatarIni(who, kind==="fini"?28:34)}<span class="t">${kind==="recu" ? `<b>${esc(other)}</b> te propose un troc` : kind==="envoye" ? `Ton troc avec <b>${esc(other)}</b>` : `Troc avec <b>${esc(who)}</b>`}</span>${kind==="fini" ? `<span class="st ${t.statut}">${t.statut==="accepte"?ic("check",12,3):""}${TROC_ST[t.statut]||t.statut}</span>` : kind==="envoye" ? `<span class="st">${ic("clock",12,2.6)} En attente</span>` : ""}${kind==="fini" ? "" : finSpan(t.le + TROC_HEURES*36e5)}<time>${timeAgo(t.le)}</time></div>
     <div class="troc-sides">${side("get", `${ic("arrow",13,2.6)} Tu reçois`, get, getB)}<span class="troc-arrow">${ic("swap",20)}</span>${side("give", `Tu donnes`, give, giveB)}</div>
+    ${bilan}
     ${t.mot ? `<p class="troc-mot">« ${esc(t.mot)} »</p>` : ""}
     ${kind==="recu" ? `<div class="troc-act"><button class="btn btn-yellow btn-sm" data-action="troc-oui" data-id="${t.id}">${ic("check",16)} Accepter</button><button class="btn btn-ghost btn-sm" data-action="troc-contre" data-id="${t.id}">${ic("swap",16)} Contre-proposer</button><button class="btn btn-ghost btn-sm" data-action="troc-non" data-id="${t.id}">Refuser</button></div>`
       : kind==="envoye" ? `<div class="troc-act"><button class="btn btn-ghost btn-sm" data-action="troc-annuler" data-id="${t.id}">Annuler ce troc</button></div>` : ""}
   </div>`;
+}
+// l'étiquette d'une bille dans un troc, d'après ta boîte. Tu reçois : motif ou coloris qui te manque, shiny que tu n'as pas, ou déjà là (×n).
+// Tu donnes : un double (il t'en reste), ton seul exemplaire, ou une bille qui quitterait ton album (dernier exemplaire de ce coloris)
+function trocInfo(){
+  const n = new Map(), sk = new Set(), ck = new Map();
+  S.specs.forEach(s=>{ const k = dupKey(s); n.set(k, (n.get(k)||0)+1); sk.add(slotKey(s)); ck.set(colorKey(s), (ck.get(colorKey(s))||0)+1) });
+  return (x, cls) => { const m = n.get(dupKey(x))||0;
+    if(cls==="get") return m ? {c:"have", t:`Tu l'as déjà${m>1?` · ×${m}`:""}`}
+      : !sk.has(slotKey(x)) ? {c:"dec", t:"Motif qui te manque"} : !ck.has(colorKey(x)) ? {c:"col", t:"Coloris qui te manque"} : {c:"sh", t:"Shiny que tu n'as pas"};
+    return m>1 ? {c:"dbl", t:`Double · tu en as ${m}`}
+      : isBasePal(x.pal) && (ck.get(colorKey(x))||0)<=1 ? {c:"last", t:"Quittera ton album"} : {c:"one", t:`${x.shiny?"Shiny · ":""}${x.shiny?"ton":"Ton"} seul exemplaire`} };
 }
 // Le troc (4 octobre 2026) : un copain choisi dans une liste (même avec 250 copains), puis les offres en trois onglets
 function courTroc(){

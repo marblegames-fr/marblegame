@@ -1,0 +1,330 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Le Bocal</title>
+<script type="importmap">{"imports":{"three":"https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.js","three/addons/":"https://cdn.jsdelivr.net/npm/three@0.160.0/examples/jsm/","cannon-es":"https://cdn.jsdelivr.net/npm/cannon-es@0.20.0/dist/cannon-es.js"}}</script>
+<style>
+/* (16 octobre 2026) Maquette : « Le Bocal ». Toutes tes billes dans un bocal en verre, en 3D (les mêmes billes vernies que la Grande Course),
+   en vraie physique : on attrape le bocal pour le secouer, on le renverse sur le plateau, on range tout, on touche une bille pour la voir.
+   Billes : le moteur de billes du jeu (tikalo-demo-rendu.js). Physique : cannon-es, en centimètres (une bille = 16 mm, un mammouth = 40 mm). */
+:root{--bg:#120D0A;--panel:#1E1712;--line:#3A2C22;--ink:#FFF3E6;--muted:#C7AE98;--yellow:#FFC93F;--blue:#6FCBDB}
+*{box-sizing:border-box;margin:0;padding:0}
+html,body{height:100%}
+body{background:var(--bg);color:var(--ink);font:600 14px/1.4 "Segoe UI",system-ui,sans-serif;display:flex;flex-direction:column;overflow:hidden}
+header{display:flex;flex-wrap:wrap;align-items:center;gap:8px;padding:10px 16px;border-bottom:1px solid var(--line);background:var(--panel)}
+h1{font-size:16px;margin-right:auto}
+button,select{height:36px;padding:0 13px;border-radius:10px;border:1px solid var(--line);background:#2B211A;color:var(--ink);font:inherit;cursor:pointer;touch-action:manipulation}
+button:hover{border-color:#5A4636}
+button.main{background:var(--yellow);border-color:var(--yellow);color:#2A1E10}
+button.on{background:var(--blue);border-color:var(--blue);color:#06222A}
+#fps{min-width:64px;text-align:right;color:var(--muted);font-variant-numeric:tabular-nums;font-size:12.5px}
+.stage{position:relative;flex:1;min-height:0;touch-action:none}
+.stage canvas{position:absolute;inset:0;width:100%;height:100%;display:block}
+.tag{position:absolute;left:12px;top:12px;z-index:2;padding:6px 12px;border-radius:999px;background:rgba(0,0,0,.5);font-size:13px;pointer-events:none}
+.tag[hidden]{display:none}
+.card{position:absolute;left:12px;bottom:12px;z-index:3;display:flex;align-items:center;gap:12px;padding:10px 14px 10px 10px;border-radius:16px;background:rgba(30,23,18,.9);
+  border:1px solid var(--line);box-shadow:0 10px 30px rgba(0,0,0,.4);max-width:calc(100% - 24px);transition:opacity .25s,transform .25s}
+.card[hidden]{display:flex;opacity:0;transform:translateY(10px);pointer-events:none}
+.card img{width:58px;height:58px;flex:none}
+.card b{display:block;font-size:15px}
+.card small{display:block;color:var(--muted);font-size:12.5px}
+.card .rar{font-weight:800}
+.hint{position:absolute;right:12px;bottom:12px;z-index:2;padding:8px 12px;border-radius:12px;background:rgba(0,0,0,.45);color:var(--muted);font-size:12.5px;line-height:1.45;pointer-events:none;max-width:290px}
+.hint b{color:var(--ink)}
+.loading{position:absolute;inset:0;display:grid;place-items:center;background:var(--bg);z-index:9;font-size:16px}
+.loading[hidden]{display:none}
+@media (max-width:640px){ header{padding:8px 10px;gap:6px} h1{width:100%;font-size:15px} button,select{height:34px;padding:0 10px;font-size:13px} .hint{display:none} }
+</style>
+</head>
+<body>
+<header>
+  <h1>Le Bocal · maquette</h1>
+  <button class="main" id="b-shake">🫙 Secouer</button>
+  <button id="b-pour">↪ Renverser</button>
+  <button id="b-tidy">⤴ Ranger</button>
+  <button id="b-motion" hidden>📱 Secouer le téléphone</button>
+  <select id="nb" aria-label="Nombre de billes"><option value="20">20 billes</option><option value="40" selected>40 billes</option><option value="80">80 billes</option></select>
+  <button id="b-sound" class="on">🔊 Son</button>
+  <span id="fps">— im/s</span>
+</header>
+<div class="stage" id="stage">
+  <span class="tag" id="tag" hidden></span>
+  <div class="card" id="card" hidden><img id="c-img" alt=""><div><b id="c-name"></b><small id="c-type"></small><small id="c-rar" class="rar"></small></div></div>
+  <div class="hint"><b>Attrape le bocal</b> et bouge la souris (ou le doigt) pour le secouer. <b>Glisse à côté</b> pour tourner autour. <b>Touche une bille</b> pour la voir.</div>
+  <div class="loading" id="loading">Le bocal se remplit…</div>
+</div>
+
+<script src="tikalo-demo-rendu.js"></script>
+<script type="module">
+import * as THREE from "three";
+import * as CANNON from "cannon-es";
+import {RoomEnvironment} from "three/addons/environments/RoomEnvironment.js";
+import {OrbitControls} from "three/addons/controls/OrbitControls.js";
+
+const Q = new URLSearchParams(location.search), HQ = !matchMedia("(pointer:coarse)").matches && !Q.has("lq");   // ?lq : rendu léger (tests)
+const RJ = 6.5, HJ = 15, GL = .35;            // le bocal : rayon intérieur, hauteur, épaisseur du verre (cm)
+const REST = new CANNON.Vec3(0, .6, 0);       // le fond du bocal posé sur le plateau
+const TRAY = {x:34, z:22};                     // le plateau en bois (demi-côtés)
+
+/* ---------- la scène ---------- */
+const stage = document.getElementById("stage");
+const renderer = new THREE.WebGLRenderer({antialias:true, powerPreference:"high-performance"});
+renderer.setPixelRatio(Math.min(HQ ? 2 : 1.5, devicePixelRatio)); renderer.shadowMap.enabled = true; renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+renderer.toneMapping = THREE.ACESFilmicToneMapping; renderer.toneMappingExposure = 1.05;
+stage.prepend(renderer.domElement);
+const scene = new THREE.Scene();
+const camera = new THREE.PerspectiveCamera(42, 1, .5, 400);
+camera.position.set(0, 21, 36);
+const controls = new OrbitControls(camera, renderer.domElement);
+controls.target.set(1, 5.5, 0); controls.enablePan = false; controls.enableDamping = true; controls.minDistance = 16; controls.maxDistance = 80; controls.maxPolarAngle = 1.42;
+const pm = new THREE.PMREMGenerator(renderer); scene.environment = pm.fromScene(new RoomEnvironment(), .04).texture; pm.dispose();
+// le fond : une pièce chaude, le soir, sous une lampe
+{ const c = document.createElement("canvas"); c.width = 4; c.height = 256; const x = c.getContext("2d"), g = x.createLinearGradient(0,0,0,256);
+  g.addColorStop(0, "#2A1D15"); g.addColorStop(.55, "#4A3324"); g.addColorStop(1, "#1C130E"); x.fillStyle = g; x.fillRect(0,0,4,256);
+  const t = new THREE.CanvasTexture(c); t.colorSpace = THREE.SRGBColorSpace; scene.background = t }
+scene.add(new THREE.HemisphereLight("#FFE9D2", "#3A2A20", .55));
+const lamp = new THREE.DirectionalLight("#FFE2BE", 2.6); lamp.position.set(-18, 40, 20); lamp.castShadow = true;
+lamp.shadow.mapSize.set(2048, 2048); Object.assign(lamp.shadow.camera, {left:-38, right:38, top:30, bottom:-30, near:5, far:110}); lamp.shadow.bias = -.0004; lamp.shadow.normalBias = .03;
+scene.add(lamp);
+
+// le plateau en bois (veinage dessiné à la main)
+function woodTex(){ const S = HQ ? 1024 : 512, c = document.createElement("canvas"); c.width = c.height = S; const x = c.getContext("2d"), im = x.createImageData(S, S), D = im.data;
+  for(let j=0;j<S;j++) for(let i=0;i<S;i++){ const u = i/S, v = j/S;
+    const w = Math.sin((v*95 + Math.sin(u*4.1 + v*3)*2.2 + Math.sin(u*17 + v*9)*.6 + Math.sin(u*61)*.12)*Math.PI), g = .5 + .5*w, k = Math.pow(g, 6)*.22 + Math.sin(u*700 + v*90)*.025 + Math.sin(v*13 + u*2)*.05;
+    const o = (j*S + i)*4; D[o] = 150 - k*80; D[o+1] = 98 - k*60; D[o+2] = 58 - k*38; D[o+3] = 255 }
+  x.putImageData(im, 0, 0); const t = new THREE.CanvasTexture(c); t.colorSpace = THREE.SRGBColorSpace; t.anisotropy = 8; t.wrapS = t.wrapT = THREE.RepeatWrapping; t.repeat.set(1, 1); return t }
+const wood = new THREE.MeshPhysicalMaterial({map:woodTex(), roughness:.55, clearcoat:.35, clearcoatRoughness:.4});
+{ const top = new THREE.Mesh(new THREE.BoxGeometry(TRAY.x*2, 2, TRAY.z*2), wood); top.position.y = -1; top.receiveShadow = true; scene.add(top);
+  const rim = (w, d, x, z) => { const m = new THREE.Mesh(new THREE.BoxGeometry(w, 2.4, d), wood); m.position.set(x, 1.2, z); m.castShadow = m.receiveShadow = true; scene.add(m) };
+  rim(TRAY.x*2 + 2, 1, 0, TRAY.z + .5); rim(TRAY.x*2 + 2, 1, 0, -TRAY.z - .5); rim(1, TRAY.z*2, TRAY.x + .5, 0); rim(1, TRAY.z*2, -TRAY.x - .5, 0);
+  const under = new THREE.Mesh(new THREE.PlaneGeometry(600, 600), new THREE.MeshStandardMaterial({color:"#24180F", roughness:1})); under.rotation.x = -Math.PI/2; under.position.y = -2.05; under.receiveShadow = true; scene.add(under) }
+
+// le bocal : du vrai verre, un col roulé, une étiquette en papier kraft ; son couvercle posé à côté
+const jarG = new THREE.Group(); scene.add(jarG);
+{ const P = [], O = RJ + GL, arc = (cx, cy, r, a0, a1, n) => { for(let k=0;k<=n;k++){ const a = a0 + (a1-a0)*k/n; P.push(new THREE.Vector2(cx + r*Math.cos(a), cy + r*Math.sin(a))) } };
+  P.push(new THREE.Vector2(0, -.6)); arc(O - 1.4, -.6 + 1.4, 1.4, -Math.PI/2, 0, 8);
+  P.push(new THREE.Vector2(O, HJ - .4)); arc(O + .25, HJ, .45, -Math.PI*.6, Math.PI*.9, 10);   // le col roulé
+  P.push(new THREE.Vector2(RJ, HJ - .2)); arc(RJ - 1, 1, 1, 0, -Math.PI/2, 6); P.push(new THREE.Vector2(0, 0));
+  const glass = new THREE.MeshPhysicalMaterial({color:"#FFFFFF", transmission:1, thickness:.5, ior:1.48, roughness:.03, attenuationColor:"#DDF3EA", attenuationDistance:30,
+    clearcoat:1, clearcoatRoughness:.03, specularIntensity:1, side:THREE.DoubleSide, envMapIntensity:1.1});
+  const m = new THREE.Mesh(new THREE.LatheGeometry(P, HQ ? 96 : 56), glass); m.renderOrder = 2; jarG.add(m);
+  // l'étiquette
+  const c = document.createElement("canvas"); c.width = 512; c.height = 256; const x = c.getContext("2d");
+  x.fillStyle = "#D9B98C"; x.fillRect(0, 0, 512, 256); for(let i=0;i<900;i++){ x.fillStyle = `rgba(90,60,30,${Math.random()*.08})`; x.fillRect(Math.random()*512, Math.random()*256, 2, 2) }
+  x.strokeStyle = "#8A6038"; x.lineWidth = 5; x.setLineDash([14, 9]); x.strokeRect(14, 14, 484, 228);
+  x.fillStyle = "#4A2E16"; x.textAlign = "center"; x.font = "italic 800 78px 'Segoe Print','Comic Sans MS',cursive"; x.fillText("Mes billes", 256, 128);
+  x.font = "700 30px 'Segoe UI',sans-serif"; x.fillStyle = "#6E4A2A"; x.fillText("ne pas toucher !", 256, 192);
+  const lt = new THREE.CanvasTexture(c); lt.colorSpace = THREE.SRGBColorSpace;
+  const lab = new THREE.Mesh(new THREE.CylinderGeometry(O + .04, O + .04, 3.6, 48, 1, true, -.7, 1.4), new THREE.MeshStandardMaterial({map:lt, roughness:.95, side:THREE.DoubleSide}));
+  lab.position.y = 10.9; lab.rotation.y = -.25; lab.castShadow = true; jarG.add(lab);
+  // le couvercle, posé sur le plateau
+  const metal = new THREE.MeshPhysicalMaterial({color:"#C9A24A", metalness:1, roughness:.28, clearcoat:.5});
+  // (un tissu vichy rouge sur le dessus, comme les pots de confiture)
+  const vc = document.createElement("canvas"); vc.width = vc.height = 256; const vx = vc.getContext("2d"); vx.fillStyle = "#FFF6EC"; vx.fillRect(0, 0, 256, 256);
+  for(let i=0;i<256;i+=32){ vx.fillStyle = "rgba(200,30,40,.55)"; vx.fillRect(i, 0, 16, 256); vx.fillRect(0, i, 256, 16) }
+  const vt = new THREE.CanvasTexture(vc); vt.colorSpace = THREE.SRGBColorSpace; vt.wrapS = vt.wrapT = THREE.RepeatWrapping; vt.repeat.set(3, 3);
+  const cloth = new THREE.MeshStandardMaterial({map:vt, roughness:.95});
+  const lid = new THREE.Mesh(new THREE.CylinderGeometry(O + .6, O + .6, 1.4, 64), [metal, cloth, metal]); lid.position.set(-15, .7, 9); lid.rotation.z = .02; lid.castShadow = lid.receiveShadow = true; scene.add(lid);
+  const knob = new THREE.Mesh(new THREE.TorusGeometry(O + .55, .25, 12, 64), metal); knob.rotation.x = Math.PI/2; knob.position.set(-15, 1.4, 9); scene.add(knob) }
+
+/* ---------- la physique (en cm) ---------- */
+const world = new CANNON.World({gravity:new CANNON.Vec3(0, -981, 0)});
+world.broadphase = new CANNON.SAPBroadphase(world); world.allowSleep = true; world.solver.iterations = 14;
+const mM = new CANNON.Material("bille"), mG = new CANNON.Material("verre"), mW = new CANNON.Material("bois");
+world.addContactMaterial(new CANNON.ContactMaterial(mM, mM, {friction:.06, restitution:.55}));
+world.addContactMaterial(new CANNON.ContactMaterial(mM, mG, {friction:.08, restitution:.35}));
+world.addContactMaterial(new CANNON.ContactMaterial(mM, mW, {friction:.25, restitution:.3}));
+{ const b = new CANNON.Body({mass:0, material:mW}); b.kind = "bois";
+  b.addShape(new CANNON.Box(new CANNON.Vec3(TRAY.x + 2, 1, TRAY.z + 2)), new CANNON.Vec3(0, -1, 0));
+  [[TRAY.x + 1, 0, 1, TRAY.z + 2], [-TRAY.x - 1, 0, 1, TRAY.z + 2], [0, TRAY.z + 1, TRAY.x + 2, 1], [0, -TRAY.z - 1, TRAY.x + 2, 1]].forEach(([x, z, hx, hz])=>
+    b.addShape(new CANNON.Box(new CANNON.Vec3(hx, 12, hz)), new CANNON.Vec3(x, 11, z)));   // des bords hauts (invisibles au-dessus du rebord) : rien ne tombe du plateau
+  world.addBody(b) }
+const jar = new CANNON.Body({mass:0, type:CANNON.Body.KINEMATIC, material:mG}); jar.kind = "verre";
+{ const NW = 28, hw = (RJ + 2)*Math.tan(Math.PI/NW)*1.08;
+  jar.addShape(new CANNON.Box(new CANNON.Vec3(RJ + 2, 1, RJ + 2)), new CANNON.Vec3(0, -1, 0));
+  for(let j=0;j<NW;j++){ const a = (j + .5)*Math.PI*2/NW, q = new CANNON.Quaternion(); q.setFromAxisAngle(new CANNON.Vec3(0,1,0), -a);
+    jar.addShape(new CANNON.Box(new CANNON.Vec3(1, (HJ + .5)/2, hw)), new CANNON.Vec3(Math.cos(a)*(RJ + 1), (HJ + .5)/2, Math.sin(a)*(RJ + 1)), q) } }
+jar.position.copy(REST); world.addBody(jar);
+
+/* ---------- les sons : le cliquetis du verre ---------- */
+let AC = null, master = null, soundOn = true, budget = 0, lastB = 0;
+const audio = () => { if(!AC){ AC = new (window.AudioContext || window.webkitAudioContext)(); master = AC.createGain(); master.gain.value = .55;
+    const comp = AC.createDynamicsCompressor(); master.connect(comp).connect(AC.destination) } if(AC.state==="suspended") AC.resume() };
+function clink(kind, v, r, x){
+  if(!AC || !soundOn) return; const t = AC.currentTime; if(t - lastB > .05){ budget = Math.max(0, budget - (t - lastB)*40); lastB = t } if(budget > 10) return; budget++;
+  const a = Math.min(1, v/180)*(kind==="bois" ? .5 : 1), pan = AC.createStereoPanner ? AC.createStereoPanner() : null; if(pan){ pan.pan.value = Math.max(-1, Math.min(1, x/25)); pan.connect(master) }
+  const out = pan || master, tone = (f, g, d) => { const o = AC.createOscillator(), e = AC.createGain(); o.frequency.value = f; o.type = "sine";
+    e.gain.setValueAtTime(0, t); e.gain.linearRampToValueAtTime(g*a, t + .002); e.gain.exponentialRampToValueAtTime(.0001, t + d); o.connect(e).connect(out); o.start(t); o.stop(t + d + .02) };
+  const s = 1/Math.sqrt(r/.8), j = .9 + Math.random()*.2;   // les grosses billes sonnent plus grave
+  if(kind==="bille"){ tone(3400*s*j, .22, .07); tone(3400*s*j*2.76, .07, .035) }
+  else if(kind==="verre"){ tone(2100*j, .16, .16); tone(2100*j*1.51, .06, .1); tone(4700*j, .03, .05) }
+  else { tone(240*s*j, .35, .06); tone(900*s*j, .08, .03) }
+}
+
+/* ---------- les billes ---------- */
+const TAILLES = [["mini", 3], ["bille", 6], ["calot", 3], ["boulet", 1], ["mammouth", .5]];
+const FAM_OK = FAMILIES.map((f,i)=>i).filter(i=>FAM_W[i] > 0);
+const B = HQ ? {TW:1024, TH:512, PX:256, K:64} : {TW:512, TH:256, PX:160, K:40};
+const bakeGL = makeGL(document.createElement("canvas"));
+let LUT = null;
+function lut(){ if(LUT) return LUT;   // (le même collage que la Grande Course : g3Lut dans index.html)
+  const {TW, TH, PX, K} = B, ga = Math.PI*(3-Math.sqrt(5)), V = [];
+  for(let k=0;k<K;k++){ const y = 1 - 2*(k+.5)/K, r = Math.sqrt(1-y*y), a = k*ga, v = [Math.cos(a)*r, y, Math.sin(a)*r], h = Math.abs(v[1]) < .9 ? [0,1,0] : [1,0,0];
+    let c0 = [h[1]*v[2]-h[2]*v[1], h[2]*v[0]-h[0]*v[2], h[0]*v[1]-h[1]*v[0]]; const l0 = Math.hypot(...c0); c0 = c0.map(x=>x/l0);
+    V.push([c0, [v[1]*c0[2]-v[2]*c0[1], v[2]*c0[0]-v[0]*c0[2], v[0]*c0[1]-v[1]*c0[0]], v]) }
+  const sl = Math.hypot(.18, .18, 1), SW = [.18/sl, -.18/sl, 1/sl], off = new Uint32Array(TW*TH), uR = .9;
+  for(let r=0;r<TH;r++){ const th = Math.PI*(r+.5)/TH, st = Math.sin(th), ct = Math.cos(th);
+    for(let q=0;q<TW;q++){ const ph = 2*Math.PI*(q+.5)/TW, d0 = -Math.cos(ph)*st, d1 = ct, d2 = Math.sin(ph)*st;
+      let best = -2, bk = 0, n0 = 0, n1 = 0;
+      for(let k=0;k<K;k++){ const M = V[k], a = M[0][0]*d0+M[0][1]*d1+M[0][2]*d2, b = M[1][0]*d0+M[1][1]*d1+M[1][2]*d2, c = M[2][0]*d0+M[2][1]*d1+M[2][2]*d2;
+        const sc = a*SW[0] + b*SW[1] + c*SW[2]; if(sc > best){ best = sc; bk = k; n0 = a; n1 = b } }
+      const px = Math.min(PX-1, Math.max(0, Math.round((n0*uR + 1)/2*PX))), py = Math.min(PX-1, Math.max(0, Math.round((n1*uR + 1)/2*PX)));
+      off[r*TW + q] = (bk*PX*PX + py*PX + px)*4 } }
+  return LUT = {off, rots:V.map(M=>[...M[0], ...M[1], ...M[2]]), buf:new Uint8Array(K*PX*PX*4)} }
+const TEX = new Map();
+function bake(spec){ const key = `${spec.seed}|${spec.type}|${spec.family}|${spec.pal}|${spec.shiny}`; if(TEX.has(key)) return TEX.get(key);
+  const {TW, TH, PX, K} = B, L = lut(), gl = bakeGL.gl, Bf = L.buf, off = L.off;
+  for(let k=0;k<K;k++){ bakeGL.draw(spec, PX, L.rots[k], 3.3); gl.readPixels(0, 0, PX, PX, gl.RGBA, gl.UNSIGNED_BYTE, Bf.subarray(k*PX*PX*4, (k+1)*PX*PX*4)) }
+  const c = document.createElement("canvas"); c.width = TW; c.height = TH; const x = c.getContext("2d"), im = x.createImageData(TW, TH), D = im.data;
+  for(let j=0, n=TW*TH; j<n; j++){ const o = off[j], a = Bf[o+3] || 255, d = j*4; D[d] = Math.min(255, Bf[o]*255/a); D[d+1] = Math.min(255, Bf[o+1]*255/a); D[d+2] = Math.min(255, Bf[o+2]*255/a); D[d+3] = 255 }
+  x.putImageData(im, 0, 0); const tx = new THREE.CanvasTexture(c); tx.colorSpace = THREE.SRGBColorSpace; tx.anisotropy = 8; TEX.set(key, tx); return tx }
+
+const SPH = new THREE.SphereGeometry(1, HQ ? 48 : 32, HQ ? 32 : 20);
+let marbles = [], gen = 0;
+function fill(n){
+  const g = ++gen; marbles.forEach(m=>{ if(m.body.world) world.removeBody(m.body); scene.remove(m.mesh); m.mesh.material.dispose() }); marbles = [];
+  const r0 = rng(hash("bocal" + n));
+  for(let i=0;i<n;i++){
+    const type = TAILLES[pickW(r0(), TAILLES.map(t=>t[1]))][0], sh = r0() < .12 ? 1 + pickW(r0(), [75, 21, 4]) : 0;
+    const spec = makeSpec(type, {seed:hash("bocal" + n + "|" + i), family:FAM_OK[Math.floor(r0()*FAM_OK.length)], shiny:sh});
+    const R = TYPES[type].mm/20;
+    const body = new CANNON.Body({mass:R*R*R*6, material:mM, shape:new CANNON.Sphere(R), linearDamping:.04, angularDamping:.08, sleepSpeedLimit:1.5, sleepTimeLimit:.6});
+    const a = r0()*Math.PI*2, d = Math.sqrt(r0())*(RJ - R - .3);
+    body.position.set(Math.cos(a)*d, REST.y + HJ - 1 - R, Math.sin(a)*d); body.kind = "bille"; body.R = R;
+    body.addEventListener("collide", e=>{ const o = e.body; if(o.kind==="bille" && o.id < body.id) return;
+      const v = Math.abs(e.contact.getImpactVelocityAlongNormal()); if(v > 12) clink(o.kind, v, o.kind==="bille" ? Math.max(R, o.R) : R, body.position.x) });
+    // elles tombent dans le bocal une à une, par le haut (sans se chevaucher)
+    setTimeout(()=>{ if(g!==gen) return; world.addBody(body); mesh.visible = true }, 120 + i*70);
+    const col = PALETTES[spec.pal]?.[1] || "#888";
+    const mesh = new THREE.Mesh(SPH, new THREE.MeshPhysicalMaterial({color:col, roughness:.06, clearcoat:1, clearcoatRoughness:.02, envMapIntensity:.95}));
+    mesh.scale.setScalar(R); mesh.castShadow = mesh.receiveShadow = true; mesh.userData.i = i; mesh.visible = false; scene.add(mesh);
+    marbles.push({spec, body, mesh, R}) }
+  // les vraies billes, une à une (pendant qu'elles tombent dans le bocal)
+  const tag = document.getElementById("tag");
+  (async()=>{ for(let i=0;i<marbles.length;i++){ if(g!==gen) return; tag.hidden = false; tag.textContent = `Les billes se fabriquent… ${i}/${marbles.length}`;
+      const m = marbles[i]; try{ m.mesh.material.map = bake(m.spec); m.mesh.material.color.set("#FFFFFF"); m.mesh.material.needsUpdate = true }catch(e){ console.warn(e); break }
+      await new Promise(r=>setTimeout(r, 0)) } tag.hidden = true })();
+}
+
+/* ---------- le bocal qui bouge : la main (souris, doigt), « Secouer », le téléphone, « Renverser » ---------- */
+const hand = new THREE.Vector3(), handT = new THREE.Vector3();   // le décalage voulu par la main, et lissé
+const spr = {o:new THREE.Vector3(), v:new THREE.Vector3()};        // un ressort : les secousses (bouton, téléphone)
+let pour = 0, pourT = 0, pourHold = 0, autoShake = 0;
+const POUR = new THREE.Vector3(Math.cos(.6), 0, Math.sin(.6));   // on renverse vers l'avant-droite : les billes roulent vers la caméra
+const qd = new THREE.Quaternion(), qTilt = new THREE.Quaternion(), qPour = new THREE.Quaternion(), prevP = new THREE.Vector3(REST.x, REST.y, REST.z), tiltV = new THREE.Vector3();
+const AX = new THREE.Vector3(), tq = new CANNON.Quaternion();
+function driveJar(dt, now){
+  // les secousses : un ressort qu'on pousse
+  if(autoShake > 0){ autoShake -= dt; const k = Math.sin(now/1000*2*Math.PI*7); spr.v.x += k*2600*dt; spr.v.y += Math.max(0, Math.sin(now/1000*2*Math.PI*3.5))*900*dt }
+  spr.v.addScaledVector(spr.o, -260*dt).multiplyScalar(Math.exp(-7*dt)); spr.o.addScaledVector(spr.v, dt);
+  spr.o.x = Math.max(-7, Math.min(7, spr.o.x)); spr.o.z = Math.max(-7, Math.min(7, spr.o.z)); spr.o.y = Math.max(0, Math.min(8, spr.o.y));
+  // renverser : on soulève le bocal, on le penche, on attend, on le remet
+  if(pourT===-1) pourT = now;
+  if(pourT){ const e = (now - pourT)/1000; pour = e < 1.6 ? e/1.6 : e < 1.6 + pourHold ? 1 : Math.max(0, 1 - (e - 1.6 - pourHold)/1.4); if(e > 3 + pourHold) pourT = 0 }
+  if(Q.has("pv")) pour = +Q.get("pv");   // (tests) ?pv=0..1 : le bocal figé à moitié renversé
+  const ep = pour*pour*(3 - 2*pour);
+  handT.lerp(dragging ? hand : hand.set(0, 0, 0), 1 - Math.exp(-14*dt));
+  const P = new THREE.Vector3(REST.x, REST.y, REST.z).add(handT.clone().multiplyScalar(1 - ep)).add(spr.o.clone().multiplyScalar(1 - ep)).add(new THREE.Vector3(0, 11.5*ep, 0));
+  P.y = Math.max(REST.y, P.y);
+  // la main penche un peu le bocal dans le sens où il part ; « Renverser » le couche vers la droite
+  const vel = P.clone().sub(prevP).divideScalar(Math.max(dt, 1e-3)); prevP.copy(P);
+  tiltV.lerp(vel, 1 - Math.exp(-10*dt)); const tl = Math.min(.32, tiltV.length()*.0035);
+  if(tl > 1e-4) qTilt.setFromAxisAngle(AX.set(tiltV.z, 0, -tiltV.x).normalize(), tl); else qTilt.identity();
+  qPour.setFromAxisAngle(AX.set(POUR.z, 0, -POUR.x), 1.85*ep + (pour===1 ? Math.sin(now/180)*.06 : 0));
+  qd.copy(qPour).multiply(qTilt);
+  // un corps « cinématique » : on lui donne la vitesse qui l'amène où on veut (les billes sont poussées pour de vrai)
+  jar.velocity.set((P.x - jar.position.x)/dt, (P.y - jar.position.y)/dt, (P.z - jar.position.z)/dt);
+  const q = jar.quaternion, qc = new THREE.Quaternion(q.x, q.y, q.z, q.w), dq = qd.clone().multiply(qc.invert()); if(dq.w < 0){ dq.x = -dq.x; dq.y = -dq.y; dq.z = -dq.z; dq.w = -dq.w }
+  const ang = 2*Math.acos(Math.min(1, dq.w)), s = Math.sqrt(Math.max(1e-9, 1 - dq.w*dq.w));
+  if(ang > 1e-5) jar.angularVelocity.set(dq.x/s*ang/dt, dq.y/s*ang/dt, dq.z/s*ang/dt); else jar.angularVelocity.set(0, 0, 0);
+  if(dragging || autoShake > 0 || pourT || spr.v.lengthSq() > 4) marbles.forEach(m=>m.body.wakeUp());
+}
+
+/* ---------- la souris et le doigt ---------- */
+const ray = new THREE.Raycaster(), ndc = new THREE.Vector2();
+let dragging = false, down = null;
+const pick = e => { const r = renderer.domElement.getBoundingClientRect(); ndc.set((e.clientX - r.left)/r.width*2 - 1, -(e.clientY - r.top)/r.height*2 + 1); ray.setFromCamera(ndc, camera) };
+renderer.domElement.addEventListener("pointerdown", e=>{ audio(); pick(e);
+  down = {x:e.clientX, y:e.clientY, t:performance.now()};
+  const hit = ray.intersectObject(jarG, true)[0];
+  if(hit && !pourT){ dragging = true; controls.enabled = false; down.jar = true; renderer.domElement.setPointerCapture(e.pointerId) } }, true);
+addEventListener("pointermove", e=>{ if(!dragging || !down) return;
+  const k = 28/Math.max(300, stage.clientHeight), right = new THREE.Vector3().setFromMatrixColumn(camera.matrixWorld, 0).setY(0).normalize();
+  const dx = (e.clientX - down.x)*k, dy = -(e.clientY - down.y)*k;
+  hand.copy(right).multiplyScalar(Math.max(-7, Math.min(7, dx))).setY(Math.max(0, Math.min(9, dy))) });
+addEventListener("pointerup", e=>{ if(!down) return;
+  const tap = Math.hypot(e.clientX - down.x, e.clientY - down.y) < 7 && performance.now() - down.t < 350;
+  if(dragging){ dragging = false; controls.enabled = true }
+  if(tap){ pick(e); const h = ray.intersectObjects(marbles.map(m=>m.mesh), false)[0]; if(h) show(marbles[h.object.userData.i]) }
+  down = null });
+
+/* ---------- la fiche d'une bille touchée ---------- */
+const card = document.getElementById("card"); let cardT = 0;
+function show(m){
+  const s = m.spec, f = FAMILIES[s.family], rar = DECOR_RAR[f.rar];
+  document.getElementById("c-img").src = marbleURL(s, 116);
+  document.getElementById("c-name").textContent = specName(s);
+  document.getElementById("c-type").textContent = TYPES[s.type].label + (s.shiny ? ` · ✨ ${SHINIES[s.shiny].name}` : "");
+  const cr = document.getElementById("c-rar"); cr.textContent = rar.name; cr.style.color = rar.c;
+  card.hidden = false; clearTimeout(cardT); cardT = setTimeout(()=>card.hidden = true, 4500);
+  // elle saute un peu, pour qu'on voie bien laquelle c'est
+  m.body.wakeUp(); m.body.applyImpulse(new CANNON.Vec3((Math.random() - .5)*60*m.body.mass, 420*m.body.mass, (Math.random() - .5)*60*m.body.mass));
+  const mat = m.mesh.material; mat.emissive.set("#FFE7B0"); mat.emissiveIntensity = .5; setTimeout(()=>mat.emissiveIntensity = 0, 500);
+}
+
+/* ---------- les boutons ---------- */
+document.getElementById("b-shake").onclick = ()=>{ audio(); autoShake = 1.3 };
+document.getElementById("b-pour").onclick = ()=>{ audio(); if(!pourT){ pourT = -1; pourHold = 3.6 } };
+document.getElementById("b-tidy").onclick = ()=>{ audio(); let k = 0;
+  // les billes sorties du bocal y retombent une à une, par le haut
+  const inv = new THREE.Matrix4().copy(jarG.matrixWorld).invert(), v = new THREE.Vector3();
+  marbles.forEach(m=>{ v.copy(m.body.position).applyMatrix4(inv); if(v.y > -1 && v.y < HJ + 1 && Math.hypot(v.x, v.z) < RJ + .2) return;
+    setTimeout(()=>{ if(pourT) return; const a = Math.random()*Math.PI*2, d = Math.sqrt(Math.random())*(RJ - m.R - .4);
+      m.body.position.set(jar.position.x + Math.cos(a)*d, jar.position.y + HJ + 4 + m.R, jar.position.z + Math.sin(a)*d); m.body.velocity.set(0, -60, 0);
+      m.body.angularVelocity.set(Math.random()*8 - 4, Math.random()*8 - 4, Math.random()*8 - 4); m.body.wakeUp() }, 90*k++) }) };
+document.getElementById("nb").onchange = e=>fill(+e.target.value);
+document.getElementById("b-sound").onclick = e=>{ audio(); soundOn = !soundOn; e.currentTarget.classList.toggle("on", soundOn); e.currentTarget.textContent = soundOn ? "🔊 Son" : "🔇 Son" };
+// le téléphone : on le secoue, le bocal aussi
+const bm = document.getElementById("b-motion");
+if(window.DeviceMotionEvent && matchMedia("(pointer:coarse)").matches){ bm.hidden = false;
+  bm.onclick = async ()=>{ audio(); try{ if(DeviceMotionEvent.requestPermission && await DeviceMotionEvent.requestPermission()!=="granted") return }catch(e){ return }
+    bm.classList.add("on"); bm.textContent = "📱 Secoue !";
+    addEventListener("devicemotion", ev=>{ const a = ev.acceleration; if(!a || a.x==null) return; const right = new THREE.Vector3().setFromMatrixColumn(camera.matrixWorld, 0).setY(0).normalize();
+      spr.v.addScaledVector(right, -a.x*9); spr.v.y += Math.max(0, a.y)*7 }) } }
+
+/* ---------- la boucle ---------- */
+function resize(){ const r = stage.getBoundingClientRect(); renderer.setSize(r.width, r.height, false); camera.aspect = r.width/r.height;
+  camera.fov = r.width < r.height ? 58 : 42; camera.updateProjectionMatrix() }
+addEventListener("resize", resize); resize();
+let last = performance.now(), fpsN = 0, fpsT = last, simNow = 0;   // simNow : le temps de la physique (les animations du bocal le suivent)
+function loop(now){
+  requestAnimationFrame(loop);
+  const dt = Math.min(1/30, Math.max(1/240, (now - last)/1000)); last = now;
+  simNow += dt*1000; driveJar(dt, simNow);
+  world.step(1/240, dt, 10);
+  jarG.position.copy(jar.position); jarG.quaternion.copy(jar.quaternion);
+  for(const m of marbles){ m.mesh.position.copy(m.body.position); m.mesh.quaternion.copy(m.body.quaternion) }
+  controls.update(); renderer.render(scene, camera);
+  fpsN++; if(now - fpsT > 1000){ document.getElementById("fps").textContent = `${Math.round(fpsN*1000/(now - fpsT))} im/s`; fpsN = 0; fpsT = now }
+}
+fill(+Q.get("n") || 40); if(Q.get("n")) document.getElementById("nb").value = Q.get("n");
+document.getElementById("loading").hidden = true;
+requestAnimationFrame(loop);
+window.__ready = true;
+// (tests) ?do=pour|shake|tidy : appuie sur un bouton tout seul au bout de 4 s
+if(Q.get("do")) setTimeout(()=>document.getElementById("b-" + Q.get("do"))?.click(), 4000);
+</script>
+</body>
+</html>

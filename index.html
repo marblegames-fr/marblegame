@@ -636,6 +636,12 @@ main{padding:22px 24px 40px;min-width:0}
 .type-head .prog{margin-left:auto;display:flex;align-items:center;gap:10px;font-weight:800;color:var(--ink-2);font-variant-numeric:tabular-nums}
 .type-head .prog .bar{width:140px}
 .card-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(132px,1fr));gap:12px}
+.title-sel{position:relative;display:flex;align-items:center;max-width:340px;color:var(--ink-2)}
+.title-sel svg{position:absolute;left:13px;pointer-events:none;color:#C07A0C}
+.title-sel select{width:100%;height:44px;padding:0 38px 0 40px;border-radius:999px;border:1.5px solid var(--line-2);color:var(--ink);font:inherit;font-weight:800;font-size:15px;cursor:pointer;-webkit-appearance:none;appearance:none;
+  background-color:var(--panel-2);background-image:linear-gradient(45deg,transparent 50%,var(--ink-2) 50%),linear-gradient(135deg,var(--ink-2) 50%,transparent 50%);background-position:calc(100% - 20px) 52%,calc(100% - 15px) 52%;background-size:5px 5px;background-repeat:no-repeat}
+.title-sel select:hover{border-color:var(--ink-2)}
+.title-sel select:focus{outline:none;border-color:var(--yellow);box-shadow:0 0 0 4px color-mix(in srgb,var(--yellow) 22%,transparent)}
 .m-card{position:relative;display:flex;flex-direction:column;align-items:center;gap:5px;padding:14px 10px 12px;border-radius:var(--r-md);background:var(--panel);border:1px solid var(--line);text-align:center;transition:transform .15s,box-shadow .15s}
 .m-card:hover{transform:translateY(-3px);box-shadow:var(--shadow)}
 .m-card .ball{height:92px;display:grid;place-items:center}
@@ -8495,6 +8501,8 @@ async function setPhoto(file){
   }catch(e){ toast("Impossible de lire cette image.") }
 }
 document.addEventListener("change", e=>{ if(e.target.id==="photo-in") setPhoto(e.target.files?.[0]) });
+// (16 octobre 2026) le titre affiché : un menu déroulant au lieu de tous les titres en boutons
+document.addEventListener("change", e=>{ if(e.target.id==="title-sel" && S.titles.includes(e.target.value)){ S.title = e.target.value; save(); renderTop(); renderView() } });
 function viewProfile(){
   const act = activeSpec(), slots = slotsOwned();
   const best = [...S.specs].sort((a,b)=>rareKey(a)-rareKey(b))[0];
@@ -8513,8 +8521,8 @@ function viewProfile(){
         <small class="meta">3 à 20 caractères : lettres, chiffres, espaces, - et _</small>
       </form>
       <div class="prof-titles"><span class="lbl">Titre affiché</span>
-        <div class="chips">${S.titles.map(n=>`<button class="chip" data-action="set-title" data-title="${esc(n)}" aria-pressed="${S.title===n}">${esc(n)}</button>`).join("")}</div>
-        <small class="meta">Débloque d'autres titres avec les défis et le passe de saison.</small>
+        <label class="title-sel">${ic("trophy",16,2.4)}<select id="title-sel" aria-label="Titre affiché">${S.titles.map(n=>`<option value="${esc(n)}"${S.title===n?" selected":""}>${esc(n)}</option>`).join("")}</select></label>
+        <small class="meta">${S.titles.length>1 ? `${S.titles.length} titres débloqués. ` : ""}Débloque d'autres titres avec les défis et le passe de saison.</small>
       </div>
     </div>
   </section>
@@ -15677,7 +15685,6 @@ document.addEventListener("click", e=>{
       toast("Passe premium débloqué ! Ton Sachet Collector t'attend, et les récompenses premium déjà atteintes aussi.") });
       break;
     }
-    case "set-title": S.title = t.dataset.title; save(); renderTop(); renderView(); break;
     case "lab-open": labOpen(); break;
     case "lab-pick": labOpen(+t.dataset.c, t.dataset.v ?? null); break;
     case "bille-odds": billeOdds(t.dataset.from); break;

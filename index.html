@@ -13041,7 +13041,7 @@ async function g3Load(){
   // S'ils ne se chargent pas, la course garde le rendu simple.
   let FX = null;
   try{ FX = Object.assign({}, ...await Promise.all(["environments/RoomEnvironment.js", "geometries/RoundedBoxGeometry.js", "postprocessing/EffectComposer.js",
-      "postprocessing/RenderPass.js", "postprocessing/GTAOPass.js", "postprocessing/UnrealBloomPass.js", "postprocessing/OutputPass.js"].map(f=>import("three/addons/"+f)))) }
+      "postprocessing/RenderPass.js", "postprocessing/GTAOPass.js", "postprocessing/UnrealBloomPass.js", "postprocessing/OutputPass.js", "utils/BufferGeometryUtils.js"].map(f=>import("three/addons/"+f)))) }
   catch(e){ console.warn("Rendu studio indisponible :", e) }
   return G3LIB = {THREE, CANNON, FX};
 }
@@ -13290,9 +13290,9 @@ function g3Fourche(k, r, n, o){
       const zi = wIn/2 + .15, ze = LZ + WID/2 + .4;
       k.box([.25, 1.5, ze - zi], v3.add(top(-.1, sd*(zi + ze)/2), [0, .6, 0]), q, "wall") });
     const PA = g3Trace([["S", 36]], {pente:p, from:[x0 + 3.4, y0 - p*3.4, LZ]});
-    const A = g3Trough(k, PA, {WID, mur:1.5, kind:o.kind, plat0:true});
+    const A = g3Trough(k, PA, {WID, mur:1.5, kind:o.kind, plat0:true, bankMax:o.bankMax});
     const PB = g3Trace([["S",3],["G",6,90],["S",8],["D",6,90],["S",10],["D",6,90],["S",8],["G",6,90],["S",2]], {pente:p, from:[x0 + 3.4, y0 - p*3.4, -LZ]});
-    const B = g3Trough(k, PB, {WID, mur:1.5, kind:o.kind, plat0:true});
+    const B = g3Trough(k, PB, {WID, mur:1.5, kind:o.kind, plat0:true, bankMax:o.bankMax});
     // les obstacles : sur le raccourci tous les 5 morceaux à partir du 4e ; sur le détour au milieu de ses lignes droites
     obsA = obsA.map(t=>t==="champis" ? "champi" : t); obsB = obsB.map(t=>t==="champis" ? "champi" : t);
     g3Obstacles(k, A.frames, WID, obsA.map((t, j)=>[4 + j*Math.floor((A.frames.length - 8)/Math.max(1, obsA.length - 1)), t]), r);
@@ -13452,14 +13452,15 @@ const G3C = {
     theme:{bg:"#1B1428", ramp:"#C9955C", tray:"#2E8CFF"},
     build(k, r, n){ const o = {RAMPS:5, LEN:30, WID:6, STEP:8, ANG:12*Math.PI/180, wallBumps:[.12,.27,.42,.57,.72,.88]};
       const z = g3Zigzag(k, o, (i, {dir, sY})=>{
-        for(let j=0;j<5;j++){ const x = -dir*(o.LEN/2-6) + dir*j*(o.LEN-12)/4, zs = j%2 ? [-.95,.95] : [-1.75,0,1.75];
+        // (16 octobre 2026) pas de plots juste à la sortie de la grille de départ : tout le peloton y bouchonnait (et à 24 billes, la grille les touchait)
+        for(let j=i===0 ? 1 : 0;j<5;j++){ const x = -dir*(o.LEN/2-6) + dir*j*(o.LEN-12)/4, zs = j%2 ? [-.95,.95] : [-1.75,0,1.75];
           zs.forEach(zz=>k.cyl(.22, 1.4, [x, sY(x)+.7, zz + (r()-.5)*.3])) } });
       return {...z, ...g3ZigStart(k, o, n, r), cam:g3ZigCam} }},
 
   // Un vrai Plinko géant : un seul grand mur de plots entre deux vitres, du haut jusqu'au bac. Le mur est penché vers l'arrière
   // (les billes descendent moins vite qu'en chute libre) ; des champignons au hasard et des bosses dans les murs mélangent le peloton.
   plinko:{name:"Le Grand Plinko", desc:"Un mur géant de plots entre deux vitres : les billes tombent de plot en plot jusqu'en bas. Impossible de savoir qui arrivera la première !",
-    theme:{bg:"#120B24", ramp:"#7B4FD6", tray:"#FF4FD8", peg:"#FFD34D", bump:"#39E6FF"}, axis:1, g:.42,
+    theme:{bg:"#120B24", ramp:"#7B4FD6", tray:"#FF4FD8", peg:"#FFD34D", bump:"#39E6FF"}, axis:1, g:.42, peloton:0,   // (16 octobre 2026) le mur de plots mélange déjà tout ; poussée vers le bas, une bille filait tout droit entre les plots
     build(k, r, n){
       const W = 18, GAP = 1.0, D = GAP+.6, ROWS = 40, DY = 1.5, top = 4, path = [[0, top, 0]];
       const yLast = top - 2 - (ROWS-1)*DY, yb = yLast - 3, bottom = yb - 2;
@@ -13613,7 +13614,7 @@ const G3C = {
 
   // Un billard en pente : des boules rangées en triangle, des bandes, et une poche-raccourci au bout de chaque tapis
   billard:{name:"Le Billard géant", desc:"Quatre tapis verts en pente, des triangles de boules à contourner, et au bout de chaque tapis une poche qui fait gagner du terrain.",
-    theme:{bg:"#10201A", ramp:"#1F7A4A", tray:"#7A4A22", pool:"#F2C230", pool2:"#C8312E"},
+    theme:{bg:"#10201A", ramp:"#1F7A4A", tray:"#7A4A22", pool:"#F2C230", pool2:"#C8312E"}, peloton:0,   // (16 octobre 2026) poussées, des billes sautaient hors des tapis par les poches ; il brasse déjà bien tout seul
     build(k, r, n){ const o = {RAMPS:4, LEN:34, WID:10, STEP:7, ANG:8.5*Math.PI/180, wall:2.2, holes:i=>({f:.88, side:i%2 ? 1 : -1, w:1.6}), wallBumps:[.15,.4,.65]};
       const z = g3Zigzag(k, o, (i, {dir, sY})=>{ const xf = f => -dir*o.LEN/2 + dir*f*o.LEN;
         [.3,.62].forEach((f, t)=>{ const x0 = xf(f), zc = ((i+t)%2 ? 1 : -1)*1.2;
@@ -13681,8 +13682,12 @@ const G3C = {
   // La mine, le soir : le raccourci passe par des portes qui tournent (les wagonnets !), le détour fait le tour de la galerie
   mine:{name:"La Mine", desc:"Une mine éclairée aux lanternes, deux fourches et quatre galeries : des portes qui tournent, des wagonnets qui balaient la voie… Quel chemin sera le bon ?",
     theme:{bg:"#140E0A", ramp:"#6B5440", tray:"#FFB547", spin:"#C9A36B", peg:"#FFB547"}, form:"fourche",
-    build(k, r, n){ return g3Fourche(k, r, n, {pente:.09, obs:{A1:["porte","plots","porte","bosse","porte"], B1:["moulin","champis","plots"],
-      A2:["moulin","champis","porte","plots","moulin"], B2:["bosse","moulin","bosse"]}}) }},
+    // (16 octobre 2026) bankMax : les branches moins relevées. Le relevé d'un virage met une vingtaine de morceaux à se défaire : dans les
+    // lignes droites du détour, la piste restait penchée, la bille collée au mur du bas, et sur une pente de 0,09 elle n'avançait presque plus
+    build(k, r, n){ return g3Fourche(k, r, n, {pente:.09, bankMax:.15, obs:{A1:["porte","plots","porte","bosse","porte"], B1:["moulin","champis","plots"],
+      // (16 octobre 2026) le détour de la 2e fourche commence par un champignon bien au milieu : la bosse (décalée au hasard), juste après
+      // le virage encore relevé, ne laissait qu'un peu plus d'une bille contre le mur du bas, où tout le monde se calait
+      A2:["moulin","champis","porte","plots","moulin"], B2:["champi","moulin","bosse"]}}) }},
 
   // ---------- (14 octobre 2026) les entonnoirs en cascade ----------
   // Le tourbillon, à midi : trois grands entonnoirs d'eau, les billes tournent, tournent… et plongent dans le trou
@@ -13701,8 +13706,9 @@ const G3C = {
   // un obstacle tous les sixièmes de tour (portes, tourniquets, champignons, plots), deux crevasses qui font sauter un tour aux chanceuses,
   // des rochers des deux côtés. Banc : 12 places par bille, 5 changements de tête, gagnant vers 72 s (avant 51 s)
   volcan:{name:"Le Volcan", desc:"Les billes plongent dans le cratère, tourbillonnent, puis dévalent une large piste de roche autour du volcan : rochers, portes de lave, tourniquets… et des crevasses qui font sauter un tour aux chanceuses. Personne n'est à l'abri jusqu'au lac de lave !",
-    theme:{bg:"#2A1410", ramp:"#B39276", tray:"#FF5A1F", rock:"#4A3A34", tower:"#6A4A3E", spin:"#FF5A1F", bump:"#FF8A3D", peg:"#FFD34D"}, form:"spirale",
-    build(k, r, n){ const NTR = 2, o = {WID:5.4, mur:1.6, pente:.1}, T = 3, A = T*TAU, R0 = 7, R1 = 14.5, drop = 20, NS = 180;
+    theme:{bg:"#2A1410", ramp:"#B39276", tray:"#FF5A1F", rock:"#4A3A34", tower:"#6A4A3E", spin:"#FF5A1F", bump:"#FF8A3D", peg:"#FFD34D"}, form:"spirale", peloton:1.6,   // (16 octobre 2026) la spirale est longue : le peloton plus fort, sinon la tête s'échappe
+    build(k, r, n){ const NTR = 2, o = {WID:5.4, mur:1.6, pente:.1, bankMax:.2}, T = 3, A = T*TAU, R0 = 7, R1 = 14.5, drop = 20, NS = 180;
+      // (16 octobre 2026) bankMax .2 : au début de la spirale (rayon 7), relevée au maximum (.42), les billes restaient collées au mur intérieur et calaient
       // la spirale (dans le sens des aiguilles d'une montre vue d'en haut)
       const at = a => { const R = R0 + (R1-R0)*a/A; return [R*Math.cos(a), -drop*a/A, R*Math.sin(a)] };
       // (16 octobre 2026) le cratère : la goulotte de départ arrive dans un entonnoir en haut du volcan, les billes y tournent
@@ -13823,6 +13829,23 @@ function g3Where(W, x, y, z){
       if(e<best){ best = e; s = cum[i-1] + t*(main ? Math.sqrt(L2) : cum[i]-cum[i-1]); T = v3.norm(d) } } }   // (le chemin principal : exactement le calcul d'avant)
   return {s, T};
 }
+// (16 octobre 2026) le peloton : l'ordre d'arrivée est tiré par le serveur (la k-ième arrivée prend le k-ième du tirage), la simulation
+// n'est que le spectacle. Pour qu'il y ait de la bagarre jusqu'au bout, comme en Formule 1 : un élastique invisible (une bille loin devant
+// le milieu du peloton freine un peu, une bille loin derrière est un peu poussée) et l'aspiration (une bille juste derrière une autre
+// prend un peu de vitesse : elle peut la doubler). Tout se relâche sur la fin de la piste : l'arrivée reste naturelle.
+// C.peloton : la force pour un circuit (0 : rien) ; C.pelotonDes : à partir d'où sur la piste (0,2 : après le premier cinquième). Renvoie la poussée de chaque bille, appliquée à chaque pas jusqu'au calcul suivant.
+function g3Peloton(W, fin){
+  const P = (W.C.peloton ?? 1)*(G3.PEL ?? 1); if(!P) return null;
+  const L = W.cum.at(-1), on = fin.map(x=>x==null), info = W.balls.map(b=>g3Where(W, b.position.x, b.position.y, b.position.z));
+  const S = info.map(x=>x.s).filter((x, i)=>on[i]).sort((a, b)=>a-b); if(S.length<2) return null;
+  const ref = S[Math.floor(S.length/2)], w = P*Math.max(0, Math.min(1, (.86 - S.at(-1)/L)/.08));
+  return W.balls.map((b, i)=>{ if(!on[i] || !w){ b.linearDamping = .02; return null }
+    const {s, T} = info[i], d = s - ref; if(s < (W.C.pelotonDes||0)*L){ b.linearDamping = .02; return null }
+    b.linearDamping = .02 + w*Math.min(.35, Math.max(0, d - 2)*.04);
+    let push = w*Math.min(.7, Math.max(0, -d - 2)*.08);
+    if(info.some((o, j)=>j!==i && on[j] && o.s - s > .3 && o.s - s < 2.5)) push += w*.35;   // l'aspiration
+    return push ? [T[0]*push, T[1]*push, T[2]*push] : null });
+}
 function g3Simulate(CANNON, seed, n, cid){
   const {DT, MAXT} = G3, W = g3World(CANNON, seed, n, cid), frames = [], kf = [], fin = new Array(n).fill(null);
   // les chocs (pour le son) : image -> [force bille contre bille, force contre le décor, bille concernée]
@@ -13830,17 +13853,19 @@ function g3Simulate(CANNON, seed, n, cid){
   W.balls.forEach((b,i)=>b.addEventListener("collide", e=>{ const o = e.body, ball = o.mass>0; if(ball && W.balls.indexOf(o)<i) return;
     const v = Math.abs(e.contact.getImpactVelocityAlongNormal()); if(v<.4) return;
     const h = hits.get(curF) || [0,0,i]; if(ball){ if(v>h[0]){ h[0] = v; h[2] = i } } else if(v>h[1]){ h[1] = v; if(!h[0]) h[2] = i } hits.set(curF, h) }));
-  let t = 0;
+  let t = 0, pel = null;
   for(let f=0; f<MAXT/DT; f++){
     curF = f;
     if(t>=3 && W.gate.world) W.world.removeBody(W.gate);   // 3 s de feux, puis la barrière tombe
+    if(t>=4 && f%15===0) pel = g3Peloton(W, fin);
+    if(pel) W.balls.forEach((b, i)=>{ const q = pel[i]; if(q){ b.force.x += q[0]; b.force.y += q[1]; b.force.z += q[2] } });
     W.world.step(DT); t += DT;
     // une bille qui n'avance plus sur le circuit depuis 4 s (calée, ou coincée dans un tas où elle tremble sur place)
     // reçoit une pichenette dans le sens de la piste, de plus en plus forte si ça ne suffit pas
     if(f%30===0) W.balls.forEach((b,i)=>{ if(fin[i]!=null || t<4) return; const {s, T} = g3Where(W, b.position.x, b.position.y, b.position.z);
       if(b.best==null || s > b.best+.5){ b.best = s; b.bestT = t; b.kicks = 0; return }
       // (14 octobre 2026) patience : plus longue dans les entonnoirs, où une bille qui tourne n'est pas bloquée
-      if(t-b.bestT>(W.C.patience||4)){ b.bestT = t; b.kicks = (b.kicks||0)+1; const side = i%2 ? 1 : -1, p = Math.min(2.5, 1+.5*(b.kicks-1));   // plafonnée : une bille ne doit jamais sauter hors de la piste
+      if(t-b.bestT>(W.C.patience||3)){ b.bestT = t; b.kicks = (b.kicks||0)+1; const side = i%2 ? 1 : -1, p = Math.min(2.5, 1+.5*(b.kicks-1));   // plafonnée : une bille ne doit jamais sauter hors de la piste
         // dans le sens de la piste, et sur le côté (sur une piste qui descend tout droit, comme le Plinko, c'est le côté qui débloque)
         const L = Math.hypot(T[0], T[2]) > .3 ? v3.norm([T[2], 0, -T[0]]) : [1, 0, 0];
         b.applyImpulse(new CANNON.Vec3(T[0]*1.2*p + side*L[0]*.8*p, .5, T[2]*1.2*p + side*L[2]*.8*p)) } });
@@ -13890,13 +13915,17 @@ function g3Lut(){
 }
 const g3Key = s => `${s.seed}|${s.type}|${s.family}|${s.pal}|${s.shiny||0}`;
 function g3Keep(key, tx){ if(G3TEX.size>=60){ const [k0, t0] = G3TEX.entries().next().value; t0.dispose(); G3TEX.delete(k0) } G3TEX.set(key, tx); return tx }
-function g3Bake(THREE, spec){
+// (16 octobre 2026) async : les K photos et le collage sont faits par petits bouts, une image d'écran entre chaque
+// (d'un bloc, chaque bille figeait la course une fraction de seconde : 4 à 5 images par seconde pendant le compte à rebours)
+async function g3Bake(THREE, spec, stop){
   const key = g3Key(spec); if(G3TEX.has(key)) return G3TEX.get(key);
-  const {TW, TH, PX, K} = G3B, L = g3Lut(), gl = ballGL.gl, B = L.buf, off = L.off;
-  for(let k=0;k<K;k++){ ballGL.draw(spec, PX, L.rots[k], 3.3); gl.readPixels(0, 0, PX, PX, gl.RGBA, gl.UNSIGNED_BYTE, B.subarray(k*PX*PX*4, (k+1)*PX*PX*4)) }
-  const c = document.createElement("canvas"); c.width = TW; c.height = TH; const x = c.getContext("2d"), im = x.createImageData(TW, TH), D = im.data;
-  for(let j=0, n=TW*TH; j<n; j++){ const o = off[j], a = B[o+3] || 255, d = j*4;
+  const {TW, TH, PX, K} = G3B, L = g3Lut(), gl = ballGL.gl, B = L.buf, off = L.off, frame = () => new Promise(r=>requestAnimationFrame(r));
+  for(let k=0;k<K;k++){ ballGL.draw(spec, PX, L.rots[k], 3.3); gl.readPixels(0, 0, PX, PX, gl.RGBA, gl.UNSIGNED_BYTE, B.subarray(k*PX*PX*4, (k+1)*PX*PX*4));
+    if(k%8===7){ await frame(); if(stop?.()) return null } }
+  const c = document.createElement("canvas"); c.width = TW; c.height = TH; const x = c.getContext("2d"), im = x.createImageData(TW, TH), D = im.data, n = TW*TH, step = 1<<17;
+  for(let j0=0; j0<n; j0+=step){ for(let j=j0, j1=Math.min(n, j0+step); j<j1; j++){ const o = off[j], a = B[o+3] || 255, d = j*4;
     D[d] = Math.min(255, B[o]*255/a); D[d+1] = Math.min(255, B[o+1]*255/a); D[d+2] = Math.min(255, B[o+2]*255/a); D[d+3] = 255 }
+    await frame(); if(stop?.()) return null }
   x.putImageData(im, 0, 0);
   const tx = new THREE.CanvasTexture(c); tx.colorSpace = THREE.SRGBColorSpace; tx.anisotropy = 8; return g3Keep(key, tx);
 }
@@ -13995,7 +14024,21 @@ async function gcWatch3D(race){
     const m = new THREE.Mesh(s.shape==="cyl" ? new THREE.CylinderGeometry(s.size[0], s.size[0], s.size[1], P ? 40 : 20) : s.shape==="sph" ? new THREE.SphereGeometry(s.size[0], P ? 32 : 24, P ? 20 : 16)
       : s.shape==="cone" ? new THREE.CylinderGeometry(s.size[0], s.size[1], s.size[2], P ? 48 : 40) : boxGeo(s.size), MAT[s.kind] || MAT.ramp);
     m.position.set(...s.pos); m.quaternion.set(...s.quat); m.castShadow = see(s.kind); m.receiveShadow = true; if(s.add!==false){ scene.add(m); if(see(s.kind)) solids.push(m) } return m };
-  W.statics.forEach(piece);
+  // (16 octobre 2026) les pièces fixes opaques fondues en un seul objet par matière : le Volcan en avait ~700, chacune redessinée pour les ombres,
+  // les ombres de contact, le verre et l'image (4 à 5 images par seconde). Les pièces d'origine, hors de la scène, servent encore à poser la pépite chinoise.
+  // Les vitres et ce qui est transparent restent à part (ils doivent être triés de loin à près).
+  const lots = new Map();
+  W.statics.forEach(s=>{
+    if(!FX?.mergeGeometries || s.shape==="group"){ piece(s); return }
+    const m = piece({...s, add:false}), mat = m.material;
+    if(mat.transparent || mat.transmission){ scene.add(m); if(see(s.kind)) solids.push(m); return }
+    m.updateMatrixWorld(); if(see(s.kind)) solids.push(m);
+    const key = mat.uuid + "|" + m.castShadow; if(!lots.has(key)) lots.set(key, {mat, cast:m.castShadow, list:[]});
+    lots.get(key).list.push(m) });
+  lots.forEach(({mat, cast, list})=>{
+    const geo = list.length > 1 ? FX.mergeGeometries(list.map(m=>m.geometry.clone().applyMatrix4(m.matrixWorld))) : null;
+    if(!geo){ list.forEach(m=>scene.add(m)); return }   // (pas fondu : chacune à part, comme avant)
+    const one = new THREE.Mesh(geo, mat); one.castShadow = cast; one.receiveShadow = true; scene.add(one) });
   const kinM = W.kin.map(piece);   // les pièces qui tournent (moulins) : replacées à chaque image
   scene.updateMatrixWorld();   // (pour poser la pépite dès la première image)
   const floor = new THREE.Mesh(new THREE.PlaneGeometry(400,400), new THREE.MeshStandardMaterial({color:night ? cbShade(TH.bg, 6) : "#7DB35F", roughness:1}));
@@ -14072,8 +14115,9 @@ async function gcWatch3D(race){
   // les vraies billes, une à une (sans moteur de billes : elles gardent leur sphère aux couleurs du coloris)
   (async()=>{ if(!ballGL || ballGL.gl.isContextLost()) return;
     for(let i=0;i<n;i++){ if(G3V.freed || GCV.g3v!==G3V) return; const sp = who[i].spec; if(!sp) continue;
-      try{ dress(i, sp.type==="chinoise" ? g3BakeTop(THREE, sp) : g3Bake(THREE, sp)) }catch(e){ console.warn("Bille 3D indisponible :", e); return }
-      await new Promise(r=>setTimeout(r, 0)) } })();
+      try{ const tx = sp.type==="chinoise" ? g3BakeTop(THREE, sp) : await g3Bake(THREE, sp, ()=>G3V.freed || GCV.g3v!==G3V); if(!tx) return; dress(i, tx) }
+      catch(e){ console.warn("Bille 3D indisponible :", e); return }
+      await new Promise(r=>requestAnimationFrame(r)) } })();
   // pas de bruit de roulement continu ici : avec toutes les billes, il sonnait comme un vent qui fait mal aux oreilles
   const big = t => { const b = document.getElementById("gc-big"); if(!b) return; b.innerHTML = `<span>${t}</span>`; setTimeout(()=>{ if(b.textContent===t) b.innerHTML = "" }, 1000) };
   const v = new THREE.Vector3(), vf = new THREE.Vector3(), UP = new THREE.Vector3(0,1,0), nT = new THREE.Vector3(), qY = new THREE.Quaternion(), ray = new THREE.Raycaster(), DOWN = new THREE.Vector3(0,-1,0), flatN = [];
@@ -14673,7 +14717,7 @@ let bugKeep = null;   // un message qui n'est pas parti : il est reproposé au p
 // on:false cache le bouton (pendant qu'on prépare la mise à jour) ; on:true le remet, avec la pastille si l'id a changé
 // (16 octobre 2026) deux repères : dot = la pastille rouge du bouton, à changer à CHAQUE mise en ligne qui ajoute une ligne au patchnote
 // (avec txt : la date du jour) ; id = la fenêtre d'annonce à l'arrivée, seulement pour les très gros jours
-const NEWS = {on:true, id:"2026-10-14b", dot:"2026-10-16-1900", url:"/nouveautes.html", txt:"Mise à jour du 16 oct."};
+const NEWS = {on:true, id:"2026-10-14b", dot:"2026-10-16-2130", url:"/nouveautes.html", txt:"Mise à jour du 16 oct."};
 const newsUnseen = () => lsGet("billeo-news-vu")!==NEWS.dot;
 // (14 octobre 2026) à l'arrivée, une fenêtre annonce la mise à jour, une seule fois par mise à jour et par compte (S.newsPop, gardé
 // dans la partie : elle ne revient pas sur un autre appareil) ; on choisit d'aller voir les nouveautés, ou pas
@@ -16415,6 +16459,13 @@ var sync = {on:false, uid:null, email:"", known:new Set(), timer:0, busy:false, 
 var eco = {ready:false, q:Promise.resolve(), testeur:false, busy:false, retry:false, retryT:0, tries:0};
 // outils de test : pour les comptes testeurs, ou quand le jeu tourne sur l'ordinateur (pas en ligne)
 const DEV_HOST = location.protocol==="file:" || /^(localhost|127\.0\.0\.1|)$/.test(location.hostname);
+// (16 octobre 2026) en local seulement (la connexion n'y marche pas : le captcha ne connaît que le vrai site) : ?essai=mine lance une course
+// d'essai par-dessus l'écran de connexion ; &graine=…&n=…&noms=… (dans l'ordre d'arrivée) rejoue une vraie course (même graine, même nombre de billes : la même physique)
+if(DEV_HOST){ const q = new URLSearchParams(location.search), cid = q.get("essai");
+  if(cid) setTimeout(()=>{ const g = +q.get("graine"), n = +q.get("n");
+    if(!g){ gcTest(G3C[cid] ? cid : null); return }
+    const noms = (q.get("noms") || "").split(",").filter(Boolean), list = Array.from({length:n || noms.length || 9}, (_, i)=>({bot:true, nom:noms[i] || "Bille "+(i+1), graine:i+1}));
+    gcWatch({jour:isoDay(), graine:g, depart:Date.now(), resultats:list, test:true, circuit:cid, heure:g3Midi(cid) ? 12 : 20}) }, 1500) }
 const devTools = () => sync.on ? eco.testeur : DEV_HOST;
 const DEV_ACTIONS = ["add-jetons","refill-free","give-shiny","pass-xp","daily-reset","pity-max","shiny-demo","sound-demo","fuse-demo","fuse-demo-menu","reset"];
 function srvOn(){ return !!(sync.on && eco.ready) }

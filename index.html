@@ -4112,7 +4112,7 @@ const EVENTS = {
           ["Rhum ambré","#7A3B0C","#1D1410","#F6E3C0","#8A4A18"]]},
   // novembre 2026 : un héros par coloris (des héros de la cour, inventés pour Tikalo). late : coloris rangés après ceux des joueurs (79 à 83)
   superheros: {name:"Super-héros !", fam:"Super-héros", color:"#2E5BFF", late:true,
-    start:Date.parse("2026-11-01T00:00:00+01:00"), end:Date.parse("2026-11-14T23:59:59+01:00"),
+    start:Date.parse("2026-11-01T00:00:00+01:00"), end:Date.parse("2026-11-15T23:59:59+01:00"),   // (16 octobre 2026) les événements suivent les demi-mois : 1-15 ou 16-fin
     desc:"Deux semaines de billes Super-héros : coche la case sur un sachet payant.",
     pals:[["Capitaine Éclair","#1E4FD8","#E5303A","#FFD23F","#1A3FA8"],
           ["Fulgura","#1A1A22","#FFD23F","#E5303A","#24242C"],
@@ -7906,7 +7906,7 @@ function lockMany(v){
   parts.reduce((p, part)=>p.then(()=>srv(()=>Cloud.cour.verrouiller(part, v))), Promise.resolve())
     .then(fin, e=>{ if(e?.code==="en_vente") toast("Une de ces billes vient d'être mise en vente : retire d'abord son annonce."); else srvFail(e); syncMarbles(true) });
 }
-const BILLES_PAQUET = 100;
+const BILLES_DEBUT = 50, BILLES_PAQUET = 100;
 function viewCollection(){
   if(ui.sel && ui.tab!=="billes") ui.sel = null;
   const slots = slotsOwned(), found = albumFound();
@@ -8053,10 +8053,10 @@ function viewCollection(){
     if(show!=="dups"){ const g = new Map(); list.forEach(x=>{ const k=dupKey(x); if(!g.has(k)) g.set(k,[]); g.get(k).push(x) });
       list = [...g.values()].map(l=>{ const b=[...l].sort(tierSort)[0]; grps.set(b.id,l); return b }) }
     list.sort(by[srt]);
-    // (16 octobre 2026) les très grosses boîtes : 100 cartes, puis « Afficher plus » par paquets de 100.
+    // (16 octobre 2026) les très grosses boîtes : 50 cartes, puis « Afficher plus » par paquets de 100.
     // Les filtres, la recherche et le tri portent toujours sur toute la boîte ; on repart à 100 quand ils changent.
     const pk = [ui.type, show, ui.q||"", srt].join("|");
-    if(ui.billesK!==pk){ ui.billesK = pk; ui.billesN = BILLES_PAQUET }
+    if(ui.billesK!==pk){ ui.billesK = pk; ui.billesN = BILLES_DEBUT }
     const shown = list.slice(0, ui.billesN), rest = list.length - shown.length;
     ui.selPool = list.map(x=>[x.id, (grps.get(x.id)||[x]).map(y=>y.id)]);   // « Tout sélectionner » : toute la liste filtrée, même pas encore affichée
     body = (show==="dups" && recyclableDups().length ? dupsBar() : "") + (list.length ? `<div class="card-grid${ui.sel?" sel-mode":""}">${shown.map(x=>ballCard(x, grps.get(x.id))).join("")}</div>${rest>0 ? `<div class="more-row"><button class="btn btn-ghost" data-action="billes-plus">${ic("plus",16,2.6)} Afficher ${Math.min(rest, BILLES_PAQUET)} de plus</button><small class="meta">${fmt(shown.length)} sur ${fmt(list.length)} cartes</small></div>` : ""}` : `<p class="empty">${qw.length?"Aucune bille ne correspond à ta recherche.":EMPTY[show]||EMPTY.all}</p>`);
@@ -15718,7 +15718,7 @@ document.addEventListener("click", e=>{
     case "sel-toggle": selToggle(t); break;
     case "sel-all": if(!ui.sel) break; (ui.selPool||[]).forEach(([id, ids])=>{ const x = specById(id); if(x && !x.secret) ui.sel.set(id, ids) });
       document.querySelectorAll(".card-grid.sel-mode .m-card[data-id]").forEach(c=>{ if(ui.sel.has(c.dataset.id)){ c.classList.add("picked"); c.setAttribute("aria-pressed", true) } }); selRefresh(); break;
-    case "billes-plus": { const y = scrollY; ui.billesN = (ui.billesN||BILLES_PAQUET) + BILLES_PAQUET; renderView(); scrollTo(0, y); break }
+    case "billes-plus": { const y = scrollY; ui.billesN = (ui.billesN||BILLES_DEBUT) + BILLES_PAQUET; renderView(); scrollTo(0, y); break }
     case "sel-none": if(!ui.sel) break; ui.sel.clear(); document.querySelectorAll(".card-grid.sel-mode .m-card.picked").forEach(c=>{ c.classList.remove("picked"); c.setAttribute("aria-pressed", false) }); selRefresh(); break;
     case "sel-lock": lockMany(t.dataset.v==="1"); break;
     case "lock-toggle": { const x = specById(t.dataset.id); if(!x || x.secret) break; lockToggle(x); break }

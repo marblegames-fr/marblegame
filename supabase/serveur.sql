@@ -180,9 +180,10 @@ create or replace function interne.evenement(nom text, out debut timestamptz, ou
 language sql immutable as $$
   select v.debut, v.fin, v.sac, v.decor, v.coloris from (values
     -- le Pirate prolongé exceptionnellement jusqu'au 31 octobre (10 octobre 2026) ; les suivants restent sur deux semaines
+    -- (16 octobre 2026) calendrier par demi-mois : du 1er au 15, ou du 16 à la fin du mois (une quinzaine peut rester sans événement)
     ('pirates', timestamptz '2026-09-30 00:00:00 Europe/Paris', timestamptz '2026-10-31 23:59:59 Europe/Paris', null, 32, array[65,66,67,68,69]),
     -- novembre 2026 : « Super-héros ! », pas de sachet à lui (on coche la case), décor 48, coloris 79 à 83 (après ceux des joueurs)
-    ('superheros', timestamptz '2026-11-01 00:00:00 Europe/Paris', timestamptz '2026-11-14 23:59:59 Europe/Paris', null, 48, array[79,80,81,82,83])
+    ('superheros', timestamptz '2026-11-01 00:00:00 Europe/Paris', timestamptz '2026-11-15 23:59:59 Europe/Paris', null, 48, array[79,80,81,82,83])
   ) v(nom, debut, fin, sac, decor, coloris) where v.nom = evenement.nom
 $$;
 create or replace function interne.evenement_du_sac(s text) returns text language sql immutable as $$

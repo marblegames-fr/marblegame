@@ -5128,8 +5128,10 @@ vec4 fam(vec3 q, out vec3 e){
       if(dd<md){ md2=md; md=dd; } else if(dd<md2) md2=dd;
     }
     float crack=smoothstep(0.035,0.0,sqrt(md2)-sqrt(md))*smoothstep(0.93,0.7,length(q));
-    e=mix(vec3(1.0),uC3,0.3)*crack*2.0;
-    return vec4(mix(uC2,vec3(1.0),0.5), 0.2+crack*30.0);
+    // (16 octobre 2026) les 3 couleurs du coloris se voient : le verre prend la 1re, les fêlures la 2e ou la 3e selon les zones
+    vec3 cc=mix(uC2, uC3, smoothstep(0.42,0.58,noise(q*2.4+so+5.0)));
+    e=mix(cc,vec3(1.0),0.3)*crack*2.4;
+    return vec4(mix(mix(uC1,vec3(1.0),0.3), cc, crack*0.7), 0.3+crack*30.0);
   }
 #elif MODE==32
   { // pirate (en verre depuis le 3 octobre 2026) : un verre fumé de la couleur du coloris ; au cœur, comme une bille sulfure,

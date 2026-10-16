@@ -8832,6 +8832,7 @@ function mvBg(s){
 // reveal : ouverte depuis l'ouverture d'un sachet (ou une fusion) : on regarde la bille, le seul bouton est « Coloris de la case »
 function openModal(id, pv, reveal=false){
   const s = pv || specById(id); if(!s) return;
+  openModal.reveal = reveal;
   // on n'enregistre (et n'envoie en ligne) que si la bille était encore marquée « Nouveau »
   if(!pv && S.unseen.includes(id)){ S.unseen = S.unseen.filter(x=>x!==id); save(); }
   liveSpec = s;
@@ -8883,7 +8884,8 @@ function openModal(id, pv, reveal=false){
     </div>
   </div>`;
   if(reveal){
-    el.querySelectorAll(".modal-actions button:not([data-action='sheet']), .siblings, .modal-visual .hint, .warn-note, .modal-body > .meta").forEach(x=>x.remove());
+    // (16 octobre 2026) à l'ouverture d'un sachet, on garde le bouton du verrou : on verrouille sa trouvaille tout de suite
+    el.querySelectorAll(".modal-actions button:not([data-action='sheet']):not([data-action='lock-toggle']), .siblings, .modal-visual .hint, .warn-note, .modal-body > .meta").forEach(x=>x.remove());
   }
   el.hidden = false;
   liveStart(el, document.getElementById("live-slot"), s);
@@ -16135,7 +16137,7 @@ const ECO_ERR = {limite_jeu:`Tu as déjà acheté tes parties du jour : reviens 
 // (16 octobre 2026) verrouiller une bille : ni vente, ni troc, ni Confiserie, ni fusion (le serveur le vérifie : supabase/verrou.sql)
 function lockToggle(x){
   const v = !x.lock, fin = () => { if(v) x.lock = true; else delete x.lock; save();
-    ui.fromSheet = !!document.querySelector(".sheet-back"); openModal(x.id); if(ui.view==="collection"||ui.view==="confiserie") renderView();
+    ui.fromSheet = !!document.querySelector(".sheet-back"); openModal(x.id, null, !!openModal.reveal); if(ui.view==="collection"||ui.view==="confiserie") renderView();
     const troc = v && [...(cour.trocs?.envoyes||[]).flatMap(t=>t.donne||[]), ...(cour.trocs?.recus||[]).flatMap(t=>t.demande||[])].some(b=>b?.id===x.id);
     toast(v ? (troc ? "Bille verrouillée. Le troc en cours où elle est ne pourra plus être accepté." : "Bille verrouillée : elle ne peut plus être vendue, troquée, échangée ni fusionnée.") : "Bille déverrouillée.") };
   if(!srvOn()) return fin();

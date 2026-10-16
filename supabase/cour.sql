@@ -521,7 +521,7 @@ begin
       and (marche.genre is null or a.enchere = (marche.genre = 'enchere'))
     order by case when tri = 'prix' then coalesce(a.offre, a.prix) end asc, case when tri = 'rare' then interne.rang(b.taille) end desc,
              case when tri = 'rare' then b.shiny end desc, case when tri = 'fin' then a.expire_le end asc, a.le desc
-    limit 60 offset greatest(page,0) * 60) x), '[]');
+    limit 200 offset greatest(page,0) * 200) x), '[]');   -- (16 octobre 2026) 60 → 200 : la recherche du marché filtre ce qui est chargé
 end $$;
 
 -- les enchères où j'ai fait une offre et qui ne sont pas finies (en tête, ou dépassé)

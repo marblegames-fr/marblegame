@@ -3129,6 +3129,9 @@ button.cp-who:hover b{text-decoration:underline}
 @media (max-width:640px){ .mk-sell{grid-template-columns:auto minmax(0,1fr)} .mk-sell .btn-xl{grid-column:1 / -1;width:100%;justify-content:center} .mk-sell-art{width:52px;height:52px} }
 .mk-bar h3{font-size:17px;font-weight:900;margin-right:auto}
 .mk-bar .cour-form{margin-top:14px;width:100%}
+/* (16 octobre 2026) la recherche du marché, sur toute la largeur au-dessus des filtres */
+.mk-srch{flex:1 1 100%}
+.mk-srch input{width:100%;height:42px;font-size:14.5px}
 .mk-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(188px,1fr));gap:14px}
 .mk{--rc:#8E8898;position:relative;display:flex;flex-direction:column;border-radius:var(--r-md);background:var(--panel);border:1px solid var(--line);overflow:hidden;text-align:center;box-shadow:var(--shadow);transition:transform .15s,box-shadow .15s}
 .mk:hover{transform:translateY(-3px)}
@@ -15171,7 +15174,7 @@ function missOf(){
 const pickCard = (x, side, on, hid, nw, cnt) => `<button class="pick${nw?` miss ${nw}`:""}" data-action="troc-pick" data-q="${esc(pickTxt(x))}"${hid?" hidden":""} data-side="${side}" data-id="${x.id}" aria-pressed="${on}">${cnt||""}<span class="ball">${mImg(x,120,Math.round(28*scaleOf(x.type)+18),"")}</span>${nw?`<span class="miss-sp" title="${nw==="dec"?"Un motif que tu n'as pas dans cette taille":"Un coloris que tu n'as pas"}">${SPARK}</span>`:""}${esc(specName(x))}<small class="meta">${TYPES[x.type].label}</small></button>`;
 // la recherche (par nom, shiny, rareté…) cache les billes sans tout redessiner ; elle est gardée dans PQ pour les redessins
 const PQ = {};
-const pqWords = side => fold(PQ[side]||"").trim().split(/s+/).filter(Boolean);
+const pqWords = side => fold(PQ[side]||"").trim().split(/\s+/).filter(Boolean);
 function pickList(list, side, sel, filt){
   if(!list) return courWait();
   const shown = list.filter(x=>!filt || x.type===filt), q = pqWords(side);
@@ -15255,6 +15258,7 @@ function courMarche(){
       <button class="btn btn-yellow btn-xl" data-action="mk-vendre">${ic("plus",19,2.6)} Vendre une bille</button></section>` })()}
     <section class="panel"><div class="mk-bar"><h3>Le marché</h3>
       ${mkTab==="acheter" ? `<div class="cour-form" id="mk-filters">
+        <div class="cp-search mk-srch">${ic("search",15)}<input type="search" class="mk-q" value="${esc(PQ.mk||"")}" placeholder="Chercher : Galaxie, Rubis, shiny, un vendeur…" aria-label="Chercher dans le marché" autocomplete="off" spellcheck="false"></div>
         ${aucOK ? sel("mk-genre", [["","Achat et enchères"],["fixe","Achat immédiat"],["enchere","Enchères"]], f.genre) : ""}
         ${sel("mk-taille", [["","Toutes les tailles"], ...TK.map(t=>[t,TYPES[t].pl])], f.taille)}
         ${decorSel(f.decor)}
@@ -15266,11 +15270,21 @@ function courMarche(){
     ${mkTab==="ench" ? (ME.length ? `<section class="panel mes-ench"><div class="panel-head"><h3>${ic("gavel",18)} Mes enchères<span class="cnt-n">${ME.length}</span></h3><span class="sample-tag">${ME.filter(a=>a.en_tete).length} en tête</span></div>
       <div class="mk-grid">${ME.map(a=>mkCard(a, true)).join("")}</div></section>` : `<p class="empty">Tu n'enchéris sur aucune bille en ce moment.</p>`) : ""}
     ${mkTab!=="acheter" ? "" : L && L.length ? `<div class="mk-sec-h"><h3>${ic("candy",18)} En vente</h3><span class="sample-tag">${L.length} bille${L.length>1?"s":""}${L.some(a=>a.enchere)?` · dont ${L.filter(a=>a.enchere).length} aux enchères`:""}</span></div>` : ""}
-    ${mkTab!=="acheter" ? "" : !L ? courWait() : L.length ? `<div class="mk-grid">${L.map(a=>mkCard(a)).join("")}</div>` : `<p class="empty">Rien en vente avec ces filtres pour l'instant.${f.taille||f.decor!=null||f.shiny||f.genre ? `<br><button class="btn btn-ghost btn-sm" style="margin-top:12px" data-action="mk-reset">Effacer les filtres</button>` : ""}</p>`}
+    ${mkTab!=="acheter" ? "" : !L ? courWait() : L.length ? `<div class="mk-grid mk-all">${L.map(a=>mkCard(a)).join("")}</div><p class="empty mk-none"${L.every(mkHid)?"":" hidden"}>Aucune bille en vente ne correspond à ta recherche.</p>` : `<p class="empty">Rien en vente avec ces filtres pour l'instant.${f.taille||f.decor!=null||f.shiny||f.genre ? `<br><button class="btn btn-ghost btn-sm" style="margin-top:12px" data-action="mk-reset">Effacer les filtres</button>` : ""}</p>`}
     ${mkTab!=="mine" ? "" : !A ? courWait() : !mine.length ? `<p class="empty">Tu n'as rien en vente. Touche « Vendre une bille » pour en proposer une.</p>` : `<section class="panel" id="mes-annonces"><div class="panel-head"><h3>Mes annonces<span class="cnt-n">${mine.length}</span></h3>${sold ? `<span class="sample-tag">${sold} vendue${sold>1?"s":""}</span>` : ""}</div>
       <div class="ann-list">${mine.map(ann).join("")}</div></section>`}
   </div>`;
 }
+// (16 octobre 2026) la recherche du marché : nom, taille, shiny, rareté… comme au troc, plus le pseudo du vendeur ; elle cache les cartes sans tout redessiner
+const mkTxt = a => pickTxt(a.bille) + " " + fold(a.moi ? "" : a.vendeur||"");
+const mkHid = a => !pqWords("mk").every(w=>mkTxt(a).includes(w));
+document.addEventListener("input", e=>{
+  if(!e.target.classList?.contains("mk-q")) return;
+  PQ.mk = e.target.value;
+  const q = pqWords("mk"); let n = 0, all = 0;
+  document.querySelectorAll(".mk-grid.mk-all .mk").forEach(c=>{ const ok = q.every(w=>c.dataset.q.includes(w)); c.hidden = !ok; n += ok; all++ });
+  document.querySelector(".mk-none")?.toggleAttribute("hidden", n>0 || !all);
+});
 // une carte du marché : achat immédiat ou enchère (mesEnch : dans « Mes enchères », on montre si on est en tête ou dépassé)
 function mkCard(a, mesEnch){
   const x = a.bille, E = a.enchere, deal = !a.moi && !E && a.moyen && a.prix <= a.moyen*.85;
@@ -15284,7 +15298,7 @@ function mkCard(a, mesEnch){
         : `<button class="btn btn-orange btn-sm" data-action="mk-encherir" data-id="${a.id}">${ic("gavel",15,2.4)} Enchérir · ${fmt(a.min)}</button>`)
     : libres()<a.prix ? `<button class="btn btn-yellow btn-sm" disabled>Il te manque ${fmt(a.prix-libres())}</button>`
     : `<button class="btn btn-yellow btn-sm" data-action="mk-acheter" data-id="${a.id}" data-prix="${a.prix}">Acheter</button>`;
-  return `<div class="mk${a.moi?" mine":""}${E?" ench":""}" style="${tstyle(x.type)}">${rib}${E?`<span class="mk-tag">${ic("gavel",12,2.4)} Enchère</span>`:`<span class="mk-tag fixe">${ic("candy",12,2.4)} Prix fixe</span>`}
+  return `<div class="mk${a.moi?" mine":""}${E?" ench":""}" data-q="${esc(mkTxt(a))}"${!mesEnch && mkHid(a)?" hidden":""} style="${tstyle(x.type)}">${rib}${E?`<span class="mk-tag">${ic("gavel",12,2.4)} Enchère</span>`:`<span class="mk-tag fixe">${ic("candy",12,2.4)} Prix fixe</span>`}
     <span class="mk-vis" data-action="cour-see" data-k="${courSpec(x, a.moi?"Ta bille en vente.":E?`Aux enchères, par ${a.vendeur}.`:`En vente par ${a.vendeur}.`)}">${mImg(x,160,Math.round(44*scaleOf(x.type)+30),"")}</span>
     <div class="mk-info"><b>${esc(specName(x))}</b><span class="pills">${typePill(x.type)}${shinyPill(x)}</span>
     ${a.moi ? "" : ownTag((mkCard.own||ownInfo())(x))}

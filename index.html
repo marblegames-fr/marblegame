@@ -14679,7 +14679,8 @@ function courLoad(kind, force){
   f().then(d=>{ const prev = cour[kind]; cour[kind] = d; cour.ok = true; if(kind==="classement" && !cour.clAgain) cour.clWait = false; if(kind==="moi") netMark("cour", true);
       if(kind==="moi") courMoiNews(prev, d);
       if(kind==="semaine") semaineLots(d);
-      if(ui.view==="cour" || (["fil","moi","encheres","classement"].includes(kind) && ui.view==="accueil") || (["annonces","trocs"].includes(kind) && ui.view==="collection" && ui.tab==="billes")) renderView();
+      const same = kind==="fil" && JSON.stringify(prev)===JSON.stringify(d);   // le rechargement de chaque minute : rien de neuf, on ne redessine pas
+      if(!same && (ui.view==="cour" || (["fil","moi","encheres","classement"].includes(kind) && ui.view==="accueil") || (["annonces","trocs"].includes(kind) && ui.view==="collection" && ui.tab==="billes"))) renderView();
       if(kind==="moi") renderNav();
       if(kind==="moi" || kind==="journal" || kind==="semaine") renderBell() },
     e=>{ if(kind==="classement") cour.clWait = false; if(e.code==="serveur_absent"){ if(kind==="moi") cour.ok = false; else cour.absent[kind] = true } else { if(kind==="moi") netMark("cour", false); if(ui.view==="cour") courFail(e) } if(ui.view==="cour") renderView() })
@@ -14745,7 +14746,8 @@ async function syncMarbles(quiet){
 // de temps en temps : nouvelles demandes, trocs reçus, ventes (et les bonbecs qui vont avec)
 setTimeout(eventGifts, 2500);
 setInterval(eventGifts, 60000);
-setInterval(()=>{ if(srvOn() && document.visibilityState==="visible"){ courLoad("moi", true); ecoRefresh(); syncMarbles(true); courNews(false) } }, 60000);
+// (16 octobre 2026) + les trouvailles rares des copains (avant, chargées une seule fois à l'ouverture du jeu)
+setInterval(()=>{ if(srvOn() && document.visibilityState==="visible"){ courLoad("moi", true); courLoad("fil", true); ecoRefresh(); syncMarbles(true); courNews(false) } }, 60000);
 // sur l'onglet Classement, il se met à jour tout seul (sans F5)
 // (14 octobre 2026) la semaine se termine lundi à minuit : on redemande le classement de la semaine (fenêtre des lots + cloche), même hors de la cour
 setInterval(()=>{ if(srvOn() && document.visibilityState==="visible" && !cour.absent.semaine && (!cour.semaine || Date.now() > cour.semaine.fin + 5000)) courLoad("semaine", true) }, 60000);

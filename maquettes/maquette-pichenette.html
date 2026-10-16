@@ -1,0 +1,601 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Pichenette</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Lilita+One&family=Nunito:wght@600;700;800;900&family=Caveat:wght@700&display=swap">
+<style>
+/* (16 octobre 2026) Maquette : la Pichenette, le premier jeu à deux de Tikalo (à deux sur le même écran, ou contre l'ordi).
+   Le moteur (règles, terrains, physique, ordi) : pichenette-moteur.js, le même que le banc d'essai (banc-pichenette.mjs)
+   et, plus tard, que le serveur. Les billes : le moteur de billes du jeu (tikalo-demo-rendu.js). */
+:root{--bg:#F2E9D7;--panel:#FAF5EB;--panel-2:#F5EEE1;--line:#E6D9C1;--line-2:#DBCAAB;--ink:#24253D;--ink-2:#56546B;--muted:#8E8898;
+  --yellow:#FFC93F;--yellow-2:#F2AE12;--yellow-soft:#FFE5A0;--blue:#2E6BE6;--blue-2:#1F4FB8;--blue-soft:#D6E4FC;--green:#2FA35A;--red:#E5484D;
+  --p0:#FFC93F;--p0d:#C98A00;--p1:#4C8DFF;--p1d:#1F4FB8;
+  --display:"Lilita One","Arial Rounded MT Bold","Trebuchet MS",sans-serif;--body:"Nunito","Segoe UI",system-ui,sans-serif;--hand:"Caveat","Segoe Print","Comic Sans MS",cursive}
+*{box-sizing:border-box;margin:0;padding:0}
+html,body{min-height:100%}
+body{background:var(--bg);color:var(--ink);font:700 15px/1.45 var(--body)}
+button{font:inherit;cursor:pointer;border:0;color:inherit;background:none;touch-action:manipulation}
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;height:42px;padding:0 20px;border-radius:999px;font-weight:800;font-size:15px;transition:transform .12s,box-shadow .12s,background .12s}
+.btn:active{transform:translateY(2px)}
+.btn-yellow{background:var(--yellow);color:var(--ink);box-shadow:0 3px 0 var(--yellow-2)}
+.btn-yellow:hover{background:#FFD45F}
+.btn-ghost{background:var(--panel);box-shadow:0 0 0 1.5px var(--line-2) inset}
+.btn-ghost:hover{background:#fff}
+.btn-xl{height:52px;padding:0 30px;font-size:18px}
+.wrap{max-width:1040px;margin:0 auto;padding:14px 16px 28px}
+.top{display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin-bottom:12px}
+.logo{font:400 30px/1 var(--display);letter-spacing:.5px;margin-right:auto;display:flex;align-items:center;gap:10px}
+.logo small{font:800 12px var(--body);color:var(--muted);letter-spacing:0;padding:3px 8px;border-radius:999px;background:var(--panel);box-shadow:0 0 0 1.5px var(--line) inset}
+.top .btn{height:36px;padding:0 14px;font-size:13.5px}
+
+/* le tableau des scores */
+.hud{display:grid;grid-template-columns:1fr auto 1fr;gap:10px;align-items:stretch;margin-bottom:10px}
+.pl{display:flex;align-items:center;gap:12px;padding:10px 14px;border-radius:18px;background:var(--panel);box-shadow:0 0 0 1.5px var(--line) inset;transition:transform .25s,box-shadow .25s;min-width:0}
+.pl.r{flex-direction:row-reverse;text-align:right}
+.pl.on.p0{box-shadow:0 0 0 3px var(--p0) inset,0 10px 24px -12px rgba(201,138,0,.7);transform:translateY(-2px)}
+.pl.on.p1{box-shadow:0 0 0 3px var(--p1) inset,0 10px 24px -12px rgba(31,79,184,.7);transform:translateY(-2px)}
+.pl .av{position:relative;width:54px;height:54px;flex:none}
+.pl .av img{width:100%;height:100%}
+.pl .av::after{content:"";position:absolute;inset:-4px;border-radius:50%;border:3px solid var(--c)}
+.pl.p0{--c:var(--p0)} .pl.p1{--c:var(--p1)}
+.pl .who{min-width:0;flex:1}
+.pl .nm{font:400 19px/1.1 var(--display);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.pl .tirs{display:flex;gap:3px;margin-top:5px;flex-wrap:wrap}
+.pl.r .tirs{justify-content:flex-end}
+.pl .tirs i{width:8px;height:8px;border-radius:50%;background:var(--c);opacity:.95}
+.pl .tirs i.off{background:var(--line-2);opacity:.6}
+.pl .butin{display:flex;gap:2px;margin-top:5px;min-height:18px;flex-wrap:wrap}
+.pl.r .butin{justify-content:flex-end}
+.pl .butin img{width:18px;height:18px;animation:pop .35s cubic-bezier(.3,1.6,.5,1)}
+@keyframes pop{from{transform:scale(0)}to{transform:scale(1)}}
+.pl .sc{font:400 44px/1 var(--display);min-width:46px;text-align:center;color:var(--ink)}
+.pl .sc.bump{animation:bump .5s}
+@keyframes bump{30%{transform:scale(1.35);color:var(--green)}}
+.mid{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px;padding:6px 10px;min-width:170px;text-align:center}
+.mid .turn{font:400 20px/1.1 var(--display);padding:6px 16px;border-radius:999px;background:var(--ink);color:#fff;white-space:nowrap}
+.mid .turn.p0{background:var(--p0);color:var(--ink)} .mid .turn.p1{background:var(--p1);color:#fff}
+.mid .sub{font-size:12.5px;color:var(--ink-2)}
+.mid .chain{display:flex;gap:4px;height:10px}
+.mid .chain i{width:22px;height:6px;border-radius:3px;background:var(--line-2)}
+.mid .chain i.on{background:var(--green)}
+
+/* le terrain */
+.stage{position:relative;border-radius:16px;overflow:hidden;box-shadow:0 22px 40px -22px rgba(40,25,10,.65);background:#6B4322;touch-action:none;user-select:none}
+.stage canvas{display:block;width:100%;height:auto;cursor:crosshair}
+.msg{position:absolute;left:50%;top:14px;transform:translateX(-50%);z-index:3;padding:7px 16px;border-radius:999px;background:rgba(36,37,61,.82);color:#fff;font-size:14px;white-space:nowrap;pointer-events:none;transition:opacity .25s;max-width:calc(100% - 20px);overflow:hidden;text-overflow:ellipsis}
+.msg[hidden]{display:block;opacity:0}
+.big{position:absolute;inset:0;display:grid;place-items:center;z-index:4;pointer-events:none}
+.big span{font:400 72px/1 var(--display);color:#fff;-webkit-text-stroke:3px rgba(36,37,61,.85);paint-order:stroke fill;text-shadow:0 6px 0 rgba(36,37,61,.35);animation:big 1.15s cubic-bezier(.2,1.4,.4,1) forwards}
+@keyframes big{0%{transform:scale(.3) rotate(-8deg);opacity:0}25%{transform:scale(1.08) rotate(2deg);opacity:1}70%{transform:scale(1);opacity:1}100%{transform:scale(1.05);opacity:0}}
+.tip{margin-top:10px;font:700 22px/1.2 var(--hand);color:var(--ink-2);text-align:center;min-height:28px}
+
+/* les fenêtres (départ, règles, fin) */
+.ov{position:fixed;inset:0;z-index:20;background:rgba(36,37,61,.55);display:grid;place-items:center;padding:16px;overflow:auto}
+.ov[hidden]{display:none}
+.card{background:var(--panel);border-radius:22px;padding:22px 24px;width:min(860px,100%);box-shadow:0 30px 60px -20px rgba(0,0,0,.55);max-height:calc(100vh - 32px);overflow:auto}
+.card h2{font:400 34px/1.05 var(--display);margin-bottom:4px}
+.card h3{font:400 19px/1.2 var(--display);margin:18px 0 8px}
+.card p.lead{color:var(--ink-2);font-weight:700}
+.maps{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:10px}
+.mapc{border-radius:14px;padding:6px 6px 8px;background:var(--panel-2);box-shadow:0 0 0 1.5px var(--line) inset;text-align:left;transition:transform .15s,box-shadow .15s}
+.mapc canvas{width:100%;border-radius:9px;display:block}
+.mapc b{display:block;font:400 15px/1.15 var(--display);margin:6px 2px 0}
+.mapc.on{box-shadow:0 0 0 3px var(--yellow-2) inset;background:#FFF7DD;transform:translateY(-2px)}
+.mapdesc{margin-top:8px;color:var(--ink-2);font-size:14px;min-height:42px}
+.who2{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.pcard{display:flex;align-items:center;gap:12px;padding:10px 12px;border-radius:16px;background:var(--panel-2);box-shadow:0 0 0 1.5px var(--line) inset}
+.pcard .pick{position:relative;width:62px;height:62px;flex:none;border-radius:50%}
+.pcard .pick img{width:100%;height:100%}
+.pcard .pick::after{content:"↻";position:absolute;right:-4px;bottom:-4px;width:22px;height:22px;border-radius:50%;background:var(--ink);color:#fff;font-size:13px;display:grid;place-items:center}
+.pcard input{width:100%;height:38px;border-radius:10px;border:1.5px solid var(--line-2);background:#fff;padding:0 10px;font:800 16px var(--body);color:var(--ink)}
+.pcard small{display:block;color:var(--muted);font-size:12px;margin-top:3px}
+.pcard.p0 .pick{box-shadow:0 0 0 3px var(--p0)} .pcard.p1 .pick{box-shadow:0 0 0 3px var(--p1)}
+.seg{display:inline-flex;border-radius:999px;background:var(--panel-2);box-shadow:0 0 0 1.5px var(--line) inset;padding:3px;gap:2px;flex-wrap:wrap}
+.seg button{height:32px;padding:0 12px;border-radius:999px;font-size:13.5px;font-weight:800;color:var(--ink-2)}
+.seg button.on{background:var(--ink);color:#fff}
+.rules{display:grid;grid-template-columns:1fr 1fr;gap:8px 18px}
+.rules label{display:flex;flex-direction:column;gap:4px;font-size:13.5px}
+.go{display:flex;justify-content:center;gap:10px;margin-top:20px;flex-wrap:wrap}
+.rtext{columns:2;column-gap:28px;font-size:14.5px;color:var(--ink-2)}
+.rtext p{margin-bottom:9px;break-inside:avoid}
+.rtext b{color:var(--ink)}
+.bench{width:100%;border-collapse:collapse;font-size:13.5px;margin-top:4px}
+.bench th,.bench td{padding:6px 8px;text-align:center;border-bottom:1px solid var(--line)}
+.bench th:first-child,.bench td:first-child{text-align:left}
+.bench .hot{color:var(--red);font-weight:900}
+.bench .ok{color:var(--green);font-weight:900}
+.win{text-align:center}
+.win .trophy{font-size:58px;line-height:1}
+.win .final{font:400 64px/1 var(--display);margin:6px 0}
+.win .final span{padding:0 8px}
+.win .bt{display:flex;justify-content:center;gap:28px;margin-top:8px;flex-wrap:wrap}
+.win .bt div{display:flex;flex-direction:column;align-items:center;gap:4px;max-width:280px}
+.win .bt .row{flex-direction:row;flex-wrap:wrap;justify-content:center;gap:2px}
+.win .bt img{width:22px;height:22px}
+.confetti{position:fixed;inset:0;pointer-events:none;z-index:30;overflow:hidden}
+.confetti i{position:absolute;top:-20px;width:10px;height:14px;border-radius:2px;animation:fall 2.6s linear forwards}
+@keyframes fall{to{transform:translateY(110vh) rotate(720deg)}}
+body{overflow-x:hidden}
+.pl .who{overflow:hidden}
+@media (max-width:760px){
+  .top{gap:6px} .top .btn{height:32px;padding:0 10px;font-size:12.5px} #b-replay .lg{display:none}
+  .mid .sub{white-space:normal} .mid .turn{font-size:17px;padding:5px 12px}
+  .hud{grid-template-columns:minmax(0,1fr) minmax(0,1fr)} .pl .butin img{width:14px;height:14px} .pl .tirs i{width:6px;height:6px}
+  .maps{grid-template-columns:repeat(3,minmax(0,1fr))} .who2,.rules{grid-template-columns:1fr} .rtext{columns:1}
+  .hud{grid-template-columns:1fr 1fr} .mid{grid-column:1/-1;grid-row:1;flex-direction:row;min-width:0;padding:0}
+  .pl{padding:8px 10px;gap:8px} .pl .av{width:40px;height:40px} .pl .sc{font-size:34px;min-width:34px} .pl .nm{font-size:16px}
+  .big span{font-size:48px} .card{padding:18px 16px} .card h2{font-size:28px} .logo{font-size:24px}
+}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="top">
+    <div class="logo">Pichenette <small>maquette · à deux</small></div>
+    <button class="btn btn-ghost" id="b-replay" disabled>⟲ Revoir<span class="lg">le dernier tir</span></button>
+    <button class="btn btn-ghost" id="b-rules">Les règles</button>
+    <button class="btn btn-ghost" id="b-bench">Qui commence ?</button>
+    <button class="btn btn-ghost" id="b-sound">🔊</button>
+    <button class="btn btn-yellow" id="b-new">Nouvelle partie</button>
+  </div>
+  <div class="hud">
+    <div class="pl p0" id="pl0"><div class="av"><img alt=""></div><div class="who"><div class="nm"></div><div class="tirs"></div><div class="butin"></div></div><div class="sc">0</div></div>
+    <div class="mid"><div class="turn" id="turn">—</div><div class="chain" id="chain"></div><div class="sub" id="sub"></div></div>
+    <div class="pl p1 r" id="pl1"><div class="av"><img alt=""></div><div class="who"><div class="nm"></div><div class="tirs"></div><div class="butin"></div></div><div class="sc">0</div></div>
+  </div>
+  <div class="stage" id="stage"><canvas id="cv"></canvas><div class="msg" id="msg" hidden></div><div class="big" id="big"></div></div>
+  <div class="tip" id="tip"></div>
+</div>
+
+<!-- le départ -->
+<div class="ov" id="ov-start">
+  <div class="card">
+    <h2>Pichenette</h2>
+    <p class="lead">Un rond à la craie, treize billes au milieu, une tireuse chacun. Sors-en le plus possible… et méfie-toi de ton adversaire.</p>
+    <h3>Le terrain</h3>
+    <div class="maps" id="maps"></div>
+    <p class="mapdesc" id="mapdesc"></p>
+    <h3>Les joueurs</h3>
+    <div class="seg" id="mode" style="margin-bottom:10px"><button data-v="2">À deux sur cet écran</button><button data-v="facile">Contre l'ordi · facile</button><button data-v="moyen">· moyen</button><button data-v="fort">· fort</button></div>
+    <div class="who2">
+      <div class="pcard p0"><button class="pick" data-p="0" title="Changer de tireuse"><img alt=""></button><div style="flex:1"><input id="n0" maxlength="14" value="Léa"><small id="s0"></small></div></div>
+      <div class="pcard p1"><button class="pick" data-p="1" title="Changer de tireuse"><img alt=""></button><div style="flex:1"><input id="n1" maxlength="14" value="Sam"><small id="s1"></small></div></div>
+    </div>
+    <h3>Les règles <span style="font:700 13px var(--body);color:var(--muted)">(à essayer : on garde ce qui est le plus juste et le plus fun)</span></h3>
+    <div class="rules" id="rules"></div>
+    <div class="go"><button class="btn btn-ghost" data-open="ov-rules">Lire les règles</button><button class="btn btn-yellow btn-xl" id="b-go">Jouer !</button></div>
+  </div>
+</div>
+
+<!-- les règles -->
+<div class="ov" id="ov-rules" hidden>
+  <div class="card">
+    <h2>Les règles de la Pichenette</h2>
+    <div class="rtext" id="rtext"></div>
+    <div class="go"><button class="btn btn-yellow" data-close>J'ai compris</button></div>
+  </div>
+</div>
+
+<!-- le banc d'essai -->
+<div class="ov" id="ov-bench" hidden>
+  <div class="card">
+    <h2>Celui qui commence est-il avantagé ?</h2>
+    <p class="lead" id="bench-lead">On a fait jouer l'ordi contre lui-même, au même niveau des deux côtés, des centaines de fois sur chaque terrain.</p>
+    <div id="bench"></div>
+    <div class="go"><button class="btn btn-yellow" data-close>Fermer</button></div>
+  </div>
+</div>
+
+<!-- la fin -->
+<div class="ov" id="ov-end" hidden><div class="card win" id="end"></div></div>
+
+<script src="tikalo-demo-rendu.js"></script>
+<script src="pichenette-moteur.js"></script>
+<script>
+"use strict";
+const {AW, AH, AB, CX, CY, R_TIR, LINE_X, LINE_Y, MAPS} = PICH;
+const $ = id => document.getElementById(id);
+const PCOL = ["#FFC93F", "#4C8DFF"], PDARK = ["#C98A00", "#1F4FB8"];
+
+/* ---------- les billes ---------- */
+const fam = n => FAMILIES.findIndex(f=>f.name===n), pal = n => PALETTES.findIndex(p=>p[0]===n);
+const TIREUSES = [["Œil-de-chat","BCKC"],["Galaxie","Nuit"],["Lave","Volcan"],["Agate","Émeraude"],["Ruban","Rubis"],["Aurore","Féerie"],["Méduse","Lagon"],["Damier","Pop"]]
+  .map(([f, p], i)=>({type:"bille", family:Math.max(0, fam(f)), pal:Math.max(0, pal(p)), shiny:i===5 ? 3 : 0, seed:hash("pich-t" + i)}));
+const nameOf = s => `${FAMILIES[s.family].name} ${PALETTES[s.pal][0]}`;
+const FAM_OK = FAMILIES.map((f,i)=>i).filter(i=>FAM_W[i] > 0 && !FAMILIES[i].season);
+function pileSpec(i, dore){ const r = rng(hash("pich-pile" + i));
+  return dore ? {type:"calot", family:fam("Tourbillon") >= 0 ? fam("Tourbillon") : 0, pal:pal("Citron") >= 0 ? pal("Citron") : 0, shiny:2, seed:hash("pich-dore")}
+    : makeSpec("bille", {seed:hash("pich-pile" + i), family:FAM_OK[Math.floor(r()*FAM_OK.length)], shiny:0}) }
+const GLR = makeGL(document.createElement("canvas"));
+const ICONS = new Map(); const icon = s => { const k = `${s.seed}|${s.type}|${s.family}|${s.pal}|${s.shiny}`; if(!ICONS.has(k)) ICONS.set(k, marbleURL(s, 48)); return ICONS.get(k) };
+const look = new Map();   // l'aspect de chaque bille du terrain : sa rotation, son image
+function lookOf(b){ let L = look.get(b.id); if(!L){ L = {R:I3.slice(), rc:0, dirty:true, cv:document.createElement("canvas")}; look.set(b.id, L) } return L }
+function sprite(b, spec, px){ const L = lookOf(b);
+  if(!GLR) return null;
+  if(L.dirty || L.cv.width!==px){ GLR.draw(spec, px, L.R); if(L.cv.width!==px) L.cv.width = L.cv.height = px;
+    const x = L.cv.getContext("2d"); x.clearRect(0, 0, px, px); x.drawImage(GLR.cv, 0, 0); L.dirty = false }
+  return L.cv }
+
+/* ---------- les sons (fabriqués, pas de fichiers) ---------- */
+let AC = null, soundOn = true;
+const audio = () => { if(!AC){ try{ AC = new (window.AudioContext || window.webkitAudioContext)(); const g = AC.createGain(); g.gain.value = .5; const c = AC.createDynamicsCompressor(); g.connect(c).connect(AC.destination); AC.out = g }catch(e){} } if(AC && AC.state==="suspended") AC.resume() };
+function tone(f, g, d, type="sine", at=0, slide=0){ if(!AC || !soundOn) return; const t = AC.currentTime + at, o = AC.createOscillator(), e = AC.createGain();
+  o.type = type; o.frequency.setValueAtTime(f, t); if(slide) o.frequency.exponentialRampToValueAtTime(Math.max(30, f*slide), t + d);
+  e.gain.setValueAtTime(0, t); e.gain.linearRampToValueAtTime(g, t + .004); e.gain.exponentialRampToValueAtTime(.0001, t + d); o.connect(e).connect(AC.out); o.start(t); o.stop(t + d + .03) }
+function noise(g, d, f=1200, at=0){ if(!AC || !soundOn) return; const t = AC.currentTime + at, n = Math.floor(AC.sampleRate*d), B = AC.createBuffer(1, n, AC.sampleRate), D = B.getChannelData(0);
+  for(let i=0;i<n;i++) D[i] = (Math.random()*2 - 1)*(1 - i/n); const s = AC.createBufferSource(), fl = AC.createBiquadFilter(), e = AC.createGain(); s.buffer = B; fl.type = "bandpass"; fl.frequency.value = f; e.gain.value = g;
+  s.connect(fl).connect(e).connect(AC.out); s.start(t) }
+let sndN = 0, sndT = 0;
+const SND = {
+  choc(v){ const t = performance.now(); if(t - sndT > 40){ sndN = 0; sndT = t } if(sndN++ > 3) return; const a = Math.min(.5, .08 + v/14), j = .92 + Math.random()*.16; tone(3300*j, a*.55, .06); tone(3300*j*2.7, a*.16, .03); noise(a*.3, .02, 5000) },
+  mur(v){ const a = Math.min(.5, v/18); tone(150, a, .07, "triangle"); noise(a*.5, .05, 600) },
+  obs(v){ const a = Math.min(.5, v/16); tone(420, a*.7, .05, "triangle"); noise(a*.5, .04, 1800) },
+  racine(v){ const a = Math.min(.5, v/16); tone(210, a*.8, .08, "triangle"); noise(a*.4, .05, 900) },
+  pot(){ tone(520, .35, .25, "sine", 0, .35); tone(260, .2, .3, "sine", .05, .5) },
+  tir(p){ noise(.12 + p*.25, .12, 700); tone(180 + p*120, .12, .08, "triangle") },
+  point(k=0){ tone(784*Math.pow(1.12, k), .22, .18); tone(1175*Math.pow(1.12, k), .12, .22, "sine", .06) },
+  dore(){ [784, 988, 1175, 1568].forEach((f, i)=>tone(f, .2, .3, "sine", i*.07)) },
+  tac(){ tone(1900, .4, .05, "square"); tone(2400, .3, .05, "square", .09); noise(.4, .06, 3000) },
+  rejoue(){ [523, 659, 784].forEach((f, i)=>tone(f, .16, .14, "triangle", i*.06)) },
+  tour(){ tone(440, .12, .12, "triangle"); tone(660, .1, .14, "triangle", .08) },
+  fin(){ [523, 659, 784, 1047, 784, 1047].forEach((f, i)=>tone(f, .2, .25, "triangle", i*.12)) },
+};
+
+/* ---------- les terrains : dessinés une fois (sol, décor), au bon nombre de pixels ---------- */
+function prand(seed){ return rng(hash(seed)) }
+function wobblyCircle(c, x, y, r, seed, w=4){ const R = prand(seed);
+  for(let pass=0; pass<2; pass++){ c.beginPath(); const ph = R()*6, n = 120;
+    for(let i=0;i<=n;i++){ const a = i/n*Math.PI*2, rr = r + Math.sin(a*3 + ph)*1.6 + Math.sin(a*7 + ph*2)*.9 + (R() - .5)*1.1 + pass*1.2;
+      const px = x + Math.cos(a)*rr, py = y + Math.sin(a)*rr; i ? c.lineTo(px, py) : c.moveTo(px, py) }
+    c.strokeStyle = pass ? "rgba(255,255,255,.35)" : "rgba(255,255,255,.85)"; c.lineWidth = pass ? w*.6 : w; c.stroke() } }
+function chalkLine(c, x1, y1, x2, y2, seed, w=4){ const R = prand(seed); c.lineCap = "round";
+  for(let pass=0; pass<2; pass++){ c.beginPath(); const n = 30; for(let i=0;i<=n;i++){ const t = i/n, px = x1 + (x2 - x1)*t + (R() - .5)*1.6, py = y1 + (y2 - y1)*t + (R() - .5)*1.6; i ? c.lineTo(px, py) : c.moveTo(px, py) }
+    c.strokeStyle = pass ? "rgba(255,255,255,.3)" : "rgba(255,255,255,.82)"; c.lineWidth = pass ? w*.55 : w; c.stroke() } }
+function grain(c, x0, y0, w, h, n, cols, seed, size=[1, 2.4]){ const R = prand(seed);
+  for(let i=0;i<n;i++){ c.fillStyle = cols[Math.floor(R()*cols.length)]; const s = size[0] + R()*(size[1] - size[0]); c.fillRect(x0 + R()*w, y0 + R()*h, s, s) } }
+function frame(c){ const g = c.createLinearGradient(0, 0, 0, AH); g.addColorStop(0, "#A0703F"); g.addColorStop(1, "#6B4322"); c.fillStyle = g; c.fillRect(0, 0, AW, AH);
+  c.strokeStyle = "rgba(55,30,10,.22)"; c.lineWidth = 1.2;
+  for(let i=0;i<4;i++){ const d = 3.5 + i*4.6; c.beginPath(); c.moveTo(0, d); c.lineTo(AW, d); c.moveTo(0, AH - d); c.lineTo(AW, AH - d); c.moveTo(d, 0); c.lineTo(d, AH); c.moveTo(AW - d, 0); c.lineTo(AW - d, AH); c.stroke() }
+  c.fillStyle = "rgba(255,232,195,.28)"; c.fillRect(0, 0, AW, 2);
+  for(const [x, y] of [[11,11],[AW-11,11],[11,AH-11],[AW-11,AH-11],[AW/2,11],[AW/2,AH-11]]){ c.fillStyle = "#3B2A1A"; c.beginPath(); c.arc(x, y, 3.2, 0, 7); c.fill(); c.fillStyle = "rgba(255,255,255,.4)"; c.beginPath(); c.arc(x - 1, y - 1, 1.2, 0, 7); c.fill() } }
+function light(c){ const g = c.createRadialGradient(CX, CY*.85, 60, CX, CY, AW*.62); g.addColorStop(0, "rgba(255,248,230,.16)"); g.addColorStop(1, "rgba(30,15,5,.32)");
+  c.fillStyle = g; c.fillRect(AB, AB, AW - 2*AB, AH - 2*AB);
+  const s = c.createLinearGradient(0, AB, 0, AB + 18); s.addColorStop(0, "rgba(40,20,5,.45)"); s.addColorStop(1, "rgba(40,20,5,0)"); c.fillStyle = s; c.fillRect(AB, AB, AW - 2*AB, 18);
+  const s2 = c.createLinearGradient(AB, 0, AB + 14, 0); s2.addColorStop(0, "rgba(40,20,5,.35)"); s2.addColorStop(1, "rgba(40,20,5,0)"); c.fillStyle = s2; c.fillRect(AB, AB, 14, AH - 2*AB) }
+const GROUND = {
+  cour(c){ c.fillStyle = "#6F737B"; c.fillRect(AB, AB, AW - 2*AB, AH - 2*AB);
+    grain(c, AB, AB, AW - 2*AB, AH - 2*AB, 9000, ["#5E6168", "#7E828A", "#8B8F96", "#555860", "#9A9DA3"], "cour");
+    // une vieille marelle peinte, à moitié effacée, dans un coin
+    c.save(); c.globalAlpha = .22; c.strokeStyle = "#F5D24A"; c.lineWidth = 5; c.translate(140, 455); c.rotate(-.04);
+    [[0,0],[42,0],[84,-21],[84,21],[126,0],[168,-21],[168,21]].forEach(([x, y])=>c.strokeRect(x - 20, y - 20, 40, 40)); c.restore();
+    c.save(); c.globalAlpha = .18; c.strokeStyle = "#fff"; c.lineWidth = 6; c.beginPath(); c.moveTo(AW - 40, AB); c.lineTo(AW - 160, AH - AB); c.stroke(); c.restore() },
+  preau(c){ const T = 46; for(let y=AB; y<AH - AB; y+=T) for(let x=AB; x<AW - AB; x+=T){ const k = ((x - AB)/T + (y - AB)/T) % 2;
+      c.fillStyle = k ? "#C9B392" : "#B98F6A"; c.fillRect(x, y, T, T) }
+    grain(c, AB, AB, AW - 2*AB, AH - 2*AB, 3500, ["rgba(255,255,255,.08)", "rgba(80,50,20,.08)"], "preau", [1, 3]);
+    c.strokeStyle = "rgba(90,70,50,.35)"; c.lineWidth = 2; for(let x=AB; x<=AW - AB; x+=T){ c.beginPath(); c.moveTo(x, AB); c.lineTo(x, AH - AB); c.stroke() } for(let y=AB; y<=AH - AB; y+=T){ c.beginPath(); c.moveTo(AB, y); c.lineTo(AW - AB, y); c.stroke() }
+    const g = c.createLinearGradient(AB, AB, AW, AH); g.addColorStop(0, "rgba(255,255,255,.14)"); g.addColorStop(.5, "rgba(255,255,255,0)"); g.addColorStop(1, "rgba(255,255,255,.08)"); c.fillStyle = g; c.fillRect(AB, AB, AW - 2*AB, AH - 2*AB) },
+  sable(c){ c.fillStyle = "#E2C68D"; c.fillRect(AB, AB, AW - 2*AB, AH - 2*AB);
+    grain(c, AB, AB, AW - 2*AB, AH - 2*AB, 14000, ["#D4B474", "#EBD6A6", "#C9A762", "#F2E2BC"], "sable", [1, 2]);
+    c.strokeStyle = "rgba(150,110,50,.12)"; c.lineWidth = 3; const R = prand("vagues"); for(let i=0;i<26;i++){ const y = AB + 10 + i*19 + R()*6; c.beginPath(); for(let x=AB; x<AW - AB; x+=10) c.lineTo(x, y + Math.sin(x*.025 + i)*4); c.stroke() }
+    // un seau et une pelle oubliés dans le coin
+    c.save(); c.translate(70, 470); c.rotate(-.3); c.fillStyle = "rgba(0,0,0,.18)"; c.beginPath(); c.ellipse(4, 6, 24, 16, 0, 0, 7); c.fill(); c.fillStyle = "#E5484D"; c.beginPath(); c.ellipse(0, 0, 22, 15, 0, 0, 7); c.fill(); c.fillStyle = "#B9343A"; c.beginPath(); c.ellipse(0, 0, 15, 9, 0, 0, 7); c.fill(); c.restore();
+    c.save(); c.translate(AW - 80, 62); c.rotate(.7); c.fillStyle = "#2E8CFF"; c.fillRect(-4, -34, 8, 40); c.beginPath(); c.ellipse(0, 14, 13, 17, 0, 0, 7); c.fill(); c.restore() },
+  marronnier(c){ c.fillStyle = "#A9835A"; c.fillRect(AB, AB, AW - 2*AB, AH - 2*AB);
+    grain(c, AB, AB, AW - 2*AB, AH - 2*AB, 11000, ["#97734C", "#B8946A", "#8A6743", "#C4A27A"], "terre", [1, 2.6]);
+    // l'ombre du feuillage et des feuilles tombées
+    const R = prand("feuilles"); for(let i=0;i<9;i++){ const fx0 = R()*AW, fy0 = R()*AH, g = c.createRadialGradient(fx0, fy0, 10, fx0, fy0, 170); g.addColorStop(0, "rgba(40,30,10,.16)"); g.addColorStop(1, "rgba(40,30,10,0)"); c.fillStyle = g; c.fillRect(AB, AB, AW - 2*AB, AH - 2*AB) }
+    for(let i=0;i<34;i++){ const x = AB + R()*(AW - 2*AB), y = AB + R()*(AH - 2*AB), r = 5 + R()*6; if(Math.abs(x - CX) < 200 && Math.abs(y - CY) < 200) continue;
+      c.save(); c.translate(x, y); c.rotate(R()*7); c.fillStyle = ["#C8752B", "#D9A03A", "#9C5A22", "#B98A2A"][Math.floor(R()*4)]; c.beginPath(); c.ellipse(0, 0, r*1.6, r, 0, 0, 7); c.fill();
+      c.strokeStyle = "rgba(80,40,10,.5)"; c.lineWidth = 1; c.beginPath(); c.moveTo(-r*1.5, 0); c.lineTo(r*1.5, 0); c.stroke(); c.restore() } },
+  pot(c){ GROUND.marronnier.call(null, c); c.fillStyle = "rgba(255,230,190,.08)"; c.fillRect(AB, AB, AW - 2*AB, AH - 2*AB) },
+};
+function drawStatic(c, map, mid, lag){
+  frame(c); c.save(); c.beginPath(); c.rect(AB, AB, AW - 2*AB, AH - 2*AB); c.clip(); GROUND[mid](c); c.restore();
+  // les bosses de sable
+  map.zones.forEach(z=>{ const g = c.createRadialGradient(z.x - z.r*.35, z.y - z.r*.4, 4, z.x, z.y, z.r*1.05); g.addColorStop(0, "rgba(255,240,205,.7)"); g.addColorStop(.6, "rgba(225,195,130,.35)"); g.addColorStop(1, "rgba(150,110,55,0)");
+    c.fillStyle = "rgba(120,85,35,.22)"; c.beginPath(); c.ellipse(z.x + 8, z.y + 10, z.r, z.r*.9, 0, 0, 7); c.fill(); c.fillStyle = g; c.beginPath(); c.arc(z.x, z.y, z.r, 0, 7); c.fill();
+    grain(c, z.x - z.r*.7, z.y - z.r*.7, z.r*1.4, z.r*1.4, 300, ["rgba(255,250,230,.5)", "rgba(170,130,60,.35)"], "bosse" + z.x) });
+  // les racines
+  map.segs.forEach(s=>{ c.lineCap = "round"; c.strokeStyle = "rgba(40,25,10,.35)"; c.lineWidth = s.r*2 + 6; c.beginPath(); c.moveTo(s.x1 + 3, s.y1 + 5); c.lineTo(s.x2 + 3, s.y2 + 5); c.stroke();
+    c.strokeStyle = "#5C3A1E"; c.lineWidth = s.r*2 + 2; c.beginPath(); c.moveTo(s.x1, s.y1); c.lineTo(s.x2, s.y2); c.stroke();
+    c.strokeStyle = "#7E5530"; c.lineWidth = s.r*2 - 4; c.stroke(); c.strokeStyle = "rgba(255,220,170,.28)"; c.lineWidth = 2.5; c.beginPath(); c.moveTo(s.x1 - 2, s.y1 - 3); c.lineTo(s.x2 - 2, s.y2 - 3); c.stroke();
+    // la racine plonge dans la terre à ses deux bouts
+    [[s.x1, s.y1], [s.x2, s.y2]].forEach(([x, y])=>{ const g = c.createRadialGradient(x, y, 2, x, y, s.r + 8); g.addColorStop(0, "rgba(60,38,18,.7)"); g.addColorStop(1, "rgba(60,38,18,0)"); c.fillStyle = g; c.beginPath(); c.arc(x, y, s.r + 8, 0, 7); c.fill() }) });
+  // le pot
+  if(map.pot){ const p = map.pot, rim = c.createRadialGradient(p.x, p.y, p.r, p.x, p.y, p.r + 16); rim.addColorStop(0, "rgba(90,58,28,.75)"); rim.addColorStop(1, "rgba(90,58,28,0)");
+    c.fillStyle = rim; c.beginPath(); c.arc(p.x, p.y, p.r + 16, 0, 7); c.fill();
+    const g = c.createRadialGradient(p.x, p.y - 5, 2, p.x, p.y, p.r); g.addColorStop(0, "#0C0602"); g.addColorStop(.75, "#24160A"); g.addColorStop(1, "#4A3018"); c.fillStyle = g; c.beginPath(); c.arc(p.x, p.y, p.r, 0, 7); c.fill();
+    c.fillStyle = "rgba(255,236,200,.3)"; c.beginPath(); c.ellipse(p.x, p.y + p.r*.55, p.r + 3, p.r*.5, 0, 0, Math.PI); c.fill() }
+  // le rond et les lignes à la craie
+  wobblyCircle(c, map.circle.x, map.circle.y, map.circle.r, mid + "rond");
+  [0, 1].forEach(s=>{ chalkLine(c, LINE_X[s], LINE_Y[0] - 20, LINE_X[s], LINE_Y[1] + 20, mid + "ligne" + s);
+    c.save(); c.translate(LINE_X[s] + (s ? 22 : -22), CY); c.rotate(s ? Math.PI/2 : -Math.PI/2); c.font = "700 22px Caveat, cursive"; c.fillStyle = "rgba(255,255,255,.55)"; c.textAlign = "center"; c.fillText(s ? "ligne bleue" : "ligne jaune", 0, 6); c.restore() });
+  if(lag){ c.save(); c.strokeStyle = "rgba(255,255,255,.85)"; c.lineWidth = 4; c.lineCap = "round"; [[-12,-12,12,12],[12,-12,-12,12]].forEach(([a,b,d,e])=>{ c.beginPath(); c.moveTo(CX + a, CY + b); c.lineTo(CX + d, CY + e); c.stroke() }); c.restore() }
+  // piliers et marrons
+  map.obstacles.forEach(p=>{ c.fillStyle = "rgba(0,0,0,.3)"; c.beginPath(); c.ellipse(p.x + 5, p.y + 7, p.r + 2, p.r*.9, 0, 0, 7); c.fill();
+    if(mid==="preau"){ const g = c.createRadialGradient(p.x - p.r*.35, p.y - p.r*.4, 2, p.x, p.y, p.r); g.addColorStop(0, "#F1EEE8"); g.addColorStop(.7, "#B8B2A8"); g.addColorStop(1, "#8D877D"); c.fillStyle = g; c.beginPath(); c.arc(p.x, p.y, p.r, 0, 7); c.fill();
+      c.strokeStyle = "rgba(229,72,77,.8)"; c.lineWidth = 4; c.beginPath(); c.arc(p.x, p.y, p.r - 6, 0, 7); c.stroke() }
+    else { const g = c.createRadialGradient(p.x - p.r*.3, p.y - p.r*.4, 1, p.x, p.y, p.r); g.addColorStop(0, "#C0703A"); g.addColorStop(.6, "#7A3A16"); g.addColorStop(1, "#4A220C"); c.fillStyle = g; c.beginPath(); c.arc(p.x, p.y, p.r, 0, 7); c.fill();
+      c.fillStyle = "rgba(235,215,170,.85)"; c.beginPath(); c.ellipse(p.x + p.r*.25, p.y + p.r*.35, p.r*.45, p.r*.3, .4, 0, 7); c.fill() } });
+  light(c);
+}
+
+/* ---------- l'état ---------- */
+const cv = $("cv"), ctx = cv.getContext("2d"), stage = $("stage");
+let S = {map:"cour", mode:"2", pick:[0, 1], names:["Léa", "Sam"], rules:{...PICH.RULES}};
+let G = null, ground = null, groundKey = "", specs = new Map(), fx = [], ghosts = [], view = null, replay = null, aim = null, drag = null, busy = false, lagShown = [false, false];
+const isBot = s => (S.mode!=="2" && s===1) || !!S.auto;   // (S.auto : ordi contre ordi, pour les tests)
+let lagWorld = null;   // la mise en jeu : la bille qui roule (le terrain est vide)
+
+// (téléphone tenu droit) le terrain pivote : le joueur jaune joue en bas, le bleu en haut. ROT : le terrain est tourné d'un quart de tour
+let ROT = false;
+function scaleCv(){ const rot = stage.clientWidth < 640 && innerHeight > innerWidth, w = Math.round(stage.clientWidth*Math.min(2, devicePixelRatio || 1));
+  if(cv.width!==w || rot!==ROT){ ROT = rot; cv.width = w; cv.height = Math.round(w*(ROT ? AW/AH : AH/AW)); groundKey = "" } return cv.width/(ROT ? AH : AW) }
+// le terrain (x, y) → l'écran : tourné d'un quart de tour si ROT (le haut de l'écran = le côté du joueur bleu)
+const world = (c, s) => ROT ? c.setTransform(0, -s, s, 0, 0, AW*s) : c.setTransform(s, 0, 0, s, 0, 0);
+// un texte toujours droit à l'écran, « au-dessus » d'un point du terrain (d : de combien)
+function upText(c, t, x, y, d, stroke){ c.save(); if(ROT){ c.translate(x + d, y); c.rotate(Math.PI/2) } else c.translate(x, y - d);
+  if(stroke) c.strokeText(t, 0, 0); c.fillText(t, 0, 0); c.restore() }
+function getGround(lag){ const key = `${S.map}|${cv.width}|${ROT}|${lag}`; if(groundKey===key) return ground;
+  ground = document.createElement("canvas"); ground.width = cv.width; ground.height = cv.height; const c = ground.getContext("2d"), s = cv.width/(ROT ? AH : AW); world(c, s);
+  drawStatic(c, MAPS[S.map], S.map, lag); groundKey = key; return ground }
+
+/* ---------- le dessin d'une image ---------- */
+function drawBall(c, b, spec, s, ring){
+  const D = 2*b.r/.9; c.fillStyle = "rgba(0,0,0,.3)"; c.beginPath(); c.ellipse(b.x + 3, b.y + 4, b.r, b.r*.8, 0, 0, 7); c.fill();
+  if(spec.shiny){ c.save(); c.globalCompositeOperation = "lighter"; const lc = spec.shiny===2 ? "#FFC93F" : PALETTES[spec.pal][2], g = c.createRadialGradient(b.x, b.y, b.r*.6, b.x, b.y, b.r*3.2);
+    g.addColorStop(0, rgba(lc, .4)); g.addColorStop(1, rgba(lc, 0)); c.fillStyle = g; c.beginPath(); c.arc(b.x, b.y, b.r*3.2, 0, 7); c.fill(); c.restore() }
+  if(ring!=null){ c.strokeStyle = PCOL[ring]; c.lineWidth = 3.5; c.beginPath(); c.arc(b.x, b.y, b.r + 4, 0, 7); c.stroke() }
+  const spr = sprite(b, spec, Math.min(160, Math.max(16, Math.ceil(D*s))));
+  if(spr) c.drawImage(spr, b.x - D/2, b.y - D/2, D, D); else { c.fillStyle = "#888"; c.beginPath(); c.arc(b.x, b.y, b.r, 0, 7); c.fill() } }
+function frameDraw(){
+  const s = scaleCv(), c = ctx; c.setTransform(1, 0, 0, 1, 0, 0);
+  const lag = G && (G.phase==="lag" || G.phase==="egalite" || G.reveal);
+  c.drawImage(getGround(lag), 0, 0); world(c, s);
+  if(!G) return;
+  const W = replay ? replay.G : G, map = MAPS[S.map];
+  if(lag){
+    // la mise en jeu : les billes déjà jouées (cachées tant que l'autre n'a pas joué, si on est deux sur le même écran)
+    [0, 1].forEach(s2=>{ const L = G.lagB?.[s2]; if(!L) return; const hide = S.mode==="2" && G.lag[1 - s2]==null && !lagWorld?.includes(L);
+      if(hide){ c.globalAlpha = .0 } drawBall(c, L, spec(L), s, s2); c.globalAlpha = 1;
+      if(G.lag[0]!=null && G.lag[1]!=null){ c.strokeStyle = PCOL[s2]; c.setLineDash([4, 6]); c.lineWidth = 2; c.beginPath(); c.moveTo(CX, CY); c.lineTo(L.x, L.y); c.stroke(); c.setLineDash([]) } });
+  } else {
+    for(const b of W.balls){ if(!b.alive) continue; drawBall(c, b, spec(b), s, b.kind==="tir" ? b.side : null);
+      if(b.kind==="tir"){ c.font = "800 13px Nunito, sans-serif"; c.textAlign = "center"; c.lineWidth = 4; c.strokeStyle = "rgba(36,37,61,.75)"; const nm = S.names[b.side];
+        c.fillStyle = PCOL[b.side]; upText(c, nm, b.x, b.y, b.r + 10, true) } }
+  }
+  // les billes gagnées s'envolent vers le tableau du joueur
+  const now = performance.now();
+  ghosts = ghosts.filter(g=>{ const k = (now - g.t0)/650; if(k >= 1) return false; const e = k*k, x = g.x + (g.tx - g.x)*e + (ROT ? Math.sin(k*Math.PI)*60 : 0), y = g.y + (g.ty - g.y)*e - (ROT ? 0 : Math.sin(k*Math.PI)*60), sc = 1 - .5*k;
+    c.globalAlpha = 1 - k*.3; drawBall(c, {...g.b, x, y, r:g.b.r*sc}, g.spec, s, null); c.globalAlpha = 1; return true });
+  // la tireuse à placer, la visée
+  const cur = G.phase==="play" ? G.turn : (G.phase==="lag" || G.phase==="egalite") ? lagWho() : null;
+  if(cur!=null && !busy && !replay && !isBot(cur)){
+    const t = shooterNow();
+    if(t){ if(t.ghost){ c.globalAlpha = .9; drawBall(c, t, spec(t), s, cur); c.globalAlpha = 1;
+        const k = .5 + .5*Math.sin(now/260); c.fillStyle = `rgba(255,255,255,${.5 + .4*k})`; [-1, 1].forEach(d=>{ c.beginPath(); c.moveTo(t.x - 7, t.y + d*(t.r + 10)); c.lineTo(t.x + 7, t.y + d*(t.r + 10)); c.lineTo(t.x, t.y + d*(t.r + 18)); c.closePath(); c.fill() }) }
+      if(aim){ const dx = t.x - aim.x, dy = t.y - aim.y, L = Math.sqrt(dx*dx + dy*dy) || 1, p = Math.min(L/180, 1), ux = dx/L, uy = dy/L, reach = 40 + p*190, col = p<.5 ? "#FFE14D" : p<.85 ? "#FF9F1C" : "#FF4D4D";
+        c.strokeStyle = "rgba(255,255,255,.4)"; c.lineWidth = 2; c.setLineDash([2, 6]); c.beginPath(); c.moveTo(t.x, t.y); c.lineTo(aim.x, aim.y); c.stroke(); c.setLineDash([]);
+        for(let i=1;i<=10;i++){ const k2 = i/10; c.fillStyle = col; c.globalAlpha = 1 - k2*.6; c.beginPath(); c.arc(t.x + ux*(t.r + k2*reach), t.y + uy*(t.r + k2*reach), 3.4 - k2*1.4, 0, 7); c.fill() }
+        c.globalAlpha = 1; c.strokeStyle = col; c.lineWidth = 4; c.beginPath(); c.arc(t.x, t.y, t.r + 9, -Math.PI/2, -Math.PI/2 + p*Math.PI*2); c.stroke() }
+      else if(!t.ghost){ const k = .5 + .5*Math.sin(now/260); c.strokeStyle = rgba(PCOL[cur], .45 + .4*k); c.lineWidth = 2.5; c.setLineDash([4, 5]); c.beginPath(); c.arc(t.x, t.y, t.r + 7 + k*3, 0, 7); c.stroke(); c.setLineDash([]) } }
+  }
+  // l'ordi qui vise
+  if(G.botAim){ if(G.botAim.t.ghost) drawBall(c, G.botAim.t, spec(G.botAim.t), s, G.botAim.t.side); const {t, shot, t0} = G.botAim, k = Math.min(1, (now - t0)/650), ux = Math.cos(shot.ang), uy = Math.sin(shot.ang), reach = (40 + shot.p*190)*k;
+    for(let i=1;i<=10;i++){ const k2 = i/10; c.fillStyle = PCOL[t.side]; c.globalAlpha = (1 - k2*.6)*k; c.beginPath(); c.arc(t.x + ux*(t.r + k2*reach), t.y + uy*(t.r + k2*reach), 3.4 - k2*1.4, 0, 7); c.fill() } c.globalAlpha = 1 }
+  // les petits textes (+1, Tac !)
+  fx = fx.filter(f=>{ const k = (now - f.t0)/1100; if(k >= 1) return false; c.globalAlpha = 1 - k*k; c.font = `400 ${f.big ? 34 : 24}px "Lilita One", sans-serif`; c.textAlign = "center";
+    c.lineWidth = 5; c.strokeStyle = "rgba(36,37,61,.8)"; c.fillStyle = f.col; upText(c, f.txt, f.x, f.y, 18 + k*40, true); c.globalAlpha = 1; return true });
+}
+function specOfId(id){ const b = G.balls.find(x=>x.id===id); return b ? spec(b) : pileSpec(0) }
+function spec(b){ if(!specs.has(b.id)){ specs.set(b.id, b.kind==="tir" ? TIREUSES[S.pick[b.side]] : pileSpec(+b.id.slice(1), b.kind==="dore")) } return specs.get(b.id) }
+
+/* ---------- la boucle : la physique avance d'une image à la fois (comme les mini-jeux), puis on dessine ---------- */
+let last = performance.now();
+const FAST = +new URLSearchParams(location.search).get("fast") || 0;   // (tests) ?fast=30 : 30 images de physique par image affichée
+function loop(now){
+  if(FAST) setTimeout(()=>loop(performance.now()), 16); else requestAnimationFrame(loop);
+  const steps = FAST || Math.min(4, Math.max(1, Math.round((now - last)/16.67))); last = now;
+  for(let i=0;i<steps;i++) tick();
+  frameDraw();
+}
+function roll(balls){ for(const b of balls){ if(!b.alive) continue; const sp = Math.sqrt(b.vx*b.vx + b.vy*b.vy); if(sp < .03) continue; const L = lookOf(b);
+  L.R = mul3(rotAxis(b.vy, b.vx, 0, sp/b.r), L.R); L.dirty = true; if(++L.rc % 60===0) L.R = ortho3(L.R) } }
+function sounds(ev, W){ for(const e of ev){ if(e.t==="choc" && e.v > .5) SND.choc(e.v); else if(e.t==="mur" && e.v > 1.2) SND.mur(e.v); else if(e.t==="obs" && e.v > 1) SND.obs(e.v); else if(e.t==="racine" && e.v > 1) SND.racine(e.v); else if(e.t==="pot") SND.pot() } }
+function tick(){
+  const map = MAPS[S.map];
+  if(lagWorld){ const ev = []; const any = PICH.step(map, lagWorld, ev); sounds(ev); roll(lagWorld); if(!any){ const b = lagWorld[0]; lagWorld = null; lagFinished(b) } return }
+  if(replay){ const ev = []; const any = PICH.step(map, replay.G.balls, ev); sounds(ev); roll(replay.G.balls); if(!any){ replay.done ? 0 : (replay.done = true, setTimeout(endReplay, 700)) } return }
+  if(!G || !G.moving) return;
+  const ev = []; const any = PICH.step(map, G.balls, ev); sounds(ev); roll(G.balls);
+  // une bille qui franchit le rond : un « +1 » tout de suite (le compte se fait à l'arrêt)
+  for(const b of G.balls){ if(b.kind==="tir" || !b.alive) continue; const inn = PICH.inCircle(map, b); if(b.wasIn && !inn && !b.flagged){ b.flagged = true; fx.push({txt:"+" + (b.kind==="dore" ? G.R.dore : 1), x:b.x, y:b.y - 18, col:PCOL[G.turn], t0:performance.now()}) } b.wasIn = inn }
+  for(const e of ev) if(e.t==="pot"){ const b = G.balls.find(x=>x.id===e.id); if(b && b.kind!=="tir") fx.push({txt:"+" + G.R.pot, x:e.x, y:e.y - 18, col:PCOL[G.turn], t0:performance.now()}) }
+  if(!any) afterShot();
+}
+
+/* ---------- les tirs ---------- */
+function lagWho(){ return G.lag[0]==null ? 0 : G.lag[1]==null ? 1 : null }
+function shooterNow(){
+  if(G.phase==="lag" || G.phase==="egalite"){ const w = lagWho(); if(w==null) return null; return G.lagGhost || (G.lagGhost = {id:"lag" + w, kind:"tir", side:w, x:LINE_X[w], y:CY, r:R_TIR, ghost:true}) }
+  const t = PICH.tireuse(G, G.turn); if(t.alive) return t;
+  return G.ghost || (G.ghost = {id:t.id, kind:"tir", side:G.turn, x:LINE_X[G.turn], y:G.lastY?.[G.turn] ?? CY, r:R_TIR, ghost:true});
+}
+function shoot(shot){
+  audio(); aim = null;
+  if(G.phase==="lag" || G.phase==="egalite"){ const w = lagWho(); G.lagGhost = null; const b = PICH.lagPlace(G, w, shot); G.lagB = G.lagB || []; G.lagB[w] = b[0]; look.delete(b[0].id); lagWorld = b; SND.tir(shot.p); busy = true; hud(); return }
+  G.snap = {G:PICH.clone(G), shot}; G.lastY = G.lastY || [CY, CY]; if(shot.y!=null) G.lastY[G.turn] = shot.y;
+  G.ghost = null; PICH.place(G, shot); G.balls.forEach(b=>{ b.wasIn = b.alive && PICH.inCircle(MAPS[S.map], b); b.flagged = false });
+  SND.tir(shot.p); busy = true; $("b-replay").disabled = true; hud();
+}
+function afterShot(){
+  const me = G.turn, before = G.balls.map(b=>({...b})), out = PICH.resolve(G);
+  // les billes gagnées s'envolent vers le tableau du joueur
+  // (vers le haut de l'écran, du côté du tableau du joueur)
+  const [tx, ty] = ROT ? [AW + 40, me ? AH - 90 : 90] : [me ? AW - 120 : 120, -30];
+  out.pris.forEach((p, k)=>{ const b = before.find(x=>x.id===p.id); ghosts.push({b, spec:spec(b), x:b.x, y:b.y, tx, ty, t0:performance.now() + k*90}) });
+  if(out.pts){ out.pris.some(p=>p.kind==="dore") ? SND.dore() : SND.point(Math.min(4, out.pris.length)) }
+  if(out.tac){ bigText("Tac !"); SND.tac() }
+  else if(out.plouf) bigText("Plouf !");
+  else if(out.pris.some(p=>p.kind==="dore")) bigText("Le Calot doré !");
+  setTimeout(()=>{ hud(true);
+    $("b-replay").disabled = false;
+    if(out.fin){ busy = false; return finish() }
+    if(out.rejoue){ say(`${S.names[me]} marque et rejoue ! (tir ${G.chain + 1} sur ${G.R.enchaine} d'affilée)`); SND.rejoue() }
+    else if(out.pts && G.chain===0 && G.log.length===1 && !G.R.ouverture){ say(`Bien joué ! Mais l'ouverture ne rejoue pas : à ${S.names[G.turn]}.`) }
+    else if(G.turn!==me){ say(`À ${S.names[G.turn]} !`); SND.tour() }
+    if(out.retour) setTimeout(()=>say(`La tireuse de ${S.names[G.turn]} était dans le rond : retour à sa ligne.`), 900);
+    busy = false; hud(); maybeBot() }, out.pris.length ? 750 : 350);
+}
+function lagFinished(b){
+  const w = b.side, d = PICH.lagDist(G, b), first = PICH.lagDone(G, w, d);
+  busy = false;
+  if(first==null){ say(S.mode==="2" ? `${S.names[w]} a joué. À ${S.names[1 - w]} : sa bille est cachée, pas de copiage !` : `À ${S.names[1 - w]}…`); hud(); maybeBot(); return }
+  const da = Math.round(G.lag[0]), db = Math.round(G.lag[1]);
+  G.reveal = true; busy = true; hud();   // les deux billes de la mise en jeu restent un moment, avec leur distance à la croix
+  if(G.phase==="fin"){ bigText(`${S.names[first]} !`); say(`Mort subite : ${S.names[first]} est le plus près du milieu (${da} contre ${db}).`); setTimeout(()=>{ G.reveal = false; busy = false; finish() }, 1800); return }
+  bigText(`${S.names[first]} commence`); say(`${S.names[0]} à ${da} du milieu, ${S.names[1]} à ${db} : ${S.names[first]} commence !`); SND.rejoue();
+  setTimeout(()=>{ G.reveal = false; busy = false; G.lagB = null; dropPile(); hud(); maybeBot() }, 2200);
+}
+function dropPile(){ look.clear(); }
+function maybeBot(){
+  if(!G) return; const who = G.phase==="play" ? G.turn : (G.phase==="lag" || G.phase==="egalite") ? lagWho() : null;
+  if(who==null || !isBot(who) || busy) return;
+  busy = true; const r = PICH.rng(Date.now() & 0xffffff);
+  setTimeout(()=>{
+    const lvl = S.mode==="2" ? "moyen" : S.mode;
+    if(G.phase==="play"){ const shot = PICH.botShot(G, lvl, r), t = PICH.tireuse(G, who);
+      G.botAim = {t:t.alive ? t : {id:t.id, kind:"tir", side:who, x:LINE_X[who], y:shot.y ?? CY, r:R_TIR, ghost:true}, shot, t0:performance.now()};
+      setTimeout(()=>{ G.botAim = null; busy = false; shoot(shot) }, 800) }
+    else { const shot = PICH.botLag(G, who, lvl, r); busy = false; shoot(shot) }
+  }, 650);
+}
+
+/* ---------- la souris et le doigt ---------- */
+function pos(e){ const r = cv.getBoundingClientRect(), u = (e.clientX - r.left)/r.width, v = (e.clientY - r.top)/r.height; return ROT ? {x:AW - v*AW, y:u*AH} : {x:u*AW, y:v*AH} }
+function canPlay(){ if(!G || busy || replay || lagWorld || G.moving) return false; const w = G.phase==="play" ? G.turn : (G.phase==="lag" || G.phase==="egalite") ? lagWho() : null; return w!=null && !isBot(w) }
+cv.addEventListener("pointerdown", e=>{ audio(); if(!canPlay()) return; const p = pos(e), t = shooterNow(); try{ cv.setPointerCapture(e.pointerId) }catch(err){}
+  // une tireuse pas encore posée : on la fait glisser le long de sa ligne
+  if(t.ghost && Math.abs(p.x - t.x) < t.r + 22 && Math.abs(p.y - t.y) < t.r + 26){ drag = {dy:p.y - t.y}; return }
+  aim = p });
+cv.addEventListener("pointermove", e=>{ if(!canPlay()) return; const p = pos(e), t = shooterNow();
+  if(drag){ t.y = Math.max(LINE_Y[0], Math.min(LINE_Y[1], p.y - drag.dy)); return }
+  if(aim) aim = p });
+const up = e=>{ if(drag){ drag = null; return } if(!aim || !canPlay()){ aim = null; return }
+  const t = shooterNow(), dx = t.x - aim.x, dy = t.y - aim.y, L = Math.sqrt(dx*dx + dy*dy), p = Math.min(L/180, 1); aim = null;
+  if(p < .04) return; shoot({y:t.ghost ? t.y : undefined, ang:Math.atan2(dy, dx), p}) };
+cv.addEventListener("pointerup", up); cv.addEventListener("pointercancel", ()=>{ aim = null; drag = null });
+
+/* ---------- le replay : le dernier tir rejoué à l'identique (c'est ce que verra l'adversaire en ligne) ---------- */
+$("b-replay").onclick = ()=>{ if(!G?.snap || busy || replay) return; audio(); const H = PICH.clone(G.snap.G); PICH.place(H, G.snap.shot); H.balls.forEach(b=>look.delete(b.id));
+  replay = {G:H}; say("Le dernier tir, rejoué à l'identique : c'est ce que verra ton adversaire en ligne."); SND.tir(G.snap.shot.p) };
+function endReplay(){ replay = null; look.clear(); say(G.phase==="play" ? `À ${S.names[G.turn]} !` : "") }
+
+/* ---------- le tableau des scores, les messages ---------- */
+let msgT = 0;
+function say(t){ const m = $("msg"); if(!t){ m.hidden = true; return } m.textContent = t; m.hidden = false; clearTimeout(msgT); msgT = setTimeout(()=>m.hidden = true, 3800) }
+function bigText(t){ const b = $("big"); b.innerHTML = ""; const s = document.createElement("span"); s.textContent = t; b.appendChild(s) }
+function hud(bump){
+  if(!G) return;
+  [0, 1].forEach(s=>{ const el = $("pl" + s), sp = TIREUSES[S.pick[s]];
+    el.querySelector(".av img").src = icon(sp); el.querySelector(".nm").textContent = S.names[s] + (isBot(s) ? " 🤖" : "");
+    const sc = el.querySelector(".sc"); if(bump && +sc.textContent!==G.score[s]){ sc.classList.remove("bump"); void sc.offsetWidth; sc.classList.add("bump") } sc.textContent = G.score[s];
+    el.querySelector(".tirs").innerHTML = Array.from({length:G.R.tirs}, (_, i)=>`<i class="${i < G.left[s] ? "" : "off"}"></i>`).join("");
+    const bt = el.querySelector(".butin"), want = G.butin[s].length; if(bt.children.length!==want){ bt.innerHTML = G.butin[s].map(id=>`<img src="${icon(specOfId(id))}" alt="" title="${esc(nameOf(specOfId(id)))}">`).join("") }
+    el.classList.toggle("on", G.phase==="play" ? G.turn===s : (G.phase==="lag" || G.phase==="egalite") && lagWho()===s) });
+  const T = $("turn"), cur = G.phase==="play" ? G.turn : lagWho();
+  T.className = "turn" + (cur!=null ? " p" + cur : "");
+  T.textContent = G.reveal && G.phase==="play" ? `${S.names[G.turn]} commence !` : G.phase==="fin" ? "Partie finie" : G.phase==="egalite" ? "Mort subite !" : G.phase==="lag" ? (cur!=null ? `Mise en jeu : ${S.names[cur]}` : "Mise en jeu") : `À ${S.names[G.turn]} !`;
+  $("chain").innerHTML = G.phase==="play" && G.R.enchaine < 20 ? Array.from({length:G.R.enchaine}, (_, i)=>`<i class="${i <= G.chain ? "on" : ""}"></i>`).join("") : "";
+  const left = G.balls.filter(b=>b.alive && b.kind!=="tir").length + (G.phase==="lag" ? 0 : 0);
+  $("sub").textContent = `${MAPS[S.map].name} · ${G.phase==="lag" || G.phase==="egalite" ? "le plus près de la croix commence" : left ? `${left} bille${left > 1 ? "s" : ""} dans le rond` : "le rond est vide"}`;
+  $("tip").textContent = G.phase==="fin" ? "" : !canPlay() ? (isBot(cur) ? "L'ordi réfléchit…" : "") :
+    G.phase!=="play" ? "Tire vers la croix du milieu : le plus près commence. Glisse ta bille sur ta ligne pour choisir ta place." :
+    shooterNow().ghost ? "Glisse ta bille le long de ta ligne, puis tire en arrière pour viser (comme un lance-pierre)." : "Tire d'où ta bille s'est arrêtée. Plus tu tires loin en arrière, plus c'est fort.";
+}
+
+/* ---------- la fin ---------- */
+function finish(){
+  hud(); const w = G.winner, end = $("end"), b = s => G.butin[s].map(id=>`<img src="${icon(specOfId(id))}" alt="">`).join("") || "<small>rien…</small>";
+  end.innerHTML = `<div class="trophy">🏆</div><h2>${w==null ? "Égalité !" : `${S.names[w]} gagne !`}</h2>
+    <div class="final"><span style="color:${PDARK[0]}">${G.score[0]}</span>–<span style="color:${PDARK[1]}">${G.score[1]}</span></div>
+    <p class="lead">${G.lag[0]!=null && G.log.length && G.score[0]===G.score[1] ? "Départagés à la mort subite." : `${G.log.length} tirs · ${MAPS[S.map].name}`}</p>
+    <div class="bt"><div><b>${esc(S.names[0])}</b><div class="row">${b(0)}</div></div><div><b>${esc(S.names[1])}</b><div class="row">${b(1)}</div></div></div>
+    <div class="go"><button class="btn btn-ghost" id="e-menu">Changer de terrain</button><button class="btn btn-yellow btn-xl" id="e-again">Revanche !</button></div>`;
+  $("ov-end").hidden = false; SND.fin(); confetti();
+  $("e-again").onclick = ()=>{ $("ov-end").hidden = true; start() }; $("e-menu").onclick = ()=>{ $("ov-end").hidden = true; openStart() };
+}
+function confetti(){ const d = document.createElement("div"); d.className = "confetti"; d.innerHTML = Array.from({length:60}, (_, i)=>`<i style="left:${(i*37) % 100}%;background:${["#FFC93F","#E5484D","#2E8CFF","#2FA35A","#7B6CF6","#F472B6"][i % 6]};animation-delay:${(i % 9)*.11}s;animation-duration:${2.2 + (i % 5)*.3}s"></i>`).join(""); document.body.appendChild(d); setTimeout(()=>d.remove(), 4000) }
+
+/* ---------- le départ : terrain, joueurs, règles ---------- */
+const RULE_UI = [
+  ["tirs", "Tirs par joueur", [[8, "8"], [10, "10"], [12, "12"]]],
+  ["enchaine", "Qui marque rejoue…", [[2, "2 tirs d'affilée max"], [3, "3 max"], [99, "sans limite"]]],
+  ["ouverture", "Le tout premier tir rejoue-t-il ?", [[false, "Non"], [true, "Oui"]]],
+  ["depuisRond", "Tirer depuis le rond", [[false, "Non : retour à la ligne"], [true, "Oui"]]],
+  ["tac", "Sortir la tireuse adverse du rond (Tac !)", [[2, "2 points"], [1, "1 point"], [0, "rien"]]],
+  ["miseEnJeu", "Qui commence", [[true, "Mise en jeu (le plus près)"], [false, "Pile ou face"]]],
+];
+function openStart(){
+  const M = $("maps"); M.innerHTML = Object.entries(MAPS).map(([k, m])=>`<button class="mapc${k===S.map ? " on" : ""}" data-m="${k}"><canvas width="300" height="173"></canvas><b>${m.name}</b></button>`).join("");
+  M.querySelectorAll(".mapc").forEach(b=>{ const c = b.querySelector("canvas").getContext("2d"), m = MAPS[b.dataset.m]; c.setTransform(300/AW, 0, 0, 300/AW, 0, 0); drawStatic(c, m, b.dataset.m, false);
+    const H = PICH.newGame(b.dataset.m); H.balls.filter(x=>x.alive).forEach(x=>{ c.fillStyle = x.kind==="dore" ? "#FFC93F" : "#F4F1EA"; c.beginPath(); c.arc(x.x, x.y, x.r, 0, 7); c.fill(); c.strokeStyle = "rgba(0,0,0,.3)"; c.lineWidth = 2; c.stroke() });
+    b.onclick = ()=>{ S.map = b.dataset.m; openStart() } });
+  $("mapdesc").textContent = MAPS[S.map].desc;
+  document.querySelectorAll("#mode button").forEach(b=>{ b.classList.toggle("on", b.dataset.v===S.mode); b.onclick = ()=>{ S.mode = b.dataset.v; if(S.mode!=="2" && $("n1").value==="Sam") $("n1").value = "L'ordi"; if(S.mode==="2" && $("n1").value==="L'ordi") $("n1").value = "Sam"; openStart() } });
+  [0, 1].forEach(s=>{ const sp = TIREUSES[S.pick[s]]; document.querySelector(`.pick[data-p="${s}"] img`).src = icon(sp); $("s" + s).textContent = "Tireuse : " + nameOf(sp) });
+  $("rules").innerHTML = RULE_UI.map(([k, lab, opts])=>`<label>${lab}<span class="seg" data-r="${k}">${opts.map(([v, t])=>`<button data-v='${JSON.stringify(v)}' class="${S.rules[k]===v ? "on" : ""}">${t}</button>`).join("")}</span></label>`).join("");
+  $("rules").querySelectorAll(".seg").forEach(sg=>sg.querySelectorAll("button").forEach(b=>b.onclick = ()=>{ S.rules[sg.dataset.r] = JSON.parse(b.dataset.v); openStart() }));
+  $("ov-start").hidden = false;
+}
+document.querySelectorAll(".pick").forEach(b=>b.onclick = ()=>{ const s = +b.dataset.p; do{ S.pick[s] = (S.pick[s] + 1) % TIREUSES.length } while(S.pick[s]===S.pick[1 - s]); openStart() });
+function start(){
+  S.names = [$("n0").value.trim() || "Jaune", $("n1").value.trim() || "Bleu"];
+  G = PICH.newGame(S.map, S.rules, Date.now() & 0xffff); specs.clear(); look.clear(); ghosts = []; fx = []; replay = null; lagWorld = null; busy = false; groundKey = "";
+  $("b-replay").disabled = true;
+  if(!G.R.miseEnJeu){ G.turn = Math.random() < .5 ? 0 : 1; G.phase = "play"; bigText(`${S.names[G.turn]} commence`); say(`Pile ou face : ${S.names[G.turn]} commence.`) }
+  else { say("Mise en jeu : chacun tire vers la croix du milieu. Le plus près commence !") }
+  $("ov-start").hidden = true; hud(); maybeBot();
+}
+$("b-go").onclick = ()=>{ audio(); start() };
+$("b-new").onclick = openStart;
+
+/* ---------- les règles (le texte) ---------- */
+$("rtext").innerHTML = `
+<p><b>Le but.</b> Au milieu du terrain, un rond à la craie et 13 billes, dont le <b>Calot doré</b>. Chacun a sa <b>tireuse</b> : à toi de sortir les billes du rond en tirant dessus. Une bille sortie = <b>1 point</b>, le Calot doré = <b>3 points</b>. Quand le rond est vide (ou que chacun a joué ses tirs), le plus de points gagne.</p>
+<p><b>Viser.</b> Tire en arrière depuis ta bille, comme un lance-pierre : plus tu tires loin, plus c'est fort. Toutes les tireuses ont <b>le même poids</b> : ta collection te donne ton style, pas un avantage.</p>
+<p><b>D'où on tire.</b> Ton premier tir part de ta ligne (tu choisis ta place). Ensuite, tu tires <b>d'où ta bille s'est arrêtée</b>… sauf si elle est restée <b>dans le rond</b> : on ne tire pas depuis le rond, elle revient à ta ligne à ton tour suivant.</p>
+<p><b>Tac !</b> Tant que ta tireuse est dans le rond, l'adversaire peut la viser : s'il la sort du rond, il marque <b>2 points</b>. Rester près des billes, c'est tentant… mais risqué.</p>
+<p><b>Qui marque rejoue.</b> Si tu sors au moins une bille (ou fais un Tac), tu rejoues tout de suite, <b>3 tirs d'affilée au plus</b>. Le tout <b>premier tir de la partie</b> (l'ouverture) ne rejoue pas : sinon celui qui commence serait avantagé.</p>
+<p><b>Qui commence.</b> La <b>mise en jeu</b> : chacun tire vers la croix du milieu, sur le terrain vide. En ligne, chacun joue la sienne sans voir celle de l'autre. Le plus près commence.</p>
+<p><b>Les terrains.</b> La Cour (classique), le Préau (des piliers pour les tirs en bande), le Bac à sable (ça freine, des bosses), Sous le marronnier (des racines et des marrons), le Pot (un trou au milieu : 2 points la bille poussée dedans ; ta tireuse dedans, Plouf, retour à ta ligne).</p>
+<p><b>Égalité.</b> Mort subite : une mise en jeu, le plus près de la croix gagne.</p>
+<p><b>En ligne (plus tard).</b> Tu défies un copain, chacun joue quand il veut (24 h par tour, sinon abandon). Ton téléphone n'envoie que ton tir (ta place, la direction, la force) : le serveur le rejoue avec le même moteur et compte les points. Ton copain voit ton tir rejoué à l'identique (le bouton « Revoir le dernier tir » montre ce que ça donne).</p>`;
+
+/* ---------- le banc d'essai ---------- */
+$("b-bench").onclick = async ()=>{ $("ov-bench").hidden = false; const el = $("bench");
+  try{ const B = await (await fetch("pichenette-banc.json", {cache:"no-store"})).json();
+    $("bench-lead").textContent = `On a fait jouer l'ordi contre lui-même (niveau ${B.niveau}, le même des deux côtés), ${B.parties} parties par terrain, en tirant au sort qui commence. Si commencer ne change rien, celui qui commence gagne environ une fois sur deux.`;
+    el.innerHTML = Object.values(B.res).map(V=>`<h3>${V.nom} <span style="font:700 13px var(--body);color:var(--muted)">(${V.desc})</span></h3>
+      <table class="bench"><tr><th>Terrain</th><th>Celui qui commence gagne</th><th>Le second gagne</th><th>Égalité</th><th>Tirs par partie</th><th>Écart moyen</th></tr>
+      ${Object.entries(V.cartes).map(([k, c])=>`<tr><td>${MAPS[k].name}</td><td class="${Math.abs(c.commence - c.second) > 12 ? "hot" : "ok"}">${c.commence} %</td><td>${c.second} %</td><td>${c.egalite} %</td><td>${c.tirs}</td><td>${c.ecart} pts</td></tr>`).join("")}</table>`).join("") }
+  catch(e){ el.innerHTML = "<p>Le banc d'essai n'a pas encore tourné (node maquettes/banc-pichenette.mjs).</p>" } };
+
+/* ---------- les fenêtres ---------- */
+document.querySelectorAll("[data-open]").forEach(b=>b.onclick = ()=>{ $(b.dataset.open).hidden = false });
+document.querySelectorAll("[data-close]").forEach(b=>b.onclick = ()=>{ b.closest(".ov").hidden = true });
+$("b-rules").onclick = ()=>{ $("ov-rules").hidden = false };
+$("b-sound").onclick = e=>{ audio(); soundOn = !soundOn; e.currentTarget.textContent = soundOn ? "🔊" : "🔇" };
+addEventListener("resize", ()=>{ groundKey = "" });
+
+openStart();
+requestAnimationFrame(loop);
+// (tests) ?auto : l'ordi contre l'ordi, tout de suite
+{ const Q = new URLSearchParams(location.search); if(Q.has("map")) S.map = Q.get("map"); if(Q.has("auto")){ S.auto = true; S.mode = "fort"; start() } }
+</script>
+</body>
+</html>

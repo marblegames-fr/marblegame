@@ -13988,13 +13988,16 @@ async function gcWatch3D(race){
     water:new THREE.MeshPhysicalMaterial({color:"#5EC8FF", roughness:.05, transparent:true, opacity:.28, depthWrite:false})};
   // rendu studio : les boîtes aux bords arrondis, les cylindres plus ronds
   const boxGeo = sz => P ? new FX.RoundedBoxGeometry(sz[0], sz[1], sz[2], 3, Math.min(.1, Math.min(...sz)*.45)) : new THREE.BoxGeometry(...sz);
+  // (16 octobre 2026, le soir) solids : ce sur quoi une bille peut rouler (pas les vitres), pour poser la pépite chinoise sur la pente
+  const solids = [], see = k => !/wall|inner|end|glass|back|water|ghost/.test(k);
   const piece = s => { if(s.shape==="group"){ const g = new THREE.Group();
-      s.parts.forEach(q=>g.add(piece({...q, kind:q.kind || s.kind, add:false}))); g.position.set(...s.pos); g.quaternion.set(...s.quat); scene.add(g); return g }
+      s.parts.forEach(q=>g.add(piece({...q, kind:q.kind || s.kind, add:false}))); g.position.set(...s.pos); g.quaternion.set(...s.quat); scene.add(g); solids.push(g); return g }
     const m = new THREE.Mesh(s.shape==="cyl" ? new THREE.CylinderGeometry(s.size[0], s.size[0], s.size[1], P ? 40 : 20) : s.shape==="sph" ? new THREE.SphereGeometry(s.size[0], P ? 32 : 24, P ? 20 : 16)
       : s.shape==="cone" ? new THREE.CylinderGeometry(s.size[0], s.size[1], s.size[2], P ? 48 : 40) : boxGeo(s.size), MAT[s.kind] || MAT.ramp);
-    m.position.set(...s.pos); m.quaternion.set(...s.quat); m.castShadow = !/wall|inner|end|glass|back|water|ghost/.test(s.kind); m.receiveShadow = true; if(s.add!==false) scene.add(m); return m };
+    m.position.set(...s.pos); m.quaternion.set(...s.quat); m.castShadow = see(s.kind); m.receiveShadow = true; if(s.add!==false){ scene.add(m); if(see(s.kind)) solids.push(m) } return m };
   W.statics.forEach(piece);
   const kinM = W.kin.map(piece);   // les pièces qui tournent (moulins) : replacées à chaque image
+  scene.updateMatrixWorld();   // (pour poser la pépite dès la première image)
   const floor = new THREE.Mesh(new THREE.PlaneGeometry(400,400), new THREE.MeshStandardMaterial({color:night ? cbShade(TH.bg, 6) : "#7DB35F", roughness:1}));
   floor.rotation.x = -Math.PI/2; floor.position.y = W.floorY-1; floor.receiveShadow = true; scene.add(floor);
   // le soir : des étoiles tout autour, des guirlandes d'ampoules sur les bords de la piste, et une lampe qui suit l'action
@@ -14069,7 +14072,16 @@ async function gcWatch3D(race){
       await new Promise(r=>setTimeout(r, 0)) } })();
   // pas de bruit de roulement continu ici : avec toutes les billes, il sonnait comme un vent qui fait mal aux oreilles
   const big = t => { const b = document.getElementById("gc-big"); if(!b) return; b.innerHTML = `<span>${t}</span>`; setTimeout(()=>{ if(b.textContent===t) b.innerHTML = "" }, 1000) };
-  const v = new THREE.Vector3(), vf = new THREE.Vector3();
+  const v = new THREE.Vector3(), vf = new THREE.Vector3(), UP = new THREE.Vector3(0,1,0), nT = new THREE.Vector3(), qY = new THREE.Quaternion(), ray = new THREE.Raycaster(), DOWN = new THREE.Vector3(0,-1,0), flatN = [];
+  // (16 octobre 2026, le soir) la pépite chinoise se couche sur la pente de la piste sous elle (toujours à plat, elle s'enfonçait du côté qui monte :
+  // un peu en ligne droite, d'un tiers de bille dans les virages relevés et les entonnoirs) ; en l'air, elle revient doucement à plat
+  ray.far = G3.R*1.8;
+  const layFlat = (i, F) => { const g = flats[i], c = meshes[i].position, N = flatN[i] || (flatN[i] = new THREE.Vector3(0,1,0));
+    ray.set(c, DOWN); const h = ray.intersectObjects(solids, true).find(x=>x.face);
+    if(h){ nT.copy(h.face.normal).transformDirection(h.object.matrixWorld); if(nT.y < 0) nT.negate(); if(nT.y < .4) nT.copy(UP) } else nT.copy(UP);
+    N.lerp(nT, .3).normalize();
+    vf.set(1,0,0).applyQuaternion(meshes[i].quaternion); qY.setFromAxisAngle(UP, Math.atan2(-vf.z, vf.x));
+    g.quaternion.setFromUnitVectors(UP, N).multiply(qY); g.position.copy(c).addScaledVector(N, -G3.R*.98) };
   const loop = now => {
     if(!document.getElementById("g3-stage") || GCV.g3v!==G3V){ g3Free(G3V); Sound.rollStop(); return }
     GCV.raf = requestAnimationFrame(loop);
@@ -14077,7 +14089,7 @@ async function gcWatch3D(race){
     const cd = t<1 ? "3" : t<2 ? "2" : t<3 ? "1" : "go";
     if(cd!==G3V.cd){ G3V.cd = cd; big(cd==="go" ? "Partez !" : cd); if(cd==="go") Sound.ding(); else Sound.tap?.(0,.5) }
     for(let i=0;i<n;i++){ meshes[i].position.set(F[i*7],F[i*7+1],F[i*7+2]); meshes[i].quaternion.set(F[i*7+3],F[i*7+4],F[i*7+5],F[i*7+6]);
-      if(flats[i]){ vf.set(1,0,0).applyQuaternion(meshes[i].quaternion); flats[i].position.set(F[i*7], F[i*7+1]-G3.R*.98, F[i*7+2]); flats[i].rotation.set(0, Math.atan2(-vf.z, vf.x), 0) } }
+      if(flats[i]) layFlat(i, F) }
     auras.forEach(({au, i})=>{ au.position.copy(meshes[i].position); if(flats[i]) au.position.y -= .39*G3.R; au.material.opacity = .7 + .3*Math.sin(now/260 + i*1.7); au.material.rotation = now/900 });
     if(kinM.length){ const K = sim.kf[f]; kinM.forEach((m,j)=>m.quaternion.set(K[j*4],K[j*4+1],K[j*4+2],K[j*4+3])) }
     const tt = f*G3.DT, rank = who.map((o,i)=>({o, i, done:sim.fin[i]<=tt, pr:g3Where(W, F[i*7],F[i*7+1],F[i*7+2]).s}))

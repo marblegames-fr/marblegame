@@ -267,11 +267,11 @@ function g3Fourche(k, r, n, o){
 function g3Funnel(k, C, RO, RI, pente, kind, o={}){
   const tp = Math.tan(pente), lot = [], ring = (r1, r2, NS) => { for(let j=0;j<NS;j++){ const a = (j+.5)*TAU/NS, rad = [Math.cos(a), 0, Math.sin(a)], rc = (r1+r2)/2;
     const X = v3.norm([rad[0]*Math.cos(pente), Math.sin(pente), rad[2]*Math.cos(pente)]), Z = [-Math.sin(a), 0, Math.cos(a)], Y = v3.cross(Z, X);
-    lot.push({size:[(r2-r1)/Math.cos(pente) + .15, .3, 2*r2*Math.sin(Math.PI/NS)*1.18], pos:v3.add(C, [rad[0]*rc, (rc-RI)*tp - .15, rad[2]*rc]), quat:g3Basis(X, Y, Z), kind:"funnel"}) } };
+    lot.push({size:[(r2-r1)/Math.cos(pente) + .15, .3, 2*r2*Math.sin(Math.PI/NS)*1.18], pos:v3.add(C, [rad[0]*rc, (rc-RI)*tp - .15, rad[2]*rc]), quat:g3Basis(X, Y, Z), kind:o.sol || "funnel"}) } };
   ring(RI, RI + (RO-RI)*.42, 20); ring(RI + (RO-RI)*.42, RO, 40);
   const NW = 40, yb = (RO-RI)*tp;
   for(let j=0;j<NW;j++){ const a = (j+.5)*TAU/NW, Z = [-Math.sin(a), 0, Math.cos(a)], X = [Math.cos(a), 0, Math.sin(a)];
-    lot.push({size:[.25, 3.4, 2*(RO+.2)*Math.sin(Math.PI/NW)*1.1], pos:v3.add(C, [X[0]*(RO+.15), yb + 1.5, X[2]*(RO+.15)]), quat:g3Basis(X, [0,1,0], Z), kind:"wall"}) }   // un rebord haut : à 24, des billes sautaient par-dessus
+    lot.push({size:[.25, 3.4, 2*(RO+.2)*Math.sin(Math.PI/NW)*1.1], pos:v3.add(C, [X[0]*(RO+.15), yb + 1.5, X[2]*(RO+.15)]), quat:g3Basis(X, [0,1,0], Z), kind:o.bord || "wall"}) }   // un rebord haut : à 24, des billes sautaient par-dessus
   // une nervure (en face de l'arrivée) : une bille qui tourne s'y arrête et redescend le long d'elle jusqu'au trou
   // (sans elle, une bille tournait plus de 40 s avant de tomber)
   { const a = Math.PI/2 + (o.nerv||0), rad = [Math.cos(a), 0, Math.sin(a)], r1 = RI + .5, r2 = RO - .25, rc = (r1+r2)/2;
@@ -622,7 +622,8 @@ const G3C = {
       // (16 octobre 2026) le cratère : la goulotte de départ arrive dans un entonnoir en haut du volcan, les billes y tournent
       // et se mélangent, tombent par le trou sur une goulotte qui tourne et rejoint la spirale
       const RO = 6.5, RI = 1.5, pf = 22*Math.PI/180, C = [-2, 0, -5], off = RO - 2.2;
-      const top = g3Funnel(k, C, RO, RI, pf, null, {champis:3}), yIn = top + 3.5, xe = C[0] - 1.2, L0 = 18;
+      // (16 octobre 2026, le soir) un cratère de roche : avec le fond à moitié transparent et le rebord en verre, on voyait la spirale à travers
+      const top = g3Funnel(k, C, RO, RI, pf, null, {champis:3, sol:"ramp", bord:"tower"}), yIn = top + 3.5, xe = C[0] - 1.2, L0 = 18;
       const P0 = g3Trace([["S", L0]], {pente:.1, from:[xe - L0, yIn + .1*L0, C[2] - off]});
       const S0 = g3Trough(k, P0, {WID:3, mur:1.4}), st = g3TroughStart(k, P0, {WID:3}, n, r);
       // sous le trou : une goulotte étroite qui tourne (rayon 5) et arrive sur la spirale, en (R0, yS, 0) vers +z
@@ -654,7 +655,9 @@ const G3C = {
       // le cône du volcan (du décor), au milieu de la spirale
       k.look("cone", [R0-2.6, R1-3.2, drop+2], [0, yS - drop/2 - 2, 0], null, "tower");   // (un peu plus bas : la goulotte sous le cratère passe au-dessus)
       const end = g3TroughEnd(k, P, path, o);
-      return {path:[...S0.path, [C[0], top + .6, C[2]], [C[0], C[1] + .2, C[2]], ...S1.path, ...path], ...st, ...end, cam:(p, T)=>p[1] > yS + 1 ? g3FunnelCam(p, T) : g3ChaseCam(p, T)} }},
+      return {path:[...S0.path, [C[0], top + .6, C[2]], [C[0], C[1] + .2, C[2]], ...S1.path, ...path], ...st, ...end, // dans le cratère, la caméra est au-dessus de son milieu (du côté opposé à la bille) et regarde vers le bord : le rebord de roche ne cache rien
+        cam:(p, T)=>{ if(p[1] <= yS + 1) return g3ChaseCam(p, T); const dx = p[0] - C[0], dz = p[2] - C[2], d = Math.hypot(dx, dz) || 1;
+          return [C[0] - dx/d*3, top + 10, C[2] - dz/d*3] }} }},
 
   // ---------- (14 octobre 2026) la grande roue ----------
   // Un mur entre deux vitres, comme le Plinko, mais coupé par deux grandes roues qui tournent en sens contraire :

@@ -14983,8 +14983,6 @@ const CP_PAGE = 12, RARES_PAGE = 6, RARES_H = 72;
 // la rareté du motif d'une trouvaille (-1 pour un motif d'événement ou de saison) et son étiquette, à partir d'Épique
 const rarOf = s => extraFam(s.family) ? -1 : FAMILIES[s.family]?.rar ?? -1;
 const rarPill = s => rarOf(s)>=3 ? `<span class="dec-pill" style="--dc:${DECOR_RAR[rarOf(s)].c}">${DECOR_RAR[rarOf(s)].name}</span>` : "";
-// (14 octobre 2026) la valeur d'une trouvaille, pour montrer les plus belles d'abord (le barème du classement : taille × rareté du motif + shiny)
-const findVal = s => SCORE.taille[TIDX[s.type]] * SCORE.decor[Math.max(0, rarOf(s))] + (s.shiny ? SCORE.shiny[s.shiny-1] : 0);
 // Les copains (allégés le 4 octobre 2026) : une liste compacte qu'on peut filtrer, et à côté les demandes,
 // l'ajout d'un copain et seulement les trouvailles rares (Mammouths et shiny)
 function courCopains(){
@@ -15000,9 +14998,9 @@ function courCopains(){
       <button class="btn btn-ghost btn-sm" data-action="ami-retirer" data-id="${r.id}">Annuler</button></div>`;
   // (10 octobre 2026) les trouvailles rares restent 72 h, 4 par page ; les copains 10 par page (la recherche cherche dans tous)
   // (14 octobre 2026) + les motifs légendaires et mythiques de toutes tailles, et les épiques à partir du Calot (pas les motifs d'événement ni de saison)
-  // (14 octobre 2026, refait) les plus belles d'abord (à valeur égale, la plus récente), 6 par page, en vitrine en haut de la page
+  // (14 octobre 2026, refait) 6 par page, en vitrine en haut de la page ; (16 octobre 2026) de la plus récente à la plus ancienne, de gauche à droite
   const rares = (cour.fil||[]).filter(e=>(e.s.type==="mammouth" || e.s.shiny || rarOf(e.s)>=4 || (rarOf(e.s)===3 && TIDX[e.s.type]>=TIDX.calot)) && Date.now()-e.at < RARES_H*36e5)
-    .sort((x,y)=>findVal(y.s)-findVal(x.s) || y.at-x.at);
+    .sort((x,y)=>y.at-x.at);
   const pg = (n, per, k) => { const max = Math.max(0, Math.ceil(n/per)-1); ui[k] = Math.min(ui[k]||0, max); return {p:ui[k], max} };
   const A = pg(amis.length, CP_PAGE, "cpPage"), F = pg(rares.length, RARES_PAGE, "rarPage");
   const pager = (P, k, lbl) => P.max ? `<div class="cp-pager" data-k="${k}"><button class="btn btn-ghost btn-sm" data-action="cp-page" data-k="${k}" data-d="-1" ${P.p?"":"disabled"} aria-label="${lbl} : page précédente">${ic("chevl",15,2.6)}</button>

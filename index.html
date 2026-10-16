@@ -3060,6 +3060,8 @@ button.cp-who:hover b{text-decoration:underline}
 .sel-ck{position:absolute;right:8px;bottom:8px;z-index:2;display:grid;place-items:center;width:24px;height:24px;border-radius:50%;border:2px solid var(--line-2);background:var(--panel);color:transparent}
 .m-card.picked .sel-ck{background:var(--yellow-2,#F2AE12);border-color:var(--yellow-2,#F2AE12);color:#2B2233}
 .card-grid.sel-mode{margin-bottom:96px}
+.more-row{display:flex;flex-direction:column;align-items:center;gap:6px;margin:18px 0 6px}
+.card-grid.sel-mode + .more-row{margin-top:-78px;margin-bottom:96px}
 .sel-bar{position:fixed;left:50%;transform:translateX(-50%);bottom:18px;width:min(820px,calc(100% - 32px));z-index:45;display:flex;flex-wrap:wrap;align-items:center;gap:8px;color:var(--ink);padding:10px 12px;border-radius:18px;background:var(--panel);border:1.5px solid var(--line-2);box-shadow:0 14px 30px -12px rgba(0,0,0,.45)}
 .sel-n{font-weight:800;font-size:14px;margin-right:4px}
 .sel-n b{font-family:var(--display);font-weight:400;font-size:20px}
@@ -5508,22 +5510,25 @@ vec4 fam(vec3 q, out vec3 e){
     float th=0.015+L*0.11;
     float fan=smoothstep(a0-0.04,a0+0.04,an)*smoothstep(a1+0.04,a1-0.04,an)*smoothstep(th,th*0.3,abs(pr.z))*step(0.0,tri)*smoothstep(0.0,0.08,L);
     vec3 rb=0.5+0.5*cos(6.2831*(vec3(0.0,0.33,0.67)+0.95-hue*0.8));
+    // (16 octobre 2026) l'éventail prend les couleurs du coloris (de la 2e à la 3e), avec un reste d'arc-en-ciel : chaque coloris se reconnaît
+    rb=mix(rb, mix(uC2,uC3,hue), 0.5);
     float lines=0.7+0.3*smoothstep(0.3,1.0,sin(hue*46.0));   // de fines raies dans le spectre
     // de la poussière de lumière qui scintille dans l'éventail, et l'arc-en-ciel qui s'écrase sur la paroi
     vec3 g=q*15.0+so; vec3 fc=fract(g)-0.5;
     float dust=step(0.86,h31(floor(g)))*smoothstep(0.14,0.02,length(fc));
     float wall=smoothstep(0.8,0.92,r);
     // dans le prisme, la lumière se sépare déjà : un dégradé arc-en-ciel vers la face de sortie
-    vec3 inside=0.5+0.5*cos(6.2831*(vec3(0.0,0.33,0.67)+t.y*1.6+0.2));
-    e=vec3(1.0,0.98,0.93)*beam*7.0
-     +rb*lines*fan*(10.0/(1.0+L*2.0)+dust*12.0+wall*5.0)
-     +mix(uC3,vec3(1.0),0.65)*edges*7.0
-     +inP*(mix(uC2,vec3(1.0),0.5)*0.35+inside*smoothstep(-0.1,0.13,t.x)*0.9);
+    vec3 inside=mix(0.5+0.5*cos(6.2831*(vec3(0.0,0.33,0.67)+t.y*1.6+0.2)), uC3, 0.55);
+    e=mix(vec3(1.0,0.98,0.93),uC3,0.3)*beam*7.0
+     +rb*lines*fan*(6.5/(1.0+L*2.0)+dust*10.0+wall*4.0)
+     +mix(uC3,vec3(1.0),0.25)*edges*7.0
+     +inP*(mix(uC2,vec3(1.0),0.15)*0.9+inside*smoothstep(-0.1,0.13,t.x)*0.8)
+     +uC2*0.35*smoothstep(0.95,0.4,r)*(1.0-inP);   // le verre profond s'éclaire de la 2e couleur
     // quelques éclats blancs dans le verre
     vec3 gs=q*11.0+so+3.0; vec3 fs=fract(gs)-0.5;
     e+=vec3(step(0.975,h31(floor(gs)))*smoothstep(0.1,0.0,length(fs)))*4.0*(1.0-inP);
-    if(inP>0.5) return vec4(mix(uC2,vec3(1.0),0.55), 2.5);
-    return vec4(uC1*0.16, 0.32);
+    if(inP>0.5) return vec4(mix(uC2,vec3(1.0),0.25), 2.5);
+    return vec4(uC1*0.34, 0.32);
   }
 #elif MODE==50
   { // orage : un ciel d'orage pris dans le verre ; des éclairs ramifiés le traversent et l'illuminent de l'intérieur
@@ -7899,6 +7904,7 @@ function lockMany(v){
   parts.reduce((p, part)=>p.then(()=>srv(()=>Cloud.cour.verrouiller(part, v))), Promise.resolve())
     .then(fin, e=>{ if(e?.code==="en_vente") toast("Une de ces billes vient d'être mise en vente : retire d'abord son annonce."); else srvFail(e); syncMarbles(true) });
 }
+const BILLES_PAQUET = 100;
 function viewCollection(){
   if(ui.sel && ui.tab!=="billes") ui.sel = null;
   const slots = slotsOwned(), found = albumFound();
@@ -8045,7 +8051,13 @@ function viewCollection(){
     if(show!=="dups"){ const g = new Map(); list.forEach(x=>{ const k=dupKey(x); if(!g.has(k)) g.set(k,[]); g.get(k).push(x) });
       list = [...g.values()].map(l=>{ const b=[...l].sort(tierSort)[0]; grps.set(b.id,l); return b }) }
     list.sort(by[srt]);
-    body = (show==="dups" && recyclableDups().length ? dupsBar() : "") + (list.length ? `<div class="card-grid${ui.sel?" sel-mode":""}">${list.map(x=>ballCard(x, grps.get(x.id))).join("")}</div>` : `<p class="empty">${qw.length?"Aucune bille ne correspond à ta recherche.":EMPTY[show]||EMPTY.all}</p>`);
+    // (16 octobre 2026) les très grosses boîtes : 100 cartes, puis « Afficher plus » par paquets de 100.
+    // Les filtres, la recherche et le tri portent toujours sur toute la boîte ; on repart à 100 quand ils changent.
+    const pk = [ui.type, show, ui.q||"", srt].join("|");
+    if(ui.billesK!==pk){ ui.billesK = pk; ui.billesN = BILLES_PAQUET }
+    const shown = list.slice(0, ui.billesN), rest = list.length - shown.length;
+    ui.selPool = list.map(x=>[x.id, (grps.get(x.id)||[x]).map(y=>y.id)]);   // « Tout sélectionner » : toute la liste filtrée, même pas encore affichée
+    body = (show==="dups" && recyclableDups().length ? dupsBar() : "") + (list.length ? `<div class="card-grid${ui.sel?" sel-mode":""}">${shown.map(x=>ballCard(x, grps.get(x.id))).join("")}</div>${rest>0 ? `<div class="more-row"><button class="btn btn-ghost" data-action="billes-plus">${ic("plus",16,2.6)} Afficher ${Math.min(rest, BILLES_PAQUET)} de plus</button><small class="meta">${fmt(shown.length)} sur ${fmt(list.length)} cartes</small></div>` : ""}` : `<p class="empty">${qw.length?"Aucune bille ne correspond à ta recherche.":EMPTY[show]||EMPTY.all}</p>`);
   }
 
   const turn = cahierLast!=null && cahierLast!==ui.tab; cahierLast = ui.tab;
@@ -15702,7 +15714,9 @@ document.addEventListener("click", e=>{
     case "sel-start": ui.sel = new Map(); renderView(); break;
     case "sel-end": ui.sel = null; renderView(); break;
     case "sel-toggle": selToggle(t); break;
-    case "sel-all": if(!ui.sel) break; document.querySelectorAll(".card-grid.sel-mode .m-card[data-id]").forEach(c=>{ const x = specById(c.dataset.id); if(x && !x.secret && !ui.sel.has(x.id)){ ui.sel.set(x.id, (c.dataset.grp||x.id).split(",")); c.classList.add("picked"); c.setAttribute("aria-pressed", true) } }); selRefresh(); break;
+    case "sel-all": if(!ui.sel) break; (ui.selPool||[]).forEach(([id, ids])=>{ const x = specById(id); if(x && !x.secret) ui.sel.set(id, ids) });
+      document.querySelectorAll(".card-grid.sel-mode .m-card[data-id]").forEach(c=>{ if(ui.sel.has(c.dataset.id)){ c.classList.add("picked"); c.setAttribute("aria-pressed", true) } }); selRefresh(); break;
+    case "billes-plus": { const y = scrollY; ui.billesN = (ui.billesN||BILLES_PAQUET) + BILLES_PAQUET; renderView(); scrollTo(0, y); break }
     case "sel-none": if(!ui.sel) break; ui.sel.clear(); document.querySelectorAll(".card-grid.sel-mode .m-card.picked").forEach(c=>{ c.classList.remove("picked"); c.setAttribute("aria-pressed", false) }); selRefresh(); break;
     case "sel-lock": lockMany(t.dataset.v==="1"); break;
     case "lock-toggle": { const x = specById(t.dataset.id); if(!x || x.secret) break; lockToggle(x); break }

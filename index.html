@@ -8198,7 +8198,16 @@ const craftShiny = t => SHINY_RATE*craftN(t);   // les chances de shiny des bill
 const RAR_F  = TK.map(t=>TYPES[t].label);
 const RAR_PL = TK.map(t=>TYPES[t].pl);
 // billes qu'on peut fusionner : jamais les shiny, la bille active, la vitrine ni les billes de saison
-const craftPool = t => S.specs.filter(s=>tierOf(s)===t && !s.shiny && !s.secret && !s.lock && s.id!==S.active && !S.vitrine.includes(s.id) && isBasePal(s.pal) && (!srvOn() || s.srv));
+// (16 octobre 2026) les billes en vente (ou aux enchères) et celles d'un troc en attente : pas de fusion (le serveur le vérifie aussi)
+function busyIds(){
+  const out = new Set();
+  if(!srvOn()) return out;
+  courLoad("annonces"); courLoad("trocs");
+  (cour.annonces||[]).filter(a=>!a.vendue).forEach(a=>a.bille?.id && out.add(a.bille.id));
+  [...(cour.trocs?.envoyes||[]).flatMap(t=>t.donne||[]), ...(cour.trocs?.recus||[]).flatMap(t=>t.demande||[])].forEach(b=>b?.id && out.add(b.id));
+  return out;
+}
+const craftPool = (t, busy=busyIds()) => S.specs.filter(s=>tierOf(s)===t && !s.shiny && !s.secret && !s.lock && !busy.has(s.id) && s.id!==S.active && !S.vitrine.includes(s.id) && isBasePal(s.pal) && (!srvOn() || s.srv));
 const slotCounts = () => { const c={}; S.specs.forEach(s=>{ const k=dupKey(s); c[k]=(c[k]||0)+1 }); return c };   // exemplaires de chaque bille (doubles stricts)
 // la taille au-dessus ; le motif et le coloris sont tirés au hasard avec leurs chances habituelles
 function craftResult(T){
@@ -8273,7 +8282,7 @@ function viewCraft(){
 // Fusion d'événement : des billes d'événement d'une même taille et d'un même coloris donnent la taille au-dessus,
 // dans le même motif et le même coloris (le seul chemin réaliste vers un Mammouth Pirate). Même règle dans serveur.sql (fusion_evenement).
 const FUSION_EV = [3,3,2,2,2];
-const evPool = () => S.specs.filter(s=>eventOf(s) && !s.shiny && !s.secret && !s.lock && s.id!==S.active && !S.vitrine.includes(s.id) && (!srvOn() || s.srv));
+const evPool = (busy=busyIds()) => S.specs.filter(s=>eventOf(s) && !s.shiny && !s.secret && !s.lock && !busy.has(s.id) && s.id!==S.active && !S.vitrine.includes(s.id) && (!srvOn() || s.srv));
 // Pour chaque bille d'événement à fusionner : combien on en a en tout (vitrine, bille active et shiny comprises).
 // Si la fusion en laisse au moins une, elle ne prend que des doubles ; sinon elle emporte le dernier exemplaire (avertissement).
 const evKey = dupKey;
@@ -16133,7 +16142,7 @@ const estLiee = s => lieeJusqu(s) > Date.now();
 const libres = () => Math.max(0, S.jetons - Math.min(S.depart||0, S.jetons));
 const departTxt = () => S.depart ? ` (tes ${fmt(Math.min(S.depart, S.jetons))} ${CUR.many} de départ servent seulement à jouer)` : "";
 const ECO_ERR = {limite_jeu:`Tu as déjà acheté tes parties du jour : reviens demain !`, limite_plinko:`Tu as déjà lâché tes ${PACHI_MAX} billes du jour au Plinko : reviens demain !`, bonbecs_depart:`Les ${CUR.many} de ton cadeau de départ servent à ouvrir des sachets et à jouer, pas aux trocs ni au marché.`, evenement_fini:"L'événement est terminé : ce sachet n'est plus en vente.", pas_assez:`Il te manque des ${CUR.many}.`, pas_encore:"Ton sachet gratuit n'est pas encore prêt.", plus_de_sac:"Tu n'as plus de sachet offert de ce type.",
-  reseau:"Pas de connexion : réessaie dans un instant.", fusion_invalide:"Cette fusion n'est pas possible.", reserve_aux_testeurs:"Ces outils sont réservés aux comptes de test."};
+  reseau:"Pas de connexion : réessaie dans un instant.", fusion_invalide:"Cette fusion n'est pas possible.", bille_indisponible:"Une de ces billes est en vente ou dans un troc en attente : elle ne peut pas fusionner.", reserve_aux_testeurs:"Ces outils sont réservés aux comptes de test."};
 // (16 octobre 2026) verrouiller une bille : ni vente, ni troc, ni Confiserie, ni fusion (le serveur le vérifie : supabase/verrou.sql)
 function lockToggle(x){
   const v = !x.lock, fin = () => { if(v) x.lock = true; else delete x.lock; save();

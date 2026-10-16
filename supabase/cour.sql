@@ -122,6 +122,11 @@ create or replace function interne.en_vente(bid uuid) returns boolean language s
   select exists (select 1 from public.annonces a where a.bille = bid and a.vendue_le is null and a.retiree_le is null
                    and (a.expire_le > now() or a.encherisseur is not null))
 $$;
+-- (16 octobre 2026) une bille dans un troc en attente (qu'on la donne ou qu'un copain la demande) : elle ne peut pas fusionner
+create or replace function interne.dans_troc(bid uuid) returns boolean language sql stable as $$
+  select exists (select 1 from public.trocs t where t.statut = 'attente' and t.le > now() - interval '48 hours'
+                   and (bid = any(t.donne) or bid = any(t.demande)))
+$$;
 
 -- une bille qui peut circuler : à ce joueur, pas détruite, tirée par le serveur, pas secrète, pas liée au compte (15 jours après l'inscription), pas en vente
 create or replace function interne.bille_libre(bid uuid, qui uuid) returns boolean language sql stable as $$

@@ -437,6 +437,8 @@ begin
   rg := interne.rang(tailles[1]);
   if rg >= 5 or nb <> (interne.fusion_n())[rg+1] or nb <> array_length(ids,1) then raise exception 'fusion_invalide'; end if;
   for b in select id from billes where id = any(ids) for update loop
+    -- (16 octobre 2026) pas une bille en vente ou dans un troc en attente (avant, la fusion retirait l'annonce sans prévenir)
+    if interne.en_vente(b.id) or interne.dans_troc(b.id) then raise exception 'bille_indisponible'; end if;
     update billes set detruite_le = now(), detruite_raison = 'fusionnee' where id = b.id;
     insert into billes_historique (bille, de, vers, motif) values (b.id, qui, null, 'detruite');
   end loop;
@@ -463,7 +465,7 @@ begin
   rg := interne.rang(g.taille);
   if rg >= 5 or g.nb <> (interne.fusion_ev_n())[rg+1] then raise exception 'fusion_invalide'; end if;
   for b in select id from billes where id = any(ids) for update loop
-    if interne.en_vente(b.id) then raise exception 'bille_indisponible'; end if;   -- (une bille liée peut fusionner)
+    if interne.en_vente(b.id) or interne.dans_troc(b.id) then raise exception 'bille_indisponible'; end if;   -- (une bille liée peut fusionner ; 16 octobre 2026 : pas une bille d'un troc en attente)
     update billes set detruite_le = now(), detruite_raison = 'fusionnee' where id = b.id;
     insert into billes_historique (bille, de, vers, motif) values (b.id, qui, null, 'detruite');
   end loop;

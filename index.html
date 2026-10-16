@@ -8339,7 +8339,8 @@ function viewCraft(){
     return s ? `<button class="fz-slot filled" style="${r}" data-action="craft-toggle" data-id="${s.id}" aria-label="Retirer ${esc(specName(s))}">${mImg(s,120,44,"")}</button>` : `<span class="fz-slot" style="${r}"></span>` }).join("");
   const last = C.sel.filter(id=>{ const s=specById(id); return !S.specs.some(x=>colorKey(x)===colorKey(s) && !C.sel.includes(x.id)) }).length;
   const full = C.sel.length===N;
-  const groups = byModel(pool.filter(craftFilt)).sort((a,b)=>cnt[b[0]]-cnt[a[0]]), F = ui.craftF||{}, nEv = evPool().length;
+  const nDup = ([,l]) => cnt[dupKey(l[0])]||0;   // exemplaires en tout (cnt est rangé par dupKey, pas par colorKey)
+  const groups = byModel(pool.filter(craftFilt)).sort((a,b)=>nDup(b)-nDup(a)), F = ui.craftF||{}, nEv = evPool().length;
   const fChip = (v,l) => `<button class="chip" data-action="craft-f" data-v="${v}" aria-pressed="${String(F.rar??"")===String(v)}">${l}</button>`;
   const craftBar = `<div class="craft-filters"><div class="chips">${fChip("","Tous les motifs")}${DECOR_RAR.map((R,k)=>fChip(k, R.name)).join("")}
       ${nEv?`<button class="chip ev" data-action="craft-ev">${ic("flag",13)} Billes d'événement (${nEv})</button>`:""}</div>
@@ -8366,7 +8367,7 @@ function viewCraft(){
     ${craftBar}
     <div class="panel-head"><h2>Tes ${RAR_PL[C.t]} (${groups.reduce((a,[k,l])=>a+l.length,0)}${groups.reduce((a,[k,l])=>a+l.length,0)<pool.length?` sur ${pool.length}`:""})</h2><span class="sample-tag">+ pour en mettre une dans le chaudron</span></div>
     ${groups.length ? `<div class="cf-grid">${groups.map(([k,l])=>{ const x=l[0], inn=l.filter(y=>C.sel.includes(y.id)).length;
-      return `<div class="cf-card${inn?" in":""}" style="${tstyle(x.type)}">${cnt[k]>1?`<span class="dup-tag">Double</span>`:""}${l.length>1?`<span class="cf-n">×${l.length}</span>`:""}
+      return `<div class="cf-card${inn?" in":""}" style="${tstyle(x.type)}">${nDup([k,l])>1?`<span class="dup-tag">Double</span>`:""}${l.length>1?`<span class="cf-n">×${l.length}</span>`:""}
         <button class="ball" data-action="spec" data-id="${x.id}" aria-label="Voir ${esc(specName(x))}">${mImg(x,160,Math.round(58*scaleOf(x.type)+14),"")}</button><b>${esc(specName(x))}</b>
         <div class="cf-step"><button data-action="craft-rm" data-k="${k}" ${inn?"":"disabled"} aria-label="En retirer une">−</button><b>${inn}</b><button data-action="craft-add" data-k="${k}" ${inn<l.length&&!full?"":"disabled"} aria-label="En ajouter une">+</button></div></div>` }).join("")}</div>`
       : `<p class="empty">Aucune bille de cette taille à fusionner pour l'instant.</p>`}

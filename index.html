@@ -2402,6 +2402,8 @@ button.gh-cell:hover{transform:translateY(-2px)}
 .nb-dot svg{display:block;width:100%;height:100%}
 .nb-dot.col{filter:drop-shadow(0 0 4px #A8E8FF)}
 .nb-dot.col{color:#A8E8FF}
+.nb-dot.sh{color:#FF9FD2;filter:drop-shadow(0 0 4px #FF9FD2)}
+.m-card b .nb-dot.sh{color:#D9488F;filter:drop-shadow(0 0 2px rgba(217,72,143,.6))}
 .m-card b .nb-dot{color:#E8A21E;filter:drop-shadow(0 0 2px rgba(232,162,30,.6))}
 .m-card b .nb-dot.col{color:#2A9FD6;filter:drop-shadow(0 0 2px rgba(42,159,214,.6))}
 /* un doublon : rien à dire, la bille est juste un peu plus discrète */
@@ -8333,10 +8335,11 @@ function craftSingles(t, keep=[]){
   return sel.concat(singles.slice(0, craftN(t)-sel.length).map(s=>s.id));
 }
 // (16 octobre 2026) « Nouveau » seulement pour un coloris qu'on n'avait pas encore : une bille pas vue dont un autre
-// exemplaire du même coloris (shiny ou pas) a déjà été vu est un double, elle perd sa marque
+// exemplaire du même coloris a déjà été vu est un double, elle perd sa marque. (18 octobre 2026) Sauf une shiny :
+// elle garde « Nouveau » tant qu'on n'a pas déjà vu cette même shiny (la version normale ne compte pas)
 function pruneUnseen(){
-  const un = new Set(S.unseen), seen = new Set(S.specs.filter(x=>!un.has(x.id)).map(colorKey));
-  const keep = S.unseen.filter(id=>{ const x = specById(id); return x && !seen.has(colorKey(x)) });
+  const un = new Set(S.unseen), vus = S.specs.filter(x=>!un.has(x.id)), seen = new Set(vus.map(colorKey)), seenD = new Set(vus.map(dupKey));
+  const keep = S.unseen.filter(id=>{ const x = specById(id); return x && (x.shiny ? !seenD.has(dupKey(x)) : !seen.has(colorKey(x))) });
   if(keep.length!==S.unseen.length){ S.unseen = keep; save() }
 }
 function viewCraft(){
@@ -9155,10 +9158,12 @@ async function openBag(bagId, gift, auto){
     if(eventOf(s)){ const ev = !evBefore.has(colorKey(s)); evBefore.add(colorKey(s)); S.specs.push(s); S.unseen.push(s.id); return {s, isNew:false, newColor:false, evNew:ev, wish:false} }
     const isNew = !before.has(k);
     const newColor = !isNew && !before.get(k).some(x=>x.pal===s.pal);   // une nouvelle bille dans une case déjà commencée
+    // (18 octobre 2026) une shiny dont on n'avait que la version normale (ou une autre shiny) n'est pas un double : elle a sa marque
+    const newShiny = !isNew && !newColor && !!s.shiny && !before.get(k).some(x=>x.pal===s.pal && (x.shiny||0)===s.shiny);
     if(!before.has(k)) before.set(k,[]); before.get(k).push(s);
     const wish = (S.wish||[]).includes(colorKey(s));
     S.specs.push(s); S.unseen.push(s.id);
-    return {s, isNew, newColor, wish};
+    return {s, isNew, newColor, newShiny, wish};
   });
   // billes de la liste de souhaits trouvées : elles libèrent leur place (et restent affichées « Trouvée ! » un moment)
   const gotW = results.filter(r=>r.wish).map(r=>colorKey(r.s));
@@ -9167,7 +9172,7 @@ async function openBag(bagId, gift, auto){
   const sid = hr===0 && mn<15 ? "grenier" : hr===16 && mn>=30 && mn<40 ? "gouter" : null;
   if(sid){ const sp = grantSecret(sid); if(sp) results.push({s:sp, isNew:true, newColor:false}) }
   // si la page se ferme avant la fin de l'ouverture, on montrera le résumé du sachet à la prochaine visite
-  S.pendingBag = {bag:bag.id, r:results.map(({s,isNew,newColor,evNew})=>({id:s.id, isNew, newColor, evNew}))};
+  S.pendingBag = {bag:bag.id, r:results.map(({s,isNew,newColor,newShiny,evNew})=>({id:s.id, isNew, newColor, newShiny, evNew}))};
   save(); renderTop(); renderNav();
   // les quêtes avancent bille par bille : chacune est annoncée quand on découvre la bille qui la termine
   heldNotes = [];
@@ -9189,7 +9194,7 @@ const motifCol = s => { const r = decorRar(s); return r>=1 ? ` style="color:${MO
 const dramaOf = s => isMyth(s) ? 7 : Math.max(pullScore(s), Math.min(5, tierOf(s) + (decorRar(s)===4 ? 2 : decorRar(s)===3 ? 1 : 0)));
 // ce qui est nouveau : un éclat scintille une fois sur le reflet de la bille quand elle apparaît (doré = nouveau motif dans cette taille, bleu = nouveau coloris), rien pour un doublon
 // et la même petite étoile devant le nom, pour savoir après coup laquelle était nouvelle
-const nbDot = ({isNew, newColor, evNew}) => isNew||evNew ? `<span class="nb-dot" title="Nouveau motif dans cette taille">${SPARK}</span>` : newColor ? `<span class="nb-dot col" title="Nouveau coloris">${SPARK}</span>` : "";
+const nbDot = ({isNew, newColor, newShiny, evNew}) => isNew||evNew ? `<span class="nb-dot" title="Nouveau motif dans cette taille">${SPARK}</span>` : newColor ? `<span class="nb-dot col" title="Nouveau coloris">${SPARK}</span>` : newShiny ? `<span class="nb-dot sh" title="Nouvelle shiny">${SPARK}</span>` : "";
 const nbSpark = (decor, sz) => `<span class="nb-spark${decor?"":" col"}" style="--bs:${sz}px" aria-label="${decor?"Nouveau motif":"Nouveau coloris"}"><i>${SPARK}</i><i>${SPARK}</i></span>`;
 const decStamp = s => { const r = decorRar(s); return r>=3 ? `<span class="dec-stamp${r===4?" leg":r===5?" myth":""}" style="--dc:${DECOR_RAR[r].c}">${ic("star",12,2.6)} <span class="ds-w">Motif </span>${DECOR_RAR[r].name.toLowerCase()}</span>` : "" };
 const scoreCol = k => k>=6 ? "#FFD27A" : RARITY[k].c;
@@ -9440,13 +9445,13 @@ function showReveal(){
     <p class="ov-sub">${ovState.forced?"Garantie Boulet activée : un gros t'attend !":"Touche chaque bille pour la découvrir…"}</p>
     <div class="reveal-row${results.length>5?" six":""}" style="--n:${Math.max(6,results.length)}">
 
-      ${results.map(({s,isNew,newColor,evNew,wish},i)=>{
-        const nb = isNew||newColor||evNew, sz = Math.round(150*scaleOf(s.type));
+      ${results.map(({s,isNew,newColor,newShiny,evNew,wish},i)=>{
+        const nb = isNew||newColor||newShiny||evNew, sz = Math.round(150*scaleOf(s.type));
         const k = pullScore(s), big = k>=BIG;
         return `<button class="slot${wish?" wished":""} ${big?"big":""} ${s.shiny?"shiny":""}${nb?"":" dupe"}" style="--d:${i*130}ms;--tc:${shade(ovState.bag.color,.2)};${tstyle(s.type)}" data-tc="${scoreCol(k)}" data-action="reveal" data-i="${i}" aria-label="Découvrir la bille ${i+1}">
         ${wish?`<span class="slot-banner">Ta liste !</span>`:s.secret?`<span class="slot-banner">Secrète !</span>`:bannerOf(s,k)?`<span class="slot-banner${k<2?" low":""}">${bannerOf(s,k)}</span>`:""}
-        <div class="slot-ball"><span class="rays"></span><span class="ball-shadow"></span><span class="orb"><span class="orb-spin">${candySVG(i)}</span></span>${mImg(s,300,sz,"")}${nb?nbSpark(isNew||evNew,sz):""}</div>
-        <div class="slot-info"><b${motifCol(s)}>${nbDot({isNew,newColor,evNew})}${esc(specName(s))}</b><span style="display:flex;gap:4px;flex-wrap:wrap;justify-content:center">${wish||s.secret?typePill(s.type,true):""}${shinyPill(s)}${edPill(s)}</span>${tierTag(s)}${decStamp(s)}</div>
+        <div class="slot-ball"><span class="rays"></span><span class="ball-shadow"></span><span class="orb"><span class="orb-spin">${candySVG(i)}</span></span>${mImg(s,300,sz,"")}${nb&&!newShiny?nbSpark(isNew||evNew,sz):""}</div>
+        <div class="slot-info"><b${motifCol(s)}>${nbDot({isNew,newColor,newShiny,evNew})}${esc(specName(s))}</b><span style="display:flex;gap:4px;flex-wrap:wrap;justify-content:center">${wish||s.secret?typePill(s.type,true):""}${shinyPill(s)}${edPill(s)}</span>${tierTag(s)}${decStamp(s)}</div>
       </button>`}).join("")}
     </div>
     <div class="ov-actions" id="ov-actions">
@@ -9628,8 +9633,8 @@ function finishReveal(){
   }
   if(ovState.demo){ document.querySelector(".ov-sub").textContent = "Démo terminée : ces billes ne sont pas dans ta boîte.";
     document.getElementById("ov-actions").innerHTML = `<button class="btn btn-yellow" data-action="${ovState.demoAct||"shiny-demo"}">Revoir la démo</button><button class="btn btn-ghost" data-action="close-ov">Fermer</button>`; return }
-  const nc = results.filter(r=>r.isNew||r.evNew).length, ncol = results.filter(r=>!r.isNew&&!r.evNew&&r.newColor).length;
-  const nbLeg = nc||ncol ? `<span class="nb-leg">${nc?`<span><span class="nb-dot">${SPARK}</span>${nc} nouveau${nc>1?"x":""} motif${nc>1?"s":""}</span>`:""}${ncol?`<span><span class="nb-dot col">${SPARK}</span>${ncol} nouveau${ncol>1?"x":""} coloris</span>`:""}</span>` : "";
+  const nc = results.filter(r=>r.isNew||r.evNew).length, ncol = results.filter(r=>!r.isNew&&!r.evNew&&r.newColor).length, nsh = results.filter(r=>r.newShiny).length;
+  const nbLeg = nc||ncol||nsh ? `<span class="nb-leg">${nc?`<span><span class="nb-dot">${SPARK}</span>${nc} nouveau${nc>1?"x":""} motif${nc>1?"s":""}</span>`:""}${ncol?`<span><span class="nb-dot col">${SPARK}</span>${ncol} nouveau${ncol>1?"x":""} coloris</span>`:""}${nsh?`<span><span class="nb-dot sh">${SPARK}</span>${nsh} nouvelle${nsh>1?"s":""} shiny</span>`:""}</span>` : "";
   document.getElementById("ov-actions").innerHTML = `${nbLeg}<span class="ov-xp" style="flex-basis:100%;justify-content:center">${ic("ticket",18)} +${ovState.pxp} XP de saison</span>${again}<button class="btn btn-ghost" data-action="to-home">Revenir à l'accueil</button>`;
 }
 function closeOv(quiet){
@@ -14718,7 +14723,7 @@ let bugKeep = null;   // un message qui n'est pas parti : il est reproposé au p
 // on:false cache le bouton (pendant qu'on prépare la mise à jour) ; on:true le remet, avec la pastille si l'id a changé
 // (16 octobre 2026) deux repères : dot = la pastille rouge du bouton, à changer à CHAQUE mise en ligne qui ajoute une ligne au patchnote
 // (avec txt : la date du jour) ; id = la fenêtre d'annonce à l'arrivée, seulement pour les très gros jours
-const NEWS = {on:true, id:"2026-10-14b", dot:"2026-10-16-2200", url:"/nouveautes.html", txt:"Mise à jour du 16 oct."};
+const NEWS = {on:true, id:"2026-10-14b", dot:"2026-10-18-1700", url:"/nouveautes.html", txt:"Mise à jour du 18 oct."};
 const newsUnseen = () => lsGet("billeo-news-vu")!==NEWS.dot;
 // (14 octobre 2026) à l'arrivée, une fenêtre annonce la mise à jour, une seule fois par mise à jour et par compte (S.newsPop, gardé
 // dans la partie : elle ne revient pas sur un autre appareil) ; on choisit d'aller voir les nouveautés, ou pas

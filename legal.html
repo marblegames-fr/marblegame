@@ -51,6 +51,7 @@ ul{padding-left:20px}
 li{margin:4px 0}
 .kid{background:color-mix(in srgb,var(--yellow) 16%,transparent);border:1px solid color-mix(in srgb,var(--yellow) 45%,transparent);border-radius:14px;padding:12px 16px;margin:12px 0}
 .kid p{margin:0;color:var(--ink)}
+.opt{font:inherit;font-size:14px;font-weight:800;padding:5px 12px;border-radius:999px;border:1px solid var(--line, #8884);background:transparent;color:inherit;cursor:pointer}
 table{width:100%;border-collapse:collapse;font-size:14.5px;margin:10px 0}
 th,td{text-align:left;vertical-align:top;padding:8px 10px;border-bottom:1px solid var(--line)}
 th{color:var(--ink);font-weight:900}
@@ -99,9 +100,9 @@ footer{text-align:center;color:var(--muted);font-size:13px;padding:0 16px 40px}
   <!-- ===================================================== CONFIDENTIALITÉ -->
   <section id="confidentialite">
     <h2>Tes données personnelles</h2>
-    <p class="maj">Mise à jour : 10 octobre 2026</p>
+    <p class="maj">Mise à jour : 19 octobre 2026</p>
 
-    <div class="kid"><p><b>En bref :</b> on garde seulement ce qu'il faut pour que tu puisses jouer (ton pseudo, ton e-mail et ta collection). Pas de publicité, pas de revente de données, pas de traceurs. Tu peux demander à tout effacer quand tu veux.</p></div>
+    <div class="kid"><p><b>En bref :</b> on garde seulement ce qu'il faut pour que tu puisses jouer (ton pseudo, ton e-mail et ta collection). Pas de publicité, pas de revente de données, pas de cookie. On compte juste les visites, sans savoir qui tu es. Tu peux demander à tout effacer quand tu veux.</p></div>
 
     <h3>Qui s'occupe de tes données ?</h3>
     <p>L'éditeur de Tikalo (voir les <a href="#mentions">mentions légales</a>) est responsable de tes données. Pour toute question : <a href="mailto:contact@tikalo.fr">contact@tikalo.fr</a>.</p>
@@ -114,20 +115,22 @@ footer{text-align:center;color:var(--muted);font-size:13px;padding:0 16px 40px}
       <tr><td><b>Ta partie</b> : billes, bonbecs, succès, passe, copains, trocs et leur petit mot, annonces, enchères, inscriptions aux courses et à la loterie</td><td>Faire fonctionner le jeu et éviter la triche</td><td>Tant que ton compte existe</td></tr>
       <tr><td><b>Messages « Signaler un bug »</b>, avec ton pseudo, la page ouverte, le modèle d'appareil et de navigateur, la taille de l'écran et les dernières erreurs du jeu (une copie arrive aussi par e-mail à l'équipe)</td><td>Corriger les problèmes</td><td>1 an au plus</td></tr>
       <tr><td><b>Adresse IP</b> et informations techniques de connexion</td><td>Sécurité du site et des comptes, protection contre les robots</td><td>Quelques semaines au plus, chez nos prestataires</td></tr>
+      <tr><td><b>Mesure d'audience anonyme</b> : nombre de visites et de pages vues, site d'où l'on vient (par exemple Instagram), pays, type d'appareil et de navigateur ; et un compteur du jeu qui ajoute +1 au total du jour quand un nouvel appareil arrive, commence ou termine l'inscription, choisit sa bille de départ et ouvre son premier sachet</td><td>Savoir si le jeu plaît et où les nouveaux venus décrochent, pour l'améliorer. Seuls des totaux sont gardés : rien ne permet de savoir qui a fait quoi</td><td>Totaux : 2 ans au plus</td></tr>
       <tr><td><b>Copies de sauvegarde</b> de la base de données</td><td>Pouvoir réparer le jeu en cas de panne</td><td>30 jours</td></tr>
     </table></div>
     <p>La base légale : l'exécution du service que tu as demandé en créant ton compte (les règles du jeu), et notre intérêt légitime à protéger le jeu contre la triche et les attaques.</p>
     <p>Un compte qui ne s'est pas connecté pendant <b>3 ans</b> peut être supprimé.</p>
 
     <h3>Dans ton navigateur</h3>
-    <p>Le jeu enregistre quelques réglages sur ton appareil (thème clair ou sombre, son, vue de la Grande Course, une copie de ta partie pour jouer plus vite, un identifiant d'appareil pour la synchronisation, ta session de connexion). Ils sont <b>indispensables</b> au fonctionnement du jeu : il n'y a ni cookie de publicité ni mesure d'audience, c'est pourquoi on ne te demande pas d'accepter des cookies.</p>
+    <p>Le jeu enregistre quelques réglages sur ton appareil (thème clair ou sombre, son, vue de la Grande Course, une copie de ta partie pour jouer plus vite, un identifiant d'appareil pour la synchronisation, ta session de connexion). Ils sont <b>indispensables</b> au fonctionnement du jeu. Il garde aussi les étapes déjà comptées par la mesure d'audience (pour ne compter chacune qu'une fois). Il n'y a aucun cookie de publicité, et la mesure d'audience est anonyme et sans cookie : c'est pourquoi on ne te demande pas d'accepter des cookies.</p>
+    <p id="audience">Tu ne veux pas être compté, même anonymement ? <button type="button" id="pas-compter" class="opt">Ne plus compter mes visites</button> <span id="pas-compter-etat" class="maj"></span></p>
 
     <h3>Les prestataires qui nous aident</h3>
     <ul>
       <li><b>Supabase</b> (base de données et comptes) : données stockées en Irlande.</li>
       <li><b>Resend</b> (envoi des e-mails : confirmation de l'adresse, mot de passe oublié, copie des messages « Signaler un bug » à l'équipe) : voit ton adresse e-mail et le contenu de ces e-mails, envoyés depuis l'Irlande.</li>
       <li><b>OVH</b> (nom de domaine tikalo.fr et boîte mail contact@tikalo.fr) : reçoit les e-mails que tu nous écris, en France.</li>
-      <li><b>Vercel</b> (hébergement du site) : voit l'adresse IP des visiteurs.</li>
+      <li><b>Vercel</b> (hébergement du site et mesure d'audience Vercel Web Analytics, sans cookie : les visiteurs ne sont reconnus que le temps d'une journée, à partir d'une empreinte de l'adresse IP qui n'est pas gardée) : voit l'adresse IP des visiteurs.</li>
       <li><b>Cloudflare Turnstile</b> (vérification « tu n'es pas un robot » à la connexion et à l'inscription) : voit l'adresse IP et des informations sur le navigateur.</li>
       <li><b>Google Fonts</b> et <b>jsDelivr</b> (polices d'écriture et outils d'affichage 3D) : voient l'adresse IP au chargement de la page.</li>
     </ul>
@@ -201,5 +204,11 @@ footer{text-align:center;color:var(--muted);font-size:13px;padding:0 16px 40px}
   </section>
 </main>
 <footer>Tikalo · <a href="./">Retour au jeu</a></footer>
+<script>/* (19 octobre 2026) refuser la mesure d'audience : le jeu (Parcours) et Vercel Web Analytics lisent « billeo-pas-compter » */
+(function(){ const b = document.getElementById("pas-compter"), t = document.getElementById("pas-compter-etat");
+  const get = () => { try{ return localStorage.getItem("billeo-pas-compter")==="1" }catch(e){ return false } };
+  const show = () => { const off = get(); b.textContent = off ? "Recompter mes visites" : "Ne plus compter mes visites"; t.textContent = off ? "Tes visites ne sont plus comptées sur cet appareil." : "" };
+  b.onclick = () => { try{ get() ? localStorage.removeItem("billeo-pas-compter") : localStorage.setItem("billeo-pas-compter","1") }catch(e){} show() };
+  show() })();</script>
 </body>
 </html>

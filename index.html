@@ -10,7 +10,15 @@ try{ const ks=[]; for(let i=0;i<localStorage.length;i++){ const k=localStorage.k
   for(const k of ks){ const n="billeo-"+k.slice(6); if(localStorage.getItem(n)===null) localStorage.setItem(n, localStorage.getItem(k)); localStorage.removeItem(k) } }catch(e){}
 try{ document.documentElement.dataset.theme = localStorage.getItem("billeo-theme") || "dark" }catch(e){ document.documentElement.dataset.theme = "dark" }
 // (10 octobre 2026) arrivée par le lien « mot de passe oublié » : noté tout de suite, avant que Supabase n'efface l'adresse
-window.RECOVERY_LINK = /(^|[#&?])type=recovery(&|$)/.test(location.hash + "&" + location.search.slice(1));</script>
+window.RECOVERY_LINK = /(^|[#&?])type=recovery(&|$)/.test(location.hash + "&" + location.search.slice(1));
+// (19 octobre 2026) compteur de fréquentation : appareil jamais venu (aucune clé du jeu ni session) et provenance, notés avant que le jeu n'écrive quoi que ce soit
+try{ let n=true; for(let i=0;i<localStorage.length;i++){ const k=localStorage.key(i)||""; if(k.startsWith("billeo-")||k.startsWith("sb-")) n=false } window.TK_NEUF=n }catch(e){ window.TK_NEUF=false }
+window.TK_SRC = /(^|[?&])(fbclid|utm_source=(ig|insta|fb|facebook))/i.test(location.search) || /instagram|facebook/i.test(document.referrer) || /Instagram|FBAN|FBAV/.test(navigator.userAgent) ? "insta" : "autre";</script>
+<!-- mesure d'audience Vercel Web Analytics : sans cookie, anonyme (voir legal.html) -->
+<script>window.va = window.va || function(){ (window.vaq = window.vaq || []).push(arguments) };
+window.TK_PAS_COMPTER = (()=>{ try{ return localStorage.getItem("billeo-pas-compter")==="1" }catch(e){ return false } })();   // refusé dans legal.html
+window.va("beforeSend", ev => window.TK_PAS_COMPTER ? null : ev);</script>
+<script defer src="/_vercel/insights/script.js"></script>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Gluten:wght@900&family=Lilita+One&family=Nunito:wght@500;600;700;800;900&family=Caveat:wght@600;700&display=swap">
@@ -3278,6 +3286,13 @@ button.cp-who:hover b{text-decoration:underline}
 .bug-tabs button{padding:5px 12px;border-radius:999px;font-size:12.5px;font-weight:800;color:var(--muted)}
 .bug-tabs button.on{background:var(--panel);color:var(--ink);box-shadow:0 1px 3px rgba(0,0,0,.12)}
 .bug-list{list-style:none;display:grid;gap:10px;margin:0;padding:0}
+.freq-t{overflow-x:auto}
+.freq-t table{border-collapse:collapse;width:100%;font-size:13px;font-variant-numeric:tabular-nums}
+.freq-t th,.freq-t td{padding:6px 8px;text-align:right;border-bottom:1px solid var(--line);white-space:nowrap}
+.freq-t th{font-size:11.5px;font-weight:800;color:var(--muted);vertical-align:bottom;white-space:normal;min-width:62px}
+.freq-t th:first-child,.freq-t td:first-child{text-align:left}
+.freq-t tr.tot td{font-weight:900;border-bottom:none}
+.freq-t small{color:var(--muted);font-weight:700;margin-left:3px}
 .bug-list li{padding:12px 14px;border-radius:14px;border:1px solid var(--line);background:var(--panel-2)}
 .bug-list li.done{opacity:.55}
 .bug-top{display:flex;align-items:center;gap:8px;flex-wrap:wrap}
@@ -9145,7 +9160,7 @@ async function openBag(bagId, gift, auto){
   // « Rouvrir un sachet » : on ne ferme l'ouverture précédente qu'une fois les billes reçues du serveur,
   // pour enchaîner directement sans repasser par l'étagère des sachets
   if(ovState && !gift && bag.price>0) closeOv();
-  S.bags = (S.bags||0)+1;
+  S.bags = (S.bags||0)+1; Parcours.etape("sachet");
   const ST = S.stats;   // au premier passage, on part de ce qu'il y a dans la boîte
   ST.pulled ??= S.specs.length; ST.shinyFound ??= S.specs.filter(x=>x.shiny).length;
   ST.bouletFound ??= S.specs.filter(x=>x.type==="boulet").length; ST.mammFound ??= S.specs.filter(x=>x.type==="mammouth").length;
@@ -14786,6 +14801,28 @@ function bugAdminHTML(){
           <details><summary>Détails</summary><small>${esc(d.appareil||"")}<br>Écran ${esc(d.ecran||"?")} · thème ${esc(d.theme||"?")} · serveur ${d.serveur?"oui":"non"} · ${d.billes??"?"} billes · ${esc(d.url||"")}${(d.erreurs||[]).length?`<br><b>Erreurs :</b><br>${d.erreurs.map(esc).join("<br>")}`:""}</small></details></li>` }).join("")}</ul>`}
   </section>`;
 }
+// (19 octobre 2026) le compteur de fréquentation anonyme, pour l'admin, dans Paramètres
+const FREQ_ETAPES = [["visite","Visites"],["arrivee","Nouveaux appareils"],["inscription","Inscription commencée"],["envoye","Formulaire envoyé"],["compte","Compte activé"],["depart","Bille de départ"],["sachet","1er sachet"]];
+const freqAdm = {list:null, busy:false, err:""};
+async function freqLoad(){
+  freqAdm.busy = true; freqAdm.err = ""; if(ui.view==="parametres") renderView();
+  try{ freqAdm.list = await Cloud.freq.liste(14) }catch(e){ freqAdm.err = e.code==="reserve_aux_testeurs" ? "Réservé à l'admin." : "Impossible de charger les chiffres." }
+  freqAdm.busy = false; if(ui.view==="parametres") renderView();
+}
+function freqAdminHTML(){
+  if(!freqAdm.list && !freqAdm.busy && !freqAdm.err) setTimeout(freqLoad);
+  const L = freqAdm.list || [], jours = [...new Set(L.map(r=>r.jour))];
+  const cell = (rows, e) => { const n = rows.filter(r=>r.etape===e).reduce((a,r)=>a+r.n,0), i = rows.filter(r=>r.etape===e && r.source==="insta").reduce((a,r)=>a+r.n,0);
+    return `<td>${n ? fmt(n) : "·"}${i ? `<small>${fmt(i)} insta</small>` : ""}</td>` };
+  const day = d => new Date(d+"T12:00:00").toLocaleDateString("fr-FR", {weekday:"short", day:"numeric", month:"short"});
+  return `<section class="panel"><div class="panel-head"><h3>Fréquentation (14 jours)</h3><button class="btn btn-ghost" data-action="freq-load">Actualiser</button></div>
+    <p class="meta">Compteur anonyme. Les étapes ne comptent que les appareils venus pour la première fois, une fois chacune. « insta » = arrivé par Instagram ou Facebook. Pour les pages vues et les pays : tableau de bord Vercel, onglet Analytics.</p>
+    ${freqAdm.err ? `<p>${freqAdm.err}</p>` : freqAdm.busy && !freqAdm.list ? `<p class="meta">Chargement…</p>` : !L.length ? `<p class="meta">Rien de compté pour l'instant.</p>` :
+      `<div class="freq-t"><table><tr><th>Jour</th>${FREQ_ETAPES.map(([,t])=>`<th>${t}</th>`).join("")}</tr>
+        ${jours.map(j=>`<tr><td>${day(j)}</td>${FREQ_ETAPES.map(([e])=>cell(L.filter(r=>r.jour===j), e)).join("")}</tr>`).join("")}
+        <tr class="tot"><td>Total</td>${FREQ_ETAPES.map(([e])=>cell(L, e)).join("")}</tr></table></div>`}
+  </section>`;
+}
 function viewSoon(){
   if(ui.view==="parametres") return `<div class="page-head"><div><h1>Paramètres</h1><p>${sync.on ? "Ta collection est sauvegardée sur ton compte." : "Sans compte, ta progression est enregistrée dans ce navigateur uniquement."}</p></div></div>
     <div class="soon-page">
@@ -14803,7 +14840,7 @@ function viewSoon(){
         <p>Pour consulter, récupérer ou supprimer tes données (ou ton compte), écris-nous à <a href="mailto:marblegamesfr@gmail.com">marblegamesfr@gmail.com</a>${sync.on ? " depuis l'adresse de ton compte" : ""}.</p>
         <div class="legal-links"><a class="btn btn-ghost" href="legal.html#cgu" target="_blank" rel="noopener">Règles du jeu</a><a class="btn btn-ghost" href="legal.html#confidentialite" target="_blank" rel="noopener">Données personnelles</a><a class="btn btn-ghost" href="legal.html#mentions" target="_blank" rel="noopener">Mentions légales</a></div>
       </section>
-      ${sync.on && eco.testeur ? bugAdminHTML() : ""}
+      ${sync.on && eco.testeur ? bugAdminHTML() + freqAdminHTML() : ""}
       ${devTools() ? `<section class="panel"><div class="panel-head"><h3>Outils de test</h3></div>
         <p>Pour tester sans attendre : ajoute des ${CUR.many}, recharge tout de suite le sachet gratuit ou reçois une bille shiny.</p>
         <div style="display:flex;gap:10px;flex-wrap:wrap;margin-top:14px">
@@ -16108,6 +16145,7 @@ document.addEventListener("click", e=>{
       toast(pub ? "C'est la bille que voient les autres joueurs !" : "C'est ta nouvelle photo de profil !"); break }
     case "bug-report": toggleProfPop(false); bugReport(); break;
     case "news": lsSet("billeo-news-vu", NEWS.dot); toggleProfPop(false); window.open(NEWS.url, "_blank", "noopener"); renderNav(); break;
+    case "freq-load": freqLoad(); break;
     case "bug-list": bugAdm.tous = t.dataset.tous==="1"; bugLoad(); break;
     case "bug-regle": bugRegle(+t.dataset.id, t.dataset.oui==="1"); break;
     case "stats": toggleProfPop(false); courStats = null; go("profil"); setTimeout(()=>document.getElementById("stats")?.scrollIntoView({behavior:"smooth", block:"start"}), 60); break;
@@ -16594,6 +16632,20 @@ function courStart(){ if(!srvOn()) return; if(S.notifVu==null){ S.notifVu = S.co
 const DEVICE = (()=>{ try{ let d = localStorage.getItem("billeo-device"); if(!d){ d = newId(); localStorage.setItem("billeo-device", d) } return d }catch(e){ return newId() } })();
 const lsGet = k => { try{ return localStorage.getItem(k) }catch(e){ return null } };
 const lsSet = (k,v) => { try{ v==null ? localStorage.removeItem(k) : localStorage.setItem(k,v) }catch(e){} };
+// (19 octobre 2026) compteur de fréquentation anonyme (supabase/frequentation.sql) : la base ne reçoit qu'un +1 par jour, étape et provenance.
+// Les étapes ne comptent que pour un appareil arrivé neuf, une fois chacune ; « visite » compte tout appareil, une fois par jour.
+const Parcours = (()=>{
+  const K = "billeo-parcours";
+  let P = null; try{ P = JSON.parse(lsGet(K)) }catch(e){}
+  if(!P || typeof P!=="object" || !P.faits) P = {src:window.TK_SRC||"autre", neuf:!!window.TK_NEUF, faits:{}};
+  const keep = () => lsSet(K, JSON.stringify(P)), send = e => window.TK_PAS_COMPTER || window.Cloud?.freq?.compter(e, P.src);
+  const etape = e => { if(!P.neuf || P.faits[e]) return; P.faits[e] = 1; keep(); send(e) };
+  return {etape, start(){
+    etape("arrivee"); keep();
+    const j = new Date().toLocaleDateString("fr-CA", {timeZone:"Europe/Paris"});
+    if(P.jour!==j){ P.jour = j; keep(); send("visite") }
+  }};
+})();
 const knownKey = () => "billeo-sync-"+sync.uid, dirtyKey = () => "billeo-dirty-"+sync.uid;
 
 // appelé par save() : on regroupe les changements et on les envoie 1,5 s plus tard
@@ -16698,6 +16750,7 @@ async function cloudStart0(user){
     return;
   }
   // premier passage de ce compte : on récupère (ou pas) la collection jouée sans compte
+  Parcours.etape("compte");
   let guest = null; try{ guest = JSON.parse(localStorage.getItem(GUEST_KEY)) }catch(e){}
   const pseudo = P.profil?.pseudo;
   const begin = async fromGuest => {
@@ -17135,6 +17188,7 @@ document.addEventListener("click", async e=>{
     case "acct-logout": ask({title:"Te déconnecter ?", text:"Ta partie reste sauvegardée sur ton compte.", ok:"Me déconnecter"}).then(ok=>ok&&logout()); break;
   }
 });
+document.addEventListener("input", e=>{ if(e.target.closest?.("#auth-signup")) Parcours.etape("inscription") });   // tape dans le formulaire (le curseur y est placé tout seul)
 document.addEventListener("submit", async e=>{
   const f = e.target; if(!f.id.startsWith("auth-")) return;
   e.preventDefault();
@@ -17150,6 +17204,7 @@ document.addEventListener("submit", async e=>{
       if(!f["a-ok"].checked) return authFail("Coche la case pour accepter les règles du jeu (avec l'accord d'un parent si tu as moins de 15 ans).");
       btn.disabled = true;
       const r = await Cloud.signUp(email, pass, pseudo, await Captcha.token(), {cgu:CGU_VERSION});
+      Parcours.etape("envoye");
       if(r.needsConfirm) authShow("check-mail");   // sinon, la connexion lance cloudStart toute seule
     }
     else if(f.id==="auth-login"){
@@ -17173,6 +17228,7 @@ document.addEventListener("submit", async e=>{
 
 // au démarrage : session en cours, lien reçu par e-mail, ou écran de bienvenue
 function accountBoot(){
+  Parcours.start();
   // un compte est obligatoire : sans connexion au serveur, on ne joue que sur la copie d'un compte déjà connecté ici
   const authEl = document.getElementById("auth");
   if(!window.Cloud?.available){ if(CLOUD_UID){ authEl.hidden = true; toast("Pas de connexion : ta partie est gardée sur cet appareil.") } else authShow("offline"); return }
@@ -17313,7 +17369,7 @@ function departPick(){
 function departChoose(k){
   const D = DEPART.find(x=>x.k===k); if(!D || S.specs.some(isDepart) || !srvNeed()) return;
   const sp = makeSpec("calot", {...departSpec(D), src:"depart"}); sp.secret = "depart"; sp.ed = "Bille de départ";
-  S.specs.push(sp); S.active = sp.id; save(); srvMint(sp, "depart", D.k);
+  S.specs.push(sp); S.active = sp.id; save(); srvMint(sp, "depart", D.k); Parcours.etape("depart");
   closeModal(); Sound.reveal(3, 0, 2); marbleRain(sp); renderTop(); renderNav();
   toast(`Le Calot ${D.name} est à toi ! C'est maintenant ta bille de jeu.`);
   if(tutoOn()) setTimeout(S.tuto.skip ? tutoSkip : tutoNext, 900); else renderView();

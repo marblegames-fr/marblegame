@@ -170,6 +170,11 @@
       liste: tous => rpc("signalements_liste", {tous:!!tous}),
       regle: (sid, oui) => rpc("signalement_regle", {sid, oui:!!oui}),
     },
+    // ---------- compteur de fréquentation anonyme (supabase/frequentation.sql) ----------
+    freq: {
+      compter: (etape, source) => db ? db.rpc("compter", {etape, source}).then(()=>{}, ()=>{}) : Promise.resolve(),
+      liste: jours => rpc("frequentation_liste", {jours:jours||14}),
+    },
     async setPseudo(uid, pseudo){
       need();
       const {error} = await db.from("profils").update({pseudo}).eq("id", uid);

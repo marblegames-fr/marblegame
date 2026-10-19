@@ -14724,7 +14724,7 @@ let bugKeep = null;   // un message qui n'est pas parti : il est reproposé au p
 // on:false cache le bouton (pendant qu'on prépare la mise à jour) ; on:true le remet, avec la pastille si l'id a changé
 // (16 octobre 2026) deux repères : dot = la pastille rouge du bouton, à changer à CHAQUE mise en ligne qui ajoute une ligne au patchnote
 // (avec txt : la date du jour) ; id = la fenêtre d'annonce à l'arrivée, seulement pour les très gros jours
-const NEWS = {on:true, id:"2026-10-14b", dot:"2026-10-19-1200", url:"/nouveautes.html", txt:"Mise à jour du 19 oct."};
+const NEWS = {on:true, id:"2026-10-14b", dot:"2026-10-19-1500", url:"/nouveautes.html", txt:"Mise à jour du 19 oct."};
 const newsUnseen = () => lsGet("billeo-news-vu")!==NEWS.dot;
 // (14 octobre 2026) à l'arrivée, une fenêtre annonce la mise à jour, une seule fois par mise à jour et par compte (S.newsPop, gardé
 // dans la partie : elle ne revient pas sur un autre appareil) ; on choisit d'aller voir les nouveautés, ou pas
@@ -15222,7 +15222,7 @@ function clSemaine(){
   const P = ui.semPortee || "tous", M = C.moi, lots = C.lots?.length ? C.lots : SEMAINE_LOTS;
   const chip = (k,l) => `<button class="chip" data-action="sem-portee" data-p="${k}" aria-pressed="${P===k}">${l}</button>`;
   const top = C.liste.slice(0,3), podium = [top[1], top[0], top[2]].filter(Boolean), liste = C.liste.slice(3);
-  const sub = x => `${fmt(x.billes)} bille${x.billes>1?"s":""} · ${fmt(x.nouvelles)} nouvelle${x.nouvelles>1?"s":""}`;
+  const sub = x => `${fmt(x.billes)} bille${x.billes>1?"s":""}`;   // (19 octobre 2026) plus « · N nouvelles » (les cases remplies) : pas clair
   const row = x => `<div class="cl-row${x.moi?" me":""}"${clVoir(x)}><span class="cl-rank">${x.rang}</span><span class="cl-face">${clFace(x,40)}</span>
       <span class="who">${esc(x.pseudo)}${x.moi?` <em>toi</em>`:""}<small>${clChamp(x)}${sub(x)}</small></span>
       <span class="cl-pts">${fmt(x.total)}<small>pts</small></span></div>`;

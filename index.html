@@ -7271,7 +7271,8 @@ function claimAll(){
   const d = claimDaily(); if(d) got.push({ic:"gift", k:"Bonbec du jour", t:`Jour ${d.idx+1}${d.streak>1?` · série de ${d.streak} jours`:""}`, r:dailyText(d)});
   ensureQuests(); S.quests.items.forEach((q,i)=>{ const j = claimQuest(i); if(j) got.push({ic:QUESTS[q.id].icon||"quest", k:"Quête du jour", t:QUESTS[q.id].title, r:`${fmt(j)} ${CUR.many}`}) });
   if(claimBonus()) got.push({ic:"star", k:`Les ${QUESTS_N} quêtes du jour`, t:"Bonus des quêtes", r:BAG_BY[QUEST_BONUS].name});
-  for(let k=1;k<=passTier();k++) ["free","prem"].forEach(tr=>{ const r = grantReward(tr,k); if(r) got.push({ic:"ticket", k:`Passe de saison${tr==="prem"?" · premium":""}`, t:`Palier ${k}`, r:rewardLabel(r)}) });
+  // (19 octobre 2026) passLevel et non passTier : les niveaux bonus aussi (avant, ils restaient comptés sur le bouton sans être pris)
+  for(let k=1;k<=passLevel();k++) ["free","prem"].forEach(tr=>{ const r = grantReward(tr,k); if(r) got.push({ic:"ticket", k:`Passe de saison${tr==="prem"?" · premium":""}`, t:k>PASS_TIERS ? `Niveau bonus ${k-PASS_TIERS}` : `Palier ${k}`, r:rewardLabel(r)}) });
   CHALLENGES.forEach(c=>{ if(claimChal(c)) got.push({ic:c.icon||"trophy", k:"Succès", t:c.title, r:rewText(c.rew)}) });
   if(!got.length) return;
   save(); Sound.coin(); Sound.ding(); closeModal(); openDay(false); renderTop(); renderNav(); renderView();
@@ -14723,7 +14724,7 @@ let bugKeep = null;   // un message qui n'est pas parti : il est reproposé au p
 // on:false cache le bouton (pendant qu'on prépare la mise à jour) ; on:true le remet, avec la pastille si l'id a changé
 // (16 octobre 2026) deux repères : dot = la pastille rouge du bouton, à changer à CHAQUE mise en ligne qui ajoute une ligne au patchnote
 // (avec txt : la date du jour) ; id = la fenêtre d'annonce à l'arrivée, seulement pour les très gros jours
-const NEWS = {on:true, id:"2026-10-14b", dot:"2026-10-18-1700", url:"/nouveautes.html", txt:"Mise à jour du 18 oct."};
+const NEWS = {on:true, id:"2026-10-14b", dot:"2026-10-19-1200", url:"/nouveautes.html", txt:"Mise à jour du 19 oct."};
 const newsUnseen = () => lsGet("billeo-news-vu")!==NEWS.dot;
 // (14 octobre 2026) à l'arrivée, une fenêtre annonce la mise à jour, une seule fois par mise à jour et par compte (S.newsPop, gardé
 // dans la partie : elle ne revient pas sur un autre appareil) ; on choisit d'aller voir les nouveautés, ou pas

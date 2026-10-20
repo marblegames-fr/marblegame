@@ -2911,7 +2911,6 @@ body:has(#view .game-wrap) .mj-btn{display:none}
 .cpc-art > button{position:relative;z-index:1;display:grid;place-items:center}
 .cpc-art img{filter:drop-shadow(0 8px 6px rgba(0,0,0,.4))}
 .cpc-art img[data-lum]{filter:drop-shadow(0 0 8px var(--lc)) drop-shadow(0 0 18px var(--lc))}
-.cpc-art .first-pill{position:absolute;z-index:2;left:50%;bottom:5px;transform:translateX(-50%);font-size:9.5px;padding:1px 7px;box-shadow:0 2px 6px rgba(0,0,0,.25)}
 .cpc-nm{padding:6px 7px 1px;font-size:12.5px;font-weight:900;line-height:1.15;text-align:center;overflow:hidden;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical}
 .cpc-by{display:flex;align-items:center;justify-content:center;gap:5px;padding:2px 6px 6px;font-size:10.5px;font-weight:800;color:var(--muted);min-width:0;white-space:nowrap}
 .cpc-by b{color:var(--ink-2);overflow:hidden;text-overflow:ellipsis}
@@ -15822,7 +15821,8 @@ function courCopains(){
   // (10 octobre 2026) les trouvailles rares restent 72 h, 4 par page ; les copains 10 par page (la recherche cherche dans tous)
   // (14 octobre 2026) + les motifs légendaires et mythiques de toutes tailles, et les épiques à partir du Calot (pas les motifs d'événement ni de saison)
   // (14 octobre 2026, refait) 6 par page, en vitrine en haut de la page ; (16 octobre 2026) de la plus récente à la plus ancienne, de gauche à droite
-  const rares = (cour.fil||[]).filter(e=>(e.s.type==="mammouth" || e.s.shiny || rarOf(e.s)>=4 || (rarOf(e.s)===3 && TIDX[e.s.type]>=TIDX.calot)) && Date.now()-e.at < RARES_H*36e5)
+  // (20 octobre 2026, le soir) plus les épiques : seulement les Mammouths, les shiny, et les légendaires et mythiques de toutes tailles
+  const rares = (cour.fil||[]).filter(e=>(e.s.type==="mammouth" || e.s.shiny || rarOf(e.s)>=4) && Date.now()-e.at < RARES_H*36e5)
     .sort((x,y)=>findScore(y.s)-findScore(x.s) || y.at-x.at);   // (20 octobre 2026) la plus rare d'abord, puis la plus récente
   const pg = (n, per, k) => { const max = Math.max(0, Math.ceil(n/per)-1); ui[k] = Math.min(ui[k]||0, max); return {p:ui[k], max} };
   const A = pg(amis.length, CP_PAGE, "cpPage"), F = pg(rares.length, RARES_PAGE, "rarPage");
@@ -15836,7 +15836,7 @@ function courCopains(){
     const isIn = !seen.has(k); if(isIn) fresh.add(k);
     return `<div class="cpc${holo?" holo":""}${r===5?" myth":""}${isIn?" in":""}${isIn && Date.now()-e.at < 24*36e5 ? " fresh" : ""}" style="--dc:${fc(e)};--i:${i}"><div class="cpc-in">
       <div class="cpc-hd"><span>${findWhy(s)}</span><span class="cpc-st" aria-label="${findStars(s)} étoiles sur 6">${"★".repeat(findStars(s))}</span></div>
-      <div class="cpc-art">${courBall(s, Math.round(24*scaleOf(s.type)+58), `Trouvée par ${e.who}.`)}${s.edn===1 ? `<span class="first-pill">Première mondiale</span>` : ""}</div>
+      <div class="cpc-art">${courBall(s, Math.round(24*scaleOf(s.type)+58), `Trouvée par ${e.who}.`)}</div>
       <div class="cpc-nm">${esc(courName(s))}</div>
       <div class="cpc-by"><span class="cpc-av" style="--ac:${AV_COLS[hash(e.who||"?")%AV_COLS.length]}">${esc((e.who||"?").slice(0,1).toUpperCase())}</span><b>${esc(e.who)}</b> · ${timeAgo(e.at)}</div></div>
       ${ami && s.id ? `<button class="cpc-troc" data-action="troc-want" data-id="${ami.id}" data-bille="${s.id}" title="Proposer un troc à ${esc(e.who)} pour cette bille" aria-label="Proposer un troc à ${esc(e.who)} pour cette bille">${ic("swap",15)}</button>` : ""}</div>` };

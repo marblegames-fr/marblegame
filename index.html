@@ -6329,7 +6329,14 @@ function save(){ try{ localStorage.setItem(STORE_KEY, JSON.stringify(S)) }catch(
 
 const ui = {view:"accueil", tab:"album", type:"all", hideMissing:true};
 
-const specById = id => S.specs.find(s=>s.id===id);
+// (20 octobre 2026) un index des billes par identifiant, refait dès que la liste change : avant, chaque recherche relisait toute la boîte
+// (avec ~3 800 billes et autant de « Nouveau », l'affichage de la collection passait des secondes rien qu'à chercher)
+let specIdx = null, specIdxOf = null, specIdxN = -1;
+const specById = id => {
+  if(id==null) return undefined;
+  if(specIdxOf!==S.specs || specIdxN!==S.specs.length){ specIdx = new Map(); S.specs.forEach(s=>{ if(!specIdx.has(s.id)) specIdx.set(s.id, s) }); specIdxOf = S.specs; specIdxN = S.specs.length }
+  const x = specIdx.get(id); return x && x.id===id ? x : S.specs.find(s=>s.id===id);   // (une bille qui a changé d'identifiant : on cherche comme avant)
+};
 // tant qu'on n'a aucune bille, les jeux se jouent avec une bille prêtée (elle n'est pas dans la boîte)
 const LOANER = {id:null, seed:hash("pretee"), type:"bille", family:EX_FAM, pal:EX_PAL, shiny:0, at:0, loan:true};
 const ownActive = () => specById(S.active) || [...S.specs].sort(tierSort)[0];
@@ -8074,8 +8081,8 @@ function viewCollection(){
     if(!list.length){ if(show!=="event") return "";
       return `<button class="m-card missing" data-action="show" data-show="event" aria-label="${TYPES[t].label} ${F.name} : pas encore trouvée"><span class="ball">${mImg(ghost(t,f),160,Math.round(84*scaleOf(t)+6),"")}</span><b>${F.name}</b><span class="rar" style="--rar:${E.color}"><i></i>Événement</span><small>${eventLive(E)?"À trouver":"Événement terminé"}</small></button>` }
     const best = [...list].sort(tierSort)[0], nP = E.palIdx.length, got = new Set(list.map(x=>x.pal)).size;
-    const isNew = list.some(s=>S.unseen.includes(s.id));
-    return `<button class="m-card case ev-case${best.shiny?" is-shiny":""}" data-action="spec" data-id="${best.id}" aria-label="${TYPES[t].label} ${F.name} : ${got} coloris sur ${nP}"${isNew?` data-unseen="${list.filter(s=>S.unseen.includes(s.id)).map(s=>s.id).join(",")}"`:""}>
+    const isNew = list.some(s=>unseenIds.has(s.id));
+    return `<button class="m-card case ev-case${best.shiny?" is-shiny":""}" data-action="spec" data-id="${best.id}" aria-label="${TYPES[t].label} ${F.name} : ${got} coloris sur ${nP}"${isNew?` data-unseen="${list.filter(s=>unseenIds.has(s.id)).map(s=>s.id).join(",")}"`:""}>
       ${best.shiny?`<span class="shiny-mark">${shinyPill(best)}</span>`:""}${isNew?`<span class="new">Nouveau</span>`:""}
       <span class="ball">${mImg(best,160,Math.round(84*scaleOf(t)+6))}</span><b>${F.name}</b><span class="rar" style="--rar:${E.color}"><i></i>Événement</span>
       <span class="case-prog"><span class="bar"><i style="width:${got/nP*100}%"></i></span><small>${got} / ${nP} coloris</small></span></button>`;
@@ -8087,8 +8094,8 @@ function viewCollection(){
     if(showFn && show!=="season" && !list.some(showFn)) return "";
     if(!list.length){ if(show!=="season" || seasonNow().m!==F.season) return "";
       return `<button class="m-card missing" data-action="nav" data-view="passe" aria-label="${TYPES[t].label} ${F.name} : à gagner dans le passe"><span class="ball">${mImg(ghost(t,f),160,Math.round(84*scaleOf(t)+6),"")}</span><b>${F.name}</b><span class="rar" style="--rar:${col}"><i></i>Saison</span><small>Dans le passe</small></button>` }
-    const best = [...list].sort(tierSort)[0], isNew = list.some(s=>S.unseen.includes(s.id));
-    return `<button class="m-card case${best.shiny?" is-shiny":""}" data-action="spec" data-id="${best.id}" aria-label="${TYPES[t].label} ${F.name}"${isNew?` data-unseen="${list.filter(s=>S.unseen.includes(s.id)).map(s=>s.id).join(",")}"`:""}>
+    const best = [...list].sort(tierSort)[0], isNew = list.some(s=>unseenIds.has(s.id));
+    return `<button class="m-card case${best.shiny?" is-shiny":""}" data-action="spec" data-id="${best.id}" aria-label="${TYPES[t].label} ${F.name}"${isNew?` data-unseen="${list.filter(s=>unseenIds.has(s.id)).map(s=>s.id).join(",")}"`:""}>
       ${best.shiny?`<span class="shiny-mark">${shinyPill(best)}</span>`:""}${isNew?`<span class="new">Nouveau</span>`:""}
       <span class="ball">${mImg(best,160,Math.round(84*scaleOf(t)+6))}</span><b>${F.name}</b><span class="rar" style="--rar:${col}"><i></i>Saison</span>
       <small class="meta">${best.ed?esc(best.ed):"Édition limitée"}${list.length>1?` · ×${list.length}`:""}</small></button>`;
@@ -8104,8 +8111,8 @@ function viewCollection(){
         if(showFn && !(list||[]).some(showFn)) return "";
         if(!list){ if(ui.hideMissing && !qw.length) return ""; return `<button class="m-card missing" data-action="missing" data-type="${t}" data-fam="${f}" aria-label="${TYPES[t].label} ${F.name} : pas encore trouvée"><span class="ball">${mImg(ghost(t,f),160,Math.round(84*scaleOf(t)+6),"")}</span><b>${F.name}</b>${rarTag(f)}<small>À trouver</small></button>` }
         const best = coverOf(list), got = casePals(list), full = got===BASE_PALS;
-        const isNew = list.some(s=>S.unseen.includes(s.id));
-        return `<button class="m-card case${best.shiny?" is-shiny":""}${full?" full":""}" data-action="sheet" data-type="${t}" data-fam="${f}" aria-label="${TYPES[t].label} ${F.name} : ${got} coloris sur ${BASE_PALS}"${isNew?` data-unseen="${list.filter(s=>S.unseen.includes(s.id)).map(s=>s.id).join(",")}"`:""}>
+        const isNew = list.some(s=>unseenIds.has(s.id));
+        return `<button class="m-card case${best.shiny?" is-shiny":""}${full?" full":""}" data-action="sheet" data-type="${t}" data-fam="${f}" aria-label="${TYPES[t].label} ${F.name} : ${got} coloris sur ${BASE_PALS}"${isNew?` data-unseen="${list.filter(s=>unseenIds.has(s.id)).map(s=>s.id).join(",")}"`:""}>
           ${best.shiny?`<span class="shiny-mark">${shinyPill(best)}</span>`:""}
           ${full?`<span class="full-tag">${ic("star",11,2.6)} Complet</span>`:""}${isNew?`<span class="new">Nouveau</span>`:""}
           <span class="ball">${mImg(best,160,Math.round(84*scaleOf(t)+6))}</span><b>${F.name}</b>${rarTag(f)}
@@ -14739,7 +14746,7 @@ let bugKeep = null;   // un message qui n'est pas parti : il est reproposé au p
 // on:false cache le bouton (pendant qu'on prépare la mise à jour) ; on:true le remet, avec la pastille si l'id a changé
 // (16 octobre 2026) deux repères : dot = la pastille rouge du bouton, à changer à CHAQUE mise en ligne qui ajoute une ligne au patchnote
 // (avec txt : la date du jour) ; id = la fenêtre d'annonce à l'arrivée, seulement pour les très gros jours
-const NEWS = {on:true, id:"2026-10-14b", dot:"2026-10-20-2130", url:"/nouveautes.html", txt:"Mise à jour du 20 oct."};
+const NEWS = {on:true, id:"2026-10-14b", dot:"2026-10-20-2200", url:"/nouveautes.html", txt:"Mise à jour du 20 oct."};
 const newsUnseen = () => lsGet("billeo-news-vu")!==NEWS.dot;
 // (14 octobre 2026) à l'arrivée, une fenêtre annonce la mise à jour, une seule fois par mise à jour et par compte (S.newsPop, gardé
 // dans la partie : elle ne revient pas sur un autre appareil) ; on choisit d'aller voir les nouveautés, ou pas
@@ -16654,7 +16661,7 @@ async function bootLoads(){
   const t0 = Date.now(); await new Promise(r=>setTimeout(r, 50));
   while(busy() && Date.now()-t0 < 6000) await new Promise(r=>setTimeout(r, 100));
 }
-function courStart(){ if(!srvOn()) return; if(S.notifVu==null){ S.notifVu = S.courVu || Date.now(); save() } courLoad("moi", true); courLoad("journal"); courLoad("semaine"); syncMarbles(true); courNews(true); gcLoad(true); lotLoad(true); courListen(); renderBell() }
+function courStart(){ if(!srvOn()) return; if(S.notifVu==null){ S.notifVu = S.courVu || Date.now(); save() } courLoad("moi", true); courLoad("journal"); courLoad("semaine"); if(Date.now()-(sync.pullT||0) > 20000) syncMarbles(true); courNews(true); gcLoad(true); lotLoad(true); courListen(); renderBell() }
 const DEVICE = (()=>{ try{ let d = localStorage.getItem("billeo-device"); if(!d){ d = newId(); localStorage.setItem("billeo-device", d) } return d }catch(e){ return newId() } })();
 const lsGet = k => { try{ return localStorage.getItem(k) }catch(e){ return null } };
 const lsSet = (k,v) => { try{ v==null ? localStorage.removeItem(k) : localStorage.setItem(k,v) }catch(e){} };
@@ -16742,7 +16749,7 @@ async function cloudStart0(user){
   let prevKnown = []; try{ prevKnown = JSON.parse(lsGet(knownKey())) || [] }catch(e){}
   if(!veilOn()) authShow("loading");
   let P;
-  try{ P = await Promise.race([Cloud.pull(user.id), new Promise((_,no)=>setTimeout(()=>no(new Error("délai")), 10000))]); sync.remise = P.remise }
+  try{ P = await Promise.race([Cloud.pull(user.id), new Promise((_,no)=>setTimeout(()=>no(new Error("délai")), 10000))]); sync.remise = P.remise; sync.pullT = Date.now() }
   catch(e){
     if(cached){   // pas de réseau : on joue sur la copie de l'appareil, elle partira plus tard
       sync.known = new Set(prevKnown); adoptState(cached); sync.on = true; authHide(); rerenderAll();
@@ -16822,7 +16829,7 @@ document.addEventListener("visibilitychange", async ()=>{
     if(!u || u.appareil===DEVICE) return;
     const P = await Cloud.pull(sync.uid);
     if(!P.sauvegarde || P.sauvegarde.appareil===DEVICE) return;
-    const st = P.sauvegarde.donnees; st.specs = P.billes; sync.remise = P.remise;
+    const st = P.sauvegarde.donnees; st.specs = P.billes; sync.remise = P.remise; sync.pullT = Date.now();
     sync.known = new Set(P.billes.map(s=>s.id));
     adoptState(st); if(P.profil) S.name = P.profil.pseudo;
     try{ localStorage.setItem(STORE_KEY, JSON.stringify(S)) }catch(e){}

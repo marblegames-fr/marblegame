@@ -1,0 +1,206 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Tikalo · Motifs en plus</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Lilita+One&family=Nunito:wght@500;600;700;800;900&family=Caveat:wght@600;700&display=swap">
+<style>
+:root{
+  --bg:#FBF4E6;--panel:#FFFCF6;--panel-2:#FFF8EC;--line:#EFE3CD;--ink:#24253D;--ink-2:#56546B;--muted:#8E8898;
+  --display:"Lilita One","Arial Rounded MT Bold",sans-serif;--body:"Nunito","Segoe UI",system-ui,sans-serif;--hand:"Caveat",cursive;
+  --shadow:0 1px 0 rgba(120,90,40,.06),0 6px 18px -10px rgba(120,90,40,.25);
+}
+@media (prefers-color-scheme:dark){ :root:not([data-theme="light"]){
+  --bg:#16130F;--panel:#211D18;--panel-2:#2A251F;--line:#352E26;--ink:#F5EEE2;--ink-2:#C8BDAD;--muted:#8F8578;
+  --shadow:0 1px 0 rgba(0,0,0,.25),0 8px 22px -12px rgba(0,0,0,.7) } }
+*{box-sizing:border-box;margin:0}
+body{background:var(--bg);color:var(--ink);font-family:var(--body);font-weight:600;line-height:1.45}
+.wrap{max-width:1180px;margin:0 auto;padding:28px 16px 80px}
+.tag{display:inline-block;font-size:11px;font-weight:900;letter-spacing:.08em;text-transform:uppercase;padding:4px 10px;border-radius:999px;background:var(--ink);color:var(--bg)}
+h1{font-family:var(--display);font-weight:400;font-size:clamp(34px,5vw,52px);line-height:1;margin:12px 0 8px}
+h2{font-family:var(--display);font-weight:400;font-size:30px;margin:40px 0 6px}
+.lead{max-width:75ch;color:var(--ink-2)}
+.note{font-family:var(--hand);font-size:22px;color:#C07A0C;margin-top:6px}
+nav.jump{position:sticky;top:0;z-index:5;display:flex;gap:8px;flex-wrap:wrap;padding:12px 0;background:var(--bg)}
+nav.jump a{padding:8px 14px;border-radius:999px;border:1px solid var(--line);background:var(--panel);color:var(--ink);text-decoration:none;font-weight:800;font-size:14px}
+
+.news{display:grid;grid-template-columns:repeat(auto-fill,minmax(340px,1fr));gap:14px;margin-top:14px}
+.nm{background:var(--panel);border:1px solid var(--line);border-radius:20px;box-shadow:var(--shadow);padding:16px;display:grid;grid-template-columns:150px minmax(0,1fr);gap:14px;border-top:5px solid var(--c)}
+.nm .hero{cursor:zoom-in;border:0;background:none;padding:0}
+.nm .hero img{width:150px;height:150px;display:block}
+.nm h3{font-family:var(--display);font-weight:400;font-size:26px;line-height:1}
+.pill{display:inline-block;margin:6px 0 6px;font-size:11px;font-weight:900;letter-spacing:.05em;text-transform:uppercase;padding:3px 9px;border-radius:999px;color:#fff;background:var(--c)}
+.nm p{font-size:13.5px;color:var(--ink-2)}
+.var{grid-column:1/-1;display:flex;gap:6px;flex-wrap:wrap;align-items:flex-end}
+.var button{border:0;background:var(--panel-2);border-radius:12px;padding:6px 4px 4px;cursor:zoom-in;text-align:center;font:inherit;color:inherit;width:calc(16.66% - 5px);min-width:46px}
+.var img{width:100%;max-width:64px;height:auto;display:block;margin:0 auto}
+.var small{display:block;font-size:10px;font-weight:800;color:var(--muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+
+.tier{display:grid;grid-template-columns:150px minmax(0,1fr);margin-top:12px;border-radius:18px;overflow:hidden;background:var(--panel);border:1px solid var(--line);box-shadow:var(--shadow)}
+.th{background:var(--c);color:#fff;padding:14px;display:flex;flex-direction:column;gap:4px}
+.th b{font-family:var(--display);font-weight:400;font-size:24px;line-height:1}
+.th small{font-size:12px;font-weight:800;opacity:.92}
+.th .cnt{font-size:20px;font-weight:900}
+.cards{display:flex;flex-wrap:wrap;gap:8px;padding:12px}
+.card{position:relative;width:112px;padding:8px 6px 9px;border-radius:14px;background:var(--panel-2);border:2px solid var(--line);text-align:center;font:inherit;color:inherit;cursor:zoom-in}
+.card img{width:74px;height:74px;display:block;margin:0 auto 4px}
+.card b{display:block;font-size:13px;font-weight:900;line-height:1.15}
+.card small{display:block;font-size:11px;color:var(--muted);font-weight:800}
+.card.new{border-style:dashed;border-color:var(--ink-2)}
+.card.moved{border-color:var(--bc)}
+.bdg{position:absolute;top:-8px;left:50%;transform:translateX(-50%);white-space:nowrap;font-size:10px;font-weight:900;letter-spacing:.04em;text-transform:uppercase;padding:2px 7px;border-radius:999px;color:#fff;background:var(--bc,#24253D)}
+
+.zoom{position:fixed;inset:0;z-index:20;background:rgba(10,8,6,.82);display:grid;place-items:center;padding:16px}
+.zoom[hidden]{display:none}
+.zoom div{text-align:center;color:#fff}
+.zoom canvas{width:min(78vw,520px);height:min(78vw,520px);cursor:grab;touch-action:none}
+.zoom b{display:block;font-family:var(--display);font-weight:400;font-size:28px}
+.zoom small{opacity:.75;font-weight:700}
+@media (max-width:640px){ .tier{grid-template-columns:minmax(0,1fr)} .nm{grid-template-columns:110px minmax(0,1fr)} .nm .hero img{width:110px;height:110px} .card{width:calc(33.33% - 6px)} }
+.nm.pick{outline:3px solid var(--c);outline-offset:2px}
+.keep{grid-column:1/-1;display:flex;align-items:center;gap:8px;justify-content:center;padding:10px;border-radius:12px;border:2px dashed var(--line);font:inherit;font-weight:900;color:var(--ink);background:var(--panel-2);cursor:pointer}
+.nm.pick .keep{border-style:solid;border-color:var(--c);background:var(--c);color:#fff}
+.bar{position:sticky;top:56px;z-index:4;margin-top:12px;display:flex;flex-wrap:wrap;gap:10px;align-items:center;padding:10px 14px;border-radius:14px;background:var(--ink);color:var(--bg);font-weight:800}
+.bar b{font-family:var(--display);font-weight:400;font-size:20px}
+.bar .ok{color:#3FBF6A}
+.odds{margin-top:14px;background:var(--panel);border:1px solid var(--line);border-radius:18px;padding:14px;box-shadow:var(--shadow);overflow-x:auto}
+.odds table{border-collapse:collapse;width:100%;min-width:560px;font-size:14px}
+.odds th,.odds td{padding:6px 8px;text-align:right;border-bottom:1px solid var(--line)}
+.odds th:first-child,.odds td:first-child{text-align:left}
+.odds .dn{color:#C0392B;font-weight:900}.odds .eq{color:var(--muted)}
+.mode{display:flex;gap:8px;flex-wrap:wrap;margin:10px 0}
+.mode label{display:flex;gap:8px;align-items:flex-start;padding:10px 12px;border-radius:12px;border:2px solid var(--line);background:var(--panel-2);cursor:pointer;max-width:540px;font-size:14px}
+.mode label:has(input:checked){border-color:var(--ink)}
+h2 small{font-family:var(--body);font-size:16px;color:var(--muted)}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <span class="tag">Maquette · 20 octobre 2026</span>
+  <h1>Plus de billes : 2 Communs et 6 Peu communs</h1>
+  <p class="lead">11 propositions de motifs, dans le même style que ceux de la tier list (des motifs peints, nets, qui prennent les couleurs du coloris), en <b>vrai rendu 3D</b> du jeu. Il y en a un peu plus que demandé (<b>3 Communs</b>, <b>8 Peu communs</b>) pour que tu puisses choisir : garde-en <b>2 Communs et 6 Peu communs</b>. Chacun est montré en Azur, dans 5 autres coloris et en Mammouth.</p>
+  <p class="note">Touche une bille pour l'agrandir et la faire tourner !</p>
+  <nav class="jump"><a href="#communs">Communs</a><a href="#peucommuns">Peu communs</a><a href="#chances">Les chances</a><a href="#tierlist">La tier list</a></nav>
+  <div class="bar" id="bar"></div>
+  <h2 id="communs">Communs <small>(3 propositions, en garder 2)</small></h2>
+  <div class="news" id="news0"></div>
+  <h2 id="peucommuns">Peu communs <small>(8 propositions, en garder 6)</small></h2>
+  <div class="news" id="news1"></div>
+  <h2 id="chances">Et les billes rares, dans tout ça ?</h2>
+  <p class="lead">Ajouter des motifs Communs et Peu communs fait sortir plus souvent… des Communs et des Peu communs. Si on ne touche à rien d'autre, les Rares, Épiques, Légendaires et l'Œil du Dragon sortent un peu moins souvent. Deux façons de faire :</p>
+  <div class="mode" id="mode">
+    <label><input type="radio" name="m" value="same" checked><span><b>Mêmes chances pour les raretés (conseillé)</b><br>On tire toujours autant de Communs qu'avant <i>en tout</i> ; c'est chaque motif Commun qui sort un peu moins souvent (le gâteau est partagé en plus de parts). Les Rares et au-dessus ne bougent pas.</span></label>
+    <label><input type="radio" name="m" value="poids"><span><b>Chaque motif garde son poids</b><br>Les nouveaux motifs s'ajoutent au tirage tels quels : plus de Communs et de Peu communs, un peu moins de tout le reste.</span></label>
+  </div>
+  <div class="odds" id="odds"></div>
+  <h2 id="tierlist">La tier list avec tes choix</h2>
+  <p class="lead" id="tl-lead"></p>
+  <div id="tiers"></div>
+</div>
+<div class="zoom" id="zoom" hidden><div><canvas id="zc" width="1040" height="1040"></canvas><b id="zn"></b><small>Glisse pour la tourner · touche à côté pour fermer</small></div></div>
+
+<script src="motifs-2-rendu.js"></script>
+<script>
+/* Maquette du 20 octobre 2026. Rendu : motifs-2-rendu.js, fabriqué par fabriquer-motifs-2.mjs à partir de tikalo-demo-rendu.js + motifs-2.glsl
+   (numéros 65 à 75 ici). Dans le jeu, les motifs gardés prendront les numéros 65, 66… dans l'ordre, après l'Œil du Dragon (64). */
+const TIERS = DECOR_RAR;
+const palOf = n => PALETTES.findIndex(P=>P[0]===n);
+const AZUR = palOf("Azur"), VARS = ["Grenat","Émeraude","Miel","Lavande","Réglisse"].map(palOf);
+const NEW = [
+  {name:"Tricolore", rar:0, desc:"Trois bandes bien égales qui font le tour de la bille, comme un drapeau enroulé : la 1re couleur, un blanc crème, la 2e."},
+  {name:"Sucette", rar:0, face:true, desc:"Une spirale de sucre en trois couleurs qui part du milieu de la bille, comme une sucette de fête foraine."},
+  {name:"Fleurettes", rar:0, desc:"De petites fleurs à cinq pétales semées sur un fond clair, chacune avec son cœur jaune : la robe d'été."},
+  {name:"Girafe", rar:1, desc:"De grandes taches aux coins arrondis, séparées par des chemins couleur crème, comme le pelage d'une girafe."},
+  {name:"Camouflage", rar:1, desc:"Des taches de trois couleurs qui se chevauchent, comme une tenue d'explorateur : la bille qui se cache dans l'herbe."},
+  {name:"Briques", rar:1, desc:"Un mur de briques bien rangées, décalées d'un rang à l'autre, avec leur joint de ciment : le mur de la cour."},
+  {name:"Puzzle", rar:1, desc:"Des pièces de puzzle de trois couleurs, chacune avec ses tenons et ses creux, emboîtées tout autour de la bille."},
+  {name:"Labyrinthe", rar:1, desc:"Des murs posés au hasard d'une case à l'autre qui dessinent des couloirs : trouve la sortie !"},
+  {name:"Pied-de-poule", rar:1, desc:"Le motif des manteaux chics, tissé en deux couleurs : de petits crochets qui s'emboîtent."},
+  {name:"Terrazzo", rar:1, desc:"Des éclats de pierre de toutes les couleurs pris dans un ciment clair, comme le sol d'une vieille école."},
+  {name:"Sable", rar:1, desc:"Des couches de sable coloré qui ondulent, avec leur grain, comme dans la bouteille de sable rapportée de vacances."},
+];
+const N0 = FAMILIES.length;   // 65
+NEW.forEach((x,i)=>{ x.fam = N0+i; FAMILIES.push({name:x.name, rar:x.rar, desc:x.desc, ...(x.face?{face:true}:{})}); OPAQUE_FAMS.push(x.fam) });   // tous opaques, comme les motifs peints de la tier list
+const extra = f => FAMILIES[f].event || FAMILIES[f].season!=null || FAMILIES[f].beta;
+const OLD = FAMILIES.map((_,i)=>i).filter(i=>i<N0 && !extra(i));
+const NEED = [2,6];
+let pick = new Set(); try{ pick = new Set(JSON.parse(localStorage.getItem("tikalo-maquette-motifs-2"))||[]) }catch(e){}
+const saveP = () => { try{ localStorage.setItem("tikalo-maquette-motifs-2", JSON.stringify([...pick])) }catch(e){} };
+
+const spec = (fam, pal=AZUR, type="calot", k="") => ({seed:hash("motifs2"+fam+k), type, family:fam, pal, shiny:0});
+const allZ = [];
+const pic = (s, px, label) => { allZ.push({s, label}); return `<img src="${marbleURL(s, px)}" alt="" data-z="${allZ.length-1}">` };
+[0,1].forEach(r=>{ document.getElementById("news"+r).innerHTML = NEW.filter(x=>x.rar===r).map(x=>{ const T = TIERS[x.rar];
+  return `<article class="nm" data-fam="${x.fam}" style="--c:${T.c}">
+    <button class="hero">${pic(spec(x.fam), 300, x.name+" · Azur")}</button>
+    <div><h3>${x.name}</h3><span class="pill" style="--c:${T.c}">${T.name}</span><p>${x.desc}</p></div>
+    <div class="var">${VARS.map((p,j)=>`<button>${pic(spec(x.fam,p,"calot","v"+j), 128, x.name+" · "+PALETTES[p][0])}<small>${PALETTES[p][0]}</small></button>`).join("")}
+      <button>${pic(spec(x.fam,AZUR,"mammouth","m"), 128, x.name+" · Mammouth")}<small>Mammouth</small></button></div>
+    <button class="keep" data-keep="${x.fam}"></button>
+  </article>` }).join("") });
+
+const pctF = v => (v>=10 ? v.toFixed(1) : v>=1 ? v.toFixed(2) : v.toFixed(3)).replace(".",",")+" %";
+const sur = v => "1 sur "+Math.round(100/v).toLocaleString("fr-FR");
+// « mêmes chances » : la part de chaque rareté reste celle d'aujourd'hui, partagée entre plus de motifs
+function weights(fams, mode){
+  const n = [0,0,0,0,0,0], n0 = [0,0,0,0,0,0]; fams.forEach(f=>n[FAMILIES[f].rar]++); OLD.forEach(f=>n0[FAMILIES[f].rar]++);
+  return fams.map(f=>{ const r = FAMILIES[f].rar, w = TIERS[r].w; return mode==="same" ? w*n0[r]/n[r] : w });
+}
+const tierCache = {};
+const tierPic = f => tierCache[f] || (tierCache[f] = pic(spec(f, AZUR, "calot", "t"), 150, FAMILIES[f].name));
+function render(){
+  document.querySelectorAll(".nm").forEach(el=>{ const on = pick.has(+el.dataset.fam); el.classList.toggle("pick", on);
+    el.querySelector(".keep").textContent = on ? "✓ Je le garde" : "Je le garde" });
+  const got = [0,1].map(r=>NEW.filter(x=>x.rar===r && pick.has(x.fam)).length), done = got[0]===2 && got[1]===6;
+  document.getElementById("bar").innerHTML = `<b>Tes choix</b> <span class="${got[0]===2?"ok":""}">Communs : ${got[0]} / 2</span> · <span class="${got[1]===6?"ok":""}">Peu communs : ${got[1]} / 6</span>
+    ${done ? `<span class="ok">C'est tout bon, dis-moi lesquels : ${NEW.filter(x=>pick.has(x.fam)).map(x=>x.name).join(", ")}</span>` : ""}`;
+  // les chances : aujourd'hui, et avec 8 nouveaux (tes choix ; sans choix, ça ne change rien aux chiffres : seul le nombre compte)
+  const chosen = [0,1].flatMap(r=>{ const l = NEW.filter(x=>x.rar===r && pick.has(x.fam)); return (l.length===NEED[r] ? l : NEW.filter(x=>x.rar===r).slice(0, NEED[r])).map(x=>x.fam) });
+  const mode = document.querySelector("#mode input:checked").value;
+  const fNow = OLD, wNow = fNow.map(f=>TIERS[FAMILIES[f].rar].w), tNow = wNow.reduce((a,b)=>a+b,0);
+  const fNew = OLD.concat(chosen), wNew = weights(fNew, mode), tNew = wNew.reduce((a,b)=>a+b,0);
+  const share = (fs, ws, t, r) => fs.reduce((a,f,i)=>a+(FAMILIES[f].rar===r?ws[i]:0),0)/t*100;
+  const one = (fs, ws, t, r) => { const i = fs.findIndex(f=>FAMILIES[f].rar===r); return ws[i]/t*100 };
+  const cl = (a,b) => Math.abs(a-b)<1e-9 ? "eq" : b<a ? "dn" : "";
+  document.getElementById("odds").innerHTML = `<table><tr><th>Rareté</th><th>Motifs</th><th>Part des billes aujourd'hui</th><th>Avec les 8 nouveaux</th><th>Un motif précis aujourd'hui</th><th>Avec les 8 nouveaux</th></tr>
+    ${TIERS.map((T,r)=>{ const a = share(fNow,wNow,tNow,r), b = share(fNew,wNew,tNew,r), c = one(fNow,wNow,tNow,r), d = one(fNew,wNew,tNew,r);
+      const n0 = fNow.filter(f=>FAMILIES[f].rar===r).length, n1 = fNew.filter(f=>FAMILIES[f].rar===r).length;
+      return `<tr><td><b style="color:${T.c}">${T.name}</b></td><td>${n0}${n1>n0?` → ${n1}`:""}</td><td>${pctF(a)}</td><td class="${cl(a,b)}">${pctF(b)}</td><td>${sur(c)}</td><td class="${cl(c,d)}">${sur(d)}</td></tr>` }).join("")}</table>
+    <p class="lead" style="margin-top:8px;font-size:13px">« Un motif précis » : la chance qu'une bille tirée ait ce motif-là (par exemple Damier, ou l'Œil du Dragon). En rouge : ce qui baisse.</p>`;
+  // la tier list complète, avec les motifs gardés
+  const all = OLD.concat(NEW.filter(x=>pick.has(x.fam)).map(x=>x.fam));
+  const cnt = [0,1,2,3,4,5].map(r=>all.filter(f=>FAMILIES[f].rar===r).length);
+  document.getElementById("tl-lead").innerHTML = `${all.length} motifs dans l'album (${OLD.length} aujourd'hui) : ${[5,4,3,2,1,0].map(r=>`${cnt[r]} ${TIERS[r].name}`).join(" · ")}. Les cadres en pointillés sont tes nouveaux.`;
+  document.getElementById("tiers").innerHTML = [5,4,3,2,1,0].map(r=>{ const T = TIERS[r];
+    const l = all.filter(f=>FAMILIES[f].rar===r).sort((a,b)=>FAMILIES[a].name.localeCompare(FAMILIES[b].name,"fr"));
+    return `<section class="tier"><div class="th" style="--c:${T.c}"><b>${T.name}</b><span class="cnt">${l.length}</span></div>
+      <div class="cards">${l.map(f=>`<button class="card${f>=N0?" new":""}">${f>=N0?`<span class="bdg">Nouveau</span>`:""}${tierPic(f)}<b>${FAMILIES[f].name}</b></button>`).join("")}</div></section>` }).join("");
+}
+document.getElementById("mode").addEventListener("change", render);
+render();
+
+// ---------- l'agrandissement : la bille en grand, qu'on fait tourner ----------
+const zoom = document.getElementById("zoom"), zc = document.getElementById("zc"), zgl = makeGL(zc);
+let zcur = null, drag = null, raf = 0, ax = 0, ay = 0;
+const rotM = (ax, ay) => { const cx=Math.cos(ax), sx=Math.sin(ax), cy=Math.cos(ay), sy=Math.sin(ay); return [cy,0,-sy, sx*sy,cx,sx*cy, cx*sy,-sx,cx*cy] };
+function frame(){ if(!zcur || !zgl) return; if(!drag) ay += .006; zgl.draw(zcur, zc.width, rotM(ax, ay)); raf = requestAnimationFrame(frame) }
+document.addEventListener("click", e=>{
+  const k = e.target.closest("[data-keep]");
+  if(k){ const f = +k.dataset.keep, r = FAMILIES[f].rar;
+    if(pick.has(f)) pick.delete(f);
+    else { const same = NEW.filter(x=>x.rar===r && pick.has(x.fam)); if(same.length>=NEED[r]) pick.delete(same[0].fam); pick.add(f) }   // déjà le compte : un autre choix laisse sa place
+    saveP(); render(); return }
+  const im = e.target.closest("[data-z]") || e.target.closest("button")?.querySelector("[data-z]");
+  if(im && !zoom.contains(e.target)){ const z = allZ[+im.dataset.z]; zcur = z.s; ax = 0; ay = 0; document.getElementById("zn").textContent = z.label; zoom.hidden = false; cancelAnimationFrame(raf); frame(); return }
+  if(zoom.contains(e.target) && e.target!==zc){ zoom.hidden = true; zcur = null; cancelAnimationFrame(raf) }
+});
+zc.addEventListener("pointerdown", e=>{ drag = {x:e.clientX, y:e.clientY, ax, ay}; zc.setPointerCapture(e.pointerId) });
+zc.addEventListener("pointermove", e=>{ if(!drag) return; ay = drag.ay + (e.clientX-drag.x)*.01; ax = drag.ax + (e.clientY-drag.y)*.01 });
+zc.addEventListener("pointerup", ()=>{ drag = null });
+document.addEventListener("keydown", e=>{ if(e.key==="Escape"){ zoom.hidden = true; zcur = null } });
+</script>
+</body>
+</html>

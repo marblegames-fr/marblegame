@@ -68,12 +68,13 @@
       return {profil, sauvegarde, billes, remise};
     },
     async billes(uid){
-      const out = [];
-      for(let from=0;; from+=1000){   // l'API renvoie au plus 1000 lignes à la fois
-        const rows = ok(await db.from("billes").select("id, numero, donnees, origine").eq("proprietaire", uid).is("detruite_le", null).order("numero").range(from, from+999));
-        out.push(...rows.map(fromRow));
-        if(rows.length<1000) return out;
-      }
+      // l'API renvoie au plus 1000 lignes à la fois : la première page dit combien il y en a, les suivantes partent toutes ensemble
+      // (20 octobre 2026 : avant, une page après l'autre, soit 4 allers-retours pour une boîte de 3 800 billes)
+      const page = (from, count) => db.from("billes").select("id, numero, donnees, origine", count ? {count:"exact"} : undefined).eq("proprietaire", uid).is("detruite_le", null).order("numero").range(from, from+999);
+      const first = await page(0, true), out = ok(first);
+      if(first.count!=null){ const more = []; for(let from=1000; from<first.count; from+=1000) more.push(page(from).then(ok)); (await Promise.all(more)).forEach(r=>out.push(...r)) }
+      else for(let r = out; r.length===1000;){ r = ok(await page(out.length)); out.push(...r) }   // (sans le total : page après page, comme avant)
+      const seen = new Set(); return out.filter(r=>!seen.has(r.id) && seen.add(r.id)).map(fromRow);   // (une bille arrivée entre deux pages peut en décaler une)
     },
     // le numéro de la dernière remise à zéro (supabase/remise.sql), null s'il n'y en a jamais eu
     async remise(){ const {data, error} = await db.from("remise").select("numero").eq("id", 1).maybeSingle(); return error ? null : data?.numero ?? null },

@@ -15085,16 +15085,20 @@ let bugKeep = null;   // un message qui n'est pas parti : il est reproposé au p
 // on:false cache le bouton (pendant qu'on prépare la mise à jour) ; on:true le remet, avec la pastille si l'id a changé
 // (16 octobre 2026) deux repères : dot = la pastille rouge du bouton, à changer à CHAQUE mise en ligne qui ajoute une ligne au patchnote
 // (avec txt : la date du jour) ; id = la fenêtre d'annonce à l'arrivée, seulement pour les très gros jours
-const NEWS = {on:true, id:"2026-10-20", dot:"2026-10-20-2330", url:"/nouveautes.html", txt:"Mise à jour du 20 oct."};
+const NEWS = {on:true, id:"2026-10-20b", dot:"2026-10-20-2330", url:"/nouveautes.html", txt:"Mise à jour du 20 oct."};
 const newsUnseen = () => lsGet("billeo-news-vu")!==NEWS.dot;
 // (14 octobre 2026) à l'arrivée, une fenêtre annonce la mise à jour, une seule fois par mise à jour et par compte (S.newsPop, gardé
 // dans la partie : elle ne revient pas sur un autre appareil) ; on choisit d'aller voir les nouveautés, ou pas
 const newsPopDue = () => NEWS.on && sync.on && S.newsPop!==NEWS.id;
 async function newsPop(){
   S.newsPop = NEWS.id; save();
-  const oui = await ask({title:"Du nouveau dans Tikalo !", ok:"Voir les nouveautés", no:"Plus tard",
-    text:`Une mise à jour vient d'arriver : 16 nouveaux circuits pour la Grande Course, un classement de la semaine avec des lots, une cloche toute neuve et plein d'autres choses.<br><small class="meta">Tu peux la revoir quand tu veux avec le bouton « Nouveautés ».</small>`});
-  if(oui){ lsSet("billeo-news-vu", NEWS.dot); window.open(NEWS.url, "_blank", "noopener"); renderNav() }
+  // (20 octobre 2026) l'annonce des 21 nouveaux motifs, avec quelques-uns en image ; on va voir l'album, ou pas
+  const pal = n => Math.max(0, PALETTES.findIndex(P=>P[0]===n)), fam = n => FAMILIES.findIndex(F=>F.name===n);
+  const balls = [["Sucette","Azur"],["Girafe","Ambre"],["Puzzle","Émeraude"],["Lucioles","Nuit"],["Tornade","Grenat"],["Comète","Féerie"]]
+    .map(([f,p])=>({seed:hash("annonce"+f), type:"calot", family:fam(f), pal:pal(p), shiny:0})).filter(s=>s.family>=0);
+  const oui = await ask({title:"21 nouveaux motifs !", ok:"Voir l'album", no:"Plus tard", balls,
+    text:`Plein de nouvelles billes sont arrivées dans les sachets : l'album passe de 50 à <b>71 motifs</b>, dans toutes les raretés. Sucette, Girafe, Puzzle, Lucioles, Tornade, Comète, Constellation… et chaque nouveau motif a son succès à gagner. Bonne chasse !<br><small class="meta">Le détail est dans « Nouveautés ».</small>`});
+  if(oui){ ui.tab = "album"; ui.show = "all"; ui.type = "all"; go("collection") }
 }
 async function bugReport(prev){
   if(!sync.on){ toast("Connecte-toi à ton compte pour envoyer un message."); return }

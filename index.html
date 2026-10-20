@@ -15801,7 +15801,7 @@ const CP_PAGE = 12, RARES_PAGE = 6, RARES_H = 48;   // (20 octobre 2026) 48 h au
 const rarOf = s => extraFam(s.family) ? -1 : FAMILIES[s.family]?.rar ?? -1;
 // (20 octobre 2026) les cartes des trouvailles : la plus rare d'abord (mythique, légendaire, shiny Lumineuse…), ses étoiles (1 à 6) et ce qui la rend rare
 const findScore = s => (rarOf(s)===5?100:0) + Math.max(0,rarOf(s))*10 + [0,3,6,12][s.shiny||0] + (s.type==="mammouth"?8:0) + TIDX[s.type];
-const findStars = s => Math.min(6, 1 + Math.max(0,rarOf(s)) + (s.shiny?1:0) + (s.type==="mammouth"?1:0));
+const findStars = s => 1 + Math.max(0,rarOf(s));   // (20 octobre 2026, le soir) la rareté du motif seulement : 1 (commun) à 6 (mythique), comme la couleur du cadre
 const findWhy = s => rarOf(s)===5 ? "Mythique" : s.shiny===3 ? "Lumineuse" : rarOf(s)===4 ? "Légendaire" : s.shiny ? SHINIES[s.shiny].name : s.type==="mammouth" ? "Mammouth" : rarOf(s)>=0 ? DECOR_RAR[rarOf(s)].name : TYPES[s.type].label;
 const AV_COLS = ["#2E6BE6","#D97E06","#2F8F45","#8A4AD6","#E0182D","#0E9C9C"];
 const rarPill = s => rarOf(s)>=3 ? `<span class="dec-pill" style="--dc:${DECOR_RAR[rarOf(s)].c}">${DECOR_RAR[rarOf(s)].name}</span>` : "";
@@ -15828,14 +15828,15 @@ function courCopains(){
   const A = pg(amis.length, CP_PAGE, "cpPage"), F = pg(rares.length, RARES_PAGE, "rarPage");
   const pager = (P, k, lbl) => P.max ? `<div class="cp-pager" data-k="${k}"><button class="btn btn-ghost btn-sm" data-action="cp-page" data-k="${k}" data-d="-1" ${P.p?"":"disabled"} aria-label="${lbl} : page précédente">${ic("chevl",15,2.6)}</button>
       <span>Page <b>${P.p+1}</b> / ${P.max+1}</span><button class="btn btn-ghost btn-sm" data-action="cp-page" data-k="${k}" data-d="1" ${P.p<P.max?"":"disabled"} aria-label="${lbl} : page suivante">${ic("chev",15,2.6)}</button></div>` : "";
-  const fc = e => e.s.shiny===3 && rarOf(e.s)<4 ? PALETTES[e.s.pal][2] : e.s.shiny && rarOf(e.s)<4 ? "#E0A800" : rarOf(e.s)>=3 ? DECOR_RAR[rarOf(e.s)].c : TYPES[e.s.type].rc;
+  // (20 octobre 2026, le soir) le cadre a toujours la couleur de la rareté du motif (avant : un Mammouth prenait l'orange de sa taille, le même que les légendaires)
+  const fc = e => rarOf(e.s)>=0 ? DECOR_RAR[rarOf(e.s)].c : TYPES[e.s.type].rc;
   // (20 octobre 2026) une carte à collectionner par trouvaille ; toucher la bille l'ouvre en grand, le bouton jaune propose un troc au copain pour cette bille
   if(!document.querySelector(".cpc-grid")) ui.cpcSeen = new Set();   // on vient d'ouvrir l'onglet : toutes les cartes font leur apparition (pas à chaque rafraîchissement)
   const fresh = new Set(), seen = ui.cpcSeen || (ui.cpcSeen = new Set());
   const card = (e, i) => { const s = e.s, r = rarOf(s), holo = s.shiny || r>=4, ami = amis.find(a=>a.pseudo===e.who), k = s.id || (e.who+e.at);
     const isIn = !seen.has(k); if(isIn) fresh.add(k);
     return `<div class="cpc${holo?" holo":""}${r===5?" myth":""}${isIn?" in":""}${isIn && Date.now()-e.at < 24*36e5 ? " fresh" : ""}" style="--dc:${fc(e)};--i:${i}"><div class="cpc-in">
-      <div class="cpc-hd"><span>${findWhy(s)}</span><span class="cpc-st" aria-label="${findStars(s)} étoiles sur 6">${"★".repeat(findStars(s))}</span></div>
+      <div class="cpc-hd"><span>${findWhy(s)}</span><span class="cpc-st" aria-label="Motif ${rarOf(s)>=0?DECOR_RAR[rarOf(s)].name:"spécial"} : ${findStars(s)} étoile${findStars(s)>1?"s":""} sur 6" title="Rareté du motif : ${rarOf(s)>=0?DECOR_RAR[rarOf(s)].name:"spécial"}">${"★".repeat(findStars(s))}</span></div>
       <div class="cpc-art">${courBall(s, Math.round(24*scaleOf(s.type)+58), `Trouvée par ${e.who}.`)}</div>
       <div class="cpc-nm">${esc(courName(s))}</div>
       <div class="cpc-by"><span class="cpc-av" style="--ac:${AV_COLS[hash(e.who||"?")%AV_COLS.length]}">${esc((e.who||"?").slice(0,1).toUpperCase())}</span><b>${esc(e.who)}</b> · ${timeAgo(e.at)}</div></div>

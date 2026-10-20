@@ -306,7 +306,7 @@ declare moi uuid := auth.uid();
 begin
   if moi is null then raise exception 'connexion_requise'; end if;
   return coalesce((select jsonb_agg(x.j) from (
-    select jsonb_build_object('who', interne.pseudo(h.vers), 'at', floor(extract(epoch from h.le)*1000)::bigint, 's', interne.bille_json(b)) j
+    select jsonb_build_object('who', interne.pseudo(h.vers), 'at', floor(extract(epoch from h.le)*1000)::bigint, 's', interne.bille_json(b) || case when b.edition is null then '{}'::jsonb else jsonb_build_object('edn', b.edition) end) j   -- (20 octobre 2026) + le numéro d'édition (« Première mondiale » sur les cartes des trouvailles)
     from billes_historique h join billes b on b.id = h.bille
     where h.motif = 'trouvee' and h.vers in (select ami from amis where joueur = moi)
       -- (16 octobre 2026) Mammouths seulement (rang 5) : les Boulets communs remplissaient les 300 places et poussaient dehors les légendaires

@@ -63,136 +63,165 @@ nav.jump a{padding:8px 14px;border-radius:999px;border:1px solid var(--line);bac
 .nm.pick{outline:3px solid var(--c);outline-offset:2px}
 .keep{grid-column:1/-1;display:flex;align-items:center;gap:8px;justify-content:center;padding:10px;border-radius:12px;border:2px dashed var(--line);font:inherit;font-weight:900;color:var(--ink);background:var(--panel-2);cursor:pointer}
 .nm.pick .keep{border-style:solid;border-color:var(--c);background:var(--c);color:#fff}
-.bar{position:sticky;top:56px;z-index:4;margin-top:12px;display:flex;flex-wrap:wrap;gap:10px;align-items:center;padding:10px 14px;border-radius:14px;background:var(--ink);color:var(--bg);font-weight:800}
+.tags{display:flex;gap:4px;flex-wrap:wrap}
+.tg{display:inline-block;margin:6px 0;font-size:11px;font-weight:900;padding:3px 9px;border-radius:999px;background:var(--panel-2);border:1px solid var(--line);color:var(--ink-2)}
+.bar{position:sticky;top:56px;z-index:4;margin-top:12px;display:flex;flex-wrap:wrap;gap:6px 14px;align-items:center;padding:10px 14px;border-radius:14px;background:var(--ink);color:var(--bg);font-weight:800}
 .bar b{font-family:var(--display);font-weight:400;font-size:20px}
-.bar .ok{color:#3FBF6A}
+.bar i{font-style:normal;color:var(--c)}
+.bar button{margin-left:auto;border:0;border-radius:999px;padding:6px 12px;font:inherit;font-weight:900;cursor:pointer;background:var(--bg);color:var(--ink)}
 .odds{margin-top:14px;background:var(--panel);border:1px solid var(--line);border-radius:18px;padding:14px;box-shadow:var(--shadow);overflow-x:auto}
 .odds table{border-collapse:collapse;width:100%;min-width:560px;font-size:14px}
 .odds th,.odds td{padding:6px 8px;text-align:right;border-bottom:1px solid var(--line)}
 .odds th:first-child,.odds td:first-child{text-align:left}
 .odds .dn{color:#C0392B;font-weight:900}.odds .eq{color:var(--muted)}
-.mode{display:flex;gap:8px;flex-wrap:wrap;margin:10px 0}
-.mode label{display:flex;gap:8px;align-items:flex-start;padding:10px 12px;border-radius:12px;border:2px solid var(--line);background:var(--panel-2);cursor:pointer;max-width:540px;font-size:14px}
-.mode label:has(input:checked){border-color:var(--ink)}
 h2 small{font-family:var(--body);font-size:16px;color:var(--muted)}
+.list{margin-top:12px;padding:12px 14px;border-radius:14px;background:var(--panel);border:1px solid var(--line);font-size:14px}
+.list:empty{display:none}
 </style>
 </head>
 <body>
 <div class="wrap">
   <span class="tag">Maquette · 20 octobre 2026</span>
-  <h1>Plus de billes : 2 Communs et 6 Peu communs</h1>
-  <p class="lead">11 propositions de motifs, dans le même style que ceux de la tier list (des motifs peints, nets, qui prennent les couleurs du coloris), en <b>vrai rendu 3D</b> du jeu. Il y en a un peu plus que demandé (<b>3 Communs</b>, <b>8 Peu communs</b>) pour que tu puisses choisir : garde-en <b>2 Communs et 6 Peu communs</b>. Chacun est montré en Azur, dans 5 autres coloris et en Mammouth.</p>
-  <p class="note">Touche une bille pour l'agrandir et la faire tourner !</p>
-  <nav class="jump"><a href="#communs">Communs</a><a href="#peucommuns">Peu communs</a><a href="#chances">Les chances</a><a href="#tierlist">La tier list</a></nav>
+  <h1>Encore plein de billes : 49 motifs à choisir</h1>
+  <p class="lead">Une grosse panoplie de nouveaux motifs dans <b>toutes les raretés</b>, plus nombreux en bas qu'en haut : <b>14 Communs, 15 Peu communs, 10 Rares, 6 Épiques et 4 Légendaires</b>. Tous en <b>vrai rendu 3D</b> du jeu, et tous utilisent <b>les 3 couleurs du coloris</b>. Chacun est montré en Azur, dans 5 autres coloris et en Mammouth. Garde tous ceux que tu veux : il n'y a pas de nombre imposé.</p>
+  <p class="note">Touche une bille pour l'agrandir et la faire tourner ! (en grand, les Engrenages, l'Atome, la Tornade et la Fusée bougent)</p>
+  <nav class="jump" id="jump"></nav>
   <div class="bar" id="bar"></div>
-  <h2 id="communs">Communs <small>(3 propositions, en garder 2)</small></h2>
-  <div class="news" id="news0"></div>
-  <h2 id="peucommuns">Peu communs <small>(8 propositions, en garder 6)</small></h2>
-  <div class="news" id="news1"></div>
-  <h2 id="chances">Et les billes rares, dans tout ça ?</h2>
-  <p class="lead">Ajouter des motifs Communs et Peu communs fait sortir plus souvent… des Communs et des Peu communs. Si on ne touche à rien d'autre, les Rares, Épiques, Légendaires et l'Œil du Dragon sortent un peu moins souvent. Deux façons de faire :</p>
-  <div class="mode" id="mode">
-    <label><input type="radio" name="m" value="same" checked><span><b>Mêmes chances pour les raretés (conseillé)</b><br>On tire toujours autant de Communs qu'avant <i>en tout</i> ; c'est chaque motif Commun qui sort un peu moins souvent (le gâteau est partagé en plus de parts). Les Rares et au-dessus ne bougent pas.</span></label>
-    <label><input type="radio" name="m" value="poids"><span><b>Chaque motif garde son poids</b><br>Les nouveaux motifs s'ajoutent au tirage tels quels : plus de Communs et de Peu communs, un peu moins de tout le reste.</span></label>
-  </div>
+  <div id="sections"></div>
+  <h2 id="chances">Les chances</h2>
+  <p class="lead">Décidé : on garde <b>les mêmes chances pour chaque rareté</b>. On tire toujours autant de Rares, d'Épiques, de Légendaires et d'Œil du Dragon qu'aujourd'hui, quel que soit le nombre de nouveaux motifs ; c'est chaque motif d'une rareté qui sort un peu moins souvent, puisque la part de sa rareté est partagée entre plus de motifs. Le tableau suit tes choix.</p>
   <div class="odds" id="odds"></div>
   <h2 id="tierlist">La tier list avec tes choix</h2>
   <p class="lead" id="tl-lead"></p>
   <div id="tiers"></div>
+  <div class="list" id="list"></div>
 </div>
 <div class="zoom" id="zoom" hidden><div><canvas id="zc" width="1040" height="1040"></canvas><b id="zn"></b><small>Glisse pour la tourner · touche à côté pour fermer</small></div></div>
 
 <script src="motifs-2-rendu.js"></script>
 <script>
 /* Maquette du 20 octobre 2026. Rendu : motifs-2-rendu.js, fabriqué par fabriquer-motifs-2.mjs à partir de tikalo-demo-rendu.js + motifs-2.glsl
-   (numéros 65 à 75 ici). Dans le jeu, les motifs gardés prendront les numéros 65, 66… dans l'ordre, après l'Œil du Dragon (64). */
+   et motifs-2b.glsl (numéros 65 à 113 ici). Dans le jeu, les motifs gardés prendront les numéros 65, 66… dans l'ordre, après l'Œil du Dragon (64). */
 const TIERS = DECOR_RAR;
 const palOf = n => PALETTES.findIndex(P=>P[0]===n);
 const AZUR = palOf("Azur"), VARS = ["Grenat","Émeraude","Miel","Lavande","Réglisse"].map(palOf);
+// fam : le numéro dans motifs-2*.glsl ; verre : un motif dans le verre (sinon peint, opaque) ; face : posé de face
 const NEW = [
-  {name:"Tricolore", rar:0, desc:"Trois bandes bien égales qui font le tour de la bille, comme un drapeau enroulé : la 1re couleur, un blanc crème, la 2e."},
-  {name:"Sucette", rar:0, face:true, desc:"Une spirale de sucre en trois couleurs qui part du milieu de la bille, comme une sucette de fête foraine."},
-  {name:"Fleurettes", rar:0, desc:"De petites fleurs à cinq pétales semées sur un fond clair, chacune avec son cœur jaune : la robe d'été."},
-  {name:"Girafe", rar:1, desc:"De grandes taches aux coins arrondis, séparées par des chemins couleur crème, comme le pelage d'une girafe."},
-  {name:"Camouflage", rar:1, desc:"Des taches de trois couleurs qui se chevauchent, comme une tenue d'explorateur : la bille qui se cache dans l'herbe."},
-  {name:"Briques", rar:1, desc:"Un mur de briques bien rangées, décalées d'un rang à l'autre, avec leur joint de ciment : le mur de la cour."},
-  {name:"Puzzle", rar:1, desc:"Des pièces de puzzle de trois couleurs, chacune avec ses tenons et ses creux, emboîtées tout autour de la bille."},
-  {name:"Labyrinthe", rar:1, desc:"Des murs posés au hasard d'une case à l'autre qui dessinent des couloirs : trouve la sortie !"},
-  {name:"Pied-de-poule", rar:1, desc:"Le motif des manteaux chics, tissé en deux couleurs : de petits crochets qui s'emboîtent."},
-  {name:"Terrazzo", rar:1, desc:"Des éclats de pierre de toutes les couleurs pris dans un ciment clair, comme le sol d'une vieille école."},
-  {name:"Sable", rar:1, desc:"Des couches de sable coloré qui ondulent, avec leur grain, comme dans la bouteille de sable rapportée de vacances."},
+  // ---------- Communs ----------
+  {fam:65, rar:0, name:"Tricolore", desc:"Trois bandes bien égales qui font le tour de la bille, une par couleur du coloris, comme un drapeau enroulé."},
+  {fam:66, rar:0, face:true, name:"Sucette", desc:"Une spirale de sucre en quatre bandes (les 3 couleurs et du blanc) qui part du milieu, comme une sucette de fête foraine."},
+  {fam:67, rar:0, name:"Fleurettes", desc:"De petites fleurs à cinq pétales semées sur un fond clair, chacune avec son cœur : la robe d'été."},
+  {fam:88, rar:0, name:"Losanges", desc:"Des losanges de deux couleurs traversés de fins pointillés d'une 3e, comme sur les chaussettes écossaises."},
+  {fam:89, rar:0, name:"Marinière", desc:"De fines rayures bien droites, avec une rayure d'une autre couleur de temps en temps et un liseré : le pull du marin."},
+  {fam:90, rar:0, name:"Triangles", desc:"Un pavage de petits triangles, chacun d'une des 3 couleurs (ou blanc), séparés par un fin joint."},
+  {fam:91, rar:0, name:"Cahier", desc:"La page d'un cahier d'écolier : ses lignes fines et grosses, ses colonnes et sa marge rouge… aux couleurs du coloris."},
+  {fam:92, rar:0, face:true, name:"Rosace", desc:"Des couronnes de pétales autour du centre, une couleur par couronne, comme une rosace de vitrail ou un mandala."},
+  {fam:93, rar:0, face:true, name:"Agrume", desc:"Une tranche d'orange (ou de citron, selon le coloris) de chaque côté, avec ses quartiers, et la peau tout autour."},
+  {fam:94, rar:0, name:"Vichy", desc:"Le carreau des nappes de pique-nique, en 3 couleurs, avec la trame du tissu."},
+  {fam:95, rar:0, name:"Spirales", desc:"De petites spirales, comme des coquilles d'escargot, semées sur un fond clair."},
+  {fam:96, rar:0, name:"Gouttes", desc:"Des gouttes de pluie de deux couleurs, chacune avec son petit reflet, sur un fond clair."},
+  {fam:97, rar:0, name:"Éventails", desc:"Des rangées d'éventails ronds qui se chevauchent, cerclés de couleurs, comme les vagues des estampes japonaises."},
+  {fam:98, rar:0, face:true, name:"Shérif", desc:"Une grande étoile au milieu, cerclée d'anneaux, de chaque côté : l'insigne du shérif de la cour."},
+  // ---------- Peu communs ----------
+  {fam:68, rar:1, name:"Girafe", desc:"De grandes taches aux coins arrondis, séparées par des chemins couleur crème, comme le pelage d'une girafe."},
+  {fam:69, rar:1, name:"Camouflage", desc:"Des taches de trois couleurs qui se chevauchent, comme une tenue d'explorateur : la bille qui se cache dans l'herbe."},
+  {fam:70, rar:1, name:"Briques", desc:"Un mur de briques bien rangées, décalées d'un rang à l'autre, avec leur joint de ciment : le mur de la cour."},
+  {fam:71, rar:1, name:"Puzzle", desc:"Des pièces de puzzle de trois couleurs, chacune avec ses tenons et ses creux, emboîtées tout autour de la bille."},
+  {fam:72, rar:1, name:"Labyrinthe", desc:"Des murs posés au hasard d'une case à l'autre qui dessinent des couloirs : trouve la sortie !"},
+  {fam:73, rar:1, name:"Pied-de-poule", desc:"Le motif des manteaux chics, tissé en deux couleurs, avec un fin carreau d'une 3e par-dessus."},
+  {fam:74, rar:1, name:"Terrazzo", desc:"Des éclats de pierre de toutes les couleurs pris dans un ciment clair, comme le sol d'une vieille école."},
+  {fam:75, rar:1, name:"Sable", desc:"Des couches de sable coloré qui ondulent, avec leur grain, comme dans la bouteille de sable rapportée de vacances."},
+  {fam:99, rar:1, name:"Foot", desc:"Le ballon de foot, ses 12 pentagones et ses 20 hexagones, avec des coutures d'une 3e couleur."},
+  {fam:100, rar:1, name:"Origami", desc:"Du papier plié en mille facettes de 3 couleurs : chacune prend la lumière à sa façon."},
+  {fam:101, rar:1, name:"Bonbecs", desc:"Des bonbons rayés dans leur papier tortillé, éparpillés sur la bille : la monnaie de la cour !"},
+  {fam:102, rar:1, name:"Pop", desc:"Des points de trame de bande dessinée, gros et petits, en deux couleurs sur un fond d'une 3e."},
+  {fam:103, rar:1, name:"Galets", desc:"Des cailloux de rivière bien ronds et polis, serrés les uns contre les autres."},
+  {fam:104, rar:1, name:"Pâte à modeler", desc:"Trois boudins de pâte de couleur roulés ensemble, marbrés en longues volutes."},
+  {fam:105, rar:1, name:"Tableau noir", desc:"L'ardoise de la classe, pleine de gribouillis à la craie blanche et de couleur."},
+  // ---------- Rares ----------
+  {fam:76, rar:2, name:"Cuivre", desc:"Du cuivre poli comme un miroir, mangé par endroits par une patine vert-de-gris aux couleurs du coloris."},
+  {fam:77, rar:2, name:"Paon", desc:"Des yeux de plume de paon sur un fond de fines barbes qui chatoient."},
+  {fam:78, rar:2, verre:true, name:"Bulles", desc:"Un verre teinté rempli de grosses bulles de savon, leur fine paroi aux reflets de couleur."},
+  {fam:79, rar:2, name:"Jungle", desc:"De grandes feuilles qui se chevauchent dans la pénombre, avec leurs nervures, une couleur du coloris chacune."},
+  {fam:80, rar:2, name:"Météorite", desc:"Une vraie pierre tombée du ciel : du fer brillant gravé de fines lamelles, avec des cristaux de couleur pris dedans."},
+  {fam:106, rar:2, verre:true, name:"Opale", desc:"Une pierre laiteuse où s'allument des éclats de couleur, différents selon l'endroit où on regarde."},
+  {fam:107, rar:2, name:"Malachite", desc:"Une pierre aux bandes rondes serrées, du plus foncé au plus clair, dans les 3 couleurs."},
+  {fam:108, rar:2, verre:true, name:"Encre", desc:"Trois gouttes d'encre de couleur qui se déploient en volutes dans un verre d'eau claire."},
+  {fam:109, rar:2, face:true, name:"Ammonite", desc:"Un coquillage fossile enroulé en spirale, de chaque côté, pris dans la pierre depuis des millions d'années."},
+  {fam:110, rar:2, name:"Holographique", desc:"Comme une carte à collectionner brillante : des arcs de couleur glissent dessus quand on la tourne, avec des petites étoiles."},
+  // ---------- Épiques ----------
+  {fam:81, rar:3, verre:true, face:true, name:"Lune", desc:"La pleine lune au cœur d'un verre de nuit, ses mers et ses cratères, et un halo autour."},
+  {fam:82, rar:3, verre:true, face:true, name:"Lucioles", desc:"Une nuit d'été dans le verre : des herbes hautes en ombre chinoise et des lucioles qui brillent."},
+  {fam:83, rar:3, verre:true, face:true, name:"Tornade", desc:"Un entonnoir de vent qui tourne sous un nuage d'orage, avec des débris pris dedans."},
+  {fam:84, rar:3, verre:true, face:true, name:"Engrenages", desc:"Trois roues dentées qui s'engrènent au cœur du verre, une de chaque couleur, et de la poussière dorée."},
+  {fam:111, rar:3, verre:true, face:true, name:"Montgolfière", desc:"Un ballon à fuseaux de 3 couleurs dans un ciel de nuages, avec sa nacelle et la flamme du brûleur."},
+  {fam:112, rar:3, verre:true, face:true, name:"Fusée", desc:"Une petite fusée qui décolle dans un verre de nuit, sa flamme et sa fumée derrière elle."},
+  // ---------- Légendaires ----------
+  {fam:85, rar:4, verre:true, face:true, name:"Comète", desc:"Une comète file dans un verre de nuit : son cœur éblouissant, une queue droite et une queue courbe."},
+  {fam:86, rar:4, verre:true, face:true, name:"Atome", desc:"Un noyau de petites boules au centre et trois orbites de lumière, chacune avec son électron."},
+  {fam:87, rar:4, verre:true, face:true, name:"Constellation", desc:"Les étoiles d'une vraie constellation, reliées par des traits de lumière, devant la Voie lactée : la Grande Ourse, Cassiopée ou Orion, selon la bille."},
+  {fam:113, rar:4, verre:true, face:true, name:"Éclipse", desc:"La Lune passe devant le Soleil : un disque noir entouré de sa couronne de feu et de la bague de diamant."},
 ];
 const N0 = FAMILIES.length;   // 65
-NEW.forEach((x,i)=>{ x.fam = N0+i; FAMILIES.push({name:x.name, rar:x.rar, desc:x.desc, ...(x.face?{face:true}:{})}); OPAQUE_FAMS.push(x.fam) });   // tous opaques, comme les motifs peints de la tier list
+NEW.forEach(x=>{ while(FAMILIES.length<=x.fam) FAMILIES.push({name:"", rar:0, desc:"", event:"vide"});
+  FAMILIES[x.fam] = {name:x.name, rar:x.rar, desc:x.desc, ...(x.face?{face:true}:{})}; if(!x.verre) OPAQUE_FAMS.push(x.fam) });
 const extra = f => FAMILIES[f].event || FAMILIES[f].season!=null || FAMILIES[f].beta;
 const OLD = FAMILIES.map((_,i)=>i).filter(i=>i<N0 && !extra(i));
-const NEED = [2,6];
-let pick = new Set(); try{ pick = new Set(JSON.parse(localStorage.getItem("tikalo-maquette-motifs-2"))||[]) }catch(e){}
-const saveP = () => { try{ localStorage.setItem("tikalo-maquette-motifs-2", JSON.stringify([...pick])) }catch(e){} };
+const isNew = f => f>=N0;
+let pick = new Set(); try{ pick = new Set(JSON.parse(localStorage.getItem("tikalo-maquette-motifs-2b"))||[]) }catch(e){}
+const saveP = () => { try{ localStorage.setItem("tikalo-maquette-motifs-2b", JSON.stringify([...pick])) }catch(e){} };
 
 const spec = (fam, pal=AZUR, type="calot", k="") => ({seed:hash("motifs2"+fam+k), type, family:fam, pal, shiny:0});
 const allZ = [];
 const pic = (s, px, label) => { allZ.push({s, label}); return `<img src="${marbleURL(s, px)}" alt="" data-z="${allZ.length-1}">` };
-[0,1].forEach(r=>{ document.getElementById("news"+r).innerHTML = NEW.filter(x=>x.rar===r).map(x=>{ const T = TIERS[x.rar];
-  return `<article class="nm" data-fam="${x.fam}" style="--c:${T.c}">
+const RARS = [0,1,2,3,4];
+document.getElementById("jump").innerHTML = RARS.map(r=>`<a href="#r${r}">${TIERS[r].name}s</a>`).join("") + `<a href="#chances">Les chances</a><a href="#tierlist">La tier list</a>`;
+document.getElementById("sections").innerHTML = RARS.map(r=>{ const l = NEW.filter(x=>x.rar===r), T = TIERS[r];
+  return `<h2 id="r${r}" style="color:${T.c}">${T.name}s <small>(${l.length} propositions)</small></h2><div class="news">${l.map(x=>`<article class="nm" data-fam="${x.fam}" style="--c:${T.c}">
     <button class="hero">${pic(spec(x.fam), 300, x.name+" · Azur")}</button>
-    <div><h3>${x.name}</h3><span class="pill" style="--c:${T.c}">${T.name}</span><p>${x.desc}</p></div>
+    <div><h3>${x.name}</h3><div class="tags"><span class="pill" style="--c:${T.c}">${T.name}</span><span class="tg">${x.verre?"Dans le verre":"Peint"}</span></div><p>${x.desc}</p></div>
     <div class="var">${VARS.map((p,j)=>`<button>${pic(spec(x.fam,p,"calot","v"+j), 128, x.name+" · "+PALETTES[p][0])}<small>${PALETTES[p][0]}</small></button>`).join("")}
       <button>${pic(spec(x.fam,AZUR,"mammouth","m"), 128, x.name+" · Mammouth")}<small>Mammouth</small></button></div>
     <button class="keep" data-keep="${x.fam}"></button>
-  </article>` }).join("") });
+  </article>`).join("")}</div>` }).join("");
 
 const pctF = v => (v>=10 ? v.toFixed(1) : v>=1 ? v.toFixed(2) : v.toFixed(3)).replace(".",",")+" %";
 const sur = v => "1 sur "+Math.round(100/v).toLocaleString("fr-FR");
-// « mêmes chances » : la part de chaque rareté reste celle d'aujourd'hui, partagée entre plus de motifs
-function weights(fams, mode){
-  const n = [0,0,0,0,0,0], n0 = [0,0,0,0,0,0]; fams.forEach(f=>n[FAMILIES[f].rar]++); OLD.forEach(f=>n0[FAMILIES[f].rar]++);
-  return fams.map(f=>{ const r = FAMILIES[f].rar, w = TIERS[r].w; return mode==="same" ? w*n0[r]/n[r] : w });
-}
 const tierCache = {};
 const tierPic = f => tierCache[f] || (tierCache[f] = pic(spec(f, AZUR, "calot", "t"), 150, FAMILIES[f].name));
 function render(){
   document.querySelectorAll(".nm").forEach(el=>{ const on = pick.has(+el.dataset.fam); el.classList.toggle("pick", on);
     el.querySelector(".keep").textContent = on ? "✓ Je le garde" : "Je le garde" });
-  const got = [0,1].map(r=>NEW.filter(x=>x.rar===r && pick.has(x.fam)).length), done = got[0]===2 && got[1]===6;
-  document.getElementById("bar").innerHTML = `<b>Tes choix</b> <span class="${got[0]===2?"ok":""}">Communs : ${got[0]} / 2</span> · <span class="${got[1]===6?"ok":""}">Peu communs : ${got[1]} / 6</span>
-    ${done ? `<span class="ok">C'est tout bon, dis-moi lesquels : ${NEW.filter(x=>pick.has(x.fam)).map(x=>x.name).join(", ")}</span>` : ""}`;
-  // les chances : aujourd'hui, et avec 8 nouveaux (tes choix ; sans choix, ça ne change rien aux chiffres : seul le nombre compte)
-  const chosen = [0,1].flatMap(r=>{ const l = NEW.filter(x=>x.rar===r && pick.has(x.fam)); return (l.length===NEED[r] ? l : NEW.filter(x=>x.rar===r).slice(0, NEED[r])).map(x=>x.fam) });
-  const mode = document.querySelector("#mode input:checked").value;
-  const fNow = OLD, wNow = fNow.map(f=>TIERS[FAMILIES[f].rar].w), tNow = wNow.reduce((a,b)=>a+b,0);
-  const fNew = OLD.concat(chosen), wNew = weights(fNew, mode), tNew = wNew.reduce((a,b)=>a+b,0);
-  const share = (fs, ws, t, r) => fs.reduce((a,f,i)=>a+(FAMILIES[f].rar===r?ws[i]:0),0)/t*100;
-  const one = (fs, ws, t, r) => { const i = fs.findIndex(f=>FAMILIES[f].rar===r); return ws[i]/t*100 };
-  const cl = (a,b) => Math.abs(a-b)<1e-9 ? "eq" : b<a ? "dn" : "";
-  document.getElementById("odds").innerHTML = `<table><tr><th>Rareté</th><th>Motifs</th><th>Part des billes aujourd'hui</th><th>Avec les 8 nouveaux</th><th>Un motif précis aujourd'hui</th><th>Avec les 8 nouveaux</th></tr>
-    ${TIERS.map((T,r)=>{ const a = share(fNow,wNow,tNow,r), b = share(fNew,wNew,tNew,r), c = one(fNow,wNow,tNow,r), d = one(fNew,wNew,tNew,r);
-      const n0 = fNow.filter(f=>FAMILIES[f].rar===r).length, n1 = fNew.filter(f=>FAMILIES[f].rar===r).length;
-      return `<tr><td><b style="color:${T.c}">${T.name}</b></td><td>${n0}${n1>n0?` → ${n1}`:""}</td><td>${pctF(a)}</td><td class="${cl(a,b)}">${pctF(b)}</td><td>${sur(c)}</td><td class="${cl(c,d)}">${sur(d)}</td></tr>` }).join("")}</table>
-    <p class="lead" style="margin-top:8px;font-size:13px">« Un motif précis » : la chance qu'une bille tirée ait ce motif-là (par exemple Damier, ou l'Œil du Dragon). En rouge : ce qui baisse.</p>`;
-  // la tier list complète, avec les motifs gardés
+  const got = RARS.map(r=>NEW.filter(x=>x.rar===r && pick.has(x.fam)).length);
+  document.getElementById("bar").innerHTML = `<b>Tes choix : ${pick.size}</b> ${RARS.map(r=>`<span style="--c:${TIERS[r].c}"><i>●</i> ${TIERS[r].name} ${got[r]}</span>`).join("")}${pick.size?`<button data-act="clear">Tout décocher</button>`:""}`;
+  // les chances, avec « mêmes chances par rareté » : la part de chaque rareté reste celle d'aujourd'hui
   const all = OLD.concat(NEW.filter(x=>pick.has(x.fam)).map(x=>x.fam));
-  const cnt = [0,1,2,3,4,5].map(r=>all.filter(f=>FAMILIES[f].rar===r).length);
-  document.getElementById("tl-lead").innerHTML = `${all.length} motifs dans l'album (${OLD.length} aujourd'hui) : ${[5,4,3,2,1,0].map(r=>`${cnt[r]} ${TIERS[r].name}`).join(" · ")}. Les cadres en pointillés sont tes nouveaux.`;
+  const wNow = OLD.reduce((a,f)=>a+TIERS[FAMILIES[f].rar].w,0);
+  const n0 = TIERS.map((_,r)=>OLD.filter(f=>FAMILIES[f].rar===r).length), n1 = TIERS.map((_,r)=>all.filter(f=>FAMILIES[f].rar===r).length);
+  const cl = (a,b) => Math.abs(a-b)<1e-9 ? "eq" : b<a ? "dn" : "";
+  document.getElementById("odds").innerHTML = `<table><tr><th>Rareté</th><th>Motifs</th><th>Part des billes</th><th>Un motif précis, aujourd'hui</th><th>Avec tes choix</th></tr>
+    ${TIERS.map((T,r)=>{ const part = n0[r]*T.w/wNow*100, c = part/n0[r], d = part/n1[r];
+      return `<tr><td><b style="color:${T.c}">${T.name}</b></td><td>${n0[r]}${n1[r]>n0[r]?` → ${n1[r]}`:""}</td><td>${pctF(part)} <small class="eq">(sans changement)</small></td><td>${sur(c)}</td><td class="${cl(c,d)}">${sur(d)}</td></tr>` }).join("")}</table>
+    <p class="lead" style="margin-top:8px;font-size:13px">« Un motif précis » : la chance qu'une bille tirée ait ce motif-là (par exemple Damier, ou l'Œil du Dragon). En rouge : ce qui baisse, parce que la part de la rareté est partagée entre plus de motifs. Avec beaucoup de nouveaux motifs, l'album devient plus long à remplir : à surveiller pour les succès « tous les motifs ».</p>`;
+  // la tier list complète, avec les motifs gardés
+  document.getElementById("tl-lead").innerHTML = `${all.length} motifs dans l'album (${OLD.length} aujourd'hui) : ${[5,4,3,2,1,0].map(r=>`${n1[r]} ${TIERS[r].name}`).join(" · ")}. Les cadres en pointillés sont tes nouveaux.`;
   document.getElementById("tiers").innerHTML = [5,4,3,2,1,0].map(r=>{ const T = TIERS[r];
     const l = all.filter(f=>FAMILIES[f].rar===r).sort((a,b)=>FAMILIES[a].name.localeCompare(FAMILIES[b].name,"fr"));
     return `<section class="tier"><div class="th" style="--c:${T.c}"><b>${T.name}</b><span class="cnt">${l.length}</span></div>
-      <div class="cards">${l.map(f=>`<button class="card${f>=N0?" new":""}">${f>=N0?`<span class="bdg">Nouveau</span>`:""}${tierPic(f)}<b>${FAMILIES[f].name}</b></button>`).join("")}</div></section>` }).join("");
+      <div class="cards">${l.map(f=>`<button class="card${isNew(f)?" new":""}">${isNew(f)?`<span class="bdg">Nouveau</span>`:""}${tierPic(f)}<b>${FAMILIES[f].name}</b></button>`).join("")}</div></section>` }).join("");
+  document.getElementById("list").innerHTML = pick.size ? `<b>Ta liste à m'envoyer :</b> ${RARS.map(r=>{ const l = NEW.filter(x=>x.rar===r && pick.has(x.fam)).map(x=>x.name); return l.length ? `${TIERS[r].name} : ${l.join(", ")}` : "" }).filter(Boolean).join(" — ")}` : "";
 }
-document.getElementById("mode").addEventListener("change", render);
 render();
 
-// ---------- l'agrandissement : la bille en grand, qu'on fait tourner ----------
+// ---------- l'agrandissement : la bille en grand, qu'on fait tourner (le temps avance : les motifs animés bougent) ----------
 const zoom = document.getElementById("zoom"), zc = document.getElementById("zc"), zgl = makeGL(zc);
 let zcur = null, drag = null, raf = 0, ax = 0, ay = 0;
 const rotM = (ax, ay) => { const cx=Math.cos(ax), sx=Math.sin(ax), cy=Math.cos(ay), sy=Math.sin(ay); return [cy,0,-sy, sx*sy,cx,sx*cy, cx*sy,-sx,cx*cy] };
-function frame(){ if(!zcur || !zgl) return; if(!drag) ay += .006; zgl.draw(zcur, zc.width, rotM(ax, ay)); raf = requestAnimationFrame(frame) }
+function frame(t){ if(!zcur || !zgl) return; if(!drag) ay += .006; zgl.draw(zcur, zc.width, rotM(ax, ay), (t||0)/1000); raf = requestAnimationFrame(frame) }
 document.addEventListener("click", e=>{
+  if(e.target.closest("[data-act=clear]")){ pick.clear(); saveP(); render(); return }
   const k = e.target.closest("[data-keep]");
-  if(k){ const f = +k.dataset.keep, r = FAMILIES[f].rar;
-    if(pick.has(f)) pick.delete(f);
-    else { const same = NEW.filter(x=>x.rar===r && pick.has(x.fam)); if(same.length>=NEED[r]) pick.delete(same[0].fam); pick.add(f) }   // déjà le compte : un autre choix laisse sa place
-    saveP(); render(); return }
+  if(k){ const f = +k.dataset.keep; if(pick.has(f)) pick.delete(f); else pick.add(f); saveP(); render(); return }
   const im = e.target.closest("[data-z]") || e.target.closest("button")?.querySelector("[data-z]");
   if(im && !zoom.contains(e.target)){ const z = allZ[+im.dataset.z]; zcur = z.s; ax = 0; ay = 0; document.getElementById("zn").textContent = z.label; zoom.hidden = false; cancelAnimationFrame(raf); frame(); return }
   if(zoom.contains(e.target) && e.target!==zc){ zoom.hidden = true; zcur = null; cancelAnimationFrame(raf) }

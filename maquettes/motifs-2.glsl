@@ -1,7 +1,7 @@
 #elif MODE==65
   { // tricolore : trois bandes égales qui font le tour de la bille, comme un drapeau enroulé
     vec3 u=normalize(q); float y=u.y+0.035*sin(atan(u.z,u.x)*3.0+so.x);
-    vec3 c=y>0.33?uC1:(y<-0.33?uC2:vec3(0.97,0.96,0.93));
+    vec3 c=y>0.33?uC1:(y<-0.33?uC2:uC3);
     float ed=min(abs(y-0.33),abs(y+0.33));
     c*=mix(0.8,1.0,smoothstep(0.004,0.022,ed));
     return vec4(c, 200.0);
@@ -9,8 +9,8 @@
 #elif MODE==66
   { // sucette : une spirale de sucre en trois couleurs qui part du centre de la bille, comme une sucette de fête foraine
     vec3 u=normalize(q); float th=acos(clamp(u.z,-1.0,1.0)), ph=atan(u.y,u.x);
-    float s=ph/6.2831853*3.0+th*(3.2+nb*0.4);
-    float m=mod(floor(s),3.0); vec3 c=m<1.0?uC1:(m<2.0?vec3(0.98,0.97,0.95):uC2);
+    float s=ph/6.2831853*4.0+th*(3.6+nb*0.4);
+    float m=mod(floor(s),4.0); vec3 c=m<1.0?uC1:(m<2.0?vec3(0.98,0.97,0.95):(m<3.0?uC2:uC3));
     float fs=fract(s); c*=mix(0.82,1.0,smoothstep(0.0,0.12,fs))*mix(1.0,0.92,smoothstep(0.75,1.0,fs));
     c=mix(c,vec3(1.0),0.5*smoothstep(0.28,0.0,th));   // le petit bout blanc au centre
     return vec4(c, 200.0);
@@ -64,9 +64,9 @@
     float mx=min(fx,1.0-fx)*6.2831853*max(cos(lat),0.05)/nk, my=min(fy,1.0-fy)*3.14159265/R;
     float mort=smoothstep(0.014,0.03,min(mx,my));
     float hb=h31(bid);
-    vec3 br=(hb<0.75?uC1:mix(uC1,uC2,0.5))*(0.78+0.3*h31(bid+2.0))*(0.88+0.18*noise(u*35.0+so));
+    vec3 br=(hb<0.6?uC1:(hb<0.85?uC2:uC3))*(0.78+0.3*h31(bid+2.0))*(0.88+0.18*noise(u*35.0+so));
     br*=mix(0.85,1.0,smoothstep(0.03,0.07,min(mx,my)));   // l'arête de la brique, un peu plus sombre
-    vec3 cem=mix(vec3(0.86,0.84,0.8),uC3,0.18)*(0.9+0.1*noise(u*80.0));
+    vec3 cem=mix(vec3(0.86,0.84,0.8),uC3,0.3)*(0.9+0.1*noise(u*80.0));
     return vec4(mix(cem,br,mort), 200.0);
   }
 #elif MODE==71
@@ -113,6 +113,7 @@
     bool top=mod(t.x+t.y,4.0)<2.0;
     bool dk=top?mod(t.x,8.0)<4.0:mod(t.y,8.0)<4.0;
     vec3 c=dk?uC1*0.85:mix(uC3,vec3(0.97,0.95,0.9),0.55);
+    vec2 ov=abs(fract(pp+0.5)-0.5); c=mix(c,uC2,smoothstep(0.03,0.015,min(ov.x,ov.y)));   // le fin carreau d'une 3e couleur par-dessus (« Prince de Galles »)
     vec2 ft=fract(pp*8.0); c*=0.9+0.12*smoothstep(0.0,0.5,top?ft.y:ft.x)*smoothstep(1.0,0.5,top?ft.y:ft.x);
     return vec4(c, 200.0);
   }

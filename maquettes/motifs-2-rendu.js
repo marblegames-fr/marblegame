@@ -1701,29 +1701,40 @@ vec4 fam(vec3 q, out vec3 e){
     return vec4(uC1*0.14, 0.45);
   }
 #elif MODE==83
-  { // tornade : un entonnoir de vent qui tourne sous un nuage d'orage, avec des débris pris dedans
-    float r=length(q), y=q.y; float t=clamp((y+0.75)/1.4,0.0,1.0);
-    vec2 c=vec2(0.1*sin(y*3.0+so.x),0.08*cos(y*2.5+so.y))*(1.0-t);   // la pointe se balade
+  { // tornade : un entonnoir de vent enroulé en spirale (une bande par couleur du coloris), qui descend d'un nuage d'orage
+    // de la 1re couleur jusqu'au sol, où il soulève un tourbillon de poussière lumineuse de la 3e ; des débris tournent autour
+    float r=length(q), y=q.y; float t=clamp((y+0.72)/1.32,0.0,1.0);
+    vec2 c=vec2(0.12*sin(y*2.6+so.x),0.06*cos(y*2.2+so.y))*(1.0-t)*(1.0-t);   // la pointe ondule un peu
     vec2 pxz=q.xz-c; float rho=length(pxz), ang=atan(pxz.y,pxz.x);
-    float R=0.04+0.38*pow(t,1.7);
-    float sw=0.5+0.5*sin(ang*4.0-y*16.0+fbm(q*4.0+so)*4.0-uTime*3.0);
-    float inY=step(y,0.6)*step(-0.78,y);
-    float wall=smoothstep(0.04+0.09*t,0.0,abs(rho-R))*inY;
-    float cloud=smoothstep(0.42,0.62,y+0.22*fbm(q*3.0+so))*smoothstep(0.96,0.8,r);
+    float R=0.03+0.29*pow(t,1.6);
+    float inY=smoothstep(-0.74,-0.68,y)*smoothstep(0.62,0.52,y);
+    float th=0.04+0.06*t;
+    float wall=smoothstep(th,th*0.35,abs(rho-R))*inY;
+    // les bandes : elles s'enroulent autour de l'entonnoir en montant
+    float s=ang/6.2831853*3.0+y*7.0+0.3*fbm(q*3.0+so);
+    float m=mod(floor(s),3.0), fs=fract(s);
+    vec3 band=m<1.0?uC1/max(max(uC1.r,max(uC1.g,uC1.b)),0.45):(m<2.0?uC2:uC3);
+    float streak=0.75+0.35*noise(vec3(ang*6.0,y*30.0,so.z));   // les filets de vent
+    band*=streak*mix(0.7,1.0,smoothstep(0.0,0.12,fs)*smoothstep(1.0,0.88,fs));
+    float side=0.6+0.5*clamp(dot(normalize(vec3(pxz.x,0.0,pxz.y)+vec3(0.0001)),normalize(vec3(-0.6,0.0,0.8))),0.0,1.0);   // éclairé d'un côté
+    // le nuage d'orage, en haut, de la 1re couleur
+    float cn=fbm(q*2.8+so);
+    float cloud=smoothstep(0.42,0.6,y+0.3*cn)*smoothstep(0.98,0.8,r);
+    vec3 cc=mix(uC1/max(max(uC1.r,max(uC1.g,uC1.b)),0.45)*0.35,mix(uC1,vec3(0.85),0.55),smoothstep(0.4,0.75,cn));
+    // la poussière au sol, de la 3e couleur, qui tourne en anneau
+    float dust=exp(-abs(y+0.7)*10.0)*smoothstep(0.55,0.1,abs(rho-0.22))*(0.5+0.5*fbm(q*6.0+so+2.0))*smoothstep(0.95,0.75,r);
     vec3 g=q*12.0+so; vec3 fg=fract(g)-0.5;
-    float chips=step(0.9,h31(floor(g)))*smoothstep(0.2,0.1,length(fg))*smoothstep(0.12,0.0,abs(rho-R*1.15))*inY;
-    vec3 tc=mix(vec3(0.78,0.78,0.8),uC2,0.4)*(0.55+0.55*sw);
-    e=mix(uC3,vec3(1.0),0.4)*exp(-abs(y+0.78)*9.0)*smoothstep(0.55,0.0,rho)*1.4;   // la poussière qui brille au sol
-    e+=mix(uC2,vec3(1.0),0.5)*1.0*exp(-abs(rho-R)*25.0)*inY*sw;
-    vec3 col=uC1*0.22;
-    col=mix(col,mix(uC1*0.5,vec3(0.45),0.4),cloud);
-    col=mix(col,tc,clamp(wall*1.5,0.0,1.0));
-    col=mix(col,uC1*0.3,chips);
-    return vec4(col, 0.4+wall*(1.5+3.0*sw)+cloud*2.5+chips*60.0);
+    float chips=step(0.88,h31(floor(g)))*smoothstep(0.18,0.08,length(fg))*smoothstep(0.14,0.0,abs(rho-R*1.25-0.03))*inY;
+    e=mix(uC3,vec3(1.0),0.25)*dust*5.0+band*wall*0.35+mix(uC2,vec3(1.0),0.4)*exp(-max(y-0.45,0.0)*8.0)*smoothstep(0.55,0.4,y)*exp(-rho*6.0)*0.25;
+    vec3 col=mix(uC1*0.12,mix(uC2,vec3(0.6),0.5)*0.35,smoothstep(-0.8,0.6,y));   // le ciel, plus clair vers le haut
+    col=mix(col,cc,cloud);
+    col=mix(col,band*side,clamp(wall*1.6,0.0,1.0));
+    col=mix(col,mix(uC3,vec3(0.2),0.4),chips);
+    return vec4(col, 0.35+wall*7.0+cloud*6.0+chips*60.0+dust*1.5);
   }
 #elif MODE==84
   { // engrenages : trois roues dentées qui s'engrènent au cœur du verre, une de chaque couleur (on les voit tourner en grand)
-    float T=uTime*0.5; float d=9.0, k=0.0;
+    float T=0.0; float d=9.0, k=0.0;
     for(int i=0;i<3;i++){
       vec2 C=i==0?vec2(-0.17,0.06):(i==1?vec2(0.31,0.2):vec2(0.11,-0.36));
       float Rg=i==0?0.3:(i==1?0.17:0.13), n=i==0?12.0:(i==1?7.0:5.0), z=i==0?0.0:(i==1?0.03:-0.03), ns=i==0?5.0:4.0;
@@ -1765,7 +1776,7 @@ vec4 fam(vec3 q, out vec3 e){
       float a=0.72, b=0.24; float th=atan(xy.y/b, xy.x/a); vec2 P=vec2(a*cos(th), b*sin(th));
       float d=length(vec3(xy-P, h));
       e+=ocol*(exp(-d*80.0)*5.0+exp(-d*18.0)*0.35);
-      float te=uTime*1.6+float(i)*2.1+so.x; vec2 Pe=vec2(a*cos(te), b*sin(te));
+      float te=float(i)*2.1+so.x; vec2 Pe=vec2(a*cos(te), b*sin(te));
       float de=length(vec3(xy-Pe, h));
       e+=mix(uC3,vec3(1.0),0.3)*(exp(-de*60.0)*30.0+exp(-de*14.0)*2.0);
     }
@@ -2119,7 +2130,7 @@ vec4 fam(vec3 q, out vec3 e){
       if(q.z>0.0 && win<0.055){ c=win<0.04?mix(uC3,vec3(1.0),0.3):uC1*0.6; e=c*0.6; }
       return vec4(c*sh, 400.0); }
     float fy=-0.27-y; float fl=step(0.0,fy)*smoothstep(0.09*(1.0-fy/0.45),0.0,rho)*step(fy,0.45);
-    float flick=0.75+0.25*sin(uTime*20.0+fy*30.0);
+    float flick=0.85+0.15*sin(fy*30.0+so.x);
     e=mix(vec3(1.0,0.95,0.8),uC3,smoothstep(0.0,0.3,fy))*fl*8.0*flick;
     float smoke=smoothstep(0.55,0.75,fbm(q*3.0+so))*smoothstep(-0.3,-0.75,y)*smoothstep(0.95,0.8,r);
     vec3 g=q*15.0+so; vec3 fc=fract(g)-0.5;

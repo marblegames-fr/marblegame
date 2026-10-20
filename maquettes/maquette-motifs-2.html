@@ -84,7 +84,7 @@ h2 small{font-family:var(--body);font-size:16px;color:var(--muted)}
   <span class="tag">Maquette · 20 octobre 2026</span>
   <h1>Encore plein de billes : 49 motifs à choisir</h1>
   <p class="lead">Une grosse panoplie de nouveaux motifs dans <b>toutes les raretés</b>, plus nombreux en bas qu'en haut : <b>14 Communs, 15 Peu communs, 10 Rares, 6 Épiques et 4 Légendaires</b>. Tous en <b>vrai rendu 3D</b> du jeu, et tous utilisent <b>les 3 couleurs du coloris</b>. Chacun est montré en Azur, dans 5 autres coloris et en Mammouth. Garde tous ceux que tu veux : il n'y a pas de nombre imposé.</p>
-  <p class="note">Touche une bille pour l'agrandir et la faire tourner ! (en grand, les Engrenages, l'Atome, la Tornade et la Fusée bougent)</p>
+  <p class="note">Touche une bille pour l'agrandir et la faire tourner ! (comme dans le jeu, seul le motif mythique est animé : ceux-ci sont fixes)</p>
   <nav class="jump" id="jump"></nav>
   <div class="bar" id="bar"></div>
   <div id="sections"></div>
@@ -152,7 +152,7 @@ const NEW = [
   // ---------- Épiques ----------
   {fam:81, rar:3, verre:true, face:true, name:"Lune", desc:"La pleine lune au cœur d'un verre de nuit, ses mers et ses cratères, et un halo autour."},
   {fam:82, rar:3, verre:true, face:true, name:"Lucioles", desc:"Une nuit d'été dans le verre : des herbes hautes en ombre chinoise et des lucioles qui brillent."},
-  {fam:83, rar:3, verre:true, face:true, name:"Tornade", desc:"Un entonnoir de vent qui tourne sous un nuage d'orage, avec des débris pris dedans."},
+  {fam:83, rar:3, verre:true, face:true, name:"Tornade", desc:"Un entonnoir de vent enroulé en spirale, une bande par couleur du coloris, qui descend d'un nuage d'orage et soulève au sol un anneau de poussière lumineuse ; des débris tournent autour."},
   {fam:84, rar:3, verre:true, face:true, name:"Engrenages", desc:"Trois roues dentées qui s'engrènent au cœur du verre, une de chaque couleur, et de la poussière dorée."},
   {fam:111, rar:3, verre:true, face:true, name:"Montgolfière", desc:"Un ballon à fuseaux de 3 couleurs dans un ciel de nuages, avec sa nacelle et la flamme du brûleur."},
   {fam:112, rar:3, verre:true, face:true, name:"Fusée", desc:"Une petite fusée qui décolle dans un verre de nuit, sa flamme et sa fumée derrière elle."},
@@ -213,11 +213,11 @@ function render(){
 }
 render();
 
-// ---------- l'agrandissement : la bille en grand, qu'on fait tourner (le temps avance : les motifs animés bougent) ----------
+// ---------- l'agrandissement : la bille en grand, qu'on fait tourner ----------
 const zoom = document.getElementById("zoom"), zc = document.getElementById("zc"), zgl = makeGL(zc);
 let zcur = null, drag = null, raf = 0, ax = 0, ay = 0;
 const rotM = (ax, ay) => { const cx=Math.cos(ax), sx=Math.sin(ax), cy=Math.cos(ay), sy=Math.sin(ay); return [cy,0,-sy, sx*sy,cx,sx*cy, cx*sy,-sx,cx*cy] };
-function frame(t){ if(!zcur || !zgl) return; if(!drag) ay += .006; zgl.draw(zcur, zc.width, rotM(ax, ay), (t||0)/1000); raf = requestAnimationFrame(frame) }
+function frame(t){ if(!zcur || !zgl) return; if(!drag) ay += .006; zgl.draw(zcur, zc.width, rotM(ax, ay)); raf = requestAnimationFrame(frame) }
 document.addEventListener("click", e=>{
   if(e.target.closest("[data-act=clear]")){ pick.clear(); saveP(); render(); return }
   const k = e.target.closest("[data-keep]");

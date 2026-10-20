@@ -7116,7 +7116,7 @@ const SRC_LABEL = {depart:"Choisie au premier lancement", gratuit:"Dans un Sache
 // Objectifs calés par simulation sur un joueur régulier (≈ 15 sachets gratuits + 4 Classiques par jour) : rien ne doit
 // demander plus d'un an, et la récompense grandit avec le temps qu'il faut.
 // motifs à trouver dans chaque taille (les gros formats dans un motif légendaire sont quasi introuvables)
-const FMT_GOAL = [N_DECORS-1,N_DECORS-1,36,33,28,24];   // Mini et Bille : tous les motifs (sauf le mythique) ; (10 octobre 2026) 50 motifs : les autres paliers relevés
+const FMT_GOAL = [N_DECORS-1,N_DECORS-1,36,33,28,24];   // Mini et Bille : tous les motifs (sauf le mythique) ; (10 octobre 2026) 50 motifs : les autres paliers relevés ; (20 octobre 2026) 71 motifs : paliers gardés (la part de chaque rareté ne change pas, mais chaque motif sort moins souvent)
 // tailles à réunir pour un motif, selon sa rareté (de la Mini bille jusqu'à…)
 const FAM_SIZES = [6,6,5,4,2], FAM_REW = [45,75,55,85,50];   // (le motif mythique a son succès à lui, « L'Œil du Dragon »)
 const upTo = n => ({bille:"à la Bille", chinoise:"à la Bille chinoise", calot:"au Calot", boulet:"au Boulet", mammouth:"au Mammouth"})[TK[n-1]];
@@ -7204,7 +7204,7 @@ const CHALLENGES = [
     rew:{j:FAM_REW[F.rar], bag:FAM_REW[F.rar]>=70?"premium":"classique"}} }),
   // --- les grandes trouvailles : motifs rares et shiny (une échelle chacun)
   {id:"epic1", cat:"rare", icon:"star", title:"Trésor épique", desc:"Trouve une bille au motif épique (Nacrée, Lave, Prisme, Ambre…).", goal:1, prog:()=>SC().filter(s=>FAMILIES[s.family].rar===3).length, rew:{j:30}},
-  {id:"leg1", cat:"rare", icon:"star", title:"Légende de poche", desc:"Trouve une bille au motif légendaire (Galaxie, Aurore, Trou noir ou Feu d'artifice).", goal:1, prog:()=>SC().filter(s=>FAMILIES[s.family].rar>=4).length, rew:{j:50}},
+  {id:"leg1", cat:"rare", icon:"star", title:"Légende de poche", desc:"Trouve une bille au motif légendaire (Galaxie, Aurore, Comète, Constellation…).", goal:1, prog:()=>SC().filter(s=>FAMILIES[s.family].rar>=4).length, rew:{j:50}},
   {id:"myth1", cat:"rare", icon:"trophy", title:"L'Œil du Dragon", desc:"Trouve une bille au motif mythique : l'Œil du Dragon.", goal:1, prog:()=>SC().filter(isMyth).length, rew:{j:500, bag:"collector", title:"Mythique"}},
   {id:"legmam", cat:"rare", icon:"trophy", title:"Légende de la cour", desc:"Un Mammouth au motif légendaire.", goal:1, prog:()=>SC().filter(s=>s.type==="mammouth"&&FAMILIES[s.family].rar>=4).length, rew:{j:500, title:"Légende de la cour"}},
   {id:"mythmam", cat:"rare", icon:"trophy", title:"L'œil du cyclone", desc:"Un Mammouth au motif mythique : la bille la plus rare de la cour.", goal:1, prog:()=>SC().filter(s=>s.type==="mammouth"&&isMyth(s)).length, rew:{j:1000, bag:"collector", title:"L'œil du cyclone"}},

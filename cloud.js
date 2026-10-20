@@ -112,6 +112,9 @@
       bet: (jeu, montant) => rpc("miser", {jeu, montant}),
       settle: (mise, gain) => rpc("regler_mise", {mise, gain}),
       test: action => rpc("outil_test", {action}),
+      // (20 octobre 2026) un mot de l'équipe, avec son cadeau versé à la lecture (supabase/messages.sql)
+      messages: () => rpc("messages_a_lire"),
+      messageLu: mid => rpc("message_lu", {mid}),
     },
     // ---------- la Grande Course, à 12 h et à 20 h (supabase/course.sql) ----------
     course: {

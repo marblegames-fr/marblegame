@@ -14739,7 +14739,7 @@ let bugKeep = null;   // un message qui n'est pas parti : il est reproposé au p
 // on:false cache le bouton (pendant qu'on prépare la mise à jour) ; on:true le remet, avec la pastille si l'id a changé
 // (16 octobre 2026) deux repères : dot = la pastille rouge du bouton, à changer à CHAQUE mise en ligne qui ajoute une ligne au patchnote
 // (avec txt : la date du jour) ; id = la fenêtre d'annonce à l'arrivée, seulement pour les très gros jours
-const NEWS = {on:true, id:"2026-10-14b", dot:"2026-10-19-1500", url:"/nouveautes.html", txt:"Mise à jour du 19 oct."};
+const NEWS = {on:true, id:"2026-10-14b", dot:"2026-10-20-2130", url:"/nouveautes.html", txt:"Mise à jour du 20 oct."};
 const newsUnseen = () => lsGet("billeo-news-vu")!==NEWS.dot;
 // (14 octobre 2026) à l'arrivée, une fenêtre annonce la mise à jour, une seule fois par mise à jour et par compte (S.newsPop, gardé
 // dans la partie : elle ne revient pas sur un autre appareil) ; on choisit d'aller voir les nouveautés, ou pas
@@ -16584,9 +16584,35 @@ function srvFail(e){
   srv(()=>Cloud.eco.state()).then(applyEco, ()=>{});
 }
 // un gain (quête, jeu, succès, passe…) : compté tout de suite, confirmé ou corrigé par le serveur
+// (20 octobre 2026) il reste dans S.gainsPend (gardé dans la sauvegarde) tant que le serveur ne l'a ni pris ni refusé, et repart tout seul :
+// avant, un gain récupéré pendant une coupure, ou avant que le serveur réponde au chargement, était perdu pour de bon
+// (quête cochée sur l'appareil mais jamais payée, puis le Sachet Premium des 4 quêtes refusé : « pas_fini »)
+const GAIN_JOUR = new Set(["quete","quetes-bonus","jeu","jeux-bonus"]);   // le serveur les range au jour où ils arrivent : pas le lendemain
+const gainsVol = new WeakSet();   // en route vers le serveur
 function earn(source, cle, j, bag){
   if(j) S.jetons += j; if(bag) S.bagInv[bag] = (S.bagInv[bag]||0)+1;
-  if(srvOn()) srv(()=>Cloud.eco.gain(source, cle, j||0, bag)).then(applyEco, srvFail);
+  if(!sync.on) return;
+  const g = {s:source, c:cle, j:j||0, b:bag||null, d:dayKey()};
+  (S.gainsPend ||= []).push(g); save();
+  if(srvOn()) gainSend(g); else ecoRetry(0);
+}
+// true : c'est réglé (pris ou refusé pour de bon) ; false : pas de réponse, on réessaiera
+function gainSend(g){
+  gainsVol.add(g);
+  return srv(()=>Cloud.eco.gain(g.s, g.c, g.j, g.b)).then(e=>{ gainsVol.delete(g); gainDone(g); applyEco(e); return true },
+    e=>{ gainsVol.delete(g);
+      if(!e?.code || e.code==="reseau" || e.code==="serveur_absent"){ clearTimeout(eco.gainT); eco.gainT = setTimeout(gainsFlush, 15e3); return false }
+      gainDone(g); srvFail(e); return true });
+}
+function gainDone(g){ S.gainsPend = (S.gainsPend||[]).filter(x=>x!==g); save() }
+// les gains en attente, un par un et dans l'ordre (les 4 quêtes avant leur Sachet Premium) ; au retour du serveur et toutes les 15 s après un échec
+async function gainsFlush(){
+  if(!srvOn() || eco.gainFl) return; eco.gainFl = true;
+  try{
+    const today = dayKey();
+    S.gainsPend = (S.gainsPend||[]).filter(g => !GAIN_JOUR.has(g.s) || g.d===today);
+    for(const g of [...S.gainsPend]){ if(gainsVol.has(g)) continue; if(!await gainSend(g)) break }
+  } finally { eco.gainFl = false }
 }
 // une bille créée ici dont le serveur fixe tout (billes du passe, billes secrètes) : même identifiant des deux côtés
 function srvMint(sp, source, cle){
@@ -16611,7 +16637,7 @@ function dropLocal(id){
 function srvAdopt(list){ list.forEach(x=>sync.known.add(x.id)); return list }
 // première connexion avec le serveur : il reprend les bonbecs et les sachets offerts de la partie
 async function ecoStart(){
-  try{ applyEco(await Cloud.eco.start(S.jetons, S.bagInv||{}, S.pity||0)); eco.ready = true; netMark("eco", true); eventGifts() }
+  try{ applyEco(await Cloud.eco.start(S.jetons, S.bagInv||{}, S.pity||0)); eco.ready = true; netMark("eco", true); eventGifts(); gainsFlush(); msgsLoad() }
   catch(e){ eco.ready = false; if(e.code!=="serveur_absent") netMark("eco", false); if(e.code!=="serveur_absent") console.warn("Serveur indisponible, la partie continue sur l'appareil", e);
     if(!eco.retry) ecoRetry([5e3,15e3,30e3][eco.tries++] ?? 60e3) }   // pendant un nouvel essai, c'est ecoRetry qui prévoit le suivant
 }
@@ -17396,6 +17422,17 @@ function winsPopup(){
     <button class="btn btn-yellow btn-xl" data-action="close-modal">Super !</button></div>`;
   el.hidden = false; Sound.ding(); return true;
 }
+// (20 octobre 2026) un mot de l'équipe (supabase/messages.sql) : une excuse après un bug, avec un cadeau versé quand on le ferme
+let msgsBoot = [];
+function msgsLoad(){ srv(()=>Cloud.eco.messages()).then(l=>{ msgsBoot = Array.isArray(l) ? l : [] }, ()=>{}) }
+async function msgPop(){
+  const m = msgsBoot.shift(); if(!m) return;
+  const cad = [m.bonbecs ? `${fmt(m.bonbecs)} ${m.bonbecs>1 ? CUR.many : CUR.one}` : "", m.sac ? `un ${BAG_BY[m.sac]?.name || "sachet offert"}` : ""].filter(Boolean).join(" et ");
+  const lu = ask({title:m.titre, ok:cad ? "Merci !" : "OK", text:esc(m.texte).replace(/\n/g, "<br>") + (cad ? `<br><br><small class="meta">${ic("gift",14)} Ton cadeau : ${cad}.</small>` : "")});
+  document.querySelector('#ask [data-ask="0"]')?.remove();   // un seul bouton
+  Sound.ding(); await lu;
+  srv(()=>Cloud.eco.messageLu(m.id)).then(e=>{ applyEco(e); if(cad) toast(`Tu as reçu ${cad} !`) }, srvFail);
+}
 function bootPopups(){
   if(winsAtBoot===null) winsAtBoot = (S.unshown||[]).slice();
   if(!popupsFree()) return;
@@ -17403,6 +17440,7 @@ function bootPopups(){
   if(tutoOn()) return;   // pendant le premier lancement : pas de bonbec du jour ni de nouvelles par-dessus
   if(departDue()){ departPick(); return }
   if(newsPopDue()){ newsPop(); return }   // (14 octobre 2026) une nouvelle mise à jour : la première fenêtre à l'arrivée, une seule fois
+  if(msgsBoot.length){ msgPop(); return }
   if(onbPopup()) return;
   if(winsAtBoot?.length && winsPopup()) return;
   const P = S.pendingBag;
@@ -17419,7 +17457,7 @@ setTimeout(bootPopups, 800);
 // une fenêtre déjà ouverte (ou un sachet en cours) : on repasse dès qu'elle se ferme ; au retour sur l'onglet après minuit aussi
 // le premier lancement en cours sans bulle ni fenêtre (fenêtre fermée par erreur, sachet qui n'a pas pu s'ouvrir…) : on la remet
 setInterval(()=>{ if(tutoOn() && document.visibilityState==="visible" && !document.getElementById("tuto") && popupsFree()) tutoShow() }, 2500);
-setInterval(()=>{ if(document.visibilityState==="visible" && (tutoDue() || departDue() || newsPopDue() || S.onb?.pop || dailyDue() || heldNews || gcDue() || lotDue()) && popupsFree() && !inGame()) bootPopups() }, 2000);
+setInterval(()=>{ if(document.visibilityState==="visible" && (tutoDue() || departDue() || newsPopDue() || msgsBoot.length || S.onb?.pop || dailyDue() || heldNews || gcDue() || lotDue()) && popupsFree() && !inGame()) bootPopups() }, 2000);
 setInterval(()=>{ if(onbOn()) onbCheck() }, 5000);   // « Reviens demain » : on regarde de temps en temps si on a changé de jour
 // petits secrets
 document.getElementById("logo-marble").addEventListener("click", e=>{

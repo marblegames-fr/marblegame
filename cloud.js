@@ -100,6 +100,7 @@
       openBag: (nom, offert, evenement) => rpc("ouvrir_sac", {nom, offert:!!offert, evenement:!!evenement}),   // evenement : la case « billes d'événement » cochée
       recycle: ids => rpc("echanger_billes", {ids}),
       fuse: ids => rpc("fusionner", {ids}),
+      fuseLot: ids => rpc("fusionner_lot", {ids}),   // (21 octobre 2026) jusqu'à 10 fusions d'un coup, les billes des fusions à la suite
       fuseEv: ids => rpc("fusion_evenement", {ids}),
       pachinko: payer => rpc("pachinko", {payer:!!payer}),
       // les jeux de hasard (supabase/chance.sql) : payer = false pour la partie offerte du jour

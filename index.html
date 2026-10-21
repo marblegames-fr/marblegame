@@ -1633,6 +1633,18 @@ canvas.gr-foil{touch-action:none}
 .recipe .rc-txt small{font-size:12px;font-weight:700;color:var(--ink-2)}
 .recipe .rc-av{font-weight:800;color:var(--muted)}
 .recipe .rc-av.ok{color:var(--green)}
+/* (21 octobre 2026) la fusion en lot */
+.recipe .rc-x{position:absolute;top:-8px;right:-4px;font-family:var(--display);font-size:12px;line-height:1;padding:4px 7px;border-radius:999px;background:var(--yellow);color:#24253D;box-shadow:0 2px 0 var(--yellow-2,#F2AE12)}
+.fz-lot{width:100%;max-width:520px;display:grid;gap:10px;margin-top:8px;padding:12px 14px;border-radius:16px;background:var(--yellow-soft);box-shadow:inset 0 0 0 1.5px var(--gold-line,#F2D27A)}
+.fz-lot-t b{font-size:15px}
+.fz-lot-t small{display:block;margin-top:3px;font-size:12.5px;font-weight:700;color:var(--ink-2)}
+.fz-lot-t small b{font-size:inherit;color:var(--ink)}
+.fz-lot-go{display:flex;flex-wrap:wrap;gap:10px;align-items:center}
+.fz-step{display:inline-flex;align-items:center;gap:2px;height:40px;padding:0 4px;border-radius:999px;background:var(--panel);box-shadow:inset 0 0 0 1.5px var(--gold-line,#F2D27A)}
+.fz-step button{width:32px;height:32px;border-radius:50%;font-size:19px;font-weight:900;line-height:1}
+.fz-step button:not(:disabled):hover{background:var(--panel-2)}
+.fz-step button:disabled{opacity:.35}
+.fz-step b{min-width:40px;text-align:center;font-family:var(--display);font-weight:400;font-size:19px}
 .fuse2{display:grid;grid-template-columns:auto minmax(0,1fr);gap:34px;align-items:center;margin:18px 0 24px;background:radial-gradient(circle at 18% 50%,color-mix(in srgb,var(--b) 16%,transparent),transparent 60%),var(--panel)}
 .fz-ring{position:relative;width:290px;height:290px;border-radius:50%;background:conic-gradient(var(--b) calc(var(--p)*360deg),color-mix(in srgb,var(--a) 22%,var(--line)) 0);transition:background .3s}
 .fz-ring.full{animation:fzGlow 1.6s ease-in-out infinite}
@@ -1660,7 +1672,7 @@ canvas.gr-foil{touch-action:none}
 @media (max-width:820px){ .conf-choices{grid-template-columns:minmax(0,1fr)} }
 /* ---------- fusion ---------- */
 .recipes{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:10px;margin-bottom:18px}
-.recipe{display:flex;flex-direction:column;align-items:flex-start;gap:4px;padding:12px 14px;border-radius:14px;border:1.5px solid var(--line);background:var(--panel);text-align:left;font-weight:800;font-size:13px;transition:transform .12s,box-shadow .12s}
+.recipe{position:relative;display:flex;flex-direction:column;align-items:flex-start;gap:4px;padding:12px 14px;border-radius:14px;border:1.5px solid var(--line);background:var(--panel);text-align:left;font-weight:800;font-size:13px;transition:transform .12s,box-shadow .12s}
 .recipe:hover{transform:translateY(-2px)}
 .recipe svg{color:var(--muted);transform:rotate(90deg);margin-left:2px}
 .rc-line{display:inline-flex;align-items:center;gap:7px}
@@ -1727,6 +1739,42 @@ canvas.gr-foil{touch-action:none}
 .cz-demo .btn{justify-content:flex-start;gap:10px}
 .cz-demo i{width:14px;height:14px;border-radius:50%;background:var(--c)}
 @media (prefers-reduced-motion:reduce){ .cz-stage *{animation:none!important} }
+/* (21 octobre 2026) la fusion en lot : la pluie dans le chaudron, puis les billes en cartes et la plus rare en grand */
+.czl .cz-in{height:130px}
+.czl .cz-in img{filter:drop-shadow(0 5px 5px rgba(0,0,0,.5))}
+.czl-count{position:absolute;left:0;right:0;top:146px;font-family:var(--display);font-size:22px;color:#FFE3B0;text-shadow:0 2px 8px rgba(0,0,0,.6);transition:opacity .3s}
+.cz-stage.boil .czl-count{opacity:0}
+.cz-stage.spill .cz-pot{animation:czl-spill .5s cubic-bezier(.2,1.8,.4,1)}
+@keyframes czl-spill{30%{transform:scale(1.1,.9)}60%{transform:scale(.96,1.05)}}
+.czl-skip{position:fixed;z-index:4;right:16px;bottom:calc(16px + env(safe-area-inset-bottom,0px));height:40px;padding:0 16px;border-radius:999px;background:rgba(255,255,255,.14);color:#fff;font-weight:800;display:inline-flex;align-items:center;gap:6px}
+.czl-skip:hover{background:rgba(255,255,255,.24)}
+.czl-best{--tc:#8E8898;position:relative;min-height:300px;display:grid;place-items:center}
+.czl-orb{width:110px;height:110px;border-radius:50%;opacity:0;transform:scale(.3);
+  background:radial-gradient(circle at 35% 30%,#fff,color-mix(in srgb,var(--tc) 70%,#fff) 45%,var(--tc));box-shadow:0 0 30px var(--tc),0 0 70px color-mix(in srgb,var(--tc) 60%,transparent)}
+.czl-best.charge .czl-orb{opacity:1;transform:scale(1);transition:transform .4s cubic-bezier(.2,1.6,.4,1),opacity .2s;animation:czl-charge .9s ease-in both}
+@keyframes czl-charge{20%{translate:-2px 1px}40%{translate:3px -2px}60%{translate:-4px 2px}80%{translate:5px -3px}100%{translate:-6px 2px;filter:brightness(1.6)}}
+.czl-grid{display:flex;flex-wrap:wrap;gap:10px;justify-content:center;max-width:760px}
+.czl-card{--tc:#8E8898;position:relative;width:132px;display:flex;flex-direction:column;align-items:center;gap:4px;padding:10px 6px;border-radius:18px;color:#fff;
+  background:rgba(255,255,255,.06);box-shadow:inset 0 0 0 1.5px color-mix(in srgb,var(--tc) 55%,transparent);opacity:0}
+.czl-card:hover{background:rgba(255,255,255,.12)}
+.czl-card.in{animation:czl-out .55s cubic-bezier(.2,1.5,.4,1) forwards}
+.czl-card.now{animation-duration:0s}
+@keyframes czl-out{from{opacity:0;transform:translateY(60px) scale(.3)}to{opacity:1;transform:none}}
+.czl-card .b{height:74px;display:grid;place-items:center}
+.czl-card .b img{filter:drop-shadow(0 6px 8px rgba(0,0,0,.45))}
+.czl-card b{font-size:12px;line-height:1.15;font-weight:800}
+.czl-card:is(.r3,.r4,.r5,.shy){background:radial-gradient(circle at 50% 30%,color-mix(in srgb,var(--tc) 28%,transparent),rgba(255,255,255,.05) 70%)}
+.czl-card:is(.r4,.r5){box-shadow:inset 0 0 0 2px var(--tc),0 0 18px color-mix(in srgb,var(--tc) 50%,transparent)}
+.czl-new{position:absolute;top:-7px;left:50%;translate:-50% 0;font-size:10px;font-weight:900;letter-spacing:.06em;text-transform:uppercase;background:#2FA35A;color:#fff;padding:3px 7px;border-radius:999px;white-space:nowrap}
+.czl-pills{display:flex;gap:4px;flex-wrap:wrap;justify-content:center}
+.czl-pill{font-size:10.5px;font-weight:900;padding:1px 7px;border-radius:999px;background:color-mix(in srgb,var(--c) 30%,transparent);color:color-mix(in srgb,var(--c) 35%,#fff);box-shadow:inset 0 0 0 1px color-mix(in srgb,var(--c) 60%,transparent)}
+.czl-end{display:flex;flex-direction:column;align-items:center;gap:12px;opacity:0;pointer-events:none;transition:opacity .4s}
+.czl-end.on{opacity:1;pointer-events:auto}
+.czl-tally{display:flex;flex-wrap:wrap;gap:6px;justify-content:center}
+.czl-tally span{display:inline-flex;align-items:center;gap:6px;padding:4px 10px;border-radius:999px;background:rgba(255,255,255,.08);font-size:13px;font-weight:800}
+.czl-tally i{width:10px;height:10px;border-radius:50%;background:var(--c)}
+@media (max-width:640px){ .czl-card{width:calc((100vw - 72px) / 3)} .czl-best{min-height:270px} }
+@media (prefers-reduced-motion:reduce){ .czl-card{animation:none!important;opacity:1} }
 .fuse-ring{position:relative;width:300px;height:300px;max-width:100%}
 .fuse-ring img{position:absolute;left:50%;top:50%;width:46px;height:46px;margin:-23px;filter:drop-shadow(0 6px 6px rgba(0,0,0,.5));
   transform:rotate(var(--a)) translateX(125px) rotate(calc(-1*var(--a))) scale(1);animation:fuse 1.7s cubic-bezier(.55,0,.85,.35) var(--d) forwards}
@@ -8796,6 +8844,25 @@ function craftSingles(t, keep=[]){
   for(let i=singles.length-1;i>0;i--){ const j=Math.floor(Math.random()*(i+1)); [singles[i],singles[j]]=[singles[j],singles[i]] }
   return sel.concat(singles.slice(0, craftN(t)-sel.length).map(s=>s.id));
 }
+// (21 octobre 2026) Fusion en lot : jusqu'à CRAFT_LOT_MAX fusions d'un coup, seulement avec des doubles (comme craftAuto :
+// il reste toujours au moins un exemplaire de chaque bille, l'album ne perd rien). Même chiffre dans serveur.sql (interne.fusion_lot_max).
+const CRAFT_LOT_MAX = 10;
+// combien de fusions on peut faire avec ses doubles de cette taille (le filtre de la fusion compris), sans limite
+function craftLotCan(t){
+  const cnt = slotCounts(), inPool = {};
+  craftPool(t).filter(craftFilt).forEach(s=>{ const k = dupKey(s); inPool[k] = (inPool[k]||0)+1 });
+  return Math.floor(Object.entries(inPool).reduce((a,[k,n])=>a+Math.min(n, cnt[k]-1), 0)/craftN(t));
+}
+// les billes de k fusions, toujours dans les doubles les plus nombreux d'abord
+function craftLotIds(t, k){
+  const cnt = slotCounts(), want = k*craftN(t), rest = craftPool(t).filter(craftFilt).sort((a,b)=>a.at-b.at), sel = [];
+  while(sel.length<want){
+    let best = -1; rest.forEach((s,i)=>{ if(cnt[dupKey(s)]>1 && (best<0 || cnt[dupKey(s)]>cnt[dupKey(rest[best])])) best = i });
+    if(best<0) break;
+    const [s] = rest.splice(best,1); cnt[dupKey(s)]--; sel.push(s.id);
+  }
+  return sel.length===want ? sel : [];
+}
 // (16 octobre 2026) « Nouveau » seulement pour un coloris qu'on n'avait pas encore : une bille pas vue dont un autre
 // exemplaire du même coloris a déjà été vu est un double, elle perd sa marque. (18 octobre 2026) Sauf une shiny :
 // elle garde « Nouveau » tant qu'on n'a pas déjà vu cette même shiny (la version normale ne compte pas)
@@ -8809,8 +8876,8 @@ function viewCraft(){
   const pool = craftPool(C.t), cnt = slotCounts();
   C.sel = C.sel.filter(id=>pool.some(s=>s.id===id));
   const A = RARITY[C.t].c, B = RARITY[C.t+1].c, N = craftN(C.t);
-  const recipes = TK.slice(0,-1).map((_,t)=>{ const n = craftPool(t).length, can = Math.floor(n/craftN(t));
-    return `<button class="recipe" data-action="craft-t" data-t="${t}" aria-pressed="${C.t===t}" style="--a:${RARITY[t].c};--b:${RARITY[t+1].c}">
+  const recipes = TK.slice(0,-1).map((_,t)=>{ const n = craftPool(t).length, can = Math.floor(n/craftN(t)), lc = Math.min(CRAFT_LOT_MAX, craftLotCan(t));
+    return `<button class="recipe" data-action="craft-t" data-t="${t}" aria-pressed="${C.t===t}" style="--a:${RARITY[t].c};--b:${RARITY[t+1].c}">${lc>=2?`<span class="rc-x" title="${lc} fusions d'un coup avec tes doubles">×${lc}</span>`:""}
       <span class="rc-balls"><span class="rc-in">${mImg(SHOWCASE[t],80,Math.round(16+14*scaleOf(TK[t])),"")}<em>×${craftN(t)}</em></span>${ic("arrow",14)}${mImg(SHOWCASE[t+1],90,Math.round(18+18*scaleOf(TK[t+1])),"")}</span>
       <span class="rc-txt"><b>${craftN(t)} ${RAR_PL[t]}</b><small>→ 1 ${RAR_F[t+1]}</small></span>
       <small class="rc-av${can?" ok":""}">${can?`${can} fusion${can>1?"s":""} possible${can>1?"s":""}`:`${n} / ${craftN(t)}`}</small></button>` }).join("");
@@ -8818,6 +8885,12 @@ function viewCraft(){
     return s ? `<button class="fz-slot filled" style="${r}" data-action="craft-toggle" data-id="${s.id}" aria-label="Retirer ${esc(specName(s))}">${mImg(s,120,44,"")}</button>` : `<span class="fz-slot" style="${r}"></span>` }).join("");
   const last = C.sel.filter(id=>{ const s=specById(id); return !S.specs.some(x=>colorKey(x)===colorKey(s) && !C.sel.includes(x.id)) }).length;
   const full = C.sel.length===N;
+  // (21 octobre 2026) la fusion en lot : le plus de fusions possible avec ses doubles (CRAFT_LOT_MAX au plus), − et + pour en faire moins
+  const lotMax = Math.min(CRAFT_LOT_MAX, craftLotCan(C.t)), lotN = Math.max(2, Math.min(C.lotN || lotMax, lotMax));
+  const lotBox = lotMax<2 ? "" : `<div class="fz-lot"><div class="fz-lot-t"><b>Fusionner plusieurs fois d'un coup</b>
+      <small><b>${lotN*N} ${RAR_PL[C.t]}</b> (que des doubles) → <b>${lotN} ${RAR_PL[C.t+1]}</b>, motifs et coloris au hasard. Ton album ne perd rien. ${pct(+((1-Math.pow(1-craftShiny(C.t), lotN))*100).toFixed(2))} de chance d'au moins une shiny.</small></div>
+    <div class="fz-lot-go"><span class="fz-step" role="group" aria-label="Nombre de fusions"><button data-action="craft-lot-n" data-d="-1" ${lotN<=2?"disabled":""} aria-label="Une fusion de moins">−</button><b>×${lotN}</b><button data-action="craft-lot-n" data-d="1" ${lotN>=lotMax?"disabled":""} aria-label="Une fusion de plus">+</button></span>
+      <button class="btn btn-yellow" data-action="craft-lot" data-n="${lotN}">${ic("flask",18)} Fusionner ×${lotN}</button></div></div>`;
   const nDup = ([,l]) => cnt[dupKey(l[0])]||0;   // exemplaires en tout (cnt est rangé par dupKey, pas par colorKey)
   const groups = byModel(pool.filter(craftFilt)).sort((a,b)=>nDup(b)-nDup(a)), F = ui.craftF||{}, nEv = evPool().length;
   const fChip = (v,l) => `<button class="chip" data-action="craft-f" data-v="${v}" aria-pressed="${String(F.rar??"")===String(v)}">${l}</button>`;
@@ -8840,6 +8913,7 @@ function viewCraft(){
         <button class="btn btn-ghost" data-action="craft-singles" ${full || craftSingles(C.t, C.sel).length===C.sel.length?"disabled":""}>Remplir au hasard (billes uniques)</button>
         <button class="btn btn-ghost" data-action="craft-clear" ${C.sel.length?"":"disabled"}>Vider</button>
       </div>
+      ${lotBox}
     </div>
   </section>
   <section>
@@ -9014,22 +9088,28 @@ function showCraft(inputs, out, pxp, demo){
 }
 // le résultat de la fusion : la bille s'ouvre comme dans un sachet (mêmes effets que reveal(), même son « Égrené »)
 function craftFinal(inputs, out, pxp, k){
-  const ov = document.getElementById("ov"), demo = ovState?.demo, dr = decorRar(out);
+  const ov = document.getElementById("ov"), demo = ovState?.demo;
   FX.setDust(false); ov.style.setProperty("--flash", rgba(scoreCol(k), .6));
   document.getElementById("ov-body").innerHTML = `<div class="ov-title">${out.shiny?"Une shiny !":"Fusion réussie !"}</div>
       <p class="ov-sub">${demo ? "Démo : cette bille n'est pas dans ta boîte." : `${esc(specName(out))} rejoint ta boîte à billes.`}</p>
-      <div class="reveal-row"><button class="slot is-open ${k>=BIG?"big":""} ${out.shiny?"shiny":""}" data-action="${demo?"":"zoom"}" data-id="${out.id}" aria-label="${esc(specName(out))}" style="--tc:${scoreCol(k)};${tstyle(out.type)}">
-        ${bannerOf(out,k)?`<span class="slot-banner">${bannerOf(out,k)}</span>`:""}
-        <div class="slot-ball"><span class="rays"></span>${mImg(out,300,Math.round(150*scaleOf(out.type)),"")}</div>
-        <div class="slot-info"><b${motifCol(out)}>${esc(specName(out))}</b><span style="display:flex;gap:4px;flex-wrap:wrap;justify-content:center">${typePill(out.type,true)}${shinyPill(out)}</span>${tierTag(out)}${decStamp(out)}</div>
-      </button></div>
+      <div class="reveal-row">${craftSlot(out, demo, k)}</div>
       <div class="ov-actions">${demo ? `<button class="btn btn-yellow" data-action="fuse-demo" data-r="${demo.r}" data-sh="${demo.sh}">Revoir</button><button class="btn btn-ghost" data-action="fuse-demo-menu">Un autre cas</button><button class="btn btn-ghost" data-action="close-ov">Fermer</button>`
         : `<span class="ov-xp" style="flex-basis:100%;justify-content:center">${ic("ticket",18)} +${pxp} XP de saison</span>
         ${eventOf(out) ? "" : ui.craft && craftPool(ui.craft.t).length>=craftN(ui.craft.t)?`<button class="btn btn-yellow" data-action="craft-again">Préparer une autre fusion</button>`:""}
         <button class="btn btn-ghost" data-action="craft-see" data-id="${out.id}">Voir la fiche</button>
         <button class="btn btn-ghost" data-action="close-ov">Retour à la Confiserie</button>`}</div>`;
-  const el = document.querySelector("#ov-body .slot"); if(!el) return;
-  const [x,y] = FX.at(el.querySelector(".slot-ball"));
+  const el = document.querySelector("#ov-body .slot"); if(el) craftOpenFX(out, el, k);
+}
+// la bille qui sort du chaudron, ouverte comme dans un sachet (une fusion, ou la plus rare d'une fusion en lot)
+function craftSlot(out, demo, k=pullScore(out)){
+  return `<button class="slot is-open ${k>=BIG?"big":""} ${out.shiny?"shiny":""}" data-action="${demo?"":"zoom"}" data-id="${out.id}" aria-label="${esc(specName(out))}" style="--tc:${scoreCol(k)};${tstyle(out.type)}">
+        ${bannerOf(out,k)?`<span class="slot-banner">${bannerOf(out,k)}</span>`:""}
+        <div class="slot-ball"><span class="rays"></span>${mImg(out,300,Math.round(150*scaleOf(out.type)),"")}</div>
+        <div class="slot-info"><b${motifCol(out)}>${esc(specName(out))}</b><span style="display:flex;gap:4px;flex-wrap:wrap;justify-content:center">${typePill(out.type,true)}${shinyPill(out)}</span>${tierTag(out)}${decStamp(out)}</div>
+      </button>`;
+}
+function craftOpenFX(out, el, k=pullScore(out)){
+  const dr = decorRar(out), [x,y] = FX.at(el.querySelector(".slot-ball"));
   if(!(out.shiny>=2)){ FX.burst(x,y, scoreCols(k), 18+k*14, .6+k*.12); if(k>=FMT_TIER.calot) FX.ring(x,y, scoreCol(k)) }
   if(out.shiny) shinyFX(out, el, x, y);
   else if(k===FMT_TIER.mammouth){ FX.burst(x,y, scoreCols(k), 120, 1.6); setTimeout(()=>FX.ring(x,y, "#FFE3B0"), 180) }
@@ -9037,6 +9117,142 @@ function craftFinal(inputs, out, pxp, k){
   Sound.opening(out.shiny||0, Math.max(0, dr));
   if(dr>=3) setTimeout(()=>{ const c = DECOR_RAR[dr].c; FX.burst(x,y, [c, shade(c,.45), "#FFF3D6"], dr>=4 ? 90 : 45, dr>=4 ? 1.3 : .9); if(dr>=4) FX.ring(x,y, c) }, 520);
   if(isMyth(out)) mythFX(x, y);
+}
+// (21 octobre 2026) La fusion en lot (maquettes/maquette-fusion-x10.html) : une seule animation pour tout le lot.
+// 1. les billes tombent toutes dans le chaudron en pluie (~2 s, un compteur au-delà de 30) ; 2. il bouillonne jusqu'au meilleur motif
+// du lot ; 3. une shiny dans le lot : il s'éteint… puis repart à sa couleur ; 4. il déborde, les billes sortent une par une,
+// de la moins rare à la plus rare, et la plus rare s'ouvre en grand en dernier, comme une fusion. « Passer » montre tout de suite le résultat.
+const czlScore = s => Math.max(0, decorRar(s))*10 + [0,25,30,45][s.shiny||0] + tierOf(s)*.1;   // la plus rare du lot (une shiny compte pour 2,5 à 4,5 crans de rareté du motif en plus)
+const czlCol = s => s.shiny===3 ? PALETTES[s.pal][2] : s.shiny ? CZ_SH[s.shiny] : DECOR_RAR[Math.max(0, decorRar(s))].c;
+function craftLotGo(C, k){
+  if(!srvNeed() || eco.busy) return;
+  const t = C.t, ids = craftLotIds(t, k);
+  if(!ids.length){ toast("Il n'y a plus assez de doubles pour ce lot."); renderView(); return }
+  const inputs = ids.map(specById), gone = new Set(ids);
+  S.specs = S.specs.filter(s=>!gone.has(s.id)); S.unseen = S.unseen.filter(id=>!gone.has(id));
+  eco.busy = true; gone.forEach(id=>sync.known.delete(id));
+  srv(()=>Cloud.eco.fuseLot(ids)).then(r=>{ applyEco(r.eco);
+      const outs = srvAdopt(r.billes||[]), seenC = new Set(S.specs.map(colorKey)), seenD = new Set(S.specs.map(dupKey)), fresh = new Set();
+      outs.forEach(o=>{ if(o.shiny ? !seenD.has(dupKey(o)) : !seenC.has(colorKey(o))) fresh.add(o.id);   // « Nouveau » : un coloris (ou une shiny) qu'on n'avait pas
+        seenC.add(colorKey(o)); seenD.add(dupKey(o)); S.specs.push(o); S.unseen.push(o.id); if(tierOf(o)>=BIG || o.shiny) logFind(o) });
+      S.crafts = (S.crafts||0)+outs.length; C.sel = []; save(); questEvent("craft", outs.length);
+      showCraftLot(t, inputs, outs, passXP(PASS_XP.craft*outs.length), fresh) },
+    e=>{ inputs.forEach(x=>{ S.specs.push(x); sync.known.add(x.id) });
+      if(e?.code==="fusion_invalide"){ resyncBilles().then(()=>{ renderView(); toast("Ta boîte a été remise à jour : vérifie et relance la fusion.") }, ()=>{ srvFail(e); renderView() }); return }
+      srvFail(e); renderView() }).finally(()=>{ eco.busy = false });
+}
+function showCraftLot(t, inputs, outs, pxp, fresh){
+  const ov = document.getElementById("ov"), body = document.getElementById("ov-body");
+  const st = ovState = {craft:true, lot:true, t, n:outs.length, outs, pxp, fresh, done:false};
+  st.skip = () => { if(st.done) return; st.done = true; czlResults(st, true) };
+  const alive = () => ovState===st && !st.done && !ov.hidden, wait = ms => new Promise(r=>setTimeout(r, ms));
+  const dr = Math.max(0, ...outs.map(decorRar)), sh = Math.max(0, ...outs.map(s=>s.shiny||0));
+  const show = inputs.slice(0, 30), sz = inputs.length>20 ? 34 : 42;
+  ov.style.setProperty("--bc", RARITY[t+1].c); ov.style.removeProperty("--flash"); ov.classList.remove("dim");
+  body.classList.remove("six");
+  body.innerHTML = `<span class="ov-kicker">La Confiserie · Fusion ×${outs.length}</span><div class="ov-title" id="cz-title">Dans le chaudron…</div>
+    <div class="cz-stage czl" id="cz-stage" style="--lq:${DECOR_RAR[0].c}">
+      <div class="cz-in">${show.map((s,i,l)=>{ const row = i%2, m = Math.ceil(l.length/2), a = Math.PI*(1.06 + .88*Math.floor(i/2)/Math.max(1,m-1));
+        return `<img src="${marbleURL(s,96)}" alt="" style="--i:${i};width:${sz}px;height:${sz}px;left:calc(50% - ${sz/2}px + ${(Math.cos(a)*(165-row*40)).toFixed(0)}px);top:${(122 + Math.sin(a)*(100-row*32)).toFixed(0)}px">` }).join("")}</div>
+      <div class="czl-count" id="czl-count">0 / ${inputs.length}</div>
+      <div class="cz-tier" id="cz-tier"></div><div class="cz-steam"><i></i><i></i><i></i></div>${czPot()}
+    </div>
+    <button class="czl-skip" data-action="craft-lot-skip">Passer ${ic("chevrr",16)}</button>`;
+  ov.hidden = false; document.body.style.overflow = "hidden";
+  FX.fit(); FX.setDust(true);
+  if(FX.reduce()) return st.skip();
+  const stage = document.getElementById("cz-stage"), tier = document.getElementById("cz-tier"), title = document.getElementById("cz-title"), cnt = document.getElementById("czl-count");
+  const potAt = () => { const r = stage.querySelector(".cz-pot").getBoundingClientRect(); return [r.left + r.width/2, r.top + r.height*.3] };
+  const bump = c => { stage.classList.remove(c); void stage.offsetWidth; stage.classList.add(c) };
+  (async()=>{
+    // 1. la pluie de billes : toutes tombent en ~2 secondes
+    await wait(300);
+    const imgs = [...stage.querySelectorAll(".cz-in img")], [px, py] = potAt(), step = Math.max(45, Math.min(110, 1900/imgs.length));
+    for(const [i, im] of imgs.entries()){
+      if(!alive()) return;
+      const r = im.getBoundingClientRect(), dx = px - (r.left + r.width/2), dy = py - (r.top + r.height/2), col = PALETTES[show[i].pal]?.[1] || "#fff";
+      im.animate([{transform:"translate(0,0) scale(1)", opacity:1}, {transform:`translate(${dx*.6}px,${dy*.35 - 40}px) scale(.85)`, opacity:1, offset:.55}, {transform:`translate(${dx}px,${dy}px) scale(.35)`, opacity:0}],
+        {duration:460, easing:"cubic-bezier(.4,0,.8,.6)", fill:"forwards"});
+      setTimeout(()=>{ if(!alive()) return; Sound.tap(0, .45, 1.1+Math.random()*.4); FX.burst(px, py, [col, shade(col,.4), "#FFFFFF"], 6, .4); bump("plop");
+        cnt.textContent = `${Math.round((i+1)/imgs.length*inputs.length)} / ${inputs.length}` }, 440);
+      await wait(step);
+    }
+    await wait(600); if(!alive()) return;
+    FX.setDust(false); title.textContent = `Ça bouillonne… ${outs.length} fusions !`; stage.classList.add("boil");
+    // 2. palier par palier jusqu'au meilleur motif du lot
+    for(let i=0;i<=dr;i++){
+      await wait(i ? 360 + i*150 + (i===dr ? 240 : 0) : 250); if(!alive()) return;
+      const c = DECOR_RAR[i].c; stage.style.setProperty("--lq", c); stage.style.setProperty("--sk", (1+i*.6).toFixed(1));
+      tier.style.setProperty("--tc", c); tier.textContent = DECOR_RAR[i].name; bump("up"); tier.classList.remove("pop"); void tier.offsetWidth; tier.classList.add("pop");
+      Sound.distStep(i); const [x,y] = potAt(); FX.burst(x, y, [c, shade(c,.45), "#FFF3D6"], 12+i*10, .5+i*.12); if(i) FX.ring(x, y, c);
+      if(i>=3) stage.classList.add("hot");
+      if(i===5){ Sound.mythSwell?.(0); FX.burst(x, y, MYTH_COLS, 90, 1.3) }
+    }
+    // 3. une shiny dans le lot : le chaudron s'éteint… puis repart à sa couleur
+    if(sh){
+      await wait(700); if(!alive()) return;
+      stage.classList.add("dark"); title.textContent = "Mais… ?"; tier.classList.remove("pop");
+      if(sh===3){ Sound.lumSwell(0); await wait(1400) } else await wait(900);
+      if(!alive()) return;
+      stage.classList.remove("dark"); stage.classList.add("sh"+sh); stage.style.setProperty("--lq", CZ_SH[sh]);
+      tier.style.setProperty("--tc", CZ_SH[sh]); tier.textContent = `${SHINIES[sh].name} !`; tier.classList.add("pop"); title.textContent = "Une shiny dans le lot !";
+      Sound.distStep(dr+1); Sound.distStep(dr+2); const [x,y] = potAt();
+      FX.burst(x, y, sh===2 ? GOLD_COLS : sh===3 ? ["#FFFFFF","#DFF8FF","#9FE6FF"] : SHINY_COLS, 60, 1); FX.ring(x, y, CZ_SH[sh]);
+    }
+    // 4. le chaudron déborde : les billes en jaillissent
+    await wait(sh ? 900 : 600); if(!alive()) return;
+    title.textContent = "Ça déborde !"; bump("spill"); Sound.whoosh();
+    { const [x,y] = potAt(); FX.burst(x, y, outs.map(czlCol).concat("#FFF3D6"), 50, 1.4) }
+    await wait(500); if(!alive()) return;
+    czlResults(st, false);
+  })();
+}
+// les résultats du lot : les billes sortent une par une, la plus rare en dernier et en grand
+async function czlResults(st, instant){
+  const ov = document.getElementById("ov"), body = document.getElementById("ov-body");
+  if(ovState!==st || ov.hidden) return;
+  const alive = () => ovState===st && !ov.hidden && !st.done, wait = ms => new Promise(r=>setTimeout(r, ms));
+  const ord = [...st.outs].sort((a,b)=>czlScore(a)-czlScore(b)), best = ord.pop(), T2 = TK[st.t+1], dr = Math.max(0, decorRar(best)), sh = best.shiny||0;
+  const nSh = st.outs.filter(s=>s.shiny).length, nNew = st.outs.filter(s=>st.fresh.has(s.id)).length;
+  const tally = DECOR_RAR.map((R,i)=>[R, st.outs.filter(s=>Math.max(0, decorRar(s))===i).length]).filter(([,n])=>n).reverse();
+  const again = ui.craft && ui.craft.t===st.t ? Math.min(CRAFT_LOT_MAX, craftLotCan(st.t), ui.craft.lotN || CRAFT_LOT_MAX) : 0;
+  const pill = s => { const r = Math.max(0, decorRar(s)); return `<span class="czl-pill" style="--c:${DECOR_RAR[r].c}">${DECOR_RAR[r].name}</span>${s.shiny?`<span class="czl-pill" style="--c:${CZ_SH[s.shiny]}">${SHINIES[s.shiny].name}</span>`:""}` };
+  const endTitle = sh ? "Une shiny dans le lot !" : `${st.n} fusions réussies !`;
+  body.innerHTML = `<span class="ov-kicker">La Confiserie · Fusion ×${st.n}</span>
+    <div class="ov-title" id="czl-title">${instant ? endTitle : "Et voilà…"}</div>
+    <div class="czl-best" id="czl-best" style="--tc:${czlCol(best)}">${instant ? craftSlot(best) : `<span class="czl-orb"></span>`}</div>
+    <div class="czl-grid">${ord.map(s=>`<button class="czl-card r${Math.max(0, decorRar(s))}${s.shiny?" shy":""}${instant?" in now":""}" data-action="craft-see" data-id="${s.id}" style="--tc:${czlCol(s)}" aria-label="${esc(specName(s))}">
+      ${st.fresh.has(s.id)?`<span class="czl-new">Nouveau</span>`:""}<span class="b">${mImg(s,160,Math.round(40*scaleOf(s.type)+26),"")}</span><b>${esc(specName(s))}</b><span class="czl-pills">${pill(s)}</span></button>`).join("")}</div>
+    <div class="czl-end${instant?" on":""}" id="czl-end">
+      <div class="czl-tally">${tally.map(([R,n])=>`<span style="--c:${R.c}"><i></i>${n} ${R.name.toLowerCase()}${n>1?"s":""}</span>`).join("")}${nSh?`<span style="--c:#E0A800"><i></i>${nSh} shiny</span>`:""}${nNew?`<span style="--c:#2FA35A"><i></i>${nNew} nouveau${nNew>1?"x":""}</span>`:""}</div>
+      <div class="ov-actions"><span class="ov-xp" style="flex-basis:100%;justify-content:center">${ic("ticket",18)} +${st.pxp} XP de saison · ${st.n} ${TYPES[T2].pl} rejoignent ta boîte</span>
+        ${again>=2 ? `<button class="btn btn-yellow" data-action="craft-lot-again" data-n="${again}">${ic("flask",18)} Encore ×${again}</button>` : ""}
+        <button class="btn btn-ghost" data-action="craft-see" data-id="${best.id}">Voir la fiche</button>
+        <button class="btn btn-ghost" data-action="close-ov">Retour à la Confiserie</button></div>
+    </div>
+    ${instant ? "" : `<button class="czl-skip" data-action="craft-lot-skip">Passer ${ic("chevrr",16)}</button>`}`;
+  FX.setDust(false);
+  const bEl = document.getElementById("czl-best"), title = document.getElementById("czl-title"), cards = [...body.querySelectorAll(".czl-card")];
+  const open = quiet => { ov.style.setProperty("--flash", rgba(czlCol(best), .55)); const el = bEl.querySelector(".slot"); if(el && !quiet) craftOpenFX(best, el) };
+  if(instant){ open(true); return }
+  // les billes sortent une par une, de la moins rare à la plus rare
+  for(const [i, c] of cards.entries()){
+    if(!alive()) return;
+    c.classList.add("in"); const s = ord[i], r = Math.max(0, decorRar(s));
+    setTimeout(()=>{ if(!alive()) return; const [x,y] = FX.at(c); if(r>=2 || s.shiny) Sound.distStep(Math.min(6, r+1)); else Sound.pop();
+      FX.burst(x, y, [czlCol(s), "#FFF3D6"], 8 + r*8, .5 + r*.1); if(r>=3 || s.shiny) FX.ring(x, y, czlCol(s)) }, 180);
+    await wait(Math.max(110, 230 - i*12));
+  }
+  // et la plus rare, en dernier, en grand
+  await wait(450); if(!alive()) return;
+  title.textContent = sh || dr>=3 ? "Et la plus rare…" : "Et la dernière…";
+  bEl.classList.add("charge"); Sound.whoosh();
+  await wait(sh || dr>=4 ? 1100 : 750); if(!alive()) return;
+  st.done = true; body.querySelector(".czl-skip")?.remove();
+  bEl.classList.remove("charge"); bEl.innerHTML = craftSlot(best); title.textContent = isMyth(best) ? "Le Mythique !" : sh ? "Une shiny !" : dr>=4 ? "Légendaire !" : endTitle;
+  open(false);
+  await wait(700); if(ovState!==st) return;
+  document.getElementById("czl-end")?.classList.add("on");
 }
 // la démo du compte admin : 10 billes au hasard dans le chaudron, et le cas choisi en sortie (rien n'est gagné)
 function fuseDemo(r, sh){
@@ -15210,7 +15426,7 @@ let bugKeep = null;   // un message qui n'est pas parti : il est reproposé au p
 // on:false cache le bouton (pendant qu'on prépare la mise à jour) ; on:true le remet, avec la pastille si l'id a changé
 // (16 octobre 2026) deux repères : dot = la pastille rouge du bouton, à changer à CHAQUE mise en ligne qui ajoute une ligne au patchnote
 // (avec txt : la date du jour) ; id = la fenêtre d'annonce à l'arrivée, seulement pour les très gros jours
-const NEWS = {on:true, id:"2026-10-20b", dot:"2026-10-21-1500", url:"/nouveautes.html", txt:"Mise à jour du 21 oct."};
+const NEWS = {on:true, id:"2026-10-20b", dot:"2026-10-21-1632", url:"/nouveautes.html", txt:"Mise à jour du 21 oct."};
 const newsUnseen = () => lsGet("billeo-news-vu")!==NEWS.dot;
 // (14 octobre 2026) à l'arrivée, une fenêtre annonce la mise à jour, une seule fois par mise à jour et par compte (S.newsPop, gardé
 // dans la partie : elle ne revient pas sur un autre appareil) ; on choisit d'aller voir les nouveautés, ou pas
@@ -16788,6 +17004,18 @@ document.addEventListener("click", e=>{
       break;
     }
     case "craft-again": closeOv(); ui.craft.sel = craftAuto(ui.craft.t); renderView(); break;
+    // (21 octobre 2026) la fusion en lot
+    case "craft-lot-n": { const C = ui.craft, mx = Math.min(CRAFT_LOT_MAX, craftLotCan(C.t)); C.lotN = Math.max(2, Math.min(mx, (C.lotN || mx) + +t.dataset.d)); renderView(); break }
+    case "craft-lot": {
+      const C = ui.craft, k = +t.dataset.n, ids = craftLotIds(C.t, k);
+      if(k<2 || !ids.length){ renderView(); break }
+      ask({title:`Fusionner ${k} fois ?`, balls:ids.map(specById), ok:`Fusionner ×${k}`,
+           text:`Ces ${ids.length} ${RAR_PL[C.t]} partent dans le chaudron pour donner ${k} ${RAR_PL[C.t+1]}, motifs et coloris au hasard. Que des doubles : il te reste au moins un exemplaire de chacune, ton album ne perd rien.`})
+        .then(yes=>{ if(yes) craftLotGo(C, k) });
+      break;
+    }
+    case "craft-lot-again": { const k = +t.dataset.n; closeOv(true); if(ui.craft) craftLotGo(ui.craft, k); break }
+    case "craft-lot-skip": ovState?.skip?.(); break;
     case "craft-see": { const id = t.dataset.id; closeOv(); openModal(id); break }
     case "vit-set": S.vitrine[+t.dataset.i] = t.dataset.id; save(); closeModal(); renderView(); toast("Bille exposée dans ta vitrine."); break;
     case "vit-add": {

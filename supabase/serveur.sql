@@ -455,6 +455,36 @@ begin
     'bille', interne.nouvelle_bille(qui, (interne.tailles())[rg+2], shiny => interne.tirer_shiny(interne.taux_shiny() * nb), src => 'fusion', liee => lie));   -- une bille liée dedans : le résultat l'est aussi
 end $$;
 
+-- (21 octobre 2026) Fusion en lot : jusqu'à 10 fusions d'un coup (CRAFT_LOT_MAX dans index.html). ids = les billes des fusions
+-- à la suite (les N premières font la 1re fusion, les N suivantes la 2e…), toutes de la même taille. Mêmes règles qu'une fusion
+-- (chaque fusion a sa propre chance de shiny ; une bille liée dans une fusion : son résultat l'est aussi). Tout ou rien :
+-- une seule bille indisponible et aucune fusion n'est faite. Le jeu n'y met que des doubles, l'album ne perd rien.
+create or replace function interne.fusion_lot_max() returns int language sql immutable as $$ select 10 $$;
+create or replace function public.fusionner_lot(ids uuid[])
+returns jsonb language plpgsql security definer set search_path = public as $$
+declare qui uuid := interne.moi(); tailles text[]; rg int; n int; nb int; k int; b record; lot uuid[]; lie boolean; sortie jsonb := '[]'::jsonb;
+begin
+  select array_agg(distinct taille), count(*) into tailles, nb from billes
+    where id = any(ids) and proprietaire = qui and detruite_le is null and secrete is null and not verrouillee
+      and shiny = 0 and interne.coloris_normal(coloris) and origine = 'serveur';
+  if tailles is null or array_length(tailles,1) <> 1 or nb <> coalesce(array_length(ids,1),0) then raise exception 'fusion_invalide'; end if;
+  rg := interne.rang(tailles[1]);
+  if rg >= 5 then raise exception 'fusion_invalide'; end if;
+  n := (interne.fusion_n())[rg+1]; k := nb / n;
+  if nb % n <> 0 or k < 1 or k > interne.fusion_lot_max() then raise exception 'fusion_invalide'; end if;
+  for b in select id from billes where id = any(ids) for update loop
+    if interne.en_vente(b.id) or interne.dans_troc(b.id) then raise exception 'bille_indisponible'; end if;
+  end loop;
+  for i in 0..k-1 loop
+    lot := ids[i*n+1 : i*n+n];
+    select bool_or(interne.encore_liee(liee, qui)) into lie from billes where id = any(lot);
+    update billes set detruite_le = now(), detruite_raison = 'fusionnee' where id = any(lot);
+    insert into billes_historique (bille, de, vers, motif) select x, qui, null, 'detruite' from unnest(lot) x;
+    sortie := sortie || jsonb_build_array(interne.nouvelle_bille(qui, (interne.tailles())[rg+2], shiny => interne.tirer_shiny(interne.taux_shiny() * n), src => 'fusion', liee => lie));
+  end loop;
+  return jsonb_build_object('eco', interne.etat(qui), 'billes', sortie);
+end $$;
+
 -- Fusion d'événement (2 octobre 2026) : des billes d'événement (décor 32 Pirate…) d'une même taille, d'un même décor et d'un même coloris
 -- donnent une bille de la taille au-dessus, dans ce décor et ce coloris. 3 billes jusqu'à la Chinoise, puis 2 (FUSION_EV dans index.html).
 -- Pas de shiny en entrée ; la shiny peut sortir comme pour une fusion normale. Les billes en vente ou dans un troc ne peuvent pas fusionner.
@@ -736,7 +766,7 @@ end $$;
 -- droits : le site ne peut appeler que ces fonctions-là
 do $$ declare f text; begin
   foreach f in array array['eco_demarrer(int,jsonb,int)','eco_etat()','ouvrir_sac(text,boolean,boolean)','echanger_billes(uuid[])',
-    'fusionner(uuid[])','fusion_evenement(uuid[])','pachinko(boolean)','bonbec_du_jour()','gagner(text,text,int,text)','bille_gagnee(text,text,bigint,uuid)',
+    'fusionner(uuid[])','fusionner_lot(uuid[])','fusion_evenement(uuid[])','pachinko(boolean)','bonbec_du_jour()','gagner(text,text,int,text)','bille_gagnee(text,text,bigint,uuid)',
     'miser(text,int)','regler_mise(bigint,int)','outil_test(text)'] loop
     execute format('revoke all on function public.%s from public, anon', f);
     execute format('grant execute on function public.%s to authenticated', f);

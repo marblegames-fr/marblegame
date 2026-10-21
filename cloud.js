@@ -76,6 +76,8 @@
       else for(let r = out; r.length===1000;){ r = ok(await page(out.length)); out.push(...r) }   // (sans le total : page après page, comme avant)
       const seen = new Set(); return out.filter(r=>!seen.has(r.id) && seen.add(r.id)).map(fromRow);   // (une bille arrivée entre deux pages peut en décaler une)
     },
+    // (21 octobre 2026) une empreinte de la boîte (supabase/vitesse.sql) : elle change dès qu'une bille arrive, part ou change
+    empreinte: () => rpc("billes_empreinte"),
     // le numéro de la dernière remise à zéro (supabase/remise.sql), null s'il n'y en a jamais eu
     async remise(){ const {data, error} = await db.from("remise").select("numero").eq("id", 1).maybeSingle(); return error ? null : data?.numero ?? null },
     async lastUpdate(uid){ need(); return ok(await db.from("sauvegardes").select("appareil, maj_le").eq("joueur", uid).maybeSingle()); },

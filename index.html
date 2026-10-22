@@ -16177,7 +16177,7 @@ let bugKeep = null;   // un message qui n'est pas parti : il est reproposé au p
 // on:false cache le bouton (pendant qu'on prépare la mise à jour) ; on:true le remet, avec la pastille si l'id a changé
 // (16 octobre 2026) deux repères : dot = la pastille rouge du bouton, à changer à CHAQUE mise en ligne qui ajoute une ligne au patchnote
 // (avec txt : la date du jour) ; id = la fenêtre d'annonce à l'arrivée, seulement pour les très gros jours
-const NEWS = {on:true, id:"2026-10-22", dot:"2026-10-23-0015", url:"/nouveautes.html", txt:"Mise à jour du 22 oct."};
+const NEWS = {on:true, id:"2026-10-22", dot:"2026-10-23-0025", url:"/nouveautes.html", txt:"Mise à jour du 22 oct."};
 const newsUnseen = () => lsGet("billeo-news-vu")!==NEWS.dot;
 // (14 octobre 2026) à l'arrivée, une fenêtre annonce la mise à jour, une seule fois par mise à jour et par compte (S.newsPop, gardé
 // dans la partie : elle ne revient pas sur un autre appareil) ; on choisit d'aller voir les nouveautés, ou pas
@@ -16894,12 +16894,13 @@ function courCopains(){
   const fc = e => rarOf(e.s)>=0 ? DECOR_RAR[rarOf(e.s)].c : TYPES[e.s.type].rc;
   // (20 octobre 2026) une carte à collectionner par trouvaille ; toucher la bille l'ouvre en grand, le bouton jaune propose un troc au copain pour cette bille
   if(!document.querySelector(".cpc-grid")) ui.cpcSeen = new Set();   // on vient d'ouvrir l'onglet : toutes les cartes font leur apparition (pas à chaque rafraîchissement)
+  // (22 octobre 2026) la bille à la même taille que dans la boîte à billes (avant : presque toutes pareilles, de 70 à 82 px)
   const fresh = new Set(), seen = ui.cpcSeen || (ui.cpcSeen = new Set());
   const card = (e, i) => { const s = e.s, r = rarOf(s), holo = s.shiny || r>=4, ami = amis.find(a=>a.pseudo===e.who), k = s.id || (e.who+e.at);
     const isIn = !seen.has(k); if(isIn) fresh.add(k);
     return `<div class="cpc${holo?" holo":""}${r===5?" myth":""}${s.shiny?" sh"+s.shiny:""}${isIn?" in":""}${isIn && Date.now()-e.at < 24*36e5 ? " fresh" : ""}" style="--dc:${fc(e)};--i:${i}"><div class="cpc-in">
       <div class="cpc-hd" title="Motif ${rarOf(s)>=0?DECOR_RAR[rarOf(s)].name:"spécial"}"><span class="cpc-tl">${TYPES[s.type].label}</span><span class="cpc-st" aria-label="${findStars(s)} étoile${findStars(s)>1?"s":""} sur 6">${"★".repeat(findStars(s))}</span></div>
-      <div class="cpc-art">${courBall(s, Math.round(24*scaleOf(s.type)+58), `Trouvée par ${e.who}.`)}</div>
+      <div class="cpc-art">${courBall(s, Math.round(84*scaleOf(s.type)+6), `Trouvée par ${e.who}.`)}</div>
       <div class="cpc-nm">${esc(courName(s))}</div>
       <div class="cpc-by"><span class="cpc-av" style="--ac:${AV_COLS[hash(e.who||"?")%AV_COLS.length]}">${esc((e.who||"?").slice(0,1).toUpperCase())}</span><b>${esc(e.who)}</b> · ${timeAgo(e.at)}</div></div>
       ${ami && s.id ? `<button class="cpc-troc" data-action="troc-want" data-id="${ami.id}" data-bille="${s.id}" title="Proposer un troc à ${esc(e.who)} pour cette bille" aria-label="Proposer un troc à ${esc(e.who)} pour cette bille">${ic("swap",15)}</button>` : ""}</div>` };

@@ -311,6 +311,7 @@ begin
     where h.motif = 'trouvee' and h.vers in (select ami from amis where joueur = moi)
       -- (16 octobre 2026) Mammouths seulement (rang 5) : les Boulets communs remplissaient les 300 places et poussaient dehors les légendaires
       and b.secrete is null   -- (22 octobre 2026) jamais une bille secrète (bêta, départ, secrets de la cour)
+      and (interne.decor_rarete())[b.decor+1] <> 5 and coalesce(b.donnees->>'src', '') not in ('passe', 'test')   -- (22 octobre 2026) ni d'événement, ni du passe de saison (ni de test)
       and h.le > now() - interval '72 hours' and (interne.rang(b.taille) = 5 or b.shiny > 0
         or (interne.decor_rarete())[b.decor+1] in (4, 6) or ((interne.decor_rarete())[b.decor+1] = 3 and interne.rang(b.taille) >= 3))
     order by h.le desc limit 300) x), '[]');   -- (14 octobre 2026) toutes celles des 72 dernières heures (300 au plus) : la cour les montre par pages, les plus belles d'abord

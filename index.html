@@ -16177,7 +16177,7 @@ let bugKeep = null;   // un message qui n'est pas parti : il est reproposé au p
 // on:false cache le bouton (pendant qu'on prépare la mise à jour) ; on:true le remet, avec la pastille si l'id a changé
 // (16 octobre 2026) deux repères : dot = la pastille rouge du bouton, à changer à CHAQUE mise en ligne qui ajoute une ligne au patchnote
 // (avec txt : la date du jour) ; id = la fenêtre d'annonce à l'arrivée, seulement pour les très gros jours
-const NEWS = {on:true, id:"2026-10-22", dot:"2026-10-23-0005", url:"/nouveautes.html", txt:"Mise à jour du 22 oct."};
+const NEWS = {on:true, id:"2026-10-22", dot:"2026-10-23-0015", url:"/nouveautes.html", txt:"Mise à jour du 22 oct."};
 const newsUnseen = () => lsGet("billeo-news-vu")!==NEWS.dot;
 // (14 octobre 2026) à l'arrivée, une fenêtre annonce la mise à jour, une seule fois par mise à jour et par compte (S.newsPop, gardé
 // dans la partie : elle ne revient pas sur un autre appareil) ; on choisit d'aller voir les nouveautés, ou pas
@@ -16884,7 +16884,7 @@ function courCopains(){
   // (14 octobre 2026) + les motifs légendaires et mythiques de toutes tailles, et les épiques à partir du Calot (pas les motifs d'événement ni de saison)
   // (14 octobre 2026, refait) 6 par page, en vitrine en haut de la page ; (16 octobre 2026) de la plus récente à la plus ancienne, de gauche à droite
   // (20 octobre 2026, le soir) plus les épiques : seulement les Mammouths, les shiny, et les légendaires et mythiques de toutes tailles
-  const rares = (cour.fil||[]).filter(e=>!e.s.secret && (e.s.type==="mammouth" && rarOf(e.s)>=3 || e.s.shiny || rarOf(e.s)>=4) && Date.now()-e.at < RARES_H*36e5)   // (22 octobre 2026) les Mammouths seulement à partir d'un motif épique : il y en avait trop
+  const rares = (cour.fil||[]).filter(e=>!e.s.secret && !extraFam(e.s.family) && !isSeason(e.s) && e.s.src!=="passe" && (e.s.type==="mammouth" && rarOf(e.s)>=3 || e.s.shiny || rarOf(e.s)>=4) && Date.now()-e.at < RARES_H*36e5)   // (22 octobre 2026) les Mammouths seulement à partir d'un motif épique : il y en avait trop
     .sort((x,y)=>y.at-x.at);   // (22 octobre 2026) de nouveau la plus récente d'abord, de gauche à droite (le 20 : la plus rare d'abord)
   const pg = (n, per, k) => { const max = Math.max(0, Math.ceil(n/per)-1); ui[k] = Math.min(ui[k]||0, max); return {p:ui[k], max} };
   const A = pg(amis.length, CP_PAGE, "cpPage"), F = pg(rares.length, RARES_PAGE, "rarPage");

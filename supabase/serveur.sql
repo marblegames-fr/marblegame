@@ -155,7 +155,7 @@ create or replace function interne.nb_coloris() returns int language sql immutab
 -- Elles sont rangées avec les billes secrètes (secrete = 'beta') : ni troc, ni marché, ni recyclage, ni classement.
 -- supabase/reset.sql les garde. Au lancement : remplacer true par false (et BETA.open:false dans index.html).
 -- (16 octobre 2026) la bêta se ferme toute seule le 1er novembre 2026 à 0 h, heure de Paris (BETA.end dans index.html)
-create or replace function interne.beta_ouverte() returns boolean language sql stable as $$ select now() < timestamptz '2026-11-01 00:00:00 Europe/Paris' $$;
+create or replace function interne.beta_ouverte() returns boolean language sql stable as $$ select now() < timestamptz '2026-12-01 00:00:00 Europe/Paris' $$;   -- (22 octobre 2026) reculée du 1er novembre au 1er décembre
 create or replace function interne.taux_shiny() returns numeric language sql immutable as $$ select 0.0005::numeric $$;   -- sac gratuit et fusions ; Classique ×2, Premium et Pirate ×4, Collector ×10 (interne.sac) ; 1 sur 2 000 (relevé le 2 octobre 2026 : 1 sur 10 000, c'était presque jamais)
 create or replace function interne.revente() returns int[] language sql immutable as $$ select array[1,2,4,8,20,50] $$;   -- 6 octobre 2026 : toute la monnaie divisée par 10 (supabase/division10.sql)
 create or replace function interne.prime_shiny() returns int[] language sql immutable as $$ select array[200,500,1500] $$;

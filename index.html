@@ -4390,7 +4390,8 @@ Object.values(EVENTS).filter(E=>!E.late).forEach(E=>{ E.palIdx = E.pals.map(P=>{
 // Au lancement : open:false ici et interne.beta_ouverte() à false dans supabase/serveur.sql.
 // Un verre précieux par taille (Mini → Mammouth), toujours avec le β d'or : coloris 70 à 75, dans l'ordre des tailles (même règle dans serveur.sql).
 // (16 octobre 2026) la bêta se ferme toute seule le 1er novembre 2026 à 0 h (Paris) : plus rien à faire le jour J (serveur : interne.beta_ouverte)
-const BETA = {fam:47, end:Date.parse("2026-11-01T00:00:00+01:00"), get open(){ return Date.now() < this.end }, ed:"Bêta 2026", pals:[
+// (22 octobre 2026) reculée au 1er décembre 2026 à 0 h (Paris), pour faire venir plus de testeurs
+const BETA = {fam:47, end:Date.parse("2026-12-01T00:00:00+01:00"), get open(){ return Date.now() < this.end }, ed:"Bêta 2026", pals:[
   ["Rubis","#5E0B1A","#D7263D","#FFC94A","#FFE3E6"],
   ["Émeraude","#06402B","#1FA463","#FFC94A","#DDF7EA"],
   ["Saphir","#0A1F5C","#2F6BEA","#FFC94A","#DFE8FF"],
@@ -7938,7 +7939,7 @@ function renderBeta(){
   // une page restée ouverte à minuit : le ruban s'en va tout seul
   const left = BETA.end - Date.now(); if(left < 864e5 && !renderBeta.t) renderBeta.t = setTimeout(()=>{ renderBeta(); renderView() }, left + 1000);
   const done = betaOwned().length===TK.length;
-  el.innerHTML = `<span class="br-tag">Bêta</span><span class="br-txt"><span class="br-long">La bêta se termine le 1er novembre : </span><span class="br-short">Fin de la bêta le 1er nov. : </span><b>récupère tes billes Bêta avant, elles ne seront plus disponibles après !</b> <span class="br-bug">Un bug ? ${sync.on ? `<button data-action="bug-report">Signale-le</button>` : "Signale-le"}, ça nous aide beaucoup.</span></span>
+  el.innerHTML = `<span class="br-tag">Bêta</span><span class="br-txt"><span class="br-long">La bêta se termine le 1er décembre : </span><span class="br-short">Fin de la bêta le 1er déc. : </span><b>récupère tes billes Bêta avant, elles ne seront plus disponibles après !</b> <span class="br-bug">Un bug ? ${sync.on ? `<button data-action="bug-report">Signale-le</button>` : "Signale-le"}, ça nous aide beaucoup.</span></span>
     ${done ? `<button class="br-btn done" data-action="beta-see">${ic("check",14,3)} Mes billes Bêta</button>` : `<button class="br-btn" data-action="beta-claim">${ic("gift",15)} Claim</button>`}`;
 }
 function claimBeta(){
@@ -16175,7 +16176,7 @@ let bugKeep = null;   // un message qui n'est pas parti : il est reproposé au p
 // on:false cache le bouton (pendant qu'on prépare la mise à jour) ; on:true le remet, avec la pastille si l'id a changé
 // (16 octobre 2026) deux repères : dot = la pastille rouge du bouton, à changer à CHAQUE mise en ligne qui ajoute une ligne au patchnote
 // (avec txt : la date du jour) ; id = la fenêtre d'annonce à l'arrivée, seulement pour les très gros jours
-const NEWS = {on:true, id:"2026-10-22", dot:"2026-10-22-2310", url:"/nouveautes.html", txt:"Mise à jour du 22 oct."};
+const NEWS = {on:true, id:"2026-10-22", dot:"2026-10-22-2335", url:"/nouveautes.html", txt:"Mise à jour du 22 oct."};
 const newsUnseen = () => lsGet("billeo-news-vu")!==NEWS.dot;
 // (14 octobre 2026) à l'arrivée, une fenêtre annonce la mise à jour, une seule fois par mise à jour et par compte (S.newsPop, gardé
 // dans la partie : elle ne revient pas sur un autre appareil) ; on choisit d'aller voir les nouveautés, ou pas

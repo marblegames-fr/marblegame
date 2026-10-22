@@ -8007,7 +8007,7 @@ function renderTop(){
 // Petit tableau de bord du joueur, sous son profil en haut à droite
 function renderProfPop(){
   const a = ownActive(), found = albumFound().size;
-  const nChal = CHALLENGES.filter(c=>S.chal.includes(c.id)).length, claim = chalClaimable()+questsClaimable();
+  const nChal = CHALLENGES.filter(c=>S.chal.includes(c.id)).length, claim = chalClaimable()+(onbOk("journee") ? questsClaimable() : 0);   // (22 octobre 2026) pas les quêtes avant « Ta journée » (pendant le démarrage)
   document.getElementById("prof-pop").innerHTML = `
     <div class="pp-head"><span class="av-ring big" style="--p:${Math.max(1.5,found/ALBUM_TOTAL*100)}"><span class="avatar">${avatarHTML(a,160,56)}</span></span>
       <div><b>${esc(S.name)}</b><small>${esc(S.title)}</small>${a?`<small class="pp-ball">Joue avec : ${esc(specName(a))}</small>`:""}</div></div>
@@ -8106,8 +8106,8 @@ const ONB = [
 const onbOn = () => !!S.onb && !S.onb.done;
 const onbOk = k => !onbOn() || ONB.slice(0, S.onb.step+1).some(e=>e.menus.includes(k));
 // la Confiserie et le passe ont leur propre étape, même s'ils sont rangés sous la Boîte et l'Accueil
-// (22 octobre 2026) le profil et les paramètres sont toujours ouverts (avant : fermés jusqu'à la fin du démarrage, « Bientôt ! »)
-const viewOk = v => v==="profil" || v==="parametres" || onbOk(NAV_PARENT[v] || v) &&({confiserie:onbOk("confiserie"), atelier:onbOk("confiserie"), passe:onbOk("passe")}[v] ?? true);
+// (22 octobre 2026) le profil, les paramètres et les succès sont toujours ouverts (avant : fermés jusqu'à la fin du démarrage, « Bientôt ! »)
+const viewOk = v => v==="profil" || v==="parametres" || v==="succes" || onbOk(NAV_PARENT[v] || v) &&({confiserie:onbOk("confiserie"), atelier:onbOk("confiserie"), passe:onbOk("passe")}[v] ?? true);
 // l'objectif est-il atteint ? on passe à l'étape suivante, et sa fenêtre « Nouveau ! » attend que l'écran soit libre
 function onbCheck(){
   if(!onbOn()) return;
@@ -16177,7 +16177,7 @@ let bugKeep = null;   // un message qui n'est pas parti : il est reproposé au p
 // on:false cache le bouton (pendant qu'on prépare la mise à jour) ; on:true le remet, avec la pastille si l'id a changé
 // (16 octobre 2026) deux repères : dot = la pastille rouge du bouton, à changer à CHAQUE mise en ligne qui ajoute une ligne au patchnote
 // (avec txt : la date du jour) ; id = la fenêtre d'annonce à l'arrivée, seulement pour les très gros jours
-const NEWS = {on:true, id:"2026-10-22", dot:"2026-10-22-2359", url:"/nouveautes.html", txt:"Mise à jour du 22 oct."};
+const NEWS = {on:true, id:"2026-10-22", dot:"2026-10-23-0005", url:"/nouveautes.html", txt:"Mise à jour du 22 oct."};
 const newsUnseen = () => lsGet("billeo-news-vu")!==NEWS.dot;
 // (14 octobre 2026) à l'arrivée, une fenêtre annonce la mise à jour, une seule fois par mise à jour et par compte (S.newsPop, gardé
 // dans la partie : elle ne revient pas sur un autre appareil) ; on choisit d'aller voir les nouveautés, ou pas

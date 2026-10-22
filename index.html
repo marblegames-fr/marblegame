@@ -12583,7 +12583,7 @@ async function pzInit(){
     cx.fillStyle = "rgba(0,0,0,.18)"; cx.beginPath(); cx.ellipse(2, r*.92, r*.8, r*.22, 0, 0, 6.283); cx.fill();
     const clear = cx.createRadialGradient(-r*.3, -r*.3, r*.1, 0, 0, r); clear.addColorStop(0, "rgba(255,255,255,.55)"); clear.addColorStop(.7, "rgba(230,245,255,.18)"); clear.addColorStop(1, "rgba(160,200,230,.45)");
     cx.fillStyle = clear; cx.beginPath(); cx.arc(0, 0, r, 0, 6.283); cx.fill();
-    if(b.c) cvLot(cx, b.c, 0, r*.1, r*.98);
+    if(b.c && !open) cvLot(cx, b.c, 0, r*.1, r*.98);   // en s'ouvrant (dans le bac), le lot sort de la boule : il n'est plus dedans
     cx.save(); cx.translate(-r*open*.4, -open*r*1.6); cx.rotate(-open*.7);
     const cap = cx.createLinearGradient(0, -r, 0, 0); cap.addColorStop(0, b.col[0]); cap.addColorStop(1, b.col[0]+"88");
     cx.fillStyle = cap; cx.beginPath(); cx.arc(0, 0, r, Math.PI, 0); cx.closePath(); cx.fill();
@@ -12633,7 +12633,8 @@ async function pzInit(){
     cx.fillStyle = "#1E2433"; cx.beginPath(); cx.roundRect(pz.claw.x-20, BOX.t+1, 40, 18, 5); cx.fill(); cx.fillStyle = "#FFC93F"; cx.fillRect(pz.claw.x-14, BOX.t+8, 28, 3);
     // les boules
     for(const b of [...pz.balls].sort((a,b)=>a.y-b.y)) if(b!==pz.held) capsule(b, b.x, b.y, RB);
-    if(pz.target && pz.st!=="ready" && !pz.held){ cx.strokeStyle = `rgba(255,225,77,${.6+.4*Math.sin(now/90)})`; cx.lineWidth = 3; cx.beginPath(); cx.arc(pz.target.x, pz.target.y, RB+4, 0, 6.283); cx.stroke() }
+    const ring = pz.st==="choose" ? pz.hi : pz.st!=="ready" && !pz.held ? pz.target : null;
+    if(ring){ cx.strokeStyle = pz.st==="choose" ? "#FFE14D" : `rgba(255,225,77,${.6+.4*Math.sin(now/90)})`; cx.lineWidth = 3.5; cx.shadowColor = "#FFE14D"; cx.shadowBlur = 12; cx.beginPath(); cx.arc(ring.x, ring.y, RB+4, 0, 6.283); cx.stroke(); cx.shadowBlur = 0 }
     // l'ombre de la pince sur le tas
     cx.fillStyle = "rgba(0,0,0,.18)"; cx.beginPath(); cx.ellipse(pz.claw.x, Math.min(BOX.f-6, pz.claw.y+70), 24 - (pz.claw.y-TOPY)/20, 6, 0, 0, 6.283); cx.fill();
     if(pz.held){ cx.save(); cx.translate(pz.claw.x, pz.claw.y-32); cx.rotate(pz.claw.sw); capsule(pz.held, 0, 38, RB); cx.restore() }
@@ -12660,16 +12661,22 @@ async function pzInit(){
   let motor = 0;
   const loop = now => {
     if(!document.body.contains(cv)){ cancelAnimationFrame(pz.raf); return }
-    const c = pz.claw, x0 = c.x;
-    if(pz.st==="travel"){ c.x = toward(c.x, pz.target.x, 4.2); if(++motor % 6===0) Sound.hit?.(.02); if(c.x===pz.target.x){ pz.st = "down"; Sound.whoosh?.() } }
-    if(pz.st==="down"){ c.x = toward(c.x, pz.target.x, 1.5); c.y += 4.6; if(c.y >= pz.target.y - RB*.35){ pz.st = "close"; pz.target.vx = pz.target.vy = 0 } }
-    if(pz.st==="close"){ c.open = Math.max(0, c.open - .05); if(c.open===0){ pz.held = pz.target; Sound.tap(0, .8, 1.2); pz.st = "up"; c.wob = 0 } }
-    if(pz.st==="up"){ c.y -= 3.6; c.wob = (c.wob||0) + 1; if(c.y <= TOPY){ c.y = TOPY; pz.st = "carry" } }
-    if(pz.st==="carry"){ c.x = toward(c.x, HOLE+2, 4.5); if(++motor % 6===0) Sound.hit?.(.02); if(c.x===HOLE+2) pz.st = "drop" }
-    if(pz.st==="drop"){ c.open = Math.min(1, c.open + .06);
+    const c = pz.claw, x0 = c.x, k = pz.lt ? Math.min(3, (now - pz.lt)/16.7) : 1; pz.lt = now;
+    if(pz.st==="choose"){ const C = pz.ch;
+      if(now >= C.next){ C.n++; const last = C.n >= C.max;
+        pz.hi = last ? pz.target : pz.balls.filter(b=>b!==pz.hi)[Math.floor(Math.random()*(pz.balls.length-1))];
+        Sound.hit?.(last ? .09 : .035); C.next = now + 60 + C.n*C.n*.9;
+        if(last){ pz.st = "pause"; C.t1 = now } } }
+    if(pz.st==="pause" && now - pz.ch.t1 > 800){ pz.st = "travel"; Sound.whoosh?.() }
+    if(pz.st==="travel"){ c.x = toward(c.x, pz.target.x, 1.6*k); if((motor += k) > 9){ motor = 0; Sound.hit?.(.02) } if(c.x===pz.target.x){ pz.st = "down"; Sound.whoosh?.() } }
+    if(pz.st==="down"){ c.x = toward(c.x, pz.target.x, .8*k); c.y += 2*k; if(c.y >= pz.target.y - RB*.35){ pz.st = "close"; pz.target.vx = pz.target.vy = 0 } }
+    if(pz.st==="close"){ c.open = Math.max(0, c.open - .02*k); if(c.open===0){ pz.held = pz.target; Sound.tap(0, .8, 1.2); pz.st = "up"; c.wob = 0 } }
+    if(pz.st==="up"){ c.y -= 1.8*k; c.wob = (c.wob||0) + k; if(c.y <= TOPY){ c.y = TOPY; pz.st = "carry" } }
+    if(pz.st==="carry"){ c.x = toward(c.x, HOLE+2, 1.8*k); if((motor += k) > 9){ motor = 0; Sound.hit?.(.02) } if(c.x===HOLE+2) pz.st = "drop" }
+    if(pz.st==="drop"){ c.open = Math.min(1, c.open + .025*k);
       if(c.open > .5 && pz.held){ pz.falling = {b:pz.held, x:c.x, y:c.y+6, vy:0}; pz.balls.splice(pz.balls.indexOf(pz.held), 1); pz.held = null; pz.target = null }
       if(c.open===1) pz.st = "home" }
-    if(pz.st==="home") c.x = toward(c.x, HOME, 3.5);
+    if(pz.st==="home") c.x = toward(c.x, HOME, 2*k);
     // le balancement : la pince traîne un peu derrière quand elle bouge, puis oscille
     c.vx = c.x - x0; c.sw += (-c.vx*.05 - c.sw)*.08 + (pz.st==="up" ? Math.sin((c.wob||0)/5)*.004 : 0); c.sw *= .97;
     if(pz.falling){ const f = pz.falling; f.vy += .5; f.y += f.vy; if(f.y > BOX.f+20){ Sound.tap(0, .9, .7); pz.tray = {b:f.b, x:60, y:BOX.f+90, open:0, t0:now}; pz.falling = null } }
@@ -12696,7 +12703,7 @@ async function pzGo(pay){
   pz.target = pz.balls.find(b=>b.i===call.r.boule);
   // la page n'avait pas la même machine que le serveur (une autre partie ailleurs) : la boule tirée est mise à jour
   if(!pz.target || pz.target.k!==call.r.case){ if(pz.target){ pz.target.k = call.r.case; pz.target.c = pz.lot } else { pz.add(call.r.boule, call.r.case); pz.target = pz.balls[pz.balls.length-1] } }
-  pz.st = "travel"; chanceBtnsAt("pince", "La machine choisit…");
+  pz.st = "choose"; pz.ch = {n:0, max:18, next:0}; pz.hi = null; chanceBtnsAt("pince", "La machine choisit…");
 }
 function pzFinish(){
   chanceEnd("pince", pz.call, pz.lot, document.getElementById("pz-stage"));
@@ -16133,7 +16140,7 @@ let bugKeep = null;   // un message qui n'est pas parti : il est reproposé au p
 // on:false cache le bouton (pendant qu'on prépare la mise à jour) ; on:true le remet, avec la pastille si l'id a changé
 // (16 octobre 2026) deux repères : dot = la pastille rouge du bouton, à changer à CHAQUE mise en ligne qui ajoute une ligne au patchnote
 // (avec txt : la date du jour) ; id = la fenêtre d'annonce à l'arrivée, seulement pour les très gros jours
-const NEWS = {on:true, id:"2026-10-22", dot:"2026-10-22-2230", url:"/nouveautes.html", txt:"Mise à jour du 22 oct."};
+const NEWS = {on:true, id:"2026-10-22", dot:"2026-10-22-2300", url:"/nouveautes.html", txt:"Mise à jour du 22 oct."};
 const newsUnseen = () => lsGet("billeo-news-vu")!==NEWS.dot;
 // (14 octobre 2026) à l'arrivée, une fenêtre annonce la mise à jour, une seule fois par mise à jour et par compte (S.newsPop, gardé
 // dans la partie : elle ne revient pas sur un autre appareil) ; on choisit d'aller voir les nouveautés, ou pas

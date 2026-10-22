@@ -1656,6 +1656,7 @@ canvas.gr-foil{touch-action:none}
 .cf-rate em{font-style:normal;font-size:11px;font-weight:800;max-width:100%;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .cf-rate b{display:inline-flex;align-items:center;gap:2px;font-size:13.5px;font-weight:900}
 .cf-rate b .coin{width:14px;height:14px}
+.cf-rr{display:inline-flex;align-items:center;padding:1px 8px;border-radius:99px;background:color-mix(in srgb,var(--c) 18%,transparent);color:color-mix(in srgb,var(--c) 75%,var(--ink));font-weight:900}
 .cf-rs{display:flex;align-items:center;flex-wrap:wrap;gap:4px 8px;font-size:12px;font-weight:700;color:var(--ink-2)}
 @media (max-width:560px){ .cf-rate-list{grid-template-columns:repeat(3,minmax(0,1fr))} }
 .cf-subf{display:grid;gap:8px;margin:0 0 14px;padding:12px 14px;border-radius:16px;background:var(--panel);border:1px solid var(--line)}
@@ -9420,7 +9421,9 @@ function confEchange(dups, dupVal){
   // (22 octobre 2026) les tarifs en haut, en petite bande (avant : un grand panneau tout en bas de la page)
   const rates = `<div class="cf-rates" role="group" aria-label="Les tarifs de la maison, par bille"><span class="cf-rl">${ic("candy",14)} Tarifs par bille</span>
     <div class="cf-rate-list">${TK.map((t,i)=>`<span class="cf-rate" style="${tstyle(t)}">${mImg(SHOWCASE[i],96,Math.round(12*scaleOf(t)+12),"")}<em>${TYPES[t].label.replace("Mini bille","Mini").replace("Bille chinoise","Chinoise")}</em><b>${COIN}${fmt(RECYCLE[t])}</b></span>`).join("")}</div>
-    <small class="cf-rs"><span class="shiny-pill">${SPARK}Shiny</span> ×${SHINY_RECYCLE_MULT} + une prime : ${SHINIES.slice(1).map((x,i)=>`${x.name} +${fmt(SHINY_BONUS[i+1])}`).join(" · ")}</small></div>`;
+    <small class="cf-rs"><b>Motif rare</b> ${DECOR_RAR.map((R,k)=>DECOR_RECYCLE_MULT[k]>1 ? `<span class="cf-rr" style="--c:${R.c}">${R.name} ×${DECOR_RECYCLE_MULT[k]}</span>` : "").join("")}</small>
+    <small class="cf-rs"><span class="shiny-pill">${SPARK}Shiny</span> ×${SHINY_RECYCLE_MULT} + une prime : ${SHINIES.slice(1).map((x,i)=>`${x.name} +${fmt(SHINY_BONUS[i+1])}`).join(" · ")}</small>
+    <small class="cf-rs meta">Les deux se cumulent : un Calot légendaire rend ${fmt(RECYCLE.calot*DECOR_RECYCLE_MULT[4])} ${CUR.many}.</small></div>`;
   return `${rates}<div class="cf-filter seg" role="group" aria-label="Quelles billes">
       <button class="chip" data-action="conf-filter" data-f="doubles" aria-pressed="${!seules}">${ic("layers",14)} Mes doubles <span class="n">${dups.length}</span></button>
       <button class="chip" data-action="conf-filter" data-f="seules" aria-pressed="${seules}">${ic("star",14)} Billes en un seul exemplaire <span class="n">${singles.length}</span></button>
@@ -16156,7 +16159,7 @@ let bugKeep = null;   // un message qui n'est pas parti : il est reproposé au p
 // on:false cache le bouton (pendant qu'on prépare la mise à jour) ; on:true le remet, avec la pastille si l'id a changé
 // (16 octobre 2026) deux repères : dot = la pastille rouge du bouton, à changer à CHAQUE mise en ligne qui ajoute une ligne au patchnote
 // (avec txt : la date du jour) ; id = la fenêtre d'annonce à l'arrivée, seulement pour les très gros jours
-const NEWS = {on:true, id:"2026-10-22", dot:"2026-10-22-2345", url:"/nouveautes.html", txt:"Mise à jour du 22 oct."};
+const NEWS = {on:true, id:"2026-10-22", dot:"2026-10-23-0005", url:"/nouveautes.html", txt:"Mise à jour du 22 oct."};
 const newsUnseen = () => lsGet("billeo-news-vu")!==NEWS.dot;
 // (14 octobre 2026) à l'arrivée, une fenêtre annonce la mise à jour, une seule fois par mise à jour et par compte (S.newsPop, gardé
 // dans la partie : elle ne revient pas sur un autre appareil) ; on choisit d'aller voir les nouveautés, ou pas

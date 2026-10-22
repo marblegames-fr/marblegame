@@ -11394,9 +11394,13 @@ const CHANCE_PRIX = {roue:15, grattage:15, distributeur:15, marelle:15, gobelets
 const chanceBought = k => playedToday()[k+"N"] || 0;
 const chanceFreeDone = k => !!playedToday()[k]?.done;
 // les boutons d'un jeu de hasard : la partie offerte, puis « encore une » tant qu'il en reste à acheter
+// (22 octobre 2026) les Gobelets et le Tiercé : la partie offerte seulement (3 lots visibles : acheter des parties serait trop avantageux)
+const CHANCE_OFFERT = new Set(["gobelets","tierce"]);
+const chanceMax = k => CHANCE_OFFERT.has(k) ? 0 : CHANCE_MAX;
 function chanceBtns(k, act, verb){
   const free = !chanceFreeDone(k), n = chanceBought(k), prix = CHANCE_PRIX[k];
   if(free) return `<button class="btn btn-yellow btn-xl" data-action="${act}" data-pay="0">${ic("gift",18)} ${verb} (offert)</button>`;
+  if(CHANCE_OFFERT.has(k)) return `<button class="btn btn-ghost btn-xl" disabled>${ic("clock",18)} Reviens demain !</button><small class="pachi-n">Une partie offerte par jour · la prochaine dans <b data-quest-timer>${untilMidnight()}</b></small>${chanceNext(k)}`;
   if(n>=CHANCE_MAX) return `<button class="btn btn-ghost btn-xl" disabled>${ic("clock",18)} Reviens demain !</button><small class="pachi-n">Encore ${CHANCE_MAX} parties à acheter demain · dans <b data-quest-timer>${untilMidnight()}</b></small>${chanceNext(k)}`;
   // (10 octobre 2026) pas assez de bonbecs : on le dit (le bouton grisé seul faisait croire à un bug)
   const manque = S.jetons<prix ? `<small class="pachi-n pachi-manque">${ic("candy",13)} Il te manque <b>${fmt(prix-S.jetons)} ${CUR.many}</b> pour cette partie</small>` : "";
@@ -11405,6 +11409,7 @@ function chanceBtns(k, act, verb){
 // payer une partie : vérifié ici, puis par le serveur ; renvoie false si on ne peut pas
 function chanceCanPay(k, pay){
   if(!pay) return !chanceFreeDone(k);
+  if(CHANCE_OFFERT.has(k)){ toast("Une seule partie par jour à ce jeu : reviens demain !"); return false }
   if(chanceBought(k)>=CHANCE_MAX){ toast(`Tu as déjà acheté tes ${CHANCE_MAX} parties du jour : reviens demain !`); return false }
   if(S.jetons<CHANCE_PRIX[k]){ toast(`Il te manque ${fmt(CHANCE_PRIX[k]-S.jetons)} ${CUR.many}.`); return false }
   return true;
@@ -12718,7 +12723,7 @@ function viewGames(){
   // un jeu « fait à fond » aujourd'hui : la partie du jour est finie, et pour les jeux de chance toutes les parties à acheter aussi
   const CHANCE_KEYS = ["roue","pachinko","grattage","distributeur","marelle", ...NEW_CHANCE];
   const freeDone = k => k==="roue"||k==="pachinko" ? !soloReady(k) && !gameLive(k) : chanceFreeDone(k);
-  const bought = k => k==="pachinko" ? pachiBought() : chanceBought(k), maxOf = k => k==="pachinko" ? PACHI_MAX : CHANCE_MAX;
+  const bought = k => k==="pachinko" ? pachiBought() : chanceBought(k), maxOf = k => k==="pachinko" ? PACHI_MAX : chanceMax(k);
   const maxed = k => k==="tir" ? tirDone : CHANCE_KEYS.includes(k) ? freeDone(k) && bought(k)>=maxOf(k) : !!dayGame(k)?.done;
   // les parties du jour d'un jeu de chance : la partie offerte, puis une pastille par partie à acheter
   const pips = k => CHANCE_KEYS.includes(k) ? `<span class="gt-pips" title="La partie offerte, puis ${maxOf(k)} parties à acheter">${ic("gift",13)}<i class="${freeDone(k)?"on":""}"></i><em></em>${Array.from({length:maxOf(k)},(_,i)=>`<i class="${i<bought(k)?"on":""}"></i>`).join("")}</span>` : "";
@@ -12734,7 +12739,7 @@ function viewGames(){
   const day = k => ({v:k, t:DAY_GAMES[k].title, max:DAY_GAMES[k].max, prize:DAY_GAMES[k].prize, ok:soloReady(k)||gameLive(k), state:state(k)});
   // (22 octobre 2026) plus de jeux d'adresse : le Tir, le Château et la Tic sont remplacés par 4 jeux de chance
   const solo = [];
-  const chanceTile = (v, t, d, art, prize) => ({v, t, d, art, prize, ok:!chanceFreeDone(v), state:chanceFreeDone(v) ? `${ic("check",14,3)} Partie offerte jouée` : `${ic("gift",14)} Partie offerte à jouer`, stat:`${chanceBought(v)} / ${CHANCE_MAX} achetées aujourd'hui · ${CHANCE_PRIX[v]} ${CUR.many}`});
+  const chanceTile = (v, t, d, art, prize) => ({v, t, d, art, prize, ok:!chanceFreeDone(v), state:chanceFreeDone(v) ? `${ic("check",14,3)} Partie offerte jouée` : `${ic("gift",14)} Partie offerte à jouer`, stat:CHANCE_OFFERT.has(v) ? "Une partie offerte par jour" : `${chanceBought(v)} / ${CHANCE_MAX} achetées aujourd'hui · ${CHANCE_PRIX[v]} ${CUR.many}`});
   const chance = [
     {...day("roue"), d:"Un tour de roue gratuit chaque jour : bonbecs, sachets offerts… et peut-être un Mammouth !", art:artRoue(), stat:`${S.stats.roue||0} tour${(S.stats.roue||0)>1?"s":""} de roue`},
     {...day("pachinko"), d:"Lâche une bille en haut du plateau : elle rebondit de clou en clou jusqu'à une case. Bonbecs, sachets offerts… et tout au bord, un Mammouth !", art:artPachinko(), stat:`${S.stats.pachi||0} bille${(S.stats.pachi||0)>1?"s":""} lâchée${(S.stats.pachi||0)>1?"s":""}`},
@@ -16128,7 +16133,7 @@ let bugKeep = null;   // un message qui n'est pas parti : il est reproposé au p
 // on:false cache le bouton (pendant qu'on prépare la mise à jour) ; on:true le remet, avec la pastille si l'id a changé
 // (16 octobre 2026) deux repères : dot = la pastille rouge du bouton, à changer à CHAQUE mise en ligne qui ajoute une ligne au patchnote
 // (avec txt : la date du jour) ; id = la fenêtre d'annonce à l'arrivée, seulement pour les très gros jours
-const NEWS = {on:true, id:"2026-10-22", dot:"2026-10-22-2200", url:"/nouveautes.html", txt:"Mise à jour du 22 oct."};
+const NEWS = {on:true, id:"2026-10-22", dot:"2026-10-22-2230", url:"/nouveautes.html", txt:"Mise à jour du 22 oct."};
 const newsUnseen = () => lsGet("billeo-news-vu")!==NEWS.dot;
 // (14 octobre 2026) à l'arrivée, une fenêtre annonce la mise à jour, une seule fois par mise à jour et par compte (S.newsPop, gardé
 // dans la partie : elle ne revient pas sur un autre appareil) ; on choisit d'aller voir les nouveautés, ou pas

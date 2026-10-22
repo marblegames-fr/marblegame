@@ -1,6 +1,6 @@
 -- Les nouveaux jeux de chance (22 octobre 2026) : les Gobelets, le Tiercé, la Toupie et la Pince remplacent le Tir, le Château et la Tic
 -- (maquettes/maquette-jeux-chance-2.html). À installer APRÈS serveur.sql, chance.sql et cour.sql.
--- Comme les autres jeux de chance : une partie offerte par jour, puis 4 achetées à 15 bonbecs (interne.jeu_chance).
+-- Une partie offerte par jour (interne.jeu_chance) ; la Toupie et la Pince ont en plus 4 parties à 15 bonbecs, les Gobelets et le Tiercé non (3 lots visibles).
 -- Tous tirent leurs lots dans la table de la Roue (interne.roue_cases) : au total, les mêmes chances qu'un tour de Roue
 -- (sauf le Tiercé : 3 lots différents et rien pour le 4e, un peu moins généreux que la Roue).
 
@@ -38,6 +38,7 @@ create or replace function public.gobelets(payer boolean default false)
 returns jsonb language plpgsql security definer set search_path = public as $$
 declare qui uuid := interne.moi(); j record; l int[] := '{}'; sig text[] := '{}'; kk int; s text; g int; b jsonb; n int := 0;
 begin
+  if payer then raise exception 'limite_jeu'; end if;   -- (22 octobre 2026) la partie offerte seulement
   select * into j from interne.jeu_chance(qui, 'gobelets', payer, 15);
   while coalesce(array_length(l, 1), 0) < 3 and n < 200 loop
     n := n + 1; kk := interne.roue_tirage();
@@ -56,6 +57,7 @@ create or replace function public.tierce(payer boolean default false)
 returns jsonb language plpgsql security definer set search_path = public as $$
 declare qui uuid := interne.moi(); j record; l int[] := '{}'; sig text[] := '{}'; kk int; s text; g int; b jsonb := null; n int := 0;
 begin
+  if payer then raise exception 'limite_jeu'; end if;   -- (22 octobre 2026) la partie offerte seulement
   select * into j from interne.jeu_chance(qui, 'tierce', payer, 15);
   while coalesce(array_length(l, 1), 0) < 3 and n < 200 loop
     n := n + 1; kk := interne.roue_tirage();

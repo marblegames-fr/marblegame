@@ -860,7 +860,7 @@ begin
   -- parties jouées par jeu : la partie offerte (source 'jeu', clé « jour|jeu ») + les parties achetées (source = le jeu ; 'plinko' pour le Plinko)
   select coalesce(jsonb_object_agg(k, n), '{}') into g from (
     select case when source = 'jeu' then split_part(cle, '|', 2) when source = 'plinko' then 'pachinko' else source end k, count(*) n
-    from gains where joueur = moi and (source in ('jeu', 'plinko', 'roue', 'grattage', 'distributeur', 'marelle'))
+    from gains where joueur = moi and (source in ('jeu', 'plinko', 'roue', 'grattage', 'distributeur', 'marelle', 'gobelets', 'tierce', 'toupie', 'pince'))
     group by 1) x;
   select s.total into mon from interne.scores() s where s.joueur = moi;
   return jsonb_build_object(

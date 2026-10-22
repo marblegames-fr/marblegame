@@ -591,13 +591,22 @@ end $$;
 -- Toujours un jeu d'adresse (Tir, Pot, Château ou Tic) en premier, puis 2 autres parmi les 7 restants.
 -- Hasard : x → (x² + 7) mod 65521 (petits nombres : le même résultat exact en SQL et en JavaScript).
 -- (9 octobre 2026) la Marelle prend la place du Pot, à la même position (JEUX_TOUS dans index.html)
+-- (22 octobre 2026) les Gobelets, le Tiercé et la Toupie remplacent le Tir, le Château et la Tic ; la Pince arrive le 23 (jeux-chance-2.sql)
 create or replace function interne.jeux_du_jour(j date) returns text[] language plpgsql immutable as $$
-declare tous text[] := array['tir','marelle','chateau','tic','roue','pachinko','grattage','distributeur'];
+declare tous text[]; n int;
         x bigint := ((j - date '2026-01-01') * 7919 + 12345) % 65521; a text; b text; c text; r text[];
 begin
-  x := (x * x + 7) % 65521; x := (x * x + 7) % 65521; a := tous[1 + x % 4];
-  r := array_remove(tous, a);  x := (x * x + 7) % 65521; b := r[1 + x % 7];
-  r := array_remove(r, b);     x := (x * x + 7) % 65521; c := r[1 + x % 6];
+  if j < date '2026-10-23' then
+    tous := array['gobelets','marelle','tierce','toupie','roue','pachinko','grattage','distributeur'];
+    x := (x * x + 7) % 65521; x := (x * x + 7) % 65521; a := tous[1 + x % 4];
+    r := array_remove(tous, a);  x := (x * x + 7) % 65521; b := r[1 + x % 7];
+    r := array_remove(r, b);     x := (x * x + 7) % 65521; c := r[1 + x % 6];
+  else
+    tous := array['gobelets','marelle','tierce','toupie','pince','roue','pachinko','grattage','distributeur']; n := 9;
+    x := (x * x + 7) % 65521; x := (x * x + 7) % 65521; a := tous[1 + x % n];
+    r := array_remove(tous, a);  x := (x * x + 7) % 65521; b := r[1 + x % (n-1)];
+    r := array_remove(r, b);     x := (x * x + 7) % 65521; c := r[1 + x % (n-2)];
+  end if;
   return array[a, b, c];
 end $$;
 

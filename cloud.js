@@ -108,6 +108,12 @@
       grattage: payer => rpc("grattage", {payer:!!payer}),
       marelle: payer => rpc("marelle", {payer:!!payer}),   // (9 octobre 2026) remplace le Pot
       distributeur: payer => rpc("distributeur", {payer:!!payer}),
+      // (22 octobre 2026) les nouveaux jeux de chance (supabase/jeux-chance-2.sql)
+      gobelets: payer => rpc("gobelets", {payer:!!payer}),
+      tierce: payer => rpc("tierce", {payer:!!payer}),
+      toupie: payer => rpc("toupie", {payer:!!payer}),
+      pince: payer => rpc("pince", {payer:!!payer}),
+      pinceEtat: () => rpc("pince_etat"),
       loterie: () => rpc("loterie_etat"),
       loterieTicket: () => rpc("loterie_ticket"),
       daily: () => rpc("bonbec_du_jour"),

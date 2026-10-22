@@ -1648,6 +1648,16 @@ canvas.gr-foil{touch-action:none}
 .conf-choice[aria-pressed="true"].cc-echange{border-color:#E0588E;background:color-mix(in srgb,#E0588E 9%,var(--panel))}
 .conf-choice[aria-pressed="true"].cc-fusion{border-color:#7A4FE0;background:color-mix(in srgb,#7A4FE0 9%,var(--panel))}
 .cf-filter{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:14px}
+.cf-rates{display:grid;gap:7px;margin:0 0 14px;padding:10px 12px;border-radius:16px;background:var(--card,var(--panel));border:1.5px dashed color-mix(in srgb,var(--ink) 18%,transparent)}
+.cf-rl{display:inline-flex;align-items:center;gap:5px;font-size:11.5px;font-weight:900;letter-spacing:.06em;text-transform:uppercase;color:var(--ink-2)}
+.cf-rl .ic{width:14px;height:14px}
+.cf-rate-list{display:grid;grid-template-columns:repeat(6,minmax(0,1fr));gap:6px}
+.cf-rate{display:grid;justify-items:center;align-content:end;gap:2px;min-width:0;padding:6px 2px 5px;border-radius:11px;background:color-mix(in srgb,var(--rc,#8E8898) 15%,transparent);line-height:1.1}
+.cf-rate em{font-style:normal;font-size:11px;font-weight:800;max-width:100%;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.cf-rate b{display:inline-flex;align-items:center;gap:2px;font-size:13.5px;font-weight:900}
+.cf-rate b .coin{width:14px;height:14px}
+.cf-rs{display:flex;align-items:center;flex-wrap:wrap;gap:4px 8px;font-size:12px;font-weight:700;color:var(--ink-2)}
+@media (max-width:560px){ .cf-rate-list{grid-template-columns:repeat(3,minmax(0,1fr))} }
 .cf-subf{display:grid;gap:8px;margin:0 0 14px;padding:12px 14px;border-radius:16px;background:var(--panel);border:1px solid var(--line)}
 .cf-fg{display:flex;align-items:center;gap:6px;flex-wrap:wrap}
 .cf-fg .f-lbl{min-width:52px;font-size:11px;font-weight:900;text-transform:uppercase;letter-spacing:.06em;color:var(--muted)}
@@ -9407,7 +9417,11 @@ function confEchange(dups, dupVal){
         ${l.length>1?`<button class="cf-all" data-action="recycle-ids" data-ids="${l.map(y=>y.id).join(",")}">Les ${l.length} · +${fmt(v*l.length)}</button>`:""}</div></div>` };
   // le ticket de caisse : les doubles par taille
   const lines = TK.map(t=>{ const l = dups.filter(x=>x.type===t); return l.length ? `<div class="rc-row"><span>${l.length} × ${TYPES[t].label}</span><i></i><b>+${fmt(l.reduce((a,x)=>a+recycleValue(x),0))}</b></div>` : "" }).join("");
-  return `<div class="cf-filter seg" role="group" aria-label="Quelles billes">
+  // (22 octobre 2026) les tarifs en haut, en petite bande (avant : un grand panneau tout en bas de la page)
+  const rates = `<div class="cf-rates" role="group" aria-label="Les tarifs de la maison, par bille"><span class="cf-rl">${ic("candy",14)} Tarifs par bille</span>
+    <div class="cf-rate-list">${TK.map((t,i)=>`<span class="cf-rate" style="${tstyle(t)}">${mImg(SHOWCASE[i],96,Math.round(12*scaleOf(t)+12),"")}<em>${TYPES[t].label.replace("Mini bille","Mini").replace("Bille chinoise","Chinoise")}</em><b>${COIN}${fmt(RECYCLE[t])}</b></span>`).join("")}</div>
+    <small class="cf-rs"><span class="shiny-pill">${SPARK}Shiny</span> ×${SHINY_RECYCLE_MULT} + une prime : ${SHINIES.slice(1).map((x,i)=>`${x.name} +${fmt(SHINY_BONUS[i+1])}`).join(" · ")}</small></div>`;
+  return `${rates}<div class="cf-filter seg" role="group" aria-label="Quelles billes">
       <button class="chip" data-action="conf-filter" data-f="doubles" aria-pressed="${!seules}">${ic("layers",14)} Mes doubles <span class="n">${dups.length}</span></button>
       <button class="chip" data-action="conf-filter" data-f="seules" aria-pressed="${seules}">${ic("star",14)} Billes en un seul exemplaire <span class="n">${singles.length}</span></button>
     </div>
@@ -9422,11 +9436,7 @@ function confEchange(dups, dupVal){
   ${base.length ? filters : ""}
   ${groups.length ? `${sz!=="all"||cat!=="all" ? `<p class="meta cf-count">${list.length} bille${list.length>1?"s":""} · ${fmt(total)} ${CUR.many}${!seules&&list.length>1?` <button class="cf-all" data-action="recycle-ids" data-ids="${list.map(x=>x.id).join(",")}">Échanger ces ${list.length} · +${fmt(total)}</button>`:""}</p>` : ""}<div class="cf-grid">${groups.map(card).join("")}</div>`
     : `<p class="empty">${base.length ? "Aucune bille avec ces filtres." : seules ? "Aucune bille unique à échanger." : "Pas de double pour l'instant. Reviens après avoir ouvert quelques sachets !"}</p>`}
-  <section class="panel cf-tarifs">
-    <div class="panel-head"><h2>Les tarifs de la maison</h2><span class="sample-tag">Par bille</span></div>
-    <div class="tarif-grid">${TK.map((t,i)=>`<div class="tarif" style="${tstyle(t)}">${mImg(SHOWCASE[i],120,Math.round(26*scaleOf(t)+18),"")}<b>${TYPES[t].label}</b><span class="price">${COIN}${fmt(RECYCLE[t])}</span></div>`).join("")}
-      <div class="tarif is-shiny"><span class="shiny-pill">${SPARK}Shiny</span><b>×${SHINY_RECYCLE_MULT} + une prime</b><span class="price" style="font-size:12px">${SHINIES.slice(1).map((x,i)=>`${x.name} +${fmt(SHINY_BONUS[i+1])}`).join("<br>")}</span></div>${[3,4,5].map(r=>`<div class="tarif"><span class="dec-pill" style="--dc:${DECOR_RAR[r].c}">${DECOR_RAR[r].name}</span><b>Motif ${DECOR_RAR[r].name.toLowerCase()}</b><span class="price">×${DECOR_RECYCLE_MULT[r]}</span></div>`).join("")}</div>
-  </section>`;
+`;
 }
 
 /* =====================================================================
@@ -12648,8 +12658,12 @@ async function pzInit(){
     cx.fillStyle = "#2B0A14"; cx.beginPath(); cx.roundRect(36, BOX.f+24, 150, 112, 14); cx.fill();
     cx.fillStyle = "rgba(255,233,168,.75)"; cx.font = "900 11px Nunito"; cx.fillText("POUR TOI", 111, BOX.f+38);
     cx.fillStyle = "#2B0A14"; cx.beginPath(); cx.roundRect(200, BOX.f+24, 124, 112, 14); cx.fill();
-    cx.fillStyle = "#111"; cx.beginPath(); cx.ellipse(236, BOX.f+98, 16, 6, 0, 0, 6.283); cx.fill(); cx.strokeStyle = "#C9CDD6"; cx.lineWidth = 5; cx.beginPath(); cx.moveTo(236, BOX.f+96); cx.lineTo(236+Math.sin(now/600)*4, BOX.f+66); cx.stroke();
-    cx.fillStyle = "#E5484D"; cx.beginPath(); cx.arc(236+Math.sin(now/600)*4, BOX.f+62, 9, 0, 6.283); cx.fill();
+    // le joystick : on le tire vers soi pour lancer la partie (il revient tout seul) ; « TIRE ! » clignote quand on peut jouer
+    const pull = pz.joyT ? Math.max(0, 1 - (now - pz.joyT)/700) : 0, jx = 236 + (pull ? 0 : Math.sin(now/600)*4), jy = BOX.f+66 + Math.sin(Math.min(1, pull*1.6)*Math.PI/2)*20;
+    cx.fillStyle = "#111"; cx.beginPath(); cx.ellipse(236, BOX.f+98, 16, 6, 0, 0, 6.283); cx.fill(); cx.strokeStyle = "#C9CDD6"; cx.lineWidth = 5; cx.beginPath(); cx.moveTo(236, BOX.f+96); cx.lineTo(jx, jy); cx.stroke();
+    const kg = cx.createRadialGradient(jx-3, jy-7, 1, jx, jy-4, 10); kg.addColorStop(0, "#FF9AA6"); kg.addColorStop(1, "#B5263A");
+    cx.fillStyle = kg; cx.beginPath(); cx.arc(jx, jy-4, 10, 0, 6.283); cx.fill();
+    if(pz.st==="ready" && pz.canJoy && Math.floor(now/450)%2){ cx.fillStyle = "#FFE14D"; cx.font = "900 10px Nunito"; cx.textAlign = "center"; cx.fillText("TIRE !", 236, BOX.f+38) }
     const on = pz.st==="ready"; cx.fillStyle = on ? "#3FDF7A" : "#2A6B40"; cx.shadowColor = "#3FDF7A"; cx.shadowBlur = on ? 16 : 0; cx.beginPath(); cx.arc(290, BOX.f+82, 22, 0, 6.283); cx.fill(); cx.shadowBlur = 0;
     cx.fillStyle = "#fff"; cx.font = "900 10px Nunito"; cx.fillText("JOUER", 290, BOX.f+82);
     if(pz.tray){ const t = pz.tray; capsule(t.b, t.x, t.y, RB*1.45, t.open); if(t.open > .3) cvLot(cx, pz.lot, t.x, t.y - t.open*8, RB*1.45*(.7+t.open*.35)) }
@@ -12679,6 +12693,15 @@ async function pzInit(){
     draw(now); pz.raf = requestAnimationFrame(loop);
   };
   pz.raf = requestAnimationFrame(loop);
+  // (22 octobre 2026) comme la manivelle du Distributeur : toucher le joystick (ou le bouton vert de la machine) lance la partie,
+  // exactement comme le bouton sous la machine (qui reste)
+  const goBtn = () => document.querySelector('#pz-btns [data-action="pz-go"]:not([disabled])');
+  const inJoy = e => { const r = cv.getBoundingClientRect(), x = (e.clientX-r.left)*W/r.width, y = (e.clientY-r.top)*H/r.height;
+    return (x>206 && x<266 && y>BOX.f+40 && y<BOX.f+112) || Math.hypot(x-290, y-(BOX.f+82)) < 26 };
+  pz.canJoy = !!goBtn();
+  cv.onpointermove = e => { pz.canJoy = !!goBtn(); cv.style.cursor = pz.st==="ready" && pz.canJoy && inJoy(e) ? "pointer" : "" };
+  cv.onpointerdown = e => { if(pz.st!=="ready" || !inJoy(e)) return; const b = goBtn(); if(!b){ chanceCanPay("pince", true); return }
+    pz.joyT = performance.now(); Sound.click?.(1); setTimeout(()=>b.isConnected && b.click(), 260) };
   await pzLoad();
   if(!document.body.contains(cv)) return;
   if(!pz.boules){ pz.st = "err"; return }
@@ -12698,6 +12721,7 @@ async function pzGo(pay){
   pz.st = "travel"; chanceBtnsAt("pince", "La pince y va…");   // (22 octobre 2026) pas de halo : la pince va directement à la boule tirée, sans rien dévoiler
 }
 function pzFinish(){
+  setTimeout(()=>{ pz.canJoy = !!document.querySelector('#pz-btns [data-action="pz-go"]:not([disabled])') }, 60);
   chanceEnd("pince", pz.call, pz.lot, document.getElementById("pz-stage"));
   const n = pz.call.r; if(pz.boules) pz.boules[n.boule] = n.neuve;
   pz.add?.(n.boule, n.neuve);   // une boule neuve retombe dans la machine
@@ -16132,7 +16156,7 @@ let bugKeep = null;   // un message qui n'est pas parti : il est reproposé au p
 // on:false cache le bouton (pendant qu'on prépare la mise à jour) ; on:true le remet, avec la pastille si l'id a changé
 // (16 octobre 2026) deux repères : dot = la pastille rouge du bouton, à changer à CHAQUE mise en ligne qui ajoute une ligne au patchnote
 // (avec txt : la date du jour) ; id = la fenêtre d'annonce à l'arrivée, seulement pour les très gros jours
-const NEWS = {on:true, id:"2026-10-22", dot:"2026-10-22-2300", url:"/nouveautes.html", txt:"Mise à jour du 22 oct."};
+const NEWS = {on:true, id:"2026-10-22", dot:"2026-10-22-2345", url:"/nouveautes.html", txt:"Mise à jour du 22 oct."};
 const newsUnseen = () => lsGet("billeo-news-vu")!==NEWS.dot;
 // (14 octobre 2026) à l'arrivée, une fenêtre annonce la mise à jour, une seule fois par mise à jour et par compte (S.newsPop, gardé
 // dans la partie : elle ne revient pas sur un autre appareil) ; on choisit d'aller voir les nouveautés, ou pas

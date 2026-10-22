@@ -30,15 +30,20 @@ begin
   return b;
 end $$;
 
--- ---------- Les Gobelets : 3 lots tirés comme à la Roue, un sous chaque gobelet ; le joueur en gagne un (1 chance sur 3) ----------
+-- ---------- Les Gobelets : 3 lots tous différents (tirés comme à la Roue), un sous chaque gobelet ; le joueur en gagne un (1 chance sur 3) ----------
+-- (22 octobre 2026, le soir) tous différents, comme au Tiercé : un peu plus généreux que la Roue (≈ 23 bonbecs en moyenne au lieu de 19, Mammouth 0,28 %)
 -- La page montre les 3 lots, mélange les gobelets (le vrai mélange est caché dans un nuage de fumée) et met le lot gagné
 -- sous le gobelet touché : savoir lequel est gagné d'avance n'aide en rien, le choix du gobelet ne change pas le lot.
 create or replace function public.gobelets(payer boolean default false)
 returns jsonb language plpgsql security definer set search_path = public as $$
-declare qui uuid := interne.moi(); j record; l int[]; g int; b jsonb;
+declare qui uuid := interne.moi(); j record; l int[] := '{}'; sig text[] := '{}'; kk int; s text; g int; b jsonb; n int := 0;
 begin
   select * into j from interne.jeu_chance(qui, 'gobelets', payer, 15);
-  l := array[interne.roue_tirage(), interne.roue_tirage(), interne.roue_tirage()];
+  while coalesce(array_length(l, 1), 0) < 3 and n < 200 loop
+    n := n + 1; kk := interne.roue_tirage();
+    select coalesce(r.bonbecs, 0) || '|' || coalesce(r.sac, '') || '|' || coalesce(r.taille, '') into s from interne.roue_cases() r where r.k = kk;
+    if not (s = any(sig)) then l := l || kk; sig := sig || s; end if;
+  end loop;
   g := floor(random() * 3)::int;
   b := interne.roue_verser(qui, l[g+1], j.lie, 'gobelets', payer);
   return jsonb_build_object('eco', interne.etat(qui), 'lots', to_jsonb(l), 'gagne', g, 'case', l[g+1], 'bille', b, 'achetees', j.achetees);

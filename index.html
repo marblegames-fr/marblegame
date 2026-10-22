@@ -12202,7 +12202,7 @@ const reduceMo = () => matchMedia("(prefers-reduced-motion: reduce)").matches;
 function cvSetup(cv, W, H){ const d = Math.min(2, (devicePixelRatio||1)) * uiZoom(); cv.width = Math.round(W*d); cv.height = Math.round(H*d); return d }
 
 /* ---------- 1. Les Gobelets ---------- */
-// 3 vrais lots (tirés comme à la Roue), un sous chaque gobelet : on les montre, les gobelets se referment, se mélangent à toute vitesse
+// 3 vrais lots tous différents (tirés comme à la Roue), un sous chaque gobelet : on les montre, les gobelets se referment, se mélangent à toute vitesse
 // puis passent dans un nuage de fumée. Le joueur en touche un : le lot gagné (1 chance sur 3, tiré par le serveur) est dessous,
 // et les deux autres gobelets montrent les deux autres lots, les vrais.
 const gob = {st:"idle", pos:[0,1,2], call:null, lots:null, pay:false};
@@ -12217,12 +12217,13 @@ function viewGobelets(){
       <div class="gob-smoke" id="gob-smoke" hidden>${"<i></i>".repeat(9)}</div>
       <div class="gob-hint" id="gob-hint">Trois gobelets, trois vrais lots</div>
       <div class="rq-win" hidden></div></div>`,
-    chanceOdds("gobelets", "Trois lots tirés comme à la Roue, un sous chaque gobelet, et 1 chance sur 3 pour chacun : au total, les mêmes chances qu'un tour de Roue."));
+    chanceOdds("gobelets", "Trois lots tous différents, tirés avec ces chances, un sous chaque gobelet, et 1 chance sur 3 pour chacun."));
 }
 function gobInit(){ gob.st = "idle"; gob.pos = [0,1,2]; if(chancePend.gobelets) chancePend.gobelets() }
 async function gobGo(pay){
   if(gob.st!=="idle") return;
-  const call = await chanceStart("gobelets", pay, ()=>{ const lots = [roueK(), roueK(), roueK()], g = Math.floor(Math.random()*3); return {lots, gagne:g, case:lots[g]} });
+  const call = await chanceStart("gobelets", pay, ()=>{ const lots = [], vu = new Set(); while(lots.length<3){ const k = roueK(); if(!vu.has(ROUE[k].lbl)){ vu.add(ROUE[k].lbl); lots.push(k) } }
+    const g = Math.floor(Math.random()*3); return {lots, gagne:g, case:lots[g]} });
   if(!call) return;
   gob.call = call; gob.pay = pay; gob.lots = call.r.lots.map(k=>ROUE[k]); gob.st = "show"; gob.pos = [0,1,2];
   const alive = () => !!document.getElementById("gob-stage");
@@ -13261,7 +13262,7 @@ function dayCard(key, el){
 // en arrivant sur un jeu dont la partie du jour (ou la partie offerte) reste à jouer, une fenêtre « C'est parti ! »
 // remonte le jeu en haut de l'écran et appuie sur ce bouton. Jamais pour une partie à acheter.
 const PHONE_GO = {
-  gobelets:"Regarde bien les 3 lots, suis les gobelets… et choisis le bon !", tierce:"Ta bille court contre 3 autres : ta place te donne ton lot.",
+  gobelets:"Regarde bien les 3 lots (tous différents), suis les gobelets… et choisis le bon !", tierce:"Ta bille court contre 3 autres : ta place te donne ton lot.",
   toupie:"Lance la toupie : la zone où elle tombe, c'est ton lot.", pince:"La machine choisit une boule, la pince va la chercher : le lot dedans est pour toi.",
   chateau:"Sors les 10 billes du cercle en 3 tirs.", tic:"Touche sa bille avant qu'il touche la tienne.",
   marelle:"Lance ta bille : la case où elle retombe te donne son lot. Le Ciel, c'est le Mammouth !",
@@ -16127,7 +16128,7 @@ let bugKeep = null;   // un message qui n'est pas parti : il est reproposé au p
 // on:false cache le bouton (pendant qu'on prépare la mise à jour) ; on:true le remet, avec la pastille si l'id a changé
 // (16 octobre 2026) deux repères : dot = la pastille rouge du bouton, à changer à CHAQUE mise en ligne qui ajoute une ligne au patchnote
 // (avec txt : la date du jour) ; id = la fenêtre d'annonce à l'arrivée, seulement pour les très gros jours
-const NEWS = {on:true, id:"2026-10-22", dot:"2026-10-22-2120", url:"/nouveautes.html", txt:"Mise à jour du 22 oct."};
+const NEWS = {on:true, id:"2026-10-22", dot:"2026-10-22-2200", url:"/nouveautes.html", txt:"Mise à jour du 22 oct."};
 const newsUnseen = () => lsGet("billeo-news-vu")!==NEWS.dot;
 // (14 octobre 2026) à l'arrivée, une fenêtre annonce la mise à jour, une seule fois par mise à jour et par compte (S.newsPop, gardé
 // dans la partie : elle ne revient pas sur un autre appareil) ; on choisit d'aller voir les nouveautés, ou pas

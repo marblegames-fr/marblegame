@@ -14996,7 +14996,7 @@ function g3Entonnoirs(k, r, n, o){
   // le premier entonnoir : son centre en (0, 0, 0) ; la goulotte arrive sur la ligne z = -off, vers +x, au-dessus du rebord
   let C = [0, 0, 0], st = null;
   for(let f=0; f<nb; f++){
-    const top = g3Funnel(k, C, RO, RI, pente, o.kind, {champis:o.champis}), yIn = top + 3.5;
+    const top = g3Funnel(k, C, RO, RI, pente, o.kind, {champis:o.champis, bord:o.bord}), yIn = top + 3.5;
     // la goulotte qui arrive : elle finit au-dessus de l'entonnoir, à côté du centre, en biais (le long du bord)
     const xe = C[0] - 1.2, len = f===0 ? 20 : null;
     if(f===0){ const P = g3Trace([["S", len]], {pente:p, from:[xe - len, yIn + p*len, C[2] - off]});
@@ -15334,7 +15334,7 @@ const G3C = {
   // Le tourbillon, à midi : trois grands entonnoirs d'eau, les billes tournent, tournent… et plongent dans le trou
   tourbillon:{name:"Le Tourbillon", desc:"Trois grands entonnoirs bleus : les billes y entrent en tournant, font des tours et des tours… puis plongent par le trou vers le suivant !",
     theme:{bg:"#0D2733", ramp:"#36C2D8", tray:"#FFD34D"}, form:"entonnoirs", patience:7,
-    build(k, r, n){ return g3Entonnoirs(k, r, n, {nb:3, RO:6.5}) }},
+    build(k, r, n){ return g3Entonnoirs(k, r, n, {nb:3, RO:6.5, bord:"wall2"}) }},   // (23 octobre 2026) le rebord des entonnoirs opaque : en verre, on voyait à travers
   // Les trois entonnoirs, le soir : plus grands, en néon
   entonnoirs:{name:"Les Entonnoirs néon", desc:"Trois entonnoirs géants qui brillent dans la nuit : les billes tourbillonnent les unes contre les autres avant de tomber dans le suivant.",
     theme:{bg:"#120A26", ramp:"#7B4FD6", tray:"#FF4FD8"}, form:"entonnoirs", patience:7,
@@ -16358,7 +16358,7 @@ let bugKeep = null;   // un message qui n'est pas parti : il est reproposé au p
 // on:false cache le bouton (pendant qu'on prépare la mise à jour) ; on:true le remet, avec la pastille si l'id a changé
 // (16 octobre 2026) deux repères : dot = la pastille rouge du bouton, à changer à CHAQUE mise en ligne qui ajoute une ligne au patchnote
 // (avec txt : la date du jour) ; id = la fenêtre d'annonce à l'arrivée, seulement pour les très gros jours
-const NEWS = {on:true, id:"2026-10-22", dot:"2026-10-23-2345", url:"/nouveautes.html", txt:"Mise à jour du 23 oct."};
+const NEWS = {on:true, id:"2026-10-22", dot:"2026-10-23-1220", url:"/nouveautes.html", txt:"Mise à jour du 23 oct."};
 const newsUnseen = () => lsGet("billeo-news-vu")!==NEWS.dot;
 // (14 octobre 2026) à l'arrivée, une fenêtre annonce la mise à jour, une seule fois par mise à jour et par compte (S.newsPop, gardé
 // dans la partie : elle ne revient pas sur un autre appareil) ; on choisit d'aller voir les nouveautés, ou pas

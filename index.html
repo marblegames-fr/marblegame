@@ -2056,7 +2056,7 @@ body.onb .mj-rail,body.onb #mj-btn,body.onb #gc-btn,body.onb #pass-btn,body.onb 
 @keyframes pgo-in{from{opacity:0}}
 @media (prefers-reduced-motion:reduce){ .pgo-scrim,.pgo{animation:none} }
 /* (10 octobre 2026, le soir) la bande du haut de la page des jeux : les 3 jeux du jour à gauche, la Course et la Loterie à droite */
-.gm-strip{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,300px);gap:14px 22px;align-items:center;margin-bottom:18px;padding:16px 18px;
+.gm-strip{display:grid;grid-template-columns:minmax(0,1fr);gap:14px 22px;align-items:center;margin-bottom:18px;padding:16px 18px;
   background:linear-gradient(110deg,color-mix(in srgb,#FFC93F 10%,var(--panel)),var(--panel) 55%)}
 .gm-strip.all-done{background:linear-gradient(110deg,color-mix(in srgb,var(--green) 12%,var(--panel)),var(--panel) 55%)}
 .gs-top{display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap}
@@ -2072,6 +2072,24 @@ body.onb .mj-rail,body.onb #mj-btn,body.onb #gc-btn,body.onb #pass-btn,body.onb 
 .gs-d:hover{border-color:var(--ink-2)}
 .gs-d.done{border-style:solid;border-color:var(--green-line);background:var(--green-soft);color:var(--green)}
 .gs-rdv{display:grid;gap:8px}
+/* (23 octobre 2026) les grands rendez-vous : la Grande Course et la Loterie, en grandes cartes */
+.rdv-h{display:flex;align-items:center;gap:8px;margin:4px 0 10px;font-size:13px;font-weight:900;letter-spacing:.06em;text-transform:uppercase;color:var(--ink-2)}
+.rdv-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,340px),1fr));gap:18px;margin-bottom:22px}
+.rdv{--pc:#EF5B60;display:grid;grid-template-columns:minmax(0,1fr);padding:0;overflow:hidden;border:1.5px solid color-mix(in srgb,var(--pc) 45%,var(--line))}
+.rdv.lot{--pc:#B07BFF}
+.rdv.in{border-color:var(--green-line)}
+.rdv-art{display:block;height:110px;overflow:hidden;background:var(--panel-2)}
+.rdv-art > svg{display:block;width:100%;height:100%;object-fit:cover}
+.rdv-body{display:flex;flex-direction:column;gap:6px;padding:16px 18px}
+.rdv-k{font-size:11px;font-weight:900;letter-spacing:.06em;text-transform:uppercase;color:color-mix(in srgb,var(--pc) 75%,var(--ink))}
+.rdv h3{margin:0;font-family:var(--display);font-weight:400;font-size:24px;line-height:1.05}
+.rdv p{margin:0;font-size:14px;line-height:1.4;color:var(--ink-2)}
+.rdv .rdv-t{display:flex;align-items:center;gap:6px;font-size:14.5px;color:var(--ink);font-weight:700}
+.rdv-t b{font-weight:900}
+.rdv-go{display:flex;flex-wrap:wrap;align-items:center;gap:8px;margin-top:6px}
+.rdv-go .rdv-main{flex:1 1 auto;justify-content:center}
+.rdv-ok{display:inline-flex;align-items:center;gap:6px;height:40px;padding:0 14px;border-radius:999px;background:var(--green-soft);color:var(--green);font-weight:900;font-size:14px}
+@media (max-width:560px){ .rdv-art{height:96px} .rdv h3{font-size:22px} }
 .gs-pill{position:relative;overflow:hidden;display:grid;grid-template-columns:auto minmax(0,1fr) auto;align-items:center;gap:11px;padding:9px 12px 9px 9px;border-radius:14px;text-align:left;color:var(--ink);
   --pc:#EF5B60;background:linear-gradient(100deg,color-mix(in srgb,var(--pc) 20%,var(--panel-2)),var(--panel-2) 72%);border:1.5px solid color-mix(in srgb,var(--pc) 50%,var(--line));transition:transform .15s,border-color .15s}
 .gs-pill:hover{border-color:var(--pc);transform:translateY(-1px)}
@@ -12882,6 +12900,40 @@ function artPince(){
 const mulb = a => () => { a |= 0; a = a + 0x6D2B79F5 | 0; let t = Math.imul(a ^ a >>> 15, 1 | a); t = t + Math.imul(t ^ t >>> 7, 61 | t) ^ t; return ((t ^ t >>> 14) >>> 0) / 4294967296 };
 
 const GAME_ICON = {tir:"target", marelle:"marelle", pot:"pot", chateau:"castle", casse:"layers", course:"flag", tic:"tic", pachinko:"pachi", roue:"wheel", grattage:"star", distributeur:"gift", loterie:"ticket", gobelets:"cup", tierce:"flag", toupie:"top", pince:"claw"};
+// (23 octobre 2026) la Grande Course et la Loterie : deux grandes cartes au lieu de deux petites pilules dans la bande des jeux du jour.
+// Merlitow ne trouvait pas comment s'y inscrire : on explique en une phrase, et le gros bouton inscrit (ou prend le ticket) tout de suite.
+function rdvCards(gcIn, L){
+  const N = gcNext(), both = N.heure===12 && N.jour===isoDay();
+  const gcBtn = !srvOn() ? `<button class="btn btn-yellow rdv-main" data-action="nav" data-view="grandecourse">${ic("flag",18)} M'inscrire</button>`
+    : gcIn ? `<span class="rdv-ok">${ic("check",16,3)} Inscrit pour ${both ? "ce midi et ce soir" : gcWhen(N)}</span><button class="btn btn-ghost btn-sm" data-action="nav" data-view="grandecourse">Voir la course</button>`
+    : `<button class="btn btn-yellow rdv-main" data-action="gc-reg">${ic("flag",18)} M'inscrire · gratuit</button><button class="btn btn-ghost btn-sm" data-action="nav" data-view="grandecourse">Comment ça marche ?</button>`;
+  const lotBtn = !L ? `<button class="btn btn-yellow rdv-main" data-action="nav" data-view="loterie">${ic("ticket",18)} Prendre mon ticket</button>`
+    : L.aujourdhui ? `<span class="rdv-ok">${ic("check",16,3)} Ticket du jour pris</span><button class="btn btn-ghost btn-sm" data-action="nav" data-view="loterie">Voir mes tickets</button>`
+    : `<button class="btn btn-yellow rdv-main" data-action="lot-go">${ic("ticket",18)} Prendre mon ticket · gratuit</button><button class="btn btn-ghost btn-sm" data-action="nav" data-view="loterie">Comment ça marche ?</button>`;
+  return `<h2 class="rdv-h">${ic("clock",17)} Les grands rendez-vous</h2>
+  <div class="rdv-grid">
+    <article class="panel rdv gc${gcIn?" in":""}">
+      <button class="rdv-art" data-action="nav" data-view="grandecourse" aria-label="La Grande Course">${artCourse()}</button>
+      <div class="rdv-body">
+        <span class="rdv-k">Tous les jours à 12 h et à 20 h</span>
+        <h3>La Grande Course</h3>
+        <p>Inscris ta bille : elle court contre celles des autres joueurs. Le podium gagne des ${CUR.many} et un sachet, et tout le monde repart avec ${COURSE_PART} ${CUR.many}.</p>
+        <p class="rdv-t">${ic("clock",15)} Départ dans <b data-gc-timer>${gcLeft(N.depart-Date.now())}</b></p>
+        <div class="rdv-go">${gcBtn}</div>
+      </div>
+    </article>
+    <article class="panel rdv lot${L?.aujourdhui?" in":""}">
+      <button class="rdv-art" data-action="nav" data-view="loterie" aria-label="La Loterie">${artLoterie()}</button>
+      <div class="rdv-body">
+        <span class="rdv-k">Un ticket gratuit par jour</span>
+        <h3>La Loterie</h3>
+        <p>Tirage le dimanche à 21 h. 3 bons numéros : ${LOT_PRIX[0].txt[0].toLowerCase()+LOT_PRIX[0].txt.slice(1)} !</p>
+        <p class="rdv-t">${ic("clock",15)} Tirage dans <b data-lot-timer>${lotLeft(L?.heure || lotNext())}</b></p>
+        <div class="rdv-go">${lotBtn}</div>
+      </div>
+    </article>
+  </div>`;
+}
 function viewGames(){
   gcLoad();
   const P = playedToday(), tirDone = !!P.tir[0], tirL = LEVELS[tirOfDay()];
@@ -12940,11 +12992,8 @@ function viewGames(){
         <i class="gp-bar"><i style="width:${doneN/keys.length*100}%"></i></i></span></div>
       <div class="gs-days">${keys.map(k=>`<button class="gs-d${isDone(k)?" done":""}" data-action="nav" data-view="${k}">${isDone(k) ? ic("check",14,3) : ic(GAME_ICON[k],15)}${JEUX_NOM[k]}</button>`).join("")}</div>
     </div>
-    <div class="gs-rdv">
-      <button class="gs-pill gc" data-action="nav" data-view="grandecourse"><span class="gp-ic">${ic("flag",19)}</span><span><small>La Grande Course</small><b>${gcIn ? "Inscrit · départ" : "Départ"} dans <span data-gc-timer>${gcLeft(gcNext().depart-Date.now())}</span></b></span>${gcIn ? ic("check",16,3) : `<em>M'inscrire</em>`}</button>
-      <button class="gs-pill lot" data-action="nav" data-view="loterie"><span class="gp-ic">${ic("ticket",19)}</span><span><small>La Loterie · dimanche 21 h</small><b>Tirage dans <span data-lot-timer>${lotLeft(L?.heure || lotNext())}</span></b></span>${L && !L.aujourdhui ? `<em>Mon ticket</em>` : L?.aujourdhui ? ic("check",16,3) : ""}</button>
-    </div>
-  </section>`}
+  </section>
+  ${rdvCards(gcIn, L)}`}
   ${todo.length ? `<div class="games-grid">${todo.map(tile).join("")}</div>` : `<p class="gs-all">${ic("check",16,3)} Tout est fait à fond aujourd'hui : bravo ! Reviens demain.</p>`}
   ${done.length ? `<div class="gt-fonds" style="--n:${done.length<=4 ? done.length : Math.ceil(done.length/2)}"><span class="gtf-l">${ic("star",14,2.6)} Faits à fond</span>${done.map(c=>`<button class="gtf" data-action="nav" data-view="${c.v}" title="${c.t} : fait à fond aujourd'hui${CHANCE_KEYS.includes(c.v) ? "" : " · rejouer pour le plaisir"}"><span class="gtf-art">${c.art}</span><b>${c.t}</b><span class="gtf-ok">${ic("check",11,3.4)}</span></button>`).join("")}</div>` : ""}`;
 }
@@ -16309,7 +16358,7 @@ let bugKeep = null;   // un message qui n'est pas parti : il est reproposé au p
 // on:false cache le bouton (pendant qu'on prépare la mise à jour) ; on:true le remet, avec la pastille si l'id a changé
 // (16 octobre 2026) deux repères : dot = la pastille rouge du bouton, à changer à CHAQUE mise en ligne qui ajoute une ligne au patchnote
 // (avec txt : la date du jour) ; id = la fenêtre d'annonce à l'arrivée, seulement pour les très gros jours
-const NEWS = {on:true, id:"2026-10-22", dot:"2026-10-23-2330", url:"/nouveautes.html", txt:"Mise à jour du 23 oct."};
+const NEWS = {on:true, id:"2026-10-22", dot:"2026-10-23-2345", url:"/nouveautes.html", txt:"Mise à jour du 23 oct."};
 const newsUnseen = () => lsGet("billeo-news-vu")!==NEWS.dot;
 // (14 octobre 2026) à l'arrivée, une fenêtre annonce la mise à jour, une seule fois par mise à jour et par compte (S.newsPop, gardé
 // dans la partie : elle ne revient pas sur un autre appareil) ; on choisit d'aller voir les nouveautés, ou pas

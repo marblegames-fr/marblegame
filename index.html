@@ -12681,7 +12681,7 @@ const pz = {st:"ready", raf:0, balls:[], boules:null, call:null, claw:null, targ
 const PZ_CAPS = [["#E5484D","#FFD1D6"],["#2EC4DE","#D3F2F0"],["#FFC93F","#FFF1C2"],["#8C7CFF","#E6E0FF"],["#3FBF6A","#DAF2D6"],["#FF8A3D","#FFE1CC"]];
 function viewPince(){
   return chanceView("pince", "La Pince", `<div class="pz-stage" id="pz-stage"><canvas id="pz-cv" aria-label="La machine à pince"></canvas><div class="rq-win" hidden></div></div>`,
-    chanceOdds("pince", "Tous les lots sont toujours dans la machine. Le lot que tu gagnes est tiré avec ces chances, comme un tour de Roue : les gros lots glissent souvent de la pince !"));
+    chanceOdds("pince", "Tous les lots sont toujours dans la machine. Le lot que tu gagnes est tiré avec ces chances, comme un tour de Roue : un gros lot glisse parfois de la pince !"));
 }
 async function pzLoad(){
   if(srvOn()){ try{ const r = await srv(()=>Cloud.eco.pinceEtat()); pz.boules = r.boules } catch(e){ pz.boules = null } }
@@ -12876,11 +12876,13 @@ async function pzGo(pay){
   pz.target = pz.balls.find(b=>b.i===call.r.boule);
   // la page n'avait pas la même machine que le serveur (une autre partie ailleurs) : la boule tirée est mise à jour
   if(!pz.target || pz.target.k!==call.r.case){ if(pz.target){ pz.target.k = call.r.case; pz.target.c = pz.lot } else { pz.add(call.r.boule, call.r.case); pz.target = pz.balls[pz.balls.length-1] } }
-  // (23 octobre 2026) un gros lot qui glisse : 4 fois sur 10, la pince attrape d'abord une boule plus rare que le lot gagné
-  // (le plus souvent la plus rare), la soulève… et elle glisse ; puis elle va chercher la bonne. Ce n'est que l'animation.
+  // (23 octobre 2026) un gros lot qui glisse : 1 fois sur 4, la pince attrape d'abord une boule plus rare que le lot gagné,
+  // la soulève… et elle glisse ; puis elle va chercher la bonne. Ce n'est que l'animation.
+  // Le Mammouth seulement 1 glissade sur 6 (≈ 1 partie sur 20, c'était 1 sur 7) : sinon on s'attend toujours au faux Mammouth.
   pz.real = null;
   const rarer = pz.balls.filter(b=>b!==pz.target && lotProb(b.c.lbl) < lotProb(pz.lot.lbl)).sort((a,b)=>lotProb(a.c.lbl)-lotProb(b.c.lbl));
-  if(rarer.length && Math.random() < .4){ const dec = rarer[Math.floor(Math.random()**2 * rarer.length)];
+  if(rarer.length && Math.random() < .25){ const autres = rarer.filter(b=>!b.c.roue);
+    const dec = !autres.length || Math.random() < 1/6 ? rarer[0] : autres[Math.floor(Math.random()**1.5 * autres.length)];
     pz.real = pz.target; pz.target = dec; pz.slipY = Math.max(150, dec.y - 60 - Math.random()*80) }
   pz.st = "travel"; chanceBtnsAt("pince", "La pince y va…");   // (22 octobre 2026) pas de halo : la pince va directement à la boule tirée, sans rien dévoiler
 }

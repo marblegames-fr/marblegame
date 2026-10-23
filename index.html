@@ -3928,6 +3928,7 @@ button.cp-who:hover b{text-decoration:underline}
 .dp-lock{display:flex;align-items:center;gap:6px;font-size:12.5px!important;color:#B7791F!important}
 .depart-pill{background:linear-gradient(90deg,#E0352B,#2E4FA8,#4FB04A)!important;color:#fff!important}
 .prem-gift{display:inline-flex;align-items:center;gap:6px;font-size:12.5px;font-weight:800;color:#FFE38A}
+.pass-free{font-size:.8em;font-weight:800;opacity:.75;margin-left:4px;white-space:normal}
 /* la Grande Course (12 h et 20 h) */
 .gc-banner{display:flex;align-items:center;gap:14px;width:100%;margin-bottom:18px;padding:14px 18px;text-align:left;cursor:pointer;color:#fff;background:linear-gradient(110deg,#C81E32,#7A1FA2);border:0;box-shadow:0 14px 30px -18px rgba(120,20,60,.8)}
 .gc-banner:hover{filter:brightness(1.06)}
@@ -7562,6 +7563,8 @@ function secretGrid(){
    PASSE DE SAISON (une saison = un mois)
    ===================================================================== */
 const PASS_TIERS = 30, PASS_PRICE = "2,99 €";
+// (23 octobre 2026) le premium ne se paie pas encore : la date où il deviendra payant n'est pas décidée
+const PASS_FREE_NOTE = "(gratuit pendant une durée indéterminée)";
 // XP pour passer au palier t : les premiers vont vite (600), puis 1 000, puis 1 300 pour les 10 derniers
 const TIER_COST = t => t<=10 ? 600 : t<=20 ? 1000 : 1300;
 const XP_AT = [0,0]; for(let t=2;t<=PASS_TIERS;t++) XP_AT[t] = XP_AT[t-1]+TIER_COST(t);   // XP totale pour atteindre le palier t
@@ -8874,7 +8877,7 @@ function viewPass(){
       <p>${tier>=PASS_TIERS?`Tu as terminé le passe, chapeau !${passLevel()>PASS_TIERS?` Niveau bonus ${passLevel()-PASS_TIERS}.`:""} Continue pour les niveaux bonus.`:`${fmt(into)} / ${fmt(need)} XP avant le palier ${tier+1}`}</p>
       <div class="ph-actions">
         ${claim?`<button class="btn btn-yellow" data-action="pass-all">${ic("gift",18)} Tout récupérer (${claim})</button>`:""}
-        ${P.premium?`<span class="prem-badge">${ic("star",16)} Passe premium actif</span>`:`<button class="btn btn-light" data-action="buy-pass">${ic("star",18)} Débloquer le premium · ${PASS_PRICE}</button><span class="prem-gift">${ic("gift",15)} + un Sachet Collector offert tout de suite</span>`}
+        ${P.premium?`<span class="prem-badge">${ic("star",16)} Passe premium actif</span>`:`<button class="btn btn-light" data-action="buy-pass">${ic("star",18)} Débloquer le premium · ${PASS_PRICE} <small class="pass-free">${PASS_FREE_NOTE}</small></button><span class="prem-gift">${ic("gift",15)} + un Sachet Collector offert tout de suite</span>`}
       </div>
     </div>
     <button class="ph-final" data-action="preview" data-k="${pv(finalSpec)}" aria-label="Voir la récompense finale">
@@ -8902,7 +8905,7 @@ function viewPass(){
       </ul>
     </section>
     <section class="panel prem-card${P.premium?" on":""}" style="${seasonStyle(se)}">
-      <div class="panel-head"><h2>${P.premium?"Ton passe premium":"Le passe premium"}</h2><span class="sample-tag">${PASS_PRICE} · démo</span></div>
+      <div class="panel-head"><h2>${P.premium?"Ton passe premium":"Le passe premium"}</h2><span class="sample-tag">${PASS_PRICE} ${PASS_FREE_NOTE}</span></div>
       <ul class="xp-list">
         <li>${ic("star",20)}<span>${pm} billes exclusives au coloris ${esc(PALETTES[se.pal][0])}, dont un Mammouth shiny Lumineuse</span></li>
         <li>${ic("gift",20)}<span><b>Tout de suite :</b> un Sachet Collector offert</span></li>

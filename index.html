@@ -8070,8 +8070,14 @@ function confResync(){ if(!srvOn() || Date.now()-lastResync<30000) return; lastR
 function go(view){
   if(!viewOk(view)){ const E = onbOn() && ONB[S.onb.step]; toast(E?.but ? `Bientôt ! Ton objectif d'abord : ${E.but.toLowerCase()}.` : "Bientôt !"); return }
   if(onbOn()){ if(view==="confiserie" || view==="atelier") S.onb.conf = 1; if(view==="cour") S.onb.cour = 1; if(view==="confiserie" || view==="cour") setTimeout(onbCheck, 1500) }
-  toggleProfPop(false); if(view!==ui.view) ui.ballPicked = null; if(view==="confiserie") confResync(); if(view==="atelier"){ view="confiserie"; ui.confTab="fusion" } if(view==="billepedia"){ view="collection"; ui.tab="pedia" } ui.view=view; renderNav(); renderView(); window.scrollTo({top:0}); phoneGo(); }
-function renderView(){
+  toggleProfPop(false); if(view!==ui.view) ui.ballPicked = null; if(view==="confiserie") confResync(); if(view==="atelier"){ view="confiserie"; ui.confTab="fusion" } if(view==="billepedia"){ view="collection"; ui.tab="pedia" } ui.view=view; renderNav(); renderView(true); window.scrollTo({top:0}); phoneGo(); }
+// (23 octobre 2026) une partie en cours des Gobelets, du Tiercé, de la Toupie ou de la Pince : un réaffichage venu d'ailleurs
+// (la boîte resynchronisée toutes les minutes, un lot arrivé…) relançait le jeu en pleine animation, et le Tiercé restait bloqué
+// (Stephiox). Pendant la partie, la page n'est pas redessinée (le haut et le menu, si). Changer de page (go) passe toujours.
+const CHANCE_LIVE = {gobelets:()=>gob.st!=="idle" && document.getElementById("gob-stage"), tierce:()=>(tie.st==="count" || tie.st==="run") && document.getElementById("tie-cv"),
+  toupie:()=>tou.st!=="ready" && tou.st!=="done" && document.getElementById("tou-cv"), pince:()=>pz.st!=="ready" && pz.st!=="load" && pz.st!=="err" && document.getElementById("pz-cv")};
+function renderView(force){
+  if(force!==true && CHANCE_LIVE[ui.view]?.()) return;
   if(ui.view==="pot") ui.view = "marelle";   // (9 octobre 2026) le Pot est remplacé par la Marelle
   if(ui.view!=="grattage") gratFlush();   // un ticket pas fini de gratter : le lot arrive quand même
   if(ui.view==="course") ui.view = "jeux";   // la Course sur la plage a été retirée (2 octobre 2026) : un vieux lien ramène aux jeux
@@ -11485,7 +11491,7 @@ function chanceMark(k, pay, r){
   if(k==="grattage" || k==="distributeur") S.stats[k] = (S.stats[k]||0)+1;   // (la Roue et la Marelle comptent leurs parties à part)
   save();
 }
-const chanceFail = (k, e) => { if(e?.code==="limite_jeu"){ playedToday()[k+"N"] = CHANCE_MAX; save() } if(e?.code==="deja"){ playedToday()[k] = {done:1}; save() } renderView(); srvFail(e) };
+const chanceFail = (k, e) => { if(e?.code==="limite_jeu"){ playedToday()[k+"N"] = CHANCE_MAX; save() } if(e?.code==="deja"){ playedToday()[k] = {done:1}; save() } renderView(true); srvFail(e) };
 const lotTxt = l => l.sac ? `un ${BAG_BY[l.sac].name}` : l.j ? `${fmt(l.j)} ${CUR.many}` : "rien cette fois";
 
 /* ---------- le Ticket à gratter ---------- */
@@ -12416,7 +12422,7 @@ function tieInit(){
   const loop = t => {
     if(!document.body.contains(cv)){ cancelAnimationFrame(tie.raf); return }
     if(tie.st==="run"){
-      const dt = Math.min(.05, (t - lastT)/1000); lastT = t;
+      const dt = Math.max(0, Math.min(.05, (t - lastT)/1000)); lastT = Math.max(lastT, t);   // la 1re image peut dater d'avant tie.go()
       const lead0 = Math.max(...tie.racers.map(r=>r.p)), crossed = tie.racers.filter(r=>r.p>=1).length;
       const slow = lead0>=.86 && crossed<3;   // ralenti de la dernière ligne droite jusqu'à ce que le podium soit fait
       spd += ((slow ? .3 : crossed>=3 ? 1.6 : 1) - spd)*Math.min(1, dt*6);
@@ -12442,7 +12448,8 @@ function tieInit(){
 }
 // (23 octobre 2026) plus de suspense : arrivées serrées (quelques dixièmes), de gros écarts en milieu de course qui se resserrent
 // à la fin, et parmi 80 courses tirées au hasard (toutes à l'arrivée voulue), on garde celle qui a le plus de dépassements
-const tieProg = (q, g) => { const x = g/q.T; if(x>=1) return 1 + (x-1)*.9;
+// (23 octobre 2026) x jamais négatif : Math.pow d'un sinus négatif donnait NaN, et la course restait bloquée (Stephiox)
+const tieProg = (q, g) => { const x = Math.max(0, g/q.T); if(x>=1) return 1 + (x-1)*.9;
   return x - .04*Math.sin(Math.PI*x) + Math.pow(Math.sin(Math.PI*x), 1.3)*(q.a1*Math.sin(Math.PI*q.k1*x + q.f1) + q.a2*Math.sin(Math.PI*q.k2*x + q.f2)) };
 function tiePlan(order){   // order : les billes dans l'ordre d'arrivée voulu
   const me = order.findIndex(r=>r.me), DT = 1/60; let best = null, bestS = -1;
@@ -12489,6 +12496,7 @@ async function tieGo(pay){
   tiePlan(order);
   tie.st = "count"; chanceBtnsAt("tierce", "3… 2… 1…");
   for(let n=1; n<=3; n++){ tie.lights(n); Sound.tap(0, .7, .8); await sleep2(600); if(!document.getElementById("tie-cv")){ call.give(); tie.st = "idle"; return } }
+  tie.racers = order;   // (23 octobre 2026) au cas où le jeu aurait été relancé pendant le compte à rebours : les billes de cette course, avec leur plan
   Sound.tap(0, 1, 1.6); tie.go(); chanceBtnsAt("tierce", "Ça court !");
 }
 async function tieFinish(){
@@ -16301,7 +16309,7 @@ let bugKeep = null;   // un message qui n'est pas parti : il est reproposé au p
 // on:false cache le bouton (pendant qu'on prépare la mise à jour) ; on:true le remet, avec la pastille si l'id a changé
 // (16 octobre 2026) deux repères : dot = la pastille rouge du bouton, à changer à CHAQUE mise en ligne qui ajoute une ligne au patchnote
 // (avec txt : la date du jour) ; id = la fenêtre d'annonce à l'arrivée, seulement pour les très gros jours
-const NEWS = {on:true, id:"2026-10-22", dot:"2026-10-23-2300", url:"/nouveautes.html", txt:"Mise à jour du 23 oct."};
+const NEWS = {on:true, id:"2026-10-22", dot:"2026-10-23-2330", url:"/nouveautes.html", txt:"Mise à jour du 23 oct."};
 const newsUnseen = () => lsGet("billeo-news-vu")!==NEWS.dot;
 // (14 octobre 2026) à l'arrivée, une fenêtre annonce la mise à jour, une seule fois par mise à jour et par compte (S.newsPop, gardé
 // dans la partie : elle ne revient pas sur un autre appareil) ; on choisit d'aller voir les nouveautés, ou pas

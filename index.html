@@ -7566,12 +7566,23 @@ const PASS_TIERS = 30, PASS_PRICE = "2,99 €";
 // (23 octobre 2026) le premium ne se paie pas encore : la date où il deviendra payant n'est pas décidée
 const PASS_FREE_NOTE = "(gratuit pendant une durée indéterminée)";
 // XP pour passer au palier t : les premiers vont vite (600), puis 1 000, puis 1 300 pour les 10 derniers
-const TIER_COST = t => t<=10 ? 600 : t<=20 ? 1000 : 1300;
+// (23 octobre 2026) à partir du passe de novembre 2026, environ ×1,35 : en octobre, les joueurs actifs finissaient le palier 30
+// entre le 10e et le 20e jour. Avec ces coûts, il faut environ 1 300 XP par jour pour le finir dans le mois (un joueur régulier),
+// les très actifs le finissent vers le 20e jour. Les passes d'avant gardent leurs coûts (récompenses oubliées versées au changement de mois).
+// [paliers 2 à 10, 11 à 20, 21 à 30, niveau bonus]
+const BONUS_MAX = 99;
+const PASS_COSTS = id => { const [y,m] = String(id).split("-").map(Number); return y*12+m >= 2026*12+11 ? [800,1350,1750,2000] : [600,1000,1300,1300] };
+const [PC1, PC2, PC3, PCB] = PASS_COSTS(seasonNow().id);
+const TIER_COST = t => t<=10 ? PC1 : t<=20 ? PC2 : PC3;
+// le niveau (bonus compris) d'une XP dans les coûts d'un passe donné
+function passLevelFor(xp, id){ const [a,b,c,bo] = PASS_COSTS(id); let s = 0, t = 1;
+  while(t<PASS_TIERS){ const k = t+1<=10 ? a : t+1<=20 ? b : c; if((xp||0) < s+k) return t; s += k; t++ }
+  return PASS_TIERS + Math.min(BONUS_MAX, Math.floor(((xp||0)-s)/bo)) }
 const XP_AT = [0,0]; for(let t=2;t<=PASS_TIERS;t++) XP_AT[t] = XP_AT[t-1]+TIER_COST(t);   // XP totale pour atteindre le palier t
 const PASS_MAX_XP = XP_AT[PASS_TIERS];
 // (16 octobre 2026) après le palier 30 : des niveaux bonus pour les plus fidèles, 1 300 XP chacun, 20 bonbecs (gratuit) et 40 (premium) par niveau.
 // Un niveau bonus b est le « palier » 30 + b (récompenses rangées dans P.free / P.prem, clé « 2026-10|free|31 » pour le serveur)
-const BONUS_COST = 1300, BONUS_MAX = 99, PASS_BONUS_J = {free:20, prem:40};
+const BONUS_COST = PCB, PASS_BONUS_J = {free:20, prem:40};
 const xpAt = t => t<=PASS_TIERS ? XP_AT[t] : PASS_MAX_XP + (t-PASS_TIERS)*BONUS_COST;
 const PASS_CAP_XP = xpAt(PASS_TIERS + BONUS_MAX);
 const passLevelOf = xp => { const t = tierOfXP(xp); return t<PASS_TIERS ? t : PASS_TIERS + Math.min(BONUS_MAX, Math.floor(((xp||0)-PASS_MAX_XP)/BONUS_COST)) };
@@ -7620,7 +7631,7 @@ function ensurePass(){
 // (si on revient dans les 7 premiers jours ; le serveur accepte le mois d'avant pendant ce temps-là).
 function passRollover(P){
   if(new Date().getDate() > PASS_GRACE) return;
-  const se = seasonOf(P.id), tier = passLevelOf(P.xp);   // niveaux bonus compris
+  const se = seasonOf(P.id), tier = passLevelFor(P.xp, P.id);   // niveaux bonus compris, avec les coûts de ce passe-là
   if(se.id===seasonNow().id) return;
   let n = 0;
   for(let t=1; t<=tier; t++) ["free","prem"].forEach(tr=>{
@@ -16290,7 +16301,7 @@ let bugKeep = null;   // un message qui n'est pas parti : il est reproposé au p
 // on:false cache le bouton (pendant qu'on prépare la mise à jour) ; on:true le remet, avec la pastille si l'id a changé
 // (16 octobre 2026) deux repères : dot = la pastille rouge du bouton, à changer à CHAQUE mise en ligne qui ajoute une ligne au patchnote
 // (avec txt : la date du jour) ; id = la fenêtre d'annonce à l'arrivée, seulement pour les très gros jours
-const NEWS = {on:true, id:"2026-10-22", dot:"2026-10-23-2100", url:"/nouveautes.html", txt:"Mise à jour du 23 oct."};
+const NEWS = {on:true, id:"2026-10-22", dot:"2026-10-23-2300", url:"/nouveautes.html", txt:"Mise à jour du 23 oct."};
 const newsUnseen = () => lsGet("billeo-news-vu")!==NEWS.dot;
 // (14 octobre 2026) à l'arrivée, une fenêtre annonce la mise à jour, une seule fois par mise à jour et par compte (S.newsPop, gardé
 // dans la partie : elle ne revient pas sur un autre appareil) ; on choisit d'aller voir les nouveautés, ou pas

@@ -3832,6 +3832,11 @@ button.cp-who:hover b{text-decoration:underline}
 .auth-pitch{pointer-events:none;text-shadow:0 2px 18px rgba(0,0,0,.55);margin-top:60px}   /* fixe : ne bouge pas quand le formulaire change de hauteur */
 .auth-pitch .logo{font-size:96px;animation:auth-in .7s cubic-bezier(.2,.9,.3,1.3) both}
 .auth-pitch .logo img{animation:auth-roll 1.1s cubic-bezier(.2,.8,.3,1) .15s both;filter:drop-shadow(0 .06em 0 var(--navy)) drop-shadow(0 4px 6px rgba(0,0,0,.5))}
+/* (23 octobre 2026) le tampon « Bêta » collé sur le « o » du logo ; il disparaît tout seul à la fin de la bêta (BETA.open) */
+.auth-pitch .lw{position:relative}
+.auth-beta{position:absolute;left:calc(100% - .3em);top:-.12em;overflow:hidden;white-space:nowrap;display:inline-flex;align-items:center;gap:7px;padding:5px 12px 5px 6px;border-radius:10px;background:repeating-linear-gradient(135deg,#C81E32 0 10px,#B9182B 10px 20px);border:2px solid rgba(255,255,255,.85);color:#fff;font-family:var(--display);font-weight:400;font-size:15px;line-height:1;letter-spacing:.1em;text-transform:uppercase;text-shadow:none;transform:rotate(9deg);box-shadow:0 3px 0 #7A0E1F,0 10px 22px -6px rgba(200,30,50,.7);animation:auth-stamp .55s 1.05s cubic-bezier(.2,1.4,.4,1) both}
+.auth-beta i{display:grid;place-items:center;width:1.5em;height:1.5em;border-radius:50%;background:#fff;color:#B9182B;font-style:normal;text-transform:none;font-family:Georgia,serif;font-weight:700;letter-spacing:0;font-size:1.05em}
+.auth-beta::after{content:"";position:absolute;inset:-2px auto -2px -40%;width:30%;background:linear-gradient(100deg,transparent,rgba(255,255,255,.55),transparent);transform:skewX(-18deg);animation:auth-shine 4s 2s ease-in-out infinite}
 .auth-pitch h1{margin:22px 0 0;font-family:var(--display);font-weight:400;font-size:clamp(34px,calc(4.4vw / var(--vz,1)),58px);line-height:.96;letter-spacing:.01em;text-transform:uppercase;animation:auth-in .7s .1s both}
 .auth-pitch h1 em{font-style:normal;color:var(--yellow)}
 .auth-hand{margin:14px 0 0;font-family:var(--hand);font-size:27px;line-height:1.1;color:rgba(255,255,255,.82);transform:rotate(-2deg);transform-origin:left;animation:auth-in .7s .2s both}
@@ -3901,12 +3906,18 @@ button.cp-who:hover b{text-decoration:underline}
 @keyframes auth-in{from{opacity:0;transform:translateY(18px)}}
 @keyframes auth-card{from{opacity:0;transform:translateY(28px) scale(.97)}}
 @keyframes auth-roll{from{opacity:0;transform:translateX(-160px) rotate(-540deg)}}
+@keyframes auth-stamp{from{opacity:0;transform:rotate(-14deg) scale(2.2)}}
+@keyframes auth-shine{0%,70%{left:-40%}100%{left:130%}}
 @keyframes auth-float{50%{transform:translateY(-8px)}}
 @keyframes auth-shake{20%,60%{transform:translateX(-5px)}40%,80%{transform:translateX(5px)}}
 @media (max-width:880px){
   .auth-wrap{grid-template-columns:minmax(0,1fr);gap:22px;padding:28px 16px 72px;align-content:start;max-width:460px}
   .auth-pitch{text-align:center;margin-top:0}
   .auth-pitch .logo{font-size:70px;justify-content:center}
+  .auth-beta{font-size:12px;padding:4px 9px 4px 5px;gap:5px}
+}
+@media (max-width:420px){
+  .auth-beta{left:calc(100% - .8em);top:-.42em}
   .auth-pitch h1{font-size:30px;margin-top:14px}
   .auth-pitch h1 br{display:none}
   .auth-hand{font-size:22px;transform:none}
@@ -7977,6 +7988,7 @@ function openDaily(){
 const betaOwned = () => TK.filter(t=>S.specs.some(x=>isBeta(x) && x.type===t));
 function renderBeta(){
   const el = document.getElementById("beta-rib"); el.hidden = !BETA.open;
+  if(!BETA.open) document.querySelector(".auth-beta")?.remove();   // le tampon de la page de connexion s'en va avec le ruban
   requestAnimationFrame(()=>document.documentElement.style.setProperty("--rib", BETA.open ? el.offsetHeight+"px" : "0px"));
   if(!BETA.open) return;
   // une page restée ouverte à minuit : le ruban s'en va tout seul
@@ -18860,7 +18872,7 @@ const AUTH_SPECS = {
   shiny: {seed:hash("accueil-s"), type:"bille", family:0, pal:4, shiny:2},
 };
 function authPitch(){
-  return `<div class="logo" role="img" aria-label="Tikalo"><span class="lw" aria-hidden="true"><span class="lt">T</span><span class="lt i">ı<img src="${marbleSrc(LOGO_SPEC,96)}" alt=""></span><span class="lt">k</span><span class="lt">a</span><span class="lt">l</span><span class="lt">o</span></span></div>
+  return `<div class="logo" role="img" aria-label="${BETA.open ? "Tikalo, version bêta" : "Tikalo"}"><span class="lw" aria-hidden="true"><span class="lt">T</span><span class="lt i">ı<img src="${marbleSrc(LOGO_SPEC,96)}" alt=""></span><span class="lt">k</span><span class="lt">a</span><span class="lt">l</span><span class="lt">o</span>${BETA.open ? `<span class="auth-beta"><i>β</i>Bêta</span>` : ""}</span></div>
     <h1>Ta cour de récré,<br> <em>en billes.</em></h1>
     <p class="auth-hand">Ouvre des sachets, complète ton album, joue avec les copains.</p>
     <ul class="auth-feats">

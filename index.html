@@ -1428,6 +1428,11 @@ body.vit-dragging,body.vit-dragging *{cursor:grabbing!important;user-select:none
 .page-head .mj-bille{margin-left:auto}
 @media (max-width:560px){ .page-head:has(.mj-bille){flex-wrap:wrap;gap:10px} .page-head .mj-bille{flex:1 1 100%;margin-left:0} .page-head .mj-bille b{max-width:none} .page-head .mj-bille .btn{margin-left:auto} }
 @media (max-width:460px){ .bp-sizes{grid-template-columns:repeat(3,minmax(0,1fr))} .bp-sz{font-size:12px} }
+.bp-f{display:flex;gap:8px;align-items:center;margin:0 0 4px}
+.bp-f .col-search{flex:1;min-width:0;margin:0}
+.bp-f .col-search input{height:40px}
+.bp-f .bx-sel{flex:0 0 auto;height:40px;max-width:46%}
+.bp-none{margin:10px 0 0;text-align:center}
 .bp-nav{display:flex;justify-content:space-between;align-items:center;margin-top:10px;font-size:13px;color:var(--ink-2);font-weight:700}
 .bp-nav span{display:flex;gap:6px}
 /* ---------- le Ticket à gratter ---------- */
@@ -3955,6 +3960,9 @@ button.cp-who:hover b{text-decoration:underline}
 .ev-opt.on .ev-box{background:#C8322F;border-color:#C8322F;color:#fff}
 .ev-opt b{display:flex;align-items:center;gap:5px;font-size:14px;font-weight:900}
 .ev-opt small{display:block;font-size:12.5px;font-weight:700;color:var(--ink-2);margin-top:2px}
+.ev-opt .ev-opt-n{font-style:normal;font-weight:800;color:var(--ink-2)}
+.ev-opt .ev-opt-fini{display:flex;gap:5px;align-items:flex-start;color:#2E9E57;font-weight:800;margin-top:5px}
+.ev-opt .ev-opt-fini svg{flex:none;margin-top:2px}
 .ev-opt input:focus-visible + .ev-box{outline:3px solid var(--blue);outline-offset:2px}
 .ev-how{margin:2px 0 10px}
 .gc-cname{font-size:13px;font-weight:800;color:var(--muted);margin-left:4px}
@@ -4439,6 +4447,9 @@ const eventLive = E => !!E && Date.now()>=E.start && Date.now()<=E.end;
 // Mêmes valeurs dans serveur.sql (taux_evenement, ouvrir_sac).
 const EV_DROP = {classique:.25, premium:.25, collector:.25};   // (11 octobre 2026) 50 % → 25 % par bille (la collection se finissait trop vite) ; la dernière du sachet reste toujours une bille d'événement
 const evOptOn = bagId => !!(S.evOpt && EV_DROP[bagId] && liveEventKey());
+// (23 octobre 2026) l'album de l'événement est fini (tous les coloris dans les 6 tailles) : la case des sachets le dit
+const evFini = k => { const f = FAMILIES.findIndex(F=>F.event===k), E = EVENTS[k];
+  return f>=0 && new Set(S.specs.filter(x=>x.family===f).map(x=>x.type+"|"+x.pal)).size >= TK.length*E.palIdx.length };
 // un événement pas encore commencé reste une surprise (Billepedia, album, Confiserie) : seule l'accueil l'annonce, billes floutées, 7 jours avant
 const evSoon = E => Date.now() < E.start;
 const liveEventKey = () => Object.keys(EVENTS).find(k=>eventLive(EVENTS[k]));
@@ -8422,9 +8433,10 @@ function viewBags(){
   <div class="bg-stage">
     <div class="bg-info">
       <div>${b.event&&eventLive(EVENTS[b.event])?`<span class="sample-tag">${ic("clock",12)} Encore ${eventLeft(EVENTS[b.event])} · ${untilLabel(EVENTS[b.event].end)}</span>`:""}<h2>${b.name}</h2><p>${b.desc}</p>
-        ${!b.event && liveEventKey() && EV_DROP[b.id] ? (()=>{ const k = liveEventKey(), F = FAMILIES.find(x=>x.event===k);
+        ${!b.event && liveEventKey() && EV_DROP[b.id] ? (()=>{ const k = liveEventKey(), F = FAMILIES.find(x=>x.event===k), fini = evFini(k);
           return `<label class="ev-opt${S.evOpt?" on":""}"><input type="checkbox" data-action="ev-opt"${S.evOpt?" checked":""}><span class="ev-box">${ic("check",14,3)}</span>
-            <span><b>${ic("flag",14)} Billes ${esc(F.name)}</b><small>${Math.round(EV_DROP[b.id]*100)} % par bille, la ${b.n}ᵉ toujours. Hors album.</small></span></label>` })() : ""}
+            <span><b>${ic("flag",14)} Billes d'événement <em class="ev-opt-n">${esc(F.name)}</em></b><small>${Math.round(EV_DROP[b.id]*100)} % par bille, la ${b.n}ᵉ toujours. Hors album.</small>
+            ${fini ? `<small class="ev-opt-fini">${ic("check",12,3)} Album de l'événement fini : tu as déjà toutes les billes ${esc(F.name)}, cocher ne te donnera que des doubles.</small>` : ""}</span></label>` })() : ""}
         ${b.event?`<p class="ev-rate">${ic("flag",14)} ${b.evFill>=1 ? `Les ${b.n} billes sont des billes ${FAMILIES[b.fam].name}` : `Bille ${FAMILIES[b.fam].name} : ${Math.round(b.evFill*100)} % par bille, ${Math.round(b.evStar*100)} % pour la vedette`} · ${b.pals.length} coloris à collectionner, dans les 6 tailles</p><div class="ev-pals">${b.pals.map(pl=>`<span title="${esc(PALETTES[pl][0])}">${mImg({seed:hash("evp"+pl),type:"calot",family:b.fam,pal:pl,shiny:0},80,34,"")}</span>`).join("")}</div>`:""}</div>
       <div class="bg-cta">${cta}</div>
       ${(()=>{ const left = PITY-(S.pity||0);
@@ -9648,6 +9660,13 @@ document.addEventListener("input", e=>{
   clearTimeout(colQT); colQT = setTimeout(()=>{ ui.craftF = {...(ui.craftF||{}), q:e.target.value}; renderView();
     const q = document.getElementById("craft-q"); if(q){ q.focus(); q.setSelectionRange(q.value.length, q.value.length) } }, 180);
 });
+// « Ma bille de jeu » : la recherche et la rareté redessinent la fenêtre (le curseur reste dans la case)
+document.addEventListener("input", e=>{
+  if(e.target.id!=="bp-q") return;
+  clearTimeout(colQT); colQT = setTimeout(()=>{ ui.bpF.q = e.target.value; ui.bpP = 0; openBallPick(ui.pickNext);
+    const q = document.getElementById("bp-q"); if(q){ q.focus(); q.setSelectionRange(q.value.length, q.value.length) } }, 180);
+});
+document.addEventListener("change", e=>{ if(e.target.id==="bp-r"){ ui.bpF.r = e.target.value; ui.bpP = 0; openBallPick(ui.pickNext) } });
 document.addEventListener("input", e=>{
   if(e.target.id!=="col-q") return;
   clearTimeout(colQT); colQT = setTimeout(()=>{
@@ -12337,13 +12356,13 @@ function tieInit(){
   const L = 2600, LANE = [W*.2, W*.4, W*.6, W*.8], START = 190;
   let r0 = 7; const rnd = () => (r0 = (r0*16807) % 2147483647) / 2147483647;
   const dots = Array.from({length:500}, ()=>({x:rnd()*W, y:rnd()*(L+H), r:.6+rnd()*1.6, c:rnd()<.5?"#7A5530":"#E8C9A0"}));
-  let lights = 0, t0 = 0;
+  let lights = 0, t0 = 0, lastT = 0, g = 0, spd = 1, zoom = 1, flash = null, myRank = -1, beat = 0;
   tie.lights = n => { lights = n };
-  tie.go = () => { t0 = performance.now(); tie.st = "run" };
+  tie.go = () => { t0 = lastT = performance.now(); g = 0; spd = 1; zoom = 1; flash = null; myRank = -1; beat = 0; tie.st = "run" };
   const draw = (t) => {
     cx.setTransform(d,0,0,d,0,0);
     const g0 = cx.createLinearGradient(0,0,W,0); g0.addColorStop(0,"#B8895A"); g0.addColorStop(.5,"#D2A472"); g0.addColorStop(1,"#B8895A"); cx.fillStyle = g0; cx.fillRect(0,0,W,H);
-    cx.save(); cx.translate(0, -tie.cam);
+    cx.save(); cx.translate(W/2, H*.55); cx.scale(zoom, zoom); cx.translate(-W/2, -H*.55 - tie.cam);   // zoom du ralenti
     for(const p of dots){ if(p.y<tie.cam-10 || p.y>tie.cam+H+10) continue; cx.globalAlpha = .45; cx.fillStyle = p.c; cx.beginPath(); cx.arc(p.x, p.y, p.r, 0, 6.283); cx.fill() }
     cx.globalAlpha = 1; cx.strokeStyle = "rgba(255,255,255,.35)"; cx.lineWidth = 2; cx.setLineDash([14,12]);
     for(let i=1;i<4;i++){ const x = W*(.1+.2*i); cx.beginPath(); cx.moveTo(x, START-40); cx.lineTo(x, START+L+200); cx.stroke() }
@@ -12369,21 +12388,69 @@ function tieInit(){
     if(tie.st==="run"){ const ord = [...tie.racers].sort((a,b)=>b.p-a.p), mi = ord.findIndex(r=>r.me);
       cx.fillStyle = "rgba(16,8,26,.8)"; cx.beginPath(); cx.roundRect(W-96, H-50, 84, 38, 12); cx.fill();
       cx.fillStyle = "#FFC93F"; cx.font = `400 22px "Lilita One"`; cx.textAlign = "center"; cx.fillText(`${mi+1}${mi?"ᵉ":"ᵉʳ"}`, W-54, H-23) }
+    // le ralenti : bandes de cinéma et « RALENTI »
+    const k = Math.max(0, Math.min(1, (zoom-1)/.28));
+    if(k>.01){ cx.fillStyle = `rgba(8,4,12,${.88*k})`; cx.fillRect(0, 0, W, 30*k); cx.fillRect(0, H-30*k, W, 30*k);
+      cx.globalAlpha = k; cx.fillStyle = "#E5484D"; cx.beginPath(); cx.arc(18, 15*k, 4, 0, 6.283); cx.fill();
+      cx.fillStyle = "#fff"; cx.font = "900 11px Nunito"; cx.textAlign = "left"; cx.textBaseline = "middle"; cx.fillText("RALENTI", 28, 15*k); cx.textBaseline = "alphabetic"; cx.globalAlpha = 1 }
+    // « Tu passes 2ᵉ ! » quand ta bille gagne ou perd une place
+    if(flash && t - flash.t < 1100){ const a = Math.min(1, (1100 - (t - flash.t))/250);
+      cx.globalAlpha = a; cx.font = `400 19px "Lilita One"`; cx.textAlign = "center"; const fw = cx.measureText(flash.txt).width + 26;
+      cx.fillStyle = flash.up ? "#2E9E57" : "#C2373C"; cx.beginPath(); cx.roundRect(W/2-fw/2, 42, fw, 32, 16); cx.fill();
+      cx.fillStyle = "#fff"; cx.fillText(flash.txt, W/2, 65); cx.globalAlpha = 1 }
   };
   const loop = t => {
     if(!document.body.contains(cv)){ cancelAnimationFrame(tie.raf); return }
     if(tie.st==="run"){
-      const s = (t - t0)/1000; let lead = 0;
+      const dt = Math.min(.05, (t - lastT)/1000); lastT = t;
+      const lead0 = Math.max(...tie.racers.map(r=>r.p)), crossed = tie.racers.filter(r=>r.p>=1).length;
+      const slow = lead0>=.86 && crossed<3;   // ralenti de la dernière ligne droite jusqu'à ce que le podium soit fait
+      spd += ((slow ? .3 : crossed>=3 ? 1.6 : 1) - spd)*Math.min(1, dt*6);
+      zoom += ((slow ? 1.28 : 1) - zoom)*Math.min(1, dt*3);
+      g += dt*spd;
       for(const r of tie.racers){
-        const x = Math.min(s/r.T, 1.25);
-        const base = x<=1 ? x - .06*Math.sin(Math.PI*x) + r.A*Math.sin(Math.PI*x)*Math.sin(r.w*s + r.ph) : 1 + (x-1)*.9;
-        const np = Math.max(r.p, base); r.rot += (np - r.p)*L/13; r.p = np; r.wob = Math.sin(s*3 + r.ph)*3*Math.min(1, x); lead = Math.max(lead, r.p) }
-      tie.cam += ((START + lead*L - H*.62) - tie.cam)*.12; tie.cam = Math.min(tie.cam, START + L - H*.55);
+        const np = Math.max(r.p, tieProg(r.q, g));
+        if(r.p<1 && np>=1) Sound.tap(0, 1, 1.5 - r.place*.12);
+        r.rot += (np - r.p)*L/13; r.p = np; r.wob = Math.sin(g*3 + r.ph)*3*Math.min(1, g/r.q.T) }
+      if(slow && (beat -= dt) <= 0){ beat = .45; Sound.tap(0, .3, .5) }   // le cœur qui bat
+      const ord = [...tie.racers].sort((a,b)=>b.p-a.p), mi = ord.findIndex(r=>r.me), me = ord[mi];
+      if(myRank>=0 && mi!==myRank && me.p<1 && g>.8 && (!flash || t - flash.t > 700))
+        flash = {t, up:mi<myRank, txt: mi<myRank ? (mi ? `Tu passes ${mi+1}ᵉ !` : "Tu prends la tête !") : `Tu recules ${mi+1}ᵉ…`};
+      myRank = mi;
+      // au ralenti, la caméra suit le peloton de tête (les 3 premiers) ; sinon la bille en tête
+      const focus = slow ? (ord[0].p + ord[2].p)/2 : ord[0].p;
+      tie.cam += ((START + focus*L - H*(slow ? .55 : .62)) - tie.cam)*.12; tie.cam = Math.min(tie.cam, START + L - H*.55);
       if(tie.racers.every(r=>r.p>=1.02)){ tie.st = "end"; tieFinish() }
     }
     draw(t); tie.raf = requestAnimationFrame(loop);
   };
   tie.raf = requestAnimationFrame(loop);
+}
+// (23 octobre 2026) plus de suspense : arrivées serrées (quelques dixièmes), de gros écarts en milieu de course qui se resserrent
+// à la fin, et parmi 80 courses tirées au hasard (toutes à l'arrivée voulue), on garde celle qui a le plus de dépassements
+const tieProg = (q, g) => { const x = g/q.T; if(x>=1) return 1 + (x-1)*.9;
+  return x - .04*Math.sin(Math.PI*x) + Math.pow(Math.sin(Math.PI*x), 1.3)*(q.a1*Math.sin(Math.PI*q.k1*x + q.f1) + q.a2*Math.sin(Math.PI*q.k2*x + q.f2)) };
+function tiePlan(order){   // order : les billes dans l'ordre d'arrivée voulu
+  const me = order.findIndex(r=>r.me), DT = 1/60; let best = null, bestS = -1;
+  for(let k=0; k<80; k++){
+    const g1 = .05 + Math.random()*.12, g2 = g1 + .05 + Math.random()*.15, g3 = g2 + .12 + Math.random()*.3;
+    const qs = [0, g1, g2, g3].map(gp=>({T:6.6 + gp, a1:.04 + Math.random()*.04, k1:.8 + Math.random()*1.2, f1:Math.random()*6.283, a2:.01 + Math.random()*.01, k2:3 + Math.random()*1.5, f2:Math.random()*6.283}));
+    const p = [0,0,0,0], cross = [0,0,0,0]; let prev = null, swaps = 0, leadCh = 0, meSw = 0, late = -1, ok = true;
+    for(let g=DT; g<qs[3].T + .1; g+=DT){
+      qs.forEach((q,i)=>{ const np = Math.max(p[i], tieProg(q, g)); if(p[i]<1 && np>=1) cross[i] = g; p[i] = np });
+      const ord = [0,1,2,3].sort((a,b)=>p[b]-p[a]);
+      if(prev){ for(let a=0;a<4;a++) for(let b=a+1;b<4;b++) if((ord.indexOf(a)<ord.indexOf(b)) !== (prev.indexOf(a)<prev.indexOf(b))) swaps++;
+        if(ord[0]!==prev[0]) leadCh++; if(ord.indexOf(me)!==prev.indexOf(me)) meSw++ }
+      if(late<0 && p[ord[0]]>=.85){ late = 0; for(let a=0;a<4;a++) for(let b=a+1;b<4;b++) if(ord.indexOf(a)>ord.indexOf(b)) late++ }
+      prev = ord;
+    }
+    for(let i=0;i<3;i++) if(!(cross[i] + 3*DT < cross[i+1])) ok = false;   // l'arrivée doit être celle tirée par le serveur (avec une marge)
+    if(!ok || swaps>16) continue;
+    const s = Math.min(swaps,10) + 2*Math.min(leadCh,4) + 3*late + 2*Math.min(meSw,4) + Math.random();
+    if(s>bestS){ bestS = s; best = qs }
+  }
+  best = best || [0,.2,.45,.9].map(gp=>({T:6.6 + gp, a1:0, k1:1, f1:0, a2:0, k2:1, f2:0}));
+  order.forEach((r,i)=>{ r.q = best[i]; r.place = i+1; r.ph = Math.random()*6.283 });
 }
 function tieSetup(){
   const lane = Math.floor(Math.random()*4); let j = 0;
@@ -12403,10 +12470,9 @@ async function tieGo(pay){
   document.querySelectorAll("#tie-stage .rq-win, #tie-pod").forEach(x=>x.hidden = true);
   document.getElementById("tie-bar").innerHTML = [...pod, null].map((c,i)=>`<div><b>${i+1}${i?"ᵉ":"ᵉʳ"}</b>${lotHTML(c)}</div>`).join("");
   tieSetup(); tie.cam = 0;
-  const gaps = [0, .08 + Math.random()*.25, .45 + Math.random()*.3, .9 + Math.random()*.4];
   const others = tie.racers.filter(r=>!r.me).sort(()=>Math.random()-.5), order = []; let oi = 0;
   for(let pl=1; pl<=4; pl++) order.push(pl===place ? tie.racers.find(r=>r.me) : others[oi++]);
-  order.forEach((r,i)=>{ r.T = 5.6 + gaps[i]; r.place = i+1; r.A = .025 + Math.random()*.03; r.w = 1.4 + Math.random()*1.4; r.ph = Math.random()*6.283 });
+  tiePlan(order);
   tie.st = "count"; chanceBtnsAt("tierce", "3… 2… 1…");
   for(let n=1; n<=3; n++){ tie.lights(n); Sound.tap(0, .7, .8); await sleep2(600); if(!document.getElementById("tie-cv")){ call.give(); tie.st = "idle"; return } }
   Sound.tap(0, 1, 1.6); tie.go(); chanceBtnsAt("tierce", "Ça court !");
@@ -12569,22 +12635,33 @@ function artToupie(){
 // Une machine de fête foraine avec 24 boules transparentes : on voit le lot dans chacune (chaque boule est tirée comme à la Roue,
 // et la machine de chaque joueur est gardée par le serveur, supabase/jeux-chance-2.sql). On appuie sur « Jouer » : la machine choisit
 // une boule au hasard (1 chance sur 24), la pince va la chercher, même au fond, et l'attrape à coup sûr ; une boule neuve retombe.
+// (23 octobre 2026) chacun des 9 lots est toujours dans la machine, et le lot gagné est tiré comme à la Roue (supabase/pince-tous-lots.sql) ;
+// pour le suspense, un gros lot glisse parfois de la pince avant qu'elle attrape la bonne boule.
 const pz = {st:"ready", raf:0, balls:[], boules:null, call:null, claw:null, target:null, held:null, falling:null, tray:null, lot:null};
 const PZ_CAPS = [["#E5484D","#FFD1D6"],["#2EC4DE","#D3F2F0"],["#FFC93F","#FFF1C2"],["#8C7CFF","#E6E0FF"],["#3FBF6A","#DAF2D6"],["#FF8A3D","#FFE1CC"]];
 function viewPince(){
   return chanceView("pince", "La Pince", `<div class="pz-stage" id="pz-stage"><canvas id="pz-cv" aria-label="La machine à pince"></canvas><div class="rq-win" hidden></div></div>`,
-    chanceOdds("pince", "Chaque boule de la machine est tirée avec ces chances, et la machine en choisit une au hasard : au total, les mêmes chances qu'un tour de Roue."));
+    chanceOdds("pince", "Tous les lots sont toujours dans la machine. Le lot que tu gagnes est tiré avec ces chances, comme un tour de Roue : les gros lots glissent souvent de la pince !"));
 }
 async function pzLoad(){
   if(srvOn()){ try{ const r = await srv(()=>Cloud.eco.pinceEtat()); pz.boules = r.boules } catch(e){ pz.boules = null } }
-  else { if(!Array.isArray(S.pince) || S.pince.length!==24){ S.pince = Array.from({length:24}, roueK); save() } pz.boules = S.pince.slice() }
+  else { if(!Array.isArray(S.pince) || S.pince.length!==24) S.pince = Array.from({length:24}, roueK); S.pince = pzComplet(S.pince); save(); pz.boules = S.pince.slice() }
+}
+// (23 octobre 2026) chacun des 9 lots est toujours dans la machine (interne.pince_complet, supabase/pince-tous-lots.sql) :
+// il manque un lot → une boule d'un lot en double (au hasard) le devient
+function pzComplet(m){
+  m = m.slice();
+  for(const lbl of new Set(ROUE.map(c=>c.lbl))) if(!m.some(k=>ROUE[k].lbl===lbl)){
+    const cand = m.map((k,i)=>i).filter(i=>m.filter(k=>ROUE[k].lbl===ROUE[m[i]].lbl).length > 1);
+    m[cand[Math.floor(Math.random()*cand.length)]] = ROUE.findIndex(c=>c.lbl===lbl) }
+  return m;
 }
 async function pzInit(){
   cancelAnimationFrame(pz.raf); if(chancePend.pince) chancePend.pince();
   const cv = document.getElementById("pz-cv"); if(!cv) return;
   const W = 360, H = 600, d = cvSetup(cv, W, H), cx = cv.getContext("2d");
   const BOX = {l:22, r:338, t:78, f:440}, WALL = 92, HOLE = (BOX.l+WALL)/2, RB = 21, HOME = 210, TOPY = 132;
-  pz.st = "load"; pz.claw = {x:HOME, y:TOPY, open:1, sw:0, vx:0}; pz.held = pz.falling = pz.tray = pz.target = null;
+  pz.st = "load"; pz.claw = {x:HOME, y:TOPY, open:1, sw:0, vx:0}; pz.held = pz.falling = pz.tray = pz.target = pz.real = null; pz.slipped = false;
   const rr = mulb(11); const deco = Array.from({length:16}, (_,i)=>({x:WALL+18+rr()*(BOX.r-WALL-36), y:BOX.f-18-rr()*70, c:PZ_CAPS[i%6]}));
   const phys = (push) => {
     const B = pz.balls, held = pz.held, tg = pz.target;
@@ -12698,7 +12775,12 @@ async function pzInit(){
     if(pz.st==="travel"){ c.x = toward(c.x, pz.target.x, 1.6*k); if((motor += k) > 9){ motor = 0; Sound.hit?.(.02) } if(c.x===pz.target.x){ pz.st = "down"; Sound.whoosh?.() } }
     if(pz.st==="down"){ c.x = toward(c.x, pz.target.x, .8*k); c.y += 2*k; if(c.y >= pz.target.y - RB*.35){ pz.st = "close"; pz.target.vx = pz.target.vy = 0 } }
     if(pz.st==="close"){ c.open = Math.max(0, c.open - .02*k); if(c.open===0){ pz.held = pz.target; Sound.tap(0, .8, 1.2); pz.st = "up"; c.wob = 0 } }
-    if(pz.st==="up"){ c.y -= 1.8*k; c.wob = (c.wob||0) + k; if(c.y <= TOPY){ c.y = TOPY; pz.st = "carry" } }
+    if(pz.st==="up"){ c.y -= 1.8*k; c.wob = (c.wob||0) + k;
+      if(pz.real && pz.held && c.y <= pz.slipY){   // ça glisse ! la boule retombe dans le tas, la pince repart vers la bonne
+        const b = pz.held; b.x = c.x; b.y = c.y + 6; b.vx = (Math.random()-.5)*2; b.vy = 0; pz.held = null;
+        pz.target = pz.real; pz.real = null; pz.slipped = true; Sound.tap(0, .6, .6); chanceBtnsAt("pince", "Oh ! Elle a glissé…") }
+      if(pz.slipped) c.open = Math.min(1, c.open + .04*k);
+      if(c.y <= TOPY){ c.y = TOPY; if(pz.slipped){ pz.slipped = false; pz.st = "travel"; setTimeout(()=>pz.st==="travel" && chanceBtnsAt("pince", "Elle y retourne…"), 500) } else pz.st = "carry" } }
     if(pz.st==="carry"){ c.x = toward(c.x, HOLE+2, 4.2*k); if((motor += k) > 9){ motor = 0; Sound.hit?.(.02) } if(c.x===HOLE+2) pz.st = "drop" }
     if(pz.st==="drop"){ c.open = Math.min(1, c.open + .05*k);
       if(c.open > .5 && pz.held){ pz.falling = {b:pz.held, x:c.x, y:c.y+6, vy:0}; pz.balls.splice(pz.balls.indexOf(pz.held), 1); pz.held = null; pz.target = null }
@@ -12731,7 +12813,9 @@ async function pzInit(){
 async function pzGo(pay){
   if(pz.st!=="ready") return;
   pz.st = "wait";
-  const call = await chanceStart("pince", pay, ()=>{ const i = Math.floor(Math.random()*24), k = S.pince[i], neuve = roueK(); S.pince[i] = neuve; save(); return {boule:i, case:k, neuve} });
+  // le lot gagné est tiré comme à la Roue, puis une boule de ce lot (même calcul que public.pince, supabase/pince-tous-lots.sql)
+  const call = await chanceStart("pince", pay, ()=>{ S.pince = pzComplet(S.pince); const lbl = ROUE[roueK()].lbl, cand = S.pince.map((k,i)=>i).filter(i=>ROUE[S.pince[i]].lbl===lbl);
+    const i = cand[Math.floor(Math.random()*cand.length)], k = S.pince[i], neuve = cand.length>1 ? roueK() : k; S.pince[i] = neuve; save(); return {boule:i, case:k, neuve} });
   if(!call){ pz.st = "ready"; return }
   if(!document.getElementById("pz-cv")){ call.give(); return }
   document.querySelector("#pz-stage .rq-win")?.setAttribute("hidden", ""); pz.tray = null;
@@ -12739,6 +12823,12 @@ async function pzGo(pay){
   pz.target = pz.balls.find(b=>b.i===call.r.boule);
   // la page n'avait pas la même machine que le serveur (une autre partie ailleurs) : la boule tirée est mise à jour
   if(!pz.target || pz.target.k!==call.r.case){ if(pz.target){ pz.target.k = call.r.case; pz.target.c = pz.lot } else { pz.add(call.r.boule, call.r.case); pz.target = pz.balls[pz.balls.length-1] } }
+  // (23 octobre 2026) un gros lot qui glisse : 4 fois sur 10, la pince attrape d'abord une boule plus rare que le lot gagné
+  // (le plus souvent la plus rare), la soulève… et elle glisse ; puis elle va chercher la bonne. Ce n'est que l'animation.
+  pz.real = null;
+  const rarer = pz.balls.filter(b=>b!==pz.target && lotProb(b.c.lbl) < lotProb(pz.lot.lbl)).sort((a,b)=>lotProb(a.c.lbl)-lotProb(b.c.lbl));
+  if(rarer.length && Math.random() < .4){ const dec = rarer[Math.floor(Math.random()**2 * rarer.length)];
+    pz.real = pz.target; pz.target = dec; pz.slipY = Math.max(150, dec.y - 60 - Math.random()*80) }
   pz.st = "travel"; chanceBtnsAt("pince", "La pince y va…");   // (22 octobre 2026) pas de halo : la pince va directement à la boule tirée, sans rien dévoiler
 }
 function pzFinish(){
@@ -12831,9 +12921,13 @@ function openBallPick(next){
   // (22 octobre 2026) par taille, 12 billes à la fois : avant, toute la collection d'un coup, et les téléphones plantaient
   const el = document.getElementById("modal"), act = activeSpec(), N = 12;
   ui.ballPicked = ui.view; ui.pickNext = next || null;
-  const has = Object.fromEntries(TK.map(t=>[t, S.specs.filter(x=>x.type===t).length]));
-  if(!ui.bpT || !has[ui.bpT]) ui.bpT = act && has[act.type] ? act.type : TK.find(t=>has[t]) || TK[0];
-  const list = S.specs.filter(x=>x.type===ui.bpT).sort(tierSort), pages = Math.max(1, Math.ceil(list.length/N));
+  // (23 octobre 2026) chercher sa bille en texte (sans accents ni majuscules) et filtrer par rareté du motif ou shiny
+  const F = ui.bpF || (ui.bpF = {q:"", r:""}), qw = fold(F.q).trim().split(/\s+/).filter(Boolean);
+  const bpOK = x => (F.r==="" || (F.r==="shiny" ? x.shiny : FAMILIES[x.family].rar===+F.r)) && qw.every(w=>fold(specName(x)).includes(w));
+  const pool = S.specs.filter(bpOK);
+  const has = Object.fromEntries(TK.map(t=>[t, pool.filter(x=>x.type===t).length]));
+  if(!ui.bpT || !has[ui.bpT]) ui.bpT = act && has[act.type] ? act.type : TK.find(t=>has[t]) || ui.bpT || TK[0];
+  const list = pool.filter(x=>x.type===ui.bpT).sort(tierSort), pages = Math.max(1, Math.ceil(list.length/N));
   if(ui.bpP==null || ui.bpP >= pages){ const i = act ? list.findIndex(x=>x.id===act.id) : -1; ui.bpP = i>=0 ? Math.floor(i/N) : 0 }
   const show = list.slice(ui.bpP*N, ui.bpP*N+N);
   el.innerHTML = `<div class="modal bag-sum pick-modal ball-go" role="dialog" aria-modal="true" aria-label="Ma bille de jeu"><button class="close-x" data-action="close-modal" aria-label="Fermer">×</button>
@@ -12841,6 +12935,9 @@ function openBallPick(next){
     ${act ? `<button class="bg-cur" data-action="ball-go" style="${tstyle(act.type)}"><span class="ball">${mImg(act,160,Math.round(30*scaleOf(act.type)+34),"")}</span>
       <span><small>Ta bille de jeu</small><b>${esc(specName(act))}</b>${typePill(act.type)}</span><span class="btn btn-yellow">${ic("check",16,3)} La garder</span></button>` : ""}
     <div class="bp-sizes">${TK.map(t=>`<button class="bp-sz${t===ui.bpT?" on":""}" data-action="bp-size" data-t="${t}" style="--rc:${TYPES[t].rc}" ${has[t]?"":"disabled"}>${TYPES[t].label.replace("Bille chinoise","Chinoise").replace("Mini bille","Mini")}<em>${has[t]}</em></button>`).join("")}</div>
+    <div class="bp-f"><label class="col-search"><span class="cs-ic">${ic("search",17)}</span><input type="search" id="bp-q" placeholder="Galaxie, Azur…" value="${esc(F.q)}" aria-label="Chercher ma bille" autocomplete="off" spellcheck="false">${F.q?`<button class="cs-x" data-action="bp-q-clear" aria-label="Effacer la recherche">×</button>`:""}</label>
+      <select id="bp-r" class="bx-sel" aria-label="Filtrer par rareté"><option value="">Toutes les raretés</option>${DECOR_RAR.map((R,k)=>`<option value="${k}"${F.r===String(k)?" selected":""}>${R.name}</option>`).join("")}<option value="shiny"${F.r==="shiny"?" selected":""}>Shiny</option></select></div>
+    ${pool.length ? "" : `<p class="meta bp-none">Aucune bille ne correspond.</p>`}
     <div class="pick-grid">${show.map(x=>`<button class="m-card${act && x.id===act.id?" on":""}" data-action="ball-go" data-id="${x.id}" style="${tstyle(x.type)}"><span class="ball">${mImg(x,120,Math.round(40*scaleOf(x.type)+14),"")}</span><b>${esc(specName(x))}</b>${typePill(x.type)}</button>`).join("")}</div>
     ${pages>1 ? `<div class="bp-nav"><b>${ui.bpP*N+1} à ${Math.min(list.length, ui.bpP*N+N)} sur ${list.length}</b><span><button class="btn btn-ghost btn-sm" data-action="bp-page" data-d="-1" ${ui.bpP?"":"disabled"} aria-label="Précédentes">${ic("chevl",14)}</button><button class="btn btn-ghost btn-sm" data-action="bp-page" data-d="1" ${ui.bpP<pages-1?"":"disabled"} aria-label="Suivantes">${ic("chev",14)}</button></span></div>` : ""}</div>`;
   el.hidden = false;
@@ -16177,7 +16274,7 @@ let bugKeep = null;   // un message qui n'est pas parti : il est reproposé au p
 // on:false cache le bouton (pendant qu'on prépare la mise à jour) ; on:true le remet, avec la pastille si l'id a changé
 // (16 octobre 2026) deux repères : dot = la pastille rouge du bouton, à changer à CHAQUE mise en ligne qui ajoute une ligne au patchnote
 // (avec txt : la date du jour) ; id = la fenêtre d'annonce à l'arrivée, seulement pour les très gros jours
-const NEWS = {on:true, id:"2026-10-22", dot:"2026-10-23-0025", url:"/nouveautes.html", txt:"Mise à jour du 22 oct."};
+const NEWS = {on:true, id:"2026-10-22", dot:"2026-10-23-1800", url:"/nouveautes.html", txt:"Mise à jour du 23 oct."};
 const newsUnseen = () => lsGet("billeo-news-vu")!==NEWS.dot;
 // (14 octobre 2026) à l'arrivée, une fenêtre annonce la mise à jour, une seule fois par mise à jour et par compte (S.newsPop, gardé
 // dans la partie : elle ne revient pas sur un autre appareil) ; on choisit d'aller voir les nouveautés, ou pas
@@ -17436,7 +17533,8 @@ document.addEventListener("click", e=>{
     case "bp-page": ui.bpP = Math.max(0, (ui.bpP||0) + (+t.dataset.d)); openBallPick(ui.pickNext); break;
     case "gr-go": gratGo(t.dataset.pay==="1"); break;
     case "mrl-go": { const pay = t.dataset.pay==="1"; if(needBall(()=>marGo(pay))) break; marGo(pay); break; }
-    case "mrl-ball": openBallPick(null); break;
+    case "bp-q-clear": ui.bpF.q = ""; ui.bpP = 0; openBallPick(ui.pickNext); document.getElementById("bp-q")?.focus(); break;
+    case "mrl-ball": ui.bpF = null; openBallPick(null); break;
     case "gr-all": { const cv = document.getElementById("gr-foil"); if(cv) cv.getContext("2d").clearRect(0,0,cv.width,cv.height); gratEnd(); break }
     case "ds-go": distGo(t.dataset.pay==="1"); break;
     case "ds-close": distClear(); break;
@@ -17475,7 +17573,9 @@ document.addEventListener("click", e=>{
     case "ami-voir": openProfil(t.dataset.id); break;
     case "ev-bag": ui.bag = t.dataset.bag; go("sacs"); break;
     case "ev-album": ui.tab = "album"; ui.show = "event"; go("collection"); break;
-    case "ev-opt": S.evOpt = t.checked; save(); t.closest(".ev-opt")?.classList.toggle("on", t.checked); toast(t.checked ? "Billes d'événement activées pour tes sachets." : "Billes d'événement désactivées : tes sachets ne donnent que des billes normales."); break;
+    case "ev-opt": { S.evOpt = t.checked; save(); t.closest(".ev-opt")?.classList.toggle("on", t.checked);
+      const k = liveEventKey(), fini = t.checked && k && evFini(k);
+      toast(fini ? `Tu as déjà toutes les billes ${FAMILIES.find(x=>x.event===k).name} : l'album de l'événement est fini, ça ne te donnera que des doubles.` : t.checked ? "Billes d'événement activées pour tes sachets." : "Billes d'événement désactivées : tes sachets ne donnent que des billes normales."); break; }
     case "draw-how": { const el = document.getElementById("modal");
       el.innerHTML = `<div class="modal bag-sum how-modal" role="dialog" aria-modal="true" aria-label="Comment chaque bille est tirée ?"><button class="close-x" data-action="close-modal" aria-label="Fermer">×</button>
         <h2>Comment chaque bille est tirée ?</h2>${drawExplainer()}</div>`;

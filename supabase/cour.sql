@@ -701,6 +701,7 @@ begin
       from portefeuilles p left join interne.scores() s on s.joueur = p.joueur
       -- les comptes de test (table testeurs : le compte « admin ») ne sont pas classés
       where p.joueur not in (select joueur from testeurs)
+        and not interne.est_invite(p.joueur)   -- (26 octobre 2026) ni les invités (supabase/invite.sql)
         and (portee <> 'copains' or p.joueur = moi or p.joueur in (select ami from amis where joueur = moi))),
     m as (select r.* from r where r.joueur = moi),
     nb as (select count(*)::int n, greatest(1, ceil(count(*) / 10.0))::int pages from r),
@@ -754,7 +755,8 @@ create or replace function interne.semaine_pts(d date) returns table (joueur uui
     where h.motif in ('trouvee', 'echange', 'vente') and h.le >= interne.semaine_t(d) and h.le < interne.semaine_t(d + 7)
       and b.origine = 'serveur' and b.secrete is null and coalesce(b.donnees->>'src', '') not in ('test', 'fusion')
       and coalesce((interne.decor_rarete())[b.decor+1], 5) <> 5
-      and h.vers not in (select t.joueur from public.testeurs t)),
+      and h.vers not in (select t.joueur from public.testeurs t)
+      and not interne.est_invite(h.vers)),   -- (26 octobre 2026) les invités ne sont pas classés (supabase/invite.sql)
   -- une bille reçue ou achetée ne compte que si c'est le premier exemplaire de ce modèle (taille, motif, coloris, shiny) arrivé chez le joueur
   wk as (select * from wk0 w where w.motif = 'trouvee' or not exists (
       select 1 from public.billes_historique h2 join public.billes b2 on b2.id = h2.bille

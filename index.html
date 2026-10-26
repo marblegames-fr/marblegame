@@ -3891,6 +3891,43 @@ button.cp-who:hover b{text-decoration:underline}
 .auth-link:hover{color:#fff}
 .auth-note{margin-top:14px;color:var(--muted);font-size:12.5px;line-height:1.45}
 .auth-mail{font-weight:900;color:#fff;word-break:break-all}
+/* (26 octobre 2026) le mode invité : « Jouer tout de suite », et le formulaire « Sauvegarde ta partie » */
+.auth-card .auth-guest{height:auto;min-height:64px;padding:12px 18px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;font-size:19px;line-height:1.15}
+.auth-guest b{font-weight:900}
+.auth-guest small{font-size:12.5px;font-weight:800;opacity:.72}
+.auth-or{display:flex;align-items:center;gap:12px;margin:20px 0 0;color:var(--muted);font-size:11.5px;font-weight:900;text-transform:uppercase;letter-spacing:.08em}
+.auth-or::before,.auth-or::after{content:"";flex:1;height:1px;background:var(--line-2)}
+.auth-duo{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.auth-card .auth-duo .btn{margin-top:12px;height:44px;font-size:14px;padding:0 10px}
+.auth-carry{display:flex;align-items:center;gap:14px;margin:14px 0 0;padding:10px 14px;border-radius:14px;background:rgba(60,196,110,.1);border:1.5px solid rgba(60,196,110,.42);text-align:left}
+.auth-carry b{display:block;color:#fff}
+.auth-carry small{color:var(--ink-2);font-size:12.5px}
+.ac-stack{display:flex;flex:none;padding-right:10px}
+.ac-stack img{margin-right:-10px;filter:drop-shadow(0 2px 3px rgba(0,0,0,.45))}
+.guest-btn{display:flex;align-items:center;gap:7px;height:38px;padding:0 14px 0 11px;border-radius:999px;background:var(--gold-bg);border:1.5px dashed var(--yellow-2);font-weight:900;font-size:13px;color:var(--ink);white-space:nowrap}
+.guest-btn svg{color:var(--yellow-2)}
+.guest-btn.wait{border-style:solid;border-color:var(--blue-line);background:var(--blue-soft)}
+.guest-btn.wait svg{color:var(--blue)}
+.guest-btn[hidden]{display:none}
+@media (max-width:700px){ .guest-btn span{display:none} .guest-btn{padding:0;width:38px;justify-content:center} }
+.pp-acct .pp-save{color:var(--ink);font-weight:900}
+.pp-acct .pp-save svg{color:var(--yellow-2)}
+.modal.guest-pop{text-align:center;display:flex;flex-direction:column;align-items:center;gap:10px;width:min(440px,100%);padding:28px 24px 20px}
+.guest-pop h2{font-family:var(--display);font-weight:400;font-size:29px;line-height:1.05;margin:0}
+.guest-pop p{color:var(--ink-2);font-weight:700;margin:0}
+.gp-kicker{font-family:var(--hand);font-size:25px;color:var(--yellow-2)!important;margin:-4px 0 -6px!important}
+.gp-ball img{filter:drop-shadow(0 12px 14px rgba(0,0,0,.35));animation:gp-in .6s cubic-bezier(.2,1.3,.4,1) both}
+@keyframes gp-in{from{transform:scale(.3) rotate(-60deg);opacity:0}}
+.gp-keep{list-style:none;margin:4px 0;padding:0;display:grid;gap:7px;width:100%;text-align:left}
+.gp-keep li{display:flex;gap:10px;align-items:center;padding:9px 12px;border-radius:12px;background:var(--panel-2);font-weight:800;font-size:14px}
+.gp-keep li svg{flex:none;color:var(--green)}
+.gp-keep li.lk svg{color:var(--yellow-2)}
+.guest-pop .btn-xl{width:100%}
+.gp-later{font-size:13px;font-weight:800;color:var(--muted);text-decoration:underline;text-underline-offset:3px;padding:4px}
+.guest-lock .gl-list{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px;width:min(560px,100%);margin:6px 0}
+.guest-lock .gl-list div{display:flex;align-items:center;gap:10px;padding:10px 12px;border-radius:14px;background:var(--panel-2);border:1px solid var(--line);text-align:left;font-weight:800;font-size:13.5px}
+.guest-lock .gl-list svg{flex:none;color:var(--yellow-2)}
+@media (max-width:560px){ .guest-lock .gl-list{grid-template-columns:1fr} }
 .auth-card .close-x{position:absolute;top:12px;right:12px;width:36px;height:36px;border-radius:50%;font-size:24px;line-height:1;color:var(--ink-2)}
 .auth-card .close-x:hover{background:rgba(255,255,255,.1);color:#fff}
 .auth-big{display:block;margin:0 auto 14px;width:88px;filter:drop-shadow(0 12px 16px rgba(0,0,0,.5));animation:auth-float 3s ease-in-out infinite}
@@ -4141,6 +4178,7 @@ body.gc-open{overflow:hidden}
   <div class="tagline">Ouvre. Collectionne. Joue.</div>
   <div class="top-spacer"></div>
   <div class="top-acts">
+    <button class="guest-btn" id="guest-btn" data-action="acct-save" hidden></button>
     <button class="mj-btn" id="mj-btn" data-action="mj-open" aria-label="Ma journée"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3.5" y="8" width="17" height="4" rx="1"/><path d="M5 12v8h14v-8M12 8v12M12 8C10.5 4 7 4 7 6s3 2 5 2c2 0 5 0 5-2s-3.5-2-5 2"/></svg><span class="lbl">Ma journée</span><span class="n" id="mj-n" hidden></span></button>
     <button class="icon-btn" id="pass-btn" data-action="nav" data-view="passe" aria-label="Le passe de saison" hidden></button>
     <button class="icon-btn" id="gc-btn" data-action="nav" data-view="grandecourse" aria-label="La Grande Course"><span class="dot"></span></button>
@@ -8054,7 +8092,12 @@ function renderTop(){
   const db = document.getElementById("daily-btn");
   if(!db.querySelector("svg")) db.insertAdjacentHTML("afterbegin", ic("gift",21));
   db.classList.toggle("ready", dailyReady());
-  document.getElementById("top-name").textContent = S.name;
+  document.getElementById("top-name").textContent = invite() ? "Invité" : S.name;
+  // (26 octobre 2026) l'invité : « Sauvegarder » toujours visible en haut (« Confirme ton e-mail » une fois le lien envoyé)
+  const gb = document.getElementById("guest-btn");
+  if(gb){ const w = !!lsGet(INVITE_MAIL); gb.hidden = !invite(); gb.classList.toggle("wait", w);
+    gb.innerHTML = `${ic(w ? "bell" : "user",16,2.4)}<span>${w ? "Confirme ton e-mail" : "Sauvegarder"}</span>`;
+    gb.setAttribute("aria-label", w ? "Confirme ton adresse e-mail pour sauvegarder ta partie" : "Tu joues en invité : sauvegarde ta partie") }
   const a = ownActive();
   document.getElementById("top-avatar").innerHTML = avatarHTML(a,120,40);
   if(!document.getElementById("prof-pop").hidden){ renderProfPop(); renderThemeBtn(); renderSoundBtn() }
@@ -8065,7 +8108,7 @@ function renderProfPop(){
   const nChal = CHALLENGES.filter(c=>S.chal.includes(c.id)).length, claim = chalClaimable()+(onbOk("journee") ? questsClaimable() : 0);   // (22 octobre 2026) pas les quêtes avant « Ta journée » (pendant le démarrage)
   document.getElementById("prof-pop").innerHTML = `
     <div class="pp-head"><span class="av-ring big" style="--p:${Math.max(1.5,found/ALBUM_TOTAL*100)}"><span class="avatar">${avatarHTML(a,160,56)}</span></span>
-      <div><b>${esc(S.name)}</b><small>${esc(S.title)}</small>${a?`<small class="pp-ball">Joue avec : ${esc(specName(a))}</small>`:""}</div></div>
+      <div><b>${invite() ? "Invité" : esc(S.name)}</b><small>${esc(S.title)}</small>${a?`<small class="pp-ball">Joue avec : ${esc(specName(a))}</small>`:""}</div></div>
     <div class="pp-stats">
       <div class="wide"><small>Billes trouvées</small><b>${fmt(found)} <i>/ ${fmt(ALBUM_TOTAL)}</i></b><span class="bar"><i style="width:${Math.max(.8,found/ALBUM_TOTAL*100)}%"></i></span></div>
       <div class="wide"><small>Succès</small><b>${nChal} <i>/ ${chalVis().length}</i></b></div>
@@ -8081,7 +8124,8 @@ function renderProfPop(){
     </div>
     <div class="pp-toggles"><button id="theme-btn" data-action="theme"></button><button id="sound-btn" data-action="sound"></button></div>
     <div class="pp-links pp-acct">
-      ${sync.on ? `<button class="pp-out" data-action="acct-logout">${ic("user",16)} Se déconnecter</button>`
+      ${invite() ? `<button class="pp-save" data-action="acct-save">${ic("user",16)} Sauvegarder ma partie</button><button data-action="acct-login-guest">${ic("user",16)} J'ai déjà un compte</button>`
+        : sync.on ? `<button class="pp-out" data-action="acct-logout">${ic("user",16)} Se déconnecter</button>`
         : window.Cloud?.available ? `<button data-action="acct-signup">${ic("user",16)} Créer un compte / Se connecter</button>` : ""}
     </div>`;
 }
@@ -8401,6 +8445,9 @@ function viewHome(){
 }
 // l'accueil : ce qui t'attend dans la cour de récré (trocs, copains, enchères, classement)
 function homeCour(){
+  if(invite()) return `<section class="panel hm-cour off"><span class="hc-ic">${ic("cour",26)}</span><div><b>La cour de récré</b>
+      <p class="meta">Tu joues en invité. Sauvegarde ta partie pour ajouter tes copains, troquer, vendre au marché et grimper au classement.</p></div>
+      <button class="btn btn-yellow btn-sm" data-action="acct-save">${lsGet(INVITE_MAIL) ? "Confirme ton e-mail" : "Sauvegarder"}</button></section>`;
   if(!srvOn()) return `<section class="panel hm-cour off"><span class="hc-ic">${ic("cour",26)}</span><div><b>La cour de récré</b>
       <p class="meta">Avec un compte, ajoute tes copains, troque tes billes, vends-les au marché et grimpe au classement.</p></div>
       ${window.Cloud?.available ? `<button class="btn btn-yellow btn-sm" data-action="acct-signup">Créer un compte</button>` : ""}</section>`;
@@ -10500,6 +10547,7 @@ function finishReveal(){
 function closeOv(quiet){
   // fermé avant d'avoir tout découvert : les billes sont déjà rangées, on montre quand même ce qu'il y avait
   const missed = !quiet && ovState && !ovState.demo && ovState.results && ovState.opened.size < ovState.results.length ? ovState : null;
+  const fini = !quiet && ovState && !ovState.demo && ovState.results ? ovState.results : null;   // (26 octobre 2026) pour la proposition à l'invité
   FX.stop();
   if(ovState?.rollRaf) cancelAnimationFrame(ovState.rollRaf);
   Sound.rollStop();
@@ -10512,6 +10560,7 @@ function closeOv(quiet){
   if(missed) showBagSummary(missed);
   else if(tutoOn() && S.tuto.step===2) setTimeout(tutoNext, 300);   // le premier sachet est ouvert : la suite du premier lancement
   else if(tutoOn()) setTimeout(tutoShow, 300);
+  else if(fini && invite()) setTimeout(()=>guestPropose(fini), 500);
 }
 function showBagSummary({bag, results, left}){
   const el = document.getElementById("modal");
@@ -16436,7 +16485,7 @@ function bugAdminHTML(){
   </section>`;
 }
 // (19 octobre 2026) le compteur de fréquentation anonyme, pour l'admin, dans Paramètres
-const FREQ_ETAPES = [["visite","Visites"],["arrivee","Nouveaux appareils"],["inscription","Inscription commencée"],["envoye","Formulaire envoyé"],["compte","Compte activé"],["depart","Bille de départ"],["sachet","1er sachet"]];
+const FREQ_ETAPES = [["visite","Visites"],["arrivee","Nouveaux appareils"],["invite","Jouer en invité"],["inscription","Inscription commencée"],["envoye","Formulaire envoyé"],["compte","Compte activé"],["depart","Bille de départ"],["sachet","1er sachet"]];
 const freqAdm = {list:null, busy:false, err:""};
 async function freqLoad(){
   freqAdm.busy = true; freqAdm.err = ""; if(ui.view==="parametres") renderView();
@@ -16458,10 +16507,12 @@ function freqAdminHTML(){
   </section>`;
 }
 function viewSoon(){
-  if(ui.view==="parametres") return `<div class="page-head"><div><h1>Paramètres</h1><p>${sync.on ? "Ta collection est sauvegardée sur ton compte." : "Sans compte, ta progression est enregistrée dans ce navigateur uniquement."}</p></div></div>
+  if(ui.view==="parametres") return `<div class="page-head"><div><h1>Paramètres</h1><p>${invite() ? "Tu joues en invité : ta partie n'est gardée que sur cet appareil." : sync.on ? "Ta collection est sauvegardée sur ton compte." : "Sans compte, ta progression est enregistrée dans ce navigateur uniquement."}</p></div></div>
     <div class="soon-page">
       <section class="panel"><div class="panel-head"><h3>Mon compte</h3></div>
-        ${sync.on ? `<p>Connecté avec <b>${esc(sync.email)}</b>. Tes billes te suivent sur tous tes appareils.</p>
+        ${invite() ? `<p>Tu joues <b>en invité</b>. Sauvegarde ta partie avec ton e-mail pour la garder pour toujours, jouer sur tous tes appareils et rejoindre la cour.</p>
+        <div style="display:flex;gap:10px;flex-wrap:wrap;margin-top:14px"><button class="btn btn-yellow" data-action="acct-save">${lsGet(INVITE_MAIL) ? "Confirme ton e-mail" : "Sauvegarder ma partie"}</button><button class="btn btn-ghost" data-action="acct-login-guest">J'ai déjà un compte</button></div>`
+        : sync.on ? `<p>Connecté avec <b>${esc(sync.email)}</b>. Tes billes te suivent sur tous tes appareils.</p>
         <div style="margin-top:14px"><button class="btn btn-ghost" data-action="acct-logout">Se déconnecter</button></div>`
         : `<p>Crée un compte pour garder ta collection en sécurité et la retrouver sur tous tes appareils.</p>
         <div style="display:flex;gap:10px;flex-wrap:wrap;margin-top:14px">${window.Cloud?.available ? `<button class="btn btn-yellow" data-action="acct-signup">Créer un compte</button><button class="btn btn-ghost" data-action="acct-login">Se connecter</button>` : `<p>Connexion impossible pour l'instant.</p>`}</div>`}
@@ -16529,7 +16580,7 @@ const COUR_ERR = {inconnu:"Personne ne s'appelle comme ça dans la cour.", soi_m
   ta_bille:"C'est ta propre bille !", pas_assez:`Il te manque des ${CUR.many}.`, reseau:"Pas de connexion : réessaie dans un instant.",
   enchere_finie:"Cette enchère est terminée.", deja_en_tete:"Tu as déjà la meilleure offre !", offre_trop_basse:"Quelqu'un a déjà proposé plus : regarde la nouvelle offre minimum.",
   deja_des_offres:"Des joueurs ont déjà enchéri : l'enchère doit aller jusqu'au bout.", en_enchere:"Cette bille est aux enchères avec des offres : elle est promise au gagnant."};
-function courFail(e){ console.warn("Cour :", e); toast(COUR_ERR[e?.code] || "Oups, ça n'a pas marché. Réessaie dans un instant.") }
+function courFail(e){ console.warn("Cour :", e); if(e?.code==="invite"){ guestPop(null, true); return } toast(COUR_ERR[e?.code] || "Oups, ça n'a pas marché. Réessaie dans un instant.") }
 const courCount = () => cour.moi ? (cour.moi.trocs||0) + (cour.moi.recues||[]).length + (cour.unread||0) : 0;
 // charge une partie de la cour, puis réaffiche si on y est toujours
 // le classement bouge tout seul (les autres ouvrent des sachets) : au-delà de 20 s, on le redemande au prochain affichage
@@ -17011,6 +17062,7 @@ function viewCour(){
   const head = `<div class="page-head"><div><h1>La cour</h1></div></div>`;  if(!sync.on) return head + `<section class="panel cour-lock">${ic("cour",40)}<h2>Il te faut un compte</h2>
     <p class="cour-lead">Pour échanger avec les autres joueurs, il faut un compte.</p>
     ${window.Cloud?.available ? `<div class="btns"><button class="btn btn-yellow" data-action="acct-signup">Créer un compte</button><button class="btn btn-ghost" data-action="acct-login">Se connecter</button></div>` : ""}</section>`;
+  if(invite()) return head + guestCourLock();
   if(!eco.ready || cour.ok===false) return head + `<section class="panel cour-lock">${ic("cour",40)}<h2>La cour ouvre bientôt</h2>
     <p class="cour-lead">Le serveur de la cour n'est pas encore en place. Reviens un peu plus tard !</p></section>`;
   courLoad("moi"); if(!cour.absent.classement) courLoad("classement");
@@ -18269,6 +18321,7 @@ function lockToggle(x){
 }
 function srvFail(e){
   console.warn("Serveur :", e);
+  if(e?.code==="invite"){ guestPop(null, true); return }   // (26 octobre 2026) le serveur refuse ça aux invités
   if(e?.code!=="deja") toast(ECO_ERR[e?.code] || "Le serveur n'a pas pu enregistrer ça. Réessaie dans un instant.");
   srv(()=>Cloud.eco.state()).then(applyEco, ()=>{});
 }
@@ -18427,6 +18480,7 @@ async function cloudStart(user){
 async function cloudStart0(user){
   if(saveT) saveNow();   // une écriture en attente va à l'ancienne clé, pas dans la copie du compte
   sync.uid = user.id; sync.email = user.email||""; STORE_KEY = "billeo-u-"+user.id;
+  sync.anon = !!user.is_anonymous; if(sync.anon) lsSet(INVITE_KEY, user.id);   // (26 octobre 2026) le mode invité : un seul par appareil
   let cached = null; try{ cached = JSON.parse(localStorage.getItem(STORE_KEY)) }catch(e){}
   const dirty = lsGet(dirtyKey()) === "1";
   let prevKnown = []; try{ prevKnown = JSON.parse(lsGet(knownKey())) || [] }catch(e){}
@@ -18466,12 +18520,13 @@ async function cloudStart0(user){
     return;
   }
   // premier passage de ce compte : on récupère (ou pas) la collection jouée sans compte
-  Parcours.etape("compte");
+  if(!sync.anon) Parcours.etape("compte");   // (l'invité est compté au clic sur « Jouer tout de suite »)
   let guest = null; try{ guest = JSON.parse(localStorage.getItem(GUEST_KEY)) }catch(e){}
   const pseudo = P.profil?.pseudo;
   const begin = async fromGuest => {
     adoptState(fromGuest ? guest : null);
     prepForCloud();
+    if(!fromGuest) S.newsPop = NEWS.id;   // (26 octobre 2026) un nouveau joueur ne reçoit pas la fenêtre des nouveautés : tout est nouveau pour lui
     if(pseudo){ S.name = pseudo; S.log.forEach(x=>{ if(x.me) x.who = pseudo }) }
     // billes déjà sur le compte sans partie sauvegardée (les billes Bêta, après la remise à zéro du lancement)
     const kept = P.billes||[], mine = new Set(S.specs.map(x=>x.id));
@@ -18482,7 +18537,8 @@ async function cloudStart0(user){
     await ecoStart();
     if(fromGuest) lsSet(GUEST_KEY, null);   // la collection appartient maintenant au compte : elle ne peut pas partir sur un autre
     authHide(); rerenderAll();
-    toast(fromGuest ? "Ta collection est maintenant sauvegardée sur ton compte." : `Bienvenue dans la cour, ${S.name} !`);
+    if(fromGuest) toast("Ta collection est maintenant sauvegardée sur ton compte.");
+    else if(!sync.anon) toast(`Bienvenue dans la cour, ${S.name} !`);
   };
   // on ne propose de reprendre la partie sans compte que si elle a vraiment été jouée (pas juste les billes de départ)
   const played = guest && Array.isArray(guest.specs) && (guest.specs.length>0 || (guest.bags||0)>0 || (guest.chal||[]).length>0);
@@ -18505,6 +18561,7 @@ addEventListener("online", ()=>ecoRetry(0));
 document.addEventListener("visibilitychange", async ()=>{
   if(!sync.on) return;
   if(document.visibilityState==="hidden"){ cloudFlush(); return }
+  if(invite()) guestCheck();   // (26 octobre 2026) l'invité a peut-être cliqué sur le lien de l'e-mail
   if(!eco.ready) ecoRetry(0);
   if(lsGet(dirtyKey())==="1" && !(await cloudFlush())) return;
   try{
@@ -18753,7 +18810,17 @@ const AuthFx = (()=>{
 addEventListener("resize", ()=>AuthFx.resize());
 
 /* ---------- écrans : bienvenue, inscription, connexion… ---------- */
-const auth = {screen:null, tab:"signup", email:"", err:"", closable:false, opts:{}};
+const auth = {screen:null, tab:"signup", email:"", err:"", closable:false, opts:{}, first:true};
+// (26 octobre 2026) le mode invité (supabase/invite.sql, maquettes/maquette-invite.html) : on joue d'un clic, sans compte
+// (Supabase crée un compte « anonyme », un vrai compte sans e-mail), puis on sauvegarde sa partie en ajoutant un e-mail à CE compte.
+// Un seul invité par appareil : INVITE_KEY garde son identifiant, et le bouton « Jouer tout de suite » ne revient plus.
+// Rien ne sort d'un compte invité ni n'y entre (pas de copains, troc, marché, Grande Course, Loterie) : c'est le serveur qui refuse.
+const INVITE_OUVERT = false;   // false : seulement avec ?invite=1 (essai sur le vrai site avant de l'ouvrir à tous)
+const INVITE_KEY = "billeo-invite", INVITE_MAIL = "billeo-invite-mail";
+const INVITE_ON = (()=>{ try{ if(new URLSearchParams(location.search).get("invite")==="1") localStorage.setItem("billeo-invite-essai", "1") }catch(e){}
+  return INVITE_OUVERT || lsGet("billeo-invite-essai")==="1" })();
+const invite = () => !!(sync.on && sync.anon);
+const guestOk = () => INVITE_ON && !!window.Cloud?.available && !lsGet(INVITE_KEY);
 const AUTH_ERR = {
   invalid_credentials:"E-mail ou mot de passe incorrect.",
   email_not_confirmed:"Confirme d'abord ton adresse e-mail : clique sur le lien reçu (regarde aussi dans les spams).",
@@ -18764,6 +18831,10 @@ const AUTH_ERR = {
   over_request_rate_limit:"Trop d'essais d'un coup. Réessaie dans quelques minutes.",
   same_password:"C'est déjà ton mot de passe actuel.",
   captcha_failed:"La vérification anti-robot n'a pas marché. Coche la case si elle apparaît, puis réessaie.",
+  email_exists:"Un compte existe déjà avec cet e-mail. Choisis une autre adresse (ou connecte-toi à ce compte, mais ta partie invitée sera perdue).",
+  pseudo_pris:"Ce pseudo est déjà pris : choisis-en un autre.",
+  anonymous_provider_disabled:"Le jeu sans compte n'est pas disponible pour le moment : crée un compte ou connecte-toi.",
+  over_request_rate_limit_invite:"Trop de parties invitées créées depuis cette connexion. Crée plutôt un compte, ou réessaie plus tard.",
 };
 // (10 octobre 2026) un mot de passe : 8 caractères au moins, avec une minuscule, une majuscule et un chiffre
 // (recommandation de la CNIL avec captcha et blocage des essais ; même règle dans les réglages de Supabase Auth)
@@ -18809,7 +18880,17 @@ function authShow(screen, opts){
   const cap = Captcha.on ? `<div class="auth-captcha"></div>` : "";
   let body = "";
   const signup = auth.tab==="signup";
-  if(screen==="welcome") body = `<p class="auth-kicker">${signup ? "C'est gratuit !" : "Te revoilà !"}</p><h2>${signup ? "Rejoins la cour" : "Connecte-toi"}</h2>
+  const legalP = `<p class="auth-legal"><a href="legal.html#mentions" target="_blank" rel="noopener">Mentions légales</a> · <a href="legal.html#confidentialite" target="_blank" rel="noopener">Données personnelles</a> · <a href="legal.html#cgu" target="_blank" rel="noopener">Règles du jeu</a></p>`;
+  // (26 octobre 2026) le mode invité : d'abord « Jouer tout de suite », les formulaires de compte en dessous
+  if(screen==="welcome" && auth.first && !auth.closable && guestOk()) body = `<p class="auth-kicker">C'est gratuit, sans inscription</p><h2>Prêt à jouer ?</h2>
+    <p>Choisis ta première bille et ouvre tes premiers sachets.</p>
+    <button class="btn btn-yellow auth-guest" data-action="auth-guest"><b>Jouer tout de suite</b><small>Pas besoin de compte pour commencer</small></button>
+    ${cap}${err}
+    <div class="auth-or"><span>J'ai déjà un compte</span></div>
+    <div class="auth-duo"><button class="btn btn-ghost" data-action="auth-tab" data-tab="login">Se connecter</button><button class="btn btn-ghost" data-action="auth-tab" data-tab="signup">Créer un compte</button></div>
+    <p class="auth-note">En jouant, tu acceptes les <a href="legal.html#cgu" target="_blank" rel="noopener">règles du jeu</a>. Ta partie est gardée sur cet appareil : crée ton compte quand tu veux pour la garder pour toujours.</p>
+    ${legalP}`;
+  else if(screen==="welcome") body = `<p class="auth-kicker">${signup ? "C'est gratuit !" : "Te revoilà !"}</p><h2>${signup ? "Rejoins la cour" : "Connecte-toi"}</h2>
     <div class="auth-tabs" role="tablist" data-tab="${auth.prevTab||auth.tab}" style="margin-top:18px">
       <button role="tab" aria-selected="${auth.tab==="signup"}" data-action="auth-tab" data-tab="signup">Créer un compte</button>
       <button role="tab" aria-selected="${auth.tab==="login"}" data-action="auth-tab" data-tab="login">Se connecter</button>
@@ -18826,8 +18907,28 @@ function authShow(screen, opts){
       ${cap}${err}<button class="btn btn-yellow" type="submit">Me connecter</button>
     </form>
     <div class="auth-links"><button class="auth-link" data-action="auth-go" data-screen="forgot">Mot de passe oublié ?</button></div>`}
-    <p class="auth-legal"><a href="legal.html#mentions" target="_blank" rel="noopener">Mentions légales</a> · <a href="legal.html#confidentialite" target="_blank" rel="noopener">Données personnelles</a> · <a href="legal.html#cgu" target="_blank" rel="noopener">Règles du jeu</a></p>
+    ${!auth.closable && guestOk() ? `<div class="auth-links"><button class="auth-link" data-action="auth-first">Jouer sans compte</button></div>` : ""}
+    ${legalP}
 `;
+  else if(screen==="lier"){
+    const last = S.specs.filter(x=>!x.secret).slice(-4);
+    body = `<p class="auth-kicker">30 secondes</p><h2>Sauvegarde ta partie</h2>
+    <div class="auth-carry"><span class="ac-stack">${last.map(x=>mImg(x,96,38,"")).join("")}</span><span><b>${fmt(S.specs.length)} bille${S.specs.length>1?"s":""} · ${fmt(S.jetons)} ${S.jetons>1?CUR.many:CUR.one}</b><small>Tout reste à toi, rien ne se perd.</small></span></div>
+    <form class="auth-form" id="auth-lier" novalidate>
+      ${field("a-pseudo","Pseudo","text",`maxlength="20" autocomplete="nickname" spellcheck="false" required value="${esc(auth.pseudo||"")}"`)}<small>3 à 20 caractères. C'est le nom que les autres joueurs verront.</small>
+      ${field("a-email","E-mail","email",`autocomplete="email" value="${esc(auth.email)}" required`)}
+      <label class="auth-ok"><input type="checkbox" id="a-ok" name="a-ok" required><span>J'ai 15 ans ou plus, ou un parent est d'accord. J'accepte les <a href="legal.html#cgu" target="_blank" rel="noopener">règles du jeu</a> et j'ai lu comment sont utilisées <a href="legal.html#confidentialite" target="_blank" rel="noopener">mes données</a>.</span></label>
+      ${err}<button class="btn btn-yellow" type="submit">Sauvegarder ma partie</button>
+    </form>
+    <p class="auth-note">On t'envoie un lien pour confirmer ton adresse. Tu choisiras ton mot de passe juste après.</p>
+    <div class="auth-links"><button class="auth-link" data-action="acct-login-guest">J'ai déjà un compte</button></div>`;
+  }
+  else if(screen==="lier-mail") body = `${head}<h2>Vérifie ta boîte mail</h2>
+    <p>On t'a envoyé un lien à <span class="auth-mail">${esc(auth.email || lsGet(INVITE_MAIL) || "")}</span>. Clique dessus et ta partie sera sauvegardée pour de bon.</p>
+    <p class="auth-note">Rien reçu ? Regarde dans les spams, ou renvoie l'e-mail. En attendant, tu peux continuer à jouer.</p>${err}
+    <button class="btn btn-yellow" data-action="auth-close">Continuer à jouer</button>
+    <button class="btn btn-ghost" data-action="auth-resend-lier">Renvoyer l'e-mail</button>
+    <div class="auth-links"><button class="auth-link" data-action="auth-go" data-screen="lier">Changer d'adresse</button></div>`;
   else if(screen==="check-mail") body = `${head}<h2>Vérifie ta boîte mail</h2>
     <p>On t'a envoyé un lien à <span class="auth-mail">${esc(auth.email)}</span>. Clique dessus pour activer ton compte : tu reviendras ici tout seul.</p>
     <p class="auth-note">Rien reçu ? Regarde dans les spams, ou renvoie l'e-mail.</p>${cap}${err}
@@ -18840,10 +18941,11 @@ function authShow(screen, opts){
   else if(screen==="forgot-sent") body = `${head}<h2>E-mail envoyé</h2>
     <p>Si un compte existe avec <span class="auth-mail">${esc(auth.email)}</span>, tu vas recevoir un lien pour choisir un nouveau mot de passe.</p>
     <div class="auth-links"><button class="auth-link" data-action="auth-go" data-screen="welcome" data-tab="login">Retour à la connexion</button></div>`;
-  else if(screen==="newpass") body = `${head}<h2>Nouveau mot de passe</h2>
+  else if(screen==="newpass") body = `${head}<h2>${auth.opts?.lien ? "Dernière étape : ton mot de passe" : "Nouveau mot de passe"}</h2>
+    ${auth.opts?.lien ? `<p>Ton adresse est confirmée, ta partie est sauvegardée. Choisis un mot de passe pour te connecter sur tous tes appareils.</p>` : ""}
     <form class="auth-form" id="auth-newpass" novalidate>${field("a-pass","Nouveau mot de passe","password",`minlength="8" autocomplete="new-password" required`)}${passRules()}
       ${err}<button class="btn btn-yellow" type="submit">Enregistrer</button></form>
-    <div class="auth-links"><button class="auth-link" data-action="auth-cancel-recovery">Annuler et me déconnecter</button></div>`;
+    ${auth.opts?.lien ? "" : `<div class="auth-links"><button class="auth-link" data-action="auth-cancel-recovery">Annuler et me déconnecter</button></div>`}`;
   else if(screen==="import") body = `${head}<h2>Tu as déjà des billes ici</h2>
     <p>Cet appareil contient une collection de <b>${fmt(auth.opts.n)} bille${auth.opts.n>1?"s":""}</b> jouée sans compte. Tu veux la garder sur ton compte ?</p>
     <button class="btn btn-yellow" data-action="auth-import" data-keep="1">Garder cette collection</button>
@@ -18878,7 +18980,7 @@ function authPitch(){
     <ul class="auth-feats">
       <li><span class="af-ic">${mImg(AUTH_SPECS.album,96,34,"")}</span><span><b>${fmt(ALBUM_TOTAL)} billes à collectionner</b>${N_DECORS} motifs, ${BASE_PALS} coloris, et chaque bille a son propre numéro.</span></li>
       <li><span class="af-ic">${mImg(AUTH_SPECS.shiny,96,34,"")}</span><span><b>Des shiny ultra-rares</b>${SHINIES.slice(1).map(x=>x.name).join(", ")} : sauras-tu les trouver ?</span></li>
-      <li><span class="af-ic">${ic("trophy",22)}</span><span><b>Des mini-jeux pour gagner des ${CUR.many}</b>Le Tir, le Pot, la Roue, la Grande Course… et des échanges avec les copains.</span></li>
+      <li><span class="af-ic">${ic("trophy",22)}</span><span><b>Des mini-jeux pour gagner des ${CUR.many}</b>Les Gobelets, la Pince, la Roue, la Grande Course… et des échanges avec les copains.</span></li>
     </ul>
 `;
 }
@@ -18891,10 +18993,87 @@ function authHide(){ syncVeil(false); document.getElementById("auth").hidden = t
 function authOpen(tab){ auth.tab = tab; auth.closable = true; toggleProfPop(false); authShow("welcome") }
 function authFail(e){ auth.err = typeof e==="string" ? e : authErr(e); authShow(auth.screen) }
 
+/* ---------- (26 octobre 2026) le mode invité dans le jeu : sauvegarder sa partie, la proposition, la cour fermée ---------- */
+// « Sauvegarder ma partie » : le formulaire (pseudo + e-mail), ou l'attente de l'e-mail s'il est déjà parti
+function guestSave(){
+  if(!invite()) return;
+  document.getElementById("modal").hidden = true; toggleProfPop(false);
+  auth.closable = true; auth.err = "";
+  if(auth.pseudo==null) auth.pseudo = /^Billeur(_\d+)?$/.test(S.name||"") ? "" : S.name;   // le pseudo donné à l'invité par le serveur ne compte pas
+  authShow(lsGet(INVITE_MAIL) ? "lier-mail" : "lier");
+}
+// un invité qui a déjà un compte : il peut s'y connecter, mais sa partie invitée sera perdue (pas de fusion : c'est voulu)
+async function guestLogin(){
+  const n = S.specs.length;
+  const ok = await ask({title:"Te connecter à ton compte ?", ok:"Me connecter quand même", danger:true,
+    text:`Ta partie invitée (${fmt(n)} bille${n>1?"s":""}) ne pourra pas être ajoutée à ce compte, et tu ne pourras plus y revenir. Pour la garder, sauvegarde-la plutôt avec une nouvelle adresse e-mail.`});
+  if(!ok) return;
+  await cloudFlush();
+  auth.first = false; authOpen("login");
+}
+// l'invité a confirmé son e-mail et choisi son mot de passe, sur cet appareil : la partie continue, c'est le même compte
+function guestDone(u){
+  sync.anon = false; sync.email = u.email || ""; lsSet(INVITE_MAIL, null);
+  authHide(); rerenderAll();
+  // le sachet de bienvenue (un message de l'équipe, déposé par le serveur : supabase/invite.sql)
+  srv(()=>Cloud.eco.messages()).then(l=>{ msgsBoot = Array.isArray(l) ? l : []; setTimeout(bootPopups, 400) }, ()=>{});
+}
+// l'invité a peut-être cliqué sur le lien ailleurs (téléphone, autre onglet) : on redemande au serveur en revenant sur la page
+async function guestCheck(){
+  if(!invite() || !lsGet(INVITE_MAIL)) return;
+  try{
+    const u = await Cloud.freshUser(); if(!u || u.is_anonymous) return;
+    if(u.user_metadata?.mdp_a_choisir){ sync.anon = false; lsSet(INVITE_MAIL, null); auth.closable = false; authShow("newpass", {lien:true}) }
+    else guestDone(u);
+  }catch(e){}
+}
+// la proposition, après un sachet : une belle bille (Calot ou plus, ou une shiny), ou dès le 3e sachet. Une fois par jour au plus.
+function guestPropose(results){
+  if(!invite() || lsGet(INVITE_MAIL) || tutoOn() || !popupsFree()) return;
+  const day = isoDay(); if(lsGet("billeo-invite-propose")===day) return;
+  const best = (results||[]).map(r=>r.s).filter(Boolean).sort((a,b)=>tierOf(b)-tierOf(a) || (b.shiny||0)-(a.shiny||0))[0];
+  const belle = best && (tierOf(best)>=FMT_TIER.calot || best.shiny) ? best : null;
+  if(!belle && (S.bags||0)<3) return;
+  lsSet("billeo-invite-propose", day);
+  guestPop(belle);
+}
+const GUEST_KEEP = () => `<ul class="gp-keep">
+    <li>${ic("check",17,3)} ${S.specs.length>1 ? `Tes ${fmt(S.specs.length)} billes` : "Ta bille"} et tes ${CUR.many} restent à toi</li>
+    <li>${ic("check",17,3)} Joue sur ton téléphone et ton ordi</li>
+    <li class="lk">${ic("cour",17)} Débloque la cour : copains, troc, marché, classement</li></ul>`;
+function guestPop(spec, cour){
+  const el = document.getElementById("modal");
+  el.innerHTML = `<div class="modal guest-pop" role="dialog" aria-modal="true" aria-labelledby="gp-t"><button class="close-x" data-action="close-modal" aria-label="Fermer">×</button>
+    ${spec ? `<p class="gp-kicker">Belle prise !</p><span class="gp-ball">${mImg(spec,256,120,"")}</span><h2 id="gp-t">Garde-la pour toujours</h2>`
+      : `<h2 id="gp-t">${cour ? "Avec un compte seulement" : "Garde ta collection"}</h2>`}
+    <p>${cour ? "Tu joues en invité : tout ce qui se fait avec les autres joueurs demande un compte. " : ""}Pour l'instant, ta partie n'existe que <b>sur cet appareil</b>. Sauvegarde-la en 30 secondes : elle te suivra partout.</p>
+    ${GUEST_KEEP()}
+    <button class="btn btn-yellow btn-xl" data-action="acct-save">Sauvegarder ma partie</button>
+    <button class="gp-later" data-action="close-modal">Plus tard</button></div>`;
+  el.hidden = false; Sound.ding();
+}
+// la cour pour un invité : ce qu'il débloquera avec un compte
+function guestCourLock(){
+  const U = [["users","Des copains (et leurs cadeaux)"],["swap","Le troc entre joueurs"],["gavel","Le marché et les enchères"],["trophy","Le classement de la semaine et ses lots"],["flag","La Grande Course et la Loterie"],["star","Tes billes sur tous tes appareils"]];
+  return `<section class="panel cour-lock guest-lock">${ic("cour",40)}<h2>La cour, c'est avec un compte</h2>
+    <p class="cour-lead">Tu joues en invité. Sauvegarde ta partie (c'est gratuit) pour rejoindre les autres joueurs : ta collection vient avec toi.</p>
+    <div class="gl-list">${U.map(([i,t])=>`<div>${ic(i,20)}<span>${t}</span></div>`).join("")}</div>
+    <div class="btns"><button class="btn btn-yellow" data-action="acct-save">${lsGet(INVITE_MAIL) ? "Confirme ton e-mail" : S.specs.length>1 ? `Sauvegarder mes ${fmt(S.specs.length)} billes` : "Sauvegarder ma partie"}</button></div></section>`;
+}
+
 document.addEventListener("click", async e=>{
   const t = e.target.closest("#auth [data-action], [data-action^='acct-']"); if(!t) return;
   switch(t.dataset.action){
-    case "auth-tab": auth.tab = t.dataset.tab; authShow("welcome"); break;
+    case "auth-tab": auth.tab = t.dataset.tab; auth.first = false; authShow("welcome"); break;
+    case "auth-first": auth.first = true; authShow("welcome"); break;
+    // (26 octobre 2026) « Jouer tout de suite » : un compte invité (un seul par appareil), la partie se lance avec SIGNED_IN
+    case "auth-guest": {
+      if(!guestOk()){ auth.first = false; authShow("welcome"); break }
+      t.disabled = true; Parcours.etape("invite");
+      try{ const u = await Cloud.signInGuest(await Captcha.token()); lsSet(INVITE_KEY, u?.id || "1") }
+      catch(err){ Captcha.reset(); t.disabled = false; authFail(err?.code==="over_request_rate_limit" ? AUTH_ERR.over_request_rate_limit_invite : err) }
+      break }
+    case "auth-resend-lier": try{ await Cloud.linkEmail(auth.email || lsGet(INVITE_MAIL), S.name, {cgu:CGU_VERSION}); toast("E-mail renvoyé !") }catch(err){ authFail(err) } break;
     case "auth-go": if(t.dataset.tab) auth.tab = t.dataset.tab; authShow(t.dataset.screen); break;
     case "auth-close": authHide(); setTimeout(bootPopups, 300); break;
     case "auth-cancel-recovery": lsSet("billeo-recovery", null); Promise.resolve(Cloud.signOut()).catch(()=>{}).finally(()=>location.replace(location.pathname)); break;
@@ -18903,7 +19082,9 @@ document.addEventListener("click", async e=>{
     case "auth-retry": { if(!window.Cloud?.available){ location.reload(); break } const u = await Cloud.currentUser().catch(()=>null); if(u){ sync.uid = null; cloudStart(u) } else authShow("welcome"); break }
     case "auth-resend": try{ await Cloud.resendConfirm(auth.email, await Captcha.token()); Captcha.reset(); toast("E-mail renvoyé !") }catch(err){ Captcha.reset(); authFail(err) } break;
     case "acct-login": authOpen("login"); break;
-    case "acct-signup": authOpen("signup"); break;
+    case "acct-signup": if(invite()) guestSave(); else authOpen("signup"); break;
+    case "acct-save": guestSave(); break;
+    case "acct-login-guest": guestLogin(); break;
     case "acct-logout": ask({title:"Te déconnecter ?", text:"Ta partie reste sauvegardée sur ton compte.", ok:"Me déconnecter"}).then(ok=>ok&&logout()); break;
   }
 });
@@ -18926,6 +19107,16 @@ document.addEventListener("submit", async e=>{
       Parcours.etape("envoye");
       if(r.needsConfirm) authShow("check-mail");   // sinon, la connexion lance cloudStart toute seule
     }
+    else if(f.id==="auth-lier"){
+      const pseudo = f["a-pseudo"].value.trim().replace(/\s+/g," "); auth.pseudo = pseudo;
+      if(!/^[\p{L}\p{N}_\- ]{3,20}$/u.test(pseudo)) return authFail("Ton pseudo doit faire 3 à 20 caractères : lettres, chiffres, espaces, - et _.");
+      if(!f["a-ok"].checked) return authFail("Coche la case pour accepter les règles du jeu (avec l'accord d'un parent si tu as moins de 15 ans).");
+      btn.disabled = true;
+      if(pseudo!==S.name){ await Cloud.setPseudo(sync.uid, pseudo); S.name = pseudo; S.log.forEach(x=>{ if(x.me) x.who = pseudo }); save(); renderTop() }
+      await Cloud.linkEmail(email, pseudo, {cgu:CGU_VERSION});
+      lsSet(INVITE_MAIL, email); Parcours.etape("envoye"); renderTop();
+      authShow("lier-mail");
+    }
     else if(f.id==="auth-login"){
       if(!pass) return authFail("Entre ton mot de passe.");
       btn.disabled = true;
@@ -18938,9 +19129,13 @@ document.addEventListener("submit", async e=>{
       btn.disabled = true;
       await Cloud.updatePassword(pass);
       lsSet("billeo-recovery", null);
-      toast("Nouveau mot de passe enregistré !");
+      const lien = !!auth.opts?.lien;
+      toast(lien ? "C'est fait : ta partie est sauvegardée !" : "Nouveau mot de passe enregistré !");
       auth.screen = null;
-      const u = await Cloud.currentUser(); if(u){ sync.uid = null; cloudStart(u) } else authShow("welcome");
+      const u = await Cloud.currentUser();
+      if(lien) Parcours.etape("compte");
+      if(u && lien && sync.on && sync.uid===u.id) guestDone(u);   // l'appareil où il jouait en invité : rien à recharger
+      else if(u){ sync.uid = null; cloudStart(u) } else authShow("welcome");
     }
   }catch(err){ Captcha.reset(); authFail(err) }
 });
@@ -18965,8 +19160,10 @@ function accountBoot(){
   // PASSWORD_RECOVERY) : on garde l'écran du nouveau mot de passe, la partie ne se lance qu'une fois le mot de passe enregistré
   Cloud.onAuth((ev, user)=>{
     if(ev==="PASSWORD_RECOVERY" || (window.RECOVERY_LINK && user) || (user && lsGet("billeo-recovery")===user.id)){
-      window.RECOVERY_LINK = false; if(user) lsSet("billeo-recovery", user.id); auth.closable = false; authShow("newpass"); return }
+      window.RECOVERY_LINK = false; if(user) lsSet("billeo-recovery", user.id); auth.closable = false; authShow("newpass", {}); return }
     if(auth.screen==="newpass") return;
+    if(user && !user.is_anonymous && user.user_metadata?.mdp_a_choisir && (ev==="INITIAL_SESSION" || ev==="SIGNED_IN" || ev==="USER_UPDATED")){
+      lsSet(INVITE_MAIL, null); auth.closable = false; authShow("newpass", {lien:true}); return }
     if(user && (ev==="INITIAL_SESSION" || ev==="SIGNED_IN")) cloudStart(user);
     else if(!user && ev==="INITIAL_SESSION") authShow("welcome");
     else if(!user && ev==="SIGNED_OUT" && sync.on){ sync.on = false; location.reload() }

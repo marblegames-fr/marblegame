@@ -51,9 +51,16 @@
       return {needsConfirm: !d.session};
     },
     async signIn(email, password, captchaToken){ need(); return ok(await db.auth.signInWithPassword({email, password, options:{captchaToken}})).user; },
+    // (26 octobre 2026) le mode invité (supabase/invite.sql) : un compte sans e-mail, créé d'un clic
+    async signInGuest(captchaToken){ need(); return ok(await db.auth.signInAnonymously({options:{captchaToken}})).user; },
+    // l'invité sauvegarde sa partie : on ajoute l'e-mail à CE compte (même identifiant, il garde tout). Le mot de passe se choisit
+    // après le clic sur le lien de l'e-mail (Supabase ne l'accepte qu'une fois l'adresse confirmée) : mdp_a_choisir le rappelle
+    async linkEmail(email, pseudo, extra){ need(); ok(await db.auth.updateUser({email, data:{pseudo, ...extra, mdp_a_choisir:true}}, {emailRedirectTo:back()})); },
+    // l'utilisateur à jour, demandé au serveur (l'invité a-t-il confirmé son e-mail ailleurs ?)
+    async freshUser(){ need(); const u = ok(await db.auth.getUser()).user; if(u && !u.is_anonymous) await db.auth.refreshSession().catch(()=>{}); return u; },
     async signOut(){ if(db) await db.auth.signOut({scope:"local"}); },
     async resetPassword(email, captchaToken){ need(); ok(await db.auth.resetPasswordForEmail(email, {redirectTo:back(), captchaToken})); },
-    async updatePassword(password){ need(); ok(await db.auth.updateUser({password})); },
+    async updatePassword(password){ need(); ok(await db.auth.updateUser({password, data:{mdp_a_choisir:null}})); },
     async resendConfirm(email, captchaToken){ need(); ok(await db.auth.resend({type:"signup", email, options:{emailRedirectTo:back(), captchaToken}})); },
 
     // tout ce qu'il faut pour reprendre la partie

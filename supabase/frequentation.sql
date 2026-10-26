@@ -23,7 +23,7 @@ create or replace function public.compter(etape text, source text)
 returns void language plpgsql security definer set search_path = public as $$
 declare e text := compter.etape; s text := compter.source;   -- mêmes noms que les colonnes : on les recopie
 begin
-  if e not in ('arrivee','visite','inscription','envoye','compte','depart','sachet') then return; end if;
+  if e not in ('arrivee','visite','invite','inscription','envoye','compte','depart','sachet') then return; end if;
   if s is null or s not in ('insta','autre') then s := 'autre'; end if;
   insert into frequentation as f (jour, etape, source, n) values ((now() at time zone 'Europe/Paris')::date, e, s, 1)
     on conflict on constraint frequentation_pkey do update set n = f.n + 1;

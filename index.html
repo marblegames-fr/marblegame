@@ -16421,7 +16421,7 @@ let bugKeep = null;   // un message qui n'est pas parti : il est reproposé au p
 // on:false cache le bouton (pendant qu'on prépare la mise à jour) ; on:true le remet, avec la pastille si l'id a changé
 // (16 octobre 2026) deux repères : dot = la pastille rouge du bouton, à changer à CHAQUE mise en ligne qui ajoute une ligne au patchnote
 // (avec txt : la date du jour) ; id = la fenêtre d'annonce à l'arrivée, seulement pour les très gros jours
-const NEWS = {on:true, id:"2026-10-22", dot:"2026-10-23-1220", url:"/nouveautes.html", txt:"Mise à jour du 23 oct."};
+const NEWS = {on:true, id:"2026-10-22", dot:"2026-10-26-1900", url:"/nouveautes.html", txt:"Mise à jour du 26 oct."};
 const newsUnseen = () => lsGet("billeo-news-vu")!==NEWS.dot;
 // (14 octobre 2026) à l'arrivée, une fenêtre annonce la mise à jour, une seule fois par mise à jour et par compte (S.newsPop, gardé
 // dans la partie : elle ne revient pas sur un autre appareil) ; on choisit d'aller voir les nouveautés, ou pas
@@ -18815,7 +18815,7 @@ const auth = {screen:null, tab:"signup", email:"", err:"", closable:false, opts:
 // (Supabase crée un compte « anonyme », un vrai compte sans e-mail), puis on sauvegarde sa partie en ajoutant un e-mail à CE compte.
 // Un seul invité par appareil : INVITE_KEY garde son identifiant, et le bouton « Jouer tout de suite » ne revient plus.
 // Rien ne sort d'un compte invité ni n'y entre (pas de copains, troc, marché, Grande Course, Loterie) : c'est le serveur qui refuse.
-const INVITE_OUVERT = false;   // false : seulement avec ?invite=1 (essai sur le vrai site avant de l'ouvrir à tous)
+const INVITE_OUVERT = true;   // (26 octobre 2026) ouvert à tous ; false : seulement avec ?invite=1
 const INVITE_KEY = "billeo-invite", INVITE_MAIL = "billeo-invite-mail";
 const INVITE_ON = (()=>{ try{ if(new URLSearchParams(location.search).get("invite")==="1") localStorage.setItem("billeo-invite-essai", "1") }catch(e){}
   return INVITE_OUVERT || lsGet("billeo-invite-essai")==="1" })();

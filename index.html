@@ -8955,7 +8955,7 @@ function viewAtelier(){
   return `<div class="at-grid">
     <aside class="at-card at-res">${atelierJar(n)}
       <div><div class="at-n">${fmt(n)} ${SHARD_SVG}<small>éclat${n>1?"s":""} de verre</small></div>
-      <p>Chaque sachet a 4 % de chances d'en contenir un, n'importe quel sachet. C'est rare : garde-les précieusement !</p>
+      <p>Obtention : 1 éclat = 4 % peu importe le sachet</p>
       ${st.eclats ? `<p class="at-last">${st.eclats} éclat${st.eclats>1?"s":""} trouvé${st.eclats>1?"s":""}${st.atelier?` · ${st.atelier} bille${st.atelier>1?"s":""} fabriquée${st.atelier>1?"s":""}`:""}</p>` : ""}</div></aside>
     <div class="at-steps">
       <section class="at-card at-step"><h3><i>1</i> La taille</h3>
@@ -13358,7 +13358,6 @@ function rdvCards(gcIn, L){
       <div class="rdv-body">
         <span class="rdv-k">Tous les jours à 12 h et à 20 h</span>
         <h3>La Grande Course</h3>
-        <p>Inscris ta bille : elle court contre celles des autres joueurs. Le podium gagne des ${CUR.many} et un sachet, et tout le monde repart avec ${COURSE_PART} ${CUR.many}.</p>
         <p class="rdv-t">${ic("clock",15)} Départ dans <b data-gc-timer>${gcLeft(N.depart-Date.now())}</b></p>
         <div class="rdv-go">${gcBtn}</div>
       </div>
@@ -13368,7 +13367,7 @@ function rdvCards(gcIn, L){
       <div class="rdv-body">
         <span class="rdv-k">Un ticket gratuit par jour</span>
         <h3>La Loterie</h3>
-        <p>Tirage le dimanche à 21 h. 3 bons numéros : ${LOT_PRIX[0].txt[0].toLowerCase()+LOT_PRIX[0].txt.slice(1)} !</p>
+        <p>Tirage le dimanche à 21 h</p>
         <p class="rdv-t">${ic("clock",15)} Tirage dans <b data-lot-timer>${lotLeft(L?.heure || lotNext())}</b></p>
         <div class="rdv-go">${lotBtn}</div>
       </div>
@@ -13388,7 +13387,7 @@ function ballPicker(kind){
     <div class="bpk-txt"><small>${gcK ? "Ta coureuse pour la Grande Course" : "Ta bille pour tous les mini-jeux"}</small>
       <h3${motifCol(cur)}>${esc(specName(cur))}</h3>
       <span class="pills">${typePill(cur.type)}${r>=1?`<span class="dec-pill" style="--dc:${DECOR_RAR[r].c}">${DECOR_RAR[r].name}</span>`:""}${shinyPill(cur)}</span>
-      <p>${gcK ? "Toutes les billes ont la même chance : choisis celle que tu veux voir gagner en 3D !" : "Elle ne change que le look : les chances sont les mêmes pour toutes. Alors joue avec ta plus belle !"}</p>
+      ${gcK ? `<p>Toutes les billes ont la même chance : choisis celle que tu veux voir gagner en 3D !</p>` : ""}
       <div class="bpk-quick"><button class="btn btn-yellow" data-action="${act}">${ic("swap",17,2.4)} Changer de bille</button></div></div>
   </section>`;
 }

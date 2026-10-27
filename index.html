@@ -9718,7 +9718,8 @@ function statsPanel(){
     ${group("Habitudes", "clock", [cell("Série en cours", `${serie} j`, "bonbec du jour"), cell("Record de série", `${mx(bestStreak(), serie)} j`, "jours d'affilée"),
       jeu("Quêtes du jour", mx(ST.quests, C.quetes), "quête réussie", "quêtes réussies"), jeu(`Bonus des ${QUESTS_N} quêtes`, mx(ST.bonus, C.bonus_quetes), "fois", "fois"),
       cell("Succès", `${nChal} <em>/ ${chalVis().length}</em>`, "réussis"), cell("Passe de saison", `${passTier()} <em>/ ${PASS_TIERS}</em>`, "palier ce mois-ci")])}
-    ${on ? group("La cour de récré", "cour", [cell("Classement", rang, C.classes ? `sur ${n(C.classes)} joueurs` : ""), cell("Copains", n(C.copains)), cell("Trocs réussis", n(C.trocs)),
+    ${on ? group("La cour de récré", "cour", [cell("Classement", rang, C.classes ? `sur ${n(C.classes)} joueurs` : ""), cell("Copains", n(C.copains)),
+      jeu("Champion de la semaine", C.semaine_victoires, "fois 1er", "fois 1er"), jeu("Podiums de la semaine", C.semaine_podiums, "dans le top 3", "dans le top 3"), cell("Trocs réussis", n(C.trocs)),
       cell("Billes vendues", n(C.vendues), C.gagne_marche ? `pour ${n(C.gagne_marche)} ${CUR.many}` : ""), cell("Billes achetées", n(C.achetees)), cell("Enchères gagnées", n(C.encheres))]) : ""}
   </section>`;
 }
@@ -16414,7 +16415,7 @@ let bugKeep = null;   // un message qui n'est pas parti : il est reproposé au p
 // on:false cache le bouton (pendant qu'on prépare la mise à jour) ; on:true le remet, avec la pastille si l'id a changé
 // (16 octobre 2026) deux repères : dot = la pastille rouge du bouton, à changer à CHAQUE mise en ligne qui ajoute une ligne au patchnote
 // (avec txt : la date du jour) ; id = la fenêtre d'annonce à l'arrivée, seulement pour les très gros jours
-const NEWS = {on:true, id:"2026-10-22", dot:"2026-10-27-1200", url:"/nouveautes.html", txt:"Mise à jour du 27 oct."};
+const NEWS = {on:true, id:"2026-10-22", dot:"2026-10-27-1800", url:"/nouveautes.html", txt:"Mise à jour du 27 oct."};
 const newsUnseen = () => lsGet("billeo-news-vu")!==NEWS.dot;
 // (14 octobre 2026) à l'arrivée, une fenêtre annonce la mise à jour, une seule fois par mise à jour et par compte (S.newsPop, gardé
 // dans la partie : elle ne revient pas sur un autre appareil) ; on choisit d'aller voir les nouveautés, ou pas
@@ -17190,6 +17191,9 @@ async function openProfil(id){
     const tot = TK.length*E.pals.length;
     return `<div class="pf2-ev" style="--ec:${E.color}"><span>${ic("flag",14)} ${esc(F.name)} <small>· ${esc(E.name)}</small></span><b>${n} / ${tot}</b><i><i style="width:${Math.round(100*n/tot)}%"></i></i></div>` }).join("");
   const top = P.top, vit = P.vitrine||[], me = !!P.moi, Sa = me ? "Ta" : "Sa";   // (11 octobre 2026) sa propre fiche s'ouvre aussi depuis le classement
+  // (27 octobre 2026) le classement de la semaine : fois 1er et podiums, depuis le début
+  const nCh = P.champion||0, nPo = P.podiums_semaine||0;
+  const champTag = nCh||nPo ? `<span class="pill" style="--rc:#C07A0C;--rb:var(--gold-bg)" title="Classement de la semaine, depuis le début">${ic("star",12,2.4)} ${nCh ? `${nCh} fois champion de la semaine` : ""}${nCh&&nPo ? " · " : ""}${nPo ? `${nPo} podium${nPo>1?"s":""}` : ""}</span>` : "";
   const shTxt = SHINIES.slice(1).map((x,i)=>sh[i] ? `${sh[i]} ${x.name}${sh[i]>1?"s":""}` : "").filter(Boolean).join(" · ");
   el.innerHTML = `<div class="modal profil pf2" role="dialog" aria-modal="true" aria-label="${esc(P.pseudo)}">
     <span class="pf-band"${P.active?` style="${tstyle(P.active.type)}"`:""}></span>
@@ -17197,7 +17201,7 @@ async function openProfil(id){
     <div class="pf2-head">
       <span class="pf2-face">${P.active ? mImg(P.active,240,96,"") : avatarIni(P.pseudo,88)}</span>
       <div><h2>${esc(P.pseudo)}</h2>
-        <div class="pf2-tags">${P.titre?`<span class="pill" style="--rc:#C07A0C;--rb:var(--gold-bg)">${ic("trophy",12,2.4)} ${esc(P.titre)}</span>`:""}${cl?`<span class="pill" style="--rc:var(--blue);--rb:var(--blue-soft)">${rangTxt(cl.rang)} du classement · ${fmt(cl.total)} pts</span>`:""}</div>
+        <div class="pf2-tags">${P.titre?`<span class="pill" style="--rc:#C07A0C;--rb:var(--gold-bg)">${ic("trophy",12,2.4)} ${esc(P.titre)}</span>`:""}${cl?`<span class="pill" style="--rc:var(--blue);--rb:var(--blue-soft)">${rangTxt(cl.rang)} du classement · ${fmt(cl.total)} pts</span>`:""}${champTag}</div>
         ${P.depuis?`<small class="meta">Dans la cour depuis le ${new Date(P.depuis).toLocaleDateString("fr-FR",{day:"numeric",month:"long",year:"numeric"})}${P.active?` · joue avec ${esc(specName(P.active))}`:""}</small>`:""}</div>
     </div>
     <div class="pf2-body">

@@ -159,6 +159,34 @@ h2.mq small{display:block;font:800 13px/1.3 var(--body);color:var(--muted)}
     radial-gradient(1px 1px at 70% 60%,rgba(0,0,0,.25) 50%,transparent 51%) 0 0/9px 7px,
     radial-gradient(ellipse at 85% -10%,rgba(255,180,90,.22),transparent 55%),var(--tar);box-shadow:0 18px 40px -22px rgba(0,0,0,.7)}
 .chalk{font-family:var(--hand);color:var(--chalk)}
+/* (27 octobre, le soir) les fonds à comparer pour la cour (le site est en « Bitume ») */
+.fonds-sw{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin:0 0 14px}
+.fonds-sw b{font:400 17px/1 var(--display);margin-right:4px}
+.fonds-sw button{padding:8px 14px;border-radius:999px;background:var(--panel);border:1px solid var(--line);font-weight:900;font-size:13.5px}
+.fonds-sw button[aria-pressed="true"]{background:var(--ink);color:var(--bg)}
+/* le tableau de la classe : vert ardoise, cadre en bois, traces d'éponge */
+.cour[data-fond="tableau"]{background:radial-gradient(ellipse 40% 30% at 20% 25%,rgba(255,255,255,.06),transparent 70%),radial-gradient(ellipse 35% 25% at 75% 70%,rgba(255,255,255,.05),transparent 70%),
+  radial-gradient(1px 1px at 30% 40%,rgba(255,255,255,.08) 50%,transparent 51%) 0 0/9px 11px,linear-gradient(160deg,#355A46,#27453A);border:12px solid #8A6A45;box-shadow:inset 0 0 40px rgba(0,0,0,.35),0 18px 40px -22px rgba(0,0,0,.7)}
+.cour[data-fond="tableau"] .board{background:#22392E;border-color:#6E5235}
+/* la cour la nuit : bleu nuit, étoiles et guirlande (comme la page Nouveautés) */
+.cour[data-fond="nuit"]{background:radial-gradient(1.5px 1.5px at 12% 12%,#fff 50%,transparent 51%),radial-gradient(1px 1px at 28% 6%,#fff 50%,transparent 51%),radial-gradient(1.5px 1.5px at 52% 9%,#FFE9A8 50%,transparent 51%),
+  radial-gradient(1px 1px at 71% 4%,#fff 50%,transparent 51%),radial-gradient(1.5px 1.5px at 90% 11%,#fff 50%,transparent 51%),radial-gradient(1px 1px at 40% 15%,#fff 50%,transparent 51%),
+  radial-gradient(ellipse at 50% 120%,#4A2E7A 0%,transparent 60%),linear-gradient(180deg,#141833,#2A1E4A)}
+.cour[data-fond="nuit"]::before{content:"";position:absolute;left:0;right:0;top:0;height:26px;pointer-events:none;background:
+  radial-gradient(circle at 20px 14px,#FFD34D 3.5px,transparent 4.5px) 0 0/80px 26px,radial-gradient(circle at 60px 18px,#FF6FB5 3.5px,transparent 4.5px) 0 0/80px 26px,
+  radial-gradient(circle at 40px 20px,#5AB8FF 3.5px,transparent 4.5px) 40px 0/80px 26px}
+/* la cour en plein jour : goudron gris-bleu, avec les lignes de jeu peintes (marelle, rond du pot, terrain) */
+.cour[data-fond="goudron"]{background:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='900' height='700'%3E%3Cg fill='none' stroke-width='6' opacity='.22'%3E%3Ccircle cx='760' cy='560' r='120' stroke='%23fff'/%3E%3Cpath d='M40 640h220v-60h-110v-60h110v-60H40' stroke='%23FFD34D'/%3E%3Cpath d='M880 40v240M520 40h360' stroke='%23fff'/%3E%3Cpath d='M300 690c60-90 180-90 240 0' stroke='%23FFD34D'/%3E%3C/g%3E%3C/svg%3E") right bottom/900px 700px no-repeat,
+  radial-gradient(1.2px 1.2px at 20% 30%,rgba(255,255,255,.08) 50%,transparent 51%) 0 0/11px 13px,radial-gradient(1px 1px at 70% 60%,rgba(0,0,0,.25) 50%,transparent 51%) 0 0/9px 7px,linear-gradient(180deg,#4A5262,#3A4150)}
+/* sans fond : la cour posée directement sur le fond du site, juste un trait de craie autour */
+.cour[data-fond="aucun"]{background:none;box-shadow:none;border:2px dashed rgba(246,242,232,.18)}
+:root:not([data-theme="dark"]) .cour[data-fond="aucun"]{--chalk:#2B2233;--chalk-2:rgba(43,34,51,.65);border-color:rgba(43,34,51,.2)}
+/* les onglets en tuiles de couleur, comme sur le site depuis le 27 octobre au soir */
+.cn{--cc:#FFC93F;background:rgba(246,242,232,.08)!important;border:2px solid rgba(246,242,232,.18)!important;border-style:solid!important;color:var(--chalk)!important;box-shadow:0 4px 0 rgba(0,0,0,.25)}
+.cn:nth-child(2){--cc:#7CE59A}.cn:nth-child(3){--cc:#FF8FB8}.cn:nth-child(4){--cc:#FFB547}.cn:nth-child(5){--cc:#7FC4FF}
+.cn svg{stroke:var(--cc)!important;stroke-width:2.6!important}
+.cn[aria-selected="true"]{background:var(--cc)!important;border-color:var(--cc)!important;color:#2B2233!important}
+.cn[aria-selected="true"] svg{stroke:#2B2233!important}
 /* le haut : le titre à la craie, ton pseudo à donner, et le plan de la cour (les 5 onglets) */
 .c-head{display:flex;flex-wrap:wrap;align-items:flex-end;justify-content:space-between;gap:10px 18px;padding:22px 22px 6px}
 .c-head h1{font:700 52px/.9 var(--hand);letter-spacing:.01em;text-shadow:0 0 1px rgba(255,255,255,.4)}
@@ -366,7 +394,7 @@ const MARKET = [[mk("calot",3),120,98,"Malo"],[mk("boulet",2),80,85,"Léa",1],[m
   [mk("chinoise",1,1),95,90,"Sacha"],[mk("mini",3),30,26,"Noé"],[mk("calot",4),420,null,"Inès",1,"38 min"],[mk("boulet",0),25,22,"Malo"]];
 const TOP = [["Jade",mk("mammouth",4),4820],["Léa",mk("boulet",3),4410],["Noé",mk("calot",4),3990],["Malo",mk("calot",2),3120],["Toi",MINE[0],2875],["Inès",mk("mammouth",1),2610],["Hugo",mk("mini",3),1990]];
 
-const st = {part:"bille", w:"pc", gi:0, ci:0, tab:"copains", tt:"recues"};
+const st = {part:"bille", w:"pc", gi:0, ci:0, tab:"copains", tt:"recues", fond:"bitume"};
 new URLSearchParams(location.search).forEach((v,k)=>{ if(k in st) st[k] = v });   // ?part=cour&tab=marche&w=phone : pour ouvrir directement un onglet
 document.querySelectorAll("[data-part]").forEach(x=>x.setAttribute("aria-pressed", x.dataset.part===st.part)); document.querySelectorAll("[data-w]").forEach(x=>x.setAttribute("aria-pressed", x.dataset.w===st.w));
 const frame = document.getElementById("frame");
@@ -464,7 +492,8 @@ function vCour(){
   return `<div class="note"><b>Le principe :</b> la cour devient un lieu. Le sol est en bitume et on y écrit à la craie : les titres, le plan de la cour (les 5 onglets) et le podium.
   Ce qu'on y pose est en papier : un petit mot plié pour chaque troc et chaque demande de copain, des étiquettes kraft au marché, un carnet pour l'historique.
   C'est le même esprit que le cahier de la Boîte à billes, et ça reste lisible en mode sombre comme en mode clair, parce que la cour garde toujours ses couleurs.</div>
-  <section class="cour">
+  <div class="fonds-sw"><b>Le fond :</b>${[["bitume","Bitume (le site aujourd'hui)"],["tableau","Tableau d'école"],["nuit","La cour la nuit"],["goudron","Goudron avec lignes de jeu"]].map(([k,l])=>`<button data-fond="${k}" aria-pressed="${st.fond===k}">${l}</button>`).join("")}</div>
+  <section class="cour" data-fond="${st.fond}">
     <div class="c-head"><h1 class="chalk"><span>Tout le monde dehors !</span>La cour de récré</h1>
       <div class="c-me">${img(me, 44, 96)}<div><small>Ton pseudo, à donner aux copains</small><b>Billou</b></div><button>Copier</button></div></div>
     <nav class="c-nav" role="tablist">${NAV.map(([k,l,svg,n])=>`<button class="cn" role="tab" data-tab="${k}" aria-selected="${st.tab===k}"><svg viewBox="0 0 42 34">${svg}</svg><b>${l}</b>${n?`<span class="n">${n}</span>`:""}</button>`).join("")}</nav>
@@ -546,6 +575,7 @@ document.addEventListener("click", e=>{
   if(b.dataset.w){ st.w = b.dataset.w; document.querySelectorAll("[data-w]").forEach(x=>x.setAttribute("aria-pressed", x===b)); render(); return }
   if(b.dataset.tab){ st.tab = b.dataset.tab; render(); return }
   if(b.dataset.tt){ st.tt = b.dataset.tt; render(); return }
+  if(b.dataset.fond){ st.fond = b.dataset.fond; render(); return }
   const a = b.dataset.act; if(!a) return;
   const n = 6, g = a[0]==="g";
   const k = g ? "gi" : "ci";

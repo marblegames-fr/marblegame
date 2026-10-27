@@ -4409,8 +4409,15 @@ body.gc-open{overflow:hidden}
 .cour-v2 .cl-row.me{background:rgba(255,211,77,.14);border-radius:10px}
 .cour-v2 .cl-list .cl-gap{color:rgba(246,242,232,.66)}
 /* ---------- Historique : un carnet, un encadré par événement ---------- */
-.cour-v2.t-journal .cour-grid > .panel{position:relative;padding-left:44px;
-  background:repeating-linear-gradient(180deg,transparent 0 23px,rgba(60,110,180,.16) 23px 24px),linear-gradient(90deg,transparent 30px,rgba(220,85,85,.4) 30px 32px,transparent 32px),var(--panel)}
+.cour-v2.t-journal .cour-grid > .panel{position:relative;padding-left:54px;color-scheme:light;
+  --panel:#FBF6EA;--panel-2:#F4ECDA;--line:#E6D9C1;--line-2:#D9C7A5;--ink:#24253D;--ink-2:#45435A;--muted:#6E6878;color:var(--ink);border:3px solid #2B2233;border-radius:6px 18px 6px 6px;
+  background:linear-gradient(90deg,transparent 40px,rgba(220,85,85,.45) 40px 42px,transparent 42px 45px,rgba(220,85,85,.45) 45px 46px,transparent 46px),
+    repeating-linear-gradient(180deg,transparent 0 31px,rgba(60,110,180,.22) 31px 32px),repeating-linear-gradient(180deg,transparent 0 7px,rgba(60,110,180,.07) 7px 8px),#F9F3E3;
+  box-shadow:6px 6px 0 -2px #EDE3CB,6px 6px 0 0 #2B2233,16px 22px 30px -18px rgba(0,0,0,.5)}
+.cour-v2.t-journal .cour-grid > .panel .jr{background:color-mix(in srgb,var(--ec) 10%,#fff)}
+.cour-v2.t-journal .cour-grid > .panel .chip{background:#fff;color:#45435A;border-color:#D9C7A5}
+.cour-v2.t-journal .cour-grid > .panel .chip[aria-pressed="true"]{background:#2B2233;color:#fff;border-color:#2B2233}
+.cour-v2.t-journal .cp-pager .btn-ghost{background:#fff;color:#24253D;border-color:#D9C7A5}
 .cour-v2 .jr-day{font-family:var(--display);font-weight:400;font-size:19px;color:var(--ink);margin:18px 0 8px;padding-bottom:4px;border-bottom:2px solid var(--line-2);text-transform:none;letter-spacing:0}
 .cour-v2 .jr{--ec:#8E8898;margin:8px 0;padding:9px 12px;border-radius:12px;border:1.5px solid color-mix(in srgb,var(--ec) 35%,transparent)!important;border-left:5px solid var(--ec)!important;background:color-mix(in srgb,var(--ec) 9%,var(--panel))}
 .cour-v2 .jr.k-troc{--ec:#2FA35A}.cour-v2 .jr.k-vendue{--ec:#E85D9A}.cour-v2 .jr.k-achat{--ec:#2E6BE6}.cour-v2 .jr.k-gagnee,.cour-v2 .jr[class*="k-ench"]{--ec:#E8743B}
@@ -16808,7 +16815,7 @@ let bugKeep = null;   // un message qui n'est pas parti : il est reproposé au p
 // on:false cache le bouton (pendant qu'on prépare la mise à jour) ; on:true le remet, avec la pastille si l'id a changé
 // (16 octobre 2026) deux repères : dot = la pastille rouge du bouton, à changer à CHAQUE mise en ligne qui ajoute une ligne au patchnote
 // (avec txt : la date du jour) ; id = la fenêtre d'annonce à l'arrivée, seulement pour les très gros jours
-const NEWS = {on:true, id:"2026-10-27", dot:"2026-10-28-0010", url:"/nouveautes.html", txt:"Mise à jour du 27 oct."};
+const NEWS = {on:true, id:"2026-10-27", dot:"2026-10-28-0040", url:"/nouveautes.html", txt:"Mise à jour du 28 oct."};
 const newsUnseen = () => lsGet("billeo-news-vu")!==NEWS.dot;
 // (14 octobre 2026) à l'arrivée, une fenêtre annonce la mise à jour, une seule fois par mise à jour et par compte (S.newsPop, gardé
 // dans la partie : elle ne revient pas sur un autre appareil) ; on choisit d'aller voir les nouveautés, ou pas
@@ -17112,15 +17119,21 @@ function jourDe(t){
 }
 // l'onglet Historique : on retient ce qui était nouveau pour le souligner, puis tout est lu
 function courSeeJournal(){ cour.hlSince = S.courHist || 0; S.courHist = Date.now(); cour.unread = 0; save(); courRefresh("journal"); renderNav() }
+// (28 octobre 2026) des pages quand la liste est longue (historique, trocs, marché) : les mêmes boutons que pour les copains
+function courPages(n, per, k){ const max = Math.max(0, Math.ceil(n/per)-1); ui[k] = Math.max(0, Math.min(ui[k]||0, max)); return {p:ui[k], max, per, from:ui[k]*per} }
+const courPager = (P, k, lbl) => P.max ? `<div class="cp-pager" data-k="${k}"><button class="btn btn-ghost btn-sm" data-action="cp-page" data-k="${k}" data-d="-1" ${P.p?"":"disabled"} aria-label="${lbl} : page précédente">${ic("chevl",15,2.6)}</button>
+    <span>Page <b>${P.p+1}</b> / ${P.max+1}</span><button class="btn btn-ghost btn-sm" data-action="cp-page" data-k="${k}" data-d="1" ${P.p<P.max?"":"disabled"} aria-label="${lbl} : page suivante">${ic("chev",15,2.6)}</button></div>` : "";
+const JR_PAGE = 15, TR_PAGE = 5, MK_PAGE = 12, mkPager = {P:{max:0}};
 function courJournal(){
   courLoad("journal");
   const J = cour.journal; if(!J) return courWait();
   const f = ui.jf || "", list = J.filter(e=>!f || (f==="troc") === (e.k==="troc"));
   const chip = (k,l) => `<button class="chip" data-action="jr-filt" data-f="${k}" aria-pressed="${f===k}">${l}</button>`;
   let day = "";
-  const rows = list.map(e=>{ const d = jourDe(e.le), h = d!==day ? `<div class="jr-day">${d}</div>` : ""; day = d; return h + journalRow(e, true) }).join("");
+  const P = courPages(list.length, JR_PAGE, "jrPage");
+  const rows = list.slice(P.from, P.from+JR_PAGE).map(e=>{ const d = jourDe(e.le), h = d!==day ? `<div class="jr-day">${d}</div>` : ""; day = d; return h + journalRow(e, true) }).join("");
   return `<div class="cour-grid"><section class="panel"><div class="panel-head"><h3>Historique</h3><div class="chips">${chip("","Tout")}${chip("troc","Troc")}${chip("marche","Marché")}</div></div>
-    ${list.length ? rows : `<p class="empty">Rien pour l'instant. Tes trocs, ventes et achats s'afficheront ici.</p>`}</section></div>`;
+    ${list.length ? rows + courPager(P, "jrPage", "Historique") : `<p class="empty">Rien pour l'instant. Tes trocs, ventes et achats s'afficheront ici.</p>`}</section></div>`;
 }
 // les nouvelles depuis la dernière visite : un récapitulatif en arrivant, puis un petit message à chaque nouveauté
 function courNews(welcome){
@@ -17679,7 +17692,7 @@ function courTroc(){
         <p class="meta">Écris le début de son pseudo, puis touche ton copain pour lui proposer un troc.</p>`
         : `<p class="cour-lead">Pour troquer, ajoute d'abord des copains dans l'onglet Copains.</p>`}</section>
     <div class="chips tr-tabs">${st("recus","Offres reçues",T.recus.length)}${st("envoyes","Offres envoyées",T.envoyes.length)}${st("finis","Terminés")}</div>
-    <section class="panel">${list.length ? list.map(t=>trocCard(t,kind)).join("") : `<p class="empty">${vide}</p>`}</section>
+    <section class="panel">${list.length ? (P => list.slice(P.from, P.from+TR_PAGE).map(t=>trocCard(t,kind)).join("") + courPager(P, "trPage"+tab, "Trocs"))(courPages(list.length, TR_PAGE, "trPage"+tab)) : `<p class="empty">${vide}</p>`}</section>
   </div>`;
 }
 // (10 octobre 2026) le copain du troc : on écrit son pseudo, les copains qui correspondent s'affichent dessous
@@ -17843,7 +17856,8 @@ function courMarche(){
     ${mkTab==="ench" ? (ME.length ? `<section class="panel mes-ench"><div class="panel-head"><h3>${ic("gavel",18)} Mes enchères<span class="cnt-n">${ME.length}</span></h3><span class="sample-tag">${ME.filter(a=>a.en_tete).length} en tête</span></div>
       <div class="mk-grid">${ME.map(a=>mkCard(a, true)).join("")}</div></section>` : `<p class="empty">Tu n'enchéris sur aucune bille en ce moment.</p>`) : ""}
     ${mkTab!=="acheter" ? "" : L && L.length ? `<div class="mk-sec-h"><h3>${ic("candy",18)} En vente</h3><span class="mk-leg"><span><i class="fixe"></i>Étiquette kraft : prix fixe, tu achètes tout de suite</span><span><i class="ench"></i>Étiquette rouge : aux enchères, tu fais une offre</span></span><span class="sample-tag">${L.length} bille${L.length>1?"s":""}${L.some(a=>a.enchere)?` · dont ${L.filter(a=>a.enchere).length} aux enchères`:""}</span></div>` : ""}
-    ${mkTab!=="acheter" ? "" : !L ? courWait() : L.length ? `<div class="mk-grid mk-all">${L.map(a=>mkCard(a)).join("")}</div><p class="empty mk-none"${L.every(mkHid)?"":" hidden"}>Aucune bille en vente ne correspond à ta recherche.</p>` : `<p class="empty">Rien en vente avec ces filtres pour l'instant.${f.manque && L0?.length ? " Toutes les billes en vente sont déjà dans ta boîte !" : ""}${f.taille||f.decor!=null||f.shiny||f.genre||f.manque ? `<br><button class="btn btn-ghost btn-sm" style="margin-top:12px" data-action="mk-reset">Effacer les filtres</button>` : ""}</p>`}
+    ${mkTab!=="acheter" ? "" : !L ? courWait() : L.length ? `<div class="mk-grid mk-all">${(()=>{ const P = courPages(L.length, MK_PAGE, "mkPage"), q = pqWords("mk").length; mkPager.P = q ? {max:0} : P;
+      return L.map((a,i)=>{ const h = mkCard(a); return !q && Math.floor(i/MK_PAGE)!==P.p ? h.replace('<div class="mk', '<div data-off hidden class="mk') : h }).join("") })()}</div>${courPager(mkPager.P, "mkPage", "Marché")}<p class="empty mk-none"${L.every(mkHid)?"":" hidden"}>Aucune bille en vente ne correspond à ta recherche.</p>` : `<p class="empty">Rien en vente avec ces filtres pour l'instant.${f.manque && L0?.length ? " Toutes les billes en vente sont déjà dans ta boîte !" : ""}${f.taille||f.decor!=null||f.shiny||f.genre||f.manque ? `<br><button class="btn btn-ghost btn-sm" style="margin-top:12px" data-action="mk-reset">Effacer les filtres</button>` : ""}</p>`}
     ${mkTab!=="mine" ? "" : !A ? courWait() : !mine.length ? `<p class="empty">Tu n'as rien en vente. Touche « Vendre une bille » pour en proposer une.</p>` : `<section class="panel" id="mes-annonces"><div class="panel-head"><h3>Mes annonces<span class="cnt-n">${mine.length}</span></h3>${sold ? `<span class="sample-tag">${sold} vendue${sold>1?"s":""}</span>` : ""}</div>
       <div class="ann-list">${mine.map(ann).join("")}</div></section>`}
   </div>`;
@@ -17855,7 +17869,9 @@ document.addEventListener("input", e=>{
   if(!e.target.classList?.contains("mk-q")) return;
   PQ.mk = e.target.value;
   const q = pqWords("mk"); let n = 0, all = 0;
-  document.querySelectorAll(".mk-grid.mk-all .mk").forEach(c=>{ const ok = q.every(w=>c.dataset.q.includes(w)); c.hidden = !ok; n += ok; all++ });
+  // (28 octobre 2026) une recherche cherche dans toutes les pages ; sans recherche, on revoit la page en cours
+  document.querySelectorAll(".mk-grid.mk-all .mk").forEach(c=>{ const ok = q.length ? q.every(w=>c.dataset.q.includes(w)) : !c.hasAttribute("data-off"); c.hidden = !ok; n += ok; all++ });
+  document.querySelector('.cp-pager[data-k="mkPage"]')?.toggleAttribute("hidden", q.length>0);
   document.querySelector(".mk-none")?.toggleAttribute("hidden", n>0 || !all);
 });
 // (16 octobre 2026) l'historique des prix : les ventes des 30 derniers jours d'un modèle (supabase/cour.sql, public.prix_modele),
@@ -18188,7 +18204,7 @@ document.addEventListener("click", e=>{
     case "sell-mode": if(!cour.sell) break; cour.sell.prix = document.getElementById("sell-prix")?.value || cour.sell.prix; cour.sell.mode = t.dataset.m; renderView(); break;
     case "mk-reset": Object.assign(cour.f, {taille:"", decor:null, shiny:"", genre:"", manque:false}); courRefresh("marche"); renderView(); break;
     case "mk-manque": cour.f.manque = t.checked; renderView(); break;
-    case "mk-tab": ui.mkTab = t.dataset.t; if(t.dataset.t!=="acheter") courRefresh("annonces","encheres"); renderView(); break;
+    case "mk-tab": ui.mkPage = 0; ui.mkTab = t.dataset.t; if(t.dataset.t!=="acheter") courRefresh("annonces","encheres"); renderView(); break;
     case "troc-tab": ui.trocTab = t.dataset.t; renderView(); break;
     case "notif-pop": toggleBell(); break;
     case "notif-go": notifGo(+t.dataset.i); break;
@@ -18213,7 +18229,7 @@ document.addEventListener("click", e=>{
       break;
     }
     case "news-see": closeModal(); ui.courTab = "journal"; cour.compose = null; cour.sell = null; courSeeJournal(); if(ui.view!=="cour") go("cour"); else renderView(); break;
-    case "jr-filt": ui.jf = t.dataset.f; renderView(); break;
+    case "jr-filt": ui.jf = t.dataset.f; ui.jrPage = 0; renderView(); break;
     case "cl-portee": ui.clPortee = t.dataset.p; ui.clPage = 0; cour.classement = null; courRefresh("classement"); renderView(); break;
     case "cl-vue": ui.clVue = t.dataset.v; renderView(); break;
     case "sem-portee": ui.semPortee = t.dataset.p; cour.semaine = null; courRefresh("semaine"); renderView(); break;

@@ -4833,14 +4833,14 @@ const bonusTag = () => `${ic("bag",16)} ${BAG_BY[QUEST_BONUS].name}`;
 // la vedette. Plus le sachet est cher, plus le plancher est haut (pas de Mini dans le Premium, rien sous la Chinoise dans le Collector).
 // Mêmes valeurs dans supabase/serveur.sql (interne.sac).
 const sizeOdds = a => Object.fromEntries(TK.map((k,i)=>[k,a[i]]));
-const FREE_BAG = {id:"gratuit", name:"Sachet gratuit", desc:"3 billes offertes. Un nouveau sachet toutes les 10 minutes, jusqu'à 10 en stock.", price:0, n:3, color:"#C98E4E", tint:"#F6E3C8", shiny:SHINY_RATE,
+const FREE_BAG = {id:"gratuit", name:"Sachet gratuit", desc:"3 billes · toutes les 10 min (10 max)", price:0, n:3, color:"#C98E4E", tint:"#F6E3C8", shiny:SHINY_RATE,
   slots:[sizeOdds([75,25,0,0,0,0]),sizeOdds([55,35,10,0,0,0]),sizeOdds([30,33,20,12,4,1])]};
 const BAGS = [FREE_BAG,
-  {id:"classique", name:"Sachet Classique", desc:"5 billes, avec de meilleures chances que le sachet gratuit. 2 fois plus de chances de shiny.", price:30, n:5, color:"#2A8A74", tint:"#D5EFE7", shiny:SHINY_RATE*2,
+  {id:"classique", name:"Sachet Classique", desc:"5 billes · 2× plus de shiny", price:30, n:5, color:"#2A8A74", tint:"#D5EFE7", shiny:SHINY_RATE*2,
    slots:[sizeOdds([70,30,0,0,0,0]),sizeOdds([50,38,12,0,0,0]),sizeOdds([35,40,20,5,0,0]),sizeOdds([20,35,30,13,2,0]),sizeOdds([10,25,30,20,12,3])]},
-  {id:"premium", name:"Sachet Premium", desc:"5 billes, dont au moins un Calot ou mieux. 4 fois plus de chances de shiny.", price:60, n:5, guarantee:"calot", color:"#34469C", tint:"#DCE0F6", shiny:SHINY_RATE*4,
+  {id:"premium", name:"Sachet Premium", desc:"5 billes · au moins un Calot · 4× plus de shiny", price:60, n:5, guarantee:"calot", color:"#34469C", tint:"#DCE0F6", shiny:SHINY_RATE*4,
    slots:[sizeOdds([0,80,20,0,0,0]),sizeOdds([0,60,35,5,0,0]),sizeOdds([0,40,45,15,0,0]),sizeOdds([0,0,55,38,7,0]),sizeOdds([0,0,0,60,34,6])]},
-  {id:"collector", name:"Sachet Collector", desc:"5 billes, dont au moins un Boulet ou plus gros. 10 fois plus de chances de shiny.", price:150, n:5, guarantee:"boulet", color:"#D9A020", tint:"#FBEBC0", shiny:SHINY_RATE*10,
+  {id:"collector", name:"Sachet Collector", desc:"5 billes · au moins un Boulet · 10× plus de shiny", price:150, n:5, guarantee:"boulet", color:"#D9A020", tint:"#FBEBC0", shiny:SHINY_RATE*10,
    slots:[sizeOdds([0,0,85,15,0,0]),sizeOdds([0,0,65,35,0,0]),sizeOdds([0,0,40,50,10,0]),sizeOdds([0,0,0,60,38,2]),sizeOdds([0,0,0,0,87,13])]},
 ];
 // par bille en moyenne (pour les chances d'une bille précise), et « au moins une » de chaque taille dans un sachet

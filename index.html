@@ -17360,9 +17360,8 @@ function clSemaine(){
   const P = ui.semPortee || "tous", M = C.moi, lots = C.lots?.length ? C.lots : SEMAINE_LOTS;
   const chip = (k,l) => `<button class="chip" data-action="sem-portee" data-p="${k}" aria-pressed="${P===k}">${l}</button>`;
   const top = C.liste.slice(0,3), podium = [top[1], top[0], top[2]].filter(Boolean), liste = C.liste.slice(3);
-  const sub = x => `${fmt(x.billes)} bille${x.billes>1?"s":""}`;   // (19 octobre 2026) plus « · N nouvelles » (les cases remplies) : pas clair
   const row = x => `<div class="cl-row${x.moi?" me":""}"${clVoir(x)}><span class="cl-rank">${x.rang}</span><span class="cl-face">${clFace(x,40)}</span>
-      <span class="who">${esc(x.pseudo)}${x.moi?` <em>toi</em>`:""}<small>${clChamp(x)}${sub(x)}</small></span>
+      <span class="who">${esc(x.pseudo)}${x.moi?` <em>toi</em>`:""}</span>
       <span class="cl-pts">${fmt(x.total)}<small>pts</small></span></div>`;
   const lot = r => lots.find(l=>r>=l.de && r<=l.a);
   return `<div class="cour-grid">
@@ -17427,7 +17426,7 @@ function clGeneral(){
   const pager = pgs>1 ? `<div class="cp-pager cl-pager">${pbtn(1,"chevll","Première page",pg<=1)}${pbtn(pg-1,"chevl","Page précédente",pg<=1)}
       <span>Page <b>${pg}</b> / ${pgs}</span>${pbtn(pg+1,"chev","Page suivante",pg>=pgs)}${pbtn(pgs,"chevrr","Dernière page",pg>=pgs)}</div>` : "";
   const row = x => `<div class="cl-row${x.moi?" me":""}"${voir(x)}><span class="cl-rank">${x.rang}</span><span class="cl-face">${face(x,40)}</span>
-      <span class="who">${esc(x.pseudo)}${x.moi?` <em>toi</em>`:""}<small>${clChamp(x)}${x.titre ? `${ic("trophy",11,2.4)} ${esc(x.titre)} · ` : ""}${fmt(x.cases)} motif${x.cases>1?"s":""}</small></span>
+      <span class="who">${esc(x.pseudo)}${x.moi?` <em>toi</em>`:""}</span>
       <span class="cl-pts">${fmt(x.total)}<small>pts</small></span></div>`;
   return `<div class="cour-grid">
     <section class="panel cl-me">

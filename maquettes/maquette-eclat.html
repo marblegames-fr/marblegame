@@ -1,0 +1,236 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Tikalo · Maquette : l'éclat dans le sachet</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Lilita+One&family=Nunito:wght@600;700;800;900&family=Caveat:wght@700&display=swap">
+<style>
+/* Maquette du 27 octobre 2026 : l'éclat de verre qui tombe d'un sachet, en 3 temps.
+   1. l'annonce : un reflet de verre passe sur le sachet avant l'ouverture, avec un petit « tink » ;
+   2. la sortie : après la dernière bille, un « ting » plus clair, l'éclat sort en tournoyant (+1 éclat de verre) ;
+   3. le rangement : il s'envole vers « Boîte à billes » dans le menu, qui fait un bond, et le compteur monte.
+   + le tout premier éclat : une petite fenêtre qui présente l'atelier ; + plusieurs sachets à la suite : l'animation entière une fois, puis juste « +1 ». */
+:root{--bg:#F2E9D7;--panel:#FAF5EB;--panel-2:#F3EADA;--line:#E6D9C1;--ink:#24253D;--ink-2:#56546B;--muted:#8E8898;
+  --yellow:#FFC93F;--yellow-2:#F2AE12;--glass:#5FD3E8;--glass-2:#2A9DB8;--pink:#E85D9A;
+  --display:"Lilita One","Arial Rounded MT Bold","Trebuchet MS",sans-serif;--body:"Nunito","Segoe UI",system-ui,sans-serif;--hand:"Caveat","Segoe Print","Comic Sans MS",cursive}
+@media (prefers-color-scheme:dark){ :root:not([data-theme="light"]){--bg:#12151F;--panel:#1B1F2C;--panel-2:#232838;--line:#2C3244;--ink:#F3F0EA;--ink-2:#BFC2CF;--muted:#858A9C} }
+:root[data-theme="dark"]{--bg:#12151F;--panel:#1B1F2C;--panel-2:#232838;--line:#2C3244;--ink:#F3F0EA;--ink-2:#BFC2CF;--muted:#858A9C}
+*{box-sizing:border-box;margin:0}
+body{background:var(--bg);color:var(--ink);font:700 15px/1.45 var(--body);-webkit-font-smoothing:antialiased;overflow-x:hidden}
+button{font:inherit;color:inherit;cursor:pointer;border:0;background:none}
+img{display:block}
+.app{display:grid;grid-template-columns:210px minmax(0,1fr);min-height:100vh}
+/* le menu du jeu, simplifié : seule « Boîte à billes » sert ici (l'éclat y file) */
+.nav{position:sticky;top:0;height:100vh;padding:18px 12px;display:grid;align-content:start;gap:6px;background:var(--panel);border-right:1px solid var(--line)}
+.nav .logo{font:900 30px/1 "Lilita One";color:var(--yellow-2);margin:0 6px 14px}
+.nv{position:relative;display:flex;align-items:center;gap:10px;padding:10px 12px;border-radius:14px;font-weight:900;color:var(--ink-2)}
+.nv span{font-size:20px}
+.nv.on{background:var(--panel-2);color:var(--ink)}
+.nv .cnt{margin-left:auto;display:inline-flex;align-items:center;gap:3px;padding:2px 8px;border-radius:999px;background:color-mix(in srgb,var(--glass) 22%,var(--panel));color:var(--glass-2);font-size:12.5px}
+.nv.bump{animation:bump .5s cubic-bezier(.2,1.8,.4,1)}
+@keyframes bump{30%{transform:scale(1.12) rotate(-2deg);background:color-mix(in srgb,var(--glass) 30%,var(--panel))}}
+.nv .cnt.up{animation:up .5s ease-out}
+@keyframes up{40%{transform:scale(1.4);background:var(--glass);color:#fff}}
+@media (max-width:720px){
+  .app{grid-template-columns:minmax(0,1fr)}
+  .nav{position:fixed;inset:auto 0 0 0;height:auto;z-index:20;grid-auto-flow:column;grid-auto-columns:1fr;padding:6px;border-right:0;border-top:1px solid var(--line)}
+  .nav .logo{display:none}
+  .nv{flex-direction:column;gap:0;padding:6px 2px;font-size:11px;text-align:center}
+  .nv .cnt{position:absolute;top:0;right:4px;margin:0;padding:0 5px;font-size:10.5px}
+  main{padding-bottom:90px!important}
+}
+main{padding:22px 18px 40px;min-width:0}
+h1{font:400 28px/1.1 var(--display)}
+.lead{color:var(--muted);font-size:13.5px;margin:4px 0 14px;max-width:70ch}
+.ctrl{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:14px}
+.chip{padding:8px 14px;border-radius:999px;background:var(--panel);border:1px solid var(--line);font-weight:900;font-size:13.5px}
+.chip[aria-pressed="true"]{background:var(--ink);color:var(--bg)}
+.btn{display:inline-flex;align-items:center;gap:8px;padding:13px 24px;border-radius:999px;font-weight:900;font-size:17px;background:var(--yellow);color:#2B2233;box-shadow:0 5px 0 var(--yellow-2)}
+.btn:active{transform:translateY(3px);box-shadow:0 2px 0 var(--yellow-2)}
+.btn[disabled]{opacity:.5;pointer-events:none}
+
+/* la scène d'ouverture (comme dans le jeu : le sachet au milieu, les billes qui sortent) */
+.stage{position:relative;height:430px;border-radius:26px;overflow:hidden;display:grid;place-items:center;
+  background:radial-gradient(ellipse at 50% 40%,#3A2E5C,#171329 70%);color:#fff}
+.stage::before{content:"";position:absolute;inset:0;opacity:.6;background-image:radial-gradient(1.5px 1.5px at 12% 22%,#fff 50%,transparent 51%),radial-gradient(1px 1px at 78% 30%,#fff 50%,transparent 51%),radial-gradient(1.5px 1.5px at 40% 80%,#fff 50%,transparent 51%),radial-gradient(1px 1px at 88% 70%,#fff 50%,transparent 51%)}
+.bag{position:absolute;left:50%;top:50%;width:170px;translate:-50% -55%;transition:opacity .3s,transform .3s}
+.bag svg{width:100%;height:auto;filter:drop-shadow(0 18px 18px rgba(0,0,0,.45))}
+.bag.shake{animation:shake .5s ease-in-out 2}
+@keyframes shake{25%{transform:rotate(-6deg)}75%{transform:rotate(6deg)}}
+.bag.open{opacity:0;transform:scale(1.4)}
+/* 1. le reflet de verre qui passe sur le sachet */
+.bag .glint{position:absolute;inset:8% 10% 4%;overflow:hidden;pointer-events:none;border-radius:24px}
+.bag .glint::after{content:"";position:absolute;top:-20%;bottom:-20%;width:40%;left:-60%;rotate:18deg;
+  background:linear-gradient(90deg,transparent,rgba(183,244,255,.0) 20%,rgba(183,244,255,.85) 50%,rgba(183,244,255,0) 80%,transparent)}
+.bag.glinting .glint::after{animation:glint 1.4s ease-in-out 2}
+@keyframes glint{to{left:120%}}
+.bag .spark{position:absolute;width:14px;height:14px;opacity:0;background:radial-gradient(circle,#fff 0 18%,rgba(183,244,255,.9) 30%,transparent 65%)}
+.bag.glinting .spark{animation:tw 1.4s ease-in-out 2}
+.bag .spark:nth-of-type(2){animation-delay:.4s!important}.bag .spark:nth-of-type(3){animation-delay:.8s!important}
+@keyframes tw{40%{opacity:1;transform:scale(1.6) rotate(45deg)}}
+.hint{position:absolute;left:50%;bottom:22px;translate:-50% 0;font-size:13px;font-weight:900;color:rgba(255,255,255,.75);white-space:nowrap}
+/* les billes du sachet */
+.got{position:absolute;left:50%;top:44%;translate:-50% -50%;display:flex;gap:18px;align-items:end}
+.got img{animation:out .55s cubic-bezier(.2,1.5,.4,1) both;filter:drop-shadow(0 8px 8px rgba(0,0,0,.45))}
+@keyframes out{from{transform:translateY(60px) scale(.3);opacity:0}}
+/* 2. l'éclat qui sort en tournoyant */
+.shard{position:absolute;left:50%;top:72%;width:62px;height:74px;translate:-50% -50%;filter:drop-shadow(0 0 16px rgba(95,211,232,.95));animation:sout .9s cubic-bezier(.2,1.6,.4,1) both}
+.shard svg{width:100%;height:100%;animation:spin 2.4s linear infinite}
+@keyframes sout{from{transform:scale(0) rotate(-200deg);opacity:0}}
+@keyframes spin{50%{transform:rotateY(180deg)}}
+.plus{position:absolute;left:50%;top:86%;translate:-50% -50%;padding:5px 14px;border-radius:999px;background:rgba(95,211,232,.18);border:1.5px solid rgba(183,244,255,.6);
+  font-weight:900;font-size:15px;color:#DFF9FF;white-space:nowrap;animation:sout .5s .3s cubic-bezier(.2,1.6,.4,1) both}
+.plus.small{top:auto;bottom:16px}
+/* 3. l'envol vers le menu : un éclat qui suit une courbe, avec sa traînée */
+.fly{position:fixed;z-index:60;width:34px;height:40px;pointer-events:none;filter:drop-shadow(0 0 10px rgba(95,211,232,.95))}
+.trail{position:fixed;z-index:59;width:8px;height:8px;border-radius:50%;pointer-events:none;background:#B7F4FF;box-shadow:0 0 8px #5FD3E8;animation:fade .6s ease-out forwards}
+@keyframes fade{to{opacity:0;transform:scale(.2)}}
+/* le premier éclat : la fenêtre */
+.modal{position:fixed;inset:0;z-index:70;display:grid;place-items:center;padding:18px;background:rgba(14,10,18,.6)}
+.modal[hidden]{display:none}
+.mbox{width:min(420px,100%);padding:22px 22px 20px;border-radius:24px;text-align:center;background:var(--panel);border:1px solid var(--line);box-shadow:0 20px 40px -18px rgba(0,0,0,.6);animation:sout .45s cubic-bezier(.2,1.5,.4,1) both}
+.mbox .s{width:70px;height:84px;margin:0 auto 6px;filter:drop-shadow(0 0 14px rgba(95,211,232,.9))}
+.mbox h2{font:400 26px/1.1 var(--display)}
+.mbox p{color:var(--ink-2);margin:8px 0 14px}
+.mbox small{display:block;color:var(--muted);font-size:12.5px;margin:-6px 0 14px}
+.notes{margin-top:16px;padding:12px 14px;border-radius:14px;background:color-mix(in srgb,var(--yellow) 22%,var(--panel));border:1px dashed var(--yellow-2);font-size:13.5px;color:var(--ink-2)}
+.notes b{color:var(--ink)}
+.notes ol{margin:6px 0 0 20px}
+</style>
+</head>
+<body>
+<div class="app">
+  <nav class="nav"><div class="logo">Tikalo</div>
+    <a class="nv"><span>🏠</span>Accueil</a><a class="nv on"><span>🛍️</span>Sachets</a>
+    <a class="nv" id="nv-boite"><span>📦</span>Boîte à billes<span class="cnt" id="cnt">💎 <b id="cntn">27</b></span></a>
+    <a class="nv"><span>🎲</span>Mini-jeux</a><a class="nv"><span>🏫</span>La cour</a></nav>
+  <main>
+    <h1>Maquette · l'éclat dans le sachet</h1>
+    <p class="lead">Maquette du 27 octobre 2026, rien n'est sur le site. Choisis un cas puis ouvre le sachet (avec le son, c'est mieux). Le compteur 💎 de « Boîte à billes » montre où l'éclat est rangé.</p>
+    <div class="ctrl" role="group" aria-label="Le cas">
+      <button class="chip" data-c="eclat" aria-pressed="true">Avec un éclat</button>
+      <button class="chip" data-c="premier" aria-pressed="false">Le tout premier éclat</button>
+      <button class="chip" data-c="rien" aria-pressed="false">Sans éclat (le plus souvent)</button>
+      <button class="chip" data-c="suite" aria-pressed="false">5 sachets offerts à la suite</button>
+    </div>
+    <section class="stage" id="stage"></section>
+    <div style="display:flex;gap:10px;align-items:center;margin-top:14px;flex-wrap:wrap"><button class="btn" id="go">Ouvrir le sachet</button><span id="left" style="color:var(--muted);font-weight:800"></span></div>
+    <div class="notes"><b>Les 3 temps :</b><ol>
+      <li><b>L'annonce</b> : quand le sachet cache un éclat, un reflet de verre bleuté passe dessus avant l'ouverture, avec un petit « tink ». Le joueur se dit « il y a un truc ! ».</li>
+      <li><b>La sortie</b> : après la dernière bille, un « ting » de verre plus clair ; l'éclat sort en tournoyant, « +1 éclat de verre ».</li>
+      <li><b>Le rangement</b> : il s'envole vers « Boîte à billes », qui fait un bond, et le compteur monte (27 → 28).</li></ol>
+      <b>Le tout premier éclat</b> ouvre une petite fenêtre qui présente l'atelier. <b>Plusieurs sachets à la suite</b> : l'animation entière ne joue qu'une fois, ensuite juste « +1 » en bas, sans ralentir.</div>
+  </main>
+</div>
+<div class="modal" id="modal" hidden></div>
+
+<script src="tikalo-demo-rendu.js"></script>
+<script>
+// ---------- les sons : du verre (des partiels qui ne sont pas des harmoniques, comme une clochette) ----------
+const A = (()=>{ let ac; return () => { if(!ac) ac = new (window.AudioContext||window.webkitAudioContext)(); if(ac.state==="suspended") ac.resume(); return ac } })();
+function glass(f, t0=0, dur=.9, vol=.12){
+  const a = A(), t = a.currentTime + t0;
+  [[1,1],[2.76,.5],[5.4,.28],[8.93,.14]].forEach(([m,v])=>{ const o = a.createOscillator(), g = a.createGain();
+    o.type = "sine"; o.frequency.value = f*m; g.gain.setValueAtTime(0,t); g.gain.linearRampToValueAtTime(vol*v, t+.004); g.gain.exponentialRampToValueAtTime(.0001, t+dur/m**.4);
+    o.connect(g).connect(a.destination); o.start(t); o.stop(t+dur+.05) });
+}
+const SND = {
+  tink(){ glass(2900, 0, .35, .05); glass(3600, .12, .3, .035) },                      // 1. le reflet sur le sachet : tout petit
+  box(i){ const SC = [523.25,659.25,783.99,1046.5,1318.5]; const a = A(), t = a.currentTime, f = SC[i%SC.length];   // les billes : la boîte à musique
+    [[1,.12,"triangle"],[2,.04,"sine"]].forEach(([m,v,ty])=>{ const o = a.createOscillator(), g = a.createGain(); o.type = ty; o.frequency.value = f*m;
+      g.gain.setValueAtTime(0,t); g.gain.linearRampToValueAtTime(v,t+.006); g.gain.exponentialRampToValueAtTime(.0001,t+.8); o.connect(g).connect(a.destination); o.start(t); o.stop(t+.9) }) },
+  ting(){ glass(1760, 0, 1.6, .16); glass(2637, .07, 1.3, .08) },                     // 2. l'éclat sort : clair, qui résonne
+  whoosh(){ const a = A(), t = a.currentTime, n = a.createBufferSource(), b = a.createBuffer(1, a.sampleRate*.6, a.sampleRate), d = b.getChannelData(0);
+    for(let i=0;i<d.length;i++) d[i] = (Math.random()*2-1)*(1-i/d.length);
+    const f = a.createBiquadFilter(), g = a.createGain(); f.type = "bandpass"; f.frequency.setValueAtTime(900,t); f.frequency.exponentialRampToValueAtTime(4200,t+.5); g.gain.value = .06;
+    n.buffer = b; n.connect(f).connect(g).connect(a.destination); n.start(t) },
+  plop(){ glass(1318.5, 0, .5, .09); glass(1975.5, .08, .6, .07) },                    // 3. rangé dans la boîte
+  mini(){ glass(2349, 0, .4, .07) },                                                    // un « +1 » de la suite
+};
+
+// ---------- la scène ----------
+const SHARD = id => `<svg viewBox="0 0 20 24" aria-hidden="true"><defs><linearGradient id="${id}" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#E6FCFF"/><stop offset=".5" stop-color="#5FD3E8"/><stop offset="1" stop-color="#2A7FB8"/></linearGradient></defs><path d="M9 1l9 7-3 14-11-3L1 9z" fill="url(#${id})" stroke="#1D5A78" stroke-width="1"/><path d="M9 1l-2 9 8 0M7 10l-3 9" stroke="#fff" stroke-opacity=".75" stroke-width=".8" fill="none"/></svg>`;
+const st = {c:"eclat", n:27, first:true, busy:false, queue:0};
+const stage = document.getElementById("stage"), go = document.getElementById("go"), left = document.getElementById("left");
+const wait = ms => new Promise(r=>setTimeout(r, ms));
+const bag = BAGS.find(b=>b.id==="gratuit");
+function setBag(withGlint){
+  stage.innerHTML = `<div class="bag" id="bag">${bagSVG(bag)}${withGlint?`<span class="glint"></span><i class="spark" style="left:22%;top:30%"></i><i class="spark" style="left:66%;top:22%"></i><i class="spark" style="left:48%;top:64%"></i>`:""}</div><span class="hint">${withGlint?"✨ Ce sachet brille un peu…":"Touche « Ouvrir le sachet »"}</span>`;
+  const b = document.getElementById("bag"), svg = b.querySelector("svg");
+  if(withGlint){ requestAnimationFrame(()=>{ b.classList.add("glinting"); SND.tink(); setTimeout(()=>SND.tink(), 1400) }) }
+  void svg;
+}
+function flyTo(from){
+  return new Promise(res=>{
+    const tgt = document.getElementById("nv-boite"), r0 = from.getBoundingClientRect(), r1 = tgt.getBoundingClientRect();
+    const x0 = r0.left + r0.width/2, y0 = r0.top + r0.height/2, x1 = r1.left + Math.min(r1.width/2, 40), y1 = r1.top + r1.height/2;
+    const cx = (x0+x1)/2, cy = Math.min(y0,y1) - 160;   // une courbe qui monte puis redescend
+    const el = document.createElement("div"); el.className = "fly"; el.innerHTML = SHARD("fl"); document.body.append(el);
+    from.style.visibility = "hidden"; SND.whoosh();
+    const T = 850, t0 = performance.now(); let lastTrail = 0;
+    const step = now => { const u = Math.min(1, (now-t0)/T), e = u<.5 ? 2*u*u : 1-(-2*u+2)**2/2;
+      const x = (1-e)**2*x0 + 2*(1-e)*e*cx + e*e*x1, y = (1-e)**2*y0 + 2*(1-e)*e*cy + e*e*y1, s = 1 - .45*e;
+      el.style.left = (x-17)+"px"; el.style.top = (y-20)+"px"; el.style.transform = `scale(${s}) rotate(${u*540}deg)`;
+      if(now - lastTrail > 28){ lastTrail = now; const t = document.createElement("i"); t.className = "trail"; t.style.left = (x-4)+"px"; t.style.top = (y-4)+"px"; document.body.append(t); setTimeout(()=>t.remove(), 650) }
+      if(u<1) requestAnimationFrame(step); else { el.remove(); res() } };
+    requestAnimationFrame(step);
+  });
+}
+function addOne(){
+  st.n++; const nv = document.getElementById("nv-boite"), c = document.getElementById("cnt");
+  document.getElementById("cntn").textContent = st.n;
+  nv.classList.remove("bump"); c.classList.remove("up"); void nv.offsetWidth; nv.classList.add("bump"); c.classList.add("up");
+}
+async function openOne(withShard, full){
+  const b = document.getElementById("bag");
+  if(full || !withShard){ b.classList.add("shake"); await wait(500) }
+  b.classList.add("open"); stage.querySelector(".hint")?.remove(); await wait(250);
+  const got = [makeSpec("bille"), makeSpec("mini"), makeSpec(Math.random()<.5?"calot":"chinoise")];
+  const row = document.createElement("div"); row.className = "got"; stage.append(row);
+  for(let i=0;i<3;i++){ row.insertAdjacentHTML("beforeend", `<img src="${marbleURL(got[i],160)}" width="${Math.round(52+34*scaleOf(got[i].type))}" alt="">`); SND.box(i); await wait(full ? 380 : 220) }
+  if(!withShard) return;
+  if(!full){   // la suite : juste « +1 », sans envol
+    stage.insertAdjacentHTML("beforeend", `<span class="plus small">💎 +1 éclat de verre</span>`); SND.mini(); addOne(); return }
+  await wait(250);
+  stage.insertAdjacentHTML("beforeend", `<div class="shard" id="shard">${SHARD("so")}</div><span class="plus">💎 +1 éclat de verre</span>`); SND.ting();
+  await wait(1300);
+  await flyTo(document.getElementById("shard")); SND.plop(); addOne();
+}
+function firstModal(){
+  const m = document.getElementById("modal");
+  m.innerHTML = `<div class="mbox"><div class="s">${SHARD("fm")}</div><h2>Ton premier éclat de verre !</h2>
+    <p>Il en tombe parfois un en ouvrant un sachet. Garde-le précieusement : à l'<b>atelier du verrier</b>, dans ta Boîte à billes, tu les fondras pour fabriquer la bille de ton choix.</p>
+    <small>Tu en trouveras d'autres en ouvrant tes sachets.</small><button class="btn" data-close>Super !</button></div>`;
+  m.hidden = false; SND.ting();
+}
+async function run(){
+  if(st.busy) return; st.busy = true; go.disabled = true;
+  if(st.c==="suite"){
+    // 5 sachets offerts : un éclat dans le 2e et le 4e (pour l'exemple) ; seul le premier éclat a l'animation entière
+    let full = true;
+    for(let k=0;k<5;k++){ const sh = k===1 || k===3; left.textContent = `Sachet ${k+1} sur 5`; setBag(sh && full); if(sh && full) await wait(1500); else await wait(250);
+      await openOne(sh, sh && full); if(sh) full = false; await wait(sh ? 900 : 500) }
+    left.textContent = "";
+  } else {
+    const sh = st.c!=="rien";
+    if(sh && !document.querySelector(".bag.glinting")){ setBag(true); await wait(1600) }   // le reflet d'abord (le tout premier clic débloque le son)
+    await openOne(sh, true);
+    if(st.c==="premier"){ await wait(400); firstModal() }
+  }
+  await wait(600); st.busy = false; go.disabled = false; go.textContent = "Rouvrir un sachet"; prep();
+}
+function prep(){ setBag(st.c==="eclat" || st.c==="premier") }
+go.addEventListener("click", ()=>{ A(); run() });
+document.addEventListener("click", e=>{
+  const c = e.target.closest("[data-c]"); if(c && !st.busy){ st.c = c.dataset.c; document.querySelectorAll("[data-c]").forEach(x=>x.setAttribute("aria-pressed", x===c)); go.textContent = st.c==="suite" ? "Ouvrir les 5 sachets" : "Ouvrir le sachet"; prep() }
+  if(e.target.closest("[data-close]")){ document.getElementById("modal").hidden = true }
+});
+// le premier passage : le reflet attend un premier clic (les navigateurs bloquent le son avant)
+stage.innerHTML = `<div class="bag" id="bag">${bagSVG(bag)}</div><span class="hint">Touche « Ouvrir le sachet »</span>`;
+if(new URLSearchParams(location.search).has("auto")) run();   // ?auto : lance tout seul (pour les captures)
+</script>
+</body>
+</html>

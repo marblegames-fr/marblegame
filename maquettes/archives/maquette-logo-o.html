@@ -3,13 +3,13 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Billeo · le « o » du logo</title>
+<title>Tikalo · le « o » du logo</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Titan+One&family=Gluten:wght@900&family=Nunito:wght@500;700;800;900&display=swap">
 <style>
 /* Maquette (8 octobre 2026) : comment garder la bille dans le logo sans qu'on lise seulement « Bille ».
-   Même style que le logo du jeu (Gluten, jaune, tranche caramel, lettres qui sautillent). Billes rendues par billeo-rendu.js. */
+   Même style que le logo du jeu (Gluten, jaune, tranche caramel, lettres qui sautillent). Billes rendues par tikalo-rendu.js. */
 :root{--navy:#24253D;--y:#FFC93F;--display:"Titan One",sans-serif}
 *{box-sizing:border-box}
 body{margin:0;background:#100E0B;color:#F5EEE2;font:600 15px/1.5 Nunito,system-ui,sans-serif}
@@ -81,11 +81,11 @@ h1{font-family:"Titan One";font-weight:400;font-size:30px;margin:0 0 4px}
 </head>
 <body>
 <main>
-  <h1>Billeo : le « o » du logo</h1>
+  <h1>Tikalo : le « o » du logo</h1>
   <p class="lead">Le problème : avec la bille à la place du « o », on risque de lire seulement « Bille ». Voici l'actuel et 5 pistes, en grand, sur fond clair, dans la colonne du jeu et en tout petit (pour l'icône ou une pub vue en passant). Le test : regarde chaque logo une demi-seconde et demande-toi ce que tu lis.</p>
   <div id="list"></div>
 </main>
-<script src="billeo-rendu.js"></script>
+<script src="tikalo-rendu.js"></script>
 <script>
 const LOGO = {seed:hash("vitrine"+TK[1]), type:TK[1], family:0, pal:0, shiny:0};   // la bille du logo du jeu
 const src = (s,px=192) => marbleURL(s,px);
@@ -98,7 +98,7 @@ const V = [
    pro:["+ La bille est bien visible.", "− « Bille » est un mot entier : la bille passe pour un dessin à côté."]},
   {name:"1 · Un vrai « o » avec la bille dedans", note:"Le « o » est jaune comme les autres lettres et la bille est dans le trou.",
    html:()=>`<span class="L V1"><span class="w">${T("Bille")}<span class="o">${B()}</span></span></span>`,
-   pro:["+ On lit « Billeo » : le « o » ressemble à une lettre.", "− La bille est plus petite, on la voit moins bien en tout petit."]},
+   pro:["+ On lit « Tikalo » : le « o » ressemble à une lettre.", "− La bille est plus petite, on la voit moins bien en tout petit."]},
   {name:"2 · Les points des « i » en billes", note:"Le « o » est écrit normalement. Les deux points des « i » sont des billes.",
    html:()=>`<span class="L V2"><span class="w">${T("B")}${I()}${T("lle")}${T("o")}</span></span>`,
    pro:["+ Le plus lisible : le nom s'écrit en entier.", "− La bille est discrète. En petit, on voit à peine que ce sont des billes."]},
@@ -107,9 +107,9 @@ const V = [
    pro:["+ La bille fait partie du mot, elle bouge avec lui.", "− Sans l'animation (icône, image fixe), on risque encore de lire « Bille »."]},
   {name:"4 · « Bill » + « eo » en bleu", note:"Le « e » et le « o » sont d'une autre couleur : ils font bloc, et « Bille » n'est plus un mot qu'on voit d'un coup.",
    html:()=>`<span class="L V4"><span class="w">${T("Bill")}${T("e","e")}<span class="o">${B()}</span></span></span>`,
-   pro:["+ Ça casse « Bille » à l'œil, même en petit. « Billeo » saute aux yeux.", "− Deux couleurs au lieu d'une : le logo est un peu plus chargé."]},
-  {name:"5 · L'actuel + « BILLEO » écrit dessous", note:"On garde le logo tel quel et on écrit le nom en clair juste en dessous.",
-   html:()=>`<span class="L V5"><span class="w">${T("Bille")}${B()}</span><span class="sub">BILLEO</span></span>`,
+   pro:["+ Ça casse « Bille » à l'œil, même en petit. « Tikalo » saute aux yeux.", "− Deux couleurs au lieu d'une : le logo est un peu plus chargé."]},
+  {name:"5 · L'actuel + « TIKALO » écrit dessous", note:"On garde le logo tel quel et on écrit le nom en clair juste en dessous.",
+   html:()=>`<span class="L V5"><span class="w">${T("Bille")}${B()}</span><span class="sub">TIKALO</span></span>`,
    pro:["+ Aucun doute possible sur le nom.", "− Le sous-titre devient illisible en petit et prend de la place dans la barre du haut."]},
 ];
 document.getElementById("list").innerHTML = V.map(v=>`<section class="card${v.ref?" ref":""}"><div class="card-h"><b>${v.name}</b><span>${v.note}</span></div>

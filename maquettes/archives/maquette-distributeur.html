@@ -1,0 +1,316 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Maquette · Le Distributeur</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Lilita+One&family=Nunito:wght@600;700;800;900&display=swap">
+<style>
+:root{--bg:#141826;--panel:#1E2335;--line:rgba(255,255,255,.1);--txt:#F4F1EA;--mut:#A9A7B8;--y:#FFC93F}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--txt);font:600 15px/1.45 Nunito,system-ui,sans-serif}
+.wrap{max-width:1180px;margin:0 auto;padding:20px 16px 40px}
+h1{font:400 30px "Lilita One";margin:0 0 4px;letter-spacing:.5px}
+.lead{color:var(--mut);margin:0 0 16px;max-width:760px}
+.grid{display:grid;grid-template-columns:minmax(0,1fr) 320px;gap:16px;align-items:start}
+@media (max-width:900px){.grid{grid-template-columns:1fr}}
+.card{background:var(--panel);border:1px solid var(--line);border-radius:18px;padding:16px}
+.card h3{margin:0 0 10px;font:400 18px "Lilita One";letter-spacing:.3px}
+.seg{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:12px}
+.seg button{border:1px solid var(--line);background:rgba(255,255,255,.05);color:var(--txt);border-radius:999px;padding:6px 11px;font:800 13px Nunito;cursor:pointer}
+.seg button[aria-pressed="true"]{background:var(--y);color:#2B2233;border-color:var(--y)}
+.notes{margin:0;padding-left:18px;color:var(--mut)} .notes li{margin:0 0 8px} .notes b{color:var(--txt)}
+
+/* ---------- la scène : un coin de confiserie ---------- */
+.stage{position:relative;height:clamp(560px,72vh,700px);border-radius:22px;overflow:hidden;isolation:isolate;
+  background:
+    radial-gradient(ellipse 60% 45% at 50% 30%,rgba(255,214,150,.35),transparent 70%),
+    repeating-linear-gradient(90deg,#F6D9C9 0 34px,#F1C9B8 34px 68px);}
+.stage::before{content:"";position:absolute;inset:0;background:radial-gradient(ellipse at 50% 35%,transparent 35%,rgba(40,14,20,.55));z-index:0;pointer-events:none}
+.counter{position:absolute;left:0;right:0;bottom:0;height:19%;z-index:1;background:linear-gradient(180deg,#9A5B32,#6E3C1E 30%,#4E2914);box-shadow:inset 0 4px 0 rgba(255,230,190,.35),0 -6px 18px rgba(0,0,0,.25)}
+.counter::before{content:"";position:absolute;left:0;right:0;top:0;height:14px;background:linear-gradient(180deg,#C98A55,#8E5229)}
+.sign{position:absolute;top:22px;left:28px;transform:rotate(-3deg);z-index:2;padding:8px 22px 9px;border-radius:14px;background:#3B1420;
+  border:3px solid #FFC93F;font:400 22px "Lilita One";color:#FFE9A8;letter-spacing:1.5px;white-space:nowrap;box-shadow:0 8px 18px rgba(0,0,0,.3)}
+.sign i{position:absolute;top:50%;width:8px;height:8px;margin-top:-4px;border-radius:50%;background:#FFE9A8;box-shadow:0 0 8px #FFC93F}
+.sign i:first-child{left:-14px} .sign i:last-child{right:-14px}
+.jars{position:absolute;bottom:19%;z-index:1;display:flex;gap:10px;align-items:flex-end}
+.jars.l{left:4%} .jars.r{right:4%}
+.jar{width:54px;border-radius:10px 10px 12px 12px;background:rgba(255,255,255,.35);border:2px solid rgba(255,255,255,.7);display:grid;place-items:center;padding:6px 4px;box-shadow:inset 0 -8px 12px rgba(0,0,0,.08)}
+.jar img{display:block}
+@media (max-width:640px){.jars{display:none}.sign{font-size:16px;left:16px;top:14px}}
+
+.machine{position:absolute;left:50%;bottom:9%;transform:translateX(-50%);z-index:3;width:min(400px,86vw)}
+.machine svg{width:100%;height:auto;display:block;filter:drop-shadow(0 22px 22px rgba(40,10,20,.45))}
+.crank{transition:transform .38s cubic-bezier(.3,1.5,.5,1)}
+.mb{transition:transform .25s ease-out}
+.lt{fill:#FFE9A8;opacity:.35}
+.machine.idle .lt{animation:tw 2.4s ease-in-out infinite;animation-delay:var(--d)}
+.machine.spin .lt{animation:chase .5s linear infinite;animation-delay:var(--d)}
+.machine.hot .lt{fill:var(--hc);animation:chase .32s linear infinite;animation-delay:var(--d)}
+@keyframes tw{50%{opacity:.9}}
+@keyframes chase{0%,40%{opacity:1}60%,100%{opacity:.25}}
+.flap{transition:transform .25s}
+.flap.bang{transform:translateY(-6px)}
+
+/* ---------- la boule, en grand ---------- */
+.veil{position:absolute;inset:0;z-index:4;background:rgba(14,10,22,.0);pointer-events:none;transition:background .5s}
+.veil.on{background:rgba(14,10,22,.72);pointer-events:auto}
+.rays{position:absolute;left:50%;top:44%;width:720px;height:720px;margin:-360px 0 0 -360px;border-radius:50%;z-index:5;pointer-events:none;opacity:0;transition:opacity .4s;
+  background:repeating-conic-gradient(color-mix(in srgb,var(--rc,#fff) 50%,transparent) 0 7deg,transparent 7deg 20deg);
+  -webkit-mask:radial-gradient(circle,#000 0 20%,transparent 62%);mask:radial-gradient(circle,#000 0 20%,transparent 62%);animation:spin 16s linear infinite}
+.rays.on{opacity:1}
+@keyframes spin{to{transform:rotate(360deg)}}
+.cap{position:absolute;z-index:6;width:var(--cs,150px);height:var(--cs,150px);margin:calc(var(--cs,150px)/-2) 0 0 calc(var(--cs,150px)/-2);cursor:pointer;border:0;background:none;padding:0;
+  transition:left .7s cubic-bezier(.3,1.25,.5,1),top .7s cubic-bezier(.3,1.25,.5,1),width .7s cubic-bezier(.3,1.25,.5,1),height .7s cubic-bezier(.3,1.25,.5,1),margin .7s cubic-bezier(.3,1.25,.5,1)}
+.cap .glow{position:absolute;inset:-30%;border-radius:50%;background:radial-gradient(circle,color-mix(in srgb,var(--cc) 70%,transparent),transparent 65%);opacity:.0;transition:opacity .3s}
+.cap.lit .glow{opacity:.9;animation:pulse 1.1s ease-in-out infinite}
+@keyframes pulse{50%{transform:scale(1.12)}}
+.cap .h{position:absolute;left:0;width:100%;height:50%;transition:transform .6s cubic-bezier(.3,1.4,.5,1),opacity .6s,background .25s}
+.cap .top{top:0;border-radius:999px 999px 0 0;background:radial-gradient(circle at 34% 34%,#fff 0 9%,color-mix(in srgb,var(--cc) 55%,#fff) 10%,var(--cc) 45%,color-mix(in srgb,var(--cc) 60%,#000) 100%);
+  box-shadow:inset 0 -3px 0 rgba(0,0,0,.25)}
+.cap .bot{bottom:0;border-radius:0 0 999px 999px;background:radial-gradient(circle at 50% 0%,rgba(255,255,255,.95),rgba(225,235,245,.9) 60%,rgba(170,185,205,.95));box-shadow:inset 0 -8px 12px rgba(0,0,0,.18)}
+.cap .band{position:absolute;left:-2%;right:-2%;top:calc(50% - 4px);height:8px;border-radius:4px;background:linear-gradient(180deg,#fff,#C9CDD6 60%,#8D919B)}
+.cap.sh1 .top{background:conic-gradient(from 0deg,#FF6B9A,#FFC93F,#7BE07B,#4FC3F7,#9C7CFF,#FF6B9A);animation:hue 2s linear infinite}
+.cap.sh2 .top{background:radial-gradient(circle at 34% 34%,#FFF7D6 0 10%,#FFD34D 30%,#C98A12 100%)}
+.cap.sh3 .top{background:radial-gradient(circle at 50% 60%,#fff 0 30%,#DFF8FF 55%,#9FE6FF 100%);box-shadow:0 0 30px #BFEFFF}
+@keyframes hue{to{filter:hue-rotate(360deg)}}
+.cap.up{animation:up .42s cubic-bezier(.3,1.6,.5,1)}
+@keyframes up{30%{transform:scale(.86,1.12) translateY(-10px)}65%{transform:scale(1.12,.9)}}
+.cap.try{animation:try .7s ease-in-out}
+@keyframes try{20%{transform:rotate(-7deg) scale(1.04)}45%{transform:rotate(6deg) scale(1.06)}70%{transform:rotate(-3deg)}}
+.cap.shake{animation:shake .5s ease-in-out}
+@keyframes shake{15%{transform:translateX(-9px) rotate(-8deg)}35%{transform:translateX(8px) rotate(7deg)}55%{transform:translateX(-6px) rotate(-5deg)}75%{transform:translateX(4px) rotate(3deg)}}
+.cap.open .top{transform:translate(-30%,-120%) rotate(-38deg);opacity:0}
+.cap.open .bot{transform:translate(28%,110%) rotate(30deg);opacity:0}
+.cap.open .band{opacity:0;transition:opacity .2s}
+.cap.open .glow{opacity:0}
+.ring{position:absolute;z-index:6;width:10px;height:10px;margin:-5px 0 0 -5px;border-radius:50%;border:4px solid var(--rc);pointer-events:none;animation:ring .7s ease-out forwards}
+@keyframes ring{to{transform:scale(26);opacity:0}}
+.hint{position:absolute;left:50%;top:calc(44% + 108px);transform:translateX(-50%);z-index:6;font:800 15px Nunito;color:#fff;background:rgba(255,255,255,.14);border-radius:999px;padding:6px 14px;white-space:nowrap;opacity:0;transition:opacity .3s;pointer-events:none}
+.hint.on{opacity:1;animation:bob 1.2s ease-in-out infinite}
+@keyframes bob{50%{transform:translate(-50%,-4px)}}
+.tierline{position:absolute;left:50%;top:calc(44% - 160px);transform:translateX(-50%);z-index:6;font:400 24px "Lilita One";letter-spacing:.6px;color:var(--tc,#fff);text-shadow:0 3px 10px rgba(0,0,0,.6);opacity:0;transition:opacity .25s;white-space:nowrap}
+.tierline.on{opacity:1}
+.tierline.pop{animation:tpop .4s cubic-bezier(.3,1.6,.5,1)}
+@keyframes tpop{from{transform:translateX(-50%) scale(1.5)}}
+.prize{position:absolute;left:50%;top:44%;z-index:7;display:grid;justify-items:center;gap:8px;transform:translate(-50%,-50%);border:0;background:none;color:#fff;font:inherit;opacity:0;pointer-events:none}
+.prize.on{opacity:1;pointer-events:auto;animation:rise .8s cubic-bezier(.2,1.5,.4,1) both}
+@keyframes rise{from{transform:translate(-50%,-10%) scale(.2);opacity:0}}
+.prize img{filter:drop-shadow(0 16px 18px rgba(0,0,0,.55))}
+.prize b{font:400 26px "Lilita One";letter-spacing:.4px;text-shadow:0 3px 8px rgba(0,0,0,.6)}
+.pill{display:inline-flex;align-items:center;gap:6px;padding:4px 12px;border-radius:999px;font:900 13px Nunito;color:#fff}
+.new{display:inline-flex;gap:4px;align-items:center;padding:3px 10px;border-radius:999px;background:var(--y);color:#2B2233;font:900 12px Nunito}
+.again{margin-top:8px;border:0;border-radius:14px;background:var(--y);color:#2B2233;font:900 15px Nunito;padding:10px 18px;cursor:pointer}
+canvas.fx{position:absolute;inset:0;z-index:8;pointer-events:none;width:100%;height:100%}
+.stage.night{filter:brightness(.35) saturate(.6);transition:filter .5s}
+.stage{transition:filter .4s}
+.go{display:block;width:100%;margin-top:12px;border:0;border-radius:16px;background:var(--y);color:#2B2233;font:900 17px Nunito;padding:14px;cursor:pointer;box-shadow:0 5px 0 #C98A12}
+.go:disabled{opacity:.5;cursor:default}
+.cmp{display:grid;grid-template-columns:auto 1fr 1fr;gap:4px 10px;font-size:13px;color:var(--mut)} .cmp b{color:var(--txt)}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <h1>Le Distributeur, en mieux</h1>
+  <p class="lead">Plus grand, plus lent, et du suspense qui dépend de la bille : la boule change de couleur avant de s'ouvrir (comme les cartes qui « montent » d'un cran), et c'est toi qui l'ouvres.</p>
+  <div class="grid">
+    <div class="stage" id="stage">
+      <div class="sign"><i></i>LA CONFISERIE<i></i></div>
+      <div class="jars l" id="jl"></div><div class="jars r" id="jr"></div>
+      <div class="counter"></div>
+      <div class="machine idle" id="machine"></div>
+      <div class="veil" id="veil"></div>
+      <div class="rays" id="rays"></div>
+      <div class="tierline" id="tierline"></div>
+      <button class="cap" id="cap" hidden aria-label="Ouvrir la boule"><span class="glow"></span><span class="h top"></span><span class="h bot"></span><span class="band"></span></button>
+      <div class="hint" id="hint">Touche la boule pour l'ouvrir !</div>
+      <div class="prize" id="prize"></div>
+      <canvas class="fx" id="fx"></canvas>
+    </div>
+    <div>
+      <section class="card">
+        <h3>Essayer</h3>
+        <div class="seg" id="res"></div>
+        <div class="seg" id="shs"></div>
+        <button class="go" id="go">Tourner la manivelle</button>
+      </section>
+      <section class="card" style="margin-top:12px">
+        <h3>Ce qui change</h3>
+        <ul class="notes">
+          <li><b>Plus grand</b> : la machine prend toute la hauteur, dans un coin de confiserie (comptoir, bocaux, enseigne).</li>
+          <li><b>La manivelle en 3 crans</b> : clac, clac, clac, les billes du globe sautent à chaque cran et les lumières tournent.</li>
+          <li><b>On voit la boule descendre</b> le toboggan derrière la vitre, puis tomber dans la trappe.</li>
+          <li><b>Le suspense</b> : la boule sort en grand, grise, puis <b>monte d'un cran à chaque fois</b> (vert, turquoise, bleu, violet, orange), de plus en plus lentement. À la fin, elle « essaie » encore une fois… et ne monte pas. Une shiny monte d'un dernier cran à elle, et tout s'éteint pour une Lumineuse.</li>
+          <li><b>C'est toi qui ouvres</b> : elle tremble plus fort si elle est grosse, puis elle s'ouvre et la bille sort au milieu des rayons.</li>
+        </ul>
+      </section>
+      <section class="card" style="margin-top:12px">
+        <h3>Durée</h3>
+        <div class="cmp"><span></span><b>Aujourd'hui</b><b>Proposé</b><span>Mini</span><span>2,5 s</span><span>≈ 5 s</span><span>Calot</span><span>2,5 s</span><span>≈ 7 s</span><span>Mammouth</span><span>2,5 s</span><span>≈ 10 s</span></div>
+      </section>
+    </div>
+  </div>
+</div>
+
+<script src="tikalo-rendu.js"></script>
+<script>
+const $ = id => document.getElementById(id);
+const TT = Object.keys(TYPES), CHANCES = [30,33,20,12,4,1];
+const TIER_C = TT.map(t=>TYPES[t].rc);
+const TIER_N = TT.map(t=>TYPES[t].label);
+const SH_C = [null, "#C78BFF", "#FFC93F", "#BFEFFF"];
+let force = -1, forceSh = 0, busy = false;
+
+/* ---------- le son : petits bruits de machine ---------- */
+let ac = null, out = null, nb = null;
+function A(){ if(!ac){ ac = new (window.AudioContext||window.webkitAudioContext)(); out = ac.createGain(); out.gain.value = .7; out.connect(ac.destination);
+  nb = ac.createBuffer(1, ac.sampleRate, ac.sampleRate); const d = nb.getChannelData(0); for(let i=0;i<d.length;i++) d[i] = Math.random()*2-1 }
+  if(ac.state==="suspended") ac.resume(); return ac }
+function tone(f, a, dur, type="sine", t=0, f2){ const c=A(), o=c.createOscillator(), g=c.createGain(), t0=c.currentTime+t; o.type=type; o.frequency.setValueAtTime(f,t0); if(f2) o.frequency.exponentialRampToValueAtTime(f2,t0+dur);
+  g.gain.setValueAtTime(.0001,t0); g.gain.exponentialRampToValueAtTime(a,t0+.005); g.gain.exponentialRampToValueAtTime(.0001,t0+dur); o.connect(g); g.connect(out); o.start(t0); o.stop(t0+dur+.05) }
+function hiss(a, dur, f, q=1, t=0, f2){ const c=A(), s=c.createBufferSource(), fl=c.createBiquadFilter(), g=c.createGain(), t0=c.currentTime+t; s.buffer=nb; fl.type="bandpass"; fl.frequency.setValueAtTime(f,t0); fl.Q.value=q;
+  if(f2) fl.frequency.exponentialRampToValueAtTime(f2,t0+dur); g.gain.setValueAtTime(.0001,t0); g.gain.exponentialRampToValueAtTime(a,t0+.01); g.gain.exponentialRampToValueAtTime(.0001,t0+dur);
+  s.connect(fl); fl.connect(g); g.connect(out); s.start(t0, Math.random()*.5, dur+.05) }
+const SND = {
+  notch(){ hiss(.5,.05,2400,2); tone(180,.25,.08,"square",0,90); for(let i=0;i<5;i++) tone(2000+Math.random()*2500,.04,.06,"sine",.03+i*.02) },
+  roll(d){ hiss(.12,d,700,1.5,0,1500); for(let i=0;i<8;i++) tone(1800+Math.random()*900,.03,.05,"sine",i*d/8) },
+  clunk(){ tone(120,.5,.25,"sine",0,60); hiss(.35,.12,500,1) },
+  step(i){ const f = 523*Math.pow(2,[0,4,7,12,16,19,24][i]/12); tone(f,.18,.6,"triangle"); tone(f*2,.06,.4); hiss(.05,.3,6000,1) },
+  fail(){ tone(330,.08,.25,"triangle",0,300); tone(311,.06,.3,"triangle",.12,290) },
+  shake(){ for(let i=0;i<6;i++) tone(2600+Math.random()*1800,.05,.05,"sine",i*.06); hiss(.06,.3,3000,2) },
+  pop(){ hiss(.4,.12,1800,.8); tone(900,.2,.12,"sine",0,300) },
+  win(k){ const ns = k>=4 ? [0,4,7,12,16,19,24] : k>=2 ? [0,4,7,12] : [0,7]; ns.forEach((n,i)=>tone(784*Math.pow(2,n/12),.12,.9,"sine",i*.07)) },
+  dark(){ hiss(.2,1.1,300,1.1,0,6000) },
+};
+
+/* ---------- la machine ---------- */
+function machineSVG(){
+  const r = rng(7); let balls = "", n = 0;
+  for(let row=0, y=242; y>58; row++, y-=19){ const half = Math.sqrt(Math.max(0, 104*104-(y-150)*(y-150)))-10;
+    for(let x=150-half+(row%2)*10; x<=150+half; x+=21){ const sz = 9+r()*5, t = TT[Math.min(5,Math.floor(r()*r()*6))];
+      const sp = {seed:hash("dm"+n), type:"bille", family:Math.floor(r()*FAMILIES.length)%12, pal:Math.floor(r()*BASE_PALS), shiny:0}; n++;
+      balls += `<g class="mb"><image href="${marbleURL(sp,64)}" x="${(x-sz+(r()-.5)*4).toFixed(1)}" y="${(y-sz+(r()-.5)*3).toFixed(1)}" width="${(sz*2).toFixed(1)}" height="${(sz*2).toFixed(1)}"/></g>` } }
+  let lights = ""; for(let i=0;i<11;i++){ const x = 84+i*13.2; lights += `<circle class="lt" cx="${x}" cy="286" r="3.6" style="--d:${(i*.05).toFixed(2)}s"/>` }
+  for(let i=0;i<8;i++){ lights += `<circle class="lt" cx="${74-i*1.6}" cy="${300+i*15}" r="3.2" style="--d:${(.55+i*.05).toFixed(2)}s"/><circle class="lt" cx="${226+i*1.6}" cy="${300+i*15}" r="3.2" style="--d:${(.55+i*.05).toFixed(2)}s"/>` }
+  return `<svg viewBox="0 0 300 440" aria-hidden="true"><defs>
+    <radialGradient id="g" cx=".32" cy=".26" r=".9"><stop offset="0" stop-color="#fff" stop-opacity=".55"/><stop offset=".35" stop-color="#EAF6FF" stop-opacity=".08"/><stop offset=".85" stop-color="#9CC4E8" stop-opacity=".14"/><stop offset="1" stop-color="#6E9CC8" stop-opacity=".5"/></radialGradient>
+    <linearGradient id="r" x1="0" x2="1"><stop offset="0" stop-color="#8E1220"/><stop offset=".3" stop-color="#E5484D"/><stop offset=".55" stop-color="#FF7A7E"/><stop offset=".75" stop-color="#D23A42"/><stop offset="1" stop-color="#7E0F1C"/></linearGradient>
+    <linearGradient id="m" x1="0" x2="1"><stop offset="0" stop-color="#7D818B"/><stop offset=".45" stop-color="#fff"/><stop offset=".6" stop-color="#C9CDD6"/><stop offset="1" stop-color="#6C707A"/></linearGradient>
+    <linearGradient id="w" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#2A0A12"/><stop offset="1" stop-color="#4A0F1C"/></linearGradient>
+    <clipPath id="c"><circle cx="150" cy="150" r="108"/></clipPath><clipPath id="wc"><rect x="92" y="330" width="86" height="56" rx="10"/></clipPath></defs>
+    <ellipse cx="150" cy="432" rx="118" ry="9" fill="rgba(40,10,20,.35)"/>
+    <rect x="134" y="12" width="32" height="14" rx="5" fill="url(#m)"/><path d="M82 46 Q150 18 218 46 L213 54 H87 Z" fill="url(#r)" stroke="#5A0E18" stroke-width="2"/>
+    <circle cx="150" cy="150" r="110" fill="rgba(200,230,255,.1)"/>
+    <g clip-path="url(#c)" id="balls">${balls}</g>
+    <circle cx="150" cy="150" r="110" fill="url(#g)" stroke="rgba(255,255,255,.8)" stroke-width="3.5"/>
+    <path d="M78 92 Q98 58 136 48" stroke="#fff" stroke-width="8" stroke-linecap="round" fill="none" opacity=".55"/><circle cx="204" cy="206" r="7" fill="#fff" opacity=".3"/>
+    <rect x="74" y="256" width="152" height="18" rx="6" fill="url(#m)" stroke="#55595F" stroke-width="1.5"/>
+    <path d="M80 274 H220 L236 420 H64 Z" fill="url(#r)" stroke="#5A0E18" stroke-width="2.5" stroke-linejoin="round"/>
+    <path d="M88 280 H104 L98 414 H74 Z" fill="#fff" opacity=".12"/>
+    ${lights}
+    <rect x="104" y="294" width="92" height="28" rx="9" fill="#5A0E18"/><text x="150" y="315" text-anchor="middle" font-family="Lilita One" font-size="19" fill="#FFE9A8" letter-spacing="1.5">TIKALO</text>
+    <rect x="92" y="330" width="86" height="56" rx="10" fill="url(#w)" stroke="#2A050B" stroke-width="2"/>
+    <g clip-path="url(#wc)"><path d="M96 344 L166 356 M174 362 L100 376" stroke="#C9CDD6" stroke-width="3" stroke-linecap="round" opacity=".8"/>
+      <circle id="mini" cx="-50" cy="-50" r="9" fill="var(--mc,#ccc)" stroke="#fff" stroke-width="1.5"/></g>
+    <rect x="94" y="332" width="18" height="52" rx="6" fill="#fff" opacity=".1"/>
+    <g class="crank" id="crank" style="transform-origin:208px 360px"><circle cx="208" cy="360" r="19" fill="url(#m)" stroke="#55595F" stroke-width="2"/><circle cx="208" cy="360" r="7" fill="#C9CDD6" stroke="#55595F"/><rect x="205" y="334" width="6" height="28" rx="3" fill="#55595F"/><circle cx="208" cy="334" r="8" fill="#FFC93F" stroke="#9E7A1C" stroke-width="2"/></g>
+    <path d="M110 392 H190 V414 Q150 422 110 414 Z" fill="#1A0408" stroke="#2A050B" stroke-width="2"/><path class="flap" id="flap" d="M112 392 H188 V400 H112 Z" fill="url(#m)" opacity=".92"/>
+  </svg>`;
+}
+$("machine").innerHTML = machineSVG();
+const jar = (seed, t) => `<div class="jar">${Array.from({length:3},(_,i)=>`<img src="${marbleURL({seed:hash(seed+i),type:t,family:(i*3+seed.length)%12,pal:(i*7+seed.length*3)%BASE_PALS,shiny:0},64)}" width="${t==="mini"?18:26}" height="${t==="mini"?18:26}" alt="">`).join("")}</div>`;
+$("jl").innerHTML = jar("ja","bille") + jar("jb","mini");
+$("jr").innerHTML = jar("jc","mini") + jar("jd","bille");
+
+/* ---------- les réglages de la maquette ---------- */
+$("res").innerHTML = `<button data-k="-1" aria-pressed="true">Au hasard</button>` + TT.map((t,i)=>`<button data-k="${i}" aria-pressed="false">${TYPES[t].label}</button>`).join("");
+$("shs").innerHTML = ["Pas shiny","Irisée","Dorée","Lumineuse"].map((s,i)=>`<button data-s="${i}" aria-pressed="${i===0}">${s}</button>`).join("");
+$("res").onclick = e => { const b = e.target.closest("button"); if(!b) return; force = +b.dataset.k; $("res").querySelectorAll("button").forEach(x=>x.setAttribute("aria-pressed", x===b)) };
+$("shs").onclick = e => { const b = e.target.closest("button"); if(!b) return; forceSh = +b.dataset.s; $("shs").querySelectorAll("button").forEach(x=>x.setAttribute("aria-pressed", x===b)) };
+
+/* ---------- les confettis ---------- */
+const cv = $("fx"), cx = cv.getContext("2d"); let parts = [];
+function confetti(cols, n, x, y, p=1){ const R = cv.getBoundingClientRect(); cv.width = R.width; cv.height = R.height;
+  for(let i=0;i<n;i++){ const a = Math.random()*Math.PI*2, v = (3+Math.random()*7)*p; parts.push({x, y, vx:Math.cos(a)*v, vy:Math.sin(a)*v-3, c:cols[i%cols.length], l:70+Math.random()*50, s:3+Math.random()*4, r:Math.random()*6}) }
+  if(parts.length===n) requestAnimationFrame(tick) }
+function tick(){ cx.clearRect(0,0,cv.width,cv.height); parts = parts.filter(p=>--p.l>0);
+  parts.forEach(p=>{ p.x+=p.vx; p.y+=p.vy; p.vy+=.18; p.vx*=.98; p.r+=.2; cx.save(); cx.translate(p.x,p.y); cx.rotate(p.r); cx.globalAlpha=Math.min(1,p.l/30); cx.fillStyle=p.c; cx.fillRect(-p.s,-p.s/2,p.s*2,p.s); cx.restore() });
+  if(parts.length) requestAnimationFrame(tick) }
+
+/* ---------- le tour de manivelle ---------- */
+const wait = ms => new Promise(r=>setTimeout(r, ms));
+function ring(x, y, c){ const e = document.createElement("span"); e.className = "ring"; e.style.cssText = `left:${x}px;top:${y}px;--rc:${c}`; $("stage").appendChild(e); setTimeout(()=>e.remove(), 800) }
+function stagePt(svgX, svgY){ const svg = $("machine").querySelector("svg"), p = svg.createSVGPoint(); p.x = svgX; p.y = svgY;
+  const q = p.matrixTransform(svg.getScreenCTM()), R = $("stage").getBoundingClientRect(); return [q.x-R.left, q.y-R.top] }
+function setCap(k, sh){ const c = $("cap"); c.style.setProperty("--cc", sh ? SH_C[sh] : TIER_C[k]); c.classList.remove("sh1","sh2","sh3"); if(sh) c.classList.add("sh"+sh) }
+function bump(el, cls){ el.classList.remove(cls); void el.offsetWidth; el.classList.add(cls) }
+
+async function turn(){
+  if(busy) return; busy = true; $("go").disabled = true; A();
+  const k = force>=0 ? force : pickW(Math.random(), CHANCES), sh = forceSh;
+  const spec = makeSpec(TT[k], {shiny:sh});
+  const M = $("machine"), st = $("stage"), cap = $("cap"), hint = $("hint"), tl = $("tierline"), prize = $("prize");
+  prize.classList.remove("on"); prize.innerHTML = ""; $("rays").classList.remove("on"); $("veil").classList.remove("on");
+  M.classList.remove("idle"); M.classList.add("spin");
+  // 1. trois crans de manivelle : les billes sautent à chaque cran
+  const balls = [...M.querySelectorAll(".mb")];
+  for(let i=1;i<=3;i++){
+    $("crank").style.transform = `rotate(${i*120}deg)`; SND.notch();
+    balls.forEach(b=>{ b.style.transform = `translate(${(Math.random()-.5)*8}px,${-4-Math.random()*10}px)` });
+    await wait(200); balls.forEach(b=>{ b.style.transform = "" }); await wait(300);
+  }
+  // 2. la boule descend le toboggan derrière la vitre, puis tombe dans la trappe
+  const mini = M.querySelector("#mini"); mini.style.setProperty("--mc", "#B9B6C6");
+  const path = [[135,330],[100,344],[166,356],[174,366],[100,377],[140,392]], T = 1100; SND.roll(T/1000);
+  const t0 = performance.now();
+  await new Promise(res=>{ const step = now => { const u = Math.max(0, Math.min(1,(now-t0)/T)), f = u*(path.length-1), i = Math.min(path.length-2, Math.floor(f)), v = f-i;
+    mini.setAttribute("cx", path[i][0]+(path[i+1][0]-path[i][0])*v); mini.setAttribute("cy", path[i][1]+(path[i+1][1]-path[i][1])*v);
+    if(u<1) requestAnimationFrame(step); else res() }; requestAnimationFrame(step) });
+  mini.setAttribute("cx",-50); SND.clunk(); bump($("flap"), "bang"); setTimeout(()=>$("flap").classList.remove("bang"), 260);
+  M.classList.remove("spin"); M.classList.add("idle");
+  // 3. la boule sort en grand, au milieu
+  const [tx, ty] = stagePt(150, 404), R = st.getBoundingClientRect(), mx = R.width/2, my = R.height*.44;
+  setCap(0, 0); cap.classList.remove("open","lit","up","try","shake");
+  cap.style.transition = "none"; cap.style.left = tx+"px"; cap.style.top = ty+"px"; cap.style.setProperty("--cs","30px"); cap.hidden = false; void cap.offsetWidth; cap.style.transition = "";
+  await wait(250); $("veil").classList.add("on");
+  cap.style.left = mx+"px"; cap.style.top = my+"px"; cap.style.setProperty("--cs", "150px");
+  await wait(850);
+  tl.style.setProperty("--tc", TIER_C[0]); tl.textContent = TIER_N[0]; tl.classList.add("on");
+  // 4. elle monte d'un cran, de plus en plus lentement
+  for(let i=1;i<=k;i++){
+    await wait(380 + i*170 + (i===k ? 250 : 0));
+    setCap(i, 0); bump(cap, "up"); cap.classList.toggle("lit", i>=3); SND.step(i); ring(mx, my, TIER_C[i]);
+    tl.style.setProperty("--tc", TIER_C[i]); tl.textContent = TIER_N[i]; bump(tl, "pop");
+    if(i>=4){ M.classList.add("hot"); M.style.setProperty("--hc", TIER_C[i]) }
+  }
+  // une shiny monte d'un dernier cran, à elle (la Lumineuse éteint tout d'abord)
+  if(sh){ await wait(900);
+    if(sh===3){ st.classList.add("night"); SND.dark(); await wait(1100); st.classList.remove("night") }
+    setCap(k, sh); cap.classList.add("lit"); bump(cap, "up"); SND.step(Math.min(6,k+1)); SND.step(Math.min(6,k+2)); ring(mx, my, SH_C[sh]); confetti(sh===2 ? ["#FFE38A","#FFC93F","#E8A317"] : sh===3 ? ["#fff","#DFF8FF","#9FE6FF"] : ["#FF6B9A","#FFC93F","#7BE07B","#4FC3F7","#9C7CFF"], 60, mx, my, .8);
+    tl.style.setProperty("--tc", SH_C[sh]); tl.textContent = `${TIER_N[k]} · ${SHINIES[sh].name} !`; bump(tl, "pop") }
+  // … et elle essaie encore une fois, sans y arriver (sauf tout en haut)
+  else if(k<5){ await wait(700 + k*120); bump(cap, "try"); SND.fail() }
+  await wait(500);
+  hint.classList.add("on");
+  await new Promise(res=>{ cap.onclick = () => { cap.onclick = null; res() } });
+  hint.classList.remove("on");
+  // 5. on l'ouvre : elle tremble, plus fort et plus longtemps si elle est grosse
+  const shakes = 1 + Math.floor(k/2) + (sh ? 1 : 0);
+  for(let i=0;i<shakes;i++){ bump(cap, "shake"); SND.shake(); await wait(560) }
+  cap.classList.add("open"); SND.pop(); ring(mx, my, "#fff");
+  const col = sh ? SH_C[sh] : PALETTES[spec.pal][2], px = Math.round(90*scaleOf(spec.type)+80);
+  $("rays").style.setProperty("--rc", col); $("rays").classList.add("on");
+  prize.innerHTML = `<img src="${marbleURL(spec, 320)}" width="${px}" height="${px}" alt=""><b>${specName(spec)}</b>
+    <span class="pill" style="background:${TIER_C[k]}">${TYPES[spec.type].label}${sh ? " · "+SHINIES[sh].name : ""}</span><button class="again" id="again">Encore !</button>`;
+  bump(prize, "on"); tl.classList.remove("on"); SND.win(k + (sh ? 2 : 0));
+  if(k>=3 || sh) confetti([col, TIER_C[k], "#FFE14D", "#fff"], 40 + k*25, mx, my, 1 + k*.12);
+  await wait(500); cap.hidden = true; M.classList.remove("hot");
+  $("again").onclick = () => { prize.classList.remove("on"); $("rays").classList.remove("on"); $("veil").classList.remove("on"); turn() };
+  busy = false; $("go").disabled = false;
+}
+$("go").onclick = () => { prize_reset(); turn() };
+if(location.hash.startsWith("#t")) window.__go = () => { const [k,sh] = location.hash.slice(2).split("-").map(Number); force = k; forceSh = sh||0; turn(); setInterval(()=>$("cap").onclick?.(), 300) };
+function prize_reset(){ $("prize").classList.remove("on"); $("rays").classList.remove("on"); $("veil").classList.remove("on") }
+</script>
+</body>
+</html>

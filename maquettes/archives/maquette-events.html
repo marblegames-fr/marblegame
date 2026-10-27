@@ -1,0 +1,285 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Tikalo · Events à thème</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Lilita+One&family=Nunito:wght@500;600;700;800;900&family=Caveat:wght@600;700&display=swap">
+<style>
+:root{
+  --bg:#FBF4E6;--panel:#FFFCF6;--panel-2:#FFF8EC;--line:#EFE3CD;--ink:#24253D;--ink-2:#56546B;--muted:#8E8898;
+  --display:"Lilita One","Arial Rounded MT Bold",sans-serif;--body:"Nunito","Segoe UI",system-ui,sans-serif;--hand:"Caveat",cursive;
+  --shadow:0 1px 0 rgba(120,90,40,.06),0 6px 18px -10px rgba(120,90,40,.25);
+}
+@media (prefers-color-scheme:dark){ :root:not([data-theme="light"]){
+  --bg:#16130F;--panel:#211D18;--panel-2:#2A251F;--line:#352E26;--ink:#F5EEE2;--ink-2:#C8BDAD;--muted:#8F8578;
+  --shadow:0 1px 0 rgba(0,0,0,.25),0 8px 22px -12px rgba(0,0,0,.7) } }
+*{box-sizing:border-box;margin:0}
+body{background:var(--bg);color:var(--ink);font-family:var(--body);font-weight:600;line-height:1.45}
+.wrap{max-width:1180px;margin:0 auto;padding:28px 16px 80px}
+.tag{display:inline-block;font-size:11px;font-weight:900;letter-spacing:.08em;text-transform:uppercase;padding:4px 10px;border-radius:999px;background:var(--ink);color:var(--bg)}
+h1{font-family:var(--display);font-weight:400;font-size:clamp(34px,5vw,52px);line-height:1;margin:12px 0 8px}
+.lead{max-width:70ch;color:var(--ink-2)}
+.note{font-family:var(--hand);font-size:22px;color:#C07A0C;margin-top:6px}
+nav.jump{position:sticky;top:0;z-index:5;display:flex;gap:8px;flex-wrap:wrap;padding:12px 0;margin:18px 0 8px;background:var(--bg)}
+nav.jump a{display:inline-flex;align-items:center;gap:8px;padding:8px 14px;border-radius:999px;border:1px solid var(--line);background:var(--panel);color:var(--ink);text-decoration:none;font-weight:800;font-size:14px}
+nav.jump a i{width:12px;height:12px;border-radius:50%;background:var(--c)}
+
+.event{margin-top:34px;border-radius:24px;overflow:hidden;background:var(--panel);border:1px solid var(--line);box-shadow:var(--shadow);scroll-margin-top:70px}
+.banner{position:relative;min-height:260px;padding:28px;display:grid;grid-template-columns:minmax(0,1.2fr) minmax(0,1fr);gap:20px;align-items:center;color:#fff;overflow:hidden;isolation:isolate}
+.banner .bg{position:absolute;inset:0;z-index:-1}
+.banner h2{font-family:var(--display);font-weight:400;font-size:clamp(34px,5vw,56px);line-height:.95;text-shadow:0 3px 0 rgba(0,0,0,.25)}
+.banner .dates{display:inline-flex;gap:6px;align-items:center;font-size:13px;font-weight:900;padding:5px 12px;border-radius:999px;background:rgba(255,255,255,.18);backdrop-filter:blur(4px);margin-bottom:12px}
+.banner p{max-width:46ch;margin-top:10px;font-weight:700;opacity:.92}
+.hero-balls{position:relative;height:220px}
+.hero-balls svg{position:absolute;filter:drop-shadow(0 14px 12px rgba(0,0,0,.35))}
+.bob{animation:bob 5s ease-in-out infinite}
+@keyframes bob{50%{transform:translateY(-8px)}}
+
+.body{padding:24px 28px 30px;display:grid;gap:26px}
+.body h3{font-size:18px;font-weight:900;margin-bottom:12px;display:flex;align-items:baseline;gap:10px}
+.body h3 small{font-size:12.5px;font-weight:800;color:var(--muted)}
+.decors{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:12px}
+.decor{border:1px solid var(--line);background:var(--panel-2);border-radius:16px;padding:14px;display:grid;gap:8px;justify-items:center;text-align:center}
+.decor .sizes{display:flex;align-items:flex-end;gap:6px;min-height:92px}
+.decor b{font-size:15px;font-weight:900}
+.decor small{font-size:12.5px;color:var(--ink-2);font-weight:600}
+.decor .reserved{font-size:10.5px;font-weight:900;letter-spacing:.05em;text-transform:uppercase;color:#C07A0C}
+.cols{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr) minmax(0,1fr);gap:14px}
+.card{border:1px solid var(--line);background:var(--panel-2);border-radius:16px;padding:16px;display:grid;gap:10px;align-content:start}
+.card .row{display:flex;gap:12px;align-items:center}
+.card b{font-weight:900}
+.card p{font-size:13.5px;color:var(--ink-2)}
+.sw{display:flex;gap:10px;flex-wrap:wrap}
+.sw span{display:grid;justify-items:center;gap:4px;font-size:12px;font-weight:800}
+.sw i{display:flex;width:64px;height:22px;border-radius:999px;overflow:hidden;border:1px solid rgba(0,0,0,.1)}
+.sw i u{flex:1}
+.pass{display:flex;gap:6px;overflow-x:auto;padding-bottom:4px}
+.pass div{flex:0 0 auto;width:64px;height:78px;border-radius:12px;border:1px solid var(--line);background:var(--panel);display:grid;place-items:center;font-size:11px;font-weight:900;color:var(--muted);text-align:center;padding:4px}
+.pass div.big{border:2px solid var(--c);background:color-mix(in srgb,var(--c) 14%,var(--panel))}
+.shiny-glow{animation:glow 2.4s ease-in-out infinite}
+@keyframes glow{50%{filter:drop-shadow(0 0 14px var(--g)) drop-shadow(0 8px 8px rgba(0,0,0,.3))}}
+.later{margin-top:34px;border:2px dashed var(--line);border-radius:20px;padding:22px;display:grid;gap:8px}
+.later h2{font-family:var(--display);font-weight:400;font-size:28px}
+.later ul{padding-left:20px;color:var(--ink-2);display:grid;gap:4px}
+
+/* décors des bannières */
+.bg-pirate{background:linear-gradient(#F7B267 0%,#F4845F 34%,#2A6F97 34.2%,#013A63 100%)}
+.bg-halloween{background:radial-gradient(circle at 78% 22%,#FFE9A8 0 44px,rgba(255,233,168,.25) 45px 70px,transparent 71px),linear-gradient(#2A1240,#120820)}
+.bg-noel{background:linear-gradient(#0E2A4F,#1B4A7A)}
+.snow{position:absolute;inset:0;background-image:radial-gradient(2px 2px at 20px 30px,#fff,transparent),radial-gradient(2px 2px at 80px 120px,#fff,transparent),radial-gradient(3px 3px at 150px 60px,#fff,transparent),radial-gradient(2px 2px at 220px 160px,#fff,transparent),radial-gradient(3px 3px at 290px 90px,#fff,transparent);background-size:320px 220px;animation:snow 12s linear infinite;opacity:.85}
+@keyframes snow{to{background-position:60px 220px,-40px 220px,30px 220px,-20px 220px,50px 220px}}
+@media (prefers-reduced-motion:reduce){ .bob,.snow,.shiny-glow{animation:none} }
+@media (max-width:900px){ .decors{grid-template-columns:repeat(2,minmax(0,1fr))} .cols{grid-template-columns:minmax(0,1fr)} .banner{grid-template-columns:minmax(0,1fr)} .hero-balls{height:180px} }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <span class="tag">Maquette · pas dans le jeu</span>
+  <h1>Les events de Tikalo</h1>
+  <p class="lead">Trois events à thème, chacun sur une dizaine de jours. Chaque event apporte 4 décors exclusifs, 3 coloris, une shiny à lui, un contenant à ouvrir à la place du sac et une variante d'un mini-jeu. Les billes d'event ne tombent que pendant l'event, puis on les retrouve dans l'album dans une page « Éditions spéciales ».</p>
+  <p class="note">Les billes ici sont dessinées à la main pour la maquette : en vrai, elles passeraient par le même rendu 3D que les autres.</p>
+  <nav class="jump">
+    <a href="#pirate" style="--c:#C8A24A"><i></i>L'Abordage</a>
+    <a href="#halloween" style="--c:#F07C1B"><i></i>La Nuit des billes</a>
+    <a href="#noel" style="--c:#C8102E"><i></i>Le Calendrier de Tikalo</a>
+  </nav>
+  <div id="events"></div>
+  <section class="later">
+    <h2>Pour plus tard</h2>
+    <ul>
+      <li><b>Ballon</b> (décor mis de côté) : un event « Coupe de la cour » pendant une grande compétition de foot, avec une Course en tirs au but.</li>
+      <li><b>Saint-Valentin</b> : billes en cœur de verre, coloris Guimauve, et un échange de billes entre amis.</li>
+      <li><b>Pâques</b> : une chasse aux billes cachées dans les pages de Tikalo, comme les billes secrètes mais pour tout le monde.</li>
+    </ul>
+  </section>
+</div>
+
+<script>
+let uid = 0;
+// Bille en SVG : fond (dégradé), motif découpé dans le rond, ombrage et reflet par-dessus
+function marble(size, base, motif, o={}){
+  const id = "m"+(uid++), [c1,c2,c3] = base;
+  return `<svg width="${size}" height="${size}" viewBox="0 0 100 100" ${o.cls?`class="${o.cls}"`:""} style="${o.style||""}" aria-hidden="true">
+    <defs>
+      <clipPath id="${id}c"><circle cx="50" cy="50" r="46"/></clipPath>
+      <radialGradient id="${id}b" cx="38%" cy="32%" r="75%"><stop offset="0" stop-color="${c1}"/><stop offset=".6" stop-color="${c2}"/><stop offset="1" stop-color="${c3}"/></radialGradient>
+      <radialGradient id="${id}s" cx="40%" cy="34%" r="68%"><stop offset=".55" stop-color="#000" stop-opacity="0"/><stop offset="1" stop-color="#000" stop-opacity="${o.opaque?.42:.32}"/></radialGradient>
+      <radialGradient id="${id}h" cx="50%" cy="50%" r="50%"><stop offset="0" stop-color="#fff" stop-opacity=".95"/><stop offset="1" stop-color="#fff" stop-opacity="0"/></radialGradient>
+    </defs>
+    <g clip-path="url(#${id}c)">
+      <circle cx="50" cy="50" r="46" fill="url(#${id}b)"/>
+      ${motif}
+      ${o.glass?`<circle cx="50" cy="50" r="46" fill="#fff" opacity=".12"/>`:""}
+      <circle cx="50" cy="50" r="46" fill="url(#${id}s)"/>
+    </g>
+    <ellipse cx="35" cy="28" rx="15" ry="9" transform="rotate(-32 35 28)" fill="url(#${id}h)"/>
+    <circle cx="66" cy="74" r="4" fill="#fff" opacity="${o.glass?.35:.15}"/>
+    <circle cx="50" cy="50" r="45.5" fill="none" stroke="rgba(255,255,255,.25)"/>
+  </svg>`;
+}
+
+/* ---------- motifs (repère 100 × 100) ---------- */
+const M = {
+  crane: `<g transform="translate(50 50)">
+      <g stroke="#EFE7D6" stroke-width="7" stroke-linecap="round"><path d="M-26 -12 L26 22"/><path d="M26 -12 L-26 22"/></g>
+      <g fill="#EFE7D6"><circle cx="-28" cy="-13" r="5"/><circle cx="28" cy="-13" r="5"/><circle cx="-28" cy="23" r="5"/><circle cx="28" cy="23" r="5"/>
+      <circle cx="0" cy="-6" r="17"/><rect x="-10" y="4" width="20" height="14" rx="4"/></g>
+      <g fill="#14161F"><ellipse cx="-7" cy="-5" rx="5" ry="6"/><ellipse cx="7" cy="-5" rx="5" ry="6"/><path d="M0 3 l-3 5 h6z"/>
+      <rect x="-6" y="12" width="2.4" height="6"/><rect x="-1.2" y="12" width="2.4" height="6"/><rect x="3.6" y="12" width="2.4" height="6"/></g></g>`,
+  carte: `<path d="M8 70 C20 58 18 42 34 38 C48 34 50 20 66 22 C78 24 84 34 94 30 L94 100 L8 100Z" fill="#B99456" opacity=".35"/>
+      <path d="M18 76 C30 70 34 58 46 58 C58 58 60 46 70 40" fill="none" stroke="#7A4A22" stroke-width="2.6" stroke-dasharray="4 4"/>
+      <g stroke="#C8102E" stroke-width="4.5" stroke-linecap="round"><path d="M66 34 l10 10"/><path d="M76 34 l-10 10"/></g>
+      <g transform="translate(28 30)" fill="#7A4A22"><path d="M0 -10 L2.5 0 L0 10 L-2.5 0Z"/><path d="M-10 0 L0 -2.5 L10 0 L0 2.5Z" opacity=".7"/></g>`,
+  doublon: `<circle cx="50" cy="50" r="33" fill="none" stroke="#8A6414" stroke-width="2.5"/>
+      <circle cx="50" cy="50" r="38" fill="none" stroke="#FFF1B8" stroke-width="1.5" stroke-dasharray="1.5 3.5"/>
+      <path d="M50 26 L56 44 L74 50 L56 56 L50 74 L44 56 L26 50 L44 44Z" fill="#A57A1C" opacity=".85"/>
+      <circle cx="50" cy="50" r="6" fill="#FFE08A"/>`,
+  kraken: `<g fill="none" stroke-linecap="round">
+      <path d="M-4 84 C20 70 26 46 14 30 C8 22 16 12 26 18" stroke="#8B3FA8" stroke-width="10"/>
+      <path d="M40 104 C44 78 64 70 74 54 C82 40 74 26 86 20" stroke="#A04CC0" stroke-width="12"/>
+      <path d="M104 70 C86 74 76 90 62 94" stroke="#7A2F96" stroke-width="8"/></g>
+      <g fill="#F2C7F5" opacity=".85"><circle cx="18" cy="60" r="2.4"/><circle cx="22" cy="48" r="2.2"/><circle cx="19" cy="36" r="2"/>
+      <circle cx="58" cy="78" r="2.6"/><circle cx="68" cy="66" r="2.4"/><circle cx="76" cy="52" r="2.2"/><circle cx="80" cy="38" r="2"/></g>`,
+  oeil: `<g stroke="#D23B3B" stroke-width="1.2" fill="none" opacity=".75"><path d="M6 40 C18 42 24 36 30 44"/><path d="M8 66 C16 62 22 70 30 60"/><path d="M92 34 C82 38 78 32 70 40"/><path d="M94 64 C86 60 80 68 72 60"/><path d="M50 96 C48 86 54 82 50 74"/></g>
+      <circle cx="50" cy="50" r="22" fill="#3FA34D"/><circle cx="50" cy="50" r="22" fill="none" stroke="#1E5E28" stroke-width="3"/>
+      <g stroke="#9BE15D" stroke-width="1.2" opacity=".7">${Array.from({length:18},(_,i)=>{const a=i/18*Math.PI*2;return `<path d="M${50+Math.cos(a)*10} ${50+Math.sin(a)*10} L${50+Math.cos(a)*20} ${50+Math.sin(a)*20}"/>`}).join("")}</g>
+      <circle cx="50" cy="50" r="10" fill="#0B0B0B"/><circle cx="45" cy="45" r="3.5" fill="#fff" opacity=".9"/>`,
+  citrouille: `<g fill="none" stroke="#B4500C" stroke-width="3" opacity=".6"><ellipse cx="50" cy="50" rx="14" ry="48"/><ellipse cx="50" cy="50" rx="32" ry="48"/></g>
+      <g fill="#FFD23F"><path d="M30 40 l8 -10 l8 10z"/><path d="M54 40 l8 -10 l8 10z"/>
+      <path d="M26 58 L34 64 L40 58 L46 66 L52 58 L58 66 L64 58 L70 64 L76 56 C70 76 32 78 26 58Z"/></g>`,
+  toile: `<g stroke="#EDE4FF" stroke-width="1.2" fill="none" opacity=".85">
+      ${Array.from({length:8},(_,i)=>{const a=i/8*Math.PI*2;return `<path d="M50 50 L${50+Math.cos(a)*60} ${50+Math.sin(a)*60}"/>`}).join("")}
+      ${[10,19,28,38].map(r=>`<path d="${Array.from({length:9},(_,i)=>{const a=i/8*Math.PI*2;return (i?"Q":"M")+(i?`${50+Math.cos(a-Math.PI/8)*r*.8} ${50+Math.sin(a-Math.PI/8)*r*.8} `:"")+`${50+Math.cos(a)*r} ${50+Math.sin(a)*r}`}).join(" ")}"/>`).join("")}</g>
+      <path d="M68 18 V32" stroke="#EDE4FF" stroke-width="1"/><g fill="#0B0B0B"><circle cx="68" cy="36" r="4.5"/><circle cx="68" cy="30.5" r="2.8"/></g>
+      <g stroke="#0B0B0B" stroke-width="1.3" fill="none"><path d="M64 34 l-5 -3 M64 37 l-6 1 M64 39 l-5 4 M72 34 l5 -3 M72 37 l6 1 M72 39 l5 4"/></g>`,
+  fantome: `<g opacity=".9"><path d="M30 78 V48 C30 30 70 30 70 48 V78 L63 71 L56 78 L50 71 L44 78 L37 71Z" fill="#fff"/>
+      <ellipse cx="43" cy="50" rx="3.5" ry="5" fill="#2A1240"/><ellipse cx="57" cy="50" rx="3.5" ry="5" fill="#2A1240"/><ellipse cx="50" cy="61" rx="3" ry="4" fill="#2A1240"/></g>
+      <g fill="#fff" opacity=".25"><ellipse cx="22" cy="30" rx="16" ry="6"/><ellipse cx="80" cy="76" rx="18" ry="6"/></g>`,
+  boule: `<rect x="0" y="36" width="100" height="10" fill="#F2D16B"/><rect x="0" y="62" width="100" height="10" fill="#F2D16B"/>
+      <path d="M0 54 ${Array.from({length:11},(_,i)=>`L${i*10+5} ${i%2?50:58}`).join(" ")} L100 54" fill="none" stroke="#FFF3C4" stroke-width="2.4"/>
+      <g fill="#FFF3C4">${[[20,22],[50,18],[80,24],[30,84],[70,86]].map(([x,y])=>`<path d="M${x} ${y-5} L${x+1.5} ${y-1.5} L${x+5} ${y} L${x+1.5} ${y+1.5} L${x} ${y+5} L${x-1.5} ${y+1.5} L${x-5} ${y} L${x-1.5} ${y-1.5}Z"/>`).join("")}</g>`,
+  pull: `${[18,50,82].map(y=>`<path d="M0 ${y} ${Array.from({length:21},(_,i)=>`L${i*5} ${y+(i%2?-5:5)}`).join(" ")}" fill="none" stroke="#fff" stroke-width="3.2"/>`).join("")}
+      ${[[20,34],[50,34],[80,34],[35,66],[65,66]].map(([x,y])=>`<g fill="#fff"><rect x="${x-1.5}" y="${y-7}" width="3" height="14"/><rect x="${x-7}" y="${y-1.5}" width="14" height="3"/><rect x="${x-4}" y="${y-4}" width="3" height="3"/><rect x="${x+1}" y="${y+1}" width="3" height="3"/><rect x="${x+1}" y="${y-4}" width="3" height="3"/><rect x="${x-4}" y="${y+1}" width="3" height="3"/></g>`).join("")}`,
+  neige: `<ellipse cx="50" cy="92" rx="60" ry="20" fill="#fff"/>
+      <g fill="#1F7A3A"><path d="M50 30 L64 56 L36 56Z"/><path d="M50 42 L68 72 L32 72Z"/></g><rect x="47" y="72" width="6" height="8" fill="#7A4A22"/>
+      <path d="M50 24 l2 4 4 .5 -3 3 1 4 -4 -2 -4 2 1 -4 -3 -3 4 -.5z" fill="#FFD23F"/>
+      <g fill="#fff">${[[18,30],[30,18],[76,26],[84,46],[20,54],[70,40],[40,20],[62,16],[86,62],[14,70]].map(([x,y])=>`<circle cx="${x}" cy="${y}" r="1.8"/>`).join("")}</g>`,
+  houx: `<g fill="#1F7A3A" stroke="#0F4D2A" stroke-width="1">
+      <path d="M50 50 C40 38 26 40 16 30 C22 34 24 26 30 30 C30 22 38 26 38 20 C42 30 50 34 50 50Z"/>
+      <path d="M50 50 C62 38 76 40 86 30 C80 34 78 26 72 30 C72 22 64 26 64 20 C60 30 50 34 50 50Z"/>
+      <path d="M50 52 C44 64 46 76 38 88 C44 84 46 90 50 86 C54 90 56 84 62 88 C54 76 56 64 50 52Z"/></g>
+      <g fill="#C8102E"><circle cx="46" cy="50" r="5"/><circle cx="55" cy="48" r="5"/><circle cx="51" cy="57" r="5"/></g>
+      <g fill="#fff" opacity=".6"><circle cx="44.5" cy="48.5" r="1.4"/><circle cx="53.5" cy="46.5" r="1.4"/><circle cx="49.5" cy="55.5" r="1.4"/></g>`,
+};
+
+/* ---------- contenants à ouvrir (à la place du sac) ---------- */
+const coffre = `<svg width="150" height="130" viewBox="0 0 150 130" aria-hidden="true">
+  <ellipse cx="75" cy="122" rx="58" ry="6" fill="rgba(0,0,0,.25)"/>
+  <path d="M18 56 H132 V114 Q132 118 128 118 H22 Q18 118 18 114Z" fill="#7A4A22"/>
+  <path d="M18 56 Q18 18 75 18 Q132 18 132 56Z" fill="#8F5A2B"/>
+  <g fill="#C8A24A"><rect x="18" y="52" width="114" height="8"/><rect x="34" y="18" width="8" height="100"/><rect x="108" y="18" width="8" height="100"/></g>
+  <rect x="64" y="50" width="22" height="26" rx="4" fill="#E9C766"/><circle cx="75" cy="61" r="3.5" fill="#3A2410"/><rect x="73.5" y="62" width="3" height="8" fill="#3A2410"/>
+  <g fill="#FFE08A"><circle cx="54" cy="28" r="2"/><circle cx="96" cy="32" r="1.6"/></g></svg>`;
+const chaudron = `<svg width="150" height="130" viewBox="0 0 150 130" aria-hidden="true">
+  <ellipse cx="75" cy="124" rx="52" ry="5" fill="rgba(0,0,0,.3)"/>
+  <path d="M28 48 C20 100 44 120 75 120 C106 120 130 100 122 48Z" fill="#1E1B24"/>
+  <ellipse cx="75" cy="48" rx="50" ry="10" fill="#2E2A36"/><ellipse cx="75" cy="48" rx="42" ry="7" fill="#7CD650"/>
+  <g fill="#B8F58A"><circle cx="60" cy="36" r="6"/><circle cx="84" cy="30" r="8"/><circle cx="96" cy="40" r="4"/><circle cx="70" cy="22" r="3.5"/></g>
+  <g fill="#1E1B24"><rect x="40" y="116" width="10" height="8" rx="2"/><rect x="100" y="116" width="10" height="8" rx="2"/></g></svg>`;
+const chaussette = `<svg width="150" height="130" viewBox="0 0 150 130" aria-hidden="true">
+  <ellipse cx="72" cy="124" rx="44" ry="5" fill="rgba(0,0,0,.25)"/>
+  <path d="M52 30 H98 V78 Q98 88 108 96 Q120 106 110 118 Q100 126 84 120 L50 104 Q36 96 44 84 Q52 74 52 64Z" fill="#C8102E"/>
+  <rect x="46" y="12" width="58" height="22" rx="8" fill="#FFFFFF"/>
+  <path d="M52 50 H98" stroke="#fff" stroke-width="5" stroke-dasharray="6 6"/><path d="M52 64 H98" stroke="#1F7A3A" stroke-width="5"/>
+  <path d="M100 104 Q112 110 108 118" fill="none" stroke="#fff" stroke-width="7" stroke-linecap="round"/>
+  <g fill="#fff"><circle cx="58" cy="22" r="2.2"/><circle cx="74" cy="20" r="2.2"/><circle cx="90" cy="23" r="2.2"/></g></svg>`;
+
+/* ---------- les trois events ---------- */
+const TAILLES = [30, 40, 54, 70];   // Mini, Bille, Calot, Mammouth (pour montrer les formats)
+const EVENTS = [
+  {id:"pirate", name:"L'Abordage", dates:"du 5 au 18 juillet", bg:"bg-pirate", accent:"#C8A24A",
+   pitch:"Des pirates ont caché leur butin dans la cour. On ouvre des coffres au trésor, on chasse la Tête de mort dorée et on joue au Pot… pardon, au Coffre.",
+   decors:[
+     {n:"Tête de mort", d:"Le drapeau noir, pris dans le verre.", m:M.crane, b:["#2B2E3D","#14161F","#07080C"], opaque:true},
+     {n:"Carte au trésor", d:"Un vieux parchemin : le X marque l'endroit.", m:M.carte, b:["#F4E3B5","#D9BC7E","#A7824A"], opaque:true},
+     {n:"Doublon", d:"Une pièce d'or espagnole, lourde et brillante.", m:M.doublon, b:["#FFE9A0","#D9A631","#8A6414"], opaque:true},
+     {n:"Kraken", d:"Des tentacules qui remontent des profondeurs.", m:M.kraken, b:["#39B8C4","#0B6E80","#032F3D"], glass:true},
+   ],
+   pals:[["Corsaire","#14161F","#C8A24A","#E9DFC7"],["Caraïbes","#0B7285","#3FD1C7","#F2D39B"],["Rhum","#5A2A12","#C46A2A","#F4C77B"]],
+   shiny:{n:"Trésor", d:"Des pièces d'or tournent autour d'elle et tintent quand elle roule.", g:"#FFD23F"},
+   box:{svg:coffre, n:"Le coffre au trésor", d:"5 billes, dont au moins une bille d'event. Il s'ouvre en tirant sur la serrure.", price:"4 doublons"},
+   money:{n:"Doublons", d:"Gagnés en jouant et avec les quêtes pirates (« Coule 3 billes au Coffre », « Trouve une Carte au trésor »…)."},
+   game:{n:"Le Coffre (variante du Pot)", d:"Le pot devient un coffre enterré, les cailloux des tonneaux qui roulent quand on les touche. Chaque bille qui rentre rapporte un doublon."},
+   pass:["Doublon","Coffre","Coloris","Titre « Moussaillon »","Coffre","Kraken","Doublon","Titre « Capitaine »","Tête de mort Mammouth"]},
+  {id:"halloween", name:"La Nuit des billes", dates:"du 24 octobre au 2 novembre", bg:"bg-halloween", accent:"#F07C1B",
+   pitch:"La cour s'éteint, les billes se réveillent. Le décor Œil (mis de côté pour les events) fait enfin son entrée, et les Lumineuses deviennent les reines de la nuit.",
+   decors:[
+     {n:"Œil", d:"Un œil qui te suit… l'iris prend le coloris.", m:M.oeil, b:["#FFFFFF","#F3EDE4","#CFC4B4"], opaque:true, reserved:true},
+     {n:"Citrouille", d:"Côtes orange et sourire taillé au couteau.", m:M.citrouille, b:["#FFB347","#F07C1B","#A1420A"], opaque:true},
+     {n:"Toile d'araignée", d:"Une toile fine… et sa propriétaire.", m:M.toile, b:["#5B3A7A","#2A1240","#120820"], glass:true},
+     {n:"Fantôme", d:"Un verre laiteux où flotte un petit fantôme.", m:M.fantome, b:["#D9CCF2","#9C8AC8","#4A3A78"], glass:true},
+   ],
+   pals:[["Sorcière","#2A1240","#7CD650","#F07C1B"],["Nuit des morts","#111111","#E8E8E8","#9B1C1C"],["Bave de crapaud","#3B5B1E","#A6E22E","#F2F2C0"]],
+   shiny:{n:"Maudite", d:"Une lueur verte qui ondule comme une flamme de feu follet.", g:"#7CD650"},
+   box:{svg:chaudron, n:"Le chaudron", d:"On touille pour mélanger (comme on secoue le sac), les billes remontent dans les bulles.", price:"30 bonbecs ensorcelés"},
+   money:{n:"Bonbecs ensorcelés", d:"Un bonbec sur dix est ensorcelé pendant l'event. « Des bonbecs ou un sort ! » : chaque visite du soir en donne un paquet."},
+   game:{n:"La Tic dans le noir", d:"Le terrain est plongé dans le noir : on ne voit que le halo de sa lanterne… et les billes Lumineuses, qui éclairent la terre autour d'elles."},
+   pass:["Bonbecs","Chaudron","Coloris","Titre « Petit monstre »","Fantôme","Chaudron","Toile","Titre « Croque-mitaine »","Œil Mammouth"]},
+  {id:"noel", name:"Le Calendrier de Tikalo", dates:"du 1er au 25 décembre", bg:"bg-noel", accent:"#C8102E",
+   pitch:"Un calendrier de l'Avent : une case à ouvrir chaque jour jusqu'au 25. Les jours rapportent des bonbecs et des chaussettes, et le 25, une bille de Noël garantie en Mammouth.",
+   decors:[
+     {n:"Boule de Noël", d:"Rayures dorées et petites étoiles, comme sur le sapin.", m:M.boule, b:["#E8414F","#B80F2A","#6E0615"], opaque:true},
+     {n:"Pull moche", d:"Tricotée à la main par mamie, avec amour.", m:M.pull, b:["#2F9E54","#1F7A3A","#0F4D2A"], opaque:true},
+     {n:"Boule à neige", d:"Un petit sapin sous la neige, dans le verre.", m:M.neige, b:["#E8F4FF","#B8D8F5","#6E9CC8"], glass:true},
+     {n:"Houx", d:"Des feuilles piquantes et trois baies rouges.", m:M.houx, b:["#FFFDF6","#F2EBDA","#CFC3A6"], opaque:true},
+   ],
+   pals:[["Sapin","#0F4D2A","#C8102E","#F2D16B"],["Neige","#DDEBFF","#FFFFFF","#8FB8E8"],["Pain d'épice","#7A4A22","#D99A5B","#FFF1DE"]],
+   shiny:{n:"Enneigée", d:"De vrais flocons tombent autour d'elle et restent un instant posés sur le sol.", g:"#CFE8FF"},
+   box:{svg:chaussette, n:"La chaussette", d:"Pendue à la cheminée : on la secoue par la pointe et les billes tombent dans la main.", price:"1 chaussette (calendrier ou quêtes)"},
+   money:{n:"Chaussettes", d:"Une case du calendrier sur deux en contient une. Le 24, deux chaussettes d'un coup."},
+   game:{n:"La Course sur la glace", d:"La piste de sable est gelée : les billes glissent deux fois plus loin et on tourne en patinant dans les virages."},
+   pass:["1 déc.","2 déc.","…","Coloris","Chaussette ×2","…","Titre « Lutin »","24 déc.","25 déc. · Mammouth"]},
+];
+
+document.getElementById("events").innerHTML = EVENTS.map(E=>{
+  const d0=E.decors;
+  return `<section class="event" id="${E.id}" style="--c:${E.accent}">
+    <div class="banner"><div class="bg ${E.bg}">${E.id==="noel"?`<div class="snow"></div>`:""}${E.id==="pirate"?waves():""}${E.id==="halloween"?bats():""}</div>
+      <div><span class="dates">${E.dates}</span><h2>${E.name}</h2><p>${E.pitch}</p></div>
+      <div class="hero-balls">
+        ${marble(150, d0[0].b, d0[0].m, {opaque:d0[0].opaque, glass:d0[0].glass, cls:"bob", style:"left:8%;top:30px"})}
+        ${marble(92, d0[2].b, d0[2].m, {opaque:d0[2].opaque, glass:d0[2].glass, cls:"bob", style:"left:56%;top:10px;animation-delay:-1.6s"})}
+        ${marble(70, d0[1].b, d0[1].m, {opaque:d0[1].opaque, glass:d0[1].glass, cls:"bob", style:"left:70%;top:130px;animation-delay:-3s"})}
+      </div>
+    </div>
+    <div class="body">
+      <div><h3>4 décors exclusifs <small>dans tous les formats, de la Mini au Mammouth</small></h3>
+        <div class="decors">${E.decors.map(D=>`<div class="decor">
+          <div class="sizes">${TAILLES.map(t=>marble(t, D.b, D.m, {opaque:D.opaque, glass:D.glass})).join("")}</div>
+          <b>${D.n}</b>${D.reserved?`<span class="reserved">Décor gardé pour les events</span>`:""}<small>${D.d}</small></div>`).join("")}</div>
+      </div>
+      <div class="cols">
+        <div class="card"><b>À ouvrir : ${E.box.n}</b><div class="row">${E.box.svg}</div><p>${E.box.d}</p><p><b>Prix :</b> ${E.box.price}</p></div>
+        <div class="card"><b>Shiny d'event : ${E.shiny.n}</b>
+          <div class="row">${marble(96, E.decors[3].b, E.decors[3].m, {opaque:E.decors[3].opaque, glass:E.decors[3].glass, cls:"shiny-glow", style:`--g:${E.shiny.g}`})}<p>${E.shiny.d}</p></div>
+          <b>3 coloris</b><div class="sw">${E.pals.map(([n,a,b,c])=>`<span><i><u style="background:${a}"></u><u style="background:${b}"></u><u style="background:${c}"></u></i>${n}</span>`).join("")}</div></div>
+        <div class="card"><b>Monnaie : ${E.money.n}</b><p>${E.money.d}</p><b>Mini-jeu : ${E.game.n}</b><p>${E.game.d}</p></div>
+      </div>
+      <div><h3>Piste de l'event <small>comme le passe de saison, mais gratuite et courte</small></h3>
+        <div class="pass">${E.pass.map((p,i,a)=>`<div class="${i===a.length-1?"big":""}">${p}</div>`).join("")}</div></div>
+    </div>
+  </section>`}).join("");
+
+function waves(){ return `<svg style="position:absolute;left:0;right:0;bottom:0;width:100%;height:60%" viewBox="0 0 400 100" preserveAspectRatio="none" aria-hidden="true">
+  <path d="M0 20 Q25 10 50 20 T100 20 T150 20 T200 20 T250 20 T300 20 T350 20 T400 20 V100 H0Z" fill="rgba(255,255,255,.08)"/>
+  <path d="M0 50 Q25 40 50 50 T100 50 T150 50 T200 50 T250 50 T300 50 T350 50 T400 50 V100 H0Z" fill="rgba(255,255,255,.07)"/>
+  <g transform="translate(300 -2)" fill="#2B1B10"><path d="M0 20 H40 L34 30 H6Z"/><rect x="19" y="-20" width="2" height="40"/><path d="M21 -18 L38 -6 L21 4Z" fill="#14161F"/></g></svg>` }
+function bats(){ return `<svg style="position:absolute;inset:0;width:100%;height:100%" viewBox="0 0 400 200" preserveAspectRatio="xMidYMid slice" aria-hidden="true" fill="#0B0512">
+  ${[[250,40,1],[290,70,.7],[220,80,.6]].map(([x,y,s])=>`<path transform="translate(${x} ${y}) scale(${s})" d="M0 0 Q-8 -8 -18 -4 Q-12 0 -14 6 Q-6 2 0 6 Q6 2 14 6 Q12 0 18 -4 Q8 -8 0 0Z"/>`).join("")}
+  <path d="M0 200 V170 Q40 160 60 175 L70 150 L80 175 Q120 165 160 180 Q220 160 280 182 L300 140 L320 182 Q360 170 400 176 V200Z"/></svg>` }
+</script>
+</body>
+</html>

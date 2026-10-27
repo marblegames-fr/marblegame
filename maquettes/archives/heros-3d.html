@@ -1,0 +1,58 @@
+<!doctype html>
+<html lang="fr"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Super-héros en 3D</title>
+<style>
+  body{margin:0;background:radial-gradient(circle at 50% 30%,#2a3045,#14161d);color:#fff;font:15px Nunito,system-ui,sans-serif;min-height:100vh}
+  h1{text-align:center;margin:22px 0 4px;font-size:26px}
+  p.sub{text-align:center;margin:0 0 14px;opacity:.7}
+  .bar{display:flex;gap:8px;justify-content:center;flex-wrap:wrap;margin-bottom:10px}
+  .bar button{border:0;border-radius:99px;padding:8px 16px;font:inherit;font-weight:800;background:#2e3446;color:#fff;cursor:pointer}
+  .bar button.on{background:#FFD23F;color:#24253D}
+  .grid{display:flex;flex-wrap:wrap;gap:12px;justify-content:center;padding:10px 16px 40px}
+  .card{text-align:center;width:260px}
+  canvas{width:260px;height:260px;cursor:grab;touch-action:none}
+  canvas:active{cursor:grabbing}
+  .card b{display:block;font-size:17px}.card small{opacity:.7}
+</style></head><body>
+<h1>Les billes Super-héros</h1>
+<p class="sub">Elles tournent toutes seules · attrape une bille pour la faire tourner toi-même</p>
+<div class="bar" id="types"></div>
+<div class="bar" id="opts"></div>
+<div class="grid" id="g"></div>
+<script src="../tikalo-demo-rendu.js"></script>
+<script>
+const LORE = ["l'écusson à éclair","les ailes","le masque","le poing","la flamme"];
+const SIZE = 260 * Math.min(2, devicePixelRatio || 1) | 0;
+let type = "bille", shiny = 0, auto = true;
+const cards = EVENTS.superheros.palIdx.map((pal, i) => {
+  const d = document.createElement("div"); d.className = "card";
+  const c = document.createElement("canvas"); c.width = c.height = SIZE;
+  d.append(c); d.insertAdjacentHTML("beforeend", `<b>${PALETTES[pal][0]}</b><small>${LORE[i]}</small>`);
+  document.getElementById("g").append(d);
+  const o = {pal, c, x: c.getContext("2d"), yaw: 0, pitch: 0, drag: null, phase: i * 1.3};
+  c.addEventListener("pointerdown", e => { o.drag = {x: e.clientX, y: e.clientY}; c.setPointerCapture(e.pointerId) });
+  c.addEventListener("pointermove", e => { if(!o.drag) return;
+    o.yaw += (e.clientX - o.drag.x) * .012; o.pitch += (e.clientY - o.drag.y) * .012; o.drag = {x: e.clientX, y: e.clientY} });
+  c.addEventListener("pointerup", () => { o.drag = null; o.release = performance.now() });
+  return o;
+});
+const btns = (id, list, get, set) => { const el = document.getElementById(id);
+  const draw = () => el.innerHTML = list.map(([v, t]) => `<button class="${get() === v ? "on" : ""}" data-v="${v}">${t}</button>`).join("");
+  el.onclick = e => { const b = e.target.closest("button"); if(!b) return; set(list.find(([v]) => String(v) === b.dataset.v)[0]); draw() }; draw() };
+btns("types", [["mini","Mini"],["bille","Bille"],["calot","Calot"],["chinoise","Chinoise"],["boulet","Boulet"],["mammouth","Mammouth"]].filter(([t]) => TK.includes(t)), () => type, v => type = v);
+btns("opts", [[0,"Normale"],[1,"Shiny"],[2,"Shiny doré"]], () => shiny, v => shiny = v);
+let last = performance.now();
+function frame(now){
+  const dt = Math.min(.05, (now - last) / 1000); last = now;
+  cards.forEach(o => {
+    // sans la main dessus : un lent balancier, pour voir le blason bouger dans le verre
+    if(!o.drag && (!o.release || now - o.release > 2500)){ o.phase += dt * .7; o.yaw += (Math.sin(o.phase) * .9 - o.yaw) * dt * 1.5; o.pitch += (Math.cos(o.phase * .7) * .25 - o.pitch) * dt * 1.5 }
+    const s = {seed: 4242 + o.pal, type, family: 48, pal: o.pal, shiny};
+    const rot = mul3(rotAxis(1, 0, 0, o.pitch), rotAxis(0, 1, 0, o.yaw));
+    try{ mainGL.draw(s, SIZE, rot, now / 1000); o.x.clearRect(0, 0, SIZE, SIZE); o.x.drawImage(mainGL.cv, 0, 0) }catch(e){ console.error(e) }
+  });
+  requestAnimationFrame(frame);
+}
+requestAnimationFrame(frame);
+</script>
+</body></html>

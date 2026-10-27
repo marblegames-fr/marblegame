@@ -1,0 +1,447 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Tikalo · démo pub</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Gluten:wght@900&family=Lilita+One&family=Nunito:wght@600;700;800;900&family=Caveat:wght@600;700&display=swap">
+<style>
+/* Maquette : une petite démo animée de Tikalo, à filmer pour TikTok / Reels / Shorts (7 octobre 2026).
+   Tout est dessiné dans la « scène » (#stage), au format choisi ; la barre du bas ne sert qu'à piloter. */
+:root{
+  --bg:#FBF4E6; --paper:#FFFCF6; --line:#EFE3CD; --ink:#24253D; --ink-2:#56546B; --muted:#8E8898;
+  --yellow:#FFC93F; --yellow-2:#F2AE12; --blue:#2E6BE6; --red:#E5484D; --green:#2FA35A;
+  --display:"Lilita One","Arial Rounded MT Bold",sans-serif; --body:"Nunito","Segoe UI",system-ui,sans-serif; --hand:"Caveat","Segoe Print",cursive;
+  --ui-bg:#16130F; --ui-panel:#211D18; --ui-line:#4A4136; --ui-ink:#F4ECDD;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+html,body{height:100%}
+body{background:var(--ui-bg);color:var(--ui-ink);font-family:var(--body);display:flex;flex-direction:column;overflow:hidden}
+button{font:inherit;color:inherit;background:none;border:0;cursor:pointer}
+
+/* ---------- la scène ---------- */
+.wrap{flex:1;min-height:0;display:grid;place-items:center;padding:16px}
+#stage{position:relative;overflow:hidden;background:var(--bg);color:var(--ink);border-radius:18px;box-shadow:0 30px 80px -30px rgba(0,0,0,.8);
+  width:var(--sw);height:var(--sh);font-size:calc(var(--u)*4)}
+body.film .wrap{padding:0}
+body.film #stage{border-radius:0;box-shadow:none}
+/* le papier quadrillé du cahier */
+#stage::before{content:"";position:absolute;inset:0;background:
+  linear-gradient(90deg,transparent calc(var(--u)*9),rgba(229,72,77,.35) calc(var(--u)*9),rgba(229,72,77,.35) calc(var(--u)*9.3),transparent calc(var(--u)*9.3)),
+  repeating-linear-gradient(0deg,transparent 0 calc(var(--u)*4.6),rgba(46,107,230,.13) calc(var(--u)*4.6) calc(var(--u)*4.75));pointer-events:none}
+.sc{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:calc(var(--u)*4);padding:calc(var(--u)*8) calc(var(--u)*6);text-align:center;opacity:0;visibility:hidden}
+.sc.on{opacity:1;visibility:visible}
+.sc.out{animation:sc-out .45s ease-in forwards;visibility:visible}
+@keyframes sc-out{to{opacity:0;transform:scale(1.04)}}
+
+/* le logo « Ça roule » du jeu (Gluten, lettres qui sautillent, la bille fait le « o ») */
+.logo{position:absolute;top:calc(var(--u)*4.4);left:50%;transform:translateX(-50%);display:flex;align-items:flex-end;z-index:5;
+  font-family:"Gluten",var(--display);font-weight:900;font-size:calc(var(--u)*9);line-height:1;letter-spacing:.02em}
+.logo .lw{display:flex;align-items:flex-end}
+.logo .lt{display:inline-block;color:#FFC93F;-webkit-text-stroke:.16em #24253D;paint-order:stroke fill;
+  text-shadow:0 .04em 0 #F59E0B,0 .08em 0 #E07B00,0 .13em 0 #24253D,0 .18em .24em rgba(0,0,0,.35)}
+.logo .lt:nth-child(1){transform:translateY(-.02em) rotate(-6deg)}
+.logo .lt:nth-child(2){transform:translateY(-.10em) rotate(4deg)}
+.logo .lt:nth-child(3){transform:translateY(.02em) rotate(-3deg)}
+.logo .lt:nth-child(4){transform:translateY(-.08em) rotate(5deg)}
+.logo .lt:nth-child(5){transform:rotate(-4deg)}
+.logo img{display:block;flex:none;width:.6em;height:.6em;margin:0 0 .06em .06em;border-radius:50%;box-shadow:0 0 0 .065em #24253D;
+  filter:drop-shadow(0 .06em 0 #24253D) drop-shadow(0 .14em .14em rgba(0,0,0,.4))}
+.beta-tag{position:absolute;top:calc(var(--u)*6.4);right:calc(var(--u)*5);z-index:5;font-weight:900;font-size:calc(var(--u)*2.8);letter-spacing:.08em;padding:calc(var(--u)*.6) calc(var(--u)*2);border-radius:999px;background:var(--ink);color:var(--yellow)}
+
+.kicker{font-family:var(--hand);font-weight:700;font-size:calc(var(--u)*7.5);line-height:1;color:var(--blue);transform:rotate(-3deg)}
+.big{font-family:var(--display);font-size:calc(var(--u)*11);line-height:.98;color:var(--ink);letter-spacing:.005em}
+.big em{font-style:normal;color:var(--red)}
+.sub{font-weight:800;font-size:calc(var(--u)*4.4);line-height:1.25;color:var(--ink-2);max-width:calc(var(--u)*80)}
+.sub b{color:var(--ink)}
+
+/* entrées : chaque élément .in apparaît avec un petit délai (--d) */
+.in{opacity:0}
+.on .in{animation:pop .55s cubic-bezier(.2,1.5,.4,1) forwards;animation-delay:var(--d,0s)}
+.on .in.up{animation-name:up;animation-timing-function:cubic-bezier(.2,.9,.3,1)}
+@keyframes pop{from{opacity:0;transform:scale(.6) rotate(var(--r0,0deg))}to{opacity:1;transform:none}}
+@keyframes up{from{opacity:0;transform:translateY(calc(var(--u)*6))}to{opacity:1;transform:none}}
+.mb{display:block;width:100%;height:auto;aspect-ratio:1;filter:drop-shadow(0 calc(var(--u)*1.2) calc(var(--u)*1.2) rgba(60,40,10,.3))}
+
+/* 1. l'accroche : des billes qui roulent */
+.hook-row{position:relative;width:100%;height:calc(var(--u)*30)}
+.roll{position:absolute;top:50%;opacity:0}
+.on .roll{animation:roll 1.4s cubic-bezier(.15,.85,.35,1) forwards;animation-delay:var(--d)}
+@keyframes roll{from{opacity:1;transform:translate(var(--x0),-50%) rotate(-540deg)}to{opacity:1;transform:translate(var(--x1),-50%) rotate(0)}}
+
+/* 2. le sachet */
+.bag-zone{position:relative;width:calc(var(--u)*86);height:calc(var(--u)*86)}
+.bag{position:absolute;left:50%;top:50%;width:calc(var(--u)*52);transform:translate(-50%,-50%)}
+.on .bag{animation:bag-shake 1.5s ease-in-out .2s both,bag-gone .35s ease-in 1.7s forwards}
+@keyframes bag-shake{0%,100%{transform:translate(-50%,-50%)}10%,30%,50%,70%{transform:translate(-52%,-50%) rotate(-5deg)}20%,40%,60%,80%{transform:translate(-48%,-50%) rotate(5deg)}90%{transform:translate(-50%,-53%) scale(1.06)}}
+@keyframes bag-gone{to{opacity:0;transform:translate(-50%,-50%) scale(1.5)}}
+.flash{position:absolute;left:50%;top:50%;width:calc(var(--u)*120);height:calc(var(--u)*120);margin:calc(var(--u)*-60) 0 0 calc(var(--u)*-60);border-radius:50%;
+  background:radial-gradient(circle,#fff 0,rgba(255,232,150,.9) 18%,rgba(255,201,63,0) 60%);opacity:0;pointer-events:none}
+.on .flash{animation:flash .9s ease-out 1.75s}
+@keyframes flash{0%{opacity:0;transform:scale(.2)}25%{opacity:1}100%{opacity:0;transform:scale(1.3)}}
+.cards{position:absolute;inset:0}
+.card{position:absolute;left:50%;top:50%;width:calc(var(--u)*25);padding:calc(var(--u)*2) calc(var(--u)*1.2) calc(var(--u)*1.8);border-radius:calc(var(--u)*3.2);background:var(--paper);
+  border:calc(var(--u)*.5) solid var(--rc);box-shadow:0 calc(var(--u)*1.5) calc(var(--u)*4) calc(var(--u)*-1) rgba(60,40,10,.35);display:flex;flex-direction:column;align-items:center;gap:calc(var(--u)*.8);
+  opacity:0;transform:translate(-50%,-50%) scale(.2)}
+.on .card{animation:deal .6s cubic-bezier(.2,1.4,.4,1) forwards;animation-delay:var(--d)}
+@keyframes deal{to{opacity:1;transform:translate(calc(-50% + var(--x)),calc(-50% + var(--y))) rotate(var(--r)) scale(1)}}
+.card .mb{width:calc(var(--u)*15)}
+.on .cards .card{animation:deal .6s cubic-bezier(.2,1.4,.4,1) forwards,dim .5s ease-in forwards;animation-delay:var(--d),3.8s}
+@keyframes dim{from{opacity:1;transform:translate(calc(-50% + var(--x)),calc(-50% + var(--y))) rotate(var(--r)) scale(1)}to{opacity:.18;transform:translate(calc(-50% + var(--x)*1.25),calc(-50% + var(--y)*1.25)) rotate(var(--r)) scale(.8)}}
+.card b{font-weight:900;font-size:calc(var(--u)*2.7);line-height:1.1;color:var(--ink)}
+.pill{display:inline-block;font-weight:900;font-size:calc(var(--u)*2.3);padding:calc(var(--u)*.25) calc(var(--u)*1.6);border-radius:999px;color:var(--rc);background:var(--rb)}
+/* la vedette : la dernière bille, en grand, avec sa lumière */
+.star{position:absolute;left:50%;top:50%;display:flex;flex-direction:column;align-items:center;gap:calc(var(--u)*1.4);opacity:0;transform:translate(-50%,-50%) scale(.3);z-index:3}
+.on .star{animation:star-in .8s cubic-bezier(.2,1.5,.4,1) forwards;animation-delay:var(--d)}
+@keyframes star-in{to{opacity:1;transform:translate(-50%,-50%) scale(1)}}
+.star .rays{position:absolute;left:50%;top:calc(var(--u)*20);width:calc(var(--u)*90);height:calc(var(--u)*90);margin:calc(var(--u)*-45) 0 0 calc(var(--u)*-45);z-index:-1;
+  background:repeating-conic-gradient(from 0deg,rgba(255,201,63,.55) 0 8deg,rgba(255,201,63,0) 8deg 22deg);-webkit-mask:radial-gradient(circle,#000 20%,transparent 68%);mask:radial-gradient(circle,#000 20%,transparent 68%)}
+.on .star .rays{animation:spin 9s linear infinite}
+@keyframes spin{to{transform:rotate(360deg)}}
+.star .glow{position:absolute;left:50%;top:calc(var(--u)*20);width:calc(var(--u)*46);height:calc(var(--u)*46);margin:calc(var(--u)*-23) 0 0 calc(var(--u)*-23);border-radius:50%;z-index:-1;
+  background:radial-gradient(circle,var(--lc) 0,transparent 68%);opacity:.85}
+.on .star .glow{animation:breathe 1.6s ease-in-out infinite alternate}
+@keyframes breathe{to{transform:scale(1.18);opacity:.55}}
+.star .mb{width:calc(var(--u)*40)}
+.leg{white-space:nowrap;font-family:var(--display);font-size:calc(var(--u)*9);line-height:1;color:#D97E06;-webkit-text-stroke:calc(var(--u)*.35) #fff;paint-order:stroke fill;text-shadow:0 calc(var(--u)*.6) 0 rgba(120,70,0,.25)}
+.star .nm{font-weight:900;font-size:calc(var(--u)*4);color:var(--ink)}
+.shiny-tag{font-weight:900;font-size:calc(var(--u)*3);padding:calc(var(--u)*.5) calc(var(--u)*2.4);border-radius:999px;color:#fff;background:linear-gradient(90deg,#FF6FB5,#FFC93F,#4FD1C5,#7B6CF6);background-size:200% 100%}
+.on .shiny-tag{animation:shimmer 2s linear infinite}
+@keyframes shimmer{to{background-position:200% 0}}
+.spark{position:absolute;width:calc(var(--u)*3);height:calc(var(--u)*3);color:#FFC93F;opacity:0}
+.on .spark{animation:twinkle 1.4s ease-in-out infinite;animation-delay:var(--d)}
+@keyframes twinkle{0%,100%{opacity:0;transform:scale(.3) rotate(0)}50%{opacity:1;transform:scale(1) rotate(45deg)}}
+
+/* 3. la collection : l'album se remplit */
+.album{display:grid;grid-template-columns:repeat(5,1fr);gap:calc(var(--u)*2);width:calc(var(--u)*84);padding:calc(var(--u)*3.4);border-radius:calc(var(--u)*4);background:var(--paper);border:calc(var(--u)*.4) solid var(--line);box-shadow:0 calc(var(--u)*2) calc(var(--u)*5) calc(var(--u)*-2) rgba(60,40,10,.3)}
+.slot{aspect-ratio:1;border-radius:calc(var(--u)*2.4);border:calc(var(--u)*.35) dashed #E4D4B6;display:grid;place-items:center;position:relative}
+.slot .mb{width:78%;opacity:0}
+.on .slot .mb{animation:pop .4s cubic-bezier(.2,1.6,.4,1) forwards;animation-delay:var(--d)}
+.slot.full{border-style:solid;border-color:transparent;background:#FFF3DA}
+.counter{font-family:var(--display);font-size:calc(var(--u)*8);color:var(--ink)}
+.counter small{font-family:var(--body);font-weight:800;font-size:calc(var(--u)*3.6);color:var(--muted)}
+
+/* 4. la fusion */
+.fuse{position:relative;width:calc(var(--u)*86);height:calc(var(--u)*70)}
+.fuse .src{position:absolute;left:50%;top:50%;width:calc(var(--u)*20);height:calc(var(--u)*20);margin:calc(var(--u)*-10) 0 0 calc(var(--u)*-10);opacity:0}
+.on .fuse .src{animation:fuse-in .5s ease-out forwards,fuse-go .7s cubic-bezier(.6,0,.9,.4) forwards;animation-delay:var(--d),calc(var(--d) + 1.4s)}
+@keyframes fuse-in{from{opacity:0;transform:translate(var(--x),var(--y)) scale(.4)}to{opacity:1;transform:translate(var(--x),var(--y))}}
+@keyframes fuse-go{from{opacity:1;transform:translate(var(--x),var(--y)) rotate(0)}to{opacity:0;transform:translate(0,0) rotate(400deg) scale(.4)}}
+.fuse .res{position:absolute;left:50%;top:50%;width:calc(var(--u)*40);height:calc(var(--u)*40);margin:calc(var(--u)*-20) 0 0 calc(var(--u)*-20);opacity:0}
+.on .fuse .res{animation:res 1s cubic-bezier(.2,1.6,.4,1) 2.55s forwards}
+@keyframes res{from{opacity:0;transform:scale(.2) rotate(-90deg)}to{opacity:1;transform:none}}
+.fuse .flash{animation:none}
+.on .fuse .flash{animation:flash .9s ease-out 2.4s}
+.fuse .ring{position:absolute;left:50%;top:50%;width:calc(var(--u)*50);height:calc(var(--u)*50);margin:calc(var(--u)*-25) 0 0 calc(var(--u)*-25);border-radius:50%;border:calc(var(--u)*.7) dashed rgba(138,74,214,.45);opacity:0}
+.on .fuse .ring{animation:ring 2.4s linear .3s forwards}
+@keyframes ring{0%{opacity:0;transform:rotate(0) scale(1.2)}20%{opacity:1}90%{opacity:1;transform:rotate(240deg) scale(.5)}100%{opacity:0;transform:rotate(270deg) scale(.3)}}
+.eq{font-family:var(--display);font-size:calc(var(--u)*6);color:var(--ink-2);display:flex;align-items:center;gap:calc(var(--u)*2)}
+.eq .pill{font-size:calc(var(--u)*3.2)}
+
+/* 5. la Grande Course */
+.track{position:relative;width:calc(var(--u)*86);padding:calc(var(--u)*2.4) 0;border-radius:calc(var(--u)*4);background:#3E9A4A;border:calc(var(--u)*1.2) solid #8B5A2B;box-shadow:inset 0 0 0 calc(var(--u)*.5) rgba(255,255,255,.15)}
+.lane{position:relative;height:calc(var(--u)*9.4);border-bottom:calc(var(--u)*.3) dashed rgba(255,255,255,.35)}
+.lane:last-child{border-bottom:0}
+.lane .mb{position:absolute;top:50%;left:calc(var(--u)*2);width:calc(var(--u)*8);height:calc(var(--u)*8);margin-top:calc(var(--u)*-4)}
+.on .lane .mb{animation:race var(--t) cubic-bezier(.35,.1,.5,1) .5s forwards}
+@keyframes race{0%{transform:translateX(0) rotate(0)}35%{transform:translateX(calc(var(--u)*var(--a))) rotate(500deg)}70%{transform:translateX(calc(var(--u)*var(--b))) rotate(1000deg)}100%{transform:translateX(calc(var(--u)*72)) rotate(1500deg)}}
+.lane .who{position:absolute;left:calc(var(--u)*2.4);bottom:calc(var(--u)*.4);font-weight:900;font-size:calc(var(--u)*2);color:rgba(255,255,255,.75)}
+.finish{position:absolute;top:0;bottom:0;right:calc(var(--u)*5);width:calc(var(--u)*3);background:repeating-conic-gradient(#fff 0 25%,#24253D 0 50%) 0 0/calc(var(--u)*3) calc(var(--u)*3)}
+.crown{position:absolute;right:calc(var(--u)*3.4);top:calc(var(--u)*-1.5);font-size:calc(var(--u)*6);opacity:0;color:var(--yellow)}
+.on .crown{animation:pop .5s cubic-bezier(.2,1.6,.4,1) forwards;animation-delay:var(--d)}
+.clock{display:flex;gap:calc(var(--u)*2.4)}
+.clock span{font-family:var(--display);font-size:calc(var(--u)*6.5);padding:calc(var(--u)*.8) calc(var(--u)*3.6);border-radius:calc(var(--u)*3);background:var(--ink);color:var(--yellow)}
+
+/* les jeux de la cour */
+.games{display:grid;grid-template-columns:1fr 1fr;gap:calc(var(--u)*2.4);width:calc(var(--u)*88)}
+.game{position:relative;border-radius:calc(var(--u)*2.6);overflow:hidden;background:var(--paper);border:calc(var(--u)*.4) solid var(--line);box-shadow:0 calc(var(--u)*1) calc(var(--u)*2.4) calc(var(--u)*-1) rgba(60,40,10,.35)}
+.game svg{display:block;width:100%;height:calc(var(--u)*13)}
+.game b{display:block;padding:calc(var(--u)*1) 0 calc(var(--u)*1.2);font-family:var(--display);font-weight:400;font-size:calc(var(--u)*3.6);color:var(--ink)}
+.game .ok{position:absolute;top:calc(var(--u)*1.2);right:calc(var(--u)*1.2);display:grid;place-items:center;width:calc(var(--u)*6);height:calc(var(--u)*6);border-radius:50%;background:var(--green);color:#fff;font-weight:900;font-size:calc(var(--u)*3.6);opacity:0;border:calc(var(--u)*.5) solid #fff}
+.on .game .ok{animation:pop .45s cubic-bezier(.2,1.6,.4,1) forwards;animation-delay:var(--d2)}
+.on .game.today{animation:pop .55s cubic-bezier(.2,1.5,.4,1) forwards,today .5s ease-out forwards;animation-delay:var(--d),var(--d2)}
+@keyframes today{to{border-color:var(--green);box-shadow:0 0 0 calc(var(--u)*.8) rgba(47,163,90,.25)}}
+.bonus{display:flex;align-items:center;gap:calc(var(--u)*2);font-weight:900;font-size:calc(var(--u)*3.8);padding:calc(var(--u)*1.4) calc(var(--u)*3.4) calc(var(--u)*1.4) calc(var(--u)*1.6);border-radius:999px;background:var(--ink);color:#fff}
+.bonus .bg{width:calc(var(--u)*9);height:calc(var(--u)*9);margin:calc(var(--u)*-2) 0}
+.bonus .bg svg{width:100%;height:100%}
+.bonus em{font-style:normal;color:var(--yellow)}
+
+/* la loterie */
+.lotto{display:flex;flex-direction:column;align-items:center;gap:calc(var(--u)*3);padding:calc(var(--u)*4) calc(var(--u)*5);border-radius:calc(var(--u)*4);background:#1B4D3A;color:#fff;box-shadow:0 calc(var(--u)*2) calc(var(--u)*5) calc(var(--u)*-2) rgba(20,50,30,.5);width:calc(var(--u)*84)}
+.lotto small{font-weight:900;font-size:calc(var(--u)*2.8);letter-spacing:.12em;text-transform:uppercase;color:#9FE0BC}
+.balls{display:flex;gap:calc(var(--u)*3.4)}
+.lball{display:grid;place-items:center;width:calc(var(--u)*16);height:calc(var(--u)*16);border-radius:50%;background:var(--bc);box-shadow:inset calc(var(--u)*-1.2) calc(var(--u)*-1.6) 0 rgba(0,0,0,.18)}
+.lball span{display:grid;place-items:center;width:62%;height:62%;border-radius:50%;background:#fff;font-family:var(--display);font-size:calc(var(--u)*5.6);color:var(--ink)}
+.on .lball{animation:drop .7s cubic-bezier(.3,1.5,.5,1) both;animation-delay:var(--d)}
+@keyframes drop{from{opacity:0;transform:translateY(calc(var(--u)*-30)) rotate(-200deg)}to{opacity:1;transform:none}}
+.ticket{display:flex;align-items:center;gap:calc(var(--u)*2.4);padding:calc(var(--u)*1.6) calc(var(--u)*3);border-radius:calc(var(--u)*2);background:#FFF6DC;color:var(--ink);font-weight:900;font-size:calc(var(--u)*3.2);border:calc(var(--u)*.4) dashed #C9A54A}
+.ticket i{font-style:normal;display:grid;place-items:center;width:calc(var(--u)*7);height:calc(var(--u)*7);border-radius:50%;background:#fff;border:calc(var(--u)*.4) solid #DCC27A;font-family:var(--display);font-weight:400;font-size:calc(var(--u)*3.6)}
+.on .ticket i{animation:hit .4s ease-out forwards;animation-delay:var(--d)}
+@keyframes hit{to{background:var(--yellow);border-color:var(--yellow-2);transform:scale(1.15)}}
+.jackpot{display:flex;align-items:center;gap:calc(var(--u)*2.4);font-weight:900;font-size:calc(var(--u)*3.6);color:var(--ink)}
+.jackpot .mb{width:calc(var(--u)*17)}
+.jackpot .bg{width:calc(var(--u)*15);height:calc(var(--u)*15)}
+.jackpot .bg svg{width:100%;height:100%}
+.jackpot .plus{font-family:var(--display);font-size:calc(var(--u)*6);color:var(--muted)}
+.jackpot .cash{font-family:var(--display);font-size:calc(var(--u)*7);color:#D9367E}
+.jackpot .cash small{font-family:var(--body);font-weight:900;font-size:calc(var(--u)*3);color:var(--ink-2)}
+
+/* 6. l'appel : la bêta */
+.beta-arc{position:relative;width:calc(var(--u)*86);height:calc(var(--u)*34)}
+.beta-arc .mb{position:absolute;left:50%;bottom:0;opacity:0}
+.on .beta-arc .mb{animation:arc-in .7s cubic-bezier(.2,1.5,.4,1) forwards;animation-delay:var(--d)}
+@keyframes arc-in{from{opacity:0;transform:translate(-50%,calc(var(--u)*10)) scale(.3)}to{opacity:1;transform:translate(calc(-50% + var(--x)),calc(var(--y)*-1))}}
+.cta{font-family:var(--display);font-size:calc(var(--u)*6.4);padding:calc(var(--u)*2.4) calc(var(--u)*7);border-radius:999px;background:var(--yellow);color:var(--ink);box-shadow:0 calc(var(--u)*1) 0 var(--yellow-2),0 calc(var(--u)*2) calc(var(--u)*5) calc(var(--u)*-1) rgba(120,80,0,.4)}
+.on .cta.in{animation:pop .55s cubic-bezier(.2,1.5,.4,1) forwards,nudge 1.2s ease-in-out infinite;animation-delay:var(--d),calc(var(--d) + .8s)}
+@keyframes nudge{50%{transform:scale(1.05)}}
+.url{font-weight:900;font-size:calc(var(--u)*4.4);color:var(--blue)}
+.date{font-family:var(--hand);font-weight:700;font-size:calc(var(--u)*6.4);color:var(--red);transform:rotate(-2deg)}
+.chips{display:flex;flex-wrap:wrap;justify-content:center;gap:calc(var(--u)*1.6)}
+.chips span{font-weight:900;font-size:calc(var(--u)*3);padding:calc(var(--u)*.8) calc(var(--u)*2.6);border-radius:999px;background:var(--paper);border:calc(var(--u)*.35) solid var(--line);color:var(--ink-2)}
+
+
+/* ---------- la barre de pilotage ---------- */
+.bar{flex:none;display:flex;align-items:center;justify-content:center;gap:8px;flex-wrap:wrap;padding:10px 16px 14px;border-top:1px solid var(--ui-line);background:var(--ui-panel)}
+.bar button,.bar select{height:36px;padding:0 14px;border-radius:10px;border:1px solid var(--ui-line);background:#2A251F;color:var(--ui-ink);font-weight:800;font-size:13.5px}
+.bar button:hover{background:#352E26}
+.bar button.rec{background:#E5484D;border-color:#E5484D;color:#fff}
+.bar .sep{width:1px;height:24px;background:var(--ui-line)}
+.bar .dots{display:flex;gap:4px}
+.bar .dots button{padding:0 10px;font-size:12.5px}
+.bar .dots button.on{background:var(--yellow);color:#24253D;border-color:var(--yellow)}
+.hint{font-size:12px;color:#A39A8A;font-weight:700}
+body.film .bar{display:none}
+.loading{position:fixed;inset:0;display:grid;place-items:center;background:var(--ui-bg);font-weight:800;z-index:20}
+@media (max-width:640px){ .bar .hint,.bar .sep{display:none} }
+@media (prefers-reduced-motion:reduce){ .hint::after{content:" · animations réduites par ton système"} }
+</style>
+</head>
+<body>
+<div class="loading" id="loading">Préparation des billes…</div>
+<div class="wrap"><div id="stage" aria-label="Démo animée de Tikalo"></div></div>
+<div class="bar" id="bar">
+  <button id="b-play">⏸ Pause</button>
+  <button id="b-restart">⏮ Recommencer</button>
+  <span class="dots" id="dots"></span>
+  <span class="sep"></span>
+  <select id="b-format" aria-label="Format">
+    <option value="9:16">9:16 · TikTok, Reels, Shorts</option>
+    <option value="4:5">4:5 · fil Instagram / Facebook</option>
+    <option value="1:1">1:1 · carré</option>
+  </select>
+  <button id="b-shuffle">🎲 Autres billes</button>
+  <button id="b-film">Mode tournage (H)</button>
+  <button id="b-rec" class="rec">● Enregistrer la vidéo</button>
+  <span class="hint">Espace : pause · ← → : scène · H : cacher la barre</span>
+</div>
+
+<script src="../tikalo-demo-rendu.js"></script>
+<script>
+/* =====================================================================
+   DÉMO : 6 scènes enchaînées en boucle (environ 30 secondes)
+   ===================================================================== */
+const STAGE = document.getElementById("stage");
+const famIdx = name => Math.max(0, FAMILIES.findIndex(f=>f.name===name));
+const palIdx = name => { const i = PALETTES.findIndex(P=>P[0]===name); return i<0 ? 0 : i };
+const RAR = f => DECOR_RAR[FAMILIES[f].rar];
+let SEED = 7;   // « Autres billes » change la graine : les mêmes scènes avec d'autres billes
+const R = () => { SEED = (SEED*1103515245 + 12345) >>> 0; return SEED / 4294967296 };
+const spec = (type, o={}) => makeSpec(type, {seed:o.seed ?? Math.floor(R()*4e9), ...o});
+const cache = new Map();
+const img = (s, px, cls="") => { const k = `${s.seed}|${s.type}|${s.family}|${s.pal}|${s.shiny}|${px}`;
+  if(!cache.has(k)) cache.set(k, marbleURL(s, px));
+  return `<img class="mb ${cls}" src="${cache.get(k)}" alt="">` };
+const base = () => FAMILIES.map((f,i)=>i).filter(i=>!FAMILIES[i].event && FAMILIES[i].season==null && !FAMILIES[i].secret && i!==BETA.fam);
+const pick = a => a[Math.floor(R()*a.length)];
+const SPARK = `<svg viewBox="0 0 12 12"><path d="M6 0c.4 3 1.2 4.4 6 6-4.8 1.6-5.6 3-6 6-.4-3-1.2-4.4-6-6 4.8-1.6 5.6-3 6-6z" fill="currentColor"/></svg>`;
+const logoSpec = {seed:20260701, type:"calot", family:famIdx("Galaxie"), pal:palIdx("Azur"), shiny:0};
+
+let set = null;   // les billes de cette prise
+function newSet(){
+  const fams = base(), byRar = r => fams.filter(f=>FAMILIES[f].rar===r);
+  const opened = [
+    spec("bille",    {family:pick(byRar(0))}),
+    spec("chinoise", {family:pick(byRar(1))}),
+    spec("calot",    {family:pick(byRar(2))}),
+    spec("calot",    {family:pick(byRar(3))}),
+  ];
+  const star = spec("mammouth", {family:pick(byRar(4)), shiny:3});
+  const album = Array.from({length:15}, (_,i)=>spec(TK[i%4===3?3:i%3], {family:fams[(i*7+Math.floor(SEED/97))%fams.length]}));
+  const fuseFam = pick(fams.filter(f=>FAMILIES[f].rar<=2));
+  const fuse = [0,1,2,3].map(()=>spec("calot", {family:fuseFam}));
+  const fuseRes = spec("boulet", {family:pick(byRar(3))});
+  const racers = Array.from({length:6}, ()=>spec(pick(["bille","calot","chinoise"]), {family:pick(fams)}));
+  const beta = TK.map(t=>({seed:hash("beta"+t), type:t, family:BETA.fam, pal:BETA.palOf(t), shiny:0}));
+  const jack = spec("mammouth", {family:pick(byRar(3))});
+  set = {opened, star, album, fuse, fuseRes, racers, beta, jack};
+}
+
+// ---------- les scènes ----------
+const SCENES = [
+  {name:"Accroche", dur:3.8, html:()=>{
+    const balls = [spec("calot",{family:famIdx("Œil-de-chat")}), spec("bille"), spec("boulet"), spec("chinoise"), spec("bille")];
+    return `<p class="kicker in" style="--d:.1s">Tu te souviens…</p>
+      <h1 class="big in up" style="--d:.45s">des billes à la <em>récré</em> ?</h1>
+      <div class="hook-row">${balls.map((s,i)=>{ const px = Math.round(8+scaleOf(s.type)*13);
+        return `<span class="roll" style="--d:${.9+i*.18}s;left:50%;--x0:calc(${i%2?110:-160}*var(--u));--x1:calc(${(i-2)*18}*var(--u) - ${px/2}*var(--u));width:calc(${px}*var(--u))">${img(s, 220)}</span>` }).join("")}</div>
+      <p class="sub in up" style="--d:1.9s">Elles sont de retour. <b>En ligne.</b></p>` }},
+  {name:"Sachet", dur:7.4, html:()=>{
+    const pos = [[-24,-22,-8],[24,-22,7],[-24,24,-5],[24,24,6]];
+    return `<p class="kicker in" style="--d:0s">Ouvre des sachets…</p>
+      <div class="bag-zone"><div class="bag">${bagSVG(BAG_BY.premium)}</div><div class="flash"></div>
+        <div class="cards">${set.opened.map((s,i)=>{ const T = TYPES[s.type], Rr = RAR(s.family);
+          return `<div class="card" style="--d:${2+i*.32}s;--x:calc(${pos[i][0]}*var(--u));--y:calc(${pos[i][1]}*var(--u));--r:${pos[i][2]}deg;--rc:${Rr.c};--rb:${T.rb}">
+            ${img(s, 200)}<b>${esc(FAMILIES[s.family].name)}</b><span class="pill" style="--rc:${T.rc}">${T.label}</span></div>` }).join("")}</div>
+        <div class="star" style="--d:4s;--lc:${PALETTES[set.star.pal][2]}"><span class="rays"></span><span class="glow"></span>
+          ${img(set.star, 420)}<span class="leg">LÉGENDAIRE !</span><span class="nm">${esc(TYPES.mammouth.label)} ${esc(specName(set.star))}</span><span class="shiny-tag">✦ Shiny Lumineuse</span>
+          ${[[-34,4],[30,-2],[-26,34],[36,30],[0,-6]].map(([x,y],i)=>`<span class="spark" style="left:calc(50% + ${x}*var(--u));top:calc(${y}*var(--u));--d:${4.3+i*.25}s">${SPARK}</span>`).join("")}</div>
+      </div>` }},
+  {name:"Collection", dur:4.8, html:()=>{
+    const n = set.album.length + 10;
+    return `<p class="kicker in" style="--d:0s">…collectionne-les toutes…</p>
+      <div class="album in up" style="--d:.15s">${Array.from({length:25},(_,i)=>{ const s = set.album[[0,2,3,5,6,7,9,11,12,13,16,18,20,22,24].indexOf(i)];
+        return `<div class="slot${s?" full":""}">${s?img(s,140).replace('class="mb ','style="--d:'+(.6+[0,2,3,5,6,7,9,11,12,13,16,18,20,22,24].indexOf(i)*.17)+'s" class="mb '):""}</div>` }).join("")}</div>
+      <p class="counter in" style="--d:3.2s">${base().length} <small>motifs</small> × ${BASE_PAL_IDS.length} <small>coloris</small></p>
+      <p class="sub in up" style="--d:3.6s">Et <b>chaque bille est unique</b> : aucune n'a exactement le même dessin.</p>` }},
+  {name:"Fusion", dur:4.6, html:()=>{
+    const pos = [[-30,-20],[30,-20],[-30,20],[30,20]];
+    return `<p class="kicker in" style="--d:0s">…fusionne tes doubles…</p>
+      <div class="fuse"><div class="ring"></div>${set.fuse.map((s,i)=>`<span class="src" style="--d:${.2+i*.15}s;--x:calc(${pos[i][0]}*var(--u));--y:calc(${pos[i][1]}*var(--u))">${img(s,180)}</span>`).join("")}
+        <div class="flash"></div><span class="res">${img(set.fuseRes,320)}</span></div>
+      <p class="eq in up" style="--d:2.9s">4 <span class="pill" style="--rc:${TYPES.calot.rc};--rb:${TYPES.calot.rb}">Calots</span> → 1 <span class="pill" style="--rc:${TYPES.boulet.rc};--rb:${TYPES.boulet.rb}">Boulet</span></p>` }},
+  {name:"Jeux", dur:5.8, html:()=>{
+    const G = [["Le Tir",artTir],["Le Pot",artPot],["Le Château",artChateau],["La Tic",artTic],["La Roue",artRoue],["Le Plinko",artPachinko],["Le Ticket",artGrattage],["Le Distributeur",artDistributeur]];
+    const today = [1,4,6];
+    return `<p class="kicker in" style="--d:0s">…joue dans la cour…</p>
+      <div class="games">${G.map(([n,f],i)=>{ const k = today.indexOf(i);
+        return `<div class="game in${k>=0?" today":""}" style="--d:${.25+i*.13}s;--d2:${2+k*.35}s">${f()}<b>${n}</b>${k>=0?`<span class="ok">✓</span>`:""}</div>` }).join("")}</div>
+      <p class="bonus in up" style="--d:3.2s"><span class="bg">${bagSVG(BAG_BY.premium)}</span><span>3 jeux par jour = <em>un Sachet Premium offert</em></span></p>` }},
+  {name:"Grande Course", dur:5.2, html:()=>{
+    const order = [2,0,4,1,5,3], names = ["Lulu","Tom","Inès","Malo","Zoé","Toi"];
+    return `<p class="kicker in" style="--d:0s">…fais la course…</p>
+      <div class="track in up" style="--d:.1s"><span class="finish"></span>${set.racers.map((s,i)=>{ const rk = order.indexOf(i), t = 3 + rk*.22;
+        const a = 18 + ((i*37)%20), b = 40 + ((i*53)%24);
+        return `<div class="lane">${img(s,120).replace('class="mb ','style="--t:'+t+'s;--a:'+a+';--b:'+b+'" class="mb ')}<span class="who">${names[i]}</span>${rk===0?`<span class="crown" style="--d:${.5+t}s">👑</span>`:""}</div>` }).join("")}</div>
+      <p class="big in up" style="--d:.5s;font-size:calc(var(--u)*8)">La Grande Course</p>
+      <div class="clock in" style="--d:.8s"><span>12 h</span><span>20 h</span></div>
+      <p class="sub in up" style="--d:1.1s">Tous les jours. Des sachets à gagner.</p>` }},
+  {name:"Loterie", dur:5.8, html:()=>{
+    const N = [7,13,18], C = ["#E5484D","#FFC93F","#2EC4DE"];
+    return `<p class="kicker in" style="--d:0s">…et tente ta chance !</p>
+      <h1 class="big in up" style="--d:.2s;font-size:calc(var(--u)*9)">La Loterie</h1>
+      <div class="lotto in up" style="--d:.4s"><small>Tirage du dimanche · 21 h</small>
+        <div class="balls">${N.map((n,i)=>`<span class="lball" style="--bc:${C[i]};--d:${.9+i*.45}s"><span>${n}</span></span>`).join("")}</div>
+        <div class="ticket">Ton ticket ${N.map((n,i)=>`<i style="--d:${1.4+i*.45}s">${n}</i>`).join("")}</div></div>
+      <p class="leg in" style="--d:2.9s;font-size:calc(var(--u)*7)">3 bons numéros !</p>
+      <div class="jackpot in up" style="--d:3.3s">${img(set.jack,240)}<span class="plus">+</span><span class="bg">${bagSVG(BAG_BY.collector)}</span><span class="plus">+</span><span class="cash">500 <small>bonbecs</small></span></div>
+      <p class="sub in up" style="--d:3.8s">Un <b>ticket gratuit</b> chaque jour.</p>` }},
+  {name:"Bêta", dur:6.4, html:()=>{
+    const n = set.beta.length;
+    return `<p class="kicker in" style="--d:0s">Joue avant tout le monde</p>
+      <h1 class="big in up" style="--d:.25s">Rejoins la <em>bêta</em></h1>
+      <div class="beta-arc">${set.beta.map((s,i)=>{ const k = i-(n-1)/2, px = 9+scaleOf(s.type)*13;
+        return img(s,240).replace('class="mb ', `style="width:calc(${px.toFixed(1)}*var(--u));--d:${.6+i*.14}s;--x:calc(${k*14}*var(--u));--y:calc(${(9-k*k*1.6).toFixed(1)}*var(--u))" class="mb `) }).join("")}</div>
+      <p class="sub in up" style="--d:1.5s">La <b>bille Bêta exclusive</b>, une par taille.<br>Elle reste à toi <b>pour toujours</b>.</p>
+      <span class="cta in" style="--d:2s">billy-marble.vercel.app</span>
+      <div class="chips in up" style="--d:2.5s"><span>Gratuit</span><span>Sans téléchargement</span><span>Téléphone & ordi</span></div>
+      <p class="date in" style="--d:3s">Lancement officiel le 1er novembre !</p>` }},
+];
+
+// ---------- le moteur ----------
+let cur = -1, t0 = 0, paused = false, pauseAt = 0, timer = 0, recording = null;
+const total = () => SCENES.reduce((a,s)=>a+s.dur,0);
+function build(){
+  STAGE.innerHTML = `<div class="logo" role="img" aria-label="Tikalo"><span class="lw" aria-hidden="true"><span class="lt">B</span><span class="lt">i</span><span class="lt">l</span><span class="lt">l</span><span class="lt">e</span></span>${img(logoSpec,160)}</div><span class="beta-tag">BÊTA</span>
+    ${SCENES.map((S,i)=>`<section class="sc" data-i="${i}"></section>`).join("")}`;
+  document.getElementById("dots").innerHTML = SCENES.map((S,i)=>`<button data-i="${i}">${i+1}. ${S.name}</button>`).join("");
+}
+function show(i){
+  const secs = STAGE.querySelectorAll(".sc"), prev = secs[cur];
+  if(prev && cur!==i){ prev.classList.remove("on"); prev.classList.add("out"); setTimeout(()=>{ prev.classList.remove("out"); if(!prev.classList.contains("on")) prev.innerHTML = "" }, 460) }
+  cur = i; const el = secs[i];
+  el.classList.remove("out","on"); el.innerHTML = SCENES[i].html(); void el.offsetWidth; el.classList.add("on");
+  t0 = performance.now(); setPaused(false);
+  document.querySelectorAll("#dots button").forEach((b,k)=>b.classList.toggle("on", k===i));
+}
+function tick(){
+  if(!paused){
+    const el = (performance.now()-t0)/1000, d = SCENES[cur].dur;
+    if(el >= d){
+      if(cur===SCENES.length-1 && recording){ stopRec(); }
+      else show((cur+1)%SCENES.length);
+    }
+  }
+  timer = requestAnimationFrame(tick);
+}
+function setPaused(p){
+  paused = p;
+  STAGE.querySelectorAll("*").forEach(x=>x.style.animationPlayState = p ? "paused" : "");
+  if(p) pauseAt = performance.now(); else if(pauseAt){ t0 += performance.now()-pauseAt; pauseAt = 0 }
+  document.getElementById("b-play").textContent = p ? "▶ Lecture" : "⏸ Pause";
+}
+
+// ---------- le format ----------
+const FORMATS = {"9:16":[1080,1920], "4:5":[1080,1350], "1:1":[1080,1080]};
+let format = "9:16";
+function layout(){
+  const [W,H] = FORMATS[format], wrap = document.querySelector(".wrap"), film = document.body.classList.contains("film");
+  const aw = wrap.clientWidth - (film?0:32), ah = wrap.clientHeight - (film?0:32), k = Math.min(aw/W, ah/H);
+  const w = Math.floor(W*k), h = Math.floor(H*k);
+  STAGE.style.setProperty("--sw", w+"px"); STAGE.style.setProperty("--sh", h+"px");
+  // 1 unité = 1 % de la largeur, sauf si la scène est trop basse (carré) : tout rétrécit pour tenir
+  STAGE.style.setProperty("--u", Math.min(w/100, h/150)+"px");
+}
+
+// ---------- l'enregistrement (Chrome / Edge) : la scène seule, une boucle complète ----------
+async function startRec(){
+  if(!navigator.mediaDevices?.getDisplayMedia){ alert("Ton navigateur ne sait pas enregistrer l'onglet. Utilise l'enregistreur d'écran de ton téléphone ou Win + Alt + R sur ordi."); return }
+  let stream;
+  try{ stream = await navigator.mediaDevices.getDisplayMedia({video:{frameRate:30}, audio:false, preferCurrentTab:true, selfBrowserSurface:"include"}) }
+  catch(e){ return }
+  const track = stream.getVideoTracks()[0];
+  document.body.classList.add("clean");
+  try{ if(window.CropTarget && track.cropTo){ await track.cropTo(await CropTarget.fromElement(STAGE)) } }catch(e){}
+  const type = ["video/mp4;codecs=avc1","video/mp4","video/webm;codecs=vp9","video/webm"].find(t=>MediaRecorder.isTypeSupported(t)) || "";
+  const rec = new MediaRecorder(stream, {mimeType:type, videoBitsPerSecond:12e6}), chunks = [];
+  rec.ondataavailable = e=>e.data.size && chunks.push(e.data);
+  rec.onstop = ()=>{ stream.getTracks().forEach(t=>t.stop()); document.body.classList.remove("clean");
+    const blob = new Blob(chunks, {type:rec.mimeType}), a = document.createElement("a");
+    a.href = URL.createObjectURL(blob); a.download = `billeo-demo-${format.replace(":","x")}.${rec.mimeType.includes("mp4")?"mp4":"webm"}`; a.click();
+    document.getElementById("b-rec").textContent = "● Enregistrer la vidéo"; recording = null };
+  track.onended = ()=>recording && stopRec();
+  recording = rec;
+  document.getElementById("b-rec").textContent = "■ Arrêter";
+  await new Promise(r=>setTimeout(r,400));
+  show(0); rec.start(500);
+}
+function stopRec(){ if(recording && recording.state!=="inactive") recording.stop() }
+
+// ---------- les boutons ----------
+document.getElementById("b-play").onclick = ()=>setPaused(!paused);
+document.getElementById("b-restart").onclick = ()=>show(0);
+document.getElementById("dots").onclick = e=>{ const b = e.target.closest("button"); if(b) show(+b.dataset.i) };
+document.getElementById("b-format").onchange = e=>{ format = e.target.value; layout() };
+document.getElementById("b-shuffle").onclick = ()=>{ SEED = (Math.random()*4e9)>>>0; newSet(); show(cur) };
+document.getElementById("b-film").onclick = ()=>{ document.body.classList.toggle("film"); layout() };
+document.getElementById("b-rec").onclick = ()=>recording ? stopRec() : startRec();
+addEventListener("resize", layout);
+addEventListener("keydown", e=>{
+  if(e.key===" "){ e.preventDefault(); setPaused(!paused) }
+  else if(e.key==="ArrowRight") show((cur+1)%SCENES.length);
+  else if(e.key==="ArrowLeft") show((cur-1+SCENES.length)%SCENES.length);
+  else if(e.key.toLowerCase()==="h"){ document.body.classList.toggle("film"); layout() }
+});
+
+// ---------- démarrage : les billes sont dessinées une fois, puis la démo tourne ----------
+document.fonts.ready.then(()=>setTimeout(()=>{
+  newSet(); build(); layout();
+  // on dessine d'avance toutes les billes de toutes les scènes (sinon la première apparition saccade)
+  SCENES.forEach(S=>S.html());
+  document.getElementById("loading").remove();
+  show(0); tick();
+}, 30));
+</script>
+</body>
+</html>

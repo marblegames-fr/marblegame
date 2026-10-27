@@ -1,0 +1,221 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Tikalo · Maquette Marble Race</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Lilita+One&family=Nunito:wght@600;800;900&display=swap">
+<style>
+  :root{--ink:#F5EEE2;--muted:#B9AE9D;--panel:rgba(22,18,30,.82);--yellow:#FFC93F}
+  *{box-sizing:border-box;margin:0}
+  html,body{height:100%;background:#120E18;color:var(--ink);font-family:"Nunito",system-ui,sans-serif;font-weight:700;overflow:hidden}
+  canvas{display:block}
+  .top{position:fixed;left:16px;top:14px;display:grid;gap:4px;max-width:min(520px,calc(100vw - 32px))}
+  .top h1{font-family:"Lilita One",sans-serif;font-weight:400;font-size:clamp(24px,4vw,34px);line-height:1}
+  .top p{font-size:13px;color:var(--muted);line-height:1.35}
+  .board{position:fixed;right:16px;top:14px;width:220px;background:var(--panel);border:1px solid rgba(255,255,255,.12);border-radius:16px;padding:10px 12px}
+  .board b{display:block;font-size:11px;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);margin-bottom:6px}
+  .row{display:flex;align-items:center;gap:8px;height:24px;font-size:13.5px}
+  .row i{width:14px;height:14px;border-radius:50%;flex:none;box-shadow:inset -2px -2px 3px rgba(0,0,0,.35)}
+  .row .n{width:18px;color:var(--muted);font-weight:900}
+  .row.fin{color:var(--yellow)}
+  .bar{position:fixed;left:50%;bottom:18px;translate:-50% 0;display:flex;gap:10px;align-items:center;background:var(--panel);border:1px solid rgba(255,255,255,.12);border-radius:999px;padding:8px 10px 8px 16px}
+  .bar span{font-size:13px;color:var(--muted)}
+  button{font:inherit;font-weight:900;border:0;border-radius:999px;height:40px;padding:0 18px;background:var(--yellow);color:#24253D;cursor:pointer}
+  button.ghost{background:transparent;color:var(--ink);border:1.5px solid rgba(255,255,255,.25)}
+  .big{position:fixed;left:50%;top:40%;translate:-50% -50%;font-family:"Lilita One",sans-serif;font-size:clamp(40px,8vw,84px);color:var(--yellow);text-shadow:0 6px 0 rgba(0,0,0,.35);pointer-events:none;opacity:0;transition:opacity .3s}
+  .big.on{opacity:1}
+  .loading{position:fixed;inset:0;display:grid;place-items:center;font-size:15px;color:var(--muted)}
+  .loading[hidden]{display:none}
+  @media (max-width:640px){ .board{top:auto;bottom:76px;right:10px;width:180px} .top p{display:none} }
+</style>
+</head>
+<body>
+<div class="loading" id="loading">Préparation de la course…</div>
+<div class="top"><h1>La Grande Course · maquette 3D</h1>
+  <p>Vraie physique (gravité, rebonds, chocs entre billes). L'ordre d'arrivée tiré par le serveur est respecté : la course est simulée avec des billes anonymes, puis chaque bille reçoit le nom du joueur classé à sa place.</p></div>
+<div class="board" id="board"></div>
+<div class="big" id="big"></div>
+<div class="bar"><span id="info">Graine —</span><button class="ghost" id="cam">Caméra : suivre</button><button id="again">Nouvelle course</button></div>
+
+<script type="importmap">
+{ "imports": { "three": "https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.js",
+               "cannon-es": "https://cdn.jsdelivr.net/npm/cannon-es@0.20.0/dist/cannon-es.js" } }
+</script>
+<script type="module">
+import * as THREE from "three";
+import * as CANNON from "cannon-es";
+
+// ---------- un hasard reproductible (la graine de la course) ----------
+const rng = s => () => { s |= 0; s = s + 0x6D2B79F5 | 0; let t = Math.imul(s ^ s >>> 15, 1 | s); t = t + Math.imul(t ^ t >>> 7, 61 | t) ^ t; return ((t ^ t >>> 14) >>> 0) / 4294967296 };
+const NAMES = ["Stephiox","Ness","Bim","Dylayn","Roro","Skr4tchh","PlummB","Toi"];
+const COLS  = ["#E5484D","#2E8CFF","#FFC93F","#2FA35A","#7B6CF6","#F472B6","#22B8CF","#FF8A3D"];
+
+// ---------- le circuit : des rampes en lacets, des clous, un plateau d'arrivée ----------
+const RAMPS = 5, LEN = 30, WID = 6, STEP = 8, ANG = 12*Math.PI/180, R = .42;
+function buildWorld(seed){
+  const r = rng(seed);
+  const world = new CANNON.World({gravity: new CANNON.Vec3(0,-9.81,0)});
+  world.allowSleep = false; world.broadphase = new CANNON.SAPBroadphase(world);
+  world.solver.iterations = 14;
+  const mat = new CANNON.Material("piste"), bmat = new CANNON.Material("bille");
+  world.addContactMaterial(new CANNON.ContactMaterial(mat, bmat, {friction:.04, restitution:.35}));
+  world.addContactMaterial(new CANNON.ContactMaterial(bmat, bmat, {friction:.02, restitution:.75}));
+  const statics = [];   // pour le dessin : {kind, size, pos, quat}
+  const box = (sx,sy,sz, x,y,z, rotZ=0, kind="ramp") => {
+    const b = new CANNON.Body({mass:0, material:mat, shape:new CANNON.Box(new CANNON.Vec3(sx/2,sy/2,sz/2))});
+    b.position.set(x,y,z); b.quaternion.setFromEuler(0,0,rotZ); b.aabbNeedsUpdate = true; world.addBody(b);   // (sinon la zone de choc reste à l'origine)
+    statics.push({kind, size:[sx,sy,sz], pos:[x,y,z], rotZ});
+  };
+  const peg = (x,y,z,h=1.4) => { const b = new CANNON.Body({mass:0, material:mat, shape:new CANNON.Cylinder(.22,.22,h,12)});
+    b.position.set(x,y,z); b.aabbNeedsUpdate = true; world.addBody(b); statics.push({kind:"peg", size:[.22,h], pos:[x,y,z]}) };
+  for(let i=0;i<RAMPS;i++){
+    const dir = i%2 ? -1 : 1, y = i*-STEP, rot = -dir*ANG, ext = 2.6;
+    // la rampe (un peu plus longue du côté haut, pour rattraper les billes qui tombent de la rampe du dessus)
+    const cx = -dir*ext/2;
+    box(LEN+ext, .4, WID, cx, y, 0, rot);
+    const sY = x => y - Math.tan(ANG)*dir*(x-cx);   // hauteur de la rampe à l'abscisse x
+    // les bords
+    box(LEN+ext, 3, .3, cx, y+1.4, WID/2+.15, rot, "wall"); box(LEN+ext, 3, .3, cx, y+1.4, -WID/2-.15, rot, "wall");   // assez hauts : une bille qui saute reste sur la piste
+    // le mur du bout (côté bas) : les billes le tapent et tombent sur la rampe du dessous
+    if(i<RAMPS-1){ const xe = dir*(LEN/2+1.4); box(.4, STEP+1.6, WID+.6, xe, y-STEP/2+.6, 0, 0, "wall") }
+    // des clous en quinconce, et un clou différent chaque jour
+    // (assez loin des bords : une bille passe toujours entre un clou et le mur)
+    for(let k=0;k<5;k++){ const x = -dir*(LEN/2-6) + dir*k*(LEN-12)/4, zs = k%2 ? [-.95,.95] : [-1.75,0,1.75];
+      zs.forEach(z=>{ const zz = z + (r()-.5)*.3; peg(x, sY(x)+.7, zz) }) }
+  }
+  // le plateau d'arrivée sous la dernière rampe
+  const yl = (RAMPS-1)*-STEP, dirL = (RAMPS-1)%2 ? -1 : 1, xf = dirL*(LEN/2+6);
+  box(14, .4, WID+4, xf, yl-STEP+.4, 0, 0, "tray");
+  box(.4, 3, WID+4, xf+dirL*7, yl-STEP+1.8, 0, 0, "wall"); box(.4, 3, WID+4, xf-dirL*7, yl-STEP+1.8, 0, 0, "wall");
+  box(14, 3, .4, xf, yl-STEP+1.8, WID/2+2, 0, "wall"); box(14, 3, .4, xf, yl-STEP+1.8, -WID/2-2, 0, "wall");
+  // les billes : sur la grille de départ, en haut de la première rampe
+  const balls = [];
+  for(let i=0;i<8;i++){
+    const b = new CANNON.Body({mass:1, material:bmat, shape:new CANNON.Sphere(R), linearDamping:.02, angularDamping:.05});
+    const row = Math.floor(i/4), col = i%4;
+    const x = -LEN/2 + .8 + row*1.1 + (r()-.5)*.05;
+    b.position.set(x, -Math.tan(ANG)*(x+1.3) + .2 + R + .03, (col-1.5)*1.2 + (r()-.5)*.05);
+    world.addBody(b); balls.push(b);
+  }
+  // une barrière de départ, retirée au « Partez ! »
+  const gate = new CANNON.Body({mass:0, material:mat, shape:new CANNON.Box(new CANNON.Vec3(.15,1,WID/2))});
+  gate.position.set(-LEN/2+3, -Math.tan(ANG)*(-LEN/2+3+1.3)+1.2, 0); gate.aabbNeedsUpdate = true; world.addBody(gate);
+  return {world, balls, statics, gate, finishY: yl-STEP+1.2, xf};
+}
+
+// la progression d'une bille le long du circuit (pour le classement en direct)
+function progress(p){
+  const lvl = Math.max(0, Math.min(RAMPS, Math.round(-p.y/STEP))), dir = lvl%2 ? -1 : 1;
+  return lvl*1000 + (lvl<RAMPS ? dir*p.x + LEN/2 : 0);
+}
+
+// ---------- la course est d'abord simulée en entier (sans dessin), image par image ----------
+const DT = 1/60, MAXT = 150;
+function simulate(seed){
+  const W = buildWorld(seed), frames = [], fin = new Array(8).fill(null);
+  let t = 0;
+  for(let f=0; f<MAXT/DT; f++){
+    if(t>=2 && W.gate.world){ W.world.removeBody(W.gate) }   // 2 s de feux, puis la barrière tombe
+    W.world.step(DT); t += DT;
+    // une bille arrêtée plus de 2 s sur la piste (calée contre un clou) reçoit une petite pichenette vers le bas de la pente
+    W.balls.forEach((b,i)=>{ if(fin[i]!=null || t<3) return; b.still = b.velocity.length()<.08 ? (b.still||0)+DT : 0;
+      if(b.still>2){ b.still = 0; const lvl = Math.max(0,Math.round(-b.position.y/STEP)), d = lvl%2 ? -1 : 1; b.applyImpulse(new CANNON.Vec3(d*1.2, .6, (b.position.z>0?-1:1)*.4)) } });
+    frames.push(W.balls.map(b=>[b.position.x,b.position.y,b.position.z,b.quaternion.x,b.quaternion.y,b.quaternion.z,b.quaternion.w]));
+    W.balls.forEach((b,i)=>{ if(fin[i]==null && b.position.y < W.finishY) fin[i] = t });
+    if(fin.every(x=>x!=null) && t>fin.reduce((a,b)=>Math.max(a,b),0)+2) break;
+  }
+  fin.forEach((x,i)=>{ if(x==null) fin[i] = 999 + i });
+  return {W, frames, fin};
+}
+
+// ---------- le dessin ----------
+const renderer = new THREE.WebGLRenderer({antialias:true});
+renderer.setPixelRatio(Math.min(2, devicePixelRatio));
+renderer.setSize(innerWidth, innerHeight);
+renderer.shadowMap.enabled = true; renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+renderer.toneMapping = THREE.ACESFilmicToneMapping;
+document.body.prepend(renderer.domElement);
+const scene = new THREE.Scene();
+scene.background = new THREE.Color("#1B1428"); scene.fog = new THREE.Fog("#1B1428", 40, 110);
+const camera = new THREE.PerspectiveCamera(50, innerWidth/innerHeight, .1, 300);
+scene.add(new THREE.HemisphereLight("#FFE9C9", "#2A1E3A", 1.1));
+const sun = new THREE.DirectionalLight("#FFF4DE", 2.2); sun.position.set(-20,40,25); sun.castShadow = true;
+sun.shadow.mapSize.set(2048,2048); Object.assign(sun.shadow.camera, {left:-40, right:40, top:40, bottom:-40, near:1, far:120}); scene.add(sun);
+window.addEventListener("resize", ()=>{ renderer.setSize(innerWidth, innerHeight); camera.aspect = innerWidth/innerHeight; camera.updateProjectionMatrix() });
+
+const MAT = {
+  ramp: new THREE.MeshStandardMaterial({color:"#C9955C", roughness:.65}),
+  wall: new THREE.MeshPhysicalMaterial({color:"#BFE6FF", roughness:.1, transmission:.6, transparent:true, opacity:.35, thickness:.2}),
+  tray: new THREE.MeshStandardMaterial({color:"#2E8CFF", roughness:.5}),
+  peg:  new THREE.MeshStandardMaterial({color:"#F4E3C2", roughness:.35, metalness:.2}),
+};
+let group = null, ballMeshes = [], race = null, t0 = 0, followCam = true, camPos = new THREE.Vector3(-30,14,22), camLook = new THREE.Vector3();
+
+function makeBallTexture(col, k){
+  // un petit motif de bille (des filets de couleur dans du verre clair), dessiné une fois
+  const c = document.createElement("canvas"); c.width = 256; c.height = 128; const x = c.getContext("2d");
+  x.fillStyle = col; x.fillRect(0,0,256,128);
+  const r = rng(k*977+3);
+  for(let i=0;i<7;i++){ x.strokeStyle = i%2 ? "rgba(255,255,255,.75)" : "rgba(0,0,0,.25)"; x.lineWidth = 5+r()*10; x.beginPath();
+    const y0 = r()*128; x.moveTo(0,y0); for(let s=0;s<=256;s+=16) x.lineTo(s, y0+Math.sin(s/40+i)*18); x.stroke() }
+  const tx = new THREE.CanvasTexture(c); tx.colorSpace = THREE.SRGBColorSpace; return tx;
+}
+function setup(seed){
+  if(group) scene.remove(group);
+  group = new THREE.Group(); scene.add(group);
+  race = simulate(seed);
+  // l'ordre d'arrivée « tiré par le serveur » (ici au hasard, avec la même graine) : la bille arrivée 1re prend le nom du 1er, etc.
+  const r = rng(seed ^ 0xBEEF), serveur = [...NAMES].sort(()=>r()-.5);
+  const order = race.fin.map((x,i)=>i).sort((a,b)=>race.fin[a]-race.fin[b]);
+  race.names = []; race.cols = [];
+  order.forEach((ball, place)=>{ const who = serveur[place]; race.names[ball] = who; race.cols[ball] = COLS[NAMES.indexOf(who)] });
+  race.order = order; race.serveur = serveur;
+  window.__race = race;   // pour les essais
+  // le décor
+  race.W.statics.forEach(s=>{
+    let m;
+    if(s.kind==="peg"){ m = new THREE.Mesh(new THREE.CylinderGeometry(s.size[0], s.size[0], s.size[1], 16), MAT.peg) }
+    else { m = new THREE.Mesh(new THREE.BoxGeometry(...s.size), MAT[s.kind]); m.rotation.z = s.rotZ }
+    m.position.set(...s.pos); m.castShadow = s.kind!=="wall"; m.receiveShadow = true; group.add(m) });
+  // le sol tout en bas
+  const floor = new THREE.Mesh(new THREE.PlaneGeometry(300,300), new THREE.MeshStandardMaterial({color:"#2A2036", roughness:1}));
+  floor.rotation.x = -Math.PI/2; floor.position.y = -RAMPS*STEP-4; floor.receiveShadow = true; group.add(floor);
+  ballMeshes = race.names.map((n,i)=>{ const m = new THREE.Mesh(new THREE.SphereGeometry(R, 32, 24),
+      new THREE.MeshPhysicalMaterial({map:makeBallTexture(race.cols[i], i+seed), roughness:.08, clearcoat:1, clearcoatRoughness:.05}));
+    m.castShadow = true; group.add(m); return m });
+  t0 = performance.now();
+  document.getElementById("info").textContent = `Graine ${seed} · ${race.frames.length/60|0} s de course`;
+  document.getElementById("loading").hidden = true;
+}
+function big(t){ const b = document.getElementById("big"); b.textContent = t; b.classList.add("on"); clearTimeout(big.k); big.k = setTimeout(()=>b.classList.remove("on"), 1100) }
+
+let lastPhase = "";
+function loop(now){
+  requestAnimationFrame(loop);
+  if(!race) return;
+  const t = (now-t0)/1000 - 1, f = Math.max(0, Math.min(race.frames.length-1, Math.floor(t/DT))), F = race.frames[f];
+  const phase = t<0 ? "wait" : t<.7 ? "3" : t<1.35 ? "2" : t<2 ? "1" : "go";
+  if(phase!==lastPhase){ lastPhase = phase; if(phase==="3"||phase==="2"||phase==="1") big(phase); if(phase==="go") big("Partez !") }
+  F.forEach((p,i)=>{ ballMeshes[i].position.set(p[0],p[1],p[2]); ballMeshes[i].quaternion.set(p[3],p[4],p[5],p[6]) });
+  // le classement en direct : les arrivées d'abord, puis la progression sur le circuit
+  const tt = f*DT, rank = F.map((p,i)=>({i, done: race.fin[i]<=tt, fin:race.fin[i], pr:progress({x:p[0],y:p[1]})}))
+    .sort((a,b)=> (a.done&&b.done) ? a.fin-b.fin : a.done ? -1 : b.done ? 1 : b.pr-a.pr);
+  document.getElementById("board").innerHTML = `<b>Classement</b>` + rank.map((o,k)=>`<div class="row${o.done?" fin":""}"><span class="n">${k+1}</span><i style="background:${race.cols[o.i]}"></i>${race.names[o.i]}${o.done?" ✓":""}</div>`).join("");
+  if(rank[0].done && !loop.won){ loop.won = true; big(`${race.names[rank[0].i]} gagne !`) }
+  // la caméra : derrière la tête de course (ou vue d'ensemble)
+  const lead = F[rank.find(o=>!o.done)?.i ?? rank[0].i];
+  const target = new THREE.Vector3(lead[0], lead[1], lead[2]);
+  // vue de côté, comme une caméra de télé le long de la piste (au-dessus, la rampe suivante gênerait la vue)
+  const want = followCam ? new THREE.Vector3(lead[0] - 4*((Math.round(-lead[1]/STEP)%2)?-1:1), lead[1]+2.6, lead[2]+13) : new THREE.Vector3(0, -RAMPS*STEP/2+12, 62);
+  camPos.lerp(want, .05); camLook.lerp(followCam ? target : new THREE.Vector3(0,-RAMPS*STEP/2,0), .08);
+  camera.position.copy(camPos); camera.lookAt(camLook);
+  renderer.render(scene, camera);
+}
+let seed = (Math.random()*1e9)|0;
+setTimeout(()=>{ setup(seed); requestAnimationFrame(loop) }, 30);
+document.getElementById("again").onclick = ()=>{ seed = (Math.random()*1e9)|0; loop.won = false; lastPhase = ""; setup(seed) };
+document.getElementById("cam").onclick = e=>{ followCam = !followCam; e.target.textContent = followCam ? "Caméra : suivre" : "Caméra : vue d'ensemble" };
+</script>
+</body>
+</html>

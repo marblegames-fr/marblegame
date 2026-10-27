@@ -1,0 +1,218 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Ouvertures shiny</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Lilita+One&family=Nunito:wght@600;700;800;900&family=Caveat:wght@700&display=swap">
+<style>
+/* Maquette seulement (8 octobre 2026) : une ouverture différente pour chaque shiny (Irisée, Dorée, Lumineuse). Rien n'est sur le site. */
+:root{--bg:#0F0D0B;--panel:#1E1915;--line:#352D25;--ink:#F5EEE2;--ink-2:#C8BDAD;--muted:#8F8578;--yellow:#FFC93F;
+  --display:"Lilita One",sans-serif;--body:"Nunito",system-ui,sans-serif;--hand:"Caveat",cursive}
+*{box-sizing:border-box;margin:0;padding:0}
+body{background:var(--bg);color:var(--ink);font-family:var(--body);font-size:14px;line-height:1.45;padding:30px 16px 50px;-webkit-font-smoothing:antialiased}
+button{font:inherit;color:inherit;border:0;background:none;cursor:pointer}
+.wrap{max-width:1320px;margin:0 auto}
+header{text-align:center;max-width:760px;margin:0 auto 26px}
+h1{font-family:var(--display);font-weight:400;font-size:40px;line-height:1.05}
+header p{color:var(--ink-2);font-weight:600;font-size:15px;margin-top:8px}
+.top-btns{display:flex;gap:10px;justify-content:center;margin-top:14px;flex-wrap:wrap}
+.btn{display:inline-flex;align-items:center;gap:8px;height:44px;padding:0 20px;border-radius:999px;font-weight:900;font-size:14.5px}
+.btn-y{background:var(--yellow);color:#2B1A00;box-shadow:0 4px 0 #C48A0A}
+.btn-g{background:#2A241E;border:1px solid #4A4136}
+.grid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:16px}
+@media (max-width:1100px){ .grid{grid-template-columns:repeat(2,minmax(0,1fr))} }
+@media (max-width:620px){ .grid{grid-template-columns:1fr} }
+.card{border-radius:22px;background:var(--panel);border:1px solid var(--line);overflow:hidden;display:flex;flex-direction:column}
+.card.base{opacity:.9}
+.stage{position:relative;height:330px;overflow:hidden;display:grid;place-items:center;background:radial-gradient(circle at 50% 55%,#2C3B30,#132018 70%);transition:background .5s}
+.stage canvas{position:absolute;inset:0;width:100%;height:100%;pointer-events:none;z-index:4}
+.fx{position:absolute;inset:0;pointer-events:none;display:grid;place-items:center}
+/* la papillote avant l'ouverture */
+.wrapper{position:relative;z-index:3;width:120px;height:120px;display:grid;place-items:center;transition:transform .2s}
+.wrapper .pap{position:absolute;inset:18px;border-radius:50%;background:radial-gradient(circle at 35% 30%,#FFE9B5,#E7A93A 55%,#A56A12);box-shadow:inset 0 -8px 16px rgba(0,0,0,.25),0 14px 24px -10px rgba(0,0,0,.6)}
+.wrapper .pap::before,.wrapper .pap::after{content:"";position:absolute;top:50%;width:34px;height:42px;background:linear-gradient(90deg,#E7A93A,#FFD978);translate:0 -50%}
+.wrapper .pap::before{right:96%;clip-path:polygon(0 0,100% 30%,100% 70%,0 100%,20% 50%)}
+.wrapper .pap::after{left:96%;clip-path:polygon(100% 0,0 30%,0 70%,100% 100%,80% 50%)}
+.wrapper.shake{animation:shake .5s ease-in-out 2}
+.wrapper.gone{animation:pop .3s ease-in forwards}
+@keyframes shake{25%{transform:rotate(-12deg) scale(1.04)}75%{transform:rotate(12deg) scale(1.04)}}
+@keyframes pop{to{transform:scale(1.5);opacity:0}}
+.ball{position:absolute;z-index:3;width:150px;height:150px;opacity:0;transform:scale(.3)}
+.ball img{width:100%;height:100%;filter:drop-shadow(0 16px 16px rgba(0,0,0,.5))}
+.ball.in{animation:ballIn .7s cubic-bezier(.2,1.6,.4,1) forwards}
+@keyframes ballIn{to{opacity:1;transform:scale(1)}}
+.name{position:absolute;bottom:18px;left:0;right:0;text-align:center;z-index:5;opacity:0;transform:translateY(8px);transition:.4s}
+.name.in{opacity:1;transform:none}
+.name b{display:block;font-family:var(--display);font-weight:400;font-size:24px;line-height:1.05;text-shadow:0 2px 0 rgba(0,0,0,.4)}
+.name small{font-size:11px;font-weight:900;letter-spacing:.08em;text-transform:uppercase}
+.info{padding:16px 18px 18px;display:grid;gap:8px;flex:1}
+.info h2{font-family:var(--display);font-weight:400;font-size:24px;display:flex;align-items:center;gap:10px}
+.info h2 span{font-family:var(--body);font-size:11px;font-weight:900;padding:3px 9px;border-radius:999px;background:#2A241E;color:var(--ink-2)}
+.info p{color:var(--ink-2);font-weight:600;font-size:13px}
+.info p b{color:var(--ink)}
+.info .btn{margin-top:auto;justify-content:center}
+
+/* Irisée : un anneau arc-en-ciel qui s'ouvre, un halo qui change de couleur */
+.iri-ring{width:160px;height:160px;border-radius:50%;background:conic-gradient(#FF6FB5,#FFB547,#FFE14D,#6FE3A8,#5AB8FF,#B07BFF,#FF6FB5);
+  -webkit-mask:radial-gradient(circle,transparent 58%,#000 60%,#000 68%,transparent 70%);mask:radial-gradient(circle,transparent 58%,#000 60%,#000 68%,transparent 70%);opacity:0}
+.iri-ring.go{animation:ring 1.1s ease-out forwards}
+.iri-ring.r2.go{animation-delay:.18s}
+@keyframes ring{0%{transform:scale(.4);opacity:1}100%{transform:scale(2.6);opacity:0}}
+.iri-halo{width:230px;height:230px;border-radius:50%;background:conic-gradient(#FF6FB5,#FFB547,#6FE3A8,#5AB8FF,#B07BFF,#FF6FB5);filter:blur(28px);opacity:0;transition:opacity .6s}
+.iri-halo.on{opacity:.55;animation:spin 4s linear infinite}
+@keyframes spin{to{transform:rotate(1turn)}}
+/* Dorée : des rayons d'or qui tournent, l'écran qui se réchauffe */
+.gold-rays{width:520px;height:520px;background:repeating-conic-gradient(rgba(255,214,90,.42) 0 6deg,transparent 6deg 18deg);
+  -webkit-mask:radial-gradient(circle,#000 10%,transparent 62%);mask:radial-gradient(circle,#000 10%,transparent 62%);opacity:0;transition:opacity .5s}
+.gold-rays.on{opacity:1;animation:spin 12s linear infinite}
+.stage.warm{background:radial-gradient(circle at 50% 55%,#5A4314,#1F160A 72%)}
+/* Lumineuse : la lumière s'éteint, un éclair, la bille brille dans le noir */
+.stage.dark{background:radial-gradient(circle at 50% 55%,#0A0C14,#020203 70%)}
+.stage.dark .wrapper{filter:brightness(.35)}
+.flash{position:absolute;inset:0;background:#fff;opacity:0;z-index:6}
+.flash.go{animation:flash .7s ease-out forwards}
+@keyframes flash{0%{opacity:.95}100%{opacity:0}}
+.lum-glow{width:200px;height:200px;border-radius:50%;background:radial-gradient(circle,var(--lc,#9FE8FF) 0,transparent 65%);opacity:0;transition:opacity .8s}
+.lum-glow.on{opacity:.9;animation:breathe 2.2s ease-in-out infinite}
+@keyframes breathe{50%{transform:scale(1.25);opacity:.55}}
+.ball.lum img{filter:drop-shadow(0 0 18px var(--lc,#9FE8FF)) drop-shadow(0 0 40px var(--lc,#9FE8FF)) brightness(1.15)}
+.name.lumtxt b{color:#E9FBFF;text-shadow:0 0 12px var(--lc,#9FE8FF),0 0 26px var(--lc,#9FE8FF)}
+@media (prefers-reduced-motion:reduce){ *{animation-duration:.01s!important;animation-iteration-count:1!important} }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <h1>Une ouverture par shiny</h1>
+    <p>On reconnaît la shiny à l'oreille et aux yeux, avant même de lire son nom. Plus elle est rare, plus le moment est spécial. Toutes partent de la même mélodie (celle du Calot), puis chacune a sa touche à elle. <b>Monte le son</b> et clique sur une papillote.</p>
+    <div class="top-btns"><button class="btn btn-y" id="all">▶ Tout jouer à la suite</button></div>
+  </header>
+  <div class="grid" id="grid"></div>
+</div>
+
+<script src="tikalo-rendu.js"></script>
+<script>
+/* ---------- le son (le même synthé que sur le site : métallophone, nappes, souffle) ---------- */
+let ctx, master, noiseBuf;
+function A(){
+  if(ctx) return ctx;
+  ctx = new (window.AudioContext||window.webkitAudioContext)();
+  const comp = ctx.createDynamicsCompressor(); master = ctx.createGain(); master.gain.value = .8; master.connect(comp); comp.connect(ctx.destination);
+  noiseBuf = ctx.createBuffer(1, ctx.sampleRate*2, ctx.sampleRate); const d = noiseBuf.getChannelData(0); for(let i=0;i<d.length;i++) d[i] = Math.random()*2-1;
+  return ctx;
+}
+const now = () => ctx.currentTime;
+function env(g,t,a,att,dec){ g.gain.setValueAtTime(.0001,t); g.gain.exponentialRampToValueAtTime(Math.max(a,.0002),t+att); g.gain.exponentialRampToValueAtTime(.0001,t+att+dec) }
+function osc(t,type,f,a,att,dec,f2,vib){
+  const o=ctx.createOscillator(), g=ctx.createGain(); o.type=type; o.frequency.setValueAtTime(f,t);
+  if(f2) o.frequency.exponentialRampToValueAtTime(f2,t+att+dec);
+  if(vib){ const l=ctx.createOscillator(), lg=ctx.createGain(); l.frequency.value=vib[0]; lg.gain.value=f*vib[1]; l.connect(lg); lg.connect(o.frequency); l.start(t); l.stop(t+att+dec+.1) }
+  env(g,t,a,att,dec); o.connect(g); g.connect(master); o.start(t); o.stop(t+att+dec+.05);
+}
+function noise(t,dur,filters){
+  const s=ctx.createBufferSource(); s.buffer=noiseBuf; const g=ctx.createGain(); let n=s;
+  filters.forEach(fp=>{ const f=ctx.createBiquadFilter(); f.type=fp.type; f.frequency.setValueAtTime(fp.f,t); if(fp.f2) f.frequency.exponentialRampToValueAtTime(fp.f2,t+dur); if(fp.Q) f.Q.value=fp.Q; n.connect(f); n=f });
+  n.connect(g); g.connect(master); s.start(t, Math.random(), dur+.05); return g;
+}
+const NOTE = st => 523.25*Math.pow(2,st/12);
+function glock(t,f,a,dur=1.3,vib){ osc(t,"sine",f,a,.002,dur,null,vib); osc(t,"sine",f*2.76,a*.35,.001,dur*.35); osc(t,"sine",f*5.4,a*.12,.001,dur*.12);
+  env(noise(t,.01,[{type:"highpass",f:5000}]),t,a*.25,.001,.008) }
+function pad(t,f,a,dur){ [1,1.004].forEach(k=>osc(t,"triangle",f*k,a,dur*.35,dur*.65)); osc(t,"sine",f/2,a*.8,dur*.3,dur*.7) }
+// la cloche dorée : des partiels de cloche (pas ceux du métallophone)
+function bell(t,f,a,dur=2.2){ [[1,1],[2.0,.5],[2.42,.35],[3.0,.25],[4.1,.15],[5.4,.08]].forEach(([k,m])=>osc(t,"sine",f*k,a*m,.002,dur*(1.2-k*.15))) }
+function clink(t,a=.08){ const f=3200+Math.random()*2400; osc(t,"sine",f,a,.001,.12); osc(t,"sine",f*1.47,a*.5,.001,.08) }
+// la mélodie du Calot, comme sur le site
+const CALOT = [[0,-5],[1,0],[2,4],[3.2,7,2],[3.2,-12,2]], STEP = .085;
+function base(t,vol=.24){ CALOT.forEach(([d,n,len])=>glock(t+d*STEP, NOTE(n), vol*(len?1.1:1), len?1.3*len:undefined)); return t+4.4*STEP }
+
+const SOUNDS = {
+  normale(){ A(); base(now()+.05) },
+  // Irisée : la montée magique, en deux voix légèrement décalées qui ondulent comme des reflets
+  irisee(){ A(); const t = base(now()+.05);
+    [0,2,4,7,9,12,14,16,19,21,24,28].forEach((n,i)=>{ glock(t+i*.05, NOTE(n+12), .13, .7, [6,.012]); glock(t+.022+i*.05, NOTE(n+12)*1.006, .08, .6, [5,.015]) });
+    pad(t+.55, NOTE(12), .035, 1.6) },
+  // Dorée : des clochettes d'or, une pluie de pièces, et l'accord qui reste en scintillant
+  doree(){ A(); const t = base(now()+.05);
+    [12,16,19,24].forEach((n,i)=>bell(t+i*.13, NOTE(n), .09, 2.4));
+    for(let i=0;i<16;i++) clink(t+.3+i*.06+Math.random()*.05, .05+Math.random()*.05);
+    const tc = t+.75; [12,16,19,24].forEach(n=>osc(tc,"sine",NOTE(n),.05,.05,2.2,null,[7,.006]));
+    for(let i=0;i<10;i++) glock(tc+.2+i*.12, 2600+Math.random()*2400, .025, .5) },
+  // Lumineuse : un silence, un souffle qui monte comme une lumière qui s'allume, la mélodie avec un halo, puis de la poussière d'étoiles
+  lumineuse(){ A(); const t0 = now()+.05, ts = t0+.45;
+    env(noise(ts,1.1,[{type:"bandpass",f:300,f2:6000,Q:1.1}]),ts,.22,1,.12);
+    osc(ts,"sine",220,.08,1,.15,880);
+    const t = base(ts+1.15, .26);
+    osc(t-.2,"sine",NOTE(31),.06,.6,2.6,null,[5,.004]);                    // le halo : une note très aiguë qui tient
+    pad(t-.2, NOTE(7), .05, 2.8); pad(t-.2, NOTE(-5), .04, 2.8);
+    [36,33,31,28,24,21,19,16,12].forEach((n,i)=>glock(t+.5+i*.16, NOTE(n), .07, 1.1)) },
+};
+
+/* ---------- les étincelles (canvas) ---------- */
+function particles(cv, kind){
+  const c = cv.getContext("2d"), W = cv.width = cv.clientWidth*devicePixelRatio, H = cv.height = cv.clientHeight*devicePixelRatio, cx = W/2, cy = H/2-10*devicePixelRatio, P = [];
+  const rnd = (a,b) => a+Math.random()*(b-a), D = devicePixelRatio;
+  if(kind==="irisee") for(let i=0;i<90;i++){ const a=rnd(0,7), v=rnd(2,7)*D; P.push({x:cx,y:cy,vx:Math.cos(a)*v,vy:Math.sin(a)*v,g:.08*D,s:rnd(3,6)*D,h:rnd(0,360),life:rnd(60,100),rot:rnd(0,6),shape:"conf"}) }
+  if(kind==="doree"){ for(let i=0;i<40;i++) P.push({x:rnd(0,W),y:rnd(-H,0),vx:rnd(-.5,.5)*D,vy:rnd(2,4)*D,g:.05*D,s:rnd(5,9)*D,life:200,rot:rnd(0,6),shape:"coin"});
+    for(let i=0;i<50;i++){ const a=rnd(0,7), v=rnd(1,5)*D; P.push({x:cx,y:cy,vx:Math.cos(a)*v,vy:Math.sin(a)*v,g:.02*D,s:rnd(2,4)*D,life:rnd(50,90),shape:"spark",col:"#FFE38A"}) } }
+  if(kind==="lumineuse"){ for(let i=0;i<70;i++){ const a=rnd(0,7), v=rnd(.5,3.5)*D; P.push({x:cx,y:cy,vx:Math.cos(a)*v,vy:Math.sin(a)*v,g:0,drag:.97,s:rnd(1.5,3.5)*D,life:rnd(120,200),shape:"star",col:"#DFF8FF"}) }
+    for(let i=0;i<40;i++) P.push({x:rnd(0,W),y:rnd(-H*.6,0),vx:0,vy:rnd(.4,1)*D,g:0,s:rnd(1,2.4)*D,life:300,shape:"star",col:"#BFEFFF",tw:rnd(0,6)}) }
+  if(kind==="normale") for(let i=0;i<24;i++){ const a=rnd(0,7), v=rnd(1,4)*D; P.push({x:cx,y:cy,vx:Math.cos(a)*v,vy:Math.sin(a)*v,g:.05*D,s:rnd(2,4)*D,life:rnd(30,60),shape:"spark",col:"#FFF3D6"}) }
+  let f = 0;
+  (function loop(){
+    c.clearRect(0,0,W,H); let alive = 0;
+    P.forEach(p=>{ if(p.life<=0) return; alive++; p.life--; p.vy += p.g; if(p.drag){ p.vx*=p.drag; p.vy*=p.drag } p.x += p.vx; p.y += p.vy; p.rot = (p.rot||0)+.15;
+      const a = Math.min(1, p.life/40); c.globalAlpha = a;
+      if(p.shape==="conf"){ c.save(); c.translate(p.x,p.y); c.rotate(p.rot); c.fillStyle=`hsl(${(p.h+f*4)%360} 95% 65%)`; c.fillRect(-p.s,-p.s/2.5,p.s*2,p.s/1.25); c.restore() }
+      else if(p.shape==="coin"){ c.save(); c.translate(p.x,p.y); c.scale(Math.abs(Math.cos(p.rot)),1); c.fillStyle="#E8A317"; c.beginPath(); c.arc(0,0,p.s,0,7); c.fill(); c.fillStyle="#FFE38A"; c.beginPath(); c.arc(0,0,p.s*.7,0,7); c.fill(); c.restore() }
+      else { const tw = p.tw!=null ? .5+.5*Math.sin(f*.15+p.tw) : 1; c.globalAlpha = a*tw; c.fillStyle = p.col; c.shadowColor = p.col; c.shadowBlur = 8*D; c.beginPath(); c.arc(p.x,p.y,p.s,0,7); c.fill(); c.shadowBlur = 0 } });
+    f++; if(alive) requestAnimationFrame(loop); else c.clearRect(0,0,W,H);
+  })();
+}
+
+/* ---------- les 4 cartes ---------- */
+const SPEC = (sh, i) => ({seed:hash("shiny-demo"+i), type:"calot", family:[5,9,14,20][i]%FAMILIES.length, pal:[12,3,27,8][i], shiny:sh});
+const CARDS = [
+  {k:"normale", sh:0, name:"Bille normale", tag:"pour comparer", txt:"Ce qu'on entend aujourd'hui pour un Calot : sa mélodie, une gerbe d'étincelles, rien de plus."},
+  {k:"irisee", sh:1, name:"Irisée", tag:"75 % des shiny", col:"#FF6FB5", txt:"<b>Image :</b> deux anneaux arc-en-ciel s'ouvrent, un halo tourne en changeant de couleur, des confettis multicolores. <b>Son :</b> la montée magique en deux voix qui ondulent, comme des reflets."},
+  {k:"doree", sh:2, name:"Dorée", tag:"21 % des shiny", col:"#FFC93F", txt:"<b>Image :</b> l'écran se réchauffe, des rayons d'or tournent, une pluie de pièces. <b>Son :</b> des cloches d'or, un tintement de pièces, puis l'accord qui reste en scintillant."},
+  {k:"lumineuse", sh:3, name:"Lumineuse", tag:"4 % des shiny", col:"#9FE8FF", txt:"<b>Image :</b> la lumière s'éteint, un silence, un éclair blanc ; la bille brille dans le noir et de la poussière d'étoiles tombe. <b>Son :</b> un souffle qui monte, la mélodie sous un halo aigu, puis une cascade qui descend lentement."},
+];
+document.getElementById("grid").innerHTML = CARDS.map((C,i)=>{ const s = SPEC(C.sh,i);
+  return `<article class="card${C.k==="normale"?" base":""}" data-k="${C.k}" style="--lc:${C.k==="lumineuse"?PALETTES[s.pal][2]:"#9FE8FF"}">
+    <div class="stage">
+      ${C.k==="irisee"?`<div class="fx"><div class="iri-halo"></div></div><div class="fx"><div class="iri-ring"></div></div><div class="fx"><div class="iri-ring r2"></div></div>`:""}
+      ${C.k==="doree"?`<div class="fx"><div class="gold-rays"></div></div>`:""}
+      ${C.k==="lumineuse"?`<div class="fx"><div class="lum-glow"></div></div><div class="flash"></div>`:""}
+      <button class="wrapper" aria-label="Ouvrir la papillote"><span class="pap"></span></button>
+      <div class="ball${C.k==="lumineuse"?" lum":""}"><img src="${marbleURL(s,160)}" alt=""></div>
+      <div class="name${C.k==="lumineuse"?" lumtxt":""}"><small style="color:${C.col||"var(--ink-2)"}">${C.sh?"Shiny "+C.name:"Calot"}</small><b>${C.sh?"Calot "+FAMILIES[s.family].name:"Calot "+FAMILIES[s.family].name}</b></div>
+      <canvas></canvas>
+    </div>
+    <div class="info"><h2>${C.name}<span>${C.tag}</span></h2><p>${C.txt}</p><button class="btn btn-g play">▶ Rejouer</button></div>
+  </article>` }).join("");
+
+const wait = ms => new Promise(r=>setTimeout(r,ms));
+async function play(card){
+  const k = card.dataset.k, st = card.querySelector(".stage"), w = card.querySelector(".wrapper"), b = card.querySelector(".ball"), n = card.querySelector(".name"), cv = st.querySelector("canvas");
+  // on remet tout à zéro
+  st.className = "stage"; w.className = "wrapper"; b.classList.remove("in"); n.classList.remove("in");
+  st.querySelectorAll(".iri-ring,.iri-halo,.gold-rays,.lum-glow,.flash").forEach(e=>e.classList.remove("go","on"));
+  void st.offsetWidth; A(); if(ctx.state==="suspended") ctx.resume();
+  w.classList.add("shake"); await wait(1000);
+  if(k==="lumineuse"){   // la lumière s'éteint, un silence, le souffle, l'éclair
+    st.classList.add("dark"); SOUNDS.lumineuse(); await wait(1500);
+    st.querySelector(".flash").classList.add("go"); w.classList.add("gone"); b.classList.add("in");
+    st.querySelector(".lum-glow").classList.add("on"); particles(cv,"lumineuse"); await wait(500); n.classList.add("in"); return }
+  w.classList.add("gone"); b.classList.add("in"); SOUNDS[k]();
+  if(k==="irisee"){ st.querySelectorAll(".iri-ring").forEach(e=>e.classList.add("go")); st.querySelector(".iri-halo").classList.add("on") }
+  if(k==="doree"){ st.classList.add("warm"); st.querySelector(".gold-rays").classList.add("on") }
+  particles(cv,k); await wait(450); n.classList.add("in");
+}
+document.querySelectorAll(".card").forEach(c=>{ c.querySelector(".wrapper").onclick = () => play(c); c.querySelector(".play").onclick = () => play(c) });
+document.getElementById("all").onclick = async () => { for(const c of document.querySelectorAll(".card")){ play(c); await wait(c.dataset.k==="lumineuse" ? 5500 : 4200) } };
+</script>
+</body>
+</html>

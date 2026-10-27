@@ -1,0 +1,557 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Fusion ×10</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Lilita+One&family=Nunito:wght@600;700;800;900&family=Caveat:wght@700&display=swap">
+<style>
+/* (21 octobre 2026) Maquette : la fusion en lot. Jusqu'à 10 fusions d'un coup, seulement avec des doubles (l'album ne perd rien).
+   L'animation : les billes tombent toutes dans le chaudron en pluie, il bouillonne jusqu'à la meilleure bille du lot
+   (et s'éteint puis repart s'il y a une shiny), puis les billes sortent une par une, de la moins rare à la plus rare,
+   et la plus rare s'ouvre en grand comme dans un sachet. Les résultats sont tirés avec les vraies chances (ou forcés par le scénario). */
+:root{--bg:#F2E9D7;--panel:#FAF5EB;--panel-2:#F5EEE1;--line:#E6D9C1;--line-2:#DBCAAB;--ink:#24253D;--ink-2:#56546B;--muted:#8E8898;
+  --yellow:#FFC93F;--yellow-2:#F2AE12;--blue:#2E6BE6;--green:#2FA35A;--green-soft:#DAF2D6;--red:#E5484D;
+  --display:"Lilita One","Arial Rounded MT Bold","Trebuchet MS",sans-serif;--body:"Nunito","Segoe UI",system-ui,sans-serif;--hand:"Caveat","Segoe Print","Comic Sans MS",cursive}
+*{box-sizing:border-box;margin:0;padding:0}
+body{background:var(--bg);color:var(--ink);font:700 15px/1.45 var(--body);overflow-x:hidden}
+button{font:inherit;cursor:pointer;border:0;color:inherit;background:none;touch-action:manipulation}
+button:disabled{cursor:default;opacity:.45}
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;height:42px;padding:0 20px;border-radius:999px;font-weight:800;font-size:15px;transition:transform .12s,background .12s}
+.btn:active:not(:disabled){transform:translateY(2px)}
+.btn-yellow{background:var(--yellow);color:var(--ink);box-shadow:0 3px 0 var(--yellow-2)}
+.btn-yellow:hover:not(:disabled){background:#FFD45F}
+.btn-ghost{background:var(--panel);box-shadow:0 0 0 1.5px var(--line-2) inset}
+.btn-ghost:hover:not(:disabled){background:#fff}
+.btn-xl{height:56px;padding:0 30px;font-size:19px}
+.btn-sm{height:32px;padding:0 12px;font-size:13px}
+.wrap{max-width:1040px;margin:0 auto;padding:14px 16px 40px}
+.logo{font:400 30px/1 var(--display);margin-bottom:6px}
+.lead{color:var(--ink-2);max-width:760px;margin-bottom:14px}
+.box{background:var(--panel);border-radius:22px;box-shadow:0 0 0 1.5px var(--line) inset;padding:18px 20px;margin-bottom:14px}
+h2{font:400 22px/1.1 var(--display);margin-bottom:10px}
+.tag{display:inline-block;font-size:11px;font-weight:900;letter-spacing:.1em;text-transform:uppercase;color:var(--muted);margin-bottom:6px}
+.chips{display:flex;flex-wrap:wrap;gap:8px}
+.chip{height:34px;padding:0 14px;border-radius:999px;background:var(--panel-2);box-shadow:0 0 0 1.5px var(--line-2) inset;font-size:13.5px;font-weight:800;display:inline-flex;align-items:center;gap:7px}
+.chip i{width:11px;height:11px;border-radius:50%;background:var(--c,#999)}
+.chip[aria-pressed="true"]{background:var(--ink);color:#fff;box-shadow:none}
+.note{font-size:13px;color:var(--muted);margin-top:10px}
+ul.points{margin:4px 0 0 20px;color:var(--ink-2)}
+ul.points li{margin:4px 0}
+ul.points b{color:var(--ink)}
+
+/* la Confiserie, onglet Fusion (simplifiée) */
+.recipes{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:8px;margin-bottom:14px}
+.recipe{position:relative;display:flex;flex-direction:column;align-items:center;gap:4px;padding:10px 6px;border-radius:16px;background:var(--panel-2);box-shadow:0 0 0 1.5px var(--line) inset;text-align:center}
+.recipe[aria-pressed="true"]{background:#fff;box-shadow:0 0 0 2.5px var(--b) inset}
+.recipe .rb{display:flex;align-items:center;gap:2px}
+.recipe .rb img{display:block}
+.recipe b{font-size:13px;line-height:1.15}
+.recipe small{font-size:11.5px;color:var(--muted);font-weight:800}
+.recipe small.ok{color:var(--green)}
+.recipe .x10{position:absolute;top:-8px;right:-4px;font:400 12px/1 var(--display);padding:4px 7px;border-radius:999px;background:var(--yellow);box-shadow:0 2px 0 var(--yellow-2)}
+.fuse{display:grid;grid-template-columns:auto 1fr;gap:20px;align-items:center}
+.mini-pot{width:150px;height:140px;position:relative}
+.mini-pot .cz-pot{position:static;margin:0;width:150px;height:auto}
+.fuse h3{font:400 22px/1.15 var(--display);margin-bottom:4px}
+.fuse .acts{display:flex;flex-wrap:wrap;gap:8px;margin-top:12px;align-items:center}
+.lot{margin-top:14px;padding:14px 16px;border-radius:18px;background:linear-gradient(135deg,#FFF6D6,#FFEBB0);box-shadow:0 0 0 1.5px #F2D27A inset}
+.lot-top{display:flex;flex-wrap:wrap;gap:12px;align-items:center;justify-content:space-between}
+.lot h4{font:400 19px/1.15 var(--display)}
+.lot p{font-size:13.5px;color:var(--ink-2);margin-top:4px}
+.lot p b{color:var(--ink)}
+.step{display:inline-flex;align-items:center;gap:2px;background:#fff;border-radius:999px;box-shadow:0 0 0 1.5px #E8C766 inset;height:42px;padding:0 4px}
+.step button{width:34px;height:34px;border-radius:50%;font:900 20px/1 var(--body)}
+.step button:hover:not(:disabled){background:#FFF3C9}
+.step b{min-width:44px;text-align:center;font:400 20px/1 var(--display)}
+.lot .go{margin-top:12px;display:flex;flex-wrap:wrap;gap:10px;align-items:center}
+@media (max-width:640px){
+  .recipes{grid-template-columns:repeat(3,minmax(0,1fr))}
+  .fuse{grid-template-columns:1fr;justify-items:center;text-align:center}
+  .fuse .acts{justify-content:center}
+}
+
+/* la fenêtre de confirmation */
+.modal-bg{position:fixed;inset:0;z-index:50;background:rgba(20,16,30,.55);display:grid;place-items:center;padding:16px}
+.modal-bg[hidden]{display:none}
+.modal{background:var(--panel);border-radius:24px;padding:22px 20px 18px;width:min(520px,100%);max-height:calc(100vh - 32px);overflow:auto;box-shadow:0 20px 60px rgba(0,0,0,.35)}
+.modal h2{font-size:24px}
+.modal p{color:var(--ink-2);font-size:14px;margin:6px 0}
+.modal p b{color:var(--ink)}
+.groups{display:flex;flex-wrap:wrap;gap:6px;margin:12px 0;justify-content:center}
+.grp{position:relative;width:58px;height:58px;display:grid;place-items:center;background:var(--panel-2);border-radius:14px;box-shadow:0 0 0 1.5px var(--line) inset}
+.grp em{position:absolute;right:-4px;bottom:-4px;font:400 12px/1 var(--display);background:var(--ink);color:#fff;padding:3px 6px;border-radius:999px;font-style:normal}
+.modal .acts{display:flex;gap:10px;justify-content:flex-end;flex-wrap:wrap;margin-top:12px}
+.ok-note{display:flex;gap:8px;align-items:flex-start;padding:10px 12px;border-radius:14px;background:var(--green-soft);color:#1F6B3A;font-size:13.5px;margin-top:8px}
+
+/* ===== l'écran de fusion (comme dans le jeu) ===== */
+.ov{position:fixed;inset:0;z-index:60;display:grid;place-items:center;padding:20px 16px 90px;color:#fff;overflow:auto;
+  background:radial-gradient(ellipse 34% 30% at 50% 48%,rgba(255,236,200,.16) 0%,transparent 70%),radial-gradient(ellipse at 50% 40%,#3A2440 0%,#1E1424 60%,#140D18 100%)}
+.ov[hidden]{display:none}
+.ov::before{content:"";position:fixed;inset:0;background:radial-gradient(circle at 50% 45%,var(--flash,transparent),transparent 55%);pointer-events:none;transition:background .4s}
+#fx{position:fixed;inset:0;width:100%;height:100%;pointer-events:none;z-index:3}
+.ov-body{position:relative;z-index:2;display:flex;flex-direction:column;align-items:center;gap:14px;text-align:center;width:min(1040px,100%)}
+.ov-body.quake{animation:quake .45s}
+@keyframes quake{20%{transform:translate(-7px,3px)}40%{transform:translate(6px,-4px)}60%{transform:translate(-4px,2px)}80%{transform:translate(3px,-1px)}}
+.ov-kicker{font-size:12px;font-weight:900;letter-spacing:.12em;text-transform:uppercase;color:#FFE3B0;background:rgba(255,255,255,.1);padding:4px 12px;border-radius:999px}
+.ov-title{font-family:var(--display);font-size:clamp(28px,4vw,42px);line-height:1;text-shadow:0 3px 0 rgba(0,0,0,.35)}
+.ov-sub{color:#E8D6C2;font-weight:700}
+.ov .btn-ghost{background:rgba(255,255,255,.1);box-shadow:0 0 0 1.5px rgba(255,255,255,.25) inset;color:#fff;height:44px}
+.ov .btn-ghost:hover{background:rgba(255,255,255,.18)}
+.ov-actions{display:flex;flex-wrap:wrap;gap:10px;justify-content:center;margin-top:6px}
+.skip{position:fixed;z-index:4;right:16px;bottom:calc(16px + env(safe-area-inset-bottom,0px));height:40px;padding:0 18px;border-radius:999px;background:rgba(255,255,255,.14);color:#fff;font-weight:800;display:inline-flex;align-items:center;gap:6px}
+.skip:hover{background:rgba(255,255,255,.24)}
+.skip[hidden]{display:none}
+.snd{position:fixed;z-index:4;top:16px;left:16px;width:38px;height:38px;border-radius:50%;background:rgba(255,255,255,.12);color:#fff;font-size:17px}
+.snd[aria-pressed="false"]{opacity:.55}
+.ov-flash{position:fixed;inset:0;z-index:5;background:#fff;pointer-events:none;animation:ovflash .8s ease-out forwards}
+.ov-flash.myth{background:#FF2E44}
+@keyframes ovflash{from{opacity:.95}to{opacity:0}}
+.myth-vortex{position:fixed;left:50%;top:50%;width:200vmax;height:200vmax;margin:-100vmax 0 0 -100vmax;z-index:4;pointer-events:none;border-radius:50%;
+  background:conic-gradient(from 0deg,transparent 0 8%,rgba(255,46,68,.6) 16%,transparent 26% 41%,rgba(255,140,60,.45) 49%,transparent 59% 74%,rgba(255,46,68,.6) 82%,transparent 92%);
+  -webkit-mask:radial-gradient(circle,transparent 6vmax,#000 22vmax,transparent 70vmax);mask:radial-gradient(circle,transparent 6vmax,#000 22vmax,transparent 70vmax);
+  animation:mythwhirl 4.4s cubic-bezier(.25,0,.25,1) forwards}
+@keyframes mythwhirl{0%{opacity:0;transform:rotate(0) scale(.5)}12%{opacity:1}75%{opacity:.8}100%{opacity:0;transform:rotate(-720deg) scale(1.1)}}
+
+/* le chaudron (repris du jeu) */
+.cz-stage{--lq:#8E8898;--sk:1;position:relative;width:min(380px,90vw);height:400px;margin:6px auto 0}
+.cz-in{position:absolute;left:0;right:0;top:0;height:130px}
+.cz-in img{position:absolute;filter:drop-shadow(0 5px 5px rgba(0,0,0,.5));animation:cz-float 1.6s ease-in-out infinite;animation-delay:calc(var(--i) * -.17s)}
+@keyframes cz-float{50%{translate:0 -6px}}
+.cz-count{position:absolute;left:0;right:0;top:146px;font:400 22px/1 var(--display);color:#FFE3B0;text-shadow:0 2px 8px rgba(0,0,0,.6);transition:opacity .3s}
+.cz-stage.boil .cz-count{opacity:0}
+.cz-pot{position:absolute;left:50%;bottom:0;width:290px;margin-left:-145px;overflow:visible;filter:drop-shadow(0 16px 20px rgba(0,0,0,.5))}
+.cz-stage.plop .cz-pot{animation:cz-plop .22s ease-out}
+@keyframes cz-plop{50%{transform:scaleY(.97) translateY(2px)}}
+.cz-liq{transition:fill .3s}
+.cz-stage .cz-liq{filter:drop-shadow(0 0 calc(6px * var(--sk)) var(--lq))}
+.cz-bub{fill:var(--lq);opacity:0}
+.cz-stage.boil .cz-bub{animation:cz-bub calc(1.3s / var(--sk)) ease-out infinite;animation-delay:var(--d)}
+@keyframes cz-bub{0%{opacity:0;transform:translate(0,4px) scale(.4)}30%{opacity:1}100%{opacity:0;transform:translate(var(--x),-26px) scale(1.2)}}
+.cz-stage.boil .cz-pot{animation:cz-shake calc(.5s / var(--sk)) ease-in-out infinite}
+.cz-stage.up .cz-pot{animation:cz-up .35s cubic-bezier(.2,1.8,.4,1)}
+@keyframes cz-shake{25%{transform:rotate(calc(-.6deg * var(--sk)))}75%{transform:rotate(calc(.6deg * var(--sk)))}}
+@keyframes cz-up{40%{transform:scale(1.06,.94)}}
+.cz-fire{transform-origin:120px 196px;animation:cz-fire .35s ease-in-out infinite alternate}
+@keyframes cz-fire{to{transform:scale(1.08,.88)}}
+.cz-steam{position:absolute;left:50%;bottom:205px;width:160px;margin-left:-80px;height:90px;pointer-events:none;opacity:0;transition:opacity .4s}
+.cz-stage.boil .cz-steam{opacity:.55}.cz-stage.hot .cz-steam{opacity:.9}
+.cz-steam i{position:absolute;bottom:0;width:46px;height:46px;border-radius:50%;background:radial-gradient(circle,color-mix(in srgb,var(--lq) 50%,#fff) 0,transparent 70%);animation:cz-steam 1.8s ease-out infinite}
+.cz-steam i:nth-child(1){left:10px}.cz-steam i:nth-child(2){left:57px;animation-delay:.6s}.cz-steam i:nth-child(3){left:104px;animation-delay:1.2s}
+@keyframes cz-steam{from{transform:translateY(10px) scale(.5);opacity:.9}to{transform:translateY(-70px) scale(1.6);opacity:0}}
+.cz-tier{position:absolute;left:0;right:0;top:132px;text-align:center;font-family:var(--display);font-size:30px;letter-spacing:.5px;color:var(--tc,#fff);text-shadow:0 3px 12px rgba(0,0,0,.6);opacity:0}
+.cz-tier.pop{animation:cz-pop .45s cubic-bezier(.2,1.8,.4,1) forwards}
+@keyframes cz-pop{from{opacity:0;transform:scale(.6)}to{opacity:1;transform:none}}
+.cz-stage.dark{--lq:#15121C!important}
+.cz-stage.dark .cz-pot{animation:cz-shake .12s linear infinite;--sk:3}
+.ov:has(.cz-stage.dark)::before{background:rgba(0,0,0,.6)}
+.cz-stage.sh1 .cz-liq{animation:cz-iri 1.2s linear infinite}
+@keyframes cz-iri{to{filter:hue-rotate(360deg) drop-shadow(0 0 14px #C78BFF)}}
+.cz-stage.sh2 .cz-liq,.cz-stage.sh3 .cz-liq{filter:drop-shadow(0 0 22px var(--lq))}
+/* nouveau : le chaudron déborde, les billes en jaillissent */
+.cz-stage.spill .cz-pot{animation:cz-spill .5s cubic-bezier(.2,1.8,.4,1)}
+@keyframes cz-spill{30%{transform:scale(1.1,.9)}60%{transform:scale(.96,1.05)}}
+
+/* nouveau : les résultats du lot */
+.bx-tally{display:flex;flex-wrap:wrap;gap:6px;justify-content:center}
+.bx-tally span{display:inline-flex;align-items:center;gap:6px;padding:4px 10px;border-radius:999px;background:rgba(255,255,255,.08);font-size:13px;font-weight:800}
+.bx-tally i{width:10px;height:10px;border-radius:50%;background:var(--c)}
+.bx-best{--tc:#8E8898;position:relative;width:250px;display:flex;flex-direction:column;align-items:center;gap:8px;padding:14px 10px 16px;border-radius:24px;
+  background:radial-gradient(circle closest-side at 50% 42%,color-mix(in srgb,var(--tc) 30%,transparent),transparent);min-height:290px}
+.bx-best .lbl{font:400 16px/1 var(--display);letter-spacing:.04em;color:color-mix(in srgb,var(--tc) 50%,#fff);text-shadow:0 2px 0 rgba(0,0,0,.4);opacity:0}
+.bx-best .ball{position:relative;width:190px;height:190px;display:grid;place-items:center}
+.bx-best .ball img{position:relative;z-index:1;filter:drop-shadow(0 10px 14px rgba(0,0,0,.5))}
+.bx-best .rays{position:absolute;inset:-30px;border-radius:50%;opacity:0;background:repeating-conic-gradient(from 0deg,var(--tc) 0 8deg,transparent 8deg 22deg);
+  -webkit-mask:radial-gradient(closest-side,#000 30%,transparent 100%);mask:radial-gradient(closest-side,#000 30%,transparent 100%);transition:opacity .5s;animation:spin 14s linear infinite}
+.bx-best.shiny .rays{background:repeating-conic-gradient(from 0deg,#FF6FB5 0 6deg,transparent 6deg 12deg,#FFB547 12deg 18deg,transparent 18deg 24deg,#6FE3A8 24deg 30deg,transparent 30deg 36deg,#5AB8FF 36deg 42deg,transparent 42deg 48deg)}
+.bx-best.sh2 .rays{background:repeating-conic-gradient(from 0deg,rgba(255,214,90,.75) 0 6deg,transparent 6deg 18deg)}
+.bx-best.sh1 .ball::before{content:"";position:absolute;inset:-6px;border-radius:50%;background:conic-gradient(#FF6FB5,#FFB547,#FFE14D,#6FE3A8,#5AB8FF,#B07BFF,#FF6FB5);filter:blur(22px);opacity:.55;animation:spin 4s linear infinite}
+.bx-best.sh3 .ball::before{content:"";position:absolute;inset:-10px;border-radius:50%;background:radial-gradient(circle,var(--lc,#9FE8FF),transparent 65%);opacity:.85;animation:lumbreathe 2.2s ease-in-out infinite}
+@keyframes lumbreathe{50%{transform:scale(1.12);opacity:.6}}
+@keyframes spin{to{transform:rotate(360deg)}}
+.bx-best .info{display:flex;flex-direction:column;align-items:center;gap:5px;opacity:0}
+.bx-best .info b{font-size:16px;line-height:1.2}
+.bx-best.on .lbl,.bx-best.on .info{opacity:1;transition:opacity .4s .15s}
+.bx-best.on .rays{opacity:1}
+.bx-best .orb{position:absolute;inset:40px;border-radius:50%;z-index:2;background:radial-gradient(circle at 35% 30%,#fff,color-mix(in srgb,var(--tc) 70%,#fff) 45%,var(--tc));
+  box-shadow:0 0 30px var(--tc),0 0 70px color-mix(in srgb,var(--tc) 60%,transparent);opacity:0;transform:scale(.3)}
+.bx-best.charge .orb{opacity:1;transform:scale(1);transition:transform .4s cubic-bezier(.2,1.6,.4,1),opacity .2s;animation:charge .9s ease-in both}
+@keyframes charge{0%{translate:0 0}20%{translate:-2px 1px}40%{translate:3px -2px}60%{translate:-4px 2px}80%{translate:5px -3px}100%{translate:-6px 2px;filter:brightness(1.6)}}
+.bx-best.on .orb{opacity:0;transform:scale(1.8);transition:transform .35s ease-out,opacity .35s}
+.bx-best .ball > img{opacity:0;transform:scale(.4)}
+.bx-best.on .ball > img{opacity:1;transform:none;transition:transform .5s cubic-bezier(.2,1.6,.4,1),opacity .2s}
+.bx-grid{display:flex;flex-wrap:wrap;gap:10px;justify-content:center;max-width:760px}
+.bx-card{--tc:#8E8898;position:relative;width:132px;display:flex;flex-direction:column;align-items:center;gap:4px;padding:10px 6px 10px;border-radius:18px;
+  background:rgba(255,255,255,.06);box-shadow:0 0 0 1.5px color-mix(in srgb,var(--tc) 55%,transparent) inset;opacity:0}
+.bx-card.in{animation:popout .55s cubic-bezier(.2,1.5,.4,1) forwards}
+@keyframes popout{from{opacity:0;transform:translateY(60px) scale(.3)}to{opacity:1;transform:none}}
+.bx-card .b{height:74px;display:grid;place-items:center}
+.bx-card .b img{filter:drop-shadow(0 6px 8px rgba(0,0,0,.45))}
+.bx-card b{font-size:12.5px;line-height:1.15}
+.bx-card.r3,.bx-card.r4,.bx-card.r5,.bx-card.shy{background:radial-gradient(circle at 50% 30%,color-mix(in srgb,var(--tc) 28%,transparent),rgba(255,255,255,.05) 70%)}
+.bx-card.r4,.bx-card.r5{box-shadow:0 0 0 2px var(--tc) inset,0 0 18px color-mix(in srgb,var(--tc) 50%,transparent)}
+.new{position:absolute;top:-7px;left:50%;translate:-50% 0;font:900 10px/1 var(--body);letter-spacing:.06em;text-transform:uppercase;background:#2FA35A;color:#fff;padding:4px 7px;border-radius:999px;white-space:nowrap}
+.pill{display:inline-flex;align-items:center;gap:4px;font-size:11px;font-weight:900;padding:2px 8px;border-radius:999px;background:color-mix(in srgb,var(--c) 30%,transparent);color:color-mix(in srgb,var(--c) 35%,#fff);box-shadow:0 0 0 1px color-mix(in srgb,var(--c) 60%,transparent) inset}
+.pills{display:flex;gap:4px;flex-wrap:wrap;justify-content:center}
+.ov-xp{font-weight:900;color:#FFD98A;font-size:14px}
+img[data-lum]{animation:lumpulse 3.6s ease-in-out infinite both}
+@keyframes lumpulse{
+  0%,100%{filter:drop-shadow(0 0 2px color-mix(in srgb,var(--lc) 60%,#fff)) drop-shadow(0 0 10px var(--lc)) drop-shadow(0 0 24px var(--lc))}
+  50%{filter:drop-shadow(0 0 3px color-mix(in srgb,var(--lc) 40%,#fff)) drop-shadow(0 0 14px var(--lc)) drop-shadow(0 0 34px var(--lc))}}
+img[data-gold]{animation:goldpulse 3.2s ease-in-out infinite both}
+@keyframes goldpulse{
+  0%,100%{filter:drop-shadow(0 0 2px rgba(255,214,110,.9)) drop-shadow(0 0 9px rgba(232,172,40,.5))}
+  50%{filter:drop-shadow(0 0 3px rgba(255,226,140,1)) drop-shadow(0 0 13px rgba(232,172,40,.65))}}
+@media (max-width:640px){
+  .bx-card{width:calc((100vw - 32px - 20px) / 3)}
+  .bx-best{width:230px;min-height:270px}
+}
+@media (prefers-reduced-motion:reduce){ .cz-stage *,.bx-best *{animation:none!important} .ov-flash,.myth-vortex{display:none} }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="logo">Fusion ×10</div>
+  <p class="lead">Maquette : jusqu'à 10 fusions d'un coup, seulement avec tes doubles. Choisis une recette, règle le nombre de fusions, puis lance. Le scénario force ce qui sort du chaudron pour voir chaque animation ; « Au hasard » tire avec les vraies chances du jeu.</p>
+
+  <div class="box">
+    <span class="tag">Ce qui sort du chaudron (pour la maquette)</span>
+    <div class="chips" id="scen"></div>
+  </div>
+
+  <div class="box">
+    <span class="tag">La Confiserie · onglet Fusion</span>
+    <div class="recipes" id="recipes"></div>
+    <div class="fuse">
+      <div class="mini-pot" id="mini-pot"></div>
+      <div>
+        <h3>Le chaudron est vide</h3>
+        <p class="note" style="margin-top:0">Une fusion à la fois, comme aujourd'hui : on remplit le chaudron à la main ou avec ses doubles.</p>
+        <div class="acts">
+          <button class="btn btn-yellow" disabled>Fusionner</button>
+          <button class="btn btn-ghost btn-sm">Remplir avec mes doubles</button>
+          <button class="btn btn-ghost btn-sm">Remplir au hasard (billes uniques)</button>
+        </div>
+      </div>
+    </div>
+    <div class="lot" id="lot"></div>
+  </div>
+
+  <div class="box">
+    <h2>Ce qui change dans le jeu</h2>
+    <ul class="points">
+      <li><b>Seulement des doubles</b>, avec la même règle que « Remplir avec mes doubles » : tu gardes toujours au moins un exemplaire de chaque bille, l'album ne perd rien. Jamais les shiny, la bille active, la vitrine, les billes de saison, ni celles en vente ou dans un troc.</li>
+      <li><b>10 fusions au maximum</b> d'un coup. Le nombre proposé est le plus grand possible avec tes doubles ; − et + pour en faire moins. Avec une seule fusion possible, le bouton n'apparaît pas.</li>
+      <li><b>Mêmes chances</b> qu'en faisant les fusions une par une : chaque fusion a sa propre chance de shiny, son motif et son coloris tirés au hasard.</li>
+      <li><b>Tout ou rien</b> côté serveur : une seule demande pour tout le lot ; si une bille n'est plus disponible, aucune fusion n'est faite et la boîte se remet à jour.</li>
+      <li>Chaque fusion compte pour la quête « Fais une fusion », l'XP de saison (×N) et les Trouvailles rares (Mammouth, shiny, légendaire, mythique).</li>
+      <li><b>L'animation</b> : environ 7 secondes pour 10 fusions, au lieu de 10 fois l'animation complète. « Passer » montre tout de suite le résultat.</li>
+    </ul>
+    <p class="note">Maquette : les billes du chaudron sont des billes au hasard, et l'étiquette « Nouveau » est tirée au hasard.</p>
+  </div>
+</div>
+
+<div class="modal-bg" id="modal" hidden></div>
+<div class="ov" id="ov" hidden><canvas id="fx"></canvas><button class="snd" id="snd" aria-pressed="true" aria-label="Son">♪</button><div class="ov-body" id="ov-body"></div><button class="skip" id="skip" hidden>Passer ▸▸</button></div>
+
+<script src="tikalo-demo-rendu.js"></script>
+<script>
+// ---------- les effets (comme FX dans le jeu, en plus simple) ----------
+const FX = (()=>{
+  const cv = document.getElementById("fx"), cx = cv.getContext("2d"); let P = [], R = [], raf = 0;
+  const fit = () => { const d = Math.min(2, devicePixelRatio||1); cv.width = innerWidth*d; cv.height = innerHeight*d; cx.setTransform(d,0,0,d,0,0) };
+  addEventListener("resize", fit); fit();
+  const loop = () => {
+    cx.clearRect(0,0,innerWidth,innerHeight);
+    P = P.filter(p=>p.life>0); R = R.filter(r=>r.life>0);
+    for(const p of P){ p.vy += .18; p.vx *= .985; p.x += p.vx; p.y += p.vy; p.life -= p.dec;
+      cx.globalAlpha = Math.max(0, p.life); cx.fillStyle = p.c; cx.beginPath(); cx.arc(p.x, p.y, p.r, 0, 6.283); cx.fill() }
+    for(const r of R){ r.rad += (r.max - r.rad)*.09; r.life -= .025;
+      cx.globalAlpha = Math.max(0, r.life); cx.strokeStyle = r.c; cx.lineWidth = 4*r.life + 1; cx.beginPath(); cx.arc(r.x, r.y, r.rad, 0, 6.283); cx.stroke() }
+    cx.globalAlpha = 1;
+    raf = P.length || R.length ? requestAnimationFrame(loop) : 0;
+  };
+  const go = () => { if(!raf) raf = requestAnimationFrame(loop) };
+  const reduce = () => matchMedia("(prefers-reduced-motion: reduce)").matches;
+  return {
+    fit, reduce, setDust(){},
+    at: el => { const r = el.getBoundingClientRect(); return [r.left + r.width/2, r.top + r.height/2] },
+    burst(x, y, cols, n=20, pw=1){ if(reduce()) return;
+      for(let i=0;i<n;i++){ const a = Math.random()*6.283, v = (2 + Math.random()*5)*pw;
+        P.push({x, y, vx:Math.cos(a)*v, vy:Math.sin(a)*v - 2*pw, r:2 + Math.random()*3.5, c:cols[i%cols.length], life:1, dec:.012 + Math.random()*.014}) } go() },
+    ring(x, y, c){ if(reduce()) return; R.push({x, y, rad:10, max:150, c, life:1}); go() },
+    fireworks(cols, n=8){ for(let i=0;i<n;i++) setTimeout(()=>this.burst(innerWidth*(.15+.7*Math.random()), innerHeight*(.15+.4*Math.random()), cols, 40, .9), i*220) },
+    clear(){ P = []; R = [] }
+  };
+})();
+
+// ---------- les sons (approchés : la boîte à musique du jeu) ----------
+const Sound = (()=>{
+  let ac = null, on = true;
+  const ctx = () => { if(!ac) ac = new (window.AudioContext||window.webkitAudioContext)(); if(ac.state==="suspended") ac.resume(); return ac };
+  const SC = [523.25,587.33,659.25,783.99,880,1046.5,1174.66,1318.5,1567.98,1760,2093];
+  function tone(f, t0, dur, vol=.15, type="sine"){
+    if(!on) return; const a = ctx(), o = a.createOscillator(), g = a.createGain(), t = a.currentTime + t0;
+    o.type = type; o.frequency.value = f; g.gain.setValueAtTime(0, t); g.gain.linearRampToValueAtTime(vol, t+.006); g.gain.exponentialRampToValueAtTime(.0001, t+dur);
+    o.connect(g).connect(a.destination); o.start(t); o.stop(t+dur+.05);
+  }
+  const box = (f, t0=0, v=.12) => { tone(f, t0, .9, v, "triangle"); tone(f*2, t0, .5, v*.35) };
+  function noise(t0, dur, f0, f1, vol=.12){
+    if(!on) return; const a = ctx(), n = a.createBufferSource(), b = a.createBuffer(1, a.sampleRate*dur, a.sampleRate), d = b.getChannelData(0);
+    for(let i=0;i<d.length;i++) d[i] = Math.random()*2-1;
+    const bp = a.createBiquadFilter(), g = a.createGain(), t = a.currentTime + t0; bp.type = "bandpass"; bp.Q.value = 1.2;
+    bp.frequency.setValueAtTime(f0, t); bp.frequency.exponentialRampToValueAtTime(f1, t+dur);
+    g.gain.setValueAtTime(vol, t); g.gain.exponentialRampToValueAtTime(.0001, t+dur);
+    n.buffer = b; n.connect(bp).connect(g).connect(a.destination); n.start(t);
+  }
+  return {
+    get on(){ return on }, set on(v){ on = v },
+    unlock(){ try{ ctx() }catch(e){} },
+    tap(_, v=.5, p=1){ tone(380*p, 0, .12, .12*v); tone(760*p, 0, .06, .05*v) },
+    pop(i){ box(SC[Math.min(SC.length-1, i)], 0, .09) },
+    distStep(i){ box(SC[Math.min(SC.length-1, i*2)], 0, .13) },
+    whoosh(){ noise(0, .7, 300, 2400, .1) },
+    lumSwell(){ for(let i=0;i<8;i++) tone(400 + i*90, i*.12, .4, .05) },
+    opening(sh, dr){ const L = 3 + Math.max(0, dr) + (sh?2:0); for(let i=0;i<L;i++) box(SC[Math.min(SC.length-1, i + Math.max(0,dr))], i*.09, .12); if(sh) for(let i=0;i<6;i++) tone(2000 + i*300, .3 + i*.06, .3, .03) },
+    mythSwell(){ tone(110, 0, 1.5, .18, "sawtooth") },
+    mythBoom(){ tone(55, 0, 1.6, .35); tone(82, 0, 1.2, .2, "triangle"); noise(0, 1, 120, 60, .2) },
+  };
+})();
+const snd = document.getElementById("snd");
+snd.addEventListener("click", ()=>{ Sound.on = !Sound.on; snd.setAttribute("aria-pressed", Sound.on) });
+
+// ---------- les données de la maquette ----------
+const CRAFT_NS = [3,5,5,6,8];
+const DOUBLES = [34, 23, 12, 4, 9];   // doubles disponibles pour chaque recette (pour l'exemple)
+const MAXLOT = 10;
+const lotMax = t => Math.min(MAXLOT, Math.floor(DOUBLES[t]/CRAFT_NS[t]));
+const SCEN = [
+  ["hasard","Au hasard (vraies chances)","#24253D"], ["banal","Un lot banal","#8E8898"], ["rare","Avec un Rare",DECOR_RAR[2].c],
+  ["epique","Avec un Épique",DECOR_RAR[3].c], ["legendaire","Avec un Légendaire",DECOR_RAR[4].c], ["mythique","Avec le Mythique",DECOR_RAR[5].c],
+  ["irisee","Avec une shiny Irisée","#C78BFF"], ["doree","Avec une shiny Dorée","#E0A800"], ["lumineuse","Avec une shiny Lumineuse","#7FE3FF"],
+  ["jackpot","Légendaire + shiny Dorée","#D97E06"],
+];
+const st = {t:0, n:lotMax(0), sc:"legendaire"};
+const rar = s => FAMILIES[s.family].rar;
+const famsOf = r => DECOR_IDS.filter(i=>FAMILIES[i].rar===r);
+const pickFam = r => { const L = famsOf(r); return L[Math.floor(Math.random()*L.length)] };
+const SH_BONUS = [0, 25, 30, 45];
+const score = s => rar(s)*10 + SH_BONUS[s.shiny||0] + Math.random();   // la plus rare du lot (le hasard départage)
+const colOf = s => s.shiny===3 ? PALETTES[s.pal][2] : s.shiny===2 ? "#E0A800" : s.shiny===1 ? "#C78BFF" : DECOR_RAR[rar(s)].c;
+const shortName = s => `${FAMILIES[s.family].name}${s.shiny?" "+SHINIES[s.shiny].name:""}`;
+const pills = s => `<span class="pill" style="--c:${TYPES[s.type].rc}">${TYPES[s.type].label}</span>${rar(s)>=1?`<span class="pill" style="--c:${DECOR_RAR[rar(s)].c}">${DECOR_RAR[rar(s)].name}</span>`:""}${s.shiny?`<span class="pill" style="--c:${CZ_SH[s.shiny]}">✦ ${SHINIES[s.shiny].name}</span>`:""}`;
+const scan = () => requestAnimationFrame(()=>lazyScan());
+
+// les billes qui partent : des doubles de quelques modèles
+function inputsOf(t, n){
+  const models = Array.from({length:Math.max(3, Math.ceil(n/5))}, ()=>makeSpec(TK[t], {family:pickFam(Math.random()<.6?0:Math.random()<.7?1:2)}));
+  return Array.from({length:n}, (_,i)=>({...models[i%models.length], id:newId(), seed:(models[i%models.length].seed + i*7919)>>>0}));
+}
+// ce qui sort : N fusions tirées avec les vraies chances, puis le scénario force une ou deux billes
+function lotOut(t, N, sc){
+  const T = TK[t+1], n = CRAFT_NS[t];
+  let out = Array.from({length:N}, ()=>makeSpec(T, {shiny:Math.random()<SHINY_RATE*n ? rollShiny() : 0}));
+  if(sc!=="hasard") out = out.map(()=>makeSpec(T, {family:pickFam(Math.random()<.62 ? 0 : Math.random()<.8 || sc==="banal" ? 1 : 2)}));
+  const used = new Set(), force = o => { let j; do j = Math.floor(Math.random()*N); while(used.has(j) && used.size<N); used.add(j); out[j] = makeSpec(T, o) };
+  const F = {rare:{family:pickFam(2)}, epique:{family:pickFam(3)}, legendaire:{family:pickFam(4)}, mythique:{family:pickFam(5)},
+    irisee:{shiny:1, family:pickFam(1)}, doree:{shiny:2, family:pickFam(1)}, lumineuse:{shiny:3, family:pickFam(2)}}[sc];
+  if(F) force(F);
+  if(sc==="jackpot"){ force({family:pickFam(4)}); force({shiny:2, family:pickFam(2)}) }
+  return out.map(s=>({...s, isNew:Math.random()<.35}));
+}
+
+// ---------- la Confiserie ----------
+function renderScen(){
+  document.getElementById("scen").innerHTML = SCEN.map(([k,l,c])=>`<button class="chip" data-sc="${k}" aria-pressed="${st.sc===k}" style="--c:${c}"><i></i>${l}</button>`).join("");
+}
+function renderRecipes(){
+  document.getElementById("recipes").innerHTML = TK.slice(0,-1).map((T,t)=>{ const can = Math.floor(DOUBLES[t]/CRAFT_NS[t]), mx = lotMax(t);
+    return `<button class="recipe" data-t="${t}" aria-pressed="${st.t===t}" style="--b:${RARITY[t+1].c}">
+      ${mx>=2?`<span class="x10">×${mx}</span>`:""}
+      <span class="rb">${mImg(exSpec(T),80,Math.round(16+14*scaleOf(T)),"")}<small>×${CRAFT_NS[t]}</small>→${mImg(exSpec(TK[t+1]),90,Math.round(18+18*scaleOf(TK[t+1])),"")}</span>
+      <b>${CRAFT_NS[t]} ${TYPES[T].pl}</b><small>→ 1 ${TYPES[TK[t+1]].label}</small>
+      <small class="${can?"ok":""}">${can ? `${can} fusion${can>1?"s":""} avec tes doubles` : `${DOUBLES[t]} / ${CRAFT_NS[t]}`}</small></button>` }).join("");
+  scan();
+}
+function renderLot(){
+  const t = st.t, mx = lotMax(t), n = CRAFT_NS[t], el = document.getElementById("lot"), T = TK[t], T2 = TK[t+1];
+  if(mx<2){ el.innerHTML = `<div class="lot-top"><div><h4>Fusion en lot</h4><p>${mx===1 ? "Tes doubles ne suffisent que pour une fusion : fais-la au chaudron, juste au-dessus." : `Pas assez de doubles de ${TYPES[T].pl} pour une fusion.`}</p></div></div>`; return }
+  st.n = Math.max(2, Math.min(st.n, mx));
+  const N = st.n, pSh = 1 - Math.pow(1 - SHINY_RATE*n, N);
+  el.innerHTML = `<div class="lot-top"><div><h4>Fusionner plusieurs fois d'un coup</h4>
+      <p><b>${N*n} ${TYPES[T].pl}</b> (que des doubles) → <b>${N} ${N>1?TYPES[T2].pl:TYPES[T2].label}</b>, motifs et coloris au hasard. Ton album ne perd rien.</p>
+      <p>${pct(+(pSh*100).toFixed(2))} de chance d'au moins une shiny dans le lot.</p></div>
+    <div class="step" aria-label="Nombre de fusions"><button data-step="-1" ${N<=2?"disabled":""} aria-label="Une fusion de moins">−</button><b>×${N}</b><button data-step="1" ${N>=mx?"disabled":""} aria-label="Une fusion de plus">+</button></div></div>
+    <div class="go"><button class="btn btn-yellow btn-xl" id="go">⚗ Fusionner ×${N}</button><small class="note" style="margin:0">${mx===MAXLOT && Math.floor(DOUBLES[t]/n)>MAXLOT ? `${Math.floor(DOUBLES[t]/n)} possibles, 10 au maximum d'un coup` : `${mx} au maximum avec tes doubles`}</small></div>`;
+}
+function renderAll(){ renderScen(); renderRecipes(); renderLot() }
+document.getElementById("mini-pot").innerHTML = czPot();
+renderAll();
+
+document.addEventListener("click", e=>{
+  Sound.unlock();
+  const sc = e.target.closest("[data-sc]"); if(sc){ st.sc = sc.dataset.sc; renderScen(); return }
+  const r = e.target.closest(".recipe"); if(r){ st.t = +r.dataset.t; st.n = lotMax(st.t); renderRecipes(); renderLot(); return }
+  const s = e.target.closest("[data-step]"); if(s){ st.n += +s.dataset.step; renderLot(); return }
+  if(e.target.closest("#go")) return confirmLot();
+  if(e.target.closest("[data-close]")){ document.getElementById("modal").hidden = true; return }
+  if(e.target.closest("[data-launch]")){ document.getElementById("modal").hidden = true; return launch() }
+  if(e.target.closest("[data-again]")) return launch();
+  if(e.target.closest("[data-back]")) return closeOv();
+  if(e.target.closest("#skip")) return skip();
+});
+
+// ---------- la confirmation ----------
+let pending = null;
+function confirmLot(){
+  const t = st.t, N = st.n, n = CRAFT_NS[t], inputs = inputsOf(t, N*n);
+  pending = {t, N, inputs};
+  const g = new Map(); inputs.forEach(s=>{ const k = s.family+"|"+s.pal; if(!g.has(k)) g.set(k, []); g.get(k).push(s) });
+  const m = document.getElementById("modal");
+  m.innerHTML = `<div class="modal" role="dialog" aria-modal="true" aria-label="Fusionner ×${N}">
+    <h2>Fusionner ${N} fois ?</h2>
+    <p><b>${N*n} ${TYPES[TK[t]].pl}</b> partent dans le chaudron. Tu reçois <b>${N} ${TYPES[TK[t+1]].pl}</b>.</p>
+    <div class="groups">${[...g.values()].map(l=>`<span class="grp">${mImg(l[0],96,40,"")}<em>×${l.length}</em></span>`).join("")}</div>
+    <div class="ok-note">✓ <span>Que des doubles : il te reste au moins un exemplaire de chacune. Ton album ne perd rien.</span></div>
+    <div class="acts"><button class="btn btn-ghost" data-close>Annuler</button><button class="btn btn-yellow" data-launch>⚗ Fusionner ×${N}</button></div></div>`;
+  m.hidden = false; scan();
+}
+
+// ---------- l'animation ----------
+const ov = document.getElementById("ov"), body = document.getElementById("ov-body"), skipB = document.getElementById("skip");
+let run = 0, cur = null;
+const wait = ms => new Promise(r=>setTimeout(r, ms));
+function closeOv(){ run++; ov.hidden = true; skipB.hidden = true; FX.clear(); document.body.style.overflow = "" }
+function skip(){ if(!cur) return; run++; skipB.hidden = true; results(cur, true) }
+function launch(){
+  if(!pending) return;
+  const {t, N} = pending, inputs = pending.inputs ?? inputsOf(t, N*CRAFT_NS[t]); pending.inputs = null;   // « Encore » : de nouvelles billes
+  const out = lotOut(t, N, st.sc);
+  cur = {t, N, inputs, out}; play(cur);
+}
+async function play(L){
+  const my = ++run, alive = () => run===my && !ov.hidden;
+  const {inputs, out} = L, dr = Math.max(...out.map(rar)), sh = Math.max(...out.map(s=>s.shiny||0));
+  const show = inputs.slice(0, 30), sz = inputs.length>20 ? 34 : 42;
+  ov.style.removeProperty("--flash");
+  body.classList.remove("quake");
+  body.innerHTML = `<span class="ov-kicker">La Confiserie · Fusion ×${L.N}</span><div class="ov-title" id="cz-title">Dans le chaudron…</div>
+    <div class="cz-stage" id="cz-stage" style="--lq:${DECOR_RAR[0].c}">
+      <div class="cz-in">${show.map((s,i,l)=>{ const row = i%2, k = Math.floor(i/2), m = Math.ceil(l.length/2), a = Math.PI*(1.06 + .88*k/Math.max(1,m-1));
+        return `<img src="${marbleURL(s,96)}" alt="" width="${sz}" height="${sz}" style="--i:${i};left:calc(50% - ${sz/2}px + ${(Math.cos(a)*(165-row*40)).toFixed(0)}px);top:${(122 + Math.sin(a)*(100-row*32)).toFixed(0)}px">` }).join("")}</div>
+      <div class="cz-count" id="cz-count">0 / ${inputs.length}</div>
+      <div class="cz-tier" id="cz-tier"></div><div class="cz-steam"><i></i><i></i><i></i></div>${czPot()}
+    </div>`;
+  ov.hidden = false; skipB.hidden = false; document.body.style.overflow = "hidden"; FX.fit();
+  const stage = document.getElementById("cz-stage"), tier = document.getElementById("cz-tier"), title = document.getElementById("cz-title"), cnt = document.getElementById("cz-count");
+  const potAt = () => { const r = stage.querySelector(".cz-pot").getBoundingClientRect(); return [r.left + r.width/2, r.top + r.height*.3] };
+  const bump = c => { stage.classList.remove(c); void stage.offsetWidth; stage.classList.add(c) };
+  if(FX.reduce()) return results(L, true);
+  // 1. la pluie de billes : toutes tombent en ~2 secondes (au-delà de 30, le compteur fait le reste)
+  await wait(300);
+  const imgs = [...stage.querySelectorAll(".cz-in img")], [px, py] = potAt(), step = Math.max(45, Math.min(110, 1900/imgs.length));
+  for(const [i, im] of imgs.entries()){
+    if(!alive()) return;
+    const r = im.getBoundingClientRect(), dx = px - (r.left + r.width/2), dy = py - (r.top + r.height/2), col = PALETTES[show[i].pal]?.[1] || "#fff";
+    im.animate([{transform:"translate(0,0) scale(1)", opacity:1}, {transform:`translate(${dx*.6}px,${dy*.35 - 40}px) scale(.85)`, opacity:1, offset:.55}, {transform:`translate(${dx}px,${dy}px) scale(.35)`, opacity:0}],
+      {duration:460, easing:"cubic-bezier(.4,0,.8,.6)", fill:"forwards"});
+    setTimeout(()=>{ if(!alive()) return; Sound.tap(0, .45, 1.1+Math.random()*.4); FX.burst(px, py, [col, shade(col,.4), "#FFFFFF"], 6, .4); bump("plop");
+      cnt.textContent = `${Math.round((i+1)/imgs.length*inputs.length)} / ${inputs.length}` }, 440);
+    await wait(step);
+  }
+  await wait(600); if(!alive()) return;
+  title.textContent = `Ça bouillonne… ${L.N} fusions !`; stage.classList.add("boil");
+  // 2. palier par palier jusqu'au meilleur motif du lot
+  for(let i=0;i<=dr;i++){
+    await wait(i ? 360 + i*150 + (i===dr ? 240 : 0) : 250); if(!alive()) return;
+    const c = DECOR_RAR[i].c; stage.style.setProperty("--lq", c); stage.style.setProperty("--sk", (1+i*.6).toFixed(1));
+    tier.style.setProperty("--tc", c); tier.textContent = DECOR_RAR[i].name; bump("up"); tier.classList.remove("pop"); void tier.offsetWidth; tier.classList.add("pop");
+    Sound.distStep(i); const [x,y] = potAt(); FX.burst(x, y, [c, shade(c,.45), "#FFF3D6"], 12+i*10, .5+i*.12); if(i) FX.ring(x, y, c);
+    if(i>=3) stage.classList.add("hot");
+    if(i===5){ Sound.mythSwell(); FX.burst(x, y, MYTH_COLS, 90, 1.3) }
+  }
+  // 3. une shiny dans le lot : le chaudron s'éteint… puis repart à sa couleur
+  if(sh){
+    await wait(700); if(!alive()) return;
+    stage.classList.add("dark"); title.textContent = "Mais… ?"; tier.classList.remove("pop");
+    if(sh===3){ Sound.lumSwell(); await wait(1400) } else await wait(900);
+    if(!alive()) return;
+    stage.classList.remove("dark"); stage.classList.add("sh"+sh); stage.style.setProperty("--lq", CZ_SH[sh]);
+    tier.style.setProperty("--tc", CZ_SH[sh]); tier.textContent = `${SHINIES[sh].name} !`; tier.classList.add("pop"); title.textContent = "Une shiny dans le lot !";
+    Sound.distStep(dr+1); Sound.distStep(dr+2); const [x,y] = potAt();
+    FX.burst(x, y, sh===2 ? ["#FFE38A","#FFC93F","#E8A317","#FFF3C4"] : sh===3 ? ["#FFFFFF","#DFF8FF","#9FE6FF"] : SHINY_COLS, 60, 1); FX.ring(x, y, CZ_SH[sh]);
+  }
+  // 4. le chaudron déborde : les billes jaillissent
+  await wait(sh ? 900 : 600); if(!alive()) return;
+  title.textContent = "Ça déborde !"; bump("spill"); Sound.whoosh();
+  { const [x,y] = potAt(); FX.burst(x, y, out.map(colOf).concat("#FFF3D6"), 50, 1.4) }
+  await wait(500); if(!alive()) return;
+  results(L, false);
+}
+// les résultats : les billes sortent une par une, de la moins rare à la plus rare, et la plus rare s'ouvre en grand
+async function results(L, instant){
+  const my = run, alive = () => run===my && !ov.hidden;
+  const ord = [...L.out].sort((a,b)=>score(a)-score(b)), best = ord.pop();
+  const T2 = TK[L.t+1], dr = rar(best), sh = best.shiny||0, tc = colOf(best);
+  const tally = DECOR_RAR.map((R,i)=>[R, L.out.filter(s=>rar(s)===i).length, i]).filter(([,n])=>n).reverse();
+  const nSh = L.out.filter(s=>s.shiny).length, nNew = L.out.filter(s=>s.isNew).length;
+  const lbl = isMyth(best) ? "Mythique !" : sh ? `Shiny ${SHINIES[sh].name} !` : dr>=2 ? `${DECOR_RAR[dr].name} !` : "La plus belle du lot";
+  body.classList.remove("quake");
+  body.innerHTML = `<span class="ov-kicker">La Confiserie · Fusion ×${L.N}</span>
+    <div class="ov-title" id="rs-title">${instant ? (sh ? "Une shiny dans le lot !" : `${L.N} fusions réussies !`) : "Et voilà…"}</div>
+    <div class="bx-best${sh?" shiny sh"+sh:""}" id="best" style="--tc:${tc};${sh===3?`--lc:${PALETTES[best.pal][2]}`:""}">
+      <span class="lbl">${lbl}</span>
+      <div class="ball"><span class="rays"></span><span class="orb"></span>${mImg(best,360,Math.round(150*scaleOf(best.type)+20),"")}</div>
+      <div class="info">${best.isNew?`<span class="new" style="position:static;translate:none">Nouveau coloris</span>`:""}<b>${esc(shortName(best))}</b><div class="pills">${pills(best)}</div></div>
+    </div>
+    <div class="bx-grid" id="grid">${ord.map((s,i)=>`<div class="bx-card r${rar(s)}${s.shiny?" shy":""}" style="--tc:${colOf(s)}">${s.isNew?`<span class="new">Nouveau</span>`:""}
+      <span class="b">${mImg(s,160,Math.round(40*scaleOf(s.type)+26),"")}</span><b>${esc(shortName(s))}</b><div class="pills">${rar(s)>=1?`<span class="pill" style="--c:${DECOR_RAR[rar(s)].c}">${DECOR_RAR[rar(s)].name}</span>`:`<span class="pill" style="--c:#8E8898">Commun</span>`}${s.shiny?`<span class="pill" style="--c:${CZ_SH[s.shiny]}">✦</span>`:""}</div></div>`).join("")}</div>
+    <div class="bx-tally" id="tally" style="opacity:${instant?1:0};transition:opacity .4s">${tally.map(([R,n])=>`<span style="--c:${R.c}"><i></i>${n} ${R.name.toLowerCase()}${n>1?"s":""}</span>`).join("")}${nSh?`<span style="--c:#E0A800"><i></i>${nSh} shiny</span>`:""}${nNew?`<span style="--c:#2FA35A"><i></i>${nNew} nouveau${nNew>1?"x":""} coloris</span>`:""}</div>
+    <div class="ov-actions" id="acts" style="opacity:${instant?1:0};pointer-events:${instant?"auto":"none"};transition:opacity .4s">
+      <span class="ov-xp" style="flex-basis:100%">🎟 +${L.N*10} XP de saison · ${L.N} ${TYPES[T2].pl} rejoignent ta boîte</span>
+      <button class="btn btn-yellow" data-again>⚗ Encore ×${L.N}</button><button class="btn btn-ghost" data-back>Voir ma boîte</button><button class="btn btn-ghost" data-back>Retour à la Confiserie</button></div>`;
+  scan();
+  const cards = [...document.querySelectorAll(".bx-card")], bEl = document.getElementById("best"), title = document.getElementById("rs-title");
+  const finish = () => { document.getElementById("tally").style.opacity = 1; const a = document.getElementById("acts"); a.style.opacity = 1; a.style.pointerEvents = "auto"; skipB.hidden = true };
+  if(instant){ cards.forEach(c=>{ c.classList.add("in"); c.style.animationDuration = "0s" }); bEl.classList.add("on"); bigFX(best, bEl, true); finish(); return }
+  // les billes sortent une par une
+  for(const [i, c] of cards.entries()){
+    if(!alive()) return;
+    c.classList.add("in"); const s = ord[i];
+    setTimeout(()=>{ if(!alive()) return; const [x,y] = FX.at(c); Sound.pop(rar(s)+i%3); FX.burst(x, y, [colOf(s), "#FFF3D6"], 8 + rar(s)*8, .5 + rar(s)*.1);
+      if(rar(s)>=3 || s.shiny) FX.ring(x, y, colOf(s)) }, 180);
+    await wait(Math.max(110, 230 - i*12));
+  }
+  // et la plus rare, en dernier, en grand
+  await wait(450); if(!alive()) return;
+  title.textContent = isMyth(best) ? "Et la dernière…" : sh || dr>=3 ? "Et la plus rare…" : "Et la dernière…";
+  bEl.classList.add("charge"); Sound.whoosh();
+  await wait(sh || dr>=4 ? 1100 : 750); if(!alive()) return;
+  bEl.classList.remove("charge"); bEl.classList.add("on");
+  title.textContent = isMyth(best) ? "Le Mythique !" : sh ? "Une shiny !" : dr>=4 ? "Légendaire !" : `${L.N} fusions réussies !`;
+  bigFX(best, bEl, false);
+  await wait(700); if(!alive()) return;
+  finish();
+}
+// les effets de la grande bille (comme craftFinal dans le jeu)
+function bigFX(s, el, quiet){
+  const [x,y] = FX.at(el.querySelector(".ball")), dr = rar(s), c = colOf(s);
+  ov.style.setProperty("--flash", rgba(c, .5));
+  if(quiet) return;
+  FX.burst(x, y, [c, shade(c,.45), "#FFF3D6"], 24 + dr*16, .7 + dr*.14); if(dr>=2 || s.shiny) FX.ring(x, y, c);
+  if(s.shiny===2) FX.burst(x, y, ["#FFE38A","#FFC93F","#E8A317","#FFF3C4"], 90, 1.3);
+  if(s.shiny===3){ FX.burst(x, y, ["#FFFFFF","#DFF8FF",PALETTES[s.pal][2]], 110, 1.4); setTimeout(()=>FX.ring(x, y, "#FFFFFF"), 200) }
+  if(s.shiny===1) FX.burst(x, y, SHINY_COLS, 70, 1.1);
+  if(dr>=3 || s.shiny){ body.classList.remove("quake"); void body.offsetWidth; body.classList.add("quake") }
+  Sound.opening(s.shiny||0, dr);
+  if(dr>=4) setTimeout(()=>{ FX.burst(x, y, [c, shade(c,.45), "#FFF3D6"], 90, 1.3); FX.ring(x, y, c) }, 520);
+  if(isMyth(s)) mythFX(x, y);
+}
+// test local : ?essai=legendaire (le scénario) lance tout de suite le lot, &passer montre directement le résultat
+{ const q = new URLSearchParams(location.search), e = q.get("essai");
+  if(e){ st.sc = e; renderScen(); setTimeout(()=>{ confirmLot(); document.getElementById("modal").hidden = true; launch(); if(q.has("passer")) setTimeout(skip, 50) }, 400) } }
+</script>
+</body>
+</html>

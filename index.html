@@ -13451,7 +13451,7 @@ function viewGames(){
     </div>
   </section>
   ${rdvCards(gcIn, L)}`}
-  ${todo.length ? `<div class="games-grid">${todo.map(tile).join("")}</div>` : `<p class="gs-all">${ic("check",16,3)} Tout est fait à fond aujourd'hui : bravo ! Reviens demain.</p>`}
+  ${todo.length ? `<div class="games-grid">${todo.map(tile).join("")}</div>` : ""}
   ${done.length ? `<div class="gt-fonds" style="--n:${done.length<=4 ? done.length : Math.ceil(done.length/2)}"><span class="gtf-l">${ic("star",14,2.6)} Faits à fond</span>${done.map(c=>`<button class="gtf" data-action="nav" data-view="${c.v}" title="${c.t} : fait à fond aujourd'hui${CHANCE_KEYS.includes(c.v) ? "" : " · rejouer pour le plaisir"}"><span class="gtf-art">${c.art}</span><b>${c.t}</b><span class="gtf-ok">${ic("check",11,3.4)}</span></button>`).join("")}</div>` : ""}`;
 }
 // Avant de jouer (5 octobre 2026) : une fenêtre « Avec quelle bille tu joues ? », une fois par visite d'un mini-jeu.

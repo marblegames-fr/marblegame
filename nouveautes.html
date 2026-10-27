@@ -96,10 +96,14 @@ ul.items p{margin:0;color:var(--ink-2);font-weight:600}
   .moments{grid-template-columns:minmax(0,1fr)}
   .sec-head h2{font-size:22px}
 }
-/* le sommaire */
-.toc{display:flex;flex-wrap:wrap;justify-content:center;gap:8px;margin:0 0 18px}
-.toc a{display:inline-flex;align-items:center;gap:6px;padding:7px 13px;border-radius:999px;background:var(--panel);border:1px solid var(--line);box-shadow:var(--shadow);font-weight:900;font-size:14px;text-decoration:none}
-.toc a:hover{border-color:var(--ink-2)}
+/* (27 octobre 2026) la grosse mise à jour du 14 octobre, repliée sous « Depuis » */
+.older{margin:0 0 18px}
+.older > summary{list-style:none;cursor:pointer;display:flex;flex-direction:column;align-items:center;gap:2px;padding:14px 18px;border-radius:22px;background:var(--panel);border:1px dashed var(--line);box-shadow:var(--shadow);font-family:var(--display);font-size:19px;text-align:center}
+.older > summary::-webkit-details-marker{display:none}
+.older > summary small{font-family:var(--body);font-weight:800;font-size:13px;color:var(--muted)}
+.older > summary::after{content:"Afficher ▾";margin-top:4px;font-family:var(--body);font-weight:900;font-size:12.5px;color:var(--orange);letter-spacing:.04em}
+.older[open] > summary{margin-bottom:18px}
+.older[open] > summary::after{content:"Replier ▴"}
 .card{scroll-margin-top:16px}
 .tag{display:inline-block;margin-left:6px;padding:1px 8px;border-radius:999px;font-size:10.5px;font-weight:900;letter-spacing:.06em;text-transform:uppercase;vertical-align:2px}
 .tag.new{background:var(--yellow);color:#2B2233}
@@ -138,9 +142,9 @@ ul.items li .scale,ul.items li .podium{margin-bottom:2px}
 
 <header class="hero">
   <div class="logo">Tikalo</div>
-  <span class="kick">Mise à jour · 14 octobre 2026</span>
+  <span class="kick">Mise à jour · 27 octobre 2026</span>
   <h1>Quoi de neuf dans la cour&nbsp;?</h1>
-  <p>16 nouveaux circuits pour la Grande Course, un classement de la semaine avec des lots, une cloche toute neuve… et plein d'autres choses !</p>
+  <p>Toutes les nouveautés de Tikalo, jour après jour.</p>
   <div class="garland" aria-hidden="true"><svg viewBox="0 0 400 30" preserveAspectRatio="none">
     <path d="M0 6 Q50 26 100 8 T200 8 T300 8 T400 6" fill="none" stroke="rgba(255,255,255,.35)" stroke-width="1.2"/>
     <g>
@@ -155,16 +159,13 @@ ul.items li .scale,ul.items li .podium{margin-bottom:2px}
 </header>
 
 <main>
-  <nav class="toc" aria-label="Sommaire">
-    <a href="#depuis">🆕 Depuis</a><a href="#course">🏁 Grande Course</a><a href="#classement">🏆 Classements</a><a href="#cloche">🔔 Cloche</a>
-    <a href="#troc">🔁 Troc et marché</a><a href="#joli">🎨 Plus joli</a>
-  </nav>
 
   <!-- les petites mises à jour, ajoutées au fil des jours (la plus récente en haut) ; la pastille « Nouveautés » ne revient que pour les grosses mises à jour -->
   <section class="card" id="depuis">
     <div class="sec-head"><span class="chip" style="background:var(--orange)">🆕</span><h2>Depuis, au fil des jours<small>Les petites améliorations et corrections, la plus récente en haut</small></h2></div>
     <h3 class="sub" style="margin-top:4px">27 octobre</h3>
     <ul class="items">
+      <li><span class="ic">🏁</span><div><b>Grande Course : 10 bonbecs pour chaque coureur</b> <span class="tag chg">Modifié</span><p>Même hors du podium, chaque bille inscrite rapporte maintenant 10 bonbecs (au lieu de 5). Inscris-toi à chaque course !</p></div></li>
       <li><span class="ic">📅</span><div><b>Les nouveautés rangées par jour</b> <span class="tag chg">Modifié</span><p>Ici, plus besoin de descendre longtemps : chaque jour a son onglet, le plus récent est ouvert. Le petit chiffre jaune dit combien il y a de nouveautés ce jour-là.</p></div></li>
       <li><span class="ic">📱</span><div><b>La Confiserie bien visible sur téléphone</b> <span class="tag fix">Corrigé</span><p>Dans la Boîte à billes, sur un petit écran, l'onglet Confiserie était poussé tout à droite, à moitié caché. Les 4 onglets se partagent maintenant la largeur de l'écran.</p></div></li>
       <li><span class="ic">🏆</span><div><b>Tes victoires de la semaine, sur ta fiche</b> <span class="tag new">Nouveau</span><p>Quand tu cliques sur un joueur dans le classement, sa fiche montre maintenant combien de fois il a fini 1er du classement de la semaine, et combien de podiums il a faits. Tu retrouves aussi les tiens dans Mes statistiques (« La cour de récré »). Tout compte, depuis la toute première semaine.</p></div></li>
@@ -261,6 +262,8 @@ ul.items li .scale,ul.items li .podium{margin-bottom:2px}
     </ul>
   </section>
 
+  <!-- (27 octobre 2026) la grosse mise à jour du 14 octobre, repliée : la page s'ouvre sur le dernier jour -->
+  <details class="older" id="14-octobre"><summary>🎉 La grande mise à jour du 14 octobre<small>Grande Course, classements, cloche, troc et marché…</small></summary><div class="older-in">
   <section class="card" id="course">
     <div class="sec-head"><span class="chip" style="background:var(--red)">🏁</span><h2>La Grande Course fait peau neuve<small>16 nouveaux circuits, 7 formes de course, de jour et de nuit</small></h2></div>
     <p class="lead">Fini les descentes qui se ressemblent : la Grande Course compte maintenant <b>22 circuits</b> de <b>7 formes différentes</b>, et deux courses à la suite n'ont jamais la même forme. À midi on court en plein jour, le soir sous les étoiles comme dans une fête foraine.</p>
@@ -367,6 +370,8 @@ ul.items li .scale,ul.items li .podium{margin-bottom:2px}
     </ul>
   </section>
 
+  </div></details>
+
   <div class="foot">
     <a class="cta" href="https://www.tikalo.fr/">🎲 Jouer à Tikalo</a>
     <p class="sign">Bonne course à tous, et à bientôt dans la cour !</p>
@@ -416,6 +421,8 @@ ul.items li .scale,ul.items li .podium{margin-bottom:2px}
     if(j >= 0){ e.preventDefault(); show(j); tabs[j].focus() }
   });
   show(0);
+  // le haut de la page annonce le dernier jour
+  const kick = document.querySelector(".kick"); if(kick) kick.textContent = "Dernière mise à jour · " + hs[0].textContent.trim();
 })();
 </script>
 </body>

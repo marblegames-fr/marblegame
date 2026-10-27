@@ -14232,7 +14232,7 @@ function cbLoop(t){
    Le site ne garde que la dernière course de midi et la dernière du soir (les rediffusions).
    Ici on ne fait que mettre la course en scène à partir de la graine et de l'ordre d'arrivée : tout le monde voit la même course.
    ===================================================================== */
-const COURSE_PRIX = [{j:50, sac:"collector"}, {j:30, sac:"premium"}, {j:20, sac:"classique"}], COURSE_PART = 5;   // mêmes valeurs que interne.course_prix
+const COURSE_PRIX = [{j:50, sac:"collector"}, {j:30, sac:"premium"}, {j:20, sac:"classique"}], COURSE_PART = 10;   // mêmes valeurs que interne.course_prix (participation 5 → 10 le 27 octobre 2026)
 const gc = {etat:null, busy:false, pick:null, live:null};
 function gcLoad(force){
   if(!srvOn() || gc.busy || (gc.etat && !force)) return;
@@ -16417,7 +16417,7 @@ let bugKeep = null;   // un message qui n'est pas parti : il est reproposé au p
 // on:false cache le bouton (pendant qu'on prépare la mise à jour) ; on:true le remet, avec la pastille si l'id a changé
 // (16 octobre 2026) deux repères : dot = la pastille rouge du bouton, à changer à CHAQUE mise en ligne qui ajoute une ligne au patchnote
 // (avec txt : la date du jour) ; id = la fenêtre d'annonce à l'arrivée, seulement pour les très gros jours
-const NEWS = {on:true, id:"2026-10-22", dot:"2026-10-27-1500", url:"/nouveautes.html", txt:"Mise à jour du 27 oct."};
+const NEWS = {on:true, id:"2026-10-22", dot:"2026-10-27-1600", url:"/nouveautes.html", txt:"Mise à jour du 27 oct."};
 const newsUnseen = () => lsGet("billeo-news-vu")!==NEWS.dot;
 // (14 octobre 2026) à l'arrivée, une fenêtre annonce la mise à jour, une seule fois par mise à jour et par compte (S.newsPop, gardé
 // dans la partie : elle ne revient pas sur un autre appareil) ; on choisit d'aller voir les nouveautés, ou pas

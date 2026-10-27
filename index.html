@@ -8287,7 +8287,7 @@ function openDaily(){
     <div class="daily-body">
       <span class="daily-kicker">${ic("gift",16)} Le bonbec du jour</span>
       <h2>${ready ? (streak>1?`${streak} jours de suite !`:"Coucou, te revoilà !") : "C'est dans la poche !"}</h2>
-      <p>Un jour raté, et ça repart au jour 1.${looped?" Après le jour 28, le calendrier recommence au jour 1.":""}</p>
+      <p>Un jour raté, et ça repart au jour 1.</p>
       <div class="daily-cal">${[0,1,2,3].map(w=>`<div class="daily-wk"><span class="wk-lbl">Semaine ${w+1}</span><div class="daily-row">${DAILY_CAL.slice(w*7,w*7+7).map((d,k)=>cell(d,w*7+k)).join("")}</div></div>`).join("")}</div>
       ${ready ? `<button class="btn btn-yellow" data-action="daily-claim">${ic("gift",18)} Récupérer ${esc(dailyText(r))}</button>`
         : `<span class="daily-done">${ic("check",18,2.5)} Bonbec du jour récupéré</span>
@@ -8646,7 +8646,7 @@ function heroSlides(){
       <div class="hm-txt">
         <span class="hm-k">${ic("flag",15)} Bientôt · le ${dayMonth(E.start)}</span>
         <h1>${esc(E.name)}</h1>
-        <p>Un nouvel événement du ${dayMonth(E.start)} au ${dayMonth(E.end)} : ${E.pals.length} coloris de billes ${esc(FAMILIES[f].name)} à trouver.</p>
+        <p>Du ${dayMonth(E.start)} au ${dayMonth(E.end)} · ${E.pals.length} coloris à trouver</p>
       </div>`}) });
   // la cour : seulement s'il y a du nouveau
   const C = hcCourInfo();
@@ -8721,10 +8721,10 @@ function viewHome(){
 // l'accueil : ce qui t'attend dans la cour de récré (trocs, copains, enchères, classement)
 function homeCour(){
   if(invite()) return `<section class="panel hm-cour off"><span class="hc-ic">${ic("cour",26)}</span><div><b>La cour de récré</b>
-      <p class="meta">Tu joues en invité. Sauvegarde ta partie pour ajouter tes copains, troquer, vendre au marché et grimper au classement.</p></div>
+      <p class="meta">Sauvegarde ta partie pour rejoindre la cour.</p></div>
       <button class="btn btn-yellow btn-sm" data-action="acct-save">${lsGet(INVITE_MAIL) ? "Confirme ton e-mail" : "Sauvegarder"}</button></section>`;
   if(!srvOn()) return `<section class="panel hm-cour off"><span class="hc-ic">${ic("cour",26)}</span><div><b>La cour de récré</b>
-      <p class="meta">Avec un compte, ajoute tes copains, troque tes billes, vends-les au marché et grimpe au classement.</p></div>
+      <p class="meta">Crée un compte pour rejoindre la cour.</p></div>
       ${window.Cloud?.available ? `<button class="btn btn-yellow btn-sm" data-action="acct-signup">Créer un compte</button>` : ""}</section>`;
   courLoad("moi"); courLoad("encheres"); courLoad("classement"); courLoad("semaine");   // (la semaine : pour la fenêtre des lots du lundi)
   const M = cour.moi, E = cour.encheres||[], dep = E.filter(x=>!x.en_tete).length, C = cour.classement?.moi, req = (M?.recues||[]).length;
@@ -8808,7 +8808,7 @@ function viewBags(){
         ${!b.event && liveEventKey() && EV_DROP[b.id] ? (()=>{ const k = liveEventKey(), F = FAMILIES.find(x=>x.event===k), fini = evFini(k);
           return `<label class="ev-opt${S.evOpt?" on":""}"><input type="checkbox" data-action="ev-opt"${S.evOpt?" checked":""}><span class="ev-box">${ic("check",14,3)}</span>
             <span><b>${ic("flag",14)} Billes d'événement <em class="ev-opt-n">${esc(F.name)}</em></b><small>${Math.round(EV_DROP[b.id]*100)} % par bille, la ${b.n}ᵉ toujours. Hors album.</small>
-            ${fini ? `<small class="ev-opt-fini">${ic("check",12,3)} Album de l'événement fini : tu as déjà toutes les billes ${esc(F.name)}, cocher ne te donnera que des doubles.</small>` : ""}</span></label>` })() : ""}
+            ${fini ? `<small class="ev-opt-fini">${ic("check",12,3)} Album fini : que des doubles</small>` : ""}</span></label>` })() : ""}
         ${b.event?`<p class="ev-rate">${ic("flag",14)} ${b.evFill>=1 ? `Les ${b.n} billes sont des billes ${FAMILIES[b.fam].name}` : `Bille ${FAMILIES[b.fam].name} : ${Math.round(b.evFill*100)} % par bille, ${Math.round(b.evStar*100)} % pour la vedette`} · ${b.pals.length} coloris à collectionner, dans les 6 tailles</p><div class="ev-pals">${b.pals.map(pl=>`<span title="${esc(PALETTES[pl][0])}">${mImg({seed:hash("evp"+pl),type:"calot",family:b.fam,pal:pl,shiny:0},80,34,"")}</span>`).join("")}</div>`:""}</div>
       <div class="bg-cta">${cta}</div>
       ${(()=>{ const left = PITY-(S.pity||0);
@@ -8854,7 +8854,7 @@ function viewQuests(){
     <section class="panel">${questRows(false)}</section>
     <section class="panel bonus-card${all&&!Q.bonus?" ready":""}">
       <span class="q-ic">${ic("trophy",26)}</span>
-      <div class="q-main"><b>Bonus du jour</b><p>Récupère les ${QUESTS_N} quêtes pour gagner un ${BAG_BY[QUEST_BONUS].name} en plus.</p>
+      <div class="q-main"><b>Bonus du jour</b><p>Les ${QUESTS_N} quêtes : + un ${BAG_BY[QUEST_BONUS].name}</p>
         <div class="q-prog"><div class="bar"><i class="${all?"done":""}" style="width:${n/QUESTS_N*100}%"></i></div><small>${n} / ${QUESTS_N}</small></div></div>
       ${Q.bonus ? `<span class="q-state">${ic("check",16,2.5)} Récupéré</span>`
         : all ? `<button class="btn btn-yellow" data-action="q-bonus">${bonusTag()}</button>`
@@ -9277,7 +9277,7 @@ function eventsView(){
     return `<section class="panel ev-album" style="--ec:${E.color}">
       <div class="ev-head"><div><h3>${F.name} <small>· ${esc(E.name)}</small></h3><p class="meta">${live ? `En cours : encore ${eventLeft(E)} (jusqu'au ${dayMonth(E.end)}).` : Date.now()<E.start ? `Commence le ${dayMonth(E.start)}.` : `Terminé le ${dayMonth(E.end)}.`}</p></div>
         <span class="serie-n">${got} / ${tot}</span></div>
-      ${live ? `<p class="meta ev-how">Coche « Billes ${esc(F.name)} » sur un sachet payant. La fusion d'événement (Confiserie) donne la taille au-dessus.</p>` : ""}
+      ${live ? `<p class="meta ev-how">Dans les sachets payants (case à cocher)</p>` : ""}
       <div class="ev-grid"><div class="ev-row ev-cols"><b></b>${TK.map(t=>`<small>${TYPES[t].label.replace("Mini bille","Mini").replace("Bille chinoise","Chinoise")}</small>`).join("")}</div>${cells}</div>
     </section>` }).join("")}`;
 }
@@ -9340,7 +9340,7 @@ function viewPass(){
   let pm=0, pj=0, pb=0;
   for(let t=1;t<=PASS_TIERS;t++){ const r=passReward("prem",t); if(r.k==="marble") pm++; else if(r.k==="jetons") pj+=r.n; else if(r.k==="bag") pb++ }
   return `<div class="page-head">
-    <div><h1>Passe de saison</h1><p>${PASS_TIERS} paliers, une nouvelle saison chaque mois. Tout ce que tu fais rapporte de l'XP.</p></div>
+    <div><h1>Passe de saison</h1><p>${PASS_TIERS} paliers · une saison par mois</p></div>
     <span class="hand-note">Fin dans <span data-pass-timer>${passLeft()}</span></span>
   </div>
   <section class="pass-hero" style="${seasonStyle(se)}">
@@ -9523,7 +9523,7 @@ function viewCraft(){
         <button class="ball" data-action="spec" data-id="${x.id}" aria-label="Voir ${esc(specName(x))}">${mImg(x,160,Math.round(58*scaleOf(x.type)+14),"")}</button><b>${esc(specName(x))}</b>
         <div class="cf-step"><button data-action="craft-rm" data-k="${k}" ${inn?"":"disabled"} aria-label="En retirer une">−</button><b>${inn}</b><button data-action="craft-add" data-k="${k}" ${inn<l.length&&!full?"":"disabled"} aria-label="En ajouter une">+</button></div></div>` }).join("")}</div>`
       : `<p class="empty">Aucune bille de cette taille à fusionner pour l'instant.</p>`}
-    <p class="meta" style="margin-top:12px">Pas les shiny, ta bille active, ta vitrine ni les billes de saison.</p>
+    <p class="meta" style="margin-top:12px">Sauf shiny, bille active, vitrine, saison</p>
   </section>`;
 }
 // Fusion d'événement : des billes d'événement d'une même taille et d'un même coloris donnent la taille au-dessus,
@@ -9979,7 +9979,7 @@ function viewProfile(){
     <div class="prof-av-wrap"><div class="avatar prof-av">${avatarHTML(act,220,104)}</div>
       <label class="btn btn-ghost" for="photo-in">${ic("plus",14)} ${S.photo?"Changer de photo":"Mettre une photo"}</label><input type="file" id="photo-in" accept="image/*" hidden>
       <button class="btn btn-ghost" data-action="pick-avatar">${ic("layers",14)} ${S.photo||!specById(S.avatar)?"Mettre une bille":"Changer de bille"}</button>
-      <small>${S.photo ? "Ta photo n'est visible que par toi." : specById(S.avatar) ? "La bille de ta photo de profil : les autres joueurs la voient aussi (classement, copains)." : "Ta bille active, tant que tu n'en choisis pas une autre."}</small>
+      <small>${S.photo ? "Ta photo n'est visible que par toi." : specById(S.avatar) ? "Visible par les autres joueurs" : "Ta bille active, tant que tu n'en choisis pas une autre."}</small>
       ${S.photo && avatarSpec(act) ? `<button class="prof-pub" data-action="pick-avatar" data-pub="1">${mImg(avatarSpec(act),96,30,"")}<span>Les autres joueurs voient <b>${esc(specName(avatarSpec(act)))}</b><em>Changer</em></span></button>` : ""}</div>
     <div class="prof-main">
       <form class="name-form" id="name-form">
@@ -10260,7 +10260,7 @@ function openModal(id, pv, reveal=false){
       <div id="live-slot"></div>
       ${liveGL?`<small class="rot-hint">Clique et fais glisser pour la tourner</small>`:""}
       ${fromSheet?`<button class="sheet-back" data-action="sheet-back">${ic("chev",14)} Tous les coloris</button>`:""}
-      ${sib.length>1?`<span class="hint">${sib.length} exemplaires de ce modèle · chaque empreinte est unique</span><div class="siblings">${sib.map(x=>`<button data-action="spec" data-id="${x.id}" aria-pressed="${x.id===s.id}" aria-label="${esc(specName(x))}">${mImg(x,80,32)}</button>`).join("")}</div>`:""}
+      ${sib.length>1?`<span class="hint">${sib.length} exemplaires</span><div class="siblings">${sib.map(x=>`<button data-action="spec" data-id="${x.id}" aria-pressed="${x.id===s.id}" aria-label="${esc(specName(x))}">${mImg(x,80,32)}</button>`).join("")}</div>`:""}
     </div>
     <div class="modal-body">
       <div class="pills">${typePill(s.type,true)}${shinyPill(s)}${edPill(s)}${tierTag(s)}</div>
@@ -10280,7 +10280,7 @@ function openModal(id, pv, reveal=false){
       ${pv&&pv.cour?`<p class="meta">${esc(pv.cour)}</p>`:pv?`<p class="meta">Aperçu Billepedia · ${S.specs.some(x=>slotKey(x)===slotKey(s))?"tu as déjà ce format dans ce motif.":"pas encore dans ta boîte à billes."}</p>`:`<div class="modal-actions">
         ${S.vitrine.includes(s.id)?`<button class="btn btn-ghost" data-action="vit-rm" data-id="${s.id}">${ic("layers",16)} Retirer de la vitrine</button>`:`<button class="btn btn-ghost" data-action="vit-add" data-id="${s.id}">${ic("layers",16)} Mettre en vitrine</button>`}
         ${s.secret ? "" : `<button class="btn ${s.lock?"btn-yellow":"btn-ghost"}" data-action="lock-toggle" data-id="${s.id}" aria-pressed="${!!s.lock}">${ic("lock",16,2.4)} ${s.lock?"Déverrouiller":"Verrouiller"}</button>`}
-        ${s.lock ? `<span class="sell-why lock-why">${ic("lock",14,2.4)} Verrouillée : elle ne peut être ni vendue, ni troquée, ni échangée, ni fusionnée</span>` : (()=>{ if(!srvOn()) return "";
+        ${s.lock ? `<span class="sell-why lock-why">${ic("lock",14,2.4)} Verrouillée</span>` : (()=>{ if(!srvOn()) return "";
           // (14 octobre 2026) une bille qui ne peut pas être vendue dit pourquoi (avant, le bouton disparaissait sans explication)
           const why = s.secret ? (isDepart(s) ? "" : "Les billes secrètes ne se vendent pas") : estLiee(s) ? `Vendable à partir du ${new Date(lieeJusqu(s)).toLocaleDateString("fr-FR",{day:"numeric", month:"long"})} (cadeau de bienvenue)` : !s.srv ? "Pas encore enregistrée sur le serveur : réessaie dans un instant" : "";
           return why ? `<span class="sell-why">${ic("lock",14,2.4)} ${why}</span>` : s.secret ? "" : `<button class="btn btn-ghost" data-action="cour-sell-this" data-id="${s.id}">${ic("cour",16)} Vendre au marché</button>` })()}
@@ -10290,7 +10290,7 @@ function openModal(id, pv, reveal=false){
         ${fromSheet?"":`<button class="btn btn-ghost" data-action="sheet" data-type="${s.type}" data-fam="${s.family}">${ic("layers",16)} Tous ses coloris · ${casePals(caseList)} / ${BASE_PALS}</button>`}
       </div>
       ${sib.length>1 && keepOf(sib).id===s.id?`<p class="meta">C'est l'exemplaire que tu gardes.</p>`:""}
-      ${!s.lock && S.active!==s.id && sib.length===1 && isBasePal(s.pal)?`<p class="warn-note">C'est ton seul exemplaire de cette bille : l'échanger la retirera de ton album.</p>`:""}
+      ${!s.lock && S.active!==s.id && sib.length===1 && isBasePal(s.pal)?`<p class="warn-note">Ton seul exemplaire</p>`:""}
       ${!s.lock && S.active!==s.id && s.shiny?`<p class="warn-note">Attention, c'est une shiny !</p>`:""}`}
     </div>
   </div>`;
@@ -12574,7 +12574,7 @@ function viewLoterie(){
         <p class="meta">${L.gagnants ? `${L.gagnants} ticket${L.gagnants>1?"s":""} avec 2 bons numéros ou plus.` : ""}</p></div>` : ""}
     </section>
     <aside><section class="panel"><div class="panel-head"><h3>Les lots</h3></div>
-      <p class="meta" style="margin-bottom:10px">Dimanche à 21 h, 3 numéros de 1 à 20 sont tirés. Combien en as-tu sur ton ticket ?</p>
+      <p class="meta" style="margin-bottom:10px">Dimanche 21 h · 3 numéros de 1 à 20</p>
       <ul class="lt-prix">${LOT_PRIX.map(x=>`<li><span class="lt-dots">${[0,1,2].map(i=>`<i class="${i<x.bons?"on":""}"></i>`).join("")}</span><span>${x.txt}</span></li>`).join("")}</ul>
     </section></aside>
   </div>`;
@@ -12607,7 +12607,7 @@ function lotBanner(){
   const D = srvOn() ? lot.data : null, mine = D?.mes||[], last = mine[mine.length-1];
   const balls = (D?.aujourdhui && last ? last : [0,0,0]).map(n=>n ? lotBall(n) : `<span class="lt-ball q">?</span>`).join("");
   const st = D?.aujourdhui ? `<span class="gm-gc-st ok">${ic("check",14,3)} Ticket du jour pris · ${mine.length} ticket${mine.length>1?"s":""} pour dimanche</span>`
-    : `<span class="gm-gc-st">Un ticket gratuit par jour. 3 bons numéros sur 3 : un Mammouth !</span>`;
+    : `<span class="gm-gc-st">1 ticket gratuit par jour</span>`;
   const btn = D && !D.aujourdhui ? `<button class="btn btn-yellow" data-action="lot-go">${ic("ticket",16)} Prendre mon ticket</button>`
     : `<button class="btn btn-yellow" data-action="nav" data-view="loterie">${D ? "Voir mes tickets" : "Voir la loterie"}</button>`;
   return `<div class="panel gm-gc gm-lot">
@@ -12833,9 +12833,9 @@ const tie = {st:"idle", raf:0, racers:null, call:null, lots:null, place:0, cam:0
 const TIE_RIV = [["Pépite", exSpec("bille", 1, "pepite")], ["Grenat", exSpec("bille", 5, "grenat")], ["Azur", exSpec("calot", 9, "azur")]];
 function viewTierce(){
   return chanceView("tierce", "Le Tiercé", `<div class="tie-stage" id="tie-stage"><canvas id="tie-cv" aria-label="La course du Tiercé"></canvas><div class="tie-bar" id="tie-bar"></div><div class="tie-pod" id="tie-pod" hidden></div><div class="rq-win" hidden></div></div>`,
-    `<p class="meta">Avant chaque course, 3 lots <b>tous différents</b> sont tirés avec les chances de la Roue et posés sur le podium : le plus rare pour le 1<sup>er</sup>, le moins rare pour le 3<sup>e</sup>. Le 4<sup>e</sup> ne gagne rien.</p>
+    `<p class="meta">3 lots sur le podium · 1 chance sur 4 pour chaque place</p>
      <ul class="rewards-list tie-places"><li><span>1<sup>er</sup></span><b>le lot le plus rare</b></li><li><span>2<sup>e</sup></span><b>le 2<sup>e</sup> lot</b></li><li><span>3<sup>e</sup></span><b>le moins rare</b></li><li><span>4<sup>e</sup></span><b>rien</b></li></ul>
-     <p class="meta mrl-how">Ta place : 1 chance sur 4 pour chacune. Les lots possibles :</p>${chanceOdds("tierce", "Chaque lot du podium est tiré avec ces chances (tous différents).")}`);
+     <p class="meta mrl-how">Les lots possibles :</p>${chanceOdds("tierce", "Chaque lot du podium est tiré avec ces chances (tous différents).")}`);
 }
 function tieInit(){
   cancelAnimationFrame(tie.raf); if(chancePend.tierce) chancePend.tierce();
@@ -13460,8 +13460,7 @@ function viewGames(){
 }
 // Avant de jouer (5 octobre 2026) : une fenêtre « Avec quelle bille tu joues ? », une fois par visite d'un mini-jeu.
 // On garde sa bille d'un clic, ou on en touche une autre, et la partie part tout de suite. Fermer la fenêtre garde la bille actuelle.
-const BALL_TIP = {marelle:"À la Marelle, ta bille ne change que le look : les chances sont les mêmes pour toutes.", pachinko:"Au Plinko, tu choisis ta bille pour toute la journée : bille du jour et billes achetées. Elle ne change que le look, les chances sont les mêmes pour toutes.", tir:"Au Tir, une petite bille se faufile plus facilement entre les obstacles.",
-};
+const BALL_TIP = {pachinko:"Au Plinko : pour toute la journée."};   // (28 octobre 2026) allégé : plus de « ne change que le look »
 function openBallPick(next){
   // (22 octobre 2026) par taille, 12 billes à la fois : avant, toute la collection d'un coup, et les téléphones plantaient
   const el = document.getElementById("modal"), act = activeSpec(), N = 12;
@@ -13476,7 +13475,7 @@ function openBallPick(next){
   if(ui.bpP==null || ui.bpP >= pages){ const i = act ? list.findIndex(x=>x.id===act.id) : -1; ui.bpP = i>=0 ? Math.floor(i/N) : 0 }
   const show = list.slice(ui.bpP*N, ui.bpP*N+N);
   el.innerHTML = `<div class="modal bag-sum pick-modal ball-go" role="dialog" aria-modal="true" aria-label="Ma bille de jeu"><button class="close-x" data-action="close-modal" aria-label="Fermer">×</button>
-    <h2>Ma bille de jeu</h2><p class="meta">${BALL_TIP[ui.view] || "Pour tous les mini-jeux. Elle ne change que le look : les chances sont les mêmes pour toutes."}</p>
+    <h2>Ma bille de jeu</h2>${BALL_TIP[ui.view] ? `<p class="meta">${BALL_TIP[ui.view]}</p>` : ""}
     ${act ? `<button class="bg-cur" data-action="ball-go" style="${tstyle(act.type)}"><span class="ball">${mImg(act,160,Math.round(30*scaleOf(act.type)+34),"")}</span>
       <span><small>Ta bille de jeu</small><b>${esc(specName(act))}</b>${typePill(act.type)}</span><span class="btn btn-yellow">${ic("check",16,3)} La garder</span></button>` : ""}
     <div class="bp-sizes">${TK.map(t=>`<button class="bp-sz${t===ui.bpT?" on":""}" data-action="bp-size" data-t="${t}" style="--rc:${TYPES[t].rc}" ${has[t]?"":"disabled"}>${TYPES[t].label.replace("Bille chinoise","Chinoise").replace("Mini bille","Mini")}<em>${has[t]}</em></button>`).join("")}</div>
@@ -14706,7 +14705,7 @@ function viewGrandeCourse(){
   else if(E?.inscrit) reg = `<div class="gc-reg on">${pick?mImg(pick,96,44,""):""}<div><b>Tu es inscrit pour ${whenAll} !</b><small>Tu cours avec ${pick?esc(specName(pick)):"ta bille"}. Rendez-vous à ${both ? "12 h et à 20 h" : `${N.heure} h`}.</small></div></div>
     <div class="btns"><button class="btn btn-ghost" data-action="gc-unreg">Me désinscrire</button></div>`;
   else reg = `<button class="btn btn-yellow btn-xl" data-action="gc-reg">${ic("flag",18)} M'inscrire pour ${whenAll}</button>
-    ${both ? `<p class="meta">Une seule inscription pour la journée : tu cours à midi et le soir.</p>` : ""}`;
+    ${both ? `<p class="meta">Une inscription : midi et soir</p>` : ""}`;
   const live = D && Date.now() < D.depart + GC_DUR*1000;
   return `<div class="page-head"><div><button class="back-link" data-action="nav" data-view="jeux">${ic("chevl",14)} Tous les jeux</button><h1>La Grande Course</h1>
     <p>À 12 h et à 20 h. Toutes les billes ont la même chance.</p></div></div>
@@ -14727,7 +14726,7 @@ function viewGrandeCourse(){
   ${E?.participants?.length ? `<section class="panel gc-parts"><div class="panel-head"><h2>Les inscrits · ${whenS}</h2><span class="sample-tag">${E.participants.length} bille${E.participants.length>1?"s":""}${gcManches(E.participants.length)>1?` · ${gcManches(E.participants.length)} manches`:""}</span></div>
     <div class="gc-plist">${E.participants.map(x=>{ const sp = gcSpec({bille:x.bille, pseudo:x.pseudo});
       return `<div class="gc-pl${x.moi?" me":""}" style="${tstyle(sp.type)}">${mImg(sp,72,34,"")}<span><b>${esc(x.moi?"Toi":x.pseudo)}</b><small>${esc(specName(sp))}</small></span></div>` }).join("")}</div>
-    ${E.participants.length<8 ? `<p class="meta">Moins de 8 inscrits : des billes de la cour complètent le départ.</p>` : ""}</section>` : ""}
+</section>` : ""}
   ${["12","20"].map(h=>E?.rediffs?.[h]).filter(Boolean).sort((a,b)=>b.depart-a.depart).map(gcRediff).join("")}`;
 }
 // une rediffusion : la dernière course de midi, ou la dernière du soir (les plus anciennes ne sont plus sur le site)
@@ -14840,7 +14839,7 @@ function gcPickOpen(){
   const chips = `<div class="chips gc-sizes"><button class="chip" data-action="gc-pickt" data-t="" aria-pressed="${!gc.pickT}">Toutes <span class="n">${all.length}</span></button>${TK.map(t=>{ const n = all.filter(x=>x.type===t).length;
     return n ? `<button class="chip" data-action="gc-pickt" data-t="${t}" aria-pressed="${gc.pickT===t}" style="${tstyle(t)}">${TYPES[t].label.replace("Mini bille","Mini").replace("Bille chinoise","Chinoise")} <span class="n">${n}</span></button>` : "" }).join("")}</div>`;
   el.innerHTML = `<div class="modal bag-sum pick-modal" role="dialog" aria-modal="true" aria-label="Choisir ta bille"><button class="close-x" data-action="close-modal" aria-label="Fermer">×</button>
-    <h2>Avec quelle bille tu cours ?</h2><p class="meta">Elle ne change que le look : toutes ont la même chance.</p>
+    <h2>Avec quelle bille tu cours ?</h2>
     <div class="pick-filter"><input type="search" id="gc-q" class="pick-q gc-q" value="${esc(gc.pickQ||"")}" placeholder="Chercher par nom : Galaxie, Rubis, shiny, légendaire…" aria-label="Chercher une bille" autocomplete="off" spellcheck="false">${chips}</div>
     <div class="pick-grid" id="gc-grid">${gcPickGrid()}</div></div>`;
   el.hidden = false; el.querySelector("#gc-q").focus();
@@ -18004,7 +18003,6 @@ function sellView(){
   const step = (n, t, on) => `<div class="sell-step${on?" on":""}"><span class="n">${n}</span><h3>${t}</h3></div>`;
   // étape 1 : la bille (en premier tant qu'aucune n'est choisie) ; étape 2 : la façon de vendre, le prix et la durée
   const pick = `<section class="panel">${step(1, p ? "Ta bille" : "Choisis la bille à vendre", !p)}
-      <p class="cour-lead" style="margin:0 0 10px">Ta bille active, les billes de départ et les billes secrètes ne peuvent pas être vendues.</p>
       ${X.list?.length ? `<label class="tr-dbl"><input type="checkbox" data-action="sell-dbl"${X.dbl?" checked":""}> Seulement mes doubles</label>` : ""}
       ${X.dbl && X.list && !X.list.some(x=>trocDups().has(x.id)) ? `<p class="empty">Tu n'as aucun double à vendre.</p>` : pickList(X.dbl && X.list ? X.list.filter(x=>trocDups().has(x.id)) : X.list, "sell", X.pick?[X.pick]:[], X.f)}</section>`;
   const form = p ? `<section class="panel">${step(2, "Comment tu la vends ?", true)}

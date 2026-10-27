@@ -4312,6 +4312,166 @@ body.gc-open{overflow:hidden}
 @media (prefers-color-scheme:dark){ :root:not([data-theme="light"]) .ciel{display:block} }
 :root[data-theme="dark"] .ciel{display:block}
 @media (prefers-reduced-motion:reduce){ .ciel i{animation:none} }
+/* ==========================================================================
+   (27 octobre 2026) LA COUR REFAITE (maquettes/maquette-cour.html) : un vrai lieu. Le sol est en bitume et on y écrit à la craie
+   (le titre, le plan de la cour, le banc des copains, le podium) ; ce qu'on y pose est en papier (les petits mots du troc et des demandes,
+   les étiquettes du marché, le carnet de l'historique). Toujours les mêmes couleurs, en mode clair comme en sombre (comme le cahier).
+   ========================================================================== */
+.cour-v2{--tar:#3B3634;--chalk:#F6F2E8;--chalk-2:rgba(246,242,232,.66);--paper:#FCF7EC;--pen:#2B2233;
+  --panel:#FCF7EC;--panel-2:#F4ECDA;--line:#E6D9C1;--line-2:#D9C7A5;--ink:#2B2233;--ink-2:#56546B;--muted:#7A7385;--track:#EDE6DA;
+  --gold-bg:#FFF3D0;--gold-line:#F4CF6A;--blue-soft:#DCE7FC;--green-soft:#D9F1DC;--purple-soft:#EDE3FB;
+  position:relative;padding:0 18px 22px;border-radius:26px;color:var(--chalk);color-scheme:light;
+  background:radial-gradient(1.2px 1.2px at 20% 30%,rgba(255,255,255,.07) 50%,transparent 51%) 0 0/11px 13px,
+    radial-gradient(1px 1px at 70% 60%,rgba(0,0,0,.25) 50%,transparent 51%) 0 0/9px 7px,
+    radial-gradient(ellipse at 85% -10%,rgba(255,180,90,.22),transparent 55%),var(--tar);box-shadow:0 18px 40px -22px rgba(0,0,0,.7)}
+/* papier posé sur le bitume */
+.cour-v2 .panel{background:var(--paper);color:var(--ink);border:0;border-radius:8px;box-shadow:0 2px 0 rgba(0,0,0,.18),0 14px 22px -14px rgba(0,0,0,.7)}
+.cour-v2 .cour-body{display:grid;gap:16px}
+.cour-v2 .cour-grid{gap:18px}
+/* le haut : le titre à la craie */
+.cv-head{display:flex;flex-wrap:wrap;align-items:flex-end;justify-content:space-between;gap:12px 18px;padding:22px 4px 6px}
+.cv-title{display:grid;gap:6px}
+.cv-title .ch-kick{display:inline-flex;align-items:center;gap:6px;font-size:12px;font-weight:900;letter-spacing:.14em;text-transform:uppercase;color:var(--yellow)}
+.cv-title h1{margin:0;font-family:var(--hand);font-weight:700;font-size:clamp(40px,7vw,56px);line-height:.9;color:var(--chalk);text-shadow:0 0 1px rgba(255,255,255,.4)}
+.cour-v2 .ch-stats{display:flex;flex-wrap:wrap;gap:8px;margin-top:4px}
+.cour-v2 .ch-stats > *{display:inline-flex;align-items:center;gap:6px;height:30px;padding:0 12px;border-radius:999px;border:1.5px dashed rgba(246,242,232,.35);color:var(--chalk);font-size:13px;font-weight:800;background:none}
+.cour-v2 .ch-stats .hot{border-color:var(--yellow);color:var(--yellow)}
+.cv-me{display:flex;align-items:center;gap:10px;padding:8px 12px 8px 8px;border-radius:16px;border:2px dashed rgba(246,242,232,.35);color:var(--chalk);text-align:left}
+.cv-me:hover{border-color:rgba(246,242,232,.7)}
+.cv-me img{flex:none}
+.cv-me small{display:block;font-size:11px;font-weight:900;letter-spacing:.06em;text-transform:uppercase;color:var(--chalk-2)}
+.cv-me b{font-family:var(--hand);font-size:25px;line-height:1}
+.cv-me em{margin-left:6px;display:inline-flex;align-items:center;gap:5px;padding:6px 10px;border-radius:999px;background:rgba(246,242,232,.12);font-style:normal;font-size:12.5px;font-weight:900}
+/* le plan de la cour : 5 coins dessinés à la craie */
+.cour-v2 .cour-nav{display:flex;gap:8px;margin:6px 0 16px;overflow-x:auto;scrollbar-width:none}
+.cour-v2 .cour-nav::-webkit-scrollbar{display:none}
+.cour-v2 .cn-tab{flex:1 0 auto;display:grid;justify-items:center;gap:2px;height:auto;min-width:86px;padding:10px 8px 8px;border-radius:18px;background:none;border:2px solid transparent;color:var(--chalk-2);box-shadow:none}
+.cour-v2 .cn-tab svg{width:42px;height:34px;fill:none;stroke:currentColor;stroke-width:2.4;stroke-linecap:round;stroke-linejoin:round}
+.cour-v2 .cn-tab span:not(.n){font-family:var(--hand);font-weight:700;font-size:22px;line-height:1}
+.cour-v2 .cn-tab:hover{color:var(--chalk);border-color:transparent;transform:translateY(-2px)}
+.cour-v2 .cn-tab[aria-selected="true"]{color:var(--chalk);background:rgba(246,242,232,.06);border:2px dashed rgba(246,242,232,.55);box-shadow:none}
+.cour-v2 .cn-tab .n{top:4px;right:auto;left:calc(50% + 12px)}
+/* les titres et les petits boutons posés directement sur le bitume */
+.cour-v2 .cour-body > .chips .chip,.cour-v2 .cour-grid > .chips .chip,.cour-v2 .cl-vues .chip{height:34px;background:rgba(246,242,232,.1);border:1px solid rgba(246,242,232,.22);color:var(--chalk)}
+.cour-v2 .cour-body > .chips .chip[aria-pressed="true"],.cour-v2 .cour-grid > .chips .chip[aria-pressed="true"],.cour-v2 .cl-vues .chip[aria-pressed="true"]{background:var(--chalk);color:var(--pen);border-color:var(--chalk)}
+.cour-v2 .mk-sec-h h3,.cour-v2 .mk-sec-h .sample-tag{color:var(--chalk)}
+.cour-v2 .empty{color:inherit}
+.cour-v2 .panel .chip[aria-pressed="true"]{background:#2B2233;color:#fff;border-color:#2B2233}
+/* ---------- Copains ---------- */
+.cour-v2 .cp-finds,.cour-v2 .cp-main{background:none;box-shadow:none;color:var(--chalk);padding:4px 2px}
+.cour-v2 .cp-finds .panel-head h3,.cour-v2 .cp-main .panel-head h3{font-family:var(--hand);font-size:30px;font-weight:700;color:var(--chalk)}
+.cour-v2 .cp-finds .sample-tag,.cour-v2 .cp-main .sample-tag{color:var(--chalk-2);background:none}
+.cour-v2 .cnt-n{background:rgba(246,242,232,.15);color:var(--chalk)}
+.cour-v2 .cp-main .cp-search,.cour-v2 .tr-new .cp-search{color:var(--chalk-2)}
+.cour-v2 .cp-main .cp-search input,.cour-v2 .tr-new .cp-search input{background:rgba(246,242,232,.1);border:2px solid rgba(246,242,232,.3);color:var(--chalk)}
+.cour-v2 .cp-main .cp-search input::placeholder,.cour-v2 .tr-new .cp-search input::placeholder{color:var(--chalk-2)}
+.cour-v2 .cpc-in{color:#2B2233}
+.cour-v2 .mate .cp-troc{width:auto;padding:0 12px}
+.cour-v2 .cp-amis{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:12px}
+.cour-v2 .cp-row.mate{display:grid;justify-items:center;gap:2px;padding:12px 8px 10px;border:2px dashed rgba(246,242,232,.28)!important;border-radius:18px;text-align:center;background:none;transition:transform .15s,border-color .15s}
+.cour-v2 .cp-row.mate[hidden]{display:none}
+.cour-v2 .cp-row.mate:hover{transform:translateY(-3px);border-color:rgba(246,242,232,.6)!important}
+.cour-v2 .mate .cp-face{width:86px;height:86px;border-radius:50%;display:grid;place-items:center;border:2.5px solid rgba(246,242,232,.35);background:none}
+.cour-v2 .mate .cp-who{display:grid;justify-items:center;color:var(--chalk)}
+.cour-v2 .mate .cp-who b{font-family:var(--hand);font-size:25px;line-height:1}
+.cour-v2 .mate .cp-who small{font-size:11.5px;color:var(--chalk-2);font-weight:800}
+.cour-v2 .mate-acts{display:flex;gap:6px;margin-top:8px;flex-wrap:wrap;justify-content:center}
+.cour-v2 .mate-acts .btn-ghost{background:rgba(246,242,232,.12);color:var(--chalk);border-color:transparent}
+.cour-v2 .cp-sub{color:var(--chalk-2)}
+.cour-v2 .cp-env .cp-row{border-color:rgba(246,242,232,.2);color:var(--chalk)}
+.cour-v2 .cp-pager{color:var(--chalk)}
+.cour-v2 .cp-pager .btn-ghost{background:rgba(246,242,232,.12);color:var(--chalk)}
+/* les demandes et l'ajout : des petits mots sur papier Seyès, un bout de scotch */
+.cour-v2 .cp-req,.cour-v2 .cp-add,.cour-v2 .troc,.cour-v2 .jr-carnet{position:relative;
+  background:repeating-linear-gradient(180deg,transparent 0 23px,rgba(60,110,180,.2) 23px 24px),linear-gradient(90deg,transparent 30px,rgba(220,85,85,.45) 30px 32px,transparent 32px),var(--paper)}
+.cour-v2 .cp-req,.cour-v2 .cp-add{padding-left:44px;rotate:-.6deg}
+.cour-v2 .cp-add{rotate:.5deg}
+.cour-v2 .cp-req::before,.cour-v2 .cp-add::before,.cour-v2 .troc::before,.cour-v2 .jr-carnet::before{content:"";position:absolute;top:-10px;left:50%;width:74px;height:22px;translate:-50% 0;rotate:-3deg;background:rgba(255,236,170,.8);box-shadow:0 1px 2px rgba(0,0,0,.15)}
+.cour-v2 .cp-req h3,.cour-v2 .cp-add h3{font-family:var(--hand);font-size:26px;font-weight:700}
+.cour-v2 .cp-add input{border:0;border-bottom:2px solid var(--pen);border-radius:0;background:transparent;font-family:var(--hand);font-size:22px}
+/* ---------- Troc ---------- */
+.cour-v2 .tr-new{background:none;box-shadow:none;color:var(--chalk);padding:4px 2px}
+.cour-v2 .tr-new .panel-head h3{font-family:var(--hand);font-size:30px;font-weight:700;color:var(--chalk)}
+.cour-v2 .tr-new .sample-tag,.cour-v2 .tr-new .meta{color:var(--chalk-2);background:none}
+.cour-v2 .tr-new .fchip{background:var(--paper);color:var(--pen)}
+.who-row{display:flex;gap:10px;overflow-x:auto;padding:4px 2px 12px;scrollbar-width:none}
+.who-row::-webkit-scrollbar{display:none}
+.tr-who{flex:none;display:grid;justify-items:center;gap:3px;width:74px;color:var(--chalk-2);font-family:var(--hand);font-weight:700;font-size:18px;line-height:1}
+.tr-who > span{width:62px;height:62px;border-radius:50%;display:grid;place-items:center;border:2.5px dashed rgba(246,242,232,.35);transition:transform .15s}
+.tr-who:hover{color:var(--chalk)}
+.tr-who:hover > span{transform:scale(1.08);border-color:var(--yellow)}
+.cour-v2 .tr-tabs .chip{border-radius:12px 12px 0 0;height:38px}
+.cour-v2 .tr-tabs{margin-bottom:-18px}
+.cour-v2 .tr-tabs + .panel{border-radius:0 10px 10px 10px;background:#F4ECDA;padding:18px}
+.cour-v2 .troc{padding:18px 16px 14px 44px;border:0;border-radius:6px;box-shadow:0 2px 0 rgba(0,0,0,.12),0 12px 18px -14px rgba(0,0,0,.6);rotate:-.4deg}
+.cour-v2 .troc + .troc{margin-top:22px;rotate:.4deg}
+.cour-v2 .troc.recu{box-shadow:0 2px 0 rgba(0,0,0,.12),0 12px 18px -14px rgba(0,0,0,.6),inset 4px 0 0 var(--yellow)}
+.cour-v2 .troc-head .t{font-family:var(--hand);font-size:24px;line-height:1.05}
+.cour-v2 .troc-side{border-radius:16px;padding:10px;border:2px solid var(--pc);background:color-mix(in srgb,var(--pc) 9%,var(--paper))}
+.cour-v2 .troc-side.get{--pc:#2FA35A}.cour-v2 .troc-side.give{--pc:#E8743B}
+.cour-v2 .troc-side > small{color:var(--pc);font-weight:900;letter-spacing:.06em;text-transform:uppercase}
+.cour-v2 .troc-arrow{display:grid;place-items:center;width:40px;height:40px;border-radius:50%;background:var(--yellow);color:#2B2233;box-shadow:0 3px 0 var(--yellow-2)}
+.cour-v2 .troc-mot{font-family:var(--hand);font-size:21px;color:#3558A8}
+/* ---------- Marché ---------- */
+.cour-v2 .mk-sell{position:relative;overflow:hidden;padding-top:58px;border-radius:18px 18px 10px 10px}
+.mk-awning{position:absolute;left:0;right:0;top:0;height:40px;background:repeating-linear-gradient(90deg,#E85D9A 0 34px,#FCF7EC 34px 68px)}
+.mk-awning::after{content:"";position:absolute;left:0;right:0;bottom:-14px;height:14px;background:radial-gradient(circle at 17px 0,#E85D9A 16px,transparent 17px) 0 0/68px 14px,radial-gradient(circle at 51px 0,#FCF7EC 16px,transparent 17px) 0 0/68px 14px}
+.cour-v2 .mk-sell b{font-family:var(--hand);font-size:32px;line-height:1}
+.cour-v2 .mk-sec-h{flex-wrap:wrap;row-gap:6px}
+.mk-leg{display:flex;flex-wrap:wrap;gap:4px 14px;font-size:12.5px;font-weight:800;color:var(--chalk-2)}
+@media (max-width:560px){ .cour-v2 .mk-leg{order:3;flex-basis:100%} }
+.mk-leg i{display:inline-block;width:14px;height:14px;border-radius:4px;vertical-align:-2px;margin-right:6px;background:linear-gradient(180deg,#D9BC8E,#CBA873)}
+.mk-leg i.ench{background:linear-gradient(180deg,#E8604C,#B8352B)}
+/* les étiquettes : kraft = prix fixe, rouge = aux enchères ; un trou et une ficelle en haut */
+.cour-v2 .mk-grid{gap:24px 16px;padding-top:6px}
+.cour-v2 .mk{--tg1:#D9BC8E;--tg2:#CBA873;padding-top:18px;border:0;border-radius:10px 10px 12px 12px;color:#2B2233;background:linear-gradient(180deg,var(--tg1),var(--tg2));
+  clip-path:polygon(18% 0,82% 0,100% 9%,100% 100%,0 100%,0 9%);box-shadow:none;filter:drop-shadow(0 10px 10px rgba(0,0,0,.45));rotate:-1.2deg}
+.cour-v2 .mk:nth-child(even){rotate:1.4deg}
+.cour-v2 .mk:hover{transform:translateY(-3px) rotate(0)}
+.cour-v2 .mk::before{content:"";position:absolute;top:7px;left:50%;width:11px;height:11px;translate:-50% 0;border-radius:50%;background:var(--tar);box-shadow:inset 0 1px 2px rgba(0,0,0,.6);z-index:2}
+.cour-v2 .mk.ench{--tg1:#E8604C;--tg2:#B8352B;color:#fff}
+.cour-v2 .mk-vis{background:radial-gradient(circle at 50% 56%,rgba(255,255,255,.35),transparent 62%);height:118px}
+.cour-v2 .mk .avg,.cour-v2 .mk .p-lbl,.cour-v2 .mk .mk-meta{color:#6E5A3E}
+.cour-v2 .mk.ench .avg,.cour-v2 .mk.ench .p-lbl,.cour-v2 .mk.ench .mk-meta{color:rgba(255,255,255,.88)}
+.cour-v2 .mk.ench .price{color:#FFE14D}
+.cour-v2 .mk .mk-tag{background:rgba(255,255,255,.55);color:#5A4426}
+.cour-v2 .mk.ench .mk-tag{background:rgba(0,0,0,.25);color:#FFE1A8}
+.cour-v2 .mk .mk-meta span{font-family:var(--hand);font-size:17px}
+/* ---------- Classement : le podium dessiné à la craie, la suite au tableau noir ---------- */
+.cour-v2 .cl-podium-wrap{background:none;box-shadow:none;color:var(--chalk);padding:4px 0}
+.cour-v2 .cl-pod b{font-family:var(--hand);font-size:24px;color:var(--chalk)}
+.cour-v2 .cl-pod .cl-pts{color:var(--chalk-2)}
+.cour-v2 .cl-step{background:none!important;border:3px solid var(--chalk);border-bottom:0;border-radius:8px 8px 0 0;box-shadow:none!important}
+.cour-v2 .cl-pod.p1 .cl-step{border-color:#FFD34D}.cour-v2 .cl-pod.p3 .cl-step{border-color:#F0A36B}
+.cour-v2 .cl-step i{font-family:var(--hand);font-style:normal;font-size:44px;color:var(--chalk)}
+.cour-v2 .cl-pod.p1 .cl-step i{color:#FFD34D}.cour-v2 .cl-pod.p3 .cl-step i{color:#F0A36B}
+.cour-v2 .cl-list{margin-top:14px;border-radius:14px;padding:6px 14px;background:#2F4A3A;border:10px solid #8A6A45;box-shadow:inset 0 0 30px rgba(0,0,0,.35),0 12px 20px -12px rgba(0,0,0,.8)}
+.cour-v2 .cl-row{background:none;border-color:rgba(246,242,232,.2);border-style:dashed;color:var(--chalk)}
+.cour-v2 .cl-row .cl-rank{font-family:var(--hand);font-size:26px;color:var(--chalk-2);background:none}
+.cour-v2 .cl-row .who{font-family:var(--hand);font-size:24px;line-height:1}
+.cour-v2 .cl-row .who small{font-family:var(--body);color:var(--chalk-2)}
+.cour-v2 .cl-row .cl-pts{font-family:var(--hand);font-size:26px;color:#FFD34D}
+.cour-v2 .cl-row.me{background:rgba(255,211,77,.14);border-radius:10px}
+.cour-v2 .cl-gap{color:var(--chalk-2)}
+.cour-v2 .cl-pager{color:var(--chalk)}
+.cour-v2 .cl-pager .btn-ghost{background:rgba(246,242,232,.12);color:var(--chalk)}
+.cour-v2 .cl-me{background:repeating-linear-gradient(180deg,transparent 0 23px,rgba(60,110,180,.2) 23px 24px),var(--paper)}
+.cour-v2 .cl-score p{font-family:var(--hand);font-size:21px;color:#3558A8}
+/* ---------- Historique : un carnet, un encadré par événement ---------- */
+.cour-v2.t-journal .cour-grid > .panel{position:relative;padding-left:44px;
+  background:repeating-linear-gradient(180deg,transparent 0 23px,rgba(60,110,180,.2) 23px 24px),linear-gradient(90deg,transparent 30px,rgba(220,85,85,.45) 30px 32px,transparent 32px),var(--paper)}
+.cour-v2 .jr-day{font-family:var(--hand);font-size:26px;color:#B4462B;margin:18px 0 8px;padding-bottom:4px;border-bottom:2px solid rgba(180,70,43,.35);text-transform:none;letter-spacing:0}
+.cour-v2 .jr{--ec:#8E8898;margin:8px 0;padding:9px 12px;border-radius:12px;border:1.5px solid color-mix(in srgb,var(--ec) 35%,transparent)!important;border-left:5px solid var(--ec)!important;background:color-mix(in srgb,var(--ec) 9%,#fff)}
+.cour-v2 .jr.k-troc{--ec:#2FA35A}.cour-v2 .jr.k-vendue{--ec:#E85D9A}.cour-v2 .jr.k-achat{--ec:#2E6BE6}.cour-v2 .jr.k-gagnee,.cour-v2 .jr[class*="k-ench"]{--ec:#E8743B}
+.cour-v2 .jr .jr-ic{width:32px;height:32px;border-radius:50%;display:grid;place-items:center;background:color-mix(in srgb,var(--ec) 18%,#fff);color:var(--ec)}
+@media (max-width:560px){
+  .cour-v2{padding:0 10px 16px;border-radius:20px}
+  .cv-head{padding-top:16px}
+  .cour-v2 .cp-amis{grid-template-columns:repeat(2,minmax(0,1fr))}
+  .cour-v2 .cn-tab{min-width:70px;padding:8px 4px 6px}
+  .cour-v2 .cn-tab span:not(.n){font-size:19px}
+  .cour-v2 .cn-tab svg{width:34px;height:28px}
+}
 </style>
 
 <div class="ciel" aria-hidden="true"><i class="ci-aurore"></i><i class="ci-e1"></i><i class="ci-e2"></i></div>
@@ -16722,17 +16882,17 @@ let bugKeep = null;   // un message qui n'est pas parti : il est reproposé au p
 // on:false cache le bouton (pendant qu'on prépare la mise à jour) ; on:true le remet, avec la pastille si l'id a changé
 // (16 octobre 2026) deux repères : dot = la pastille rouge du bouton, à changer à CHAQUE mise en ligne qui ajoute une ligne au patchnote
 // (avec txt : la date du jour) ; id = la fenêtre d'annonce à l'arrivée, seulement pour les très gros jours
-const NEWS = {on:true, id:"2026-10-22", dot:"2026-10-27-2230", url:"/nouveautes.html", txt:"Mise à jour du 27 oct."};
+const NEWS = {on:true, id:"2026-10-27", dot:"2026-10-27-2300", url:"/nouveautes.html", txt:"Mise à jour du 27 oct."};
 const newsUnseen = () => lsGet("billeo-news-vu")!==NEWS.dot;
 // (14 octobre 2026) à l'arrivée, une fenêtre annonce la mise à jour, une seule fois par mise à jour et par compte (S.newsPop, gardé
 // dans la partie : elle ne revient pas sur un autre appareil) ; on choisit d'aller voir les nouveautés, ou pas
 const newsPopDue = () => NEWS.on && sync.on && S.newsPop!==NEWS.id;
 async function newsPop(){
   S.newsPop = NEWS.id; save();
-  // (22 octobre 2026) l'annonce des 4 nouveaux mini-jeux (les Gobelets, le Tiercé, la Toupie, la Pince) ; on va voir les jeux, ou pas
-  const oui = await ask({title:"4 nouveaux mini-jeux !", ok:"Voir les jeux", no:"Plus tard",
-    text:`<b>Les Gobelets</b>, <b>le Tiercé</b>, <b>la Toupie</b> et <b>la Pince</b> remplacent le Tir, le Château et la Tic. Comme la Roue : une partie offerte chaque jour, et le Mammouth à gagner partout ! Et ta bille de jeu se choisit maintenant une seule fois, en haut de « Mini-jeux ».<br><small class="meta">Le détail est dans « Nouveautés ».</small>`});
-  if(oui) go("jeux")
+  // (27 octobre 2026) l'annonce du grand jour : l'atelier du verrier ouvre, la cour est refaite ; on va voir l'atelier, ou pas
+  const oui = await ask({title:"L'atelier du verrier est ouvert !", ok:"Voir l'atelier", no:"Plus tard",
+    text:`En ouvrant tes sachets, tu trouveras parfois un <b>éclat de verre</b>. À l'<b>atelier</b> (dans ta Boîte à billes), fonds-les pour fabriquer <b>la bille de ton choix</b> : la taille et le motif que tu veux ! Et ce n'est pas tout : <b>la cour est refaite</b> de fond en comble, et ta bille de jeu s'affiche en grand dans les Mini-jeux.<br><small class="meta">Le détail est dans « Nouveautés ».</small>`});
+  if(oui){ ui.tab = "verrier"; go("collection") }
 }
 async function bugReport(prev){
   if(!sync.on){ toast("Connecte-toi à ton compte pour envoyer un message."); return }
@@ -17016,7 +17176,7 @@ function journalRow(e, click){
   const got = (e.recu||[]).map(ball).join("") + bbChip(e.bonbecs_recus), gave = (e.donne||[]).map(ball).join("") + bbChip(e.bonbecs_donnes);
   const balls = e.k==="troc" ? `${got}${got && gave ? `<span class="troc-arrow">${ic("swap",14)}</span>` : ""}${gave}` : e.bille ? ball(e.bille) : "";
   const amt = e.k==="vendue" ? `<span class="jr-amt plus">+${fmt(e.prix||0)}</span>` : e.k==="achat" || e.k==="gagnee" ? `<span class="jr-amt">−${fmt(e.prix||0)}</span>` : "";
-  return `<div class="cour-row jr k-${e.k}${fresh?" new":""}"><span class="jr-ic">${ic(J.ic,18)}</span><span class="who">${J.txt}<small>${timeAgo(e.le)}${e.k==="troc"&&e.mot?` · « ${esc(e.mot)} »`:""}</small></span>${amt}<span class="jr-balls">${balls}</span></div>`;
+  return `<div class="cour-row jr k-${e.k}${e.statut?" s-"+e.statut:""}${fresh?" new":""}"><span class="jr-ic">${ic(J.ic,18)}</span><span class="who">${J.txt}<small>${timeAgo(e.le)}${e.k==="troc"&&e.mot?` · « ${esc(e.mot)} »`:""}</small></span>${amt}<span class="jr-balls">${balls}</span></div>`;
 }
 // « Aujourd'hui », « Hier », puis le jour en toutes lettres
 function jourDe(t){
@@ -17368,10 +17528,11 @@ function viewCour(){
     <p class="cour-lead">Le serveur de la cour n'est pas encore en place. Reviens un peu plus tard !</p></section>`;
   courLoad("moi"); if(!cour.absent.classement) courLoad("classement");
   const tab = ui.courTab || "copains", M = cour.moi;
-  const tb = (k,l,icon,n) => `<button class="cn-tab" role="tab" data-action="cour-tab" data-tab="${k}" aria-selected="${tab===k}">${ic(icon,20,2.2)}<span>${l}</span>${n?`<span class="n">${n}</span>`:""}</button>`;
-  const tabs = `<div class="cour-nav" role="tablist">${tb("copains","Copains","users",(M?.recues||[]).length)}${tb("troc","Troc","swap",M?.trocs||0)}${tb("marche","Marché","candy")}${tb("classement","Classement","trophy")}${tb("journal","Historique","clock",cour.unread||0)}</div>`;
+  // (27 octobre 2026) le plan de la cour, dessiné à la craie : 5 coins (maquettes/maquette-cour.html)
+  const tb = (k,l,svg,n) => `<button class="cn-tab" role="tab" data-action="cour-tab" data-tab="${k}" aria-selected="${tab===k}"><svg viewBox="0 0 42 34" aria-hidden="true">${svg}</svg><span>${l}</span>${n?`<span class="n">${n}</span>`:""}</button>`;
+  const tabs = `<div class="cour-nav" role="tablist">${tb("copains","Copains",'<circle cx="12" cy="13" r="6"/><circle cx="30" cy="13" r="6"/><path d="M3 31c1-7 6-10 9-10s8 3 9 10M21 31c1-7 6-10 9-10s8 3 9 10"/>',(M?.recues||[]).length)}${tb("troc","Troc",'<path d="M6 10h26l-6-6M36 24H10l6 6"/>',M?.trocs||0)}${tb("marche","Marché",'<path d="M4 12h34l-3-8H7zM6 12v18h30V12M15 30v-9h12v9"/><path d="M4 12c0 3 4 3 4 0 0 3 5 3 5 0 0 3 4 3 4 0 0 3 5 3 5 0 0 3 4 3 4 0 0 3 5 3 5 0 0 3 4 3 4 0"/>')}${tb("classement","Classement",'<path d="M15 30V12h12v18M3 30v-9h12M27 30v-13h12v13M1 30h40"/><path d="M21 4l1.5 3 3 .4-2.2 2 .6 3-2.9-1.5-2.9 1.5.6-3-2.2-2 3-.4z"/>')}${tb("journal","Historique",'<path d="M9 3h22v28H9zM14 10h12M14 16h12M14 22h8"/>',cour.unread||0)}</div>`;
   const body = tab==="troc" ? courTroc() : tab==="marche" ? courMarche() : tab==="journal" ? courJournal() : tab==="classement" ? courClassement() : courCopains();
-  return courHero() + tabs + body;
+  return `<section class="cour-v2 t-${tab}">${courHero()}${tabs}<div class="cour-body">${body}</div></section>`;
 }
 const courWait = () => `<p class="empty">Un instant…</p>`;
 // l'initiale d'un joueur dans un rond, toujours de la même couleur pour le même pseudo
@@ -17395,16 +17556,14 @@ const courScene = () => `<svg class="ch-scene" viewBox="0 0 800 240" preserveAsp
   </g>
   <rect width="800" height="240" fill="url(#chs-fade)"/></svg>`;
 function courHero(){
-  const M = cour.moi, me = specById(S.active), amis = (M?.amis||[]).filter(a=>a.active).slice(0,4);
+  // (27 octobre 2026) le titre écrit à la craie sur le bitume, ton pseudo à donner aux copains, et ce qui t'attend
+  const M = cour.moi, me = specById(S.active);
   const n = (v, one, many) => `<b>${fmt(v)}</b> ${v>1?many:one}`;
-  const ball = (x, px, cls, name) => `<span class="ch-ball ${cls}">${mImg(x,200,px,"")}${name?`<i>${esc(name)}</i>`:""}</span>`;
-  return `<section class="cour-hero">${courScene()}
-    <div class="ch-txt"><span class="ch-kick">${ic("cour",14,2.4)} Tout le monde dehors !</span><h1>La cour de récré</h1>
-      
-      ${M ? `<div class="ch-stats"><span>${ic("users",15)} ${n((M.amis||[]).length,"copain","copains")}</span>${M.trocs?`<span class="hot">${ic("swap",15)} ${n(M.trocs,"troc à voir","trocs à voir")}</span>`:""}${cour.classement?.moi && (ui.clPortee||"tous")==="tous" ? `<button data-action="cour-tab" data-tab="classement">${ic("trophy",15)} <b>${rangTxt(cour.classement.moi.rang)}</b> au classement</button>` : ""}
-        <button data-action="cour-copy" title="Copier ton pseudo pour le donner à tes copains">Ton pseudo : <b>${esc(S.name)}</b> ${ic("copy",14)}</button></div>` : ""}</div>
-    <div class="ch-floor" aria-hidden="true">${me ? ball(me, Math.round(46*scaleOf(me.type)+40), "me", "toi") : ""}${amis.map((a,i)=>ball(a.active, Math.round(30*scaleOf(a.active.type)+20), "f"+i, a.pseudo)).join("")}</div>
-  </section>`;
+  return `<header class="cv-head">
+    <div class="cv-title"><span class="ch-kick">${ic("cour",14,2.4)} Tout le monde dehors !</span><h1>La cour de récré</h1>
+      ${M ? `<div class="ch-stats"><span>${ic("users",15)} ${n((M.amis||[]).length,"copain","copains")}</span>${M.trocs?`<span class="hot">${ic("swap",15)} ${n(M.trocs,"troc à voir","trocs à voir")}</span>`:""}${cour.classement?.moi && (ui.clPortee||"tous")==="tous" ? `<button data-action="cour-tab" data-tab="classement">${ic("trophy",15)} <b>${rangTxt(cour.classement.moi.rang)}</b> au classement</button>` : ""}</div>` : ""}</div>
+    <button class="cv-me" data-action="cour-copy" title="Copier ton pseudo pour le donner à tes copains">${me ? mImg(me,96,44,"") : ""}<span><small>Ton pseudo, à donner aux copains</small><b>${esc(S.name)}</b></span><em>${ic("copy",14)} Copier</em></button>
+  </header>`;
 }
 
 const CP_PAGE = 12, RARES_PAGE = 6, RARES_H = 48;   // (20 octobre 2026) 48 h au lieu de 72 : il y en avait trop
@@ -17421,11 +17580,12 @@ function courCopains(){
   const M = cour.moi; if(!M) return courWait();
   courLoad("fil");
   const rec = M.recues||[], env = M.envoyees||[], amis = M.amis||[];
-  const face = a => a.active ? mImg(a.active,96,Math.round(14*scaleOf(a.active.type)+26),"") : avatarIni(a.pseudo,36);
-  const row = (a, i) => `<div class="cp-row" data-q="${esc(fold(a.pseudo))}"${Math.floor(i/CP_PAGE)!==A.p?" data-off hidden":""}${a.active?` style="${tstyle(a.active.type)}"`:""}>
+  const face = a => a.active ? mImg(a.active,120,Math.round(20*scaleOf(a.active.type)+40),"") : avatarIni(a.pseudo,48);
+  // (27 octobre 2026) le banc des copains : une carte par copain, sa bille sur un rond de craie
+  const row = (a, i) => `<div class="cp-row mate" data-q="${esc(fold(a.pseudo))}"${Math.floor(i/CP_PAGE)!==A.p?" data-off hidden":""}${a.active?` style="${tstyle(a.active.type)}"`:""}>
       <button class="cp-face" data-action="ami-voir" data-id="${a.id}" aria-label="Voir la fiche de ${esc(a.pseudo)}">${face(a)}</button>
-      <button class="cp-who" data-action="ami-voir" data-id="${a.id}"><b>${esc(a.pseudo)}</b>${a.active ? `<small>${esc(specName(a.active))}</small>` : ""}</button>
-      <button class="btn btn-yellow btn-sm cp-troc" data-action="troc-new" data-id="${a.id}" title="Proposer un troc à ${esc(a.pseudo)}" aria-label="Proposer un troc à ${esc(a.pseudo)}">${ic("swap",16)}</button></div>`;
+      <button class="cp-who" data-action="ami-voir" data-id="${a.id}"><b>${esc(a.pseudo)}</b>${a.active ? `<small>joue avec ${esc(FAMILIES[a.active.family]?.name || specName(a.active))}</small>` : ""}</button>
+      <span class="mate-acts"><button class="btn btn-yellow btn-sm cp-troc" data-action="troc-new" data-id="${a.id}" title="Proposer un troc à ${esc(a.pseudo)}">${ic("swap",14)} Troc</button><button class="btn btn-ghost btn-sm" data-action="ami-voir" data-id="${a.id}">Sa fiche</button></span></div>`;
   const wait = r => `<div class="cp-row wait"><span class="cp-face">${avatarIni(r.pseudo,36)}</span><span class="cp-who"><b>${esc(r.pseudo)}</b><small>${ic("clock",12,2.4)} N'a pas encore répondu</small></span>
       <button class="btn btn-ghost btn-sm" data-action="ami-retirer" data-id="${r.id}">Annuler</button></div>`;
   // (10 octobre 2026) les trouvailles rares restent 72 h, 4 par page ; les copains 10 par page (la recherche cherche dans tous)
@@ -17459,7 +17619,7 @@ function courCopains(){
         : `<p class="empty">${amis.length ? "Pas de trouvaille rare chez tes copains ces 2 derniers jours. Les shiny, les légendaires, les Mammouths épiques… apparaîtront ici." : "Ajoute des copains : leurs shiny, légendaires et Mammouths épiques apparaîtront ici."}</p>`}
     </section>
     <div class="cp-layout">
-    <section class="panel cp-main"><div class="panel-head"><h3>Mes copains<span class="cnt-n">${amis.length}</span></h3>
+    <section class="panel cp-main"><div class="panel-head"><h3>Le banc des copains<span class="cnt-n">${amis.length}</span></h3>
         ${amis.length ? `<div class="cp-search">${ic("search",15)}<input type="search" id="cp-q" placeholder="Chercher un copain" aria-label="Chercher un copain" autocomplete="off" spellcheck="false"></div>` : ""}</div>
       ${amis.length ? `<div class="cp-list cp-amis">${amis.map(row).join("")}</div><p class="meta cp-none" hidden>Aucun copain ne s'appelle comme ça.</p>${pager(A,"cpPage","Copains")}`
         : `<p class="empty">Pas encore de copain : ajoute-en un avec son pseudo, ou donne-lui le tien (<b>${esc(S.name)}</b>).</p>`}
@@ -17586,8 +17746,9 @@ function courTroc(){
   const list = tab==="envoyes" ? T.envoyes : tab==="finis" ? T.finis : T.recus, kind = tab==="envoyes" ? "envoye" : tab==="finis" ? "fini" : "recu";
   const vide = {recu:"Aucune offre reçue pour l'instant.", envoye:"Tu n'as pas d'offre en attente.", fini:"Pas encore de troc terminé."}[kind];
   return `<div class="cour-grid">
-    <section class="panel tr-new"><div class="panel-head"><h3>${ic("swap",18)} Proposer un troc</h3></div>
-      ${amis.length ? `<form class="tr-pick" id="troc-ami-form"><span class="cp-search tr-q">${ic("search",16)}<input type="search" id="troc-q" placeholder="Écris le pseudo de ton copain" aria-label="Pseudo de ton copain" autocomplete="off" spellcheck="false" enterkeyhint="go"></span></form>
+    <section class="panel tr-new"><div class="panel-head"><h3>Proposer un troc à…</h3><span class="sample-tag">Touche un copain, ou écris son pseudo</span></div>
+      ${amis.length ? `<div class="who-row">${amis.slice(0,16).map(a=>`<button class="tr-who" data-action="troc-new" data-id="${a.id}" title="Proposer un troc à ${esc(a.pseudo)}"><span>${a.active ? mImg(a.active,96,40,"") : avatarIni(a.pseudo,36)}</span>${esc(a.pseudo)}</button>`).join("")}</div>
+        <form class="tr-pick" id="troc-ami-form"><span class="cp-search tr-q">${ic("search",16)}<input type="search" id="troc-q" placeholder="Écris le pseudo de ton copain" aria-label="Pseudo de ton copain" autocomplete="off" spellcheck="false" enterkeyhint="go"></span></form>
         <div class="tr-found" id="troc-found" aria-live="polite"></div>
         <p class="meta">Écris le début de son pseudo, puis touche ton copain pour lui proposer un troc.</p>`
         : `<p class="cour-lead">Pour troquer, ajoute d'abord des copains dans l'onglet Copains.</p>`}</section>
@@ -17738,8 +17899,8 @@ function courMarche(){
       <span class="who">${esc(specName(x))}<small>${TYPES[x.type].label}${x.shiny?" · shiny":""}${E && !a.vendue ? ` · ${a.offre?"meilleure offre":"mise à prix"}` : ""}</small></span>
       <span class="price">${COIN}${fmt(a.offre ?? a.prix)}</span><span class="ann-end">${st}</span></div>` };
   return `<div class="cour-grid">
-    ${(()=>{ const n = trocDups().size; return `<section class="panel mk-sell"><span class="mk-sell-art" aria-hidden="true">${ic("candy",34,2)}</span>
-      <div><b>Des doubles dans ta boîte ?</b><small>${n ? `Tu as <b>${fmt(n)} double${n>1?"s":""}</b> : vends-les aux autres joueurs contre des ${CUR.many}, à prix fixe ou aux enchères.` : `Vends tes billes aux autres joueurs contre des ${CUR.many}, à prix fixe ou aux enchères.`}</small></div>
+    ${(()=>{ const n = trocDups().size; return `<section class="panel mk-sell"><span class="mk-awning" aria-hidden="true"></span><span class="mk-sell-art" aria-hidden="true">${ic("candy",34,2)}</span>
+      <div><b>Le marché de la cour</b><small>${n ? `Tu as <b>${fmt(n)} double${n>1?"s":""}</b> : vends-les aux autres joueurs contre des ${CUR.many}, à prix fixe ou aux enchères.` : `Vends tes billes aux autres joueurs contre des ${CUR.many}, à prix fixe ou aux enchères.`}</small></div>
       <button class="btn btn-yellow btn-xl" data-action="mk-vendre">${ic("plus",19,2.6)} Vendre une bille</button></section>` })()}
     <section class="panel"><div class="mk-bar"><h3>Le marché</h3>
       ${mkTab==="acheter" ? `<div class="cour-form" id="mk-filters">
@@ -17755,7 +17916,7 @@ function courMarche(){
       ${mkTab==="acheter" ? `<p class="cour-info" style="margin-top:12px">${ic("quest",16)}<span>Le prix moyen : ce que les joueurs ont payé ce modèle en 30 jours.${aucOK?` Enchères : au plus offrant à la fin.`:""}</span></p>` : ""}</section>
     ${mkTab==="ench" ? (ME.length ? `<section class="panel mes-ench"><div class="panel-head"><h3>${ic("gavel",18)} Mes enchères<span class="cnt-n">${ME.length}</span></h3><span class="sample-tag">${ME.filter(a=>a.en_tete).length} en tête</span></div>
       <div class="mk-grid">${ME.map(a=>mkCard(a, true)).join("")}</div></section>` : `<p class="empty">Tu n'enchéris sur aucune bille en ce moment.</p>`) : ""}
-    ${mkTab!=="acheter" ? "" : L && L.length ? `<div class="mk-sec-h"><h3>${ic("candy",18)} En vente</h3><span class="sample-tag">${L.length} bille${L.length>1?"s":""}${L.some(a=>a.enchere)?` · dont ${L.filter(a=>a.enchere).length} aux enchères`:""}</span></div>` : ""}
+    ${mkTab!=="acheter" ? "" : L && L.length ? `<div class="mk-sec-h"><h3>${ic("candy",18)} En vente</h3><span class="mk-leg"><span><i class="fixe"></i>Étiquette kraft : prix fixe, tu achètes tout de suite</span><span><i class="ench"></i>Étiquette rouge : aux enchères, tu fais une offre</span></span><span class="sample-tag">${L.length} bille${L.length>1?"s":""}${L.some(a=>a.enchere)?` · dont ${L.filter(a=>a.enchere).length} aux enchères`:""}</span></div>` : ""}
     ${mkTab!=="acheter" ? "" : !L ? courWait() : L.length ? `<div class="mk-grid mk-all">${L.map(a=>mkCard(a)).join("")}</div><p class="empty mk-none"${L.every(mkHid)?"":" hidden"}>Aucune bille en vente ne correspond à ta recherche.</p>` : `<p class="empty">Rien en vente avec ces filtres pour l'instant.${f.manque && L0?.length ? " Toutes les billes en vente sont déjà dans ta boîte !" : ""}${f.taille||f.decor!=null||f.shiny||f.genre||f.manque ? `<br><button class="btn btn-ghost btn-sm" style="margin-top:12px" data-action="mk-reset">Effacer les filtres</button>` : ""}</p>`}
     ${mkTab!=="mine" ? "" : !A ? courWait() : !mine.length ? `<p class="empty">Tu n'as rien en vente. Touche « Vendre une bille » pour en proposer une.</p>` : `<section class="panel" id="mes-annonces"><div class="panel-head"><h3>Mes annonces<span class="cnt-n">${mine.length}</span></h3>${sold ? `<span class="sample-tag">${sold} vendue${sold>1?"s":""}</span>` : ""}</div>
       <div class="ann-list">${mine.map(ann).join("")}</div></section>`}

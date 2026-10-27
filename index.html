@@ -4310,6 +4310,7 @@ body.gc-open{overflow:hidden}
 .cour-v2{--paper:var(--panel);--pen:var(--ink);display:grid;gap:18px}
 .cour-v2 .cour-body{display:grid;gap:16px}
 .cour-v2 .cour-grid{gap:18px}
+.row-2:has(> .cl-bareme){align-items:start}
 .cl-bareme > summary{list-style:none;cursor:pointer;margin:0}
 .cl-bareme > summary::-webkit-details-marker{display:none}
 .cl-bareme > summary svg:last-child{transition:transform .2s}
@@ -17444,9 +17445,9 @@ function clGeneral(){
       ${pager}
     </section>` : ""}
     <div class="row-2">
-      <section class="panel"><div class="panel-head"><h3>${ic("flag",18)} Pour grimper</h3></div>
+      <details class="panel cl-bareme"><summary class="panel-head"><h3>${ic("flag",18)} Pour grimper</h3>${ic("chev",16,2.6)}</summary>
         <div class="cl-goals">${scoreGoals().map(g=>`<div class="cl-goal"><div class="g-top"><b>${esc(g.titre)}</b><span class="g-pts">+${fmt(g.pts)}</span></div>
-          <div class="bar"><i style="width:${Math.round(100*g.n/g.of)}%"></i></div><small>${g.n} / ${g.of} · ${esc(g.manque)}</small></div>`).join("")}</div></section>
+          <div class="bar"><i style="width:${Math.round(100*g.n/g.of)}%"></i></div><small>${g.n} / ${g.of} · ${esc(g.manque)}</small></div>`).join("")}</div></details>
       <details class="panel cl-bareme"><summary class="panel-head"><h3>${ic("quest",18)} Voir le barème</h3>${ic("chev",16,2.6)}</summary>
         <ul class="cl-rules">
           <li><b>Chaque motif de l'album, dans chaque taille</b><span>${TK.map(t=>`${TYPES[t].label} ${SCORE.taille[TIDX[t]]}`).join(" · ")}</span><small>× la rareté du motif : ${DECOR_RAR.map((r,i)=>`${r.name.toLowerCase()} ×${String(SCORE.decor[i]).replace(".",",")}`).join(", ")}</small></li>

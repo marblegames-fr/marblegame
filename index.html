@@ -937,8 +937,9 @@ button.rw:hover{transform:translateY(-2px)}
 .at-prices table{width:100%;min-width:430px;border-collapse:collapse;margin-top:10px;font-size:13px;text-align:center}
 .at-prices th,.at-prices td{padding:6px 4px;border-bottom:1px dashed var(--line-2)}
 .at-prices th{font-size:11.5px;letter-spacing:.04em;text-transform:uppercase}
+.at-prices td,.at-prices td b{color:#24253D!important}   /* (27 octobre 2026) les prix restaient en blanc sur le papier clair */
 .at-prices td b{display:block;font-family:var(--display);font-weight:400;font-size:17px;line-height:1}
-.at-prices td small{display:block;color:#66606F;font-weight:800;font-size:10.5px;line-height:1.15}
+.at-prices td small{display:block;color:#66606F!important;font-weight:800;font-size:10.5px;line-height:1.15}
 .at-prices th{color:#45435A}
 .at-prices td.hl{background:#DDF5FA;border-radius:8px}
 @media (max-width:760px){
@@ -8969,7 +8970,7 @@ function cahierTabs(cur, counts={}){
   </div>`;
 }
 // (27 octobre 2026) L'ATELIER DU VERRIER (maquettes/maquette-atelier.html, maquette-eclat.html ; serveur : supabase/atelier.sql).
-// Un éclat de verre tombe dans 1 sachet sur 25 (n'importe lequel) ; à l'atelier, on les fond pour fabriquer une bille au choix :
+// Chaque sachet a 4 % de chances de contenir un éclat de verre (n'importe lequel, chaque sachet tiré à part, sans garantie) ; à l'atelier, on les fond pour fabriquer une bille au choix :
 // une taille et un motif (commun à légendaire, jamais le mythique ni les motifs d'événement ou de saison), le coloris au hasard.
 // La bille fabriquée compte au classement général, pas au classement de la semaine (comme la fusion).
 const VERRIER_C = "#5FD3E8";
@@ -8999,7 +9000,7 @@ function viewAtelier(){
   return `<div class="at-grid">
     <aside class="at-card at-res">${atelierJar(n)}
       <div><div class="at-n">${fmt(n)} ${SHARD_SVG}<small>éclat${n>1?"s":""} de verre</small></div>
-      <p>Il en tombe un dans 1 sachet sur 25, n'importe lequel. C'est rare : garde-les précieusement !</p>
+      <p>Chaque sachet a 4 % de chances d'en contenir un, n'importe quel sachet. C'est rare : garde-les précieusement !</p>
       ${st.eclats ? `<p class="at-last">${st.eclats} éclat${st.eclats>1?"s":""} trouvé${st.eclats>1?"s":""}${st.atelier?` · ${st.atelier} bille${st.atelier>1?"s":""} fabriquée${st.atelier>1?"s":""}`:""}</p>` : ""}</div></aside>
     <div class="at-steps">
       <section class="at-card at-step"><h3><i>1</i> La taille</h3>
@@ -10459,7 +10460,7 @@ async function openBag(bagId, gift, auto){
     try{
       const r = await srv(()=>Cloud.eco.openBag(bagId, !!gift, evOptOn(bagId)));
       pulls = srvAdopt(r.billes);   // dans l'ordre des positions
-      pulls.forced = r.force; pulls.eclat = !!r.eclat; applyEco(r.eco);   // (27 octobre 2026) un éclat de verre, 1 sachet sur 25
+      pulls.forced = r.force; pulls.eclat = !!r.eclat; applyEco(r.eco);   // (27 octobre 2026) un éclat de verre : 4 % par sachet
     }catch(e){ srvFail(e); return }
     finally{ eco.busy = false }
   } else {
@@ -16882,7 +16883,7 @@ let bugKeep = null;   // un message qui n'est pas parti : il est reproposé au p
 // on:false cache le bouton (pendant qu'on prépare la mise à jour) ; on:true le remet, avec la pastille si l'id a changé
 // (16 octobre 2026) deux repères : dot = la pastille rouge du bouton, à changer à CHAQUE mise en ligne qui ajoute une ligne au patchnote
 // (avec txt : la date du jour) ; id = la fenêtre d'annonce à l'arrivée, seulement pour les très gros jours
-const NEWS = {on:true, id:"2026-10-27", dot:"2026-10-27-2300", url:"/nouveautes.html", txt:"Mise à jour du 27 oct."};
+const NEWS = {on:true, id:"2026-10-27", dot:"2026-10-27-2330", url:"/nouveautes.html", txt:"Mise à jour du 27 oct."};
 const newsUnseen = () => lsGet("billeo-news-vu")!==NEWS.dot;
 // (14 octobre 2026) à l'arrivée, une fenêtre annonce la mise à jour, une seule fois par mise à jour et par compte (S.newsPop, gardé
 // dans la partie : elle ne revient pas sur un autre appareil) ; on choisit d'aller voir les nouveautés, ou pas

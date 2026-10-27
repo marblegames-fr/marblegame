@@ -1552,7 +1552,6 @@ body.vit-dragging,body.vit-dragging *{cursor:grabbing!important;user-select:none
 .bpk.gc .bpk-txt{padding-bottom:22px;text-shadow:0 2px 6px rgba(0,0,0,.3)}
 .bpk.gc .bpk-txt small,.bpk.gc .bpk-txt p{color:rgba(255,255,255,.92)}
 .bpk.gc .bpk-txt h3{color:#fff!important}
-.bpk-bib{position:absolute;z-index:2;right:2px;top:8px;padding:3px 7px;border-radius:7px;background:#fff;color:#E0182D;font-family:var(--display);font-size:14px;line-height:1;border:2px solid #24253D;transform:rotate(8deg)}
 .gt-me{position:absolute;right:10px;bottom:10px;z-index:2;width:42px;height:42px;border-radius:50%;display:grid;place-items:center;background:rgba(255,255,255,.92);box-shadow:0 3px 8px rgba(0,0,0,.25)}
 @media (max-width:560px){
   .bpk{grid-template-columns:minmax(0,1fr);justify-items:center;text-align:center}
@@ -4303,126 +4302,88 @@ body.gc-open{overflow:hidden}
 :root[data-theme="dark"] .ciel{display:block}
 @media (prefers-reduced-motion:reduce){ .ciel i{animation:none} }
 /* ==========================================================================
-   (27 octobre 2026) LA COUR REFAITE (maquettes/maquette-cour.html) : un vrai lieu. Le sol est en bitume et on y écrit à la craie
-   (le titre, le plan de la cour, le banc des copains, le podium) ; ce qu'on y pose est en papier (les petits mots du troc et des demandes,
-   les étiquettes du marché, le carnet de l'historique). Toujours les mêmes couleurs, en mode clair comme en sombre (comme le cahier).
+   (27 octobre 2026) LA COUR REFAITE (maquettes/maquette-cour.html), sans grand fond (le soir même, à la demande) :
+   la cour reprend le fond du site comme les autres pages, en blocs bien séparés. On garde le plan en tuiles de couleur,
+   le banc des copains, les petits mots (troc, demandes), l'étal et ses étiquettes kraft / rouges, le podium et le tableau noir,
+   le carnet de l'historique. Tout suit le mode clair ou sombre du site.
    ========================================================================== */
-.cour-v2{--tar:#3B3634;--chalk:#F6F2E8;--chalk-2:rgba(246,242,232,.66);--paper:#FCF7EC;--pen:#2B2233;
-  --panel:#FCF7EC;--panel-2:#F4ECDA;--line:#E6D9C1;--line-2:#D9C7A5;--ink:#2B2233;--ink-2:#56546B;--muted:#7A7385;--track:#EDE6DA;
-  --gold-bg:#FFF3D0;--gold-line:#F4CF6A;--blue-soft:#DCE7FC;--green-soft:#D9F1DC;--purple-soft:#EDE3FB;
-  position:relative;padding:0 18px 22px;border-radius:26px;color:var(--chalk);color-scheme:light;
-  background:radial-gradient(1.2px 1.2px at 20% 30%,rgba(255,255,255,.07) 50%,transparent 51%) 0 0/11px 13px,
-    radial-gradient(1px 1px at 70% 60%,rgba(0,0,0,.25) 50%,transparent 51%) 0 0/9px 7px,
-    radial-gradient(ellipse at 85% -10%,rgba(255,180,90,.22),transparent 55%),var(--tar);box-shadow:0 18px 40px -22px rgba(0,0,0,.7)}
-/* papier posé sur le bitume */
-.cour-v2 .panel{background:var(--paper);color:var(--ink);border:0;border-radius:8px;box-shadow:0 2px 0 rgba(0,0,0,.18),0 14px 22px -14px rgba(0,0,0,.7)}
+.cour-v2{--paper:var(--panel);--pen:var(--ink);display:grid;gap:18px}
 .cour-v2 .cour-body{display:grid;gap:16px}
 .cour-v2 .cour-grid{gap:18px}
-/* le haut : le titre à la craie */
-.cv-head{display:flex;flex-wrap:wrap;align-items:flex-end;justify-content:space-between;gap:12px 18px;padding:22px 4px 6px}
-.cv-title{display:grid;gap:6px}
-.cv-title .ch-kick{display:inline-flex;align-items:center;gap:6px;font-size:12px;font-weight:900;letter-spacing:.14em;text-transform:uppercase;color:var(--yellow)}
-.cv-title h1{margin:0;font-family:var(--hand);font-weight:700;font-size:clamp(40px,7vw,56px);line-height:.9;color:var(--chalk);text-shadow:0 0 1px rgba(255,255,255,.4)}
-.cour-v2 .ch-stats{display:flex;flex-wrap:wrap;gap:8px;margin-top:4px}
-.cour-v2 .ch-stats > *{display:inline-flex;align-items:center;gap:6px;height:30px;padding:0 12px;border-radius:999px;border:1.5px dashed rgba(246,242,232,.35);color:var(--chalk);font-size:13px;font-weight:800;background:none}
-.cour-v2 .ch-stats .hot{border-color:var(--yellow);color:var(--yellow)}
-.cv-me{display:flex;align-items:center;gap:10px;padding:8px 12px 8px 8px;border-radius:16px;border:2px dashed rgba(246,242,232,.35);color:var(--chalk);text-align:left}
-.cv-me:hover{border-color:rgba(246,242,232,.7)}
+/* le haut : le titre de la page, ce qui t'attend, et ton pseudo à donner */
+.cv-head{display:flex;flex-wrap:wrap;align-items:flex-end;justify-content:space-between;gap:12px 18px;margin-bottom:0}
+.cv-title{display:grid;gap:8px}
+.cv-title h1{margin:0}
+.cour-v2 .ch-stats{display:flex;flex-wrap:wrap;gap:8px}
+.cour-v2 .ch-stats > *{display:inline-flex;align-items:center;gap:6px;height:32px;padding:0 13px;border-radius:999px;border:1px solid var(--line);background:var(--panel);color:var(--ink-2);font-size:13px;font-weight:800;box-shadow:var(--shadow)}
+.cour-v2 .ch-stats b{color:var(--ink)}
+.cour-v2 .ch-stats .hot{border-color:var(--gold-line);background:var(--gold-bg);color:#9A6A05}
+.cv-me{display:flex;align-items:center;gap:10px;padding:8px 12px 8px 8px;border-radius:18px;border:1px solid var(--line);background:var(--panel);color:var(--ink);text-align:left;box-shadow:var(--shadow)}
+.cv-me:hover{border-color:var(--line-2)}
 .cv-me img{flex:none}
-.cv-me small{display:block;font-size:11px;font-weight:900;letter-spacing:.06em;text-transform:uppercase;color:var(--chalk-2)}
-.cv-me b{font-family:var(--hand);font-size:25px;line-height:1}
-.cv-me em{margin-left:6px;display:inline-flex;align-items:center;gap:5px;padding:6px 10px;border-radius:999px;background:rgba(246,242,232,.12);font-style:normal;font-size:12.5px;font-weight:900}
-/* le plan de la cour : 5 coins dessinés à la craie */
-.cour-v2 .cour-nav{display:flex;gap:10px;margin:2px 0 16px;padding:10px 4px 8px;overflow-x:auto;scrollbar-width:none}
+.cv-me small{display:block;font-size:11px;font-weight:900;letter-spacing:.06em;text-transform:uppercase;color:var(--muted)}
+.cv-me b{font-family:var(--display);font-weight:400;font-size:20px;line-height:1.1}
+.cv-me em{margin-left:6px;display:inline-flex;align-items:center;gap:5px;padding:6px 10px;border-radius:999px;background:var(--panel-2);font-style:normal;font-size:12.5px;font-weight:900;color:var(--ink-2)}
+/* le plan de la cour : 5 tuiles de couleur */
+.cour-v2 .cour-nav{display:flex;gap:10px;margin:0;padding:8px 2px 6px;overflow-x:auto;scrollbar-width:none}
 .cour-v2 .cour-nav::-webkit-scrollbar{display:none}
-/* (27 octobre 2026, le soir) chaque coin est une vraie tuile, avec sa couleur : on voit tout de suite que ce sont des onglets */
-.cour-v2 .cn-tab{--cc:#FFC93F;flex:1 0 auto;display:grid;justify-items:center;gap:3px;height:auto;min-width:96px;padding:12px 8px 10px;border-radius:18px;
-  background:rgba(246,242,232,.08);border:2px solid rgba(246,242,232,.18);color:var(--chalk);box-shadow:0 4px 0 rgba(0,0,0,.25);transition:transform .15s,background .15s}
-.cour-v2 .cn-tab:nth-child(2){--cc:#7CE59A}.cour-v2 .cn-tab:nth-child(3){--cc:#FF8FB8}.cour-v2 .cn-tab:nth-child(4){--cc:#FFB547}.cour-v2 .cn-tab:nth-child(5){--cc:#7FC4FF}
-.cour-v2 .cn-tab svg{width:42px;height:34px;fill:none;stroke:var(--cc);stroke-width:2.6;stroke-linecap:round;stroke-linejoin:round}
-.cour-v2 .cn-tab span:not(.n){font-family:var(--hand);font-weight:700;font-size:23px;line-height:1}
-.cour-v2 .cn-tab:hover{transform:translateY(-2px);background:rgba(246,242,232,.14);border-color:color-mix(in srgb,var(--cc) 60%,transparent)}
-.cour-v2 .cn-tab[aria-selected="true"]{background:var(--cc);border-color:var(--cc);color:#2B2233;box-shadow:0 4px 0 rgba(0,0,0,.35),0 0 0 3px rgba(246,242,232,.25)}
-.cour-v2 .cn-tab[aria-selected="true"] svg{stroke:#2B2233}
+.cour-v2 .cn-tab{--cc:#F2AE12;flex:1 0 auto;display:grid;justify-items:center;gap:4px;height:auto;min-width:96px;padding:12px 8px 10px;border-radius:18px;
+  background:var(--panel);border:1.5px solid var(--line);color:var(--ink);box-shadow:var(--shadow);transition:transform .15s,border-color .15s}
+.cour-v2 .cn-tab:nth-child(2){--cc:#2FA35A}.cour-v2 .cn-tab:nth-child(3){--cc:#E85D9A}.cour-v2 .cn-tab:nth-child(4){--cc:#E8743B}.cour-v2 .cn-tab:nth-child(5){--cc:#2E6BE6}
+.cour-v2 .cn-tab svg{width:40px;height:32px;fill:none;stroke:var(--cc);stroke-width:2.6;stroke-linecap:round;stroke-linejoin:round}
+.cour-v2 .cn-tab span:not(.n){font-weight:900;font-size:14.5px;line-height:1.1}
+.cour-v2 .cn-tab:hover{transform:translateY(-2px);border-color:var(--cc)}
+.cour-v2 .cn-tab[aria-selected="true"]{background:var(--cc);border-color:var(--cc);color:#fff;box-shadow:0 4px 0 color-mix(in srgb,var(--cc) 60%,#000),0 12px 20px -12px var(--cc)}
+.cour-v2 .cn-tab[aria-selected="true"] svg{stroke:#fff}
 .cour-v2 .cn-tab .n{top:-7px;right:-5px;left:auto}
-/* les titres et les petits boutons posés directement sur le bitume */
-.cour-v2 .cour-body > .chips .chip,.cour-v2 .cour-grid > .chips .chip,.cour-v2 .cl-vues .chip{height:34px;background:rgba(246,242,232,.1);border:1px solid rgba(246,242,232,.22);color:var(--chalk)}
-.cour-v2 .cour-body > .chips .chip[aria-pressed="true"],.cour-v2 .cour-grid > .chips .chip[aria-pressed="true"],.cour-v2 .cl-vues .chip[aria-pressed="true"]{background:var(--chalk);color:var(--pen);border-color:var(--chalk)}
-.cour-v2 .mk-sec-h h3,.cour-v2 .mk-sec-h .sample-tag{color:var(--chalk)}
-.cour-v2 .empty{color:inherit}
-.cour-v2 .panel .chip[aria-pressed="true"]{background:#2B2233;color:#fff;border-color:#2B2233}
-/* ---------- Copains ---------- */
-.cour-v2 .cp-finds,.cour-v2 .cp-main{background:none;box-shadow:none;color:var(--chalk);padding:4px 2px}
-.cour-v2 .cp-finds .panel-head h3,.cour-v2 .cp-main .panel-head h3{font-family:var(--hand);font-size:30px;font-weight:700;color:var(--chalk)}
-.cour-v2 .cp-finds .sample-tag,.cour-v2 .cp-main .sample-tag{color:var(--chalk-2);background:none}
-.cour-v2 .cnt-n{background:rgba(246,242,232,.15);color:var(--chalk)}
-.cour-v2 .cp-main .cp-search,.cour-v2 .tr-new .cp-search{color:var(--chalk-2)}
-.cour-v2 .cp-main .cp-search input,.cour-v2 .tr-new .cp-search input{background:rgba(246,242,232,.1);border:2px solid rgba(246,242,232,.3);color:var(--chalk)}
-.cour-v2 .cp-main .cp-search input::placeholder,.cour-v2 .tr-new .cp-search input::placeholder{color:var(--chalk-2)}
-.cour-v2 .cpc-in{color:#2B2233}
-.cour-v2 .mate .cp-troc{width:auto;padding:0 12px}
+/* ---------- Copains : le banc (une carte par copain, sa bille dans un rond) ---------- */
 .cour-v2 .cp-amis{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:12px}
-.cour-v2 .cp-row.mate{display:grid;justify-items:center;gap:2px;padding:12px 8px 10px;border:2px dashed rgba(246,242,232,.28)!important;border-radius:18px;text-align:center;background:none;transition:transform .15s,border-color .15s}
+.cour-v2 .cp-row.mate{display:grid;justify-items:center;gap:2px;padding:12px 8px 10px;border:1.5px dashed var(--line-2)!important;border-radius:18px;text-align:center;background:var(--panel-2);transition:transform .15s,border-color .15s}
 .cour-v2 .cp-row.mate[hidden]{display:none}
-.cour-v2 .cp-row.mate:hover{transform:translateY(-3px);border-color:rgba(246,242,232,.6)!important}
-.cour-v2 .mate .cp-face{width:86px;height:86px;border-radius:50%;display:grid;place-items:center;border:2.5px solid rgba(246,242,232,.35);background:none}
-.cour-v2 .mate .cp-who{display:grid;justify-items:center;color:var(--chalk)}
-.cour-v2 .mate .cp-who b{font-family:var(--hand);font-size:25px;line-height:1}
-.cour-v2 .mate .cp-who small{font-size:11.5px;color:var(--chalk-2);font-weight:800}
+.cour-v2 .cp-row.mate:hover{transform:translateY(-3px);border-color:var(--ink-2)!important}
+.cour-v2 .mate .cp-face{width:86px;height:86px;border-radius:50%;display:grid;place-items:center;border:2px solid var(--line-2);background:radial-gradient(circle,color-mix(in srgb,var(--rc) 22%,transparent),transparent 70%)}
+.cour-v2 .mate .cp-who{display:grid;justify-items:center;color:var(--ink)}
+.cour-v2 .mate .cp-who b{font-family:var(--display);font-weight:400;font-size:19px;line-height:1.1}
+.cour-v2 .mate .cp-who small{font-size:11.5px;color:var(--muted);font-weight:800}
 .cour-v2 .mate-acts{display:flex;gap:6px;margin-top:8px;flex-wrap:wrap;justify-content:center}
-.cour-v2 .mate-acts .btn-ghost{background:rgba(246,242,232,.12);color:var(--chalk);border-color:transparent}
-.cour-v2 .cp-sub{color:var(--chalk-2)}
-.cour-v2 .cp-env .cp-row{border-color:rgba(246,242,232,.2);color:var(--chalk)}
-.cour-v2 .cp-pager{color:var(--chalk)}
-.cour-v2 .cp-pager .btn-ghost{background:rgba(246,242,232,.12);color:var(--chalk)}
-/* les demandes et l'ajout : des petits mots sur papier Seyès, un bout de scotch */
-.cour-v2 .cp-req,.cour-v2 .cp-add,.cour-v2 .troc,.cour-v2 .jr-carnet{position:relative;
-  background:repeating-linear-gradient(180deg,transparent 0 23px,rgba(60,110,180,.2) 23px 24px),linear-gradient(90deg,transparent 30px,rgba(220,85,85,.45) 30px 32px,transparent 32px),var(--paper)}
-.cour-v2 .cp-req,.cour-v2 .cp-add{padding-left:44px;rotate:-.6deg}
-.cour-v2 .cp-add{rotate:.5deg}
-.cour-v2 .cp-req::before,.cour-v2 .cp-add::before,.cour-v2 .troc::before,.cour-v2 .jr-carnet::before{content:"";position:absolute;top:-10px;left:50%;width:74px;height:22px;translate:-50% 0;rotate:-3deg;background:rgba(255,236,170,.8);box-shadow:0 1px 2px rgba(0,0,0,.15)}
-.cour-v2 .cp-req h3,.cour-v2 .cp-add h3{font-family:var(--hand);font-size:26px;font-weight:700}
-.cour-v2 .cp-add input{border:0;border-bottom:2px solid var(--pen);border-radius:0;background:transparent;font-family:var(--hand);font-size:22px}
+.cour-v2 .mate .cp-troc{width:auto;padding:0 12px}
+/* les demandes, l'ajout d'un copain, les trocs : des petits mots sur papier Seyès, un bout de scotch */
+.cour-v2 .cp-req,.cour-v2 .cp-add,.cour-v2 .troc{position:relative;
+  background:repeating-linear-gradient(180deg,transparent 0 23px,rgba(60,110,180,.16) 23px 24px),linear-gradient(90deg,transparent 30px,rgba(220,85,85,.4) 30px 32px,transparent 32px),var(--panel)}
+.cour-v2 .cp-req,.cour-v2 .cp-add{padding-left:44px}
+.cour-v2 .cp-req::before,.cour-v2 .cp-add::before,.cour-v2 .troc::before{content:"";position:absolute;top:-10px;left:50%;width:74px;height:22px;translate:-50% 0;rotate:-3deg;background:rgba(255,226,140,.8);box-shadow:0 1px 2px rgba(0,0,0,.15)}
 /* ---------- Troc ---------- */
-.cour-v2 .tr-new{background:none;box-shadow:none;color:var(--chalk);padding:4px 2px}
-.cour-v2 .tr-new .panel-head h3{font-family:var(--hand);font-size:30px;font-weight:700;color:var(--chalk)}
-.cour-v2 .tr-new .sample-tag,.cour-v2 .tr-new .meta{color:var(--chalk-2);background:none}
-.cour-v2 .tr-new .fchip{background:var(--paper);color:var(--pen)}
-.who-row{display:flex;gap:10px;overflow-x:auto;padding:4px 2px 12px;scrollbar-width:none}
+.tr-who-row,.who-row{display:flex;gap:10px;overflow-x:auto;padding:4px 2px 12px;scrollbar-width:none}
 .who-row::-webkit-scrollbar{display:none}
-.tr-who{flex:none;display:grid;justify-items:center;gap:3px;width:74px;color:var(--chalk-2);font-family:var(--hand);font-weight:700;font-size:18px;line-height:1}
-.tr-who > span{width:62px;height:62px;border-radius:50%;display:grid;place-items:center;border:2.5px dashed rgba(246,242,232,.35);transition:transform .15s}
-.tr-who:hover{color:var(--chalk)}
-.tr-who:hover > span{transform:scale(1.08);border-color:var(--yellow)}
-.cour-v2 .tr-tabs .chip{border-radius:12px 12px 0 0;height:38px}
-.cour-v2 .tr-tabs{margin-bottom:-18px}
-.cour-v2 .tr-tabs + .panel{border-radius:0 10px 10px 10px;background:#F4ECDA;padding:18px}
-.cour-v2 .troc{padding:18px 16px 14px 44px;border:0;border-radius:6px;box-shadow:0 2px 0 rgba(0,0,0,.12),0 12px 18px -14px rgba(0,0,0,.6);rotate:-.4deg}
-.cour-v2 .troc + .troc{margin-top:22px;rotate:.4deg}
-.cour-v2 .troc.recu{box-shadow:0 2px 0 rgba(0,0,0,.12),0 12px 18px -14px rgba(0,0,0,.6),inset 4px 0 0 var(--yellow)}
-.cour-v2 .troc-head .t{font-family:var(--hand);font-size:24px;line-height:1.05}
-.cour-v2 .troc-side{border-radius:16px;padding:10px;border:2px solid var(--pc);background:color-mix(in srgb,var(--pc) 9%,var(--paper))}
+.tr-who{flex:none;display:grid;justify-items:center;gap:4px;width:74px;color:var(--ink-2);font-weight:800;font-size:12.5px;line-height:1.1}
+.tr-who > span{width:62px;height:62px;border-radius:50%;display:grid;place-items:center;border:2px dashed var(--line-2);background:var(--panel-2);transition:transform .15s}
+.tr-who:hover{color:var(--ink)}
+.tr-who:hover > span{transform:scale(1.08);border-color:var(--yellow-2)}
+.cour-v2 .troc{padding:18px 16px 14px 44px;border:1px solid var(--line);border-radius:10px}
+.cour-v2 .troc + .troc{margin-top:22px}
+.cour-v2 .troc.recu{box-shadow:inset 4px 0 0 var(--yellow)}
+.cour-v2 .troc-head .t{font-family:var(--display);font-weight:400;font-size:19px;line-height:1.1}
+.cour-v2 .troc-side{border-radius:16px;padding:10px;border:2px solid var(--pc);background:color-mix(in srgb,var(--pc) 9%,var(--panel))}
 .cour-v2 .troc-side.get{--pc:#2FA35A}.cour-v2 .troc-side.give{--pc:#E8743B}
 .cour-v2 .troc-side > small{color:var(--pc);font-weight:900;letter-spacing:.06em;text-transform:uppercase}
 .cour-v2 .troc-arrow{display:grid;place-items:center;width:40px;height:40px;border-radius:50%;background:var(--yellow);color:#2B2233;box-shadow:0 3px 0 var(--yellow-2)}
-.cour-v2 .troc-mot{font-family:var(--hand);font-size:21px;color:#3558A8}
-/* ---------- Marché ---------- */
-.cour-v2 .mk-sell{position:relative;overflow:hidden;padding-top:58px;border-radius:18px 18px 10px 10px}
+.cour-v2 .troc-mot{font-family:var(--hand);font-size:21px;color:#3D6BC8}
+/* ---------- Marché : l'étal, et deux couleurs d'étiquettes ---------- */
+.cour-v2 .mk-sell{position:relative;overflow:hidden;padding-top:58px}
 .mk-awning{position:absolute;left:0;right:0;top:0;height:40px;background:repeating-linear-gradient(90deg,#E85D9A 0 34px,#FCF7EC 34px 68px)}
 .mk-awning::after{content:"";position:absolute;left:0;right:0;bottom:-14px;height:14px;background:radial-gradient(circle at 17px 0,#E85D9A 16px,transparent 17px) 0 0/68px 14px,radial-gradient(circle at 51px 0,#FCF7EC 16px,transparent 17px) 0 0/68px 14px}
-.cour-v2 .mk-sell b{font-family:var(--hand);font-size:32px;line-height:1}
+.cour-v2 .mk-sell b{font-family:var(--display);font-weight:400;font-size:22px;line-height:1.1}
 .cour-v2 .mk-sec-h{flex-wrap:wrap;row-gap:6px}
-.mk-leg{display:flex;flex-wrap:wrap;gap:4px 14px;font-size:12.5px;font-weight:800;color:var(--chalk-2)}
-@media (max-width:560px){ .cour-v2 .mk-leg{order:3;flex-basis:100%} }
+.mk-leg{display:flex;flex-wrap:wrap;gap:4px 14px;font-size:12.5px;font-weight:800;color:var(--muted)}
 .mk-leg i{display:inline-block;width:14px;height:14px;border-radius:4px;vertical-align:-2px;margin-right:6px;background:linear-gradient(180deg,#D9BC8E,#CBA873)}
 .mk-leg i.ench{background:linear-gradient(180deg,#E8604C,#B8352B)}
-/* les étiquettes : kraft = prix fixe, rouge = aux enchères ; un trou et une ficelle en haut */
+@media (max-width:560px){ .cour-v2 .mk-leg{order:3;flex-basis:100%} }
 .cour-v2 .mk-grid{gap:24px 16px;padding-top:6px}
 .cour-v2 .mk{--tg1:#D9BC8E;--tg2:#CBA873;padding-top:18px;border:0;border-radius:10px 10px 12px 12px;color:#2B2233;background:linear-gradient(180deg,var(--tg1),var(--tg2));
-  clip-path:polygon(18% 0,82% 0,100% 9%,100% 100%,0 100%,0 9%);box-shadow:none;filter:drop-shadow(0 10px 10px rgba(0,0,0,.45));rotate:-1.2deg}
+  clip-path:polygon(18% 0,82% 0,100% 9%,100% 100%,0 100%,0 9%);box-shadow:none;filter:drop-shadow(0 8px 10px rgba(0,0,0,.3));rotate:-1.2deg}
 .cour-v2 .mk:nth-child(even){rotate:1.4deg}
 .cour-v2 .mk:hover{transform:translateY(-3px) rotate(0)}
-.cour-v2 .mk::before{content:"";position:absolute;top:7px;left:50%;width:11px;height:11px;translate:-50% 0;border-radius:50%;background:var(--tar);box-shadow:inset 0 1px 2px rgba(0,0,0,.6);z-index:2}
+.cour-v2 .mk::before{content:"";position:absolute;top:7px;left:50%;width:11px;height:11px;translate:-50% 0;border-radius:50%;background:var(--bg);box-shadow:inset 0 1px 2px rgba(0,0,0,.5);z-index:2}
 .cour-v2 .mk.ench{--tg1:#E8604C;--tg2:#B8352B;color:#fff}
 .cour-v2 .mk-vis{background:radial-gradient(circle at 50% 56%,rgba(255,255,255,.35),transparent 62%);height:118px}
 .cour-v2 .mk .avg,.cour-v2 .mk .p-lbl,.cour-v2 .mk .mk-meta{color:#6E5A3E}
@@ -4430,41 +4391,35 @@ body.gc-open{overflow:hidden}
 .cour-v2 .mk.ench .price{color:#FFE14D}
 .cour-v2 .mk .mk-tag{background:rgba(255,255,255,.55);color:#5A4426}
 .cour-v2 .mk.ench .mk-tag{background:rgba(0,0,0,.25);color:#FFE1A8}
-.cour-v2 .mk .mk-meta span{font-family:var(--hand);font-size:17px}
-/* ---------- Classement : le podium dessiné à la craie, la suite au tableau noir ---------- */
-.cour-v2 .cl-podium-wrap{background:none;box-shadow:none;color:var(--chalk);padding:4px 0}
-.cour-v2 .cl-pod b{font-family:var(--hand);font-size:24px;color:var(--chalk)}
-.cour-v2 .cl-pod .cl-pts{color:var(--chalk-2)}
-.cour-v2 .cl-step{background:none!important;border:3px solid var(--chalk);border-bottom:0;border-radius:8px 8px 0 0;box-shadow:none!important}
-.cour-v2 .cl-pod.p1 .cl-step{border-color:#FFD34D}.cour-v2 .cl-pod.p3 .cl-step{border-color:#F0A36B}
-.cour-v2 .cl-step i{font-family:var(--hand);font-style:normal;font-size:44px;color:var(--chalk)}
-.cour-v2 .cl-pod.p1 .cl-step i{color:#FFD34D}.cour-v2 .cl-pod.p3 .cl-step i{color:#F0A36B}
-.cour-v2 .cl-list{margin-top:14px;border-radius:14px;padding:6px 14px;background:#2F4A3A;border:10px solid #8A6A45;box-shadow:inset 0 0 30px rgba(0,0,0,.35),0 12px 20px -12px rgba(0,0,0,.8)}
-.cour-v2 .cl-row{background:none;border-color:rgba(246,242,232,.2);border-style:dashed;color:var(--chalk)}
-.cour-v2 .cl-row .cl-rank{font-family:var(--hand);font-size:26px;color:var(--chalk-2);background:none}
-.cour-v2 .cl-row .who{font-family:var(--hand);font-size:24px;line-height:1}
-.cour-v2 .cl-row .who small{font-family:var(--body);color:var(--chalk-2)}
+/* ---------- Classement : le podium à marches, la suite au tableau noir ---------- */
+.cour-v2 .cl-pod b{font-family:var(--display);font-weight:400;font-size:19px}
+.cour-v2 .cl-step{background:var(--panel-2)!important;border:3px solid var(--line-2);border-bottom:0;border-radius:10px 10px 0 0;box-shadow:none!important}
+.cour-v2 .cl-pod.p1 .cl-step{border-color:#F2AE12;background:color-mix(in srgb,#FFD34D 22%,var(--panel))!important}
+.cour-v2 .cl-pod.p2 .cl-step{border-color:#A9B6C6}
+.cour-v2 .cl-pod.p3 .cl-step{border-color:#E08A4E;background:color-mix(in srgb,#F0A36B 18%,var(--panel))!important}
+.cour-v2 .cl-step i{font-family:var(--display);font-style:normal;font-size:34px;color:var(--ink)}
+.cour-v2 .cl-list{margin-top:14px;border-radius:14px;padding:6px 14px;background:#2F4A3A;border:10px solid #8A6A45;box-shadow:inset 0 0 30px rgba(0,0,0,.35),0 12px 20px -12px rgba(0,0,0,.6)}
+.cour-v2 .cl-row{background:none;border-color:rgba(246,242,232,.2);border-style:dashed;color:#F6F2E8}
+.cour-v2 .cl-row .cl-rank{font-family:var(--hand);font-size:26px;color:rgba(246,242,232,.66);background:none}
+.cour-v2 .cl-row .who{font-family:var(--hand);font-size:24px;line-height:1;color:#F6F2E8}
+.cour-v2 .cl-row .who small{font-family:var(--body);color:rgba(246,242,232,.66)}
+.cour-v2 .cl-row .who em{color:#2B2233}
 .cour-v2 .cl-row .cl-pts{font-family:var(--hand);font-size:26px;color:#FFD34D}
+.cour-v2 .cl-row .cl-pts small{color:rgba(246,242,232,.6)}
 .cour-v2 .cl-row.me{background:rgba(255,211,77,.14);border-radius:10px}
-.cour-v2 .cl-gap{color:var(--chalk-2)}
-.cour-v2 .cl-pager{color:var(--chalk)}
-.cour-v2 .cl-pager .btn-ghost{background:rgba(246,242,232,.12);color:var(--chalk)}
-.cour-v2 .cl-me{background:repeating-linear-gradient(180deg,transparent 0 23px,rgba(60,110,180,.2) 23px 24px),var(--paper)}
-.cour-v2 .cl-score p{font-family:var(--hand);font-size:21px;color:#3558A8}
+.cour-v2 .cl-list .cl-gap{color:rgba(246,242,232,.66)}
 /* ---------- Historique : un carnet, un encadré par événement ---------- */
 .cour-v2.t-journal .cour-grid > .panel{position:relative;padding-left:44px;
-  background:repeating-linear-gradient(180deg,transparent 0 23px,rgba(60,110,180,.2) 23px 24px),linear-gradient(90deg,transparent 30px,rgba(220,85,85,.45) 30px 32px,transparent 32px),var(--paper)}
-.cour-v2 .jr-day{font-family:var(--hand);font-size:26px;color:#B4462B;margin:18px 0 8px;padding-bottom:4px;border-bottom:2px solid rgba(180,70,43,.35);text-transform:none;letter-spacing:0}
-.cour-v2 .jr{--ec:#8E8898;margin:8px 0;padding:9px 12px;border-radius:12px;border:1.5px solid color-mix(in srgb,var(--ec) 35%,transparent)!important;border-left:5px solid var(--ec)!important;background:color-mix(in srgb,var(--ec) 9%,#fff)}
+  background:repeating-linear-gradient(180deg,transparent 0 23px,rgba(60,110,180,.16) 23px 24px),linear-gradient(90deg,transparent 30px,rgba(220,85,85,.4) 30px 32px,transparent 32px),var(--panel)}
+.cour-v2 .jr-day{font-family:var(--display);font-weight:400;font-size:19px;color:var(--ink);margin:18px 0 8px;padding-bottom:4px;border-bottom:2px solid var(--line-2);text-transform:none;letter-spacing:0}
+.cour-v2 .jr{--ec:#8E8898;margin:8px 0;padding:9px 12px;border-radius:12px;border:1.5px solid color-mix(in srgb,var(--ec) 35%,transparent)!important;border-left:5px solid var(--ec)!important;background:color-mix(in srgb,var(--ec) 9%,var(--panel))}
 .cour-v2 .jr.k-troc{--ec:#2FA35A}.cour-v2 .jr.k-vendue{--ec:#E85D9A}.cour-v2 .jr.k-achat{--ec:#2E6BE6}.cour-v2 .jr.k-gagnee,.cour-v2 .jr[class*="k-ench"]{--ec:#E8743B}
-.cour-v2 .jr .jr-ic{width:32px;height:32px;border-radius:50%;display:grid;place-items:center;background:color-mix(in srgb,var(--ec) 18%,#fff);color:var(--ec)}
+.cour-v2 .jr .jr-ic{width:32px;height:32px;border-radius:50%;display:grid;place-items:center;background:color-mix(in srgb,var(--ec) 18%,var(--panel));color:var(--ec)}
 @media (max-width:560px){
-  .cour-v2{padding:0 10px 16px;border-radius:20px}
-  .cv-head{padding-top:16px}
   .cour-v2 .cp-amis{grid-template-columns:repeat(2,minmax(0,1fr))}
-  .cour-v2 .cn-tab{min-width:70px;padding:8px 4px 6px}
-  .cour-v2 .cn-tab span:not(.n){font-size:19px}
-  .cour-v2 .cn-tab svg{width:34px;height:28px}
+  .cour-v2 .cn-tab{min-width:72px;padding:9px 4px 8px}
+  .cour-v2 .cn-tab span:not(.n){font-size:12.5px}
+  .cour-v2 .cn-tab svg{width:32px;height:26px}
 }
 </style>
 
@@ -13422,7 +13377,7 @@ function ballPicker(kind){
   const gcK = kind==="gc", px = Math.round(62+44*scaleOf(cur.type)), r = decorRar(cur), act = gcK ? "gc-pickopen" : "mrl-ball";
   return `<section class="bpk${gcK?" gc":""}" aria-label="${gcK?"Ta bille pour la course":"Ta bille de jeu"}">
     ${S.ballChanged ? "" : `<span class="bpk-sticker" aria-hidden="true">Change-la !</span>`}${gcK ? `<span class="bpk-lane" aria-hidden="true"></span>` : ""}
-    <button class="bpk-ball" data-action="${act}" aria-label="Changer de bille" style="${tstyle(cur.type)}">${mImg(cur,240,px,"")}${gcK?`<span class="bpk-bib">n°${1+hash(sync.uid||"moi")%40}</span>`:""}</button>
+    <button class="bpk-ball" data-action="${act}" aria-label="Changer de bille" style="${tstyle(cur.type)}">${mImg(cur,240,px,"")}</button>
     <div class="bpk-txt"><small>${gcK ? "Ta coureuse pour la Grande Course" : "Ta bille pour tous les mini-jeux"}</small>
       <h3${motifCol(cur)}>${esc(specName(cur))}</h3>
       <span class="pills">${typePill(cur.type)}${r>=1?`<span class="dec-pill" style="--dc:${DECOR_RAR[r].c}">${DECOR_RAR[r].name}</span>`:""}${shinyPill(cur)}</span>
@@ -16853,7 +16808,7 @@ let bugKeep = null;   // un message qui n'est pas parti : il est reproposé au p
 // on:false cache le bouton (pendant qu'on prépare la mise à jour) ; on:true le remet, avec la pastille si l'id a changé
 // (16 octobre 2026) deux repères : dot = la pastille rouge du bouton, à changer à CHAQUE mise en ligne qui ajoute une ligne au patchnote
 // (avec txt : la date du jour) ; id = la fenêtre d'annonce à l'arrivée, seulement pour les très gros jours
-const NEWS = {on:true, id:"2026-10-27", dot:"2026-10-27-2350", url:"/nouveautes.html", txt:"Mise à jour du 27 oct."};
+const NEWS = {on:true, id:"2026-10-27", dot:"2026-10-28-0010", url:"/nouveautes.html", txt:"Mise à jour du 27 oct."};
 const newsUnseen = () => lsGet("billeo-news-vu")!==NEWS.dot;
 // (14 octobre 2026) à l'arrivée, une fenêtre annonce la mise à jour, une seule fois par mise à jour et par compte (S.newsPop, gardé
 // dans la partie : elle ne revient pas sur un autre appareil) ; on choisit d'aller voir les nouveautés, ou pas
@@ -17527,11 +17482,11 @@ const courScene = () => `<svg class="ch-scene" viewBox="0 0 800 240" preserveAsp
   </g>
   <rect width="800" height="240" fill="url(#chs-fade)"/></svg>`;
 function courHero(){
-  // (27 octobre 2026) le titre écrit à la craie sur le bitume, ton pseudo à donner aux copains, et ce qui t'attend
+  // (27 octobre 2026) le titre de la page (comme les autres pages), ce qui t'attend, et ton pseudo à donner aux copains
   const M = cour.moi, me = specById(S.active);
   const n = (v, one, many) => `<b>${fmt(v)}</b> ${v>1?many:one}`;
-  return `<header class="cv-head">
-    <div class="cv-title"><span class="ch-kick">${ic("cour",14,2.4)} Tout le monde dehors !</span><h1>La cour de récré</h1>
+  return `<header class="page-head cv-head">
+    <div class="cv-title"><h1>La cour</h1>
       ${M ? `<div class="ch-stats"><span>${ic("users",15)} ${n((M.amis||[]).length,"copain","copains")}</span>${M.trocs?`<span class="hot">${ic("swap",15)} ${n(M.trocs,"troc à voir","trocs à voir")}</span>`:""}${cour.classement?.moi && (ui.clPortee||"tous")==="tous" ? `<button data-action="cour-tab" data-tab="classement">${ic("trophy",15)} <b>${rangTxt(cour.classement.moi.rang)}</b> au classement</button>` : ""}</div>` : ""}</div>
     <button class="cv-me" data-action="cour-copy" title="Copier ton pseudo pour le donner à tes copains">${me ? mImg(me,96,44,"") : ""}<span><small>Ton pseudo, à donner aux copains</small><b>${esc(S.name)}</b></span><em>${ic("copy",14)} Copier</em></button>
   </header>`;

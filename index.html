@@ -380,7 +380,7 @@ main{padding:22px 24px 40px;min-width:0}
 .btn-yellow:hover{background:var(--yellow-hover)}
 .btn-blue{background:var(--blue);color:#fff;box-shadow:0 3px 0 var(--blue-2)}
 .btn-blue:hover{background:#3A78F0}
-.btn-ghost{border:1.5px solid var(--line-2);background:var(--panel);height:38px;padding:0 16px;font-size:13.5px}
+.btn-ghost{border:1.5px solid var(--line-2);background:var(--panel);padding:0 18px;font-size:14px;box-shadow:0 3px 0 var(--line-2)}   /* (28 octobre 2026) plus de hauteur à part (38 px) : la même que les boutons voisins, et le même rebord */
 .btn-ghost:hover{background:var(--panel-2)}
 .btn[disabled]{opacity:.55;cursor:not-allowed;box-shadow:none}
 .price{display:inline-flex;align-items:center;gap:6px;font-variant-numeric:tabular-nums}
@@ -4351,7 +4351,8 @@ body.gc-open{overflow:hidden}
 .cour-v2 .mate .cp-who{display:grid;justify-items:center;color:var(--ink)}
 .cour-v2 .mate .cp-who b{font-family:var(--display);font-weight:400;font-size:19px;line-height:1.1}
 .cour-v2 .mate .cp-who small{font-size:11.5px;color:var(--muted);font-weight:800}
-.cour-v2 .mate-acts{display:flex;gap:6px;margin-top:8px;flex-wrap:wrap;justify-content:center}
+.cour-v2 .mate-acts{display:grid;grid-template-columns:1fr 1fr;gap:6px;width:100%;margin-top:8px}
+.cour-v2 .mate-acts .btn{width:100%;padding:0 6px;font-size:13px}
 .cour-v2 .mate .cp-troc{width:auto;padding:0 12px}
 /* les demandes, l'ajout d'un copain, les trocs : des petits mots sur papier Seyès, un bout de scotch */
 .cour-v2 .cp-req,.cour-v2 .cp-add,.cour-v2 .troc{position:relative;
@@ -8789,7 +8790,7 @@ function viewBags(){
     ? (st ? `<button class="btn btn-yellow btn-xl" data-action="open-free">${ic("bag",22)} Ouvrir un sachet</button>`
           : `<button class="btn btn-yellow btn-xl" disabled>${ic("clock",20)} Prochain dans <span class="timer" data-free-timer>${freeLeft()}</span></button>`)
     : inv ? `<button class="btn btn-gift btn-xl" data-action="open-gift" data-bag="${b.id}">${ic("gift",20)} Ouvrir mon sachet offert${inv>1?` (${inv})`:""}</button>
-             <button class="btn btn-ghost" data-action="buy" data-bag="${b.id}" ${miss>0?"disabled":""}>Ou l'acheter <span class="price">${COIN}${fmt(b.price)}</span></button>`
+             <button class="btn btn-ghost btn-xl" data-action="buy" data-bag="${b.id}" ${miss>0?"disabled":""}>Ou l'acheter <span class="price">${COIN}${fmt(b.price)}</span></button>`
     : `<button class="btn btn-yellow btn-xl" data-action="buy" data-bag="${b.id}" ${miss>0?"disabled":""}>${miss>0?`Il manque ${fmt(miss)} ${CUR.many}`:`Ouvrir · <span class="price">${COIN}${fmt(b.price)}</span>`}</button>`;
   const pick = x => { const n = x.price===0 ? st : (S.bagInv[x.id]||0);
     return `<button class="bg-pick" data-action="bag-pick" data-bag="${x.id}" aria-pressed="${x.id===b.id}">
@@ -9486,8 +9487,8 @@ function viewCraft(){
   const full = C.sel.length===N;
   // (21 octobre 2026) la fusion en lot : le plus de fusions possible avec ses doubles (CRAFT_LOT_MAX au plus), − et + pour en faire moins
   const lotMax = Math.min(CRAFT_LOT_MAX, craftLotCan(C.t)), lotN = Math.max(2, Math.min(C.lotN || lotMax, lotMax));
-  const lotBox = lotMax<2 ? "" : `<div class="fz-lot"><div class="fz-lot-t"><b>Fusionner plusieurs fois d'un coup</b>
-      <small><b>${lotN*N} ${RAR_PL[C.t]}</b> (que des doubles) → <b>${lotN} ${RAR_PL[C.t+1]}</b>, motifs et coloris au hasard. Ton album ne perd rien. ${pct(+((1-Math.pow(1-craftShiny(C.t), lotN))*100).toFixed(2))} de chance d'au moins une shiny.</small></div>
+  const lotBox = lotMax<2 ? "" : `<div class="fz-lot"><div class="fz-lot-t"><b>Fusion en lot</b>
+      <small><b>${lotN*N} doubles</b> → <b>${lotN} ${RAR_PL[C.t+1]}</b> · ${pct(+((1-Math.pow(1-craftShiny(C.t), lotN))*100).toFixed(2))} de shiny</small></div>
     <div class="fz-lot-go"><span class="fz-step" role="group" aria-label="Nombre de fusions"><button data-action="craft-lot-n" data-d="-1" ${lotN<=2?"disabled":""} aria-label="Une fusion de moins">−</button><b>×${lotN}</b><button data-action="craft-lot-n" data-d="1" ${lotN>=lotMax?"disabled":""} aria-label="Une fusion de plus">+</button></span>
       <button class="btn btn-yellow" data-action="craft-lot" data-n="${lotN}">${ic("flask",18)} Fusionner ×${lotN}</button></div></div>`;
   const nDup = ([,l]) => cnt[dupKey(l[0])]||0;   // exemplaires en tout (cnt est rangé par dupKey, pas par colorKey)
@@ -9503,13 +9504,13 @@ function viewCraft(){
       <div class="fz-core"><span class="orb-mini">?</span><b>1 ${RAR_F[C.t+1]}</b><small>${pct(+(craftShiny(C.t)*100).toFixed(2))} de shiny</small></div></div>
     <div class="fz-side">
       <span class="sample-tag">Le chaudron</span>
-      <h3>${full ? "Le chaudron est plein, prêt à fusionner !" : `Encore ${N-C.sel.length} ${N-C.sel.length>1?RAR_PL[C.t]:RAR_F[C.t]} à ajouter`}</h3>
+      <h3>${full ? "Prêt à fusionner !" : `Encore ${N-C.sel.length} ${N-C.sel.length>1?RAR_PL[C.t]:RAR_F[C.t]} à ajouter`}</h3>
       <div class="fz-bar"><i style="width:${C.sel.length/N*100}%"></i></div><small class="meta">${C.sel.length} / ${N} ${RAR_PL[C.t]}</small>
-      ${last?`<p class="warn-note fz-warn">Attention : ${last} de ces billes ${last>1?"sont les dernières":"est la dernière"} de ce coloris : l'album perdra ${last} bille${last>1?"s":""}.</p>`:""}
+      ${last?`<p class="warn-note fz-warn">${last} bille${last>1?"s":""} quitterai${last>1?"en":""}t ton album</p>`:""}
       <div class="fz-actions">
-        <button class="btn btn-yellow btn-xl" data-action="craft-go" ${full?"":"disabled"}>${ic("flask",20)} Fusionner</button>
+        <button class="btn btn-yellow" data-action="craft-go" ${full?"":"disabled"}>${ic("flask",18)} Fusionner</button>
         <button class="btn btn-ghost" data-action="craft-auto" ${full || craftAuto(C.t, C.sel).length===C.sel.length?"disabled":""}>Remplir avec mes doubles</button>
-        <button class="btn btn-ghost" data-action="craft-singles" ${full || craftSingles(C.t, C.sel).length===C.sel.length?"disabled":""}>Remplir au hasard (billes uniques)</button>
+        <button class="btn btn-ghost" data-action="craft-singles" ${full || craftSingles(C.t, C.sel).length===C.sel.length?"disabled":""}>Remplir au hasard</button>
         <button class="btn btn-ghost" data-action="craft-clear" ${C.sel.length?"":"disabled"}>Vider</button>
       </div>
       ${lotBox}
@@ -9517,12 +9518,12 @@ function viewCraft(){
   </section>
   <section>
     ${craftBar}
-    <div class="panel-head"><h2>Tes ${RAR_PL[C.t]} (${groups.reduce((a,[k,l])=>a+l.length,0)}${groups.reduce((a,[k,l])=>a+l.length,0)<pool.length?` sur ${pool.length}`:""})</h2><span class="sample-tag">+ pour en mettre une dans le chaudron</span></div>
+    <div class="panel-head"><h2>Tes ${RAR_PL[C.t]} (${groups.reduce((a,[k,l])=>a+l.length,0)}${groups.reduce((a,[k,l])=>a+l.length,0)<pool.length?` sur ${pool.length}`:""})</h2></div>
     ${groups.length ? `<div class="cf-grid">${groups.map(([k,l])=>{ const x=l[0], inn=l.filter(y=>C.sel.includes(y.id)).length;
       return `<div class="cf-card${inn?" in":""}" style="${tstyle(x.type)}">${nDup([k,l])>1?`<span class="dup-tag">Double</span>`:""}${l.length>1?`<span class="cf-n">×${l.length}</span>`:""}
         <button class="ball" data-action="spec" data-id="${x.id}" aria-label="Voir ${esc(specName(x))}">${mImg(x,160,Math.round(58*scaleOf(x.type)+14),"")}</button><b>${esc(specName(x))}</b>
         <div class="cf-step"><button data-action="craft-rm" data-k="${k}" ${inn?"":"disabled"} aria-label="En retirer une">−</button><b>${inn}</b><button data-action="craft-add" data-k="${k}" ${inn<l.length&&!full?"":"disabled"} aria-label="En ajouter une">+</button></div></div>` }).join("")}</div>`
-      : `<p class="empty">Aucune bille de cette taille à fusionner pour l'instant.</p>`}
+      : `<p class="empty">Aucune bille à fusionner</p>`}
     <p class="meta" style="margin-top:12px">Sauf shiny, bille active, vitrine, saison</p>
   </section>`;
 }
@@ -9548,14 +9549,14 @@ function evFusionPanel(){
       ${dbl>0?`<span class="dup-tag">${dbl} double${dbl>1?"s":""}</span>`:`<span class="dup-tag one">Seul exemplaire</span>`}
       <span class="evf-balls">${mImg(x,120,Math.round(26*scaleOf(x.type)+18),"")}<em>×${n}</em>${ic("arrow",14)}${mImg(nx,140,Math.round(26*scaleOf(nx.type)+22),"")}</span>
       <b>${esc(specName(x))}</b><small>${l.length} / ${n} ${TYPES[x.type].pl} · donne 1 ${TYPES[nx.type].label}</small>
-      ${safe ? `<button class="btn btn-yellow btn-sm" data-action="evf-go" data-k="${evKey(x)}">${ic("flask",15)} Fusionner mes doubles</button>`
-        : ok ? `<button class="btn btn-ghost btn-sm" data-action="evf-go" data-k="${evKey(x)}">${ic("flask",15)} Fusionner (dernier exemplaire)</button><small class="evf-warn">Il te faut ${n+1} billes pour en garder une</small>`
+      ${safe ? `<button class="btn btn-yellow btn-sm" data-action="evf-go" data-k="${evKey(x)}">${ic("flask",15)} Fusionner</button>`
+        : ok ? `<button class="btn btn-ghost btn-sm" data-action="evf-go" data-k="${evKey(x)}">${ic("flask",15)} Fusionner</button><small class="evf-warn">Dernier exemplaire</small>`
         : `<button class="btn btn-ghost btn-sm" disabled>${ic("flask",15)} Fusionner</button>`}</div>` };
   const chip = (v,l,c) => `<button class="chip" data-action="evf-f" data-f="${v}" aria-pressed="${F===v}">${l}${c!=null?` <span class="n">${c}</span>`:""}</button>`;
   return `<section class="panel evf">
-    <div class="panel-head"><h2>${ic("flag",18)} Fusion d'événement</h2><span class="sample-tag">Même motif, même coloris</span></div>
-    <p class="cour-lead">Même taille, même coloris → la taille au-dessus, <b>dans ce coloris</b> : ${TK.slice(0,-1).map((t,i)=>`${FUSION_EV[i]} ${TYPES[t].pl}`).join(", ")}.</p>
-    ${all.length ? `<p class="evf-sum">${nSafe ? `<b>${nSafe} fusion${nSafe>1?"s":""} possible${nSafe>1?"s":""} avec tes doubles</b>, sans perdre de bille de ta collection.` : "Aucune fusion possible avec tes seuls doubles pour l'instant."}${nLast ? ` ${nLast} autre${nLast>1?"s":""} emporterai${nLast>1?"en":""}t ton dernier exemplaire.` : ""}</p>
+    <div class="panel-head"><h2>${ic("flag",18)} Fusion d'événement</h2></div>
+    <p class="cour-lead">Même coloris → la taille au-dessus : ${TK.slice(0,-1).map((t,i)=>`${FUSION_EV[i]} ${TYPES[t].pl}`).join(", ")}</p>
+    ${all.length ? `<p class="evf-sum">${nSafe ? `<b>${nSafe} fusion${nSafe>1?"s":""} avec tes doubles</b>` : "Aucune fusion avec tes doubles"}${nLast ? ` · ${nLast} avec ton dernier exemplaire` : ""}</p>
     <div class="chips evf-chips">${chip("","Toutes",all.length)}${chip("doubles",`${ic("layers",14)} Avec des doubles`,nDbl)}${chip("seules",`${ic("star",14)} En un seul exemplaire`,all.length-nDbl)}</div>` : ""}
     ${list.length ? `<div class="evf-grid">${list.map(card).join("")}</div>` : all.length ? `<p class="empty">Aucune bille d'événement dans ce filtre.</p>` : `<p class="empty">Pas encore de bille d'événement à fusionner.</p>`}
   </section>`;
@@ -11455,7 +11456,7 @@ function viewPachinko(){
       <div class="pachi-btns">
         <button class="btn btn-yellow btn-xl" data-action="pachi-go" data-pay="0" ${free?"":"disabled"}>${ic("gift",18)} ${free?"Lâcher ma bille du jour":"Bille du jour lâchée"}</button>
         ${pachiBought()>=PACHI_MAX ? `<button class="btn btn-ghost btn-xl" disabled>${ic("clock",18)} Reviens demain !</button>`
-          : `<button class="btn ${free?"btn-ghost":"btn-yellow btn-xl"}" data-action="pachi-go" data-pay="1" ${S.jetons<PACHI_PRICE?"disabled":""}>Une bille de plus · <span class="price">${COIN}${PACHI_PRICE}</span></button>`}
+          : `<button class="btn btn-xl ${free?"btn-ghost":"btn-yellow"}" data-action="pachi-go" data-pay="1" ${S.jetons<PACHI_PRICE?"disabled":""}>Une bille de plus · <span class="price">${COIN}${PACHI_PRICE}</span></button>`}
         ${pachiBall() ? `<small class="pachi-ball">${mImg(pachiBall(),96,26,"")} Ta bille du jour : <b>${esc(specName(pachiBall()))}</b></small>` : ""}
         <small class="pachi-n">${pachiBought()>=PACHI_MAX ? `Tu as lâché tes ${PACHI_MAX} billes du jour · de nouvelles dans <b data-quest-timer>${untilMidnight()}</b>` : `Billes achetées aujourd'hui : <b>${pachiBought()} / ${PACHI_MAX}</b>`}</small>
         ${free ? "" : chanceNext("pachinko")}
@@ -13351,11 +13352,11 @@ const GAME_ICON = {tir:"target", marelle:"marelle", pot:"pot", chateau:"castle",
 function rdvCards(gcIn, L){
   const N = gcNext(), both = N.heure===12 && N.jour===isoDay();
   const gcBtn = !srvOn() ? `<button class="btn btn-yellow rdv-main" data-action="nav" data-view="grandecourse">${ic("flag",18)} M'inscrire</button>`
-    : gcIn ? `<span class="rdv-ok">${ic("check",16,3)} Inscrit pour ${both ? "ce midi et ce soir" : gcWhen(N)}</span><button class="btn btn-ghost btn-sm" data-action="nav" data-view="grandecourse">Voir la course</button>`
-    : `<button class="btn btn-yellow rdv-main" data-action="gc-reg">${ic("flag",18)} M'inscrire · gratuit</button><button class="btn btn-ghost btn-sm" data-action="nav" data-view="grandecourse">Comment ça marche ?</button>`;
+    : gcIn ? `<span class="rdv-ok">${ic("check",16,3)} Inscrit pour ${both ? "ce midi et ce soir" : gcWhen(N)}</span><button class="btn btn-ghost" data-action="nav" data-view="grandecourse">Voir la course</button>`
+    : `<button class="btn btn-yellow rdv-main" data-action="gc-reg">${ic("flag",18)} M'inscrire · gratuit</button><button class="btn btn-ghost" data-action="nav" data-view="grandecourse">Comment ça marche ?</button>`;
   const lotBtn = !L ? `<button class="btn btn-yellow rdv-main" data-action="nav" data-view="loterie">${ic("ticket",18)} Prendre mon ticket</button>`
-    : L.aujourdhui ? `<span class="rdv-ok">${ic("check",16,3)} Ticket du jour pris</span><button class="btn btn-ghost btn-sm" data-action="nav" data-view="loterie">Voir mes tickets</button>`
-    : `<button class="btn btn-yellow rdv-main" data-action="lot-go">${ic("ticket",18)} Prendre mon ticket · gratuit</button><button class="btn btn-ghost btn-sm" data-action="nav" data-view="loterie">Comment ça marche ?</button>`;
+    : L.aujourdhui ? `<span class="rdv-ok">${ic("check",16,3)} Ticket du jour pris</span><button class="btn btn-ghost" data-action="nav" data-view="loterie">Voir mes tickets</button>`
+    : `<button class="btn btn-yellow rdv-main" data-action="lot-go">${ic("ticket",18)} Prendre mon ticket · gratuit</button><button class="btn btn-ghost" data-action="nav" data-view="loterie">Comment ça marche ?</button>`;
   return `<h2 class="rdv-h">${ic("clock",17)} Les grands rendez-vous</h2>
   <div class="rdv-grid">
     <article class="panel rdv gc${gcIn?" in":""}">
@@ -13980,7 +13981,7 @@ function phoneGo(){
       <span class="dc-kick">${ic(live?"play":"gift",14)} ${live ? "Partie pas finie" : DAY_GAMES[k] && b.dataset.action==="game-go" ? "Ta partie du jour" : "Ta partie offerte"}</span>
       <h2>${JEUX_NOM[k]}</h2><p>${PHONE_GO[k]}</p>
       <button class="btn btn-yellow btn-xl" data-pgo="go">${ic("play",18)} ${live ? "Reprendre" : "C'est parti !"}</button>
-      <button class="btn btn-ghost btn-sm" data-pgo="no">Regarder le jeu d'abord</button></div>`;
+      <button class="btn btn-ghost btn-xl" data-pgo="no">Regarder le jeu d'abord</button></div>`;
     const close = () => { el.classList.add("out"); setTimeout(()=>el.remove(), 200) };
     el.onclick = e => { const a = e.target.closest("[data-pgo]")?.dataset.pgo; if(!a && e.target!==el) return;
       close(); if(a!=="go") return;
@@ -17525,7 +17526,7 @@ function courCopains(){
   const row = (a, i) => `<div class="cp-row mate" data-q="${esc(fold(a.pseudo))}"${Math.floor(i/CP_PAGE)!==A.p?" data-off hidden":""}${a.active?` style="${tstyle(a.active.type)}"`:""}>
       <button class="cp-face" data-action="ami-voir" data-id="${a.id}" aria-label="Voir la fiche de ${esc(a.pseudo)}">${face(a)}</button>
       <button class="cp-who" data-action="ami-voir" data-id="${a.id}"><b>${esc(a.pseudo)}</b>${a.active ? `<small>joue avec ${esc(FAMILIES[a.active.family]?.name || specName(a.active))}</small>` : ""}</button>
-      <span class="mate-acts"><button class="btn btn-yellow btn-sm cp-troc" data-action="troc-new" data-id="${a.id}" title="Proposer un troc à ${esc(a.pseudo)}">${ic("swap",14)} Troc</button><button class="btn btn-ghost btn-sm" data-action="ami-voir" data-id="${a.id}">Sa fiche</button></span></div>`;
+      <span class="mate-acts"><button class="btn btn-yellow btn-sm" data-action="troc-new" data-id="${a.id}" title="Proposer un troc à ${esc(a.pseudo)}">${ic("swap",14)} Troc</button><button class="btn btn-ghost btn-sm" data-action="ami-voir" data-id="${a.id}">Fiche</button></span></div>`;
   const wait = r => `<div class="cp-row wait"><span class="cp-face">${avatarIni(r.pseudo,36)}</span><span class="cp-who"><b>${esc(r.pseudo)}</b><small>${ic("clock",12,2.4)} N'a pas encore répondu</small></span>
       <button class="btn btn-ghost btn-sm" data-action="ami-retirer" data-id="${r.id}">Annuler</button></div>`;
   // (10 octobre 2026) les trouvailles rares restent 72 h, 4 par page ; les copains 10 par page (la recherche cherche dans tous)
@@ -17556,7 +17557,7 @@ function courCopains(){
   fresh.forEach(k=>seen.add(k));
   return `<section class="panel cp-finds"><div class="panel-head"><h3>${ic("star",18)} Trouvailles rares${rares.length?`<span class="cnt-n">${rares.length}</span>`:""}</h3><span class="sample-tag">2 derniers jours</span></div>
       ${rares.length ? `<div class="cpc-grid">${cards}</div>${pager(F,"rarPage","Trouvailles")}`
-        : `<p class="empty">${amis.length ? "Pas de trouvaille rare chez tes copains ces 2 derniers jours. Les shiny, les légendaires, les Mammouths épiques… apparaîtront ici." : "Ajoute des copains : leurs shiny, légendaires et Mammouths épiques apparaîtront ici."}</p>`}
+        : `<p class="empty">${amis.length ? "Rien de rare ces 2 derniers jours" : "Ajoute des copains : leurs shiny, légendaires et Mammouths épiques apparaîtront ici."}</p>`}
     </section>
     <div class="cp-layout">
     <section class="panel cp-main"><div class="panel-head"><h3>Le banc des copains<span class="cnt-n">${amis.length}</span></h3>

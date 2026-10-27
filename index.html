@@ -1534,8 +1534,6 @@ body.vit-dragging,body.vit-dragging *{cursor:grabbing!important;user-select:none
 .bpk-ball{position:relative;width:130px;height:130px;display:grid;place-items:center;cursor:pointer;transition:transform .15s}
 .bpk-ball:hover{transform:scale(1.05) rotate(-4deg)}
 .bpk-ball::before{content:"";position:absolute;inset:auto 12px 4px;height:20px;border-radius:50%;background:radial-gradient(closest-side,rgba(0,0,0,.28),transparent)}
-.bpk-ball::after{content:"";position:absolute;inset:6px;border-radius:50%;border:3px dashed color-mix(in srgb,var(--ink) 18%,transparent);animation:bpk-spin 18s linear infinite}
-@keyframes bpk-spin{to{transform:rotate(360deg)}}
 .bpk-ball img{position:relative;z-index:1;animation:bpk-bob 2.6s ease-in-out infinite;filter:drop-shadow(0 6px 6px rgba(0,0,0,.25))}
 @keyframes bpk-bob{50%{transform:translateY(-6px)}}
 .bpk-ball.swap img{animation:bpk-pop .35s cubic-bezier(.2,1.6,.4,1)}
@@ -1551,7 +1549,6 @@ body.vit-dragging,body.vit-dragging *{cursor:grabbing!important;user-select:none
 .bpk.gc{color:#fff;border:0;background:linear-gradient(180deg,#3F8EF0 0%,#8CC6FF 62%,#6FAE55 62%,#5E9A47 100%)}
 .bpk.gc .bpk-lane{position:absolute;left:0;right:0;bottom:18px;height:12px;background:repeating-linear-gradient(90deg,#fff 0 12px,#24253D 12px 24px);opacity:.85}
 .bpk.gc .bpk-ball,.bpk.gc .bpk-txt{position:relative}
-.bpk.gc .bpk-ball::after{border-color:rgba(255,255,255,.55)}
 .bpk.gc .bpk-txt{padding-bottom:22px;text-shadow:0 2px 6px rgba(0,0,0,.3)}
 .bpk.gc .bpk-txt small,.bpk.gc .bpk-txt p{color:rgba(255,255,255,.92)}
 .bpk.gc .bpk-txt h3{color:#fff!important}
@@ -16856,7 +16853,7 @@ let bugKeep = null;   // un message qui n'est pas parti : il est reproposé au p
 // on:false cache le bouton (pendant qu'on prépare la mise à jour) ; on:true le remet, avec la pastille si l'id a changé
 // (16 octobre 2026) deux repères : dot = la pastille rouge du bouton, à changer à CHAQUE mise en ligne qui ajoute une ligne au patchnote
 // (avec txt : la date du jour) ; id = la fenêtre d'annonce à l'arrivée, seulement pour les très gros jours
-const NEWS = {on:true, id:"2026-10-27", dot:"2026-10-27-2345", url:"/nouveautes.html", txt:"Mise à jour du 27 oct."};
+const NEWS = {on:true, id:"2026-10-27", dot:"2026-10-27-2350", url:"/nouveautes.html", txt:"Mise à jour du 27 oct."};
 const newsUnseen = () => lsGet("billeo-news-vu")!==NEWS.dot;
 // (14 octobre 2026) à l'arrivée, une fenêtre annonce la mise à jour, une seule fois par mise à jour et par compte (S.newsPop, gardé
 // dans la partie : elle ne revient pas sur un autre appareil) ; on choisit d'aller voir les nouveautés, ou pas

@@ -889,6 +889,15 @@ button.rw:hover{transform:translateY(-2px)}
 .cahier-page::after{content:"";position:absolute;right:-3px;bottom:-3px;width:46px;height:46px;border-top:2.5px solid var(--ol);border-left:2.5px solid var(--ol);
   background:linear-gradient(135deg,var(--corner) 0%,#E8DAB4 46%,var(--ol) 46% 50%,var(--under1) 50%);filter:drop-shadow(-2px -2px 3px rgba(0,0,0,.12))}
 .cahier-page[data-paper="pedia"]::after{background:linear-gradient(135deg,var(--old) 0%,#E0CB98 46%,var(--ol) 46% 50%,var(--under1) 50%)}
+/* (27 octobre 2026) l'atelier du verrier, en travaux : une bande « En travaux », un bocal d'éclats et l'annonce */
+.vr-soon{position:relative;display:grid;justify-items:center;gap:10px;max-width:520px;margin:10px auto 0;padding:52px 22px 26px;text-align:center;
+  background:var(--card);border:2.5px solid var(--ol);border-radius:18px;box-shadow:0 4px 0 rgba(43,34,51,.18);overflow:hidden}
+.vr-tape{position:absolute;top:14px;left:-30px;right:-30px;rotate:-3deg;padding:5px 0;overflow:hidden;white-space:nowrap;
+  background:repeating-linear-gradient(-45deg,#FFC93F 0 16px,#2B2233 16px 32px);border-block:2px solid var(--ol)}
+.vr-tape span{display:inline-block;padding:2px 10px;background:#FFC93F;color:#2B2233;font-weight:900;font-size:12px;letter-spacing:.12em;text-transform:uppercase}
+.vr-jar{width:120px;height:auto}
+.vr-soon h3{font-family:var(--hand);font-size:34px;line-height:1;color:var(--ink)}
+.vr-soon p{max-width:40ch;color:var(--ink-2);font-weight:700}
 /* la page qui se tourne quand on change d'intercalaire */
 .cahier-page.turn{animation:pageturn .38s cubic-bezier(.2,1.25,.4,1) both;transform-origin:0 50%}
 @keyframes pageturn{from{opacity:0;transform:perspective(1200px) rotateY(14deg) translateX(-14px)}to{opacity:1;transform:none}}
@@ -1018,12 +1027,12 @@ button.rw:hover{transform:translateY(-2px)}
 @media (max-width:760px){ :root .cahier{padding:14px 10px 20px 10px;border-radius:18px;margin-right:0} }
 @media (max-width:760px){
   .cahier{grid-template-columns:minmax(0,1fr);margin-right:6px}
-  /* (27 octobre 2026) les 4 intercalaires se partagent la largeur (la Confiserie n'est plus rejetée tout à droite, hors de l'écran) */
-  .cahier-tabs{position:static;flex-direction:row;gap:4px;padding:0 4px;overflow-x:auto;scrollbar-width:none;margin-bottom:-3px}
-  .ctab,.ctab:nth-child(even){flex:1 1 auto;min-width:0;min-height:0;grid-template-columns:auto auto;justify-content:center;column-gap:5px;padding:7px 6px 9px;margin:6px 0 0;border:3px solid var(--ol);border-bottom:0;border-radius:14px 14px 0 0;transform:translateY(5px) rotate(0);box-shadow:none}
+  /* (27 octobre 2026) les intercalaires se partagent la largeur (la Confiserie n'est plus rejetée tout à droite, hors de l'écran) ; 5 avec l'Atelier */
+  .cahier-tabs{position:static;flex-direction:row;gap:3px;padding:0 3px;overflow-x:auto;scrollbar-width:none;margin-bottom:-3px}
+  .ctab,.ctab:nth-child(even){flex:1 1 auto;min-width:0;min-height:0;grid-template-columns:auto auto;justify-content:center;column-gap:5px;padding:7px 4px 9px;margin:6px 0 0;border:3px solid var(--ol);border-bottom:0;border-radius:14px 14px 0 0;transform:translateY(5px) rotate(0);box-shadow:none}
   .ctab svg{grid-row:auto}
-  .ctab b{font-size:clamp(15px,4.4vw,21px);white-space:nowrap}
-  @media (max-width:430px){ .ctab svg{display:none} }
+  .ctab b{font-size:clamp(13px,3.6vw,21px);white-space:nowrap}
+  @media (max-width:560px){ .ctab svg{display:none} }
   .ctab small{display:none}
   .ctab:hover,.ctab:nth-child(even):hover{transform:translateY(2px)}
   .ctab[aria-selected="true"]{transform:none}
@@ -8654,8 +8663,23 @@ function cahierTabs(cur, counts={}){
     ${CAHIER.map(([k,c,icon,lbl])=>{ const n = counts[k];
       return `<button class="ctab" role="tab" style="--c:${c}" data-action="tab" data-tab="${k}" aria-selected="${cur===k}">${ic(icon,16,2.4)}<b>${lbl}</b>${n!=null?`<small>${n}</small>`:""}</button>` }).join("")}
     ${onbOk("confiserie") ? `<button class="ctab" role="tab" style="--c:#E85D9A" data-action="nav" data-view="confiserie" aria-selected="${cur==="confiserie"}">${ic("candy",16,2.4)}<b>Confiserie</b>${dups?`<small>${dups} double${dups>1?"s":""}</small>`:""}</button>` : ""}
+    ${onbOk("confiserie") ? `<button class="ctab" role="tab" style="--c:${VERRIER_C}" data-action="tab" data-tab="verrier" aria-selected="${cur==="verrier"}">${ic("flask",16,2.4)}<b>Atelier</b><small>bientôt</small></button>` : ""}
   </div>`;
 }
+// (27 octobre 2026) l'atelier du verrier (maquettes/maquette-atelier.html) : un intercalaire « en travaux » en attendant
+// les réglages (éclats de verre dans les sachets, fabrication d'une bille au choix). Quand il ouvrira : le démarrage par étapes
+// (message « nouv » comme la Confiserie), les quêtes, les succès, les statistiques et le patchnote.
+const VERRIER_C = "#5FD3E8";
+const verrierSoon = () => `<div class="vr-soon">
+    <div class="vr-tape" aria-hidden="true"><span>En travaux · En travaux · En travaux · En travaux · En travaux · En travaux · En travaux ·</span></div>
+    <svg class="vr-jar" viewBox="0 0 150 180" aria-hidden="true"><rect x="40" y="6" width="70" height="16" rx="5" fill="#C99760" stroke="#2B2233" stroke-width="3"/>
+      <path d="M44 22h62v10c18 6 26 20 26 40v80c0 12-8 20-20 20H38c-12 0-20-8-20-20V72c0-20 8-34 26-40z" fill="rgba(200,240,255,.35)" stroke="#2B2233" stroke-width="3"/>
+      ${["#5FD3E8","#B7F4FF","#FF9FD0","#FFD34D","#9FEAF6","#7FB8FF","#5FD3E8","#FFD34D","#B7F4FF"].map((c,i)=>`<path d="M0 -8l7 5-2 9-8-2-3-7z" transform="translate(${44+(i%5)*15+(i>4?8:0)} ${166-(i>4?13:0)-(i*7)%5}) rotate(${i*53})" fill="${c}" stroke="#1D5A78" stroke-width="1"/>`).join("")}
+      <path d="M30 70c0-14 6-24 16-28" stroke="#fff" stroke-width="5" stroke-linecap="round" opacity=".7" fill="none"/></svg>
+    <h3>Bientôt dans ta boîte !</h3>
+    <p>Des éclats de verre tomberont parfois de tes sachets. Ici, tu pourras les fondre pour fabriquer <b>la bille de ton choix</b> : la taille et le motif que tu veux.</p>
+    <p class="meta">L'atelier est encore en travaux : on peaufine les derniers réglages. Rendez-vous très bientôt !</p>
+  </div>`;
 const CAHIER = [["album","#8A63D2","book","Album"],["billes","#5BAA4A","layers","Mes billes"],["pedia","#4C93C9","search","Billepedia"]];
 let cahierLast = null;   // l'intercalaire affiché la dernière fois (pour tourner la page quand on en change)
 const DOODLES = `<div class="cp-doodles" aria-hidden="true">
@@ -8862,13 +8886,13 @@ function viewCollection(){
 
   const turn = cahierLast!=null && cahierLast!==ui.tab; cahierLast = ui.tab;
   return `<h1 class="sr-only">Ma boîte à billes</h1>
-  <div class="cahier" style="--tc:${(CAHIER.find(c=>c[0]===ui.tab)||CAHIER[0])[1]}">
+  <div class="cahier" style="--tc:${ui.tab==="verrier" ? VERRIER_C : (CAHIER.find(c=>c[0]===ui.tab)||CAHIER[0])[1]}">
     ${cahierTabs(ui.tab, {album:`${slots.size} / ${TOTAL_SLOTS}`, billes:S.specs.length})}
     <div class="cahier-page${turn?" turn":""}" data-paper="${ui.tab}">${DOODLES}
     ${(()=>{ const T = {album:["Mon album", `${slots.size} / ${TOTAL_SLOTS} motifs trouvés`], billes:["Mes billes", `${S.specs.length} bille${S.specs.length>1?"s":""} · ${fmt(found.size)} / ${fmt(ALBUM_TOTAL)} modèles`],
-        beta:["Billes Bêta", `${betaOwned().length} / ${TK.length}`], events:["Événements", ""], pedia:["Billepedia", "toutes les billes du jeu"]}[ui.tab] || ["", ""];
+        beta:["Billes Bêta", `${betaOwned().length} / ${TK.length}`], events:["Événements", ""], pedia:["Billepedia", "toutes les billes du jeu"], verrier:["L'atelier du verrier", "arrive bientôt"]}[ui.tab] || ["", ""];
       return T[0] ? `<div class="cp-title"><h2>${T[0]}</h2>${T[1]?`<span>${T[1]}</span>`:""}</div>` : "" })()}
-  ${ui.tab==="pedia" ? viewPedia().replace(/^<div class="page-head">[\s\S]*?(?=<section class="pedia-sec">)/, "") : `
+  ${ui.tab==="verrier" ? verrierSoon() : ui.tab==="pedia" ? viewPedia().replace(/^<div class="page-head">[\s\S]*?(?=<section class="pedia-sec">)/, "") : `
   ${filters}
   ${body}`}
     </div>
@@ -16417,7 +16441,7 @@ let bugKeep = null;   // un message qui n'est pas parti : il est reproposé au p
 // on:false cache le bouton (pendant qu'on prépare la mise à jour) ; on:true le remet, avec la pastille si l'id a changé
 // (16 octobre 2026) deux repères : dot = la pastille rouge du bouton, à changer à CHAQUE mise en ligne qui ajoute une ligne au patchnote
 // (avec txt : la date du jour) ; id = la fenêtre d'annonce à l'arrivée, seulement pour les très gros jours
-const NEWS = {on:true, id:"2026-10-22", dot:"2026-10-27-1600", url:"/nouveautes.html", txt:"Mise à jour du 27 oct."};
+const NEWS = {on:true, id:"2026-10-22", dot:"2026-10-27-2000", url:"/nouveautes.html", txt:"Mise à jour du 27 oct."};
 const newsUnseen = () => lsGet("billeo-news-vu")!==NEWS.dot;
 // (14 octobre 2026) à l'arrivée, une fenêtre annonce la mise à jour, une seule fois par mise à jour et par compte (S.newsPop, gardé
 // dans la partie : elle ne revient pas sur un autre appareil) ; on choisit d'aller voir les nouveautés, ou pas

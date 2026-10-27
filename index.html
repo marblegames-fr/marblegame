@@ -1018,10 +1018,12 @@ button.rw:hover{transform:translateY(-2px)}
 @media (max-width:760px){ :root .cahier{padding:14px 10px 20px 10px;border-radius:18px;margin-right:0} }
 @media (max-width:760px){
   .cahier{grid-template-columns:minmax(0,1fr);margin-right:6px}
-  .cahier-tabs{position:static;flex-direction:row;gap:5px;padding:0 6px;overflow-x:auto;scrollbar-width:none;margin-bottom:-3px}
-  .ctab,.ctab:nth-child(even){flex:none;min-height:0;grid-template-columns:auto auto;padding:7px 11px 9px;margin:6px 0 0;border:3px solid var(--ol);border-bottom:0;border-radius:14px 14px 0 0;transform:translateY(5px) rotate(0);box-shadow:none}
+  /* (27 octobre 2026) les 4 intercalaires se partagent la largeur (la Confiserie n'est plus rejetée tout à droite, hors de l'écran) */
+  .cahier-tabs{position:static;flex-direction:row;gap:4px;padding:0 4px;overflow-x:auto;scrollbar-width:none;margin-bottom:-3px}
+  .ctab,.ctab:nth-child(even){flex:1 1 auto;min-width:0;min-height:0;grid-template-columns:auto auto;justify-content:center;column-gap:5px;padding:7px 6px 9px;margin:6px 0 0;border:3px solid var(--ol);border-bottom:0;border-radius:14px 14px 0 0;transform:translateY(5px) rotate(0);box-shadow:none}
   .ctab svg{grid-row:auto}
-  .ctab b{font-size:21px}
+  .ctab b{font-size:clamp(15px,4.4vw,21px);white-space:nowrap}
+  @media (max-width:430px){ .ctab svg{display:none} }
   .ctab small{display:none}
   .ctab:hover,.ctab:nth-child(even):hover{transform:translateY(2px)}
   .ctab[aria-selected="true"]{transform:none}
@@ -16415,7 +16417,7 @@ let bugKeep = null;   // un message qui n'est pas parti : il est reproposé au p
 // on:false cache le bouton (pendant qu'on prépare la mise à jour) ; on:true le remet, avec la pastille si l'id a changé
 // (16 octobre 2026) deux repères : dot = la pastille rouge du bouton, à changer à CHAQUE mise en ligne qui ajoute une ligne au patchnote
 // (avec txt : la date du jour) ; id = la fenêtre d'annonce à l'arrivée, seulement pour les très gros jours
-const NEWS = {on:true, id:"2026-10-22", dot:"2026-10-27-1800", url:"/nouveautes.html", txt:"Mise à jour du 27 oct."};
+const NEWS = {on:true, id:"2026-10-22", dot:"2026-10-27-1500", url:"/nouveautes.html", txt:"Mise à jour du 27 oct."};
 const newsUnseen = () => lsGet("billeo-news-vu")!==NEWS.dot;
 // (14 octobre 2026) à l'arrivée, une fenêtre annonce la mise à jour, une seule fois par mise à jour et par compte (S.newsPop, gardé
 // dans la partie : elle ne revient pas sur un autre appareil) ; on choisit d'aller voir les nouveautés, ou pas

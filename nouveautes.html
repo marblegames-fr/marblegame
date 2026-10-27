@@ -117,6 +117,21 @@ h3.sub{margin:20px 0 10px;font-family:var(--display);font-weight:400;font-size:1
 .podium .p1{background:linear-gradient(180deg,#FFE27A,#F2AE12)}.podium .p2{background:linear-gradient(180deg,#E9EDF5,#B9C3D6)}.podium .p3{background:linear-gradient(180deg,#F6C9A0,#D98A4E)}
 ul.items li .scale,ul.items li .podium{margin-bottom:2px}
 @media (max-width:560px){ .scale{grid-template-columns:repeat(3,minmax(0,1fr))} }
+/* (27 octobre 2026) « Depuis » rangé par jour : une rangée d'onglets (une date chacun), un seul jour affiché à la fois.
+   Les onglets sont fabriqués par le script en bas à partir des h3.sub : on continue d'ajouter un h3 + une liste en haut. */
+.days{display:flex;gap:8px;overflow-x:auto;scrollbar-width:none;padding:8px 8px 10px 2px;margin:0 0 4px;scroll-snap-type:x proximity}
+.days::-webkit-scrollbar{display:none}
+.day{flex:none;scroll-snap-align:start;position:relative;display:grid;justify-items:center;min-width:60px;padding:7px 10px 6px;border-radius:14px;border:1px solid var(--line);
+  background:var(--panel-2);color:var(--ink);font:inherit;line-height:1.1;cursor:pointer;transition:transform .15s}
+.day:hover{transform:translateY(-2px)}
+.day b{font-family:var(--display);font-weight:400;font-size:23px}
+.day span{font-size:11px;font-weight:900;color:var(--muted);text-transform:uppercase;letter-spacing:.05em}
+.day i{position:absolute;top:-7px;right:-6px;display:grid;place-items:center;min-width:19px;height:19px;padding:0 5px;border-radius:999px;background:var(--yellow);color:#2B2233;font-style:normal;font-size:11px;font-weight:900}
+.day[aria-selected="true"]{background:var(--orange);border-color:var(--orange);color:#fff;box-shadow:0 8px 16px -10px var(--orange)}
+.day[aria-selected="true"] span{color:rgba(255,255,255,.85)}
+.day-panel h3.sub{margin-top:4px}
+.day-older{display:block;margin:14px auto 0;padding:9px 16px;border-radius:999px;border:1px solid var(--line);background:var(--panel-2);color:var(--ink);font:inherit;font-weight:900;font-size:14px;cursor:pointer}
+.day-older:hover{border-color:var(--ink-2)}
 </style>
 </head>
 <body>
@@ -150,6 +165,8 @@ ul.items li .scale,ul.items li .podium{margin-bottom:2px}
     <div class="sec-head"><span class="chip" style="background:var(--orange)">🆕</span><h2>Depuis, au fil des jours<small>Les petites améliorations et corrections, la plus récente en haut</small></h2></div>
     <h3 class="sub" style="margin-top:4px">27 octobre</h3>
     <ul class="items">
+      <li><span class="ic">📅</span><div><b>Les nouveautés rangées par jour</b> <span class="tag chg">Modifié</span><p>Ici, plus besoin de descendre longtemps : chaque jour a son onglet, le plus récent est ouvert. Le petit chiffre jaune dit combien il y a de nouveautés ce jour-là.</p></div></li>
+      <li><span class="ic">📱</span><div><b>La Confiserie bien visible sur téléphone</b> <span class="tag fix">Corrigé</span><p>Dans la Boîte à billes, sur un petit écran, l'onglet Confiserie était poussé tout à droite, à moitié caché. Les 4 onglets se partagent maintenant la largeur de l'écran.</p></div></li>
       <li><span class="ic">🏆</span><div><b>Tes victoires de la semaine, sur ta fiche</b> <span class="tag new">Nouveau</span><p>Quand tu cliques sur un joueur dans le classement, sa fiche montre maintenant combien de fois il a fini 1er du classement de la semaine, et combien de podiums il a faits. Tu retrouves aussi les tiens dans Mes statistiques (« La cour de récré »). Tout compte, depuis la toute première semaine.</p></div></li>
       <li><span class="ic">🌀</span><div><b>La Toupie se lance avec le bouton</b> <span class="tag chg">Modifié</span><p>Plus besoin de tirer en arrière sur la toupie : un appui sur « Lancer la toupie » et c'est parti. La force ne changeait de toute façon pas ton lot, seulement la durée du lancer.</p></div></li>
     </ul>
@@ -355,5 +372,51 @@ ul.items li .scale,ul.items li .podium{margin-bottom:2px}
     <p class="sign">Bonne course à tous, et à bientôt dans la cour !</p>
   </div>
 </main>
+<script>
+// (27 octobre 2026) « Depuis » : chaque h3.sub + sa liste devient un onglet de date (sans script, tout reste affiché comme avant)
+(() => {
+  const sec = document.getElementById("depuis"), hs = [...sec.querySelectorAll(":scope > h3.sub")];
+  if(hs.length < 2) return;
+  const MOIS = {janvier:"janv.",février:"févr.",mars:"mars",avril:"avr.",mai:"mai",juin:"juin",juillet:"juil.",août:"août",septembre:"sept.",octobre:"oct.",novembre:"nov.",décembre:"déc."};
+  const nav = document.createElement("div");
+  nav.className = "days"; nav.setAttribute("role","tablist"); nav.setAttribute("aria-label","Les jours");
+  hs[0].before(nav);
+  const tabs = [], panels = [];
+  hs.forEach((h,i) => {
+    const panel = document.createElement("div"), list = h.nextElementSibling;
+    panel.className = "day-panel"; panel.id = "jour-"+i; panel.setAttribute("role","tabpanel");
+    h.before(panel); panel.append(h); if(list && list.matches("ul.items")) panel.append(list);
+    const t = h.textContent.trim(), m = t.match(/^(\d+)\s+(\S+)\s*(.*)$/);
+    const tab = document.createElement("button");
+    tab.type = "button"; tab.className = "day"; tab.setAttribute("role","tab"); tab.setAttribute("aria-controls",panel.id);
+    tab.innerHTML = m ? `<b>${m[1]}</b><span>${MOIS[m[2]]||m[2]}${m[3]?" "+m[3].replace(/^au\s+/,""):""}</span>` : `<b>${t}</b>`;
+    tab.setAttribute("aria-label", t);
+    const n = panel.querySelectorAll("ul.items > li").length;
+    if(n) tab.insertAdjacentHTML("beforeend", `<i aria-hidden="true">${n}</i>`);
+    tab.onclick = () => show(i);
+    nav.append(tab); tabs.push(tab); panels.push(panel);
+    // en bas de chaque jour : un bouton vers le jour d'avant
+    if(i < hs.length - 1){
+      const older = document.createElement("button");
+      older.type = "button"; older.className = "day-older";
+      older.textContent = "Le jour d'avant : " + hs[i+1].textContent.trim() + " →";
+      older.onclick = () => { show(i+1); sec.scrollIntoView({behavior:"smooth", block:"start"}) };
+      panel.append(older);
+    }
+  });
+  function show(i){
+    tabs.forEach((t,k) => { t.setAttribute("aria-selected", k===i); t.tabIndex = k===i ? 0 : -1 });
+    panels.forEach((p,k) => p.hidden = k!==i);
+    const t = tabs[i];
+    nav.scrollTo({left: t.offsetLeft - nav.offsetLeft - nav.clientWidth/2 + t.offsetWidth/2, behavior:"smooth"});
+  }
+  nav.addEventListener("keydown", e => {
+    const i = tabs.indexOf(document.activeElement); if(i < 0) return;
+    const j = e.key==="ArrowRight" ? Math.min(i+1, tabs.length-1) : e.key==="ArrowLeft" ? Math.max(i-1, 0) : -1;
+    if(j >= 0){ e.preventDefault(); show(j); tabs[j].focus() }
+  });
+  show(0);
+})();
+</script>
 </body>
 </html>

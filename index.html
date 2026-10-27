@@ -12594,11 +12594,11 @@ function artTierce(){
 
 /* ---------- 3. La Toupie ---------- */
 // Un plateau en bois découpé en zones de lots (à peu près à la taille de leurs chances, avec un minimum pour qu'on voie les rares).
-// On tire le doigt en arrière depuis la toupie et on lâche (ou le bouton) : elle se promène, passe sur un gros lot, ralentit, tangue
-// et tombe. Le lot est tiré d'abord par le serveur ; la trajectoire est calculée pour finir dans sa zone, la force ne change que la durée.
-const tou = {st:"ready", raf:0, call:null, T:null, run:null, win:null, pull:null, trail:[]};
+// On la lance avec le bouton (27 octobre 2026 : plus de tir au doigt ni de force) : elle se promène, passe sur un gros lot, ralentit, tangue
+// et tombe. Le lot est tiré d'abord par le serveur ; la trajectoire est calculée pour finir dans sa zone.
+const tou = {st:"ready", raf:0, call:null, T:null, run:null, win:null, trail:[]};
 function viewToupie(){
-  return chanceView("toupie", "La Toupie", `<div class="tou-stage" id="tou-stage"><canvas id="tou-cv" aria-label="La toupie : tire en arrière et lâche pour la lancer"></canvas><div class="rq-win" hidden></div></div>`,
+  return chanceView("toupie", "La Toupie", `<div class="tou-stage" id="tou-stage"><canvas id="tou-cv" aria-label="La toupie : lance-la avec le bouton"></canvas><div class="rq-win" hidden></div></div>`,
     chanceOdds("toupie", "La taille des zones suit à peu près les chances, avec un minimum pour que les zones rares se voient : les vraies chances sont celles-ci."));
 }
 function touInit(){
@@ -12649,10 +12649,7 @@ function touInit(){
     // les traces laissées par la toupie
     if(tou.trail.length > 1){ cx.lineCap = "round"; for(let i=1;i<tou.trail.length;i++){ const [a,b] = [tou.trail[i-1], tou.trail[i]], k = i/tou.trail.length;
       cx.strokeStyle = `rgba(255,255,255,${k*.35})`; cx.lineWidth = 2 + k*3; cx.beginPath(); cx.moveTo(...toS(a.x, a.y)); cx.lineTo(...toS(b.x, b.y)); cx.stroke() } }
-    // le doigt qui tire
     const T = tou.T;
-    if(tou.pull){ const [x,y] = toS(T.x, T.y); cx.strokeStyle = "rgba(255,255,255,.85)"; cx.lineWidth = 3; cx.setLineDash([6,6]); cx.beginPath(); cx.moveTo(x, y); cx.lineTo(tou.pull.x, tou.pull.y); cx.stroke(); cx.setLineDash([]);
-      cx.fillStyle = "#FFE14D"; cx.font = "900 13px Nunito"; cx.textAlign = "center"; cx.fillText(`Force ${Math.round(tou.pull.p*100)} %`, x, y+58) }
     // la toupie : la pointe, le corps en bois peint, le disque qui tourne, la tige ; un reflet qui ne tourne pas
     const [sx, sy] = toS(T.x, T.y), lean = T.tilt, tx = Math.cos(T.td)*lean*26, ty = Math.sin(T.td)*lean*13;
     cx.fillStyle = "rgba(0,0,0,.35)"; cx.beginPath(); cx.ellipse(sx+5+tx*.6, sy+3, 27+lean*10, 9+lean*3, 0, 0, 6.283); cx.fill();
@@ -12674,7 +12671,6 @@ function touInit(){
     const stem = cx.createLinearGradient(top.x-4, 0, top.x+4, 0); stem.addColorStop(0, "#8A5A2A"); stem.addColorStop(.5, "#F7D18E"); stem.addColorStop(1, "#8A5A2A");
     cx.fillStyle = stem; cx.fillRect(top.x-3.5, top.y-24, 7, 24); cx.fillStyle = "#E5484D"; cx.beginPath(); cx.arc(top.x, top.y-25, 6, 0, 6.283); cx.fill();
     cx.fillStyle = "rgba(255,255,255,.6)"; cx.beginPath(); cx.arc(top.x-2, top.y-27, 2, 0, 6.283); cx.fill();
-    if(tou.st==="ready"){ cx.fillStyle = "rgba(255,255,255,.92)"; cx.font = "900 13px Nunito"; cx.textAlign = "center"; cx.fillText("Tire en arrière depuis la toupie et lâche !", W/2, H-22) }
   };
   const at = (P, s) => { let i = P.findIndex(q=>q.L >= s); if(i<=0) return P[Math.max(0,i)]; const a = P[i-1], b = P[i], k = (s-a.L)/((b.L-a.L)||1); return {x:a.x+(b.x-a.x)*k, y:a.y+(b.y-a.y)*k} };
   let last = 0, hum = 0;
@@ -12692,10 +12688,7 @@ function touInit(){
     T.spin += T.vs*dt/1000;
     draw(now); tou.raf = requestAnimationFrame(loop);
   };
-  const pos = e => { const r = cv.getBoundingClientRect(); return {x:(e.clientX-r.left)*W/r.width, y:(e.clientY-r.top)*H/r.height} };
-  cv.onpointerdown = e => { if(tou.st==="done"){ document.querySelector("#tou-stage .rq-win").hidden = true; tou.reset() } if(tou.st!=="ready") return; cv.setPointerCapture(e.pointerId); tou.pull = {...pos(e), p:0} };
-  cv.onpointermove = e => { if(!tou.pull) return; const p = pos(e), [x,y] = toS(tou.T.x, tou.T.y); tou.pull = {...p, p:Math.min(1, Math.hypot(p.x-x, p.y-y)/140)} };
-  cv.onpointerup = cv.onpointercancel = () => { if(!tou.pull) return; const pw = tou.pull.p; tou.pull = null; if(pw >= .12) touGo(!chanceFreeDone("toupie") ? false : true, pw) };
+  cv.onpointerdown = () => { if(tou.st==="done"){ document.querySelector("#tou-stage .rq-win").hidden = true; tou.reset() } };
   tou.raf = requestAnimationFrame(loop);
 }
 // une courbe douce qui passe par quelques points (Catmull-Rom), mesurée pour avancer à vitesse réglée
@@ -12709,7 +12702,7 @@ function touSpline(P){
   let L = 0; out[0].L = 0; for(let i=1;i<out.length;i++){ L += Math.hypot(out[i].x-out[i-1].x, out[i].y-out[i-1].y); out[i].L = L }
   out.len = L; return out;
 }
-async function touGo(pay, power=.6){
+async function touGo(pay){
   if(tou.st==="done"){ document.querySelector("#tou-stage .rq-win")?.setAttribute("hidden",""); tou.reset?.() }
   if(tou.st!=="ready" || !tou.zones) return;
   tou.st = "wait";
@@ -12718,12 +12711,12 @@ async function touGo(pay, power=.6){
   if(!document.getElementById("tou-cv")){ call.give(); return }
   const lot = ROUE[call.r.case], z = tou.zones.find(q=>q.c.lbl===lot.lbl), RP = tou.RP;
   const inZ = (q, fa, fr) => { const a = q.a0 + (q.a1-q.a0)*fa, r = RP*fr; return {x:Math.cos(a)*r, y:Math.sin(a)*r} };
-  const pts = [{x:tou.T.x, y:tou.T.y}], n = 3 + Math.round(power*2);
+  const pts = [{x:tou.T.x, y:tou.T.y}], n = 4;
   for(let i=0;i<n;i++){ const a = Math.random()*6.283, r = RP*(.2 + Math.random()*.6); pts.push({x:Math.cos(a)*r, y:Math.sin(a)*r}) }
   const big = tou.zones.filter(q=>lotBig(q.c) && q!==z); if(big.length) pts.push(inZ(big[Math.floor(Math.random()*big.length)], .5, .55));
   pts.push(inZ(z, .3 + Math.random()*.4, .35 + Math.random()*.3));
   tou.call = call; tou.lot = lot;
-  tou.run = {P:touSpline(pts), t0:performance.now(), T:reduceMo() ? 900 : 4200 + power*2600};
+  tou.run = {P:touSpline(pts), t0:performance.now(), T:reduceMo() ? 900 : 5760};
   tou.T.vs = 36; tou.st = "spin"; Sound.whoosh?.(); chanceBtnsAt("toupie", "Elle tourne…");
 }
 function artToupie(){
@@ -16421,7 +16414,7 @@ let bugKeep = null;   // un message qui n'est pas parti : il est reproposé au p
 // on:false cache le bouton (pendant qu'on prépare la mise à jour) ; on:true le remet, avec la pastille si l'id a changé
 // (16 octobre 2026) deux repères : dot = la pastille rouge du bouton, à changer à CHAQUE mise en ligne qui ajoute une ligne au patchnote
 // (avec txt : la date du jour) ; id = la fenêtre d'annonce à l'arrivée, seulement pour les très gros jours
-const NEWS = {on:true, id:"2026-10-22", dot:"2026-10-26-1900", url:"/nouveautes.html", txt:"Mise à jour du 26 oct."};
+const NEWS = {on:true, id:"2026-10-22", dot:"2026-10-27-1200", url:"/nouveautes.html", txt:"Mise à jour du 27 oct."};
 const newsUnseen = () => lsGet("billeo-news-vu")!==NEWS.dot;
 // (14 octobre 2026) à l'arrivée, une fenêtre annonce la mise à jour, une seule fois par mise à jour et par compte (S.newsPop, gardé
 // dans la partie : elle ne revient pas sur un autre appareil) ; on choisit d'aller voir les nouveautés, ou pas

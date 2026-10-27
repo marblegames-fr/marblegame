@@ -4310,6 +4310,11 @@ body.gc-open{overflow:hidden}
 .cour-v2{--paper:var(--panel);--pen:var(--ink);display:grid;gap:18px}
 .cour-v2 .cour-body{display:grid;gap:16px}
 .cour-v2 .cour-grid{gap:18px}
+.cl-bareme > summary{list-style:none;cursor:pointer;margin:0}
+.cl-bareme > summary::-webkit-details-marker{display:none}
+.cl-bareme > summary svg:last-child{transition:transform .2s}
+.cl-bareme[open] > summary{margin-bottom:14px}
+.cl-bareme[open] > summary svg:last-child{transform:rotate(90deg)}
 /* le haut : le titre de la page, ce qui t'attend, et ton pseudo à donner */
 .cv-head{display:flex;flex-wrap:wrap;align-items:flex-end;justify-content:space-between;gap:12px 18px;margin-bottom:0}
 .cv-title{display:grid;gap:8px}
@@ -8286,7 +8291,7 @@ function openDaily(){
       ${ready ? `<button class="btn btn-yellow" data-action="daily-claim">${ic("gift",18)} Récupérer ${esc(dailyText(r))}</button>`
         : `<span class="daily-done">${ic("check",18,2.5)} Bonbec du jour récupéré</span>
            <p>Reviens dans <b data-quest-timer>${untilMidnight()}</b> pour le jour ${next+1} : ${esc(dailyText(dailyRew(next)))}.</p>`}
-      <p class="meta">Si tu sautes un jour, ta série recommence au jour 1.</p>
+
     </div></div>`;
   el.hidden = false;
   (el.querySelector(".btn-yellow")||el.querySelector(".close-x")).focus();
@@ -8965,14 +8970,14 @@ function viewAtelier(){
         <label class="at-only"><input type="checkbox" data-action="atl-only"${A.only?" checked":""}> Seulement les motifs qui me manquent dans cette taille</label>
         <div class="at-motifs">${L.map(i=>`<button class="at-mo" data-action="atl-f" data-f="${i}" style="--c:${DECOR_RAR[A.r].c}" aria-pressed="${i===A.f}">${miss(A.t,i)?`<span class="at-miss">Te manque</span>`:`<span class="at-have" title="Tu l'as déjà dans cette taille">${ic("check",11,3)}</span>`}${mImg(thumb(i),96,48,"")}<span>${esc(FAMILIES[i].name)}</span></button>`).join("") || `<p class="meta">Tu as déjà tous ces motifs dans cette taille !</p>`}</div></section>
       <section class="at-oven"><span class="at-prev" id="atl-prev" data-t="${A.t}" data-f="${A.f}">${mImg(atelierPrevSpec(A),240,Math.round(70+50*scaleOf(A.t)),"")}<em>coloris au hasard</em></span>
-        <div><h4>${esc(F.name)} · ${TYPES[A.t].label}</h4><p>Motif ${DECOR_RAR[A.r].name.toLowerCase()}${miss(A.t, A.f)?" · il te manque dans cette taille":""}. Le coloris sera tiré au hasard parmi tous les coloris.</p>
+        <div><h4>${esc(F.name)} · ${TYPES[A.t].label}</h4><p>Motif ${DECOR_RAR[A.r].name.toLowerCase()}${miss(A.t, A.f)?" · te manque":""}</p>
           <div class="at-cost"><b>${prix} ${SHARD_SVG}</b><span>tu en as ${fmt(n)}</span></div>
           <div class="at-prog"><i style="width:${Math.min(100, Math.round(100*n/prix))}%"></i></div>
-          ${ok ? `<button class="btn btn-yellow" data-action="atl-make">${ic("flask",17,2.4)} Fabriquer pour ${prix} éclats</button>` : `<button class="btn btn-yellow" disabled>${ic("flask",17,2.4)} Fabriquer</button><p class="at-wait">Encore ${prix-n} éclat${prix-n>1?"s":""} : ${atelierJours(prix-n)} pour un joueur régulier.</p>`}</div></section>
+          ${ok ? `<button class="btn btn-yellow" data-action="atl-make">${ic("flask",17,2.4)} Fabriquer pour ${prix} éclats</button>` : `<button class="btn btn-yellow" disabled>${ic("flask",17,2.4)} Fabriquer</button><p class="at-wait">Encore ${prix-n} éclat${prix-n>1?"s":""}</p>`}</div></section>
       <section class="at-card at-prices"><h3>Combien d'éclats ?</h3>
         <div class="at-tb"><table><tr><th></th>${DECOR_RAR.slice(0,5).map(R=>`<th style="color:${R.c}">${R.name}</th>`).join("")}</tr>
           ${TK.map(t=>`<tr><th style="color:${TYPES[t].rc};text-align:left">${TYPES[t].label}</th>${[0,1,2,3,4].map(r=>`<td class="${t===A.t&&r===A.r?"hl":""}"><b>${atelierPrix(t,r)}</b><small>${atelierJours(atelierPrix(t,r)).replace("environ ","≈ ")}</small></td>`).join("")}</tr>`).join("")}</table></div>
-        <p class="meta">Les durées : pour un joueur régulier, qui ouvre une soixantaine de sachets par jour. La bille fabriquée compte au classement général, pas au classement de la semaine.</p></section>
+</section>
     </div>
   </div>`;
 }
@@ -9134,7 +9139,7 @@ function viewCollection(){
     return `<section class="panel recycle-bar">
       <span class="q-ic">${ic("candy",24)}</span>
       <div><b>${d.length ? `${d.length} double${d.length>1?"s":""} à échanger · +${fmt(v)} ${CUR.many}` : "Aucun double pour l'instant"}</b>
-        <p>Même taille, motif et coloris. Tu en gardes toujours un ; les autres peuvent partir à la Confiserie.</p></div>
+        <p>Tu en gardes toujours un.</p></div>
       <button class="btn btn-ghost" data-action="nav" data-view="confiserie">Aller à la Confiserie ${ic("arrow",16)}</button>
     </section>` };
   // (14 octobre 2026) les billes en vente au marché (ou aux enchères) et celles d'un troc en cours : un contour pointillé et une étiquette
@@ -9490,7 +9495,7 @@ function viewCraft(){
   const craftBar = `<div class="craft-filters"><div class="chips">${fChip("","Tous les motifs")}${DECOR_RAR.map((R,k)=>fChip(k, R.name)).join("")}
       ${nEv?`<button class="chip ev" data-action="craft-ev">${ic("flag",13)} Billes d'événement (${nEv})</button>`:""}</div>
     <div class="col-search"><span class="cs-ic">${ic("search",17)}</span><input type="search" id="craft-q" placeholder="Chercher : Galaxie, Azur…" value="${esc(F.q||"")}" aria-label="Chercher une bille à fusionner" autocomplete="off" spellcheck="false"></div></div>`;
-  return `<p class="conf-intro">Des billes d'une même taille donnent une bille de la taille au-dessus (motif et coloris au hasard).</p>
+  return `<p class="conf-intro">Même taille → la taille au-dessus, motif et coloris au hasard.</p>
   <div class="recipes">${recipes}</div>
   <section class="panel fuse2" style="--a:${A};--b:${B};--p:${C.sel.length/N}">
     <div class="fz-ring${full?" full":""}"><div class="fz-in"></div>${slots}
@@ -9924,8 +9929,7 @@ function confEchange(dups, dupVal){
   const rates = `<div class="cf-rates" role="group" aria-label="Les tarifs de la maison, par bille"><span class="cf-rl">${ic("candy",14)} Tarifs par bille</span>
     <div class="cf-rate-list">${TK.map((t,i)=>`<span class="cf-rate" style="${tstyle(t)}">${mImg(SHOWCASE[i],96,Math.round(12*scaleOf(t)+12),"")}<em>${TYPES[t].label.replace("Mini bille","Mini").replace("Bille chinoise","Chinoise")}</em><b>${COIN}${fmt(RECYCLE[t])}</b></span>`).join("")}</div>
     <small class="cf-rs"><b>Motif rare</b> ${DECOR_RAR.map((R,k)=>DECOR_RECYCLE_MULT[k]>1 ? `<span class="cf-rr" style="--c:${R.c}">${R.name} ×${DECOR_RECYCLE_MULT[k]}</span>` : "").join("")}</small>
-    <small class="cf-rs"><span class="shiny-pill">${SPARK}Shiny</span> ×${SHINY_RECYCLE_MULT} + une prime : ${SHINIES.slice(1).map((x,i)=>`${x.name} +${fmt(SHINY_BONUS[i+1])}`).join(" · ")}</small>
-    <small class="cf-rs meta">Les deux se cumulent : un Calot légendaire rend ${fmt(RECYCLE.calot*DECOR_RECYCLE_MULT[4])} ${CUR.many}.</small></div>`;
+    <small class="cf-rs"><span class="shiny-pill">${SPARK}Shiny</span> ×${SHINY_RECYCLE_MULT} + une prime : ${SHINIES.slice(1).map((x,i)=>`${x.name} +${fmt(SHINY_BONUS[i+1])}`).join(" · ")}</small></div>`;
   return `${rates}<div class="cf-filter seg" role="group" aria-label="Quelles billes">
       <button class="chip" data-action="conf-filter" data-f="doubles" aria-pressed="${!seules}">${ic("layers",14)} Mes doubles <span class="n">${dups.length}</span></button>
       <button class="chip" data-action="conf-filter" data-f="seules" aria-pressed="${seules}">${ic("star",14)} Billes en un seul exemplaire <span class="n">${singles.length}</span></button>
@@ -9935,7 +9939,7 @@ function confEchange(dups, dupVal){
       <div class="cf-receipt"><div class="rc-head">Ticket de la Confiserie</div>
         ${lines || `<div class="rc-row"><span>Aucun double pour l'instant</span><i></i><b>0</b></div>`}
         <div class="rc-total"><span>Total</span><b>+ ${fmt(dupVal)} ${COIN}</b></div></div>
-      <div class="cf-side"><p class="meta">Tu gardes toujours un exemplaire. Shiny, secrètes, bille active et vitrine ne partent jamais.</p>
+      <div class="cf-side"><p class="meta">Shiny, secrètes, bille active et vitrine ne partent jamais.</p>
         <button class="btn btn-yellow btn-xl" data-action="recycle-dups" ${dups.length?"":"disabled"}>${ic("candy",20)} Tout échanger · +${fmt(dupVal)}</button></div>
     </section>`}
   ${base.length ? filters : ""}
@@ -13387,7 +13391,6 @@ function ballPicker(kind){
     <div class="bpk-txt"><small>${gcK ? "Ta coureuse pour la Grande Course" : "Ta bille pour tous les mini-jeux"}</small>
       <h3${motifCol(cur)}>${esc(specName(cur))}</h3>
       <span class="pills">${typePill(cur.type)}${r>=1?`<span class="dec-pill" style="--dc:${DECOR_RAR[r].c}">${DECOR_RAR[r].name}</span>`:""}${shinyPill(cur)}</span>
-      ${gcK ? `<p>Toutes les billes ont la même chance : choisis celle que tu veux voir gagner en 3D !</p>` : ""}
       <div class="bpk-quick"><button class="btn btn-yellow" data-action="${act}">${ic("swap",17,2.4)} Changer de bille</button></div></div>
   </section>`;
 }
@@ -14714,7 +14717,7 @@ function viewGrandeCourse(){
       <div class="gc-clock"><small>Départ dans</small><b data-gc-timer>${gcLeft(N.depart-Date.now())}</b></div>
       ${reg}
       <div class="gc-prizes">${prize(0,"1er")}${prize(1,"2e")}${prize(2,"3e")}</div>
-      <p class="meta">Les autres inscrits gagnent ${COURSE_PART} ${CUR.many}. ${E ? `${E.inscrits} inscrit${E.inscrits>1?"s":""}${gcManches(E.inscrits)>1?` (${gcManches(E.inscrits)} manches, un podium chacune)`:""}.` : ""} Inscriptions jusqu'à ${N.heure===12?"11 h 59":"19 h 59"}.</p>
+      <p class="meta">${E ? `${E.inscrits} inscrit${E.inscrits>1?"s":""}${gcManches(E.inscrits)>1?` (${gcManches(E.inscrits)} manches)`:""} · ` : ""}jusqu'à ${N.heure===12?"11 h 59":"19 h 59"}</p>
     </div>
     <div class="gc-side"><div class="gc-prev">${gcPrevSVG(cN)}<span>${whenS} : ${esc(G3C[cN].name)}</span></div>
       <p class="meta">${esc(G3C[cN].desc)} En 3D, avec ta vraie bille !</p>
@@ -17380,13 +17383,13 @@ function clSemaine(){
       <section class="panel"><div class="panel-head"><h3>${ic("gift",18)} À gagner lundi</h3></div>
         <ul class="cl-rules">${lots.map(l=>`<li><b>${placesTxt(l)}</b><span>${esc(semLotTxt(l))}</span>${(l.titre || (l.de===1 && SEMAINE_LOTS[0].titre)) ? `<small>+ le titre « ${SEMAINE_TITRE} »</small>` : l.pas>0 && l.a>l.de ? `<small>${fmt(l.pas)} ${l.pas>1?CUR.many:CUR.one} de moins à chaque place : ${rangTxt(l.de)} ${fmt(l.bonbecs)}, ${rangTxt(l.de+1)} ${fmt(l.bonbecs-l.pas)}…</small>` : ""}</li>`).join("")}</ul>
         <p class="meta">Les lots arrivent tout seuls dans tes sachets offerts, lundi après minuit.</p></section>
-      <section class="panel"><div class="panel-head"><h3>${ic("quest",18)} Comment gagner des points</h3></div>
+      <details class="panel cl-bareme"><summary class="panel-head"><h3>${ic("quest",18)} Voir le barème</h3>${ic("chev",16,2.6)}</summary>
         <ul class="cl-rules">
           <li><b>Chaque bille tirée cette semaine</b><span>${TK.map(t=>`${TYPES[t].label} ${String(SCORE.taille[TIDX[t]]/10).replace(".",",")}`).join(" · ")}</span><small>× la rareté du motif, même pour un double.</small></li>
           <li><b>Une case vide remplie</b><span>la bille compte double</span><small>Un nouveau motif dans une taille que tu n'avais pas.</small></li>
           <li><b>Une shiny</b><span>${SHINIES.slice(1).map((x,i)=>`${x.name} +${SCORE.shiny[i]/10}`).join(" · ")}</span></li>
           <li><b>Une bille troquée ou achetée au marché</b><span>comme une bille tirée</span><small>Seulement si c'est ton premier exemplaire de cette bille (pas un double).</small></li>
-        </ul><p class="meta">Ne comptent pas : les doubles reçus par troc ou au marché, les billes des fusions et de l'atelier, d'événement et de saison. Tout repart à zéro chaque lundi à minuit.</p></section>
+        </ul><p class="meta">Ne comptent pas : les doubles reçus par troc ou au marché, les billes des fusions et de l'atelier, d'événement et de saison. Tout repart à zéro chaque lundi à minuit.</p></details>
     </div>
   </div>`;
 }
@@ -17444,14 +17447,14 @@ function clGeneral(){
       <section class="panel"><div class="panel-head"><h3>${ic("flag",18)} Pour grimper</h3></div>
         <div class="cl-goals">${scoreGoals().map(g=>`<div class="cl-goal"><div class="g-top"><b>${esc(g.titre)}</b><span class="g-pts">+${fmt(g.pts)}</span></div>
           <div class="bar"><i style="width:${Math.round(100*g.n/g.of)}%"></i></div><small>${g.n} / ${g.of} · ${esc(g.manque)}</small></div>`).join("")}</div></section>
-      <section class="panel"><div class="panel-head"><h3>${ic("quest",18)} Comment gagner des points</h3></div>
+      <details class="panel cl-bareme"><summary class="panel-head"><h3>${ic("quest",18)} Voir le barème</h3>${ic("chev",16,2.6)}</summary>
         <ul class="cl-rules">
           <li><b>Chaque motif de l'album, dans chaque taille</b><span>${TK.map(t=>`${TYPES[t].label} ${SCORE.taille[TIDX[t]]}`).join(" · ")}</span><small>× la rareté du motif : ${DECOR_RAR.map((r,i)=>`${r.name.toLowerCase()} ×${String(SCORE.decor[i]).replace(".",",")}`).join(", ")}</small></li>
           <li><b>Chaque coloris en plus</b><span>un cinquième des points de la taille × la rareté du motif</span><small>Jusqu'à 5 coloris par case. Les doubles (même coloris) ne comptent pas.</small></li>
           <li><b>Chaque shiny différente</b><span>${SHINIES.slice(1).map((x,i)=>`${x.name} ${SCORE.shiny[i]}`).join(" · ")}</span></li>
           <li><b>Le motif mythique</b><span>${SCORE.mythique} dès ton premier Œil du Dragon</span><small>En plus des points de sa case (×${SCORE.decor[5]}).</small></li>
           <li><b>Les grandes collections</b><span>un motif dans les 6 tailles : ${SCORE.serieDecor} × la rareté du motif</span><small>Une taille dans tous les motifs (le mythique n'est pas demandé), ou un motif complet (ses ${BASE_PALS} coloris) : ${SCORE.serie} × les points de la taille.</small></li>
-        </ul><p class="meta">Les billes de départ et les secrètes ne comptent pas.</p></section>
+        </ul><p class="meta">Les billes de départ et les secrètes ne comptent pas.</p></details>
     </div>
   </div>`;
 }
@@ -17552,7 +17555,7 @@ function courCopains(){
       ${ami && s.id ? `<button class="cpc-troc" data-action="troc-want" data-id="${ami.id}" data-bille="${s.id}" title="Proposer un troc à ${esc(e.who)} pour cette bille" aria-label="Proposer un troc à ${esc(e.who)} pour cette bille">${ic("swap",15)}</button>` : ""}</div>` };
   const shown = rares.slice(F.p*RARES_PAGE, (F.p+1)*RARES_PAGE), cards = shown.map(card).join("");
   fresh.forEach(k=>seen.add(k));
-  return `<section class="panel cp-finds"><div class="panel-head"><h3>${ic("star",18)} Trouvailles rares${rares.length?`<span class="cnt-n">${rares.length}</span>`:""}</h3><span class="sample-tag">Les plus récentes de tes copains · 2 derniers jours</span></div>
+  return `<section class="panel cp-finds"><div class="panel-head"><h3>${ic("star",18)} Trouvailles rares${rares.length?`<span class="cnt-n">${rares.length}</span>`:""}</h3><span class="sample-tag">2 derniers jours</span></div>
       ${rares.length ? `<div class="cpc-grid">${cards}</div>${pager(F,"rarPage","Trouvailles")}`
         : `<p class="empty">${amis.length ? "Pas de trouvaille rare chez tes copains ces 2 derniers jours. Les shiny, les légendaires, les Mammouths épiques… apparaîtront ici." : "Ajoute des copains : leurs shiny, légendaires et Mammouths épiques apparaîtront ici."}</p>`}
     </section>
@@ -17568,8 +17571,7 @@ function courCopains(){
         ${rec.map(r=>`<div class="cp-row">${avatarIni(r.pseudo,36)}<span class="cp-who"><b>${esc(r.pseudo)}</b><small>veut être ton copain · ${timeAgo(r.le)}</small></span>
           <span class="cp-acts"><button class="btn btn-yellow btn-sm" data-action="ami-oui" data-id="${r.id}" aria-label="Accepter">${ic("check",15,2.6)}</button><button class="btn btn-ghost btn-sm" data-action="ami-non" data-id="${r.id}" aria-label="Refuser">×</button></span></div>`).join("")}</section>` : ""}
       <section class="panel cp-add"><div class="panel-head"><h3>${ic("plus",17,2.6)} Ajouter un copain</h3></div>
-        <form id="ami-form"><input type="text" id="ami-pseudo" maxlength="20" placeholder="Son pseudo" autocomplete="off" aria-label="Pseudo de ton copain"><button class="btn btn-yellow btn-sm" type="submit">Ajouter</button></form>
-        <small class="meta">Entre copains, vous voyez vos vitrines et vous pouvez troquer.</small></section>
+        <form id="ami-form"><input type="text" id="ami-pseudo" maxlength="20" placeholder="Son pseudo" autocomplete="off" aria-label="Pseudo de ton copain"><button class="btn btn-yellow btn-sm" type="submit">Ajouter</button></form></section>
     </div>
   </div>`;
 }
@@ -17684,11 +17686,11 @@ function courTroc(){
   const list = tab==="envoyes" ? T.envoyes : tab==="finis" ? T.finis : T.recus, kind = tab==="envoyes" ? "envoye" : tab==="finis" ? "fini" : "recu";
   const vide = {recu:"Aucune offre reçue pour l'instant.", envoye:"Tu n'as pas d'offre en attente.", fini:"Pas encore de troc terminé."}[kind];
   return `<div class="cour-grid">
-    <section class="panel tr-new"><div class="panel-head"><h3>Proposer un troc à…</h3><span class="sample-tag">Touche un copain, ou écris son pseudo</span></div>
+    <section class="panel tr-new"><div class="panel-head"><h3>Proposer un troc à…</h3></div>
       ${amis.length ? `<div class="who-row">${amis.slice(0,16).map(a=>`<button class="tr-who" data-action="troc-new" data-id="${a.id}" title="Proposer un troc à ${esc(a.pseudo)}"><span>${a.active ? mImg(a.active,96,40,"") : avatarIni(a.pseudo,36)}</span>${esc(a.pseudo)}</button>`).join("")}</div>
         <form class="tr-pick" id="troc-ami-form"><span class="cp-search tr-q">${ic("search",16)}<input type="search" id="troc-q" placeholder="Écris le pseudo de ton copain" aria-label="Pseudo de ton copain" autocomplete="off" spellcheck="false" enterkeyhint="go"></span></form>
         <div class="tr-found" id="troc-found" aria-live="polite"></div>
-        <p class="meta">Écris le début de son pseudo, puis touche ton copain pour lui proposer un troc.</p>`
+`
         : `<p class="cour-lead">Pour troquer, ajoute d'abord des copains dans l'onglet Copains.</p>`}</section>
     <div class="chips tr-tabs">${st("recus","Offres reçues",T.recus.length)}${st("envoyes","Offres envoyées",T.envoyes.length)}${st("finis","Terminés")}</div>
     <section class="panel">${list.length ? (P => list.slice(P.from, P.from+TR_PAGE).map(t=>trocCard(t,kind)).join("") + courPager(P, "trPage"+tab, "Trocs"))(courPages(list.length, TR_PAGE, "trPage"+tab)) : `<p class="empty">${vide}</p>`}</section>
@@ -17838,7 +17840,7 @@ function courMarche(){
       <span class="price">${COIN}${fmt(a.offre ?? a.prix)}</span><span class="ann-end">${st}</span></div>` };
   return `<div class="cour-grid">
     ${(()=>{ const n = trocDups().size; return `<section class="panel mk-sell"><span class="mk-awning" aria-hidden="true"></span><span class="mk-sell-art" aria-hidden="true">${ic("candy",34,2)}</span>
-      <div><b>Le marché de la cour</b><small>${n ? `Tu as <b>${fmt(n)} double${n>1?"s":""}</b> : vends-les aux autres joueurs contre des ${CUR.many}, à prix fixe ou aux enchères.` : `Vends tes billes aux autres joueurs contre des ${CUR.many}, à prix fixe ou aux enchères.`}</small></div>
+      <div><b>Le marché de la cour</b><small>${n ? `Tu as <b>${fmt(n)} double${n>1?"s":""}</b> : vends-les, à prix fixe ou aux enchères.` : `Vends tes doubles, à prix fixe ou aux enchères.`}</small></div>
       <button class="btn btn-yellow btn-xl" data-action="mk-vendre">${ic("plus",19,2.6)} Vendre une bille</button></section>` })()}
     <section class="panel"><div class="mk-bar"><h3>Le marché</h3>
       ${mkTab==="acheter" ? `<div class="cour-form" id="mk-filters">
@@ -17851,7 +17853,7 @@ function courMarche(){
         <label class="tr-dbl mk-manque"><input type="checkbox" data-action="mk-manque"${f.manque?" checked":""}> Seulement celles qui me manquent</label>
       </div>` : ""}
       <div class="chips mk-tabs">${mt("acheter",`${ic("bag",14)} Acheter`)}${mt("mine",`${ic("candy",14)} Mes annonces`,mine.length)}${aucOK?mt("ench",`${ic("gavel",14)} Mes enchères`,ME.length):""}</div></div>
-      ${mkTab==="acheter" ? `<p class="cour-info" style="margin-top:12px">${ic("quest",16)}<span>Le prix moyen : ce que les joueurs ont payé ce modèle en 30 jours.${aucOK?` Enchères : au plus offrant à la fin.`:""}</span></p>` : ""}</section>
+      </section>
     ${mkTab==="ench" ? (ME.length ? `<section class="panel mes-ench"><div class="panel-head"><h3>${ic("gavel",18)} Mes enchères<span class="cnt-n">${ME.length}</span></h3><span class="sample-tag">${ME.filter(a=>a.en_tete).length} en tête</span></div>
       <div class="mk-grid">${ME.map(a=>mkCard(a, true)).join("")}</div></section>` : `<p class="empty">Tu n'enchéris sur aucune bille en ce moment.</p>`) : ""}
     ${mkTab!=="acheter" ? "" : L && L.length ? `<div class="mk-sec-h"><h3>${ic("candy",18)} En vente</h3><span class="mk-leg"><span><i class="fixe"></i>Étiquette kraft : prix fixe, tu achètes tout de suite</span><span><i class="ench"></i>Étiquette rouge : aux enchères, tu fais une offre</span></span><span class="sample-tag">${L.length} bille${L.length>1?"s":""}${L.some(a=>a.enchere)?` · dont ${L.filter(a=>a.enchere).length} aux enchères`:""}</span></div>` : ""}

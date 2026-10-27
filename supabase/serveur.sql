@@ -88,6 +88,7 @@ create table if not exists public.portefeuilles (
 alter table public.portefeuilles add column if not exists depart int not null default 0;
 alter table public.portefeuilles add column if not exists gratuits_lies int not null default 0;
 alter table public.portefeuilles add column if not exists sacs_lies jsonb not null default '{}';
+alter table public.portefeuilles add column if not exists eclats int not null default 0 check (eclats >= 0);   -- (27 octobre 2026) l'atelier du verrier (supabase/atelier.sql : taux_eclat, prix_atelier, fabriquer)
 alter table public.billes add column if not exists liee boolean not null default false;   -- une bille du cadeau de bienvenue : ne s'échange pas tout de suite
 grant select (liee) on public.billes to authenticated;
 -- (4 octobre 2026, plus tard) les billes liées deviennent échangeables 15 jours après l'inscription du joueur
@@ -286,7 +287,7 @@ drop function if exists interne.nouvelle_bille(uuid, text, int, int, int, text, 
 create or replace function interne.etat(qui uuid) returns jsonb language sql stable as $$
   select jsonb_build_object('bonbecs', p.bonbecs, 'depart', least(p.depart, p.bonbecs), 'sacs', p.sacs,
     'gratuit_t0', floor(extract(epoch from p.gratuit_t0)*1000)::bigint, 'pity', p.pity, 'sacs_ouverts', p.sacs_ouverts,
-    'serie', p.serie, 'serie_jour', p.serie_jour, 'testeur', exists (select 1 from public.testeurs t where t.joueur = qui))
+    'serie', p.serie, 'serie_jour', p.serie_jour, 'eclats', p.eclats, 'testeur', exists (select 1 from public.testeurs t where t.joueur = qui))
   from public.portefeuilles p where p.joueur = qui
 $$;
 
@@ -362,7 +363,7 @@ drop function if exists public.ouvrir_sac(text, boolean);
 create or replace function public.ouvrir_sac(nom text, offert boolean default false, evenement boolean default false)
 returns jsonb language plpgsql security definer set search_path = public as $$
 declare qui uuid := interne.moi(); p portefeuilles; r record; ev record; evc record; evb boolean; stock int; t int; i int; d int; c int;
-        tirees int[] := '{}'; shinies int[] := '{}'; billes jsonb := '[]'; force boolean := false; lie boolean := false;
+        tirees int[] := '{}'; shinies int[] := '{}'; billes jsonb := '[]'; force boolean := false; lie boolean := false; ec boolean := false;
 begin
   select * into r from interne.sac(nom);
   if r.n is null then raise exception 'sac_inconnu'; end if;
@@ -407,7 +408,11 @@ begin
     end if;
     billes := billes || interne.nouvelle_bille(qui, (interne.tailles())[tirees[i]+1], shiny => shinies[i], src => nom, decor => d, coloris => c, liee => lie);
   end loop;
-  return jsonb_build_object('eco', interne.etat(qui), 'billes', billes, 'force', force);
+  -- (27 octobre 2026) l'atelier du verrier : un éclat de verre dans 1 sachet sur 25, quel que soit le sachet (supabase/atelier.sql)
+  if random() < interne.taux_eclat() then
+    update portefeuilles set eclats = eclats + 1 where joueur = qui; ec := true;
+  end if;
+  return jsonb_build_object('eco', interne.etat(qui), 'billes', billes, 'force', force, 'eclat', ec);
 end $$;
 
 -- La Confiserie : échange des billes contre des bonbecs. Seules les billes tirées par le serveur rapportent.

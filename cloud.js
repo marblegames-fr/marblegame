@@ -109,6 +109,7 @@
       fuse: ids => rpc("fusionner", {ids}),
       fuseLot: ids => rpc("fusionner_lot", {ids}),   // (21 octobre 2026) jusqu'à 10 fusions d'un coup, les billes des fusions à la suite
       fuseEv: ids => rpc("fusion_evenement", {ids}),
+      fabriquer: (taille, decor) => rpc("fabriquer", {taille, decor}),   // (27 octobre 2026) l'atelier du verrier (supabase/atelier.sql)
       pachinko: payer => rpc("pachinko", {payer:!!payer}),
       // les jeux de hasard (supabase/chance.sql) : payer = false pour la partie offerte du jour
       roue: payer => rpc("roue", {payer:!!payer}),

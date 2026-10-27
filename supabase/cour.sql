@@ -753,7 +753,7 @@ create or replace function interne.semaine_pts(d date) returns table (joueur uui
       round((interne.pts_taille())[interne.rang(b.taille)+1] * (interne.mult_decor())[(interne.decor_rarete())[b.decor+1]+1])::int v
     from public.billes_historique h join public.billes b on b.id = h.bille
     where h.motif in ('trouvee', 'echange', 'vente') and h.le >= interne.semaine_t(d) and h.le < interne.semaine_t(d + 7)
-      and b.origine = 'serveur' and b.secrete is null and coalesce(b.donnees->>'src', '') not in ('test', 'fusion')
+      and b.origine = 'serveur' and b.secrete is null and coalesce(b.donnees->>'src', '') not in ('test', 'fusion', 'atelier')   -- (27 octobre 2026) ni les billes de l'atelier du verrier
       and coalesce((interne.decor_rarete())[b.decor+1], 5) <> 5
       and h.vers not in (select t.joueur from public.testeurs t)
       and not interne.est_invite(h.vers)),   -- (26 octobre 2026) les invités ne sont pas classés (supabase/invite.sql)

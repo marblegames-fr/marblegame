@@ -889,15 +889,104 @@ button.rw:hover{transform:translateY(-2px)}
 .cahier-page::after{content:"";position:absolute;right:-3px;bottom:-3px;width:46px;height:46px;border-top:2.5px solid var(--ol);border-left:2.5px solid var(--ol);
   background:linear-gradient(135deg,var(--corner) 0%,#E8DAB4 46%,var(--ol) 46% 50%,var(--under1) 50%);filter:drop-shadow(-2px -2px 3px rgba(0,0,0,.12))}
 .cahier-page[data-paper="pedia"]::after{background:linear-gradient(135deg,var(--old) 0%,#E0CB98 46%,var(--ol) 46% 50%,var(--under1) 50%)}
-/* (27 octobre 2026) l'atelier du verrier, en travaux : une bande « En travaux », un bocal d'éclats et l'annonce */
-.vr-soon{position:relative;display:grid;justify-items:center;gap:10px;max-width:520px;margin:10px auto 0;padding:52px 22px 26px;text-align:center;
-  background:var(--card);border:2.5px solid var(--ol);border-radius:18px;box-shadow:0 4px 0 rgba(43,34,51,.18);overflow:hidden}
-.vr-tape{position:absolute;top:14px;left:-30px;right:-30px;rotate:-3deg;padding:5px 0;overflow:hidden;white-space:nowrap;
-  background:repeating-linear-gradient(-45deg,#FFC93F 0 16px,#2B2233 16px 32px);border-block:2px solid var(--ol)}
-.vr-tape span{display:inline-block;padding:2px 10px;background:#FFC93F;color:#2B2233;font-weight:900;font-size:12px;letter-spacing:.12em;text-transform:uppercase}
-.vr-jar{width:120px;height:auto}
-.vr-soon h3{font-family:var(--hand);font-size:34px;line-height:1;color:var(--ink)}
-.vr-soon p{max-width:40ch;color:var(--ink-2);font-weight:700}
+/* (27 octobre 2026) l'atelier du verrier (maquettes/maquette-atelier.html) : le bocal à gauche, les 3 étapes à droite ; une colonne sur téléphone */
+.shard{display:inline-block;width:1em;height:1.15em;vertical-align:-.2em;flex:none}
+.at-grid{display:grid;grid-template-columns:230px minmax(0,1fr);gap:20px;align-items:start;margin-top:6px}
+.at-grid > *{min-width:0}
+.at-card{background:var(--card);border:2.5px solid var(--ol);border-radius:18px;box-shadow:0 4px 0 rgba(43,34,51,.18)}
+.at-res{padding:16px;text-align:center;position:sticky;top:calc(96px + var(--rib,0px))}
+.at-jar{width:140px;height:auto;margin:0 auto}
+.at-n{font-family:var(--display);font-size:42px;line-height:1;color:#1F7F99;margin-top:4px}
+.at-n small{display:block;font-family:var(--body);font-weight:900;font-size:12px;letter-spacing:.06em;text-transform:uppercase;color:var(--muted)}
+.at-res p{font-size:13px;font-weight:700;color:var(--ink-2);margin:8px 0 0}
+.at-res .at-last{padding:7px 10px;border-radius:12px;background:#E3F7FB;color:#1F6378;font-weight:800}
+.at-steps{display:grid;grid-template-columns:minmax(0,1fr);gap:16px}
+.at-step{padding:14px 16px}
+.at-step h3,.at-prices h3{display:flex;align-items:center;gap:10px;margin:0;font-family:var(--display);font-weight:400;font-size:20px;line-height:1.1}
+.at-step h3 i{display:grid;place-items:center;width:28px;height:28px;border-radius:50%;background:var(--ol);color:#fff;font-style:normal;font-size:15px}
+.at-step h3 small{margin-left:auto;font-family:var(--body);font-weight:800;font-size:12.5px;color:var(--muted)}
+.at-sizes{display:grid;grid-template-columns:repeat(6,minmax(0,1fr));gap:8px;margin-top:12px}
+.at-sz,.at-mo{position:relative;display:grid;justify-items:center;align-content:end;gap:2px;padding:8px 4px 7px;border-radius:14px;border:2px solid var(--line-2);background:#fff;color:var(--ink);font-size:12.5px;line-height:1.15}
+.at-sz small{font-size:11px;color:var(--muted);font-weight:800;white-space:nowrap}
+.at-sz[aria-pressed="true"],.at-mo[aria-pressed="true"]{border-color:var(--c);background:color-mix(in srgb,var(--c) 12%,#fff);box-shadow:0 0 0 2px var(--c)}
+.at-rars{display:flex;flex-wrap:wrap;gap:6px;margin-top:12px}
+.at-rar{padding:6px 12px;border-radius:999px;font-size:13px;font-weight:900;color:var(--c);background:color-mix(in srgb,var(--c) 12%,#fff);border:2px solid color-mix(in srgb,var(--c) 40%,transparent)}
+.at-rar[aria-pressed="true"]{background:var(--c);color:#fff;border-color:var(--c)}
+.at-rar.lock{display:inline-flex;align-items:center;gap:4px;opacity:.55;cursor:not-allowed}
+.at-only{display:flex;align-items:center;gap:6px;margin-top:10px;font-size:13px;font-weight:800;color:var(--ink-2)}
+.at-motifs{display:grid;grid-template-columns:repeat(auto-fill,minmax(88px,1fr));gap:8px;margin-top:12px;max-height:300px;overflow:auto;padding:2px}
+.at-mo span:last-child{font-weight:800}
+.at-miss{position:absolute;top:4px;right:4px;padding:0 6px;border-radius:999px;background:var(--yellow);color:#2B2233;font-size:9.5px;font-weight:900}
+.at-have{position:absolute;top:4px;right:6px;color:var(--green)}
+.at-oven{display:grid;grid-template-columns:auto minmax(0,1fr);gap:18px;align-items:center;padding:16px 18px;border-radius:18px;color:#fff;border:2.5px solid var(--ol);
+  background:radial-gradient(circle at 18% 60%,rgba(255,160,60,.55),transparent 45%),linear-gradient(135deg,#3A2A2A,#22181C)}
+.at-oven h4{margin:0;font-family:var(--display);font-weight:400;font-size:24px;line-height:1.1}
+.at-oven p{margin:2px 0 10px;font-size:13px;opacity:.85}
+.at-prev{position:relative;width:150px;height:150px;display:grid;place-items:center}
+.at-prev::before{content:"";position:absolute;inset:8px;border-radius:50%;background:radial-gradient(circle,rgba(255,190,90,.55),transparent 65%);animation:at-glow 2s ease-in-out infinite}
+@keyframes at-glow{50%{opacity:.5;transform:scale(.92)}}
+.at-prev img{position:relative;filter:drop-shadow(0 8px 8px rgba(0,0,0,.5))}
+.at-prev em{position:absolute;bottom:2px;left:50%;translate:-50% 0;padding:2px 10px;border-radius:999px;background:rgba(0,0,0,.45);font-style:normal;font-size:11px;font-weight:900;white-space:nowrap}
+.at-cost{display:flex;align-items:center;gap:10px;flex-wrap:wrap;font-weight:800}
+.at-cost b{font-family:var(--display);font-weight:400;font-size:30px;line-height:1;color:#9FEAF6}
+.at-prog{margin:10px 0 12px;height:12px;border-radius:99px;background:rgba(255,255,255,.15);overflow:hidden}
+.at-prog i{display:block;height:100%;border-radius:99px;background:linear-gradient(90deg,#5FD3E8,#B7F4FF)}
+.at-wait{margin:8px 0 0!important;font-size:13.5px!important;font-weight:800;color:#FFD9A0;opacity:1!important}
+.at-prices{padding:14px 16px;color:#24253D}
+.at-tb{overflow-x:auto}
+.at-prices table{width:100%;min-width:430px;border-collapse:collapse;margin-top:10px;font-size:13px;text-align:center}
+.at-prices th,.at-prices td{padding:6px 4px;border-bottom:1px dashed var(--line-2)}
+.at-prices th{font-size:11.5px;letter-spacing:.04em;text-transform:uppercase}
+.at-prices td b{display:block;font-family:var(--display);font-weight:400;font-size:17px;line-height:1}
+.at-prices td small{display:block;color:#66606F;font-weight:800;font-size:10.5px;line-height:1.15}
+.at-prices th{color:#45435A}
+.at-prices td.hl{background:#DDF5FA;border-radius:8px}
+@media (max-width:760px){
+  .at-grid{grid-template-columns:minmax(0,1fr)}
+  .at-res{position:static;display:grid;grid-template-columns:96px minmax(0,1fr);gap:2px 12px;align-items:center;text-align:left}
+  .at-jar{width:96px}
+  .at-sizes{grid-template-columns:repeat(3,minmax(0,1fr))}
+  .at-oven{grid-template-columns:minmax(0,1fr);justify-items:center;text-align:center}
+}
+/* la fabrication : le four, les éclats qui s'y fondent, la bille */
+.modal.atl-made{display:grid;grid-template-columns:minmax(0,1fr);justify-items:center;gap:8px;width:min(440px,100%);padding:22px;text-align:center;color:#fff;background:linear-gradient(160deg,#3A2A2A,#1D1418);border:0}
+.am-melt{position:relative;width:200px;height:200px;display:grid;place-items:center}
+.am-fire{position:absolute;inset:0;border-radius:50%;background:radial-gradient(circle,#FFE6A0 0,#FF9A3C 35%,rgba(232,60,40,.5) 60%,transparent 72%);animation:am-fire 1.6s ease-in-out both}
+@keyframes am-fire{0%{transform:scale(.2);opacity:0}40%{transform:scale(1.15);opacity:1}100%{transform:scale(.9);opacity:.35}}
+.am-ball{position:relative;animation:am-born 1s 1.2s cubic-bezier(.2,1.5,.4,1) both}
+.am-ball img{filter:drop-shadow(0 10px 10px rgba(0,0,0,.5))}
+@keyframes am-born{from{transform:scale(0);opacity:0}}
+.am-sh{position:absolute;font-size:26px;translate:-50% -50%;animation:am-fly 1.2s ease-in both}
+@keyframes am-fly{to{left:50%;top:50%;transform:scale(.2);opacity:0}}
+.am-after{opacity:0;animation:am-fade .5s 2s both}
+.am-after h2{margin:0;font-family:var(--display);font-weight:400;font-size:26px}
+.am-after p{margin:6px 0 14px;opacity:.85}
+@keyframes am-fade{to{opacity:1}}
+/* l'éclat dans le sachet : le reflet avant l'ouverture */
+.bag-stage .bs-glint{position:absolute;inset:8% 14% 6%;overflow:hidden;pointer-events:none;border-radius:26px}
+.bag-stage .bs-glint::after{content:"";position:absolute;top:-20%;bottom:-20%;width:40%;left:-60%;rotate:18deg;background:linear-gradient(90deg,transparent,rgba(183,244,255,.85) 50%,transparent);animation:bs-glint 1.4s .2s ease-in-out 2 both}
+@keyframes bs-glint{to{left:120%}}
+.bag-stage .bs-sp{position:absolute;width:14px;height:14px;opacity:0;pointer-events:none;background:radial-gradient(circle,#fff 0 18%,rgba(183,244,255,.9) 30%,transparent 65%);animation:bs-tw 1.4s ease-in-out 2}
+.bag-stage .bs-sp:nth-of-type(1){left:28%;top:30%}.bag-stage .bs-sp:nth-of-type(2){left:66%;top:24%;animation-delay:.4s}.bag-stage .bs-sp:nth-of-type(3){left:48%;top:64%;animation-delay:.8s}
+@keyframes bs-tw{40%{opacity:1;transform:scale(1.6) rotate(45deg)}}
+/* l'éclat dans le sachet : la sortie, puis il file dans la réserve */
+.ov-eclat{flex-basis:100%;display:flex;align-items:center;justify-content:center;gap:10px;flex-wrap:wrap;font-weight:900;color:#DFF9FF}
+.ov-eclat .eo-big{font-size:58px;line-height:0;filter:drop-shadow(0 0 16px rgba(95,211,232,.95));animation:eo-out .9s cubic-bezier(.2,1.6,.4,1) both}
+.ov-eclat .eo-big .shard{animation:eo-spin 2.4s linear infinite}
+@keyframes eo-out{from{transform:scale(0) rotate(-200deg);opacity:0}}
+@keyframes eo-spin{50%{transform:rotateY(180deg)}}
+.eo-n{display:inline-flex;align-items:center;gap:4px;padding:4px 12px;border-radius:999px;background:rgba(95,211,232,.18);border:1.5px solid rgba(183,244,255,.6);font-size:15px}
+.eo-n i{font-style:normal}
+.eo-n.bump{animation:eo-bump .5s cubic-bezier(.2,1.8,.4,1)}
+@keyframes eo-bump{40%{transform:scale(1.3);background:#5FD3E8;color:#fff}}
+.ov-eclat.quiet{animation:eo-out .5s cubic-bezier(.2,1.6,.4,1) both}
+.eo-fly{position:fixed;left:0;top:0;z-index:9999;font-size:32px;line-height:0;pointer-events:none;filter:drop-shadow(0 0 10px rgba(95,211,232,.95))}
+.sum-eclat{display:flex;align-items:center;gap:10px;margin:14px 0 0;padding:10px 12px;border-radius:14px;background:color-mix(in srgb,#5FD3E8 16%,var(--panel));font-size:14px}
+.sum-eclat .shard{font-size:26px}
+.modal.eclat-first{display:grid;grid-template-columns:minmax(0,1fr);justify-items:center;gap:6px;width:min(420px,100%);padding:24px 22px 20px;text-align:center}
+.eclat-first .ef-shard{font-size:64px;line-height:0;filter:drop-shadow(0 0 14px rgba(95,211,232,.9));animation:eo-out .8s cubic-bezier(.2,1.6,.4,1) both}
+.eclat-first h2{margin:6px 0 0}
+.eclat-first p{color:var(--ink-2);margin:4px 0 12px}
 /* la page qui se tourne quand on change d'intercalaire */
 .cahier-page.turn{animation:pageturn .38s cubic-bezier(.2,1.25,.4,1) both;transform-origin:0 50%}
 @keyframes pageturn{from{opacity:0;transform:perspective(1200px) rotateY(14deg) translateX(-14px)}to{opacity:1;transform:none}}
@@ -4915,8 +5004,18 @@ function compose(style,d,t,z,dr,sh){
         riser(d, t, .12, 2.1); osc(d, t, "sine", 55, .12, 1.9, .25, 110); timpRoll(d, t+.6, 1.5, 60, .05, .3) },
     };
   })();
+  // (27 octobre 2026) le verre de l'atelier : des partiels qui ne sont pas des harmoniques, comme une clochette (maquettes/maquette-eclat.html)
+  function glass(f, delay=0, dur=.9, vol=.12){ if(!init()) return; const t=now()+delay;
+    [[1,1],[2.76,.5],[5.4,.28],[8.93,.14]].forEach(([m,v])=>{ const o=ctx.createOscillator(), g=ctx.createGain(); o.type="sine"; o.frequency.value=f*m;
+      g.gain.setValueAtTime(0,t); g.gain.linearRampToValueAtTime(vol*v,t+.004); g.gain.exponentialRampToValueAtTime(.0001,t+dur/m**.4);
+      o.connect(g); g.connect(master); o.start(t); o.stop(t+dur+.05) }) }
   const api = {
     get on(){ return on },
+    eclatTink(delay=0){ glass(2900, delay, .35, .05); glass(3600, delay+.12, .3, .035) },   // un reflet passe sur le sachet
+    eclatTing(){ glass(1760, 0, 1.6, .16); glass(2637, .07, 1.3, .08) },                     // l'éclat sort du sachet
+    eclatPlop(){ glass(1318.5, 0, .5, .09); glass(1975.5, .08, .6, .07) },                  // rangé dans la boîte
+    eclatMini(){ glass(2349, 0, .4, .07) },                                                  // « +1 » dans une suite de sachets
+    melt(){ if(!init()) return; const t=now(); for(let i=0;i<10;i++) glass(1400+i*180, i*.09, .5, .05); glass(880, 1.2, 2, .14); glass(1320, 1.28, 1.8, .09) },   // la fabrication
     toggle(){ on=!on; try{localStorage.setItem("billeo-sound",on?"on":"off")}catch(e){}
       if(on){ init(); api.pop() } else { api.rollStop(); if(ctx) ctx.suspend() } return on },
     shake(k=1){ if(!init()) return; const t=now();
@@ -7441,7 +7540,7 @@ function editionOf(s){
 }
 // d'où vient une bille (affiché dans sa fiche)
 const SRC_LABEL = {depart:"Choisie au premier lancement", gratuit:"Dans un Sachet gratuit", classique:"Dans un Sachet Classique", premium:"Dans un Sachet Premium", collector:"Dans un Sachet Collector",
-  fusion:"En fusion, à la Confiserie", chateau:"En gagnant au Château", passe:"Au passe de saison", secrete:"En découvrant un secret", test:"Outil de test",
+  fusion:"En fusion, à la Confiserie", atelier:"Fabriquée à l'atelier du verrier", chateau:"En gagnant au Château", passe:"Au passe de saison", secrete:"En découvrant un secret", test:"Outil de test",
   pirate:"Pendant l'événement Pirate", roue:"Gagnée à la Roue du jour", pachinko:"Gagnée au Plinko", grattage:"Gagnée au Ticket à gratter",
   distributeur:"Sortie du Distributeur", loterie:"Gagnée à la Loterie", beta:"Cadeau des bêta-testeurs",
   gobelets:"Gagnée aux Gobelets", tierce:"Gagnée au Tiercé", toupie:"Gagnée à la Toupie", pince:"Attrapée à la Pince"};
@@ -8206,9 +8305,9 @@ const ONB = [
     prog:()=>[JEUX_TOUS.some(jeuFait) || S.onb.jeu ? 1 : 0, 1],
     nouv:"Joue avec tes billes et gagne des bonbecs. Avec les bonbecs, tu ouvres d'autres sachets !", titre:"Les mini-jeux"},
   {menus:["confiserie"], but:"Va voir la Confiserie", ic:"candy", go:"confiserie",
-    detail:"Dans ta boîte à billes, l'onglet Confiserie : tes doubles s'y échangent contre des bonbecs, ou se fusionnent pour obtenir une bille plus grosse.",
+    detail:"Dans ta boîte à billes, l'onglet Confiserie : tes doubles s'y échangent contre des bonbecs, ou se fusionnent pour obtenir une bille plus grosse. Juste à côté, l'Atelier : les éclats de verre trouvés dans tes sachets y fabriquent la bille de ton choix.",
     prog:()=>[S.onb.conf ? 1 : 0, 1],
-    nouv:"Un nouvel onglet dans ta boîte à billes : échange tes doubles contre des bonbecs, ou fusionne-les pour une bille plus grosse.", titre:"La Confiserie"},
+    nouv:"Deux nouveaux onglets dans ta boîte à billes : la Confiserie (échange tes doubles contre des bonbecs, ou fusionne-les pour une bille plus grosse) et l'Atelier (fonds tes éclats de verre pour fabriquer la bille de ton choix).", titre:"La Confiserie et l'Atelier"},
   {menus:["cour"], but:"Découvre la cour", ic:"cour", go:"cour",
     detail:"Retrouve tes copains, troque tes billes avec eux, vends-en au marché et grimpe au classement.",
     prog:()=>[S.onb.cour ? 1 : 0, 1],
@@ -8663,23 +8762,114 @@ function cahierTabs(cur, counts={}){
     ${CAHIER.map(([k,c,icon,lbl])=>{ const n = counts[k];
       return `<button class="ctab" role="tab" style="--c:${c}" data-action="tab" data-tab="${k}" aria-selected="${cur===k}">${ic(icon,16,2.4)}<b>${lbl}</b>${n!=null?`<small>${n}</small>`:""}</button>` }).join("")}
     ${onbOk("confiserie") ? `<button class="ctab" role="tab" style="--c:#E85D9A" data-action="nav" data-view="confiserie" aria-selected="${cur==="confiserie"}">${ic("candy",16,2.4)}<b>Confiserie</b>${dups?`<small>${dups} double${dups>1?"s":""}</small>`:""}</button>` : ""}
-    ${onbOk("confiserie") ? `<button class="ctab" role="tab" style="--c:${VERRIER_C}" data-action="tab" data-tab="verrier" aria-selected="${cur==="verrier"}">${ic("flask",16,2.4)}<b>Atelier</b><small>bientôt</small></button>` : ""}
+    ${onbOk("confiserie") ? `<button class="ctab" role="tab" style="--c:${VERRIER_C}" data-action="tab" data-tab="verrier" aria-selected="${cur==="verrier"}">${ic("flask",16,2.4)}<b>Atelier</b><small>${fmt(S.eclats||0)} éclat${(S.eclats||0)>1?"s":""}</small></button>` : ""}
   </div>`;
 }
-// (27 octobre 2026) l'atelier du verrier (maquettes/maquette-atelier.html) : un intercalaire « en travaux » en attendant
-// les réglages (éclats de verre dans les sachets, fabrication d'une bille au choix). Quand il ouvrira : le démarrage par étapes
-// (message « nouv » comme la Confiserie), les quêtes, les succès, les statistiques et le patchnote.
+// (27 octobre 2026) L'ATELIER DU VERRIER (maquettes/maquette-atelier.html, maquette-eclat.html ; serveur : supabase/atelier.sql).
+// Un éclat de verre tombe dans 1 sachet sur 25 (n'importe lequel) ; à l'atelier, on les fond pour fabriquer une bille au choix :
+// une taille et un motif (commun à légendaire, jamais le mythique ni les motifs d'événement ou de saison), le coloris au hasard.
+// La bille fabriquée compte au classement général, pas au classement de la semaine (comme la fusion).
 const VERRIER_C = "#5FD3E8";
-const verrierSoon = () => `<div class="vr-soon">
-    <div class="vr-tape" aria-hidden="true"><span>En travaux · En travaux · En travaux · En travaux · En travaux · En travaux · En travaux ·</span></div>
-    <svg class="vr-jar" viewBox="0 0 150 180" aria-hidden="true"><rect x="40" y="6" width="70" height="16" rx="5" fill="#C99760" stroke="#2B2233" stroke-width="3"/>
-      <path d="M44 22h62v10c18 6 26 20 26 40v80c0 12-8 20-20 20H38c-12 0-20-8-20-20V72c0-20 8-34 26-40z" fill="rgba(200,240,255,.35)" stroke="#2B2233" stroke-width="3"/>
-      ${["#5FD3E8","#B7F4FF","#FF9FD0","#FFD34D","#9FEAF6","#7FB8FF","#5FD3E8","#FFD34D","#B7F4FF"].map((c,i)=>`<path d="M0 -8l7 5-2 9-8-2-3-7z" transform="translate(${44+(i%5)*15+(i>4?8:0)} ${166-(i>4?13:0)-(i*7)%5}) rotate(${i*53})" fill="${c}" stroke="#1D5A78" stroke-width="1"/>`).join("")}
-      <path d="M30 70c0-14 6-24 16-28" stroke="#fff" stroke-width="5" stroke-linecap="round" opacity=".7" fill="none"/></svg>
-    <h3>Bientôt dans ta boîte !</h3>
-    <p>Des éclats de verre tomberont parfois de tes sachets. Ici, tu pourras les fondre pour fabriquer <b>la bille de ton choix</b> : la taille et le motif que tu veux.</p>
-    <p class="meta">L'atelier est encore en travaux : on peaufine les derniers réglages. Rendez-vous très bientôt !</p>
+const ECLAT_TAUX = .04, ATELIER_BASE = [2,3,4,5,7,10], ATELIER_MULT = [1,1.5,2.5,4,9];   // mêmes valeurs dans supabase/atelier.sql (taux_eclat, prix_atelier)
+const ATELIER_JOUR = 60*ECLAT_TAUX;   // un joueur régulier ouvre environ 60 sachets par jour (les 14 jours avant le 27 octobre 2026)
+const atelierPrix = (t, r) => Math.round(ATELIER_BASE[TIDX[t]]*ATELIER_MULT[r]);
+const atelierJours = n => { const d = n/ATELIER_JOUR; return d < 1.5 ? "environ 1 jour" : d < 12 ? `environ ${Math.round(d)} jours` : `environ ${String(Math.round(d/7*2)/2).replace(".",",")} semaines` };
+const atelierFams = r => DECOR_IDS.filter(i=>!extraFam(i) && !FAMILIES[i].myth && FAMILIES[i].rar===r);
+const SHARD_SVG = `<svg class="shard" viewBox="0 0 20 24" aria-hidden="true"><path d="M9 1l9 7-3 14-11-3L1 9z" fill="url(#shard-g)" stroke="#1D5A78" stroke-width="1.2" stroke-linejoin="round"/><path d="M9 1l-2 9 8 0M7 10l-3 9" stroke="#fff" stroke-opacity=".75" stroke-width="1" fill="none"/></svg>`;
+// le dégradé des éclats, une seule fois pour toute la page
+document.body.insertAdjacentHTML("beforeend", `<svg width="0" height="0" style="position:absolute" aria-hidden="true"><defs><linearGradient id="shard-g" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#E6FCFF"/><stop offset=".5" stop-color="#5FD3E8"/><stop offset="1" stop-color="#2A7FB8"/></linearGradient></defs></svg>`);
+// le bocal : un éclat dessiné par éclat (jusqu'à 30)
+const atelierJar = n => { const C = ["#5FD3E8","#B7F4FF","#FF9FD0","#FFD34D","#9FEAF6","#7FB8FF"];
+  const sh = Array.from({length:Math.min(30, n)}, (_,i)=>`<path d="M0 -8l7 5-2 9-8-2-3-7z" transform="translate(${34+(i%6)*16+(Math.floor(i/6)%2)*8} ${168-Math.floor(i/6)*13-(i*7)%5}) rotate(${(i*53)%360})" fill="${C[i%6]}" stroke="#1D5A78" stroke-width="1"/>`).join("");
+  return `<svg class="at-jar" viewBox="0 0 150 180" aria-hidden="true"><rect x="40" y="6" width="70" height="16" rx="5" fill="#C99760" stroke="#2B2233" stroke-width="3"/>
+    <path d="M44 22h62v10c18 6 26 20 26 40v80c0 12-8 20-20 20H38c-12 0-20-8-20-20V72c0-20 8-34 26-40z" fill="rgba(200,240,255,.35)" stroke="#2B2233" stroke-width="3"/>${sh}
+    <path d="M30 70c0-14 6-24 16-28" stroke="#fff" stroke-width="5" stroke-linecap="round" opacity=".7" fill="none"/></svg>` };
+const atelierPrevSpec = A => ({seed:hash("atelier|"+A.t+"|"+A.f), type:A.t, family:A.f, pal:BASE_PAL_IDS[(ui.atlPal||0) % BASE_PAL_IDS.length], shiny:0});
+function viewAtelier(){
+  const A = ui.atl || (ui.atl = {t:"boulet", r:2, f:null, only:false}), n = S.eclats||0, slots = slotsOwned();
+  const miss = (t, i) => !slots.has(t+"|"+i);
+  const all = atelierFams(A.r), L = A.only ? all.filter(i=>miss(A.t, i)) : all;
+  if(A.f==null || FAMILIES[A.f]?.rar!==A.r || !L.includes(A.f)) A.f = L.find(i=>miss(A.t, i)) ?? L[0] ?? all[0];
+  const prix = atelierPrix(A.t, A.r), ok = n >= prix, F = FAMILIES[A.f];
+  const thumb = i => ({seed:hash("atl-m"+i), type:"calot", family:i, pal:PEDIA_PAL, shiny:0});
+  const st = S.stats||{};
+  return `<div class="at-grid">
+    <aside class="at-card at-res">${atelierJar(n)}
+      <div><div class="at-n">${fmt(n)} ${SHARD_SVG}<small>éclat${n>1?"s":""} de verre</small></div>
+      <p>Il en tombe un dans 1 sachet sur 25, n'importe lequel. C'est rare : garde-les précieusement !</p>
+      ${st.eclats ? `<p class="at-last">${st.eclats} éclat${st.eclats>1?"s":""} trouvé${st.eclats>1?"s":""}${st.atelier?` · ${st.atelier} bille${st.atelier>1?"s":""} fabriquée${st.atelier>1?"s":""}`:""}</p>` : ""}</div></aside>
+    <div class="at-steps">
+      <section class="at-card at-step"><h3><i>1</i> La taille</h3>
+        <div class="at-sizes">${TK.map(t=>`<button class="at-sz" data-action="atl-t" data-t="${t}" style="--c:${TYPES[t].rc}" aria-pressed="${t===A.t}">${mImg({seed:hash("atl-s"+t), type:t, family:A.f, pal:PEDIA_PAL, shiny:0},96,Math.round(24+18*scaleOf(t)),"")}<b>${TYPES[t].label.replace("Bille chinoise","Chinoise").replace("Mini bille","Mini")}</b><small>${SHARD_SVG} dès ${atelierPrix(t,0)}</small></button>`).join("")}</div></section>
+      <section class="at-card at-step"><h3><i>2</i> Le motif <small>${L.length} motif${L.length>1?"s":""}</small></h3>
+        <div class="at-rars">${DECOR_RAR.slice(0,5).map((R,k)=>`<button class="at-rar" data-action="atl-r" data-r="${k}" style="--c:${R.c}" aria-pressed="${k===A.r}">${R.name} · ${atelierPrix(A.t,k)}</button>`).join("")}<span class="at-rar lock" style="--c:${DECOR_RAR[5].c}" title="Le mythique ne se fabrique jamais : il reste le trésor des sachets">${ic("lock",13,2.6)} Mythique</span></div>
+        <label class="at-only"><input type="checkbox" data-action="atl-only"${A.only?" checked":""}> Seulement les motifs qui me manquent dans cette taille</label>
+        <div class="at-motifs">${L.map(i=>`<button class="at-mo" data-action="atl-f" data-f="${i}" style="--c:${DECOR_RAR[A.r].c}" aria-pressed="${i===A.f}">${miss(A.t,i)?`<span class="at-miss">Te manque</span>`:`<span class="at-have" title="Tu l'as déjà dans cette taille">${ic("check",11,3)}</span>`}${mImg(thumb(i),96,48,"")}<span>${esc(FAMILIES[i].name)}</span></button>`).join("") || `<p class="meta">Tu as déjà tous ces motifs dans cette taille !</p>`}</div></section>
+      <section class="at-oven"><span class="at-prev" id="atl-prev" data-t="${A.t}" data-f="${A.f}">${mImg(atelierPrevSpec(A),240,Math.round(70+50*scaleOf(A.t)),"")}<em>coloris au hasard</em></span>
+        <div><h4>${esc(F.name)} · ${TYPES[A.t].label}</h4><p>Motif ${DECOR_RAR[A.r].name.toLowerCase()}${miss(A.t, A.f)?" · il te manque dans cette taille":""}. Le coloris sera tiré au hasard parmi tous les coloris.</p>
+          <div class="at-cost"><b>${prix} ${SHARD_SVG}</b><span>tu en as ${fmt(n)}</span></div>
+          <div class="at-prog"><i style="width:${Math.min(100, Math.round(100*n/prix))}%"></i></div>
+          ${ok ? `<button class="btn btn-yellow" data-action="atl-make">${ic("flask",17,2.4)} Fabriquer pour ${prix} éclats</button>` : `<button class="btn btn-yellow" disabled>${ic("flask",17,2.4)} Fabriquer</button><p class="at-wait">Encore ${prix-n} éclat${prix-n>1?"s":""} : ${atelierJours(prix-n)} pour un joueur régulier.</p>`}</div></section>
+      <section class="at-card at-prices"><h3>Combien d'éclats ?</h3>
+        <div class="at-tb"><table><tr><th></th>${DECOR_RAR.slice(0,5).map(R=>`<th style="color:${R.c}">${R.name}</th>`).join("")}</tr>
+          ${TK.map(t=>`<tr><th style="color:${TYPES[t].rc};text-align:left">${TYPES[t].label}</th>${[0,1,2,3,4].map(r=>`<td class="${t===A.t&&r===A.r?"hl":""}"><b>${atelierPrix(t,r)}</b><small>${atelierJours(atelierPrix(t,r)).replace("environ ","≈ ")}</small></td>`).join("")}</tr>`).join("")}</table></div>
+        <p class="meta">Les durées : pour un joueur régulier, qui ouvre une soixantaine de sachets par jour. La bille fabriquée compte au classement général, pas au classement de la semaine.</p></section>
+    </div>
   </div>`;
+}
+// le coloris de l'aperçu change tout seul : on ne sait pas lequel sortira
+setInterval(()=>{ const el = document.getElementById("atl-prev"); if(!el || document.hidden) return;
+  ui.atlPal = (ui.atlPal||0) + 1; const im = el.querySelector("img"); if(im) im.src = marbleURL(atelierPrevSpec({t:el.dataset.t, f:+el.dataset.f}), 240) }, 900);
+async function atelierMake(){
+  const A = ui.atl; if(!A || eco.busy || !srvNeed()) return;
+  const prix = atelierPrix(A.t, A.r), F = FAMILIES[A.f];
+  if((S.eclats||0) < prix) return;
+  if(!await ask({title:"Fabriquer cette bille ?", text:`${TYPES[A.t].label} ${esc(F.name)} (motif ${DECOR_RAR[A.r].name.toLowerCase()}), coloris au hasard, pour <b>${prix} éclats de verre</b>. Il t'en restera ${fmt((S.eclats||0)-prix)}.`, ok:"Fabriquer"})) return;
+  eco.busy = true; let r;
+  try{ r = await srv(()=>Cloud.eco.fabriquer(A.t, A.f)) }catch(e){ srvFail(e); return }
+  finally{ eco.busy = false }
+  const [s] = srvAdopt([r.bille]), isNew = !slotsOwned().has(slotKey(s));
+  S.specs.push(s); S.unseen.push(s.id); S.stats.atelier = (S.stats.atelier||0)+1;
+  applyEco(r.eco); save(); renderView();
+  atelierShow(s, isNew);
+}
+// la fabrication : le four chauffe, les éclats s'y fondent, la bille apparaît
+function atelierShow(s, isNew){
+  const el = document.getElementById("modal"), r = decorRar(s);
+  const shards = Array.from({length:8},(_,i)=>{ const a = i/8*TAU; return `<span class="am-sh" style="left:${50+46*Math.cos(a)}%;top:${50+46*Math.sin(a)}%;animation-delay:${i*.06}s">${SHARD_SVG}</span>` }).join("");
+  el.innerHTML = `<div class="modal atl-made" role="dialog" aria-modal="true" aria-label="Ta nouvelle bille">
+    <div class="am-melt"><span class="am-fire"></span>${shards}<span class="am-ball">${mImg(s,300,Math.round(80+60*scaleOf(s.type)),"")}</span></div>
+    <div class="am-after"><h2${motifCol(s)}>${esc(specName(s))}</h2><p>${TYPES[s.type].label} · motif ${r>=0?DECOR_RAR[r].name.toLowerCase():""}${isNew?" · une nouvelle case dans ton album !":"."} Elle t'attend dans ta Boîte à billes.</p>
+      <button class="btn btn-yellow" data-action="close-modal">Génial !</button></div></div>`;
+  el.hidden = false; Sound.melt();
+}
+// la sortie d'un éclat, à la fin de l'ouverture du sachet : il tournoie, puis file dans la réserve (le compteur monte)
+function eclatOut(){
+  const st = ovState; if(!st || st.eclatDone || st.demo) return; st.eclatDone = true;
+  if(!S.eclat1){ S.eclat1 = 1; st.eclatFirst = true; save() }
+  const n = S.eclats||0, acts = document.getElementById("ov-actions"); if(!acts) return;
+  acts.insertAdjacentHTML("afterbegin", `<span class="ov-eclat${st.eclatQuiet?" quiet":""}">${st.eclatQuiet?"":`<span class="eo-big" id="eo-big">${SHARD_SVG}</span>`}<span>+1 éclat de verre</span><b class="eo-n" id="eo-n">${SHARD_SVG} <i>${fmt(st.eclatQuiet ? n : Math.max(0, n-1))}</i></b></span>`);
+  if(st.eclatQuiet){ Sound.eclatMini(); return }
+  ui.eclatAnimAt = Date.now(); Sound.eclatTing();
+  setTimeout(()=>{ if(ovState!==st) return; const a = document.getElementById("eo-big"), b = document.getElementById("eo-n"); if(!a || !b) return;
+    const r0 = a.getBoundingClientRect(), r1 = b.getBoundingClientRect(), x0 = r0.left+r0.width/2, y0 = r0.top+r0.height/2, x1 = r1.left+18, y1 = r1.top+r1.height/2;
+    const cx = (x0+x1)/2, cy = Math.min(y0,y1) - 120, fly = document.createElement("span"); fly.className = "eo-fly"; fly.innerHTML = SHARD_SVG; document.body.append(fly);
+    a.style.visibility = "hidden"; Sound.whoosh();
+    const T = 700, t0 = performance.now();
+    const step = now => { const u = Math.min(1,(now-t0)/T), e = u<.5 ? 2*u*u : 1-(-2*u+2)**2/2;
+      const x = (1-e)**2*x0 + 2*(1-e)*e*cx + e*e*x1, y = (1-e)**2*y0 + 2*(1-e)*e*cy + e*e*y1;
+      fly.style.transform = `translate(${x-14}px,${y-16}px) scale(${1-.4*e}) rotate(${u*540}deg)`;
+      if(u<1) requestAnimationFrame(step); else { fly.remove(); Sound.eclatPlop(); b.querySelector("i").textContent = fmt(S.eclats||0); b.classList.add("bump") } };
+    requestAnimationFrame(step) }, 1300);
+}
+function eclatFirstPop(){
+  const el = document.getElementById("modal");
+  el.innerHTML = `<div class="modal eclat-first" role="dialog" aria-modal="true" aria-labelledby="ef-t"><span class="ef-shard">${SHARD_SVG}</span>
+    <h2 id="ef-t">Ton premier éclat de verre !</h2>
+    <p>Il en tombe parfois un en ouvrant un sachet. Garde-le précieusement : à l'<b>atelier du verrier</b>, dans ta Boîte à billes, tu fondras tes éclats pour fabriquer la bille de ton choix.</p>
+    <div class="btns"><button class="btn btn-yellow" data-action="close-modal">Super !</button>${onbOk("confiserie") ? `<button class="btn btn-ghost" data-action="tab" data-tab="verrier">Voir l'atelier</button>` : ""}</div></div>`;
+  el.hidden = false; Sound.eclatTing();
+}
 const CAHIER = [["album","#8A63D2","book","Album"],["billes","#5BAA4A","layers","Mes billes"],["pedia","#4C93C9","search","Billepedia"]];
 let cahierLast = null;   // l'intercalaire affiché la dernière fois (pour tourner la page quand on en change)
 const DOODLES = `<div class="cp-doodles" aria-hidden="true">
@@ -8890,9 +9080,9 @@ function viewCollection(){
     ${cahierTabs(ui.tab, {album:`${slots.size} / ${TOTAL_SLOTS}`, billes:S.specs.length})}
     <div class="cahier-page${turn?" turn":""}" data-paper="${ui.tab}">${DOODLES}
     ${(()=>{ const T = {album:["Mon album", `${slots.size} / ${TOTAL_SLOTS} motifs trouvés`], billes:["Mes billes", `${S.specs.length} bille${S.specs.length>1?"s":""} · ${fmt(found.size)} / ${fmt(ALBUM_TOTAL)} modèles`],
-        beta:["Billes Bêta", `${betaOwned().length} / ${TK.length}`], events:["Événements", ""], pedia:["Billepedia", "toutes les billes du jeu"], verrier:["L'atelier du verrier", "arrive bientôt"]}[ui.tab] || ["", ""];
+        beta:["Billes Bêta", `${betaOwned().length} / ${TK.length}`], events:["Événements", ""], pedia:["Billepedia", "toutes les billes du jeu"], verrier:["L'atelier du verrier", "fonds tes éclats de verre et fabrique la bille de ton choix"]}[ui.tab] || ["", ""];
       return T[0] ? `<div class="cp-title"><h2>${T[0]}</h2>${T[1]?`<span>${T[1]}</span>`:""}</div>` : "" })()}
-  ${ui.tab==="verrier" ? verrierSoon() : ui.tab==="pedia" ? viewPedia().replace(/^<div class="page-head">[\s\S]*?(?=<section class="pedia-sec">)/, "") : `
+  ${ui.tab==="verrier" ? viewAtelier() : ui.tab==="pedia" ? viewPedia().replace(/^<div class="page-head">[\s\S]*?(?=<section class="pedia-sec">)/, "") : `
   ${filters}
   ${body}`}
     </div>
@@ -9730,6 +9920,7 @@ function statsPanel(){
       cell("Shiny tirées", n(shinyF), shinyF ? `1 toutes les ${fmt(Math.round(pulled/shinyF))} billes` : ""),
       cell("Boulets tirés", n(ST.bouletFound ?? S.specs.filter(x=>x.type==="boulet").length)), cell("Mammouths tirés", n(ST.mammFound ?? S.specs.filter(x=>x.type==="mammouth").length))])}
     ${group("Confiserie", "flask", [cell("Fusions réussies", n(S.crafts)), cell("Billes échangées", n(mx(ST.recycled, C.recyclees)), "contre des bonbecs")])}
+    ${group("Atelier du verrier", "flask", [cell("Éclats trouvés", n(ST.eclats||0), "dans les sachets"), cell("Billes fabriquées", n(ST.atelier||0)), cell("Éclats en réserve", n(S.eclats||0))])}
     ${group("Mini-jeux", "pad", [jeu("Les Gobelets", mx(ST.gobelets, G.gobelets), "partie", "parties"), jeu("Le Tiercé", mx(ST.tierce, G.tierce), "course", "courses"),
       jeu("La Toupie", mx(ST.toupie, G.toupie), "lancer", "lancers"), jeu("La Pince", mx(ST.pince, G.pince), "boule attrapée", "boules attrapées"),
       jeu("La Marelle", mx(ST.marelle, G.marelle), "bille lancée", "billes lancées"),
@@ -10065,7 +10256,7 @@ async function openBag(bagId, gift, auto){
     try{
       const r = await srv(()=>Cloud.eco.openBag(bagId, !!gift, evOptOn(bagId)));
       pulls = srvAdopt(r.billes);   // dans l'ordre des positions
-      pulls.forced = r.force; applyEco(r.eco);
+      pulls.forced = r.force; pulls.eclat = !!r.eclat; applyEco(r.eco);   // (27 octobre 2026) un éclat de verre, 1 sachet sur 25
     }catch(e){ srvFail(e); return }
     finally{ eco.busy = false }
   } else {
@@ -10085,6 +10276,7 @@ async function openBag(bagId, gift, auto){
   ST.pulled += pulls.length; ST.shinyFound += pulls.filter(x=>x.shiny).length;
   ST.bouletFound += pulls.filter(x=>x.type==="boulet").length; ST.mammFound += pulls.filter(x=>x.type==="mammouth").length;
   pulls.forEach(s=>{ if(tierOf(s)>=BIG || s.shiny) logFind(s) });
+  if(pulls.eclat) ST.eclats = (ST.eclats||0)+1;
   const before = slotsOwned(), evBefore = new Set(S.specs.filter(x=>eventOf(x)).map(colorKey));
   const results = pulls.map(s=>{
     const k = slotKey(s);
@@ -10106,15 +10298,16 @@ async function openBag(bagId, gift, auto){
   const sid = hr===0 && mn<15 ? "grenier" : hr===16 && mn>=30 && mn<40 ? "gouter" : null;
   if(sid){ const sp = grantSecret(sid); if(sp) results.push({s:sp, isNew:true, newColor:false}) }
   // si la page se ferme avant la fin de l'ouverture, on montrera le résumé du sachet à la prochaine visite
-  S.pendingBag = {bag:bag.id, r:results.map(({s,isNew,newColor,newShiny,evNew})=>({id:s.id, isNew, newColor, newShiny, evNew}))};
+  S.pendingBag = {bag:bag.id, r:results.map(({s,isNew,newColor,newShiny,evNew})=>({id:s.id, isNew, newColor, newShiny, evNew})), e:pulls.eclat?1:0};
   save(); renderTop(); renderNav();
   // les quêtes avancent bille par bille : chacune est annoncée quand on découvre la bille qui la termine
   heldNotes = [];
   questEvent("open_bag", 1, 0);
   results.forEach((r,i)=>{ if(TIDX[r.s.type]>=TIDX.boulet) questEvent("find_boulet", 1, i) });
-  ovState = {bag, results, opened:new Set(), gift, forced:!!pulls.forced, pxp:passXP(bagXP(BAG_XP[bag.id])), autoOpen:!!auto};
+  ovState = {bag, results, opened:new Set(), gift, forced:!!pulls.forced, pxp:passXP(bagXP(BAG_XP[bag.id])), autoOpen:!!auto, eclat:!!pulls.eclat,
+    eclatQuiet:!!pulls.eclat && !!auto && Date.now()-(ui.eclatAnimAt||0) < 10*60e3};   // une suite de sachets : l'animation entière une fois, ensuite juste « +1 »
   showBagStage();
-  if(ovState.autoOpen) requestAnimationFrame(()=>tear());   // sachet gratuit ou offert enchaîné : il s'ouvre tout seul
+  if(ovState.autoOpen) setTimeout(()=>tear(), ovState.eclat && !ovState.eclatQuiet ? 1600 : 0);   // sachet gratuit ou offert enchaîné : il s'ouvre tout seul (après le reflet d'un éclat)
 }
 // Taille la plus grosse d'un tirage : 0 (Mini) à 4 (Mammouth), et 6 pour une shiny
 const pullScore = s => s.shiny || s.secret ? 6 : tierOf(s);
@@ -10211,7 +10404,7 @@ function showBagStage(){
     <span class="ov-kicker">${ovState.demo?"Démo : rien n'est gagné":gift?"Offert par le passe de saison":bag.price?`${fmt(bag.price)} ${CUR.many}`:"Offert toutes les 10 minutes"}</span>
     <div class="ov-title">${bag.name}</div>
     <div class="bag-zone${forced?" guar":""}" id="bag-zone"><div class="bag-halo"></div>
-      <button class="bag-stage" id="bag-stage" aria-label="Ouvrir le sachet">${bagSVG(bag)}</button>
+      <button class="bag-stage${ovState.eclat && !ovState.eclatQuiet ? " glint" : ""}" id="bag-stage" aria-label="Ouvrir le sachet">${bagSVG(bag)}${ovState.eclat && !ovState.eclatQuiet ? `<span class="bs-glint" aria-hidden="true"></span><i class="bs-sp"></i><i class="bs-sp"></i><i class="bs-sp"></i>` : ""}</button>
       ${forced?`<div class="guar-seal" role="status" aria-label="Garantie Boulet : au moins un Boulet dans ce sachet"><span class="gs-rays"></span>
         <span class="gs-disc">${mImg({seed:hash("garantie"), type:"boulet", family:0, pal:PEDIA_PAL, shiny:0},160,64,"")}</span><span class="gs-ribbon">${ic("shield",15,2.6)} Boulet garanti</span></div>`:""}
     </div>
@@ -10226,6 +10419,7 @@ function showBagStage(){
   document.body.style.overflow = "hidden";
   FX.fit(); FX.setDust(true);
   bindBag();
+  if(ovState.eclat && !ovState.eclatQuiet){ Sound.eclatTink(.3); Sound.eclatTink(1.7) }   // (27 octobre 2026) le sachet cache un éclat : un reflet de verre et un petit « tink »
   document.getElementById("bag-stage").focus();
   // la garantie Boulet tombe sur ce sachet : le tampon doré s'abat dessus, avec une gerbe d'étincelles
   if(forced) setTimeout(()=>{ const z = document.querySelector(".guar-seal .gs-disc"); if(!z || !ovState) return;
@@ -10570,11 +10764,13 @@ function finishReveal(){
   const nc = results.filter(r=>r.isNew||r.evNew).length, ncol = results.filter(r=>!r.isNew&&!r.evNew&&r.newColor).length, nsh = results.filter(r=>r.newShiny).length;
   const nbLeg = nc||ncol||nsh ? `<span class="nb-leg">${nc?`<span><span class="nb-dot">${SPARK}</span>${nc} nouveau${nc>1?"x":""} motif${nc>1?"s":""}</span>`:""}${ncol?`<span><span class="nb-dot col">${SPARK}</span>${ncol} nouveau${ncol>1?"x":""} coloris</span>`:""}${nsh?`<span><span class="nb-dot sh">${SPARK}</span>${nsh} nouvelle${nsh>1?"s":""} shiny</span>`:""}</span>` : "";
   document.getElementById("ov-actions").innerHTML = `${nbLeg}<span class="ov-xp" style="flex-basis:100%;justify-content:center">${ic("ticket",18)} +${ovState.pxp} XP de saison</span>${again}<button class="btn btn-ghost" data-action="to-home">Revenir à l'accueil</button>`;
+  if(ovState.eclat) eclatOut();
 }
 function closeOv(quiet){
   // fermé avant d'avoir tout découvert : les billes sont déjà rangées, on montre quand même ce qu'il y avait
   const missed = !quiet && ovState && !ovState.demo && ovState.results && ovState.opened.size < ovState.results.length ? ovState : null;
-  const fini = !quiet && ovState && !ovState.demo && ovState.results ? ovState.results : null;   // (26 octobre 2026) pour la proposition à l'invité
+  const fini = !quiet && ovState && !ovState.demo && ovState.results ? ovState.results : null;
+  const ef = !quiet && !missed && ovState?.eclatFirst;   // (27 octobre 2026) le tout premier éclat : la fenêtre qui présente l'atelier   // (26 octobre 2026) pour la proposition à l'invité
   FX.stop();
   if(ovState?.rollRaf) cancelAnimationFrame(ovState.rollRaf);
   Sound.rollStop();
@@ -10587,15 +10783,18 @@ function closeOv(quiet){
   if(missed) showBagSummary(missed);
   else if(tutoOn() && S.tuto.step===2) setTimeout(tutoNext, 300);   // le premier sachet est ouvert : la suite du premier lancement
   else if(tutoOn()) setTimeout(tutoShow, 300);
+  else if(ef) setTimeout(eclatFirstPop, 350);
   else if(fini && invite()) setTimeout(()=>guestPropose(fini), 500);
 }
-function showBagSummary({bag, results, left}){
+function showBagSummary({bag, results, left, eclat}){
+  if(eclat) S.eclat1 = 1;   // le premier éclat est présenté ici
   const el = document.getElementById("modal");
   el.innerHTML = `<div class="modal bag-sum" role="dialog" aria-modal="true" aria-labelledby="bag-sum-t">
     <button class="close-x" data-action="close-modal" aria-label="Fermer">×</button>
     <h2 id="bag-sum-t">${esc(bag.name)} : ${results.length} billes reçues</h2>
     <p class="meta">${left ? "Tu as quitté la page avant d'avoir ouvert tout ton sachet" : "Tu as fermé le sachet avant la fin"} : pas de panique, tout est déjà rangé dans ta boîte à billes.</p>
     <div class="bag-sum-grid">${results.map(r=>{ const {s} = r; return `<button class="m-card" data-action="spec" data-id="${s.id}"><span class="ball">${mImg(s,160,Math.round(58*scaleOf(s.type)+8))}</span><b>${nbDot(r)}${esc(specName(s))}</b>${typePill(s.type)}${shinyPill(s)}</button>` }).join("")}</div>
+    ${eclat ? `<p class="sum-eclat">${SHARD_SVG}<span><b>Et un éclat de verre !</b> Il est rangé à l'atelier du verrier, dans ta Boîte à billes : fonds tes éclats pour fabriquer la bille de ton choix.</span></p>` : ""}
   </div>`;
   el.hidden = false;
   el.querySelector(".close-x").focus();
@@ -16441,7 +16640,7 @@ let bugKeep = null;   // un message qui n'est pas parti : il est reproposé au p
 // on:false cache le bouton (pendant qu'on prépare la mise à jour) ; on:true le remet, avec la pastille si l'id a changé
 // (16 octobre 2026) deux repères : dot = la pastille rouge du bouton, à changer à CHAQUE mise en ligne qui ajoute une ligne au patchnote
 // (avec txt : la date du jour) ; id = la fenêtre d'annonce à l'arrivée, seulement pour les très gros jours
-const NEWS = {on:true, id:"2026-10-22", dot:"2026-10-27-2000", url:"/nouveautes.html", txt:"Mise à jour du 27 oct."};
+const NEWS = {on:true, id:"2026-10-22", dot:"2026-10-27-2200", url:"/nouveautes.html", txt:"Mise à jour du 27 oct."};
 const newsUnseen = () => lsGet("billeo-news-vu")!==NEWS.dot;
 // (14 octobre 2026) à l'arrivée, une fenêtre annonce la mise à jour, une seule fois par mise à jour et par compte (S.newsPop, gardé
 // dans la partie : elle ne revient pas sur un autre appareil) ; on choisit d'aller voir les nouveautés, ou pas
@@ -17007,7 +17206,7 @@ function clSemaine(){
           <li><b>Une case vide remplie</b><span>la bille compte double</span><small>Un nouveau motif dans une taille que tu n'avais pas.</small></li>
           <li><b>Une shiny</b><span>${SHINIES.slice(1).map((x,i)=>`${x.name} +${SCORE.shiny[i]/10}`).join(" · ")}</span></li>
           <li><b>Une bille troquée ou achetée au marché</b><span>comme une bille tirée</span><small>Seulement si c'est ton premier exemplaire de cette bille (pas un double).</small></li>
-        </ul><p class="meta">Ne comptent pas : les doubles reçus par troc ou au marché, les billes des fusions, d'événement et de saison. Tout repart à zéro chaque lundi à minuit.</p></section>
+        </ul><p class="meta">Ne comptent pas : les doubles reçus par troc ou au marché, les billes des fusions et de l'atelier, d'événement et de saison. Tout repart à zéro chaque lundi à minuit.</p></section>
     </div>
   </div>`;
 }
@@ -17151,7 +17350,7 @@ function courCopains(){
   // (14 octobre 2026) + les motifs légendaires et mythiques de toutes tailles, et les épiques à partir du Calot (pas les motifs d'événement ni de saison)
   // (14 octobre 2026, refait) 6 par page, en vitrine en haut de la page ; (16 octobre 2026) de la plus récente à la plus ancienne, de gauche à droite
   // (20 octobre 2026, le soir) plus les épiques : seulement les Mammouths, les shiny, et les légendaires et mythiques de toutes tailles
-  const rares = (cour.fil||[]).filter(e=>!e.s.secret && !extraFam(e.s.family) && !isSeason(e.s) && e.s.src!=="passe" && (e.s.type==="mammouth" && rarOf(e.s)>=3 || e.s.shiny || rarOf(e.s)>=4) && Date.now()-e.at < RARES_H*36e5)   // (22 octobre 2026) les Mammouths seulement à partir d'un motif épique : il y en avait trop
+  const rares = (cour.fil||[]).filter(e=>!e.s.secret && !extraFam(e.s.family) && !isSeason(e.s) && e.s.src!=="passe" && e.s.src!=="atelier" && (e.s.type==="mammouth" && rarOf(e.s)>=3 || e.s.shiny || rarOf(e.s)>=4) && Date.now()-e.at < RARES_H*36e5)   // (22 octobre 2026) les Mammouths seulement à partir d'un motif épique : il y en avait trop
     .sort((x,y)=>y.at-x.at);   // (22 octobre 2026) de nouveau la plus récente d'abord, de gauche à droite (le 20 : la plus rare d'abord)
   const pg = (n, per, k) => { const max = Math.max(0, Math.ceil(n/per)-1); ui[k] = Math.min(ui[k]||0, max); return {p:ui[k], max} };
   const A = pg(amis.length, CP_PAGE, "cpPage"), F = pg(rares.length, RARES_PAGE, "rarPage");
@@ -17854,6 +18053,12 @@ document.addEventListener("click", e=>{
       if(ui.view==="collection" && ui.tab!==t.dataset.tab) Sound.page();
       ui.tab=t.dataset.tab; closeModal(); if(ui.view!=="collection") go("collection"); else renderView(); break;
     case "ftype": ui.type=t.dataset.type; renderView(); break;
+    // (27 octobre 2026) l'atelier du verrier : la taille, la rareté, le motif, puis fabriquer
+    case "atl-t": ui.atl.t = t.dataset.t; renderView(); break;
+    case "atl-r": ui.atl.r = +t.dataset.r; ui.atl.f = null; renderView(); break;
+    case "atl-f": ui.atl.f = +t.dataset.f; renderView(); break;
+    case "atl-only": ui.atl.only = t.checked; renderView(); break;
+    case "atl-make": atelierMake(); break;
     case "show": ui.show=t.dataset.show; renderView(); break;
     case "pinfo": { const p = t.closest("h2")?.nextElementSibling; if(p){ p.hidden = !p.hidden; t.setAttribute("aria-expanded", String(!p.hidden)) } break }
     case "col-q-clear": ui.q = ""; renderView(); document.getElementById("col-q")?.focus(); break;
@@ -18313,6 +18518,7 @@ function applyEco(e){
   S.jetons = e.bonbecs; S.depart = e.depart||0; S.bagInv = knownBags(e.sacs); S.freeT0 = e.gratuit_t0; S.pity = e.pity;
   if(e.serie_jour){ const [y,m,d] = e.serie_jour.split("-").map(Number); S.daily = {last:`${y}-${m}-${d}`, streak:e.serie, best:Math.max(e.serie, S.daily?.best||0)} }   // le record de série reste (avant le 10 octobre 2026, il se perdait ici)
   eco.testeur = !!e.testeur;
+  if(e.eclats!=null) S.eclats = e.eclats;   // (27 octobre 2026) les éclats de verre de l'atelier
   save(); renderTop(); renderNav(); chanceRefresh();
 }
 // (10 octobre 2026) les bonbecs ont changé (une quête récupérée, un lot…) : les boutons du jeu de chance affiché se remettent à jour
@@ -18330,7 +18536,7 @@ const lieeJusqu = s => s.lie===true ? Infinity : +s.lie||0;
 const estLiee = s => lieeJusqu(s) > Date.now();
 const libres = () => Math.max(0, S.jetons - Math.min(S.depart||0, S.jetons));
 const departTxt = () => S.depart ? ` (tes ${fmt(Math.min(S.depart, S.jetons))} ${CUR.many} de départ servent seulement à jouer)` : "";
-const ECO_ERR = {limite_jeu:`Tu as déjà acheté tes parties du jour : reviens demain !`, limite_plinko:`Tu as déjà lâché tes ${PACHI_MAX} billes du jour au Plinko : reviens demain !`, bonbecs_depart:`Les ${CUR.many} de ton cadeau de départ servent à ouvrir des sachets et à jouer, pas aux trocs ni au marché.`, evenement_fini:"L'événement est terminé : ce sachet n'est plus en vente.", pas_assez:`Il te manque des ${CUR.many}.`, pas_encore:"Ton sachet gratuit n'est pas encore prêt.", plus_de_sac:"Tu n'as plus de sachet offert de ce type.",
+const ECO_ERR = {pas_assez_eclats:"Il te manque des éclats de verre pour cette bille.", motif_interdit:"Ce motif ne se fabrique pas à l'atelier.", taille_inconnue:"Cette taille n'existe pas.", limite_jeu:`Tu as déjà acheté tes parties du jour : reviens demain !`, limite_plinko:`Tu as déjà lâché tes ${PACHI_MAX} billes du jour au Plinko : reviens demain !`, bonbecs_depart:`Les ${CUR.many} de ton cadeau de départ servent à ouvrir des sachets et à jouer, pas aux trocs ni au marché.`, evenement_fini:"L'événement est terminé : ce sachet n'est plus en vente.", pas_assez:`Il te manque des ${CUR.many}.`, pas_encore:"Ton sachet gratuit n'est pas encore prêt.", plus_de_sac:"Tu n'as plus de sachet offert de ce type.",
   reseau:"Pas de connexion : réessaie dans un instant.", fusion_invalide:"Cette fusion n'est pas possible.", bille_indisponible:"Une de ces billes est en vente ou dans un troc en attente : elle ne peut pas fusionner.", reserve_aux_testeurs:"Ces outils sont réservés aux comptes de test."};
 // (16 octobre 2026) verrouiller une bille : ni vente, ni troc, ni Confiserie, ni fusion (le serveur le vérifie : supabase/verrou.sql)
 function lockToggle(x){
@@ -19361,7 +19567,7 @@ function bootPopups(){
   const P = S.pendingBag;
   if(P){ delete S.pendingBag; save();
     const results = (P.r||[]).map(x=>({...x, s:specById(x.id)})).filter(x=>x.s);
-    if(results.length && BAG_BY[P.bag]){ showBagSummary({bag:BAG_BY[P.bag], results, left:true}); return }
+    if(results.length && BAG_BY[P.bag]){ showBagSummary({bag:BAG_BY[P.bag], results, left:true, eclat:!!P.e}); return }
   }
   if(dailyDue()){ S.dailySeen = dayKey(); save(); openDaily(); return }
   if(heldNews){ showHeldNews(); return }

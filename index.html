@@ -1527,6 +1527,49 @@ body.vit-dragging,body.vit-dragging *{cursor:grabbing!important;user-select:none
 .bp-sz:disabled{opacity:.4}
 .page-head .mj-bille{margin-left:auto}
 @media (max-width:560px){ .page-head:has(.mj-bille){flex-wrap:wrap;gap:10px} .page-head .mj-bille{flex:1 1 100%;margin-left:0} .page-head .mj-bille b{max-width:none} .page-head .mj-bille .btn{margin-left:auto} }
+/* (27 octobre 2026) « Ma bille de jeu » bien en vue (Mini-jeux et Grande Course) : la bille en grand, une flèche de chaque côté, ses préférées */
+.bpk{position:relative;display:grid;grid-template-columns:auto minmax(0,1fr);gap:18px;align-items:center;margin-bottom:18px;padding:14px 18px;border-radius:24px;overflow:hidden;
+  background:radial-gradient(ellipse at 16% 60%,color-mix(in srgb,var(--yellow) 28%,transparent),transparent 55%),var(--panel);border:2px solid var(--line);box-shadow:var(--shadow)}
+.bpk-sel{display:grid;grid-template-columns:44px auto 44px;align-items:center;gap:4px}
+.bpk-arrow{width:44px;height:44px;border-radius:50%;display:grid;place-items:center;background:var(--panel-2);border:2px solid var(--line);color:var(--ink);transition:transform .15s}
+.bpk-arrow:hover{transform:scale(1.1);border-color:var(--ink-2)}
+.bpk-ball{position:relative;width:120px;height:120px;display:grid;place-items:center}
+.bpk-ball::before{content:"";position:absolute;inset:auto 12px 4px;height:20px;border-radius:50%;background:radial-gradient(closest-side,rgba(0,0,0,.28),transparent)}
+.bpk-ball::after{content:"";position:absolute;inset:6px;border-radius:50%;border:3px dashed color-mix(in srgb,var(--ink) 18%,transparent);animation:bpk-spin 18s linear infinite}
+@keyframes bpk-spin{to{transform:rotate(360deg)}}
+.bpk-ball img{position:relative;z-index:1;animation:bpk-bob 2.6s ease-in-out infinite;filter:drop-shadow(0 6px 6px rgba(0,0,0,.25))}
+@keyframes bpk-bob{50%{transform:translateY(-6px)}}
+.bpk-ball.swap img{animation:bpk-pop .35s cubic-bezier(.2,1.6,.4,1)}
+@keyframes bpk-pop{from{transform:scale(.4) rotate(-90deg);opacity:.2}}
+.bpk-txt small{display:block;font-size:11.5px;font-weight:900;letter-spacing:.07em;text-transform:uppercase;color:var(--muted)}
+.bpk-txt h3{margin:2px 0 6px;font-family:var(--display);font-weight:400;font-size:25px;line-height:1.1}
+.bpk-txt .pills{display:flex;gap:5px;flex-wrap:wrap}
+.bpk-txt p{margin:8px 0 0;color:var(--ink-2);font-size:13.5px;max-width:52ch}
+.bpk-quick{display:flex;align-items:center;gap:8px;margin-top:12px;flex-wrap:wrap}
+.bpk-q{width:46px;height:46px;border-radius:14px;display:grid;place-items:center;background:var(--panel-2);border:2px solid var(--line);transition:transform .15s}
+.bpk-q:hover{transform:translateY(-3px)}
+.bpk-q[aria-pressed="true"]{border-color:var(--yellow-2);background:color-mix(in srgb,var(--yellow) 30%,var(--panel))}
+.bpk-sticker{position:absolute;z-index:2;top:12px;right:14px;padding:5px 11px;border-radius:10px;background:#E85D9A;color:#fff;font-family:var(--display);font-size:15px;line-height:1;box-shadow:0 3px 0 #B83C75;transform:rotate(6deg);animation:bpk-wig 2.4s ease-in-out infinite}
+@keyframes bpk-wig{0%,80%,100%{transform:rotate(6deg)}88%{transform:rotate(-3deg) scale(1.08)}94%{transform:rotate(9deg)}}
+/* la Grande Course : ta coureuse sur la ligne de départ, avec son dossard */
+.bpk.gc{color:#fff;border:0;background:linear-gradient(180deg,#3F8EF0 0%,#8CC6FF 62%,#6FAE55 62%,#5E9A47 100%)}
+.bpk.gc .bpk-lane{position:absolute;left:0;right:0;bottom:18px;height:12px;background:repeating-linear-gradient(90deg,#fff 0 12px,#24253D 12px 24px);opacity:.85}
+.bpk.gc .bpk-sel,.bpk.gc .bpk-txt{position:relative}
+.bpk.gc .bpk-arrow{background:rgba(255,255,255,.92);border-color:#fff;color:#24253D}
+.bpk.gc .bpk-ball::after{border-color:rgba(255,255,255,.55)}
+.bpk.gc .bpk-txt{padding-bottom:22px;text-shadow:0 2px 6px rgba(0,0,0,.3)}
+.bpk.gc .bpk-txt small,.bpk.gc .bpk-txt p{color:rgba(255,255,255,.92)}
+.bpk.gc .bpk-txt h3{color:#fff!important}
+.bpk.gc .bpk-q{background:rgba(255,255,255,.85);border-color:rgba(255,255,255,.9)}
+.bpk.gc .btn-ghost{background:rgba(255,255,255,.88);color:#24253D;text-shadow:none}
+.bpk-bib{position:absolute;z-index:2;right:2px;top:8px;padding:3px 7px;border-radius:7px;background:#fff;color:#E0182D;font-family:var(--display);font-size:14px;line-height:1;border:2px solid #24253D;transform:rotate(8deg)}
+.gt-me{position:absolute;right:10px;bottom:10px;z-index:2;width:42px;height:42px;border-radius:50%;display:grid;place-items:center;background:rgba(255,255,255,.92);box-shadow:0 3px 8px rgba(0,0,0,.25)}
+@media (max-width:560px){
+  .bpk{grid-template-columns:minmax(0,1fr);justify-items:center;text-align:center}
+  .bpk-quick,.bpk-txt .pills{justify-content:center}
+  .bpk-txt p{margin-inline:auto}
+  .bpk.gc{background:linear-gradient(180deg,#3F8EF0 0%,#8CC6FF 40%,#6FAE55 40%,#5E9A47 100%)}
+}
 @media (max-width:460px){ .bp-sizes{grid-template-columns:repeat(3,minmax(0,1fr))} .bp-sz{font-size:12px} }
 .bp-f{display:flex;gap:8px;align-items:center;margin:0 0 4px}
 .bp-f .col-search{flex:1;min-width:0;margin:0}
@@ -13216,6 +13259,46 @@ function rdvCards(gcIn, L){
     </article>
   </div>`;
 }
+// (27 octobre 2026) « Ma bille de jeu » bien en vue (maquettes/maquette-cour.html, parties 1 et 2) : comme un écran de choix du personnage,
+// la bille en grand, une flèche de chaque côté, et ses 6 billes préférées pour changer d'un geste (« Toutes mes billes » ouvre la fenêtre de choix).
+// kind "jeux" : la bille de tous les mini-jeux (S.active) ; kind "gc" : la coureuse de la Grande Course (S.gcBille, à part).
+// L'autocollant « Change-la ! » remue tant que le joueur n'a jamais changé de bille.
+const bpkCur = kind => kind==="gc" ? ((gc.pick && specById(gc.pick)) || gcMine() || gcDefault()) : activeSpec();
+// les préférées : la bille actuelle, les dernières choisies, la vitrine, puis les plus belles de la boîte
+function bpkFavs(kind){
+  const ok = kind==="gc" ? s => sync.known?.has(s.id) : () => true, cur = bpkCur(kind), out = [], seen = new Set();
+  const add = s => { if(s && !seen.has(s.id) && specById(s.id) && ok(s) && out.length<6){ seen.add(s.id); out.push(s) } };
+  add(cur); (S.ballHist||[]).forEach(id=>add(specById(id))); (S.vitrine||[]).forEach(id=>add(specById(id)));
+  if(out.length<6) [...S.specs].sort(tierSort).forEach(add);
+  return out;
+}
+function ballPicker(kind){
+  const cur = bpkCur(kind); if(!cur || !specById(cur.id)) return "";
+  const favs = bpkFavs(kind), gcK = kind==="gc", px = Math.round(62+44*scaleOf(cur.type)), r = decorRar(cur);
+  return `<section class="bpk${gcK?" gc":""}" aria-label="${gcK?"Ta bille pour la course":"Ta bille de jeu"}">
+    ${S.ballChanged ? "" : `<span class="bpk-sticker" aria-hidden="true">Change-la !</span>`}${gcK ? `<span class="bpk-lane" aria-hidden="true"></span>` : ""}
+    <div class="bpk-sel"><button class="bpk-arrow" data-action="bpk-step" data-k="${kind}" data-d="-1" aria-label="Bille précédente">${ic("chevl",20,3)}</button>
+      <span class="bpk-ball" id="bpk-${kind}" style="${tstyle(cur.type)}">${mImg(cur,240,px,"")}${gcK?`<span class="bpk-bib">n°${1+hash(sync.uid||"moi")%40}</span>`:""}</span>
+      <button class="bpk-arrow" data-action="bpk-step" data-k="${kind}" data-d="1" aria-label="Bille suivante">${ic("chev",20,3)}</button></div>
+    <div class="bpk-txt"><small>${gcK ? "Ta coureuse pour la Grande Course" : "Ta bille pour tous les mini-jeux"}</small>
+      <h3${motifCol(cur)}>${esc(specName(cur))}</h3>
+      <span class="pills">${typePill(cur.type)}${r>=1?`<span class="dec-pill" style="--dc:${DECOR_RAR[r].c}">${DECOR_RAR[r].name}</span>`:""}${shinyPill(cur)}</span>
+      <p>${gcK ? "Toutes les billes ont la même chance : choisis celle que tu veux voir gagner en 3D !" : "Elle ne change que le look : les chances sont les mêmes pour toutes. Alors joue avec ta plus belle !"}</p>
+      <div class="bpk-quick">${favs.map(s=>`<button class="bpk-q" data-action="bpk-set" data-k="${kind}" data-id="${s.id}" aria-pressed="${s.id===cur.id}" title="${esc(specName(s))}">${mImg(s,96,34,"")}</button>`).join("")}
+        <button class="btn btn-ghost btn-sm" data-action="${gcK?"gc-pickopen":"mrl-ball"}">Toutes mes billes ${ic("chev",13,2.6)}</button></div></div>
+  </section>`;
+}
+// choisir une bille : pour les mini-jeux tout de suite ; pour la course, l'inscription est mise à jour une fois qu'on a fini de choisir
+let bpkWait = null;
+function bpkSet(kind, id){
+  const s = specById(id); if(!s) return;
+  S.ballChanged = 1; S.ballHist = [id, ...(S.ballHist||[]).filter(x=>x!==id)].slice(0,12);
+  if(kind==="gc"){ gc.pick = S.gcBille = id; save(); renderView();
+    if(gc.etat?.inscrit){ clearTimeout(bpkWait); bpkWait = setTimeout(gcRegister, 1500) } }
+  else { if(id!==S.active){ S.active = id; save(); renderTop(); renderNav(); swapGameBall(activeSpec()) } else save(); renderView() }
+  Sound.tap(0,.6);
+  document.getElementById("bpk-"+kind)?.classList.add("swap");
+}
 function viewGames(){
   gcLoad();
   const P = playedToday(), tirDone = !!P.tir[0], tirL = LEVELS[tirOfDay()];
@@ -13234,7 +13317,7 @@ function viewGames(){
   const tile = c => { const m = maxed(c.v), paid = !c.ok && !m, n = resteN(c.v);
     const st = paid ? `${ic("candy",14)} Encore ${n} partie${n>1?"s":""} à acheter` : c.state;
     return `<article class="panel game-tile${paid?" paid":c.ok?"":" played"}${m?" maxed":""}">${m?`<span class="gt-fond">${ic("star",13,2.6)} Fait à fond !</span>`:""}
-    <button class="gt-art" data-action="nav" data-view="${c.v}" aria-label="${c.ok?"Jouer":paid?"Rejouer":"Voir"} : ${c.t}">${c.art}${jdj.has(c.v)?`<span class="gt-jdj">${ic("star",12,2.6)} Jeu du jour</span>`:""}<span class="gt-max">${c.prize ? `jusqu'à ${c.prize}` : `${COIN} jusqu'à ${c.max}`}</span><span class="gt-state ${c.ok?"ok":paid?"paid":""}">${st}</span></button>
+    <button class="gt-art" data-action="nav" data-view="${c.v}" aria-label="${c.ok?"Jouer":paid?"Rejouer":"Voir"} : ${c.t}">${c.art}${jdj.has(c.v)?`<span class="gt-jdj">${ic("star",12,2.6)} Jeu du jour</span>`:""}${act ? `<span class="gt-me" title="Tu joues avec ${esc(specName(act))}">${mImg(act,96,30,"")}</span>` : ""}<span class="gt-max">${c.prize ? `jusqu'à ${c.prize}` : `${COIN} jusqu'à ${c.max}`}</span><span class="gt-state ${c.ok?"ok":paid?"paid":""}">${st}</span></button>
     <div class="gt-body gt-foot"><div class="gt-ttl"><span class="gt-kind">${CHANCE_KEYS.includes(c.v) ? "Jeu de chance" : "Jeu d'adresse"}</span><h2>${c.t}</h2>${pips(c.v)}</div><button class="btn ${c.ok?"btn-blue":paid?"btn-ghost gt-again":"btn-ghost"}" data-action="nav" data-view="${c.v}">${c.ok?`${ic("play",16)} Jouer`:paid?`${ic("play",16)} Rejouer`:"Voir"}</button></div>
   </article>` };
   const state = k => { const g = dayGame(k);
@@ -13265,7 +13348,7 @@ function viewGames(){
   const all = [...solo, ...multi, ...chance];
   const todo = all.filter(c=>!maxed(c.v)).sort((a,b)=>(b.ok-a.ok) || (jdj.has(b.v)-jdj.has(a.v))), done = all.filter(c=>maxed(c.v));
   const bag = BAG_BY[GAMES_BONUS], gcIn = !!gc.etat?.inscrit, L = srvOn() ? lot.data : null; if(srvOn()) lotLoad();
-  return `<div class="page-head"><div><h1>Mini-jeux</h1></div>${act ? `<button class="mj-bille" data-action="mrl-ball" aria-label="Changer ma bille de jeu">${mImg(act,96,40,"")}<span><small>Ma bille de jeu</small><b>${esc(specName(act))}</b></span><span class="btn btn-ghost btn-sm">Changer</span></button>` : ""}</div>
+  return `<div class="page-head"><div><h1>Mini-jeux</h1></div></div>${act ? ballPicker("jeux") : ""}
   ${!onbOk("journee") ? "" : `<section class="panel gm-strip${left?"":" all-done"}">
     <div class="gs-day">
       <div class="gs-top"><span class="gh-kick">${ic("star",14)} Les 3 jeux du jour</span><small class="gh-time">${ic("clock",13)} Nouveaux dans <b data-quest-timer>${untilMidnight()}</b></small></div>
@@ -14525,15 +14608,14 @@ function viewGrandeCourse(){
   else if(!srvOn()) reg = `<div class="gc-reg off">${ic("user",18)} Crée ton compte (c'est gratuit) pour t'inscrire à la Grande Course.</div>
     ${window.Cloud?.available && !sync.on ? `<button class="btn btn-yellow" data-action="acct-signup">Créer mon compte</button>` : ""}`;
   else if(E?.inscrit) reg = `<div class="gc-reg on">${pick?mImg(pick,96,44,""):""}<div><b>Tu es inscrit pour ${whenAll} !</b><small>Tu cours avec ${pick?esc(specName(pick)):"ta bille"}. Rendez-vous à ${both ? "12 h et à 20 h" : `${N.heure} h`}.</small></div></div>
-    <div class="btns"><button class="btn btn-ghost" data-action="gc-pickopen">Changer de bille</button><button class="btn btn-ghost" data-action="gc-unreg">Me désinscrire</button></div>`;
-  else reg = `<div class="gc-pickrow"><button class="gc-ball" data-action="gc-pickopen" aria-label="Choisir ma bille">${pick?mImg(pick,120,56,""):""}<span>Changer</span></button>
-      <div><small>Ta bille pour la course</small><b>${pick?esc(specName(pick)):"—"}</b></div></div>
-    <button class="btn btn-yellow btn-xl" data-action="gc-reg">${ic("flag",18)} M'inscrire pour ${whenAll}</button>
+    <div class="btns"><button class="btn btn-ghost" data-action="gc-unreg">Me désinscrire</button></div>`;
+  else reg = `<button class="btn btn-yellow btn-xl" data-action="gc-reg">${ic("flag",18)} M'inscrire pour ${whenAll}</button>
     ${both ? `<p class="meta">Une seule inscription pour la journée : tu cours à midi et le soir.</p>` : ""}`;
   const live = D && Date.now() < D.depart + GC_DUR*1000;
   return `<div class="page-head"><div><button class="back-link" data-action="nav" data-view="jeux">${ic("chevl",14)} Tous les jeux</button><h1>La Grande Course</h1>
     <p>À 12 h et à 20 h. Toutes les billes ont la même chance.</p></div></div>
   ${gcWaiting().map(gcLotsBanner).join("")}
+  ${srvOn() ? ballPicker("gc") : ""}
   <section class="panel gc-hero">
     <div class="gc-main">
       <span class="gh-kick">${ic("flag",14)} Course du ${new Date(N.depart).toLocaleDateString("fr-FR",{weekday:"long", day:"numeric", month:"long"})} à ${N.heure} h</span>
@@ -16640,7 +16722,7 @@ let bugKeep = null;   // un message qui n'est pas parti : il est reproposé au p
 // on:false cache le bouton (pendant qu'on prépare la mise à jour) ; on:true le remet, avec la pastille si l'id a changé
 // (16 octobre 2026) deux repères : dot = la pastille rouge du bouton, à changer à CHAQUE mise en ligne qui ajoute une ligne au patchnote
 // (avec txt : la date du jour) ; id = la fenêtre d'annonce à l'arrivée, seulement pour les très gros jours
-const NEWS = {on:true, id:"2026-10-22", dot:"2026-10-27-2200", url:"/nouveautes.html", txt:"Mise à jour du 27 oct."};
+const NEWS = {on:true, id:"2026-10-22", dot:"2026-10-27-2230", url:"/nouveautes.html", txt:"Mise à jour du 27 oct."};
 const newsUnseen = () => lsGet("billeo-news-vu")!==NEWS.dot;
 // (14 octobre 2026) à l'arrivée, une fenêtre annonce la mise à jour, une seule fois par mise à jour et par compte (S.newsPop, gardé
 // dans la partie : elle ne revient pas sur un autre appareil) ; on choisit d'aller voir les nouveautés, ou pas
@@ -17907,6 +17989,8 @@ document.addEventListener("click", e=>{
     case "mrl-go": { const pay = t.dataset.pay==="1"; if(needBall(()=>marGo(pay))) break; marGo(pay); break; }
     case "bp-q-clear": ui.bpF.q = ""; ui.bpP = 0; openBallPick(ui.pickNext); document.getElementById("bp-q")?.focus(); break;
     case "mrl-ball": ui.bpF = null; openBallPick(null); break;
+    case "bpk-set": bpkSet(t.dataset.k, t.dataset.id); break;
+    case "bpk-step": { const L = bpkFavs(t.dataset.k), i = L.findIndex(x=>x.id===bpkCur(t.dataset.k)?.id), d = +t.dataset.d; if(L.length>1) bpkSet(t.dataset.k, L[(i+d+L.length)%L.length].id); break }
     case "gr-all": { const cv = document.getElementById("gr-foil"); if(cv) cv.getContext("2d").clearRect(0,0,cv.width,cv.height); gratEnd(); break }
     case "ds-go": distGo(t.dataset.pay==="1"); break;
     case "ds-close": distClear(); break;
@@ -17916,7 +18000,7 @@ document.addEventListener("click", e=>{
     case "pachi-go": { if(!pachiBall() && S.active){ playedToday().pachiBall = S.active; save() } pachiGo(t.dataset.pay==="1"); break; }
     case "ball-go": {
       if(ui.view==="pachinko"){ playedToday().pachiBall = t.dataset.id || S.active; save() }   // au Plinko : la bille du jour, sans changer la bille des autres jeux
-      else if(t.dataset.id && t.dataset.id!==S.active){ S.active = t.dataset.id; save(); renderTop(); renderNav(); swapGameBall(activeSpec()) }
+      else if(t.dataset.id && t.dataset.id!==S.active){ S.active = t.dataset.id; S.ballChanged = 1; S.ballHist = [t.dataset.id, ...(S.ballHist||[]).filter(x=>x!==t.dataset.id)].slice(0,12); save(); renderTop(); renderNav(); swapGameBall(activeSpec()) }
       closeModal(); const n = ui.pickNext; ui.pickNext = null; Sound.tap(0,.6); if(n) setTimeout(n, 60); else if(ui.view==="jeux") renderView(); break;
     }
     case "conf-filter": ui.confF=t.dataset.f; renderView(); break;
@@ -18155,7 +18239,7 @@ document.addEventListener("click", e=>{
     case "gc-pickopen": gcPickOpen(); break;
     case "gc-pickt": gc.pickT = t.dataset.t || null; t.parentNode.querySelectorAll(".chip").forEach(c=>c.setAttribute("aria-pressed", c===t));
       { const g = document.getElementById("gc-grid"); if(g) g.innerHTML = gcPickGrid() } break;
-    case "gc-pick": gc.pick = S.gcBille = t.dataset.id; save(); closeModal(); if(gc.etat?.inscrit) gcRegister(); else renderView(); break;
+    case "gc-pick": gc.pick = S.gcBille = t.dataset.id; S.ballChanged = 1; S.ballHist = [t.dataset.id, ...(S.ballHist||[]).filter(x=>x!==t.dataset.id)].slice(0,12); save(); closeModal(); if(gc.etat?.inscrit) gcRegister(); else renderView(); break;
     case "gc-reg": gcRegister(); break;
     case "gc-unreg": srv(()=>Cloud.course.desinscrire()).then(e=>{ gc.etat = e; renderView(); renderNav(); toast("Tu n'es plus inscrit à la Grande Course.") }, srvFail); break;
     case "gc-watch": { const D = gc.etat?.rediffs?.[t.dataset.h] || gc.etat?.derniere; if(D){ closeModal(); gcWatch(D) } break }

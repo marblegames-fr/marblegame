@@ -1,0 +1,622 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Tikalo · vidéo Qui va gagner</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Gluten:wght@900&family=Lilita+One&family=Nunito:wght@700;800;900&family=Caveat:wght@700&display=swap">
+<script type="importmap">{"imports":{"three":"https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.js","cannon-es":"https://cdn.jsdelivr.net/npm/cannon-es@0.20.0/dist/cannon-es.js"}}</script>
+<style>
+/* La 6e vidéo Instagram de Tikalo (16 octobre 2026) : « Qui va gagner ? ». Six billes numérotées au départ du Volcan (le circuit refait le jour même),
+   on choisit la sienne en commentaire, puis la VRAIE course : la physique de la Grande Course est recopiée de index.html (course-moteur.js,
+   fabriqué par fabriquer-course.mjs) et calculée dans la page, avec la graine 40 (la gagnante, la 5, passe devant à 0,4 s de la ligne et gagne de 13 centièmes ;
+   graine choisie dans Chrome : la course calculée par Node n'est pas exactement la même). Même moteur de scènes, de musique et d'enregistrement que demo-defi.html.
+   Pour vérifier une image : demo-course.html?s=2&at=12 (scène 2, figée à 12 s), &film pour cacher la barre.
+   L'image de couverture (aperçu du réel) : demo-course.html?cover&film, en 1080 × 1920. */
+:root{
+  --night:#3A1206; --night-2:#7A2A0E; --night-3:#1E0803; --ink:#1A1B33;
+  --yellow:#FFC93F; --yellow-2:#F2AE12; --pink:#FF4FA3; --cyan:#2EE6E6; --green:#2FCF6A; --orange:#FF7A1A; --red-2:#FF2E44; --lava:#FF5A1F;
+  --display:"Lilita One","Arial Rounded MT Bold",sans-serif; --logo:"Gluten","Lilita One",sans-serif; --body:"Nunito","Segoe UI",system-ui,sans-serif; --hand:"Caveat",cursive;
+  --ui-bg:#0A0B16; --ui-panel:#15172A; --ui-line:#2C3050; --ui-ink:#E9EBFF;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+html,body{height:100%}
+body{background:var(--ui-bg);color:var(--ui-ink);font-family:var(--body);display:flex;flex-direction:column;overflow:hidden}
+button,select{font:inherit;color:inherit}
+button{background:none;border:0;cursor:pointer}
+
+/* ---------- la scène : la nuit rouge du volcan ---------- */
+.wrap{flex:1;min-height:0;display:grid;place-items:center;padding:16px}
+#stage{position:relative;overflow:hidden;width:var(--sw);height:var(--sh);font-size:calc(var(--u)*4);color:#fff;border-radius:18px;
+  background:radial-gradient(60% 40% at 50% 46%,var(--night-2),var(--night) 60%,var(--night-3));box-shadow:0 30px 80px -30px #000}
+body.film .wrap{padding:0} body.film #stage{border-radius:0;box-shadow:none}
+.bg{position:absolute;inset:0;pointer-events:none}
+.bg .burst{position:absolute;left:50%;top:46%;width:calc(var(--u)*240);height:calc(var(--u)*240);margin:calc(var(--u)*-120);border-radius:50%;
+  background:repeating-conic-gradient(from 0deg,var(--lava) 0 9deg,transparent 9deg 22deg);opacity:.35;-webkit-mask:radial-gradient(circle,#000 8%,transparent 55%);mask:radial-gradient(circle,#000 8%,transparent 55%);
+  animation:spin 14s linear infinite}
+.bg .embers{position:absolute;inset:0;opacity:.5;background-image:radial-gradient(circle,#FFB02E calc(var(--u)*.3),transparent calc(var(--u)*.4));background-size:calc(var(--u)*9) calc(var(--u)*13);animation:rise 6s linear infinite}
+@keyframes rise{to{background-position:0 calc(var(--u)*-26)}}
+/* la course en 3D, sous tout le reste */
+#g3{position:absolute;inset:0;width:100%;height:100%;opacity:0;transition:opacity .35s}
+#stage.race #g3{opacity:1}
+#stage.race .bg{opacity:0}
+.vig{position:absolute;inset:0;pointer-events:none;background:radial-gradient(120% 80% at 50% 50%,transparent 55%,rgba(20,4,0,.55));opacity:0}
+#stage.race .vig{opacity:1}
+#fx{position:absolute;inset:0;width:100%;height:100%;pointer-events:none;z-index:8}
+#flash{position:absolute;inset:0;background:#fff;opacity:0;pointer-events:none;z-index:9}
+#flash.go{animation:fl .5s ease-out}
+@keyframes fl{0%{opacity:.85}100%{opacity:0}}
+.cam{position:absolute;inset:0}
+.cam.shake{animation:shake .38s cubic-bezier(.36,.07,.19,.97)}
+@keyframes shake{10%,90%{transform:translate(-1%,0)}20%,80%{transform:translate(1.4%,.6%)}30%,50%,70%{transform:translate(-1.8%,-.6%) rotate(-.6deg)}40%,60%{transform:translate(1.8%,.4%) rotate(.6deg)}}
+
+/* le bas de l'image est laissé libre : sur Instagram, la légende et les boutons passent par-dessus */
+.sc{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:calc(var(--u)*3.6);padding:calc(var(--u)*12) calc(var(--u)*6) calc(var(--u)*18);text-align:center;opacity:0;visibility:hidden}
+.sc.on{opacity:1;visibility:visible}
+.sc.out{visibility:visible;animation:sc-out .3s ease-in forwards}
+@keyframes sc-out{to{opacity:0;transform:scale(1.15);filter:blur(calc(var(--u)*.8))}}
+
+.mini-logo{position:absolute;top:calc(var(--u)*4.6);left:50%;transform:translateX(-50%);z-index:6;transition:opacity .3s}
+#stage.big-logo .mini-logo,#stage.no-logo .mini-logo{opacity:0}
+.logo{display:flex;align-items:flex-end;font-family:var(--logo);font-weight:900;line-height:1;letter-spacing:.02em}
+.logo .lt{display:inline-block;position:relative;color:var(--yellow);-webkit-text-stroke:.16em var(--ink);paint-order:stroke fill;
+  text-shadow:0 .04em 0 #F59E0B,0 .08em 0 #E07B00,0 .13em 0 var(--ink),0 .2em .3em rgba(0,0,0,.5)}
+.logo .lt:nth-child(1){transform:translateY(-.02em) rotate(-6deg)} .logo .lt:nth-child(2){transform:translateY(-.10em) rotate(4deg)}
+.logo .lt:nth-child(3){transform:translateY(.02em) rotate(-3deg)} .logo .lt:nth-child(4){transform:translateY(-.08em) rotate(5deg)}
+.logo .lt:nth-child(5){transform:rotate(-4deg)} .logo .lt:nth-child(6){transform:translateY(-.04em) rotate(3deg)}
+.logo .i img{position:absolute;left:50%;top:-.2em;width:.27em;height:.27em;margin-left:-.12em;border-radius:50%;box-shadow:0 0 0 .05em var(--ink);filter:drop-shadow(0 .06em 0 var(--ink))}
+.mini-logo .logo{font-size:calc(var(--u)*6.5)}
+
+/* ---------- la typo qui claque ---------- */
+.slam{font-family:var(--display);line-height:.92;letter-spacing:.01em;color:#fff;-webkit-text-stroke:calc(var(--u)*.55) var(--ink);paint-order:stroke fill;text-shadow:0 calc(var(--u)*1) 0 var(--ink),0 calc(var(--u)*2) calc(var(--u)*3) rgba(0,0,0,.45)}
+.slam.xl{font-size:calc(var(--u)*16)} .slam.l{font-size:calc(var(--u)*12)} .slam.m{font-size:calc(var(--u)*8.5)} .slam.s{font-size:calc(var(--u)*6.4)}
+.slam .y{color:var(--yellow)} .slam .r{color:var(--red-2)} .slam .o{color:#FF8A3D}
+.word{display:inline-block;opacity:0}
+.on .word{animation:slam .42s cubic-bezier(.2,1.6,.35,1) forwards;animation-delay:var(--d)}
+@keyframes slam{from{opacity:0;transform:scale(2.6) rotate(var(--r,-8deg));filter:blur(calc(var(--u)*.6))}to{opacity:1;transform:rotate(var(--rr,0deg))}}
+.hand{font-family:var(--hand);line-height:1.05;color:#FFE9A0;transform:rotate(-3deg)}
+.hand.l{font-size:calc(var(--u)*10)} .hand.m{font-size:calc(var(--u)*7.6)} .hand.s{font-size:calc(var(--u)*6)}
+.in{opacity:0}
+.on .in{animation:pop .5s cubic-bezier(.2,1.5,.4,1) forwards;animation-delay:var(--d,0s)}
+.on .in.up{animation-name:up;animation-timing-function:cubic-bezier(.2,.9,.3,1)}
+@keyframes pop{from{opacity:0;transform:scale(.4) rotate(var(--r0,0deg))}to{opacity:1;transform:none}}
+@keyframes up{from{opacity:0;transform:translateY(calc(var(--u)*8))}to{opacity:1;transform:none}}
+.mb{display:block;width:100%;height:auto;aspect-ratio:1;filter:drop-shadow(0 calc(var(--u)*1.2) calc(var(--u)*1.4) rgba(0,0,0,.55))}
+@keyframes spin{to{transform:rotate(360deg)}}
+@keyframes float{to{transform:translateY(calc(var(--u)*-1.5)) rotate(5deg)}}
+.sub{font-weight:900;font-size:calc(var(--u)*4.4);line-height:1.15;color:#FFE9DA;text-shadow:0 calc(var(--u)*.4) 0 var(--ink)}
+.sub b{color:var(--yellow)}
+
+/* 1. les six billes au départ */
+.grid6{display:grid;grid-template-columns:repeat(3,1fr);gap:calc(var(--u)*3) calc(var(--u)*4);width:calc(var(--u)*84)}
+.pick{position:relative;opacity:0}
+.on .pick{animation:pop .45s cubic-bezier(.2,1.7,.4,1) forwards,float 1.4s ease-in-out infinite alternate;animation-delay:var(--d),calc(var(--d) + .45s)}
+.num{position:absolute;right:-6%;top:-6%;width:44%;aspect-ratio:1;display:grid;place-items:center;border-radius:50%;font-family:var(--display);font-size:calc(var(--u)*7);
+  color:#fff;background:var(--c);border:calc(var(--u)*.6) solid var(--ink);box-shadow:0 calc(var(--u)*.7) 0 var(--ink);-webkit-text-stroke:calc(var(--u)*.3) var(--ink);paint-order:stroke fill}
+.tag-c{font-weight:900;font-size:calc(var(--u)*3.2);text-transform:uppercase;letter-spacing:.06em;color:#fff;margin-top:calc(var(--u)*.6);text-shadow:0 calc(var(--u)*.35) 0 var(--ink)}
+.pill{display:inline-flex;align-items:center;gap:calc(var(--u)*1.4);font-weight:900;font-size:calc(var(--u)*3.4);padding:calc(var(--u)*1) calc(var(--u)*3);border-radius:999px;background:rgba(0,0,0,.35);border:calc(var(--u)*.35) solid rgba(255,255,255,.25)}
+
+/* 2. la course : le classement des six, le décompte, les annonces */
+.race-ui{position:absolute;inset:0;pointer-events:none;opacity:0;transition:opacity .3s}
+#stage.race .race-ui{opacity:1}
+.board{position:absolute;left:calc(var(--u)*3.5);top:calc(var(--u)*16);width:calc(var(--u)*13);height:calc(var(--u)*6*8.6)}
+.board .row{position:absolute;left:0;top:0;width:100%;height:calc(var(--u)*7.6);display:flex;align-items:center;gap:calc(var(--u)*1);transition:transform .35s cubic-bezier(.3,1.4,.5,1);transform:translateY(calc(var(--k)*var(--u)*8.6))}
+.board .pos{width:calc(var(--u)*4.4);font-family:var(--display);font-size:calc(var(--u)*3.6);color:#fff;text-shadow:0 calc(var(--u)*.3) 0 var(--ink);text-align:right}
+.board .dot{width:calc(var(--u)*7.4);height:calc(var(--u)*7.4);border-radius:50%;display:grid;place-items:center;font-family:var(--display);font-size:calc(var(--u)*4.4);color:#fff;background:var(--c);
+  border:calc(var(--u)*.5) solid var(--ink);box-shadow:0 calc(var(--u)*.5) 0 var(--ink);-webkit-text-stroke:calc(var(--u)*.25) var(--ink);paint-order:stroke fill}
+.board .row.lead .dot{box-shadow:0 0 0 calc(var(--u)*.7) var(--yellow),0 calc(var(--u)*.5) 0 var(--ink)}
+.chrono{position:absolute;right:calc(var(--u)*3.5);top:calc(var(--u)*16);font-family:var(--display);font-size:calc(var(--u)*4.4);padding:calc(var(--u)*.8) calc(var(--u)*2.4);border-radius:999px;background:rgba(0,0,0,.45);border:calc(var(--u)*.35) solid rgba(255,255,255,.25)}
+.speed{position:absolute;right:calc(var(--u)*3.5);top:calc(var(--u)*24);font-weight:900;font-size:calc(var(--u)*3.4);padding:calc(var(--u)*.6) calc(var(--u)*2.2);border-radius:999px;background:var(--lava);border:calc(var(--u)*.35) solid var(--ink);opacity:0;transition:opacity .25s}
+.speed.on{opacity:1}
+.speed.slow{background:#2E6BE6}
+.cap{position:absolute;left:0;right:0;top:calc(var(--u)*38);display:flex;justify-content:center;opacity:0}
+.cap.go{animation:cap 1.6s ease forwards}
+@keyframes cap{0%{opacity:0;transform:scale(2.2) rotate(-6deg)}14%{opacity:1;transform:scale(1) rotate(-3deg)}80%{opacity:1;transform:scale(1) rotate(-3deg)}100%{opacity:0;transform:scale(.9) rotate(-3deg)}}
+.cap.stay{animation:cap2 .45s cubic-bezier(.2,1.6,.35,1) forwards}
+@keyframes cap2{from{opacity:0;transform:scale(2.4) rotate(-8deg)}to{opacity:1;transform:rotate(-3deg)}}
+.lbl{position:absolute;left:0;top:0;width:calc(var(--u)*6.4);height:calc(var(--u)*6.4);margin:calc(var(--u)*-3.2);border-radius:50%;display:grid;place-items:center;font-family:var(--display);font-size:calc(var(--u)*3.8);color:#fff;
+  background:var(--c);border:calc(var(--u)*.45) solid var(--ink);-webkit-text-stroke:calc(var(--u)*.2) var(--ink);paint-order:stroke fill;will-change:transform}
+.lbl::after{content:"";position:absolute;left:50%;bottom:calc(var(--u)*-1.6);margin-left:calc(var(--u)*-.8);border:calc(var(--u)*.8) solid transparent;border-top-color:var(--ink)}
+.lbl[hidden]{display:none}
+
+/* 3. la gagnante */
+.hero{position:relative;width:calc(var(--u)*50)}
+.on .hero{animation:float 1.8s ease-in-out infinite alternate}
+.hero::before{content:"";position:absolute;inset:-22%;border-radius:50%;background:radial-gradient(circle,rgba(255,201,63,.5),transparent 62%)}
+.hero .num{width:36%}
+.on .hero .mb{animation:revealin .8s cubic-bezier(.2,1.5,.4,1) both .1s}
+@keyframes revealin{from{opacity:0;scale:.1;rotate:-200deg}to{opacity:1;scale:1;rotate:0deg}}
+.url{font-family:var(--display);font-size:calc(var(--u)*7.6);padding:calc(var(--u)*1.8) calc(var(--u)*5.4);border-radius:999px;background:var(--yellow);color:var(--ink);
+  box-shadow:0 calc(var(--u)*1.2) 0 var(--yellow-2),0 0 calc(var(--u)*8) rgba(255,201,63,.5)}
+.on .url.in{animation:pop .5s cubic-bezier(.2,1.5,.4,1) forwards,beat .5s ease-in-out infinite;animation-delay:var(--d),calc(var(--d) + .5s)}
+@keyframes beat{0%{transform:scale(1)}15%{transform:scale(1.07)}100%{transform:scale(1)}}
+.giant{font-size:calc(var(--u)*13)}
+.chips{display:flex;flex-wrap:wrap;justify-content:center;gap:calc(var(--u)*1.6)}
+.chips span{font-weight:900;font-size:calc(var(--u)*3.3);padding:calc(var(--u)*.8) calc(var(--u)*2.6);border-radius:999px;background:rgba(255,255,255,.1);border:calc(var(--u)*.35) solid rgba(255,255,255,.25)}
+
+/* l'image de couverture : la course en fond, le titre au milieu (la grille du profil coupe le haut et le bas en 3:4) */
+#stage.cover .race-ui .board,#stage.cover .race-ui .chrono{display:none}
+.cv-dim{position:absolute;inset:0;background:linear-gradient(180deg,rgba(30,8,3,.15),rgba(30,8,3,.55) 35%,rgba(30,8,3,.55) 65%,rgba(30,8,3,.2))}
+.sc.cv{gap:calc(var(--u)*3)}
+.sc.cv .grid6{width:calc(var(--u)*72);gap:calc(var(--u)*2) calc(var(--u)*3)}
+.sc.cv .pick,.sc.cv .word,.sc.cv .in{opacity:1;animation:none}
+
+/* ---------- la barre de pilotage ---------- */
+.bar{flex:none;display:flex;align-items:center;justify-content:center;gap:8px;flex-wrap:wrap;padding:10px 16px 14px;border-top:1px solid var(--ui-line);background:var(--ui-panel)}
+.bar button,.bar select{height:36px;padding:0 14px;border-radius:10px;border:1px solid var(--ui-line);background:#1E2140;color:var(--ui-ink);font-weight:800;font-size:13.5px}
+.bar button:hover{background:#272B52}
+.bar button.rec{background:#E5484D;border-color:#E5484D;color:#fff}
+.bar button.on{background:var(--yellow);color:#24253D;border-color:var(--yellow)}
+.bar .sep{width:1px;height:24px;background:var(--ui-line)}
+.bar .dots{display:flex;gap:4px;flex-wrap:wrap;justify-content:center}
+.bar .dots button{padding:0 9px;font-size:12px;height:30px}
+.hint{font-size:12px;color:#8E93C4;font-weight:700}
+body.film .bar{display:none}
+.loading{position:fixed;inset:0;display:grid;place-items:center;background:var(--ui-bg);font-weight:800;z-index:20}
+@media (max-width:640px){ .bar .hint,.bar .sep{display:none} }
+</style>
+</head>
+<body>
+<div class="loading" id="loading">La course se calcule… (quelques secondes)</div>
+<div class="wrap"><div id="stage" aria-label="Vidéo Tikalo : qui va gagner la course du Volcan ?"></div></div>
+<div class="bar" id="bar">
+  <button id="b-play">⏸ Pause</button>
+  <button id="b-restart">⏮ Recommencer</button>
+  <button id="b-sound">🔇 Musique coupée</button>
+  <select id="b-music" aria-label="Musique">
+    <option value="course">🎵 Course-poursuite</option>
+    <option value="fete">🎠 Fête foraine</option>
+    <option value="epique">🥁 Épique (tambours)</option>
+    <option value="chip">👾 Jeu vidéo 8 bits</option>
+  </select>
+  <span class="dots" id="dots"></span>
+  <span class="sep"></span>
+  <select id="b-format" aria-label="Format">
+    <option value="9:16">9:16 · Reels, TikTok, Shorts</option>
+    <option value="4:5">4:5 · fil Instagram / Facebook</option>
+    <option value="1:1">1:1 · carré</option>
+  </select>
+  <button id="b-film">Mode tournage (H)</button>
+  <button id="b-rec" class="rec">● Enregistrer la vidéo</button>
+  <span class="hint">Espace : pause · ← → : scène · H : cacher la barre · M : musique</span>
+</div>
+
+<script src="../tikalo-demo-rendu.js"></script>
+<script src="course-moteur.js"></script>
+<script type="module">
+import * as THREE from "three";
+import * as CANNON from "cannon-es";
+/* =====================================================================
+   LA VIDÉO : 3 scènes, environ 33 secondes, sur une musique à 120 BPM
+   ===================================================================== */
+const STAGE = document.getElementById("stage");
+const BEAT = .5;
+const {G3C, G3, g3Simulate, g3Where} = window.COURSE;
+window.CANNON = CANNON;   // (pour chercher une graine depuis la console : la course calculée par le navigateur n'est pas tout à fait celle de Node)
+const SEED = 40, CID = "volcan", NB = 6;
+// les six billes : un coloris bien à elle, un numéro
+const COLS = ["Rubis","Azur","Citron","Émeraude","Lavande","Ambre"].map(n=>PALETTES.findIndex(p=>p[0]===n));
+const LBL = ["Rouge","Bleue","Jaune","Verte","Violette","Orange"];
+const BALLS = COLS.map((pal, i)=>({n:i+1, pal, c:PALETTES[pal][2], name:LBL[i], spec:makeSpec("calot", {seed:hash("course"+i), family:0, pal, shiny:0})}));
+const cache = new Map();
+const url = (s, px) => { const k = `${s.seed}|${s.type}|${s.family}|${s.pal}|${px}`; if(!cache.has(k)) cache.set(k, marbleURL(s, px)); return cache.get(k) };
+const img = (s, px, attrs="") => `<img class="mb" src="${url(s, px)}" alt="" ${attrs}>`;
+const words = (txt, d0, step=BEAT/2, cls="") => txt.split(" ").map((w,i)=>`<span class="word ${cls}" style="--d:${(d0+i*step).toFixed(2)}s;--r:${(i%2?8:-8)}deg">${w}</span>`).join(" ");
+const logoHTML = (cls="") => `<div class="logo ${cls}"><span class="lt">T</span><span class="lt i">ı<img src="${url(LOGO_SPEC,160)}" alt=""></span><span class="lt">k</span><span class="lt">a</span><span class="lt">l</span><span class="lt">o</span></div>`;
+const pickHTML = (b, d) => `<div class="pick" style="--d:${d.toFixed(2)}s">${img(b.spec, 300)}<span class="num" style="--c:${b.c}">${b.n}</span><p class="tag-c">${b.name}</p></div>`;
+
+/* ---------- la course : calculée une fois (la même que dans le jeu), puis jouée à vitesse variable ---------- */
+let SIM = null, ORDER = null;
+// le temps de la vidéo (scène 2) → le temps de la course ; v : vitesse affichée (« ×9 », « ralenti »)
+let WARP = [];
+function makeWarp(win){
+  const fin = win + .45;
+  WARP = [[0, .6], [2.4, 3], [6.4, 11], [11.4, 20], [16.4, win - 15], [20.6, win - 1.7], [24.8, fin]];
+}
+const RACE_DUR = 26.4;
+function simAt(v){
+  for(let j=1;j<WARP.length;j++){ const [a, A] = WARP[j-1], [b, B] = WARP[j]; if(v <= b) return A + (B-A)*Math.max(0, v-a)/(b-a) }
+  return WARP.at(-1)[1];
+}
+const speedAt = v => { for(let j=1;j<WARP.length;j++){ const [a, A] = WARP[j-1], [b, B] = WARP[j]; if(v <= b) return (B-A)/(b-a) } return 0 };
+
+/* ---------- la 3D ---------- */
+let R3 = null;
+function shade(hex, p){ const c = new THREE.Color(hex), h = {}; c.getHSL(h); c.setHSL(h.h, h.s, Math.max(0, Math.min(1, h.l + p/100))); return "#" + c.getHexString() }
+function ballTex(pal, k){
+  const P = PALETTES[pal], c = document.createElement("canvas"); c.width = 256; c.height = 128; const x = c.getContext("2d");
+  x.fillStyle = P[2]; x.fillRect(0,0,256,128);
+  const r = rng(k*977+5);
+  for(let i=0;i<8;i++){ x.strokeStyle = [P[1],P[3],P[4]||"#fff"][i%3]; x.globalAlpha = .85; x.lineWidth = 4+r()*12; x.beginPath();
+    const y0 = r()*128, a = 10+r()*20, f = 25+r()*30; x.moveTo(0,y0); for(let s=0;s<=256;s+=8) x.lineTo(s, y0+Math.sin(s/f+i)*a); x.stroke() }
+  const tx = new THREE.CanvasTexture(c); tx.colorSpace = THREE.SRGBColorSpace; return tx;
+}
+function build3D(){
+  const W = SIM.W, TH = G3C[CID].theme, cv = document.getElementById("g3");
+  const renderer = new THREE.WebGLRenderer({canvas:cv, antialias:true, preserveDrawingBuffer:true});
+  renderer.shadowMap.enabled = true; renderer.shadowMap.type = THREE.PCFSoftShadowMap; renderer.toneMapping = THREE.ACESFilmicToneMapping;
+  const scene = new THREE.Scene(), camera = new THREE.PerspectiveCamera(58, 9/16, .1, 300);
+  // midi, comme la course du Volcan dans le jeu : ciel bleu, soleil, herbe
+  { const c = document.createElement("canvas"); c.width = 4; c.height = 256; const x = c.getContext("2d"), g = x.createLinearGradient(0,0,0,256);
+    g.addColorStop(0, "#3F8EF0"); g.addColorStop(.6, "#8CC6FF"); g.addColorStop(1, "#DDF0FF"); x.fillStyle = g; x.fillRect(0,0,4,256);
+    const sky = new THREE.CanvasTexture(c); sky.colorSpace = THREE.SRGBColorSpace; scene.background = sky; scene.fog = new THREE.Fog("#CBE6FF", 60, 170) }
+  scene.add(new THREE.HemisphereLight("#E4F2FF", "#6B8F4E", 1.35));
+  const sun = new THREE.DirectionalLight("#FFF8E6", 2.8); sun.castShadow = true;
+  const bb = [[1e9,1e9,1e9],[-1e9,-1e9,-1e9]]; W.statics.forEach(s=>s.pos.forEach((p,j)=>{ bb[0][j] = Math.min(bb[0][j], p); bb[1][j] = Math.max(bb[1][j], p) }));
+  const mid = bb[0].map((p,j)=>(p+bb[1][j])/2), half = Math.max(...bb[0].map((p,j)=>(bb[1][j]-p)/2)) + 8;
+  sun.position.set(mid[0]-20, mid[1]+40, mid[2]+25); sun.target.position.set(...mid); scene.add(sun.target);
+  sun.shadow.mapSize.set(2048,2048); Object.assign(sun.shadow.camera, {left:-half, right:half, top:half, bottom:-half, near:1, far:half*2+90}); scene.add(sun);
+  const glass = o => new THREE.MeshPhysicalMaterial({color:"#BFE6FF", roughness:.1, transparent:true, opacity:o, depthWrite:false});
+  const MAT = {ramp:new THREE.MeshStandardMaterial({color:TH.ramp, roughness:.65}), tray:new THREE.MeshStandardMaterial({color:TH.tray, roughness:.5}),
+    wall:glass(.28), inner:glass(.22), end:glass(.4), glass:glass(.12), wall2:new THREE.MeshStandardMaterial({color:TH.ramp, roughness:.5}),
+    peg:new THREE.MeshStandardMaterial({color:TH.peg||"#F4E3C2", roughness:.35, metalness:.2}),
+    bump:new THREE.MeshStandardMaterial({color:TH.bump||"#FF4F7A", roughness:.3, metalness:.1, emissive:TH.bump||"#FF4F7A", emissiveIntensity:.25}),
+    spin:new THREE.MeshStandardMaterial({color:TH.spin||"#FFD34D", roughness:.35, metalness:.3}), axle:new THREE.MeshStandardMaterial({color:"#8A8FA3", roughness:.3, metalness:.6}),
+    tower:new THREE.MeshStandardMaterial({color:TH.tower||shade(TH.ramp, -25), roughness:.8}), rock:new THREE.MeshStandardMaterial({color:TH.rock||"#8C949C", roughness:.9}),
+    rail:new THREE.MeshStandardMaterial({color:TH.peg||"#FFD34D", roughness:.3, metalness:.4}),
+    funnel:new THREE.MeshStandardMaterial({color:TH.ramp, roughness:.35, transparent:true, opacity:.72, depthWrite:false, side:THREE.DoubleSide})};
+  const piece = s => { if(s.shape==="group"){ const g = new THREE.Group();
+      s.parts.forEach(q=>g.add(piece({...q, kind:q.kind || s.kind, add:false}))); g.position.set(...s.pos); g.quaternion.set(...s.quat); scene.add(g); return g }
+    const m = new THREE.Mesh(s.shape==="cyl" ? new THREE.CylinderGeometry(s.size[0], s.size[0], s.size[1], 20) : s.shape==="sph" ? new THREE.SphereGeometry(s.size[0], 24, 16)
+      : s.shape==="cone" ? new THREE.CylinderGeometry(s.size[0], s.size[1], s.size[2], 40) : new THREE.BoxGeometry(...s.size), MAT[s.kind] || MAT.ramp);
+    m.position.set(...s.pos); m.quaternion.set(...s.quat); m.castShadow = !/wall|inner|end|glass/.test(s.kind); m.receiveShadow = true; if(s.add!==false) scene.add(m); return m };
+  W.statics.forEach(piece);
+  const kinM = W.kin.map(piece);
+  const floor = new THREE.Mesh(new THREE.PlaneGeometry(400,400), new THREE.MeshStandardMaterial({color:"#7DB35F", roughness:1}));
+  floor.rotation.x = -Math.PI/2; floor.position.y = W.floorY-1; floor.receiveShadow = true; scene.add(floor);
+  // le lac de lave, sous le bac d'arrivée : une lueur orange
+  const balls = BALLS.map((b,i)=>{ const m = new THREE.Mesh(new THREE.SphereGeometry(G3.R, 32, 24), new THREE.MeshPhysicalMaterial({map:ballTex(b.pal, i), roughness:.08, clearcoat:1, clearcoatRoughness:.05}));
+    m.castShadow = true; scene.add(m); return m });
+  R3 = {renderer, scene, camera, kinM, balls, cam:null, look:null, lastV:-1};
+  sizeGL();
+}
+function sizeGL(){ if(!R3) return; const r = STAGE.getBoundingClientRect(), dpr = Math.min(2, devicePixelRatio);
+  R3.renderer.setPixelRatio(dpr); R3.renderer.setSize(r.width, r.height, false); R3.camera.aspect = r.width/r.height; R3.camera.updateProjectionMatrix() }
+// la position d'une bille au temps t de la course (entre deux images de la simulation)
+function posAt(t, i){ const DT = G3.DT, F = SIM.frames, f = Math.max(0, Math.min(F.length-1.001, t/DT)), a = Math.floor(f), u = f - a, A = F[a], B = F[Math.min(F.length-1, a+1)];
+  return [0,1,2].map(j=>A[i*7+j]*(1-u) + B[i*7+j]*u) }
+function quatAt(t, i){ const F = SIM.frames, a = Math.max(0, Math.min(F.length-1, Math.round(t/G3.DT))); return [3,4,5,6].map(j=>F[a][i*7+j]) }
+// le classement à l'instant t : arrivées d'abord (dans l'ordre), puis la plus avancée sur le circuit
+function rankAt(t){
+  const s = BALLS.map((b,i)=>{ const p = posAt(t, i); return {i, done:SIM.fin[i] <= t, s:g3Where(SIM.W, ...p).s} });
+  return s.sort((a,b)=>(a.done && b.done) ? SIM.fin[a.i]-SIM.fin[b.i] : a.done ? -1 : b.done ? 1 : b.s-a.s).map(x=>x.i);
+}
+let rankC = {t:-1, r:null};
+const rankCached = t => { if(Math.abs(t - rankC.t) > .05) rankC = {t, r:rankAt(t)}; return rankC.r };
+function render3D(t, dtReal, snap){
+  if(!R3) return;
+  const W = SIM.W, {camera, balls, kinM} = R3;
+  balls.forEach((m, i)=>{ m.position.set(...posAt(t, i)); m.quaternion.set(...quatAt(t, i)) });
+  if(SIM.kf.length){ const k = SIM.kf[Math.max(0, Math.min(SIM.kf.length-1, Math.round(t/G3.DT)))]; kinM.forEach((m,i)=>m.quaternion.set(k[i*4],k[i*4+1],k[i*4+2],k[i*4+3])) }
+  // la caméra suit la tête de course (à la fin, entre les deux premières : le photo-finish)
+  const rk = rankCached(t), lead = rk[0], p = posAt(t, lead);
+  let target = p;
+  if(t > SIM.fin[ORDER[0]] - 4 && t < SIM.fin[ORDER[0]] + 1){ const q = posAt(t, ORDER[1]), pw = posAt(t, ORDER[0]); target = pw.map((v,j)=>(v + q[j])/2) }
+  const {T} = g3Where(W, ...target), h = Math.hypot(T[0], T[2]) || 1;
+  // dans le cratère : vue d'en haut ; sur la spirale : de l'extérieur (les tours du dessus sont plus à l'intérieur, rien ne cache la bille)
+  const inFunnel = h < .3 || target[1] > -2.5, rr = Math.hypot(target[0], target[2]) || 1, rad = [target[0]/rr, 0, target[2]/rr];
+  let want = inFunnel ? [target[0] + 1, target[1] + 11, target[2] - 9] : [target[0] + rad[0]*7 - T[0]/h*3, target[1] + 9.5, target[2] + rad[2]*7 - T[2]/h*3];
+  let look = inFunnel ? [target[0], target[1] - .5, target[2]] : [target[0] + T[0]/h*1.5, target[1] - .4, target[2] + T[2]/h*1.5];
+  // les 3 dernières secondes : une caméra posée derrière la ligne d'arrivée, face aux billes qui arrivent
+  if(t > SIM.fin[ORDER[0]] - 3){ const P = W.path, A = P.at(-3), B = P.at(-2), d = [B[0]-A[0], 0, B[2]-A[2]], dl = Math.hypot(d[0], d[2]) || 1, u = [d[0]/dl, 0, d[2]/dl];
+    want.splice(0, 3, B[0] + u[0]*12 - u[2]*4, B[1] + 8, B[2] + u[2]*12 + u[0]*4); look = [target[0], target[1] - .3, target[2]] }
+  const k = snap || !R3.cam ? 1 : 1 - Math.exp(-dtReal*Math.max(2.5, 1.6*speedNow));
+  R3.cam = R3.cam ? R3.cam.map((v,j)=>v + (want[j]-v)*k) : want; R3.look = R3.look ? R3.look.map((v,j)=>v + (look[j]-v)*k) : look;
+  camera.position.set(...R3.cam); camera.lookAt(...R3.look);
+  R3.renderer.render(R3.scene, camera);
+  // les numéros au-dessus des billes
+  const r = STAGE.getBoundingClientRect(), v = new THREE.Vector3();
+  balls.forEach((m, i)=>{ const el = document.getElementById("lb"+i); if(!el) return; v.copy(m.position); v.y += .95;
+    const front = v.clone().applyMatrix4(camera.matrixWorldInverse).z < -.5; v.project(camera);   // (une bille derrière la caméra : pas de numéro)
+    const vis = front && v.z < 1 && Math.abs(v.x) < 1.1 && Math.abs(v.y) < 1.1 && SIM.fin[i] > t - .6;
+    el.hidden = !vis; if(vis) el.style.transform = `translate(${((v.x+1)/2*r.width).toFixed(1)}px,${((1-v.y)/2*r.height).toFixed(1)}px)` });
+  // le classement des six
+  rk.forEach((i, k)=>{ const row = document.getElementById("rw"+i); if(row){ row.style.setProperty("--k", k); row.classList.toggle("lead", k===0) } });
+  const ch = document.getElementById("chrono"); if(ch) ch.textContent = Math.max(0, t-3).toFixed(1).replace(".", ",") + " s";
+}
+let speedNow = 1;
+
+/* ---------- les scènes ---------- */
+const SCENES = [
+  {name:"Qui va gagner ?", dur:5, logo:"small", html:()=>`
+      <h1 class="slam l">${words("QUI VA", .05, .18)}<br><span class="y">${words("GAGNER&nbsp;?", .35, .18)}</span></h1>
+      <p class="sub in up" style="--d:.7s">Choisis ta bille et <b>écris son numéro</b> en commentaire 👇</p>
+      <div class="grid6">${BALLS.map((b,i)=>pickHTML(b, 1 + i*.22)).join("")}</div>
+      <span class="pill in" style="--d:2.6s">🌋 Course du Volcan · une seule gagnante</span>`,
+    cues:[[0,"hit"],[.15,"hit"],[.35,"hit2"],[.55,"hit2"],...BALLS.map((b,i)=>[1 + i*.22, "pop:"+i]),[2.6,"chime"]]},
+  {name:"La course", dur:RACE_DUR, logo:"small", race:true, html:()=>``,
+    cues:[[.4,"beep"],[1.4,"beep"],[2.4,"go"],[2.4,"shake"]]},
+  {name:"La gagnante", dur:6.4, logo:"big", html:()=>{ const w = BALLS[ORDER[0]], s = BALLS[ORDER[1]], gap = Math.max(.01, SIM.fin[ORDER[1]] - SIM.fin[ORDER[0]]);
+      return `<h1 class="slam m">${words("C'EST LA", .1, .18)} <span class="y">${words(w.n + " !", .45, .2)}</span></h1>
+      <div class="hero">${img(w.spec, 520)}<span class="num" style="--c:${w.c}">${w.n}</span></div>
+      <p class="hand m in" style="--d:1s">devant la ${s.n}, de ${Math.round(gap*100)} centième${Math.round(gap*100)>1?"s":""} 😱</p>
+      <h2 class="slam s in" style="--d:1.7s">T'avais choisi <span class="y">laquelle ?</span> 👇</h2>
+      ${logoHTML("giant in")}
+      <span class="url in" style="--d:2.6s">www.tikalo.fr</span>
+      <div class="chips in up" style="--d:3.1s"><span>Une course à midi et à 20 h</span><span>Gratuit</span></div>` },
+    cues:[[0,"flash"],[.05,"boom"],[.05,"shake"],[.1,"burst:center:gold:140"],[.45,"hit2"],[1,"chime"],[2.6,"arp"]]},
+];
+const RACE_CUES = [[2.4,"PARTEZ !",1],[6.6,"Le cratère ! 🌋",0],[11.6,"⏩ On accélère…",0],[20.7,"🐢 Ralenti",0]];
+
+/* ---------- la course à l'écran ---------- */
+function raceUI(){
+  return `<div class="board">${BALLS.map((b,i)=>`<div class="row" id="rw${i}" style="--k:${i}"><span class="pos"></span><span class="dot" style="--c:${b.c}">${b.n}</span></div>`).join("")}</div>
+    <div class="chrono" id="chrono">0,0 s</div><div class="speed" id="speed"></div>
+    <div class="cap" id="cap"><h2 class="slam m"></h2></div>
+    ${BALLS.map((b,i)=>`<span class="lbl" id="lb${i}" style="--c:${b.c}" hidden>${b.n}</span>`).join("")}`;
+}
+let capLast = -1, countLast = -1;
+function raceFrame(e, dtReal, snap){
+  const t = simAt(e); speedNow = speedAt(e);
+  render3D(t, dtReal, snap);
+  const sp = document.getElementById("speed");
+  if(sp){ const fast = speedNow > 3, slow = speedNow < .9 && e < WARP.at(-1)[0];
+    sp.classList.toggle("on", fast || slow); sp.classList.toggle("slow", slow); sp.textContent = fast ? `⏩ ×${Math.round(speedNow)}` : slow ? "Ralenti ×0,5" : "" }
+  // le décompte 3, 2, 1 puis les annonces
+  const cap = document.getElementById("cap"); if(!cap) return;
+  const cnt = e < 2.4 ? 3 - Math.floor((e - .4)/1) : -1;
+  if(e >= .4 && cnt>0 && cnt!==countLast){ countLast = cnt; cap.querySelector("h2").innerHTML = `<span class="y">${cnt}</span>`; kick(cap, "go") }
+  const j = RACE_CUES.findLastIndex(([at])=>e >= at);
+  if(j>=0 && j!==capLast){ capLast = j; const [, txt] = RACE_CUES[j]; cap.querySelector("h2").innerHTML = txt; kick(cap, "go") }
+  // la ligne : photo-finish
+  if(e >= WARP.at(-1)[0] && !cap.classList.contains("stay")){ cap.querySelector("h2").innerHTML = `<span class="y">PHOTO-FINISH !</span>`; cap.classList.remove("go"); kick(cap, "stay"); if(!paused){ SND.sfx("boom"); kick(document.getElementById("cam"), "shake") } }
+  // les chocs de la course (aux vitesses où on les entend)
+  if(!paused && speedNow < 3){ const f0 = Math.round(raceFrame.lastT/G3.DT), f1 = Math.round(t/G3.DT); let n = 0;
+    for(let f=f0+1; f<=f1 && n<3; f++){ const h = SIM.hits.get(f); if(h && (h[0] > 1.2 || h[1] > 2.5)){ SND.sfx("clack", Math.min(1, Math.max(h[0], h[1]*.6)/5)); n++ } } }
+  raceFrame.lastT = t;
+}
+raceFrame.lastT = 0;
+
+/* ---------- les effets : confettis (canvas), secousses, flash ---------- */
+const FX = (() => {
+  let cv, cx, parts = [], W = 0, H = 0;
+  const PAL = {gold:["#FFC93F","#FFE38A","#F2AE12","#fff"], lava:["#FF5A1F","#FFB02E","#FFE0CF","#B0122A"]};
+  function fit(){ cv = document.getElementById("fx"); if(!cv) return; const r = cv.getBoundingClientRect(); W = r.width; H = r.height; cv.width = W*devicePixelRatio; cv.height = H*devicePixelRatio; cx = cv.getContext("2d"); cx.setTransform(devicePixelRatio,0,0,devicePixelRatio,0,0) }
+  function burst(where, pal, n){
+    if(!cx) return; const x = W/2, y = H*.42, cols = PAL[pal] || PAL.gold, sp = W/100;
+    for(let i=0;i<n;i++){ const a = Math.random()*Math.PI*2, v = (1.2+Math.random()*3.2)*sp*.55;
+      parts.push({x, y, vx:Math.cos(a)*v, vy:Math.sin(a)*v - sp*.5, g:sp*.045, life:1, d:.008+Math.random()*.012, s:sp*(.5+Math.random()*.9), c:cols[i%cols.length], r:Math.random()*6, vr:(Math.random()-.5)*.4, k:Math.random()<.3 }) }
+  }
+  function frame(){
+    if(cx){ cx.clearRect(0,0,W,H);
+      if(!paused) parts = parts.filter(p=>p.life>0);
+      for(const p of parts){ if(!paused){ p.x += p.vx; p.y += p.vy; p.vy += p.g; p.vx *= .985; p.r += p.vr; p.life -= p.d }
+        cx.save(); cx.globalAlpha = Math.max(0, Math.min(1, p.life*2)); cx.translate(p.x, p.y); cx.rotate(p.r); cx.fillStyle = p.c;
+        if(p.k){ cx.beginPath(); for(let j=0;j<8;j++){ const rr = j%2 ? p.s*.35 : p.s; cx.lineTo(Math.cos(j*Math.PI/4)*rr, Math.sin(j*Math.PI/4)*rr) } cx.fill() }
+        else cx.fillRect(-p.s/2, -p.s/4, p.s, p.s/2);
+        cx.restore() } }
+    requestAnimationFrame(frame);
+  }
+  requestAnimationFrame(frame);
+  return {fit, burst};
+})();
+const kick = (el, c) => { if(!el) return; el.classList.remove(c); void el.offsetWidth; el.classList.add(c) };
+
+/* ---------- la musique et les bruitages (Web Audio, rien à télécharger) ---------- */
+const SND = (() => {
+  let ctx = null, master, musG, music = null, on = false, dest = null;
+  const N = n => 440*Math.pow(2,(n-69)/12);
+  function init(){ if(ctx) return; ctx = new AudioContext(); master = ctx.createGain(); master.gain.value = .8; musG = ctx.createGain(); musG.connect(master);
+    const comp = ctx.createDynamicsCompressor(); master.connect(comp); comp.connect(ctx.destination); dest = ctx.createMediaStreamDestination(); comp.connect(dest) }
+  const noiseBuf = () => { const b = ctx.createBuffer(1, ctx.sampleRate*3, ctx.sampleRate), d = b.getChannelData(0); for(let i=0;i<d.length;i++) d[i] = Math.random()*2-1; return b };
+  let NBUF = null;
+  function env(node, t, a, peak, dec){ node.gain.setValueAtTime(0, t); node.gain.linearRampToValueAtTime(peak, t+a); node.gain.exponentialRampToValueAtTime(.0001, t+a+dec) }
+  function osc(type, f, t, peak, dec, f2, out=master, a=.004){ const o = ctx.createOscillator(), g = ctx.createGain(); o.type = type; o.frequency.setValueAtTime(f, t); if(f2) o.frequency.exponentialRampToValueAtTime(f2, t+dec);
+    env(g, t, a, peak, dec); o.connect(g); g.connect(out); o.start(t); o.stop(t+a+dec+.05) }
+  function noise(t, peak, dec, ftype="highpass", f=6000, f2, out=master, a=.003){ NBUF ||= noiseBuf(); const s = ctx.createBufferSource(), fl = ctx.createBiquadFilter(), g = ctx.createGain(); s.buffer = NBUF;
+    fl.type = ftype; fl.frequency.setValueAtTime(f, t); if(f2) fl.frequency.exponentialRampToValueAtTime(f2, t+a+dec); env(g, t, a, peak, dec); s.connect(fl); fl.connect(g); g.connect(out); s.start(t); s.stop(t+a+dec+.05) }
+  // une note tenue, adoucie par un filtre (les nappes de cordes, les cuivres)
+  function pad(type, f, t, dur, peak, cut, out=musG){ const o = ctx.createOscillator(), fl = ctx.createBiquadFilter(), g = ctx.createGain(); o.type = type; o.frequency.value = f;
+    fl.type = "lowpass"; fl.frequency.value = cut; g.gain.setValueAtTime(0, t); g.gain.linearRampToValueAtTime(peak, t+.06); g.gain.setValueAtTime(peak, t+dur*.7); g.gain.exponentialRampToValueAtTime(.0001, t+dur);
+    o.connect(fl); fl.connect(g); g.connect(out); o.start(t); o.stop(t+dur+.05) }
+  // (16 octobre 2026) quatre musiques au choix, toutes à 120 BPM (les repères de la vidéo restent calés) : menu « Musique » de la barre
+  const STYLES = {
+    // la course-poursuite : ré mineur, basse en doubles croches, cordes qui piquent, caisse claire qui roule
+    course:{prog:[[50,62,65,69],[46,62,65,70],[48,60,64,67],[45,61,64,69]], mel:[[74,77,74,72,74,77,79,81],[82,81,79,77,79,77,74,72],[72,76,79,76,72,76,79,84],[81,79,76,73,76,79,81,85]],
+      bar(t, ch, mel, M){
+        for(let b=0;b<4;b++){ const tb = t+b*BEAT;
+          osc("sine", 140, tb, .7, .2, 42, M);
+          noise(tb+BEAT/2, .1, .05, "highpass", 7500, 0, M); noise(tb+BEAT/4*3, .05, .04, "highpass", 8000, 0, M);
+          if(b%2) noise(tb, .3, .14, "bandpass", 1800, 0, M);
+          for(let e=0;e<4;e++) osc("sawtooth", N(ch[0]-12), tb+e*BEAT/4, .05, .1, 0, M);
+          ch.slice(1).forEach(n=>osc("square", N(n), tb+BEAT/2, .018, .1, 0, M)) }
+        mel.forEach((n,i)=>{ const tn = t+i*BEAT/2; osc("triangle", N(n), tn, .08, .2, 0, M); osc("sine", N(n)*2, tn, .018, .08, 0, M) }) }},
+    // la fête foraine : do majeur, « boum-tchac » (basse sur 1 et 3, accords sur 2 et 4), un orgue de manège qui sautille
+    fete:{prog:[[48,64,67,72],[53,65,69,72],[55,62,67,71],[48,64,67,72]], mel:[[79,76,79,84,83,79,76,79],[81,77,81,84,81,77,74,77],[79,74,79,83,86,83,79,74],[76,79,84,79,76,72,74,76]],
+      bar(t, ch, mel, M){
+        for(let b=0;b<4;b++){ const tb = t+b*BEAT;
+          if(b%2===0){ osc("triangle", N(ch[0]-12), tb, .3, .3, 0, M); osc("sine", 110, tb, .35, .12, 50, M) }
+          else { ch.slice(1).forEach(n=>osc("square", N(n), tb, .028, .16, 0, M)); noise(tb, .12, .06, "highpass", 6000, 0, M) }
+          noise(tb+BEAT/2, .05, .03, "highpass", 9000, 0, M) }
+        mel.forEach((n,i)=>{ const tn = t+i*BEAT/2; osc("square", N(n), tn, .045, .18, 0, M); osc("square", N(n)*2.003, tn, .015, .12, 0, M); osc("sine", N(n+12), tn+BEAT/4, .02, .06, 0, M) }) }},
+    // l'épique : la mineur, grands tambours, nappe de cordes graves, cuivres qui montent (bande-annonce de film)
+    epique:{prog:[[45,57,60,64],[41,57,60,65],[43,55,59,62],[40,56,59,64]], mel:[[69,0,72,0,76,0,74,72],[72,0,69,0,77,0,76,74],[71,0,74,0,79,0,77,74],[76,0,75,0,76,0,80,83]],
+      bar(t, ch, mel, M){
+        ch.forEach((n,j)=>pad("sawtooth", N(n - (j?0:12)), t, BEAT*4, j ? .022 : .05, 900, M));   // la nappe tenue toute la mesure
+        [0,.75,1.5,2,2.5,2.75,3,3.5].forEach((b,j)=>{ const tb = t+b*BEAT; osc("sine", j%3 ? 95 : 70, tb, j%3 ? .45 : .8, .32, 38, M); noise(tb, .08, .08, "lowpass", 900, 0, M) });
+        [1,3].forEach(b=>noise(t+b*BEAT, .28, .22, "bandpass", 1500, 0, M));
+        mel.forEach((n,i)=>{ if(n) pad("sawtooth", N(n), t+i*BEAT/2, BEAT*.95, .06, 1800, M) }) }},
+    // le jeu vidéo : sol majeur en 8 bits, arpèges rapides, basse triangle, petite mélodie carrée
+    chip:{prog:[[43,59,62,67],[40,55,59,64],[36,55,60,64],[38,54,57,62]], mel:[[79,83,86,83,79,81,83,86],[88,86,83,79,83,81,79,76],[79,81,83,84,86,84,83,79],[81,83,85,86,90,86,85,81]],
+      bar(t, ch, mel, M){
+        for(let b=0;b<4;b++){ const tb = t+b*BEAT;
+          osc("triangle", N(ch[0]), tb, .32, .22, 0, M); osc("triangle", N(ch[0]+12), tb+BEAT/2, .2, .15, 0, M);
+          for(let e=0;e<4;e++) osc("square", N(ch[1 + e%3] + 12), tb+e*BEAT/4, .02, .07, 0, M);
+          noise(tb+BEAT/2, .06, .025, "highpass", 8000, 0, M); if(b%2) noise(tb, .18, .07, "highpass", 2500, 0, M) }
+        mel.forEach((n,i)=>osc("square", N(n), t+i*BEAT/2, .05, .2, 0, M)) }},
+  };
+  let style = "course";
+  function bar(t, k){ const S = STYLES[style]; S.bar(t, S.prog[k%4], S.mel[k%4], musG) }
+  function startMusic(){ init(); if(music) return; let k = 0, next = ctx.currentTime + .05;
+    music = setInterval(()=>{ while(next < ctx.currentTime + .6){ bar(next, k++); next += BEAT*4 } }, 120) }
+  function stopMusic(){ clearInterval(music); music = null }
+  const SFX = {
+    hit(){ const t = ctx.currentTime; osc("sine", 300, t, .5, .14, 80); noise(t, .22, .06, "lowpass", 3000) },
+    hit2(){ const t = ctx.currentTime; osc("sine", 420, t, .5, .16, 110); noise(t, .28, .08, "lowpass", 4000) },
+    boom(){ const t = ctx.currentTime; osc("sine", 90, t, 1, .8, 28); noise(t, .5, .5, "lowpass", 1200, 100) },
+    pop(i){ const t = ctx.currentTime; osc("sine", N(72 + [0,2,4,7,9,12][i|0]), t, .22, .25); noise(t, .06, .02, "highpass", 5000) },
+    chime(){ const t = ctx.currentTime; [76,83,88].forEach((n,i)=>osc("sine", N(n), t+i*.06, .18, 1.1)) },
+    arp(){ const t = ctx.currentTime; [72,76,79,84,88,91,96].forEach((n,i)=>osc("triangle", N(n), t+i*.055, .14, .7)); noise(t, .2, 1.2, "highpass", 7000) },
+    // le décompte de la barrière, comme dans le jeu
+    beep(){ const t = ctx.currentTime; osc("square", 660, t, .14, .18) },
+    go(){ const t = ctx.currentTime; osc("square", 990, t, .16, .45); osc("sine", 1980, t, .06, .3) },
+    // une bille en verre contre une autre (ou contre la piste)
+    clack(v=.5){ const t = ctx.currentTime, f = 2200+Math.random()*900; osc("sine", f, t, .1*v + .03, .04); noise(t, .06*v, .012, "highpass", 4500) },
+  };
+  return {
+    get on(){ return on }, get stream(){ init(); return dest.stream },
+    setStyle(v){ style = STYLES[v] ? v : "course" },
+    toggle(v = !on){ on = v; init(); if(on){ ctx.resume(); startMusic() } else { stopMusic(); ctx.suspend() } return on },
+    pause(p){ if(!ctx || !on) return; p ? ctx.suspend() : ctx.resume() },
+    restart(){ if(!on) return; stopMusic(); musG.gain.cancelScheduledValues(ctx.currentTime); musG.gain.setValueAtTime(1, ctx.currentTime); startMusic() },
+    music(v){ if(!ctx) return; musG.gain.cancelScheduledValues(ctx.currentTime); musG.gain.setTargetAtTime(v, ctx.currentTime, .12) },
+    sfx(name, arg){ if(!on || !ctx || ctx.state!=="running") return; SFX[name]?.(arg) },
+  };
+})();
+
+/* ---------- le moteur : scènes, repères, pause ---------- */
+let cur = -1, t0 = 0, paused = false, pauseAt = 0, recording = null, fired = new Set(), lastNow = performance.now();
+const elapsed = () => ((paused ? pauseAt : performance.now()) - t0) / 1000;
+function build(){
+  STAGE.innerHTML = `<div class="bg"><div class="burst"></div><div class="embers"></div></div><canvas id="g3"></canvas><div class="vig"></div>
+    <div class="cam" id="cam"><div class="race-ui" id="race-ui">${raceUI()}</div><div class="mini-logo">${logoHTML()}</div>${SCENES.map((S,i)=>`<section class="sc" data-i="${i}"></section>`).join("")}</div>
+    <canvas id="fx"></canvas><div id="flash"></div>`;
+  document.getElementById("dots").innerHTML = SCENES.map((S,i)=>`<button data-i="${i}">${i+1}. ${S.name}</button>`).join("");
+  FX.fit();
+}
+function show(i){
+  const secs = STAGE.querySelectorAll(".sc"), prev = secs[cur];
+  if(prev && cur!==i){ prev.classList.remove("on"); prev.classList.add("out"); setTimeout(()=>{ prev.classList.remove("out"); if(!prev.classList.contains("on")) prev.innerHTML = "" }, 320) }
+  cur = i; const el = secs[i], S = SCENES[i];
+  el.classList.remove("out","on"); el.innerHTML = S.html(); void el.offsetWidth; el.classList.add("on");
+  STAGE.classList.toggle("big-logo", S.logo==="big"); STAGE.classList.toggle("race", !!S.race);
+  if(S.race){ document.getElementById("race-ui").innerHTML = raceUI(); capLast = -1; countLast = -1; raceFrame.lastT = 0; R3.cam = null; raceFrame(0, 0, true) }
+  if(i===0) SND.music(1);
+  t0 = performance.now(); fired = new Set(); if(paused) setPaused(false);
+  document.querySelectorAll("#dots button").forEach((b,k)=>b.classList.toggle("on", k===i));
+}
+function cue(what){
+  const [k, a, b, c] = what.split(":");
+  if(k==="burst") return FX.burst(a, b, +c);
+  if(k==="shake") return kick(document.getElementById("cam"), "shake");
+  if(k==="flash") return kick(document.getElementById("flash"), "go");
+  if(k==="mus") return SND.music(+a);
+  SND.sfx(k, a===undefined ? undefined : +a);
+}
+function tick(){
+  const now = performance.now(), dt = Math.min(.1, (now - lastNow)/1000); lastNow = now;
+  if(!paused && cur>=0){
+    const S = SCENES[cur], e = elapsed();
+    (S.cues||[]).forEach(([t, w], j)=>{ if(e>=t && !fired.has(j)){ fired.add(j); cue(w) } });
+    if(S.race) raceFrame(Math.min(e, S.dur), dt);
+    if(e >= S.dur){
+      if(cur===SCENES.length-1 && recording) stopRec();
+      else if(!FREEZE){ if(cur===SCENES.length-1) SND.restart(); show((cur+1)%SCENES.length) }
+    }
+    // l'image figée : la course est rejouée jusqu'à cet instant (pour que la caméra soit à sa vraie place), les animations calées dessus
+    if(FREEZE && e >= FREEZE.at && !paused){
+      if(S.race){ R3.cam = null; for(let x = Math.max(0, FREEZE.at-3); x <= FREEZE.at; x += 1/60) raceFrame(x, 1/60, x===Math.max(0, FREEZE.at-3)) }
+      setPaused(true); document.getAnimations().forEach(x=>{ try{ x.currentTime = FREEZE.at*1000; x.pause() }catch(_){} }) }
+  }
+  requestAnimationFrame(tick);
+}
+function setPaused(p){
+  if(p===paused) return; paused = p;
+  STAGE.querySelectorAll("*").forEach(x=>x.style.animationPlayState = p ? "paused" : "");
+  if(p) pauseAt = performance.now(); else { t0 += performance.now()-pauseAt }
+  SND.pause(p);
+  document.getElementById("b-play").textContent = p ? "▶ Lecture" : "⏸ Pause";
+}
+
+/* ---------- le format ---------- */
+const FORMATS = {"9:16":[1080,1920], "4:5":[1080,1350], "1:1":[1080,1080]};
+let format = "9:16";
+function layout(){
+  const [W,H] = FORMATS[format], wrap = document.querySelector(".wrap"), film = document.body.classList.contains("film");
+  const aw = wrap.clientWidth - (film?0:32), ah = wrap.clientHeight - (film?0:32), k = Math.min(aw/W, ah/H);
+  const w = Math.floor(W*k), h = Math.floor(H*k);
+  STAGE.style.setProperty("--sw", w+"px"); STAGE.style.setProperty("--sh", h+"px");
+  STAGE.style.setProperty("--u", Math.min(w/100, h/158)+"px");
+  requestAnimationFrame(()=>{ FX.fit(); sizeGL() });
+}
+
+/* ---------- l'enregistrement (Chrome / Edge) : l'image de la scène et le son de la page ---------- */
+async function startRec(){
+  if(!navigator.mediaDevices?.getDisplayMedia){ document.querySelector(".hint").textContent = "Ton navigateur ne sait pas enregistrer l'onglet : utilise Win + Alt + R, ou l'enregistreur d'écran du téléphone."; return }
+  let stream;
+  try{ stream = await navigator.mediaDevices.getDisplayMedia({video:{frameRate:60}, audio:false, preferCurrentTab:true, selfBrowserSurface:"include"}) }catch(e){ return }
+  const track = stream.getVideoTracks()[0];
+  try{ if(window.CropTarget && track.cropTo) await track.cropTo(await CropTarget.fromElement(STAGE)) }catch(e){}
+  if(SND.on) SND.stream.getAudioTracks().forEach(t=>stream.addTrack(t));
+  const type = ["video/mp4;codecs=avc1,mp4a.40.2","video/mp4","video/webm;codecs=vp9,opus","video/webm"].find(t=>MediaRecorder.isTypeSupported(t)) || "";
+  const rec = new MediaRecorder(stream, {mimeType:type, videoBitsPerSecond:16e6}), chunks = [];
+  rec.ondataavailable = e=>e.data.size && chunks.push(e.data);
+  rec.onstop = ()=>{ stream.getVideoTracks().forEach(t=>t.stop());
+    const blob = new Blob(chunks, {type:rec.mimeType}), a = document.createElement("a");
+    a.href = URL.createObjectURL(blob); a.download = `tikalo-qui-va-gagner-${format.replace(":","x")}.${rec.mimeType.includes("mp4")?"mp4":"webm"}`; a.click();
+    document.getElementById("b-rec").textContent = "● Enregistrer la vidéo"; recording = null };
+  track.onended = ()=>recording && stopRec();
+  recording = rec; document.getElementById("b-rec").textContent = "■ Arrêter";
+  await new Promise(r=>setTimeout(r,400));
+  SND.restart(); show(0); rec.start(500);
+}
+function stopRec(){ if(recording && recording.state!=="inactive") recording.stop() }
+
+/* ---------- les boutons ---------- */
+const soundBtn = () => { const b = document.getElementById("b-sound"); b.textContent = SND.on ? "🔊 Musique" : "🔇 Musique coupée"; b.classList.toggle("on", SND.on) };
+document.getElementById("b-play").onclick = ()=>setPaused(!paused);
+document.getElementById("b-restart").onclick = ()=>{ SND.restart(); show(0) };
+document.getElementById("b-sound").onclick = ()=>{ SND.toggle(); if(SND.on){ SND.restart(); show(0) } soundBtn() };
+document.getElementById("dots").onclick = e=>{ const b = e.target.closest("button"); if(b) show(+b.dataset.i) };
+document.getElementById("b-format").onchange = e=>{ format = e.target.value; layout() };
+// changer de musique : on la relance du début, avec la vidéo (et on la garde pour la prochaine fois)
+document.getElementById("b-music").onchange = e=>{ SND.setStyle(e.target.value); try{ localStorage.setItem("tikalo-course-musique", e.target.value) }catch(_){}
+  if(!SND.on){ SND.toggle(true); soundBtn() } SND.restart(); show(0) };
+try{ const m = localStorage.getItem("tikalo-course-musique"); if(m){ SND.setStyle(m); document.getElementById("b-music").value = m } }catch(_){}
+document.getElementById("b-film").onclick = ()=>{ document.body.classList.toggle("film"); layout() };
+document.getElementById("b-rec").onclick = ()=>recording ? stopRec() : startRec();
+addEventListener("resize", layout);
+addEventListener("keydown", e=>{
+  if(e.key===" "){ e.preventDefault(); setPaused(!paused) }
+  else if(e.key==="ArrowRight") show((cur+1)%SCENES.length);
+  else if(e.key==="ArrowLeft") show((cur-1+SCENES.length)%SCENES.length);
+  else if(e.key.toLowerCase()==="h"){ document.body.classList.toggle("film"); layout() }
+  else if(e.key.toLowerCase()==="m"){ SND.toggle(); soundBtn() }
+});
+
+/* ---------- l'image de couverture : la course dans le cratère, le titre, les six billes ---------- */
+function cover(){
+  STAGE.classList.add("race","cover","no-logo"); document.getElementById("race-ui").innerHTML = raceUI();
+  R3.cam = null; for(let x = 6.5; x <= 9.5; x += 1/60) raceFrame(x, 1/60, x===6.5);
+  BALLS.forEach((b,i)=>{ const l = document.getElementById("lb"+i); if(l) l.hidden = true });
+  const el = STAGE.querySelector(".sc"); el.classList.add("cv","on");
+  el.innerHTML = `<div class="cv-dim"></div>
+    <div style="position:relative;display:flex;flex-direction:column;align-items:center;gap:calc(var(--u)*3.2)">
+      ${logoHTML("giant")}
+      <h1 class="slam xl" style="margin-top:calc(var(--u)*2)"><span class="y">QUI VA</span><br>GAGNER ?</h1>
+      <div class="grid6">${BALLS.map(b=>pickHTML(b, 0)).join("")}</div>
+      <p class="hand m">Choisis ta bille 👇</p>
+    </div>`;
+}
+
+/* ---------- démarrage : la course est calculée d'avance (la même graine donne toujours la même course) ---------- */
+const Q = new URLSearchParams(location.search);
+const FREEZE = Q.has("at") ? {at:+Q.get("at")} : null;
+if(Q.has("film")) document.body.classList.add("film");
+document.fonts.ready.then(()=>setTimeout(()=>{
+  SIM = g3Simulate(CANNON, SEED, NB, CID);
+  ORDER = SIM.fin.map((x,i)=>i).sort((a,b)=>SIM.fin[a]-SIM.fin[b]);
+  makeWarp(SIM.fin[ORDER[0]]);
+  build(); build3D(); layout();
+  BALLS.forEach(b=>{ const i = new Image(); i.src = url(b.spec, 520) });
+  document.getElementById("loading").remove();
+  window.__ready = true;
+  if(Q.has("cover")){ requestAnimationFrame(()=>{ sizeGL(); cover(); window.__cover = true }); return }
+  const s0 = Math.max(0, Math.min(SCENES.length-1, (+Q.get("s")||1)-1));
+  show(s0); tick();
+}, 30));
+</script>
+</body>
+</html>

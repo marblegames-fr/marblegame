@@ -1,0 +1,515 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Tikalo · vidéo Mets pause</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Gluten:wght@900&family=Lilita+One&family=Nunito:wght@700;800;900&family=Caveat:wght@700&display=swap">
+<style>
+/* La 4e vidéo Instagram de Tikalo (13 octobre 2026) : « Mets pause ! », le défi. Les billes défilent 8 fois par seconde (4 jusqu'au 13 octobre, trop lent) ; là où on met pause,
+   c'est « sa » bille, avec une petite phrase (« Tu es… »). L'Œil du Dragon passe une seule fois, un éclair : on revoit la vidéo pour l'attraper.
+   Même moteur que demo-recre.html (scènes, repères, musique générée à 120 BPM, enregistrement), décor de bande dessinée (Super-héros le 1er novembre).
+   Chaque image du défilement est nette (pas de fondu) : une pause tombe toujours sur une bille lisible.
+   Pour vérifier une image précise : demo-defi.html?s=1&at=8.4 (scène 1, figée à 8,4 s), &film pour cacher la barre. */
+:root{
+  --night:#141A4A; --night-2:#23308A; --night-3:#0B0F2E; --ink:#1A1B33;
+  --yellow:#FFC93F; --yellow-2:#F2AE12; --pink:#FF4FA3; --cyan:#2EE6E6; --green:#2FCF6A; --orange:#FF7A1A; --red-2:#FF2E44;
+  --display:"Lilita One","Arial Rounded MT Bold",sans-serif; --logo:"Gluten","Lilita One",sans-serif; --body:"Nunito","Segoe UI",system-ui,sans-serif; --hand:"Caveat",cursive;
+  --ui-bg:#0A0B16; --ui-panel:#15172A; --ui-line:#2C3050; --ui-ink:#E9EBFF;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+html,body{height:100%}
+body{background:var(--ui-bg);color:var(--ui-ink);font-family:var(--body);display:flex;flex-direction:column;overflow:hidden}
+button,select{font:inherit;color:inherit}
+button{background:none;border:0;cursor:pointer}
+
+/* ---------- la scène : une case de bande dessinée, la nuit ---------- */
+.wrap{flex:1;min-height:0;display:grid;place-items:center;padding:16px}
+#stage{--rc:#2E6BE6;position:relative;overflow:hidden;width:var(--sw);height:var(--sh);font-size:calc(var(--u)*4);color:#fff;border-radius:18px;
+  background:radial-gradient(60% 40% at 50% 46%,var(--night-2),var(--night) 60%,var(--night-3));box-shadow:0 30px 80px -30px #000}
+body.film .wrap{padding:0} body.film #stage{border-radius:0;box-shadow:none}
+.bg{position:absolute;inset:0;pointer-events:none}
+/* la trame de points de la BD */
+.bg .dots{position:absolute;inset:0;opacity:.16;background-image:radial-gradient(circle,#fff calc(var(--u)*.32),transparent calc(var(--u)*.36));background-size:calc(var(--u)*2.4) calc(var(--u)*2.4);
+  -webkit-mask:radial-gradient(70% 55% at 50% 46%,transparent 30%,#000 100%);mask:radial-gradient(70% 55% at 50% 46%,transparent 30%,#000 100%)}
+/* les rayons derrière la bille, à la couleur de sa rareté */
+.bg .burst{position:absolute;left:50%;top:44%;width:calc(var(--u)*240);height:calc(var(--u)*240);margin:calc(var(--u)*-120);border-radius:50%;
+  background:repeating-conic-gradient(from 0deg,var(--rc) 0 9deg,transparent 9deg 22deg);opacity:.42;-webkit-mask:radial-gradient(circle,#000 8%,transparent 55%);mask:radial-gradient(circle,#000 8%,transparent 55%);
+  animation:spin 14s linear infinite}
+.bg .glow{position:absolute;left:50%;top:44%;width:calc(var(--u)*110);height:calc(var(--u)*110);margin:calc(var(--u)*-55);border-radius:50%;background:radial-gradient(circle,var(--rc),transparent 62%);opacity:.5}
+#stage.calm .bg .burst,#stage.calm .bg .glow{opacity:0;transition:opacity .4s}
+#night{position:absolute;inset:0;pointer-events:none;background:radial-gradient(circle at 50% 45%,rgba(140,0,20,.5),rgba(12,0,4,.94) 70%);opacity:0;transition:opacity var(--nt,.8s) ease}
+#fx{position:absolute;inset:0;width:100%;height:100%;pointer-events:none;z-index:8}
+#flash{position:absolute;inset:0;background:#fff;opacity:0;pointer-events:none;z-index:9}
+#flash.go{animation:fl .5s ease-out}
+#flash.red{background:#FF2E44}
+@keyframes fl{0%{opacity:.85}100%{opacity:0}}
+.cam{position:absolute;inset:0}
+.cam.shake{animation:shake .38s cubic-bezier(.36,.07,.19,.97)}
+@keyframes shake{10%,90%{transform:translate(-1%,0)}20%,80%{transform:translate(1.4%,.6%)}30%,50%,70%{transform:translate(-1.8%,-.6%) rotate(-.6deg)}40%,60%{transform:translate(1.8%,.4%) rotate(.6deg)}}
+
+/* le bas de l'image est laissé libre : sur Instagram, la légende et les boutons passent par-dessus */
+.sc{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:calc(var(--u)*3.6);padding:calc(var(--u)*12) calc(var(--u)*6) calc(var(--u)*18);text-align:center;opacity:0;visibility:hidden}
+.sc.on{opacity:1;visibility:visible}
+.sc.out{visibility:visible;animation:sc-out .3s ease-in forwards}
+@keyframes sc-out{to{opacity:0;transform:scale(1.15);filter:blur(calc(var(--u)*.8))}}
+
+.mini-logo{position:absolute;top:calc(var(--u)*4.6);left:50%;transform:translateX(-50%);z-index:6;transition:opacity .3s}
+#stage.big-logo .mini-logo,#stage.no-logo .mini-logo{opacity:0}
+.logo{display:flex;align-items:flex-end;font-family:var(--logo);font-weight:900;line-height:1;letter-spacing:.02em}
+.logo .lt{display:inline-block;position:relative;color:var(--yellow);-webkit-text-stroke:.16em var(--ink);paint-order:stroke fill;
+  text-shadow:0 .04em 0 #F59E0B,0 .08em 0 #E07B00,0 .13em 0 var(--ink),0 .2em .3em rgba(0,0,0,.5)}
+.logo .lt:nth-child(1){transform:translateY(-.02em) rotate(-6deg)} .logo .lt:nth-child(2){transform:translateY(-.10em) rotate(4deg)}
+.logo .lt:nth-child(3){transform:translateY(.02em) rotate(-3deg)} .logo .lt:nth-child(4){transform:translateY(-.08em) rotate(5deg)}
+.logo .lt:nth-child(5){transform:rotate(-4deg)} .logo .lt:nth-child(6){transform:translateY(-.04em) rotate(3deg)}
+.logo .i img{position:absolute;left:50%;top:-.2em;width:.27em;height:.27em;margin-left:-.12em;border-radius:50%;box-shadow:0 0 0 .05em var(--ink);filter:drop-shadow(0 .06em 0 var(--ink))}
+.mini-logo .logo{font-size:calc(var(--u)*6.5)}
+
+/* ---------- la typo qui claque ---------- */
+.slam{font-family:var(--display);line-height:.92;letter-spacing:.01em;color:#fff;-webkit-text-stroke:calc(var(--u)*.55) var(--ink);paint-order:stroke fill;text-shadow:0 calc(var(--u)*1) 0 var(--ink),0 calc(var(--u)*2) calc(var(--u)*3) rgba(0,0,0,.45)}
+.slam.xl{font-size:calc(var(--u)*16)} .slam.l{font-size:calc(var(--u)*12)} .slam.m{font-size:calc(var(--u)*8.5)} .slam.s{font-size:calc(var(--u)*6.4)}
+.slam .y{color:var(--yellow)} .slam .r{color:var(--red-2)}
+.word{display:inline-block;opacity:0}
+.on .word{animation:slam .42s cubic-bezier(.2,1.6,.35,1) forwards;animation-delay:var(--d)}
+@keyframes slam{from{opacity:0;transform:scale(2.6) rotate(var(--r,-8deg));filter:blur(calc(var(--u)*.6))}to{opacity:1;transform:rotate(var(--rr,0deg))}}
+.hand{font-family:var(--hand);line-height:1.05;color:#FFE9A0;transform:rotate(-3deg)}
+.hand.l{font-size:calc(var(--u)*10)} .hand.m{font-size:calc(var(--u)*7.6)} .hand.s{font-size:calc(var(--u)*6)}
+.in{opacity:0}
+.on .in{animation:pop .5s cubic-bezier(.2,1.5,.4,1) forwards;animation-delay:var(--d,0s)}
+.on .in.up{animation-name:up;animation-timing-function:cubic-bezier(.2,.9,.3,1)}
+@keyframes pop{from{opacity:0;transform:scale(.4) rotate(var(--r0,0deg))}to{opacity:1;transform:none}}
+@keyframes up{from{opacity:0;transform:translateY(calc(var(--u)*8))}to{opacity:1;transform:none}}
+.mb{display:block;width:100%;height:auto;aspect-ratio:1;filter:drop-shadow(0 calc(var(--u)*1.2) calc(var(--u)*1.4) rgba(0,0,0,.55))}
+.mb.vx{filter:drop-shadow(0 0 calc(var(--u)*3) rgba(255,46,68,.6)) drop-shadow(0 calc(var(--u)*1.2) calc(var(--u)*1.4) rgba(0,0,0,.55))}
+@keyframes spin{to{transform:rotate(360deg)}}
+@keyframes float{to{transform:translateY(calc(var(--u)*-1.5)) rotate(5deg)}}
+
+/* 1. le défilement */
+.sc.roul{justify-content:flex-start;gap:0;padding-top:calc(var(--u)*13)}
+.head{display:flex;flex-direction:column;align-items:center;gap:calc(var(--u)*1.4)}
+.pause{display:inline-flex;align-items:center;gap:calc(var(--u)*2.4)}
+.pause i{display:inline-flex;gap:calc(var(--u)*1.1);padding:calc(var(--u)*1.6);border-radius:calc(var(--u)*2.4);background:var(--red-2);border:calc(var(--u)*.6) solid var(--ink);box-shadow:0 calc(var(--u)*.9) 0 var(--ink);opacity:0}
+.pause i b{width:calc(var(--u)*2.2);height:calc(var(--u)*8);border-radius:calc(var(--u)*.6);background:#fff}
+.on .pause i{animation:pop .45s cubic-bezier(.2,1.7,.4,1) forwards .05s,blink 1s steps(1) infinite 1s}
+@keyframes blink{50%{background:#B0122A}}
+.sub{font-weight:900;font-size:calc(var(--u)*4.4);line-height:1.15;color:#E8ECFF;text-shadow:0 calc(var(--u)*.4) 0 var(--ink)}
+.sub b{color:var(--yellow)}
+.wheel{position:relative;width:calc(var(--u)*80);height:calc(var(--u)*62);display:grid;place-items:center;margin-top:calc(var(--u)*2)}
+.wheel .mb{position:absolute;width:var(--w,60%);left:50%;top:50%;translate:-50% -50%}
+.wheel .mb[hidden]{display:none}
+/* chaque nouvelle bille arrive d'un petit coup (pas de fondu : la pause tombe toujours sur une image nette) */
+.wheel.k .mb{animation:kick .1s cubic-bezier(.2,1.8,.4,1)}
+@keyframes kick{from{scale:.82}to{scale:1}}
+.card{display:flex;flex-direction:column;align-items:center;gap:calc(var(--u)*1.2);min-height:calc(var(--u)*30)}
+.nm{font-family:var(--display);font-size:calc(var(--u)*6.4);line-height:1;color:#fff;-webkit-text-stroke:calc(var(--u)*.35) var(--ink);paint-order:stroke fill;text-shadow:0 calc(var(--u)*.6) 0 var(--ink)}
+.tags{display:flex;gap:calc(var(--u)*1.4);flex-wrap:wrap;justify-content:center}
+.tags span{font-weight:900;font-size:calc(var(--u)*3);text-transform:uppercase;letter-spacing:.05em;padding:calc(var(--u)*.6) calc(var(--u)*2.2);border-radius:999px;color:#fff;background:var(--rc);border:calc(var(--u)*.35) solid var(--ink)}
+.tags .sz{background:rgba(255,255,255,.14);border-color:rgba(255,255,255,.3)}
+.tags .shy{background:linear-gradient(90deg,#FF4FA3,#FFC93F,#2EE6E6,#8B6CFF,#FF4FA3);background-size:200% 100%;animation:shim 1.6s linear infinite}
+.tags .shy.gold{background:linear-gradient(90deg,#FFF3C4,#FFC93F,#E8A317,#FFE38A);color:var(--ink)}
+.tags .shy.lum{background:#E8FBFF;color:var(--ink);box-shadow:0 0 calc(var(--u)*3) #9FE8FF}
+@keyframes shim{to{background-position:200% 0}}
+.verdict{font-family:var(--hand);font-size:calc(var(--u)*7.2);line-height:1.02;color:#FFE9A0;transform:rotate(-2deg);max-width:calc(var(--u)*88)}
+.verdict small{display:block;font-size:.62em;color:#C9D0FF}
+.wheel .halo{position:absolute;inset:6%;border-radius:50%;pointer-events:none;opacity:0}
+.wheel.sh1 .halo{opacity:.7;background:conic-gradient(#FF6FB5,#FFB547,#FFE14D,#6FE3A8,#5AB8FF,#B07BFF,#FF6FB5);filter:blur(calc(var(--u)*4));animation:spin 3s linear infinite}
+.wheel.sh2 .halo{opacity:.75;inset:-6%;background:repeating-conic-gradient(from 0deg,rgba(255,214,90,.85) 0 6deg,transparent 6deg 18deg);-webkit-mask:radial-gradient(circle,#000 20%,transparent 68%);mask:radial-gradient(circle,#000 20%,transparent 68%);animation:spin 8s linear infinite}
+.wheel.sh3 .halo{opacity:.9;background:radial-gradient(circle,var(--lc,#9FE8FF),transparent 65%)}
+.wheel.sh3 .mb{filter:drop-shadow(0 0 calc(var(--u)*2) var(--lc,#9FE8FF)) drop-shadow(0 0 calc(var(--u)*5) var(--lc,#9FE8FF))}
+.prog{position:absolute;left:calc(var(--u)*10);right:calc(var(--u)*10);bottom:calc(var(--u)*14);height:calc(var(--u)*1.2);border-radius:999px;background:rgba(255,255,255,.14);overflow:hidden}
+.prog i{position:absolute;inset:0;transform-origin:0 50%;transform:scaleX(var(--p,0));background:var(--yellow)}
+
+/* 2. la légende */
+.hero{position:relative;width:calc(var(--u)*62)}
+.on .hero{animation:float 1.8s ease-in-out infinite alternate}
+.hero::before{content:"";position:absolute;inset:-20%;border-radius:50%;background:radial-gradient(circle,rgba(255,46,68,.45),transparent 62%)}
+.on .hero .mb{animation:revealin .8s cubic-bezier(.2,1.5,.4,1) both .1s}
+@keyframes revealin{from{opacity:0;scale:.1;rotate:-200deg}to{opacity:1;scale:1;rotate:0deg}}
+.orbit-sp{position:absolute;inset:-14%;border-radius:50%;border:calc(var(--u)*.35) dashed rgba(255,138,61,.55);animation:spin 5s linear infinite reverse}
+
+/* 3. l'appel final */
+.url{font-family:var(--display);font-size:calc(var(--u)*8.5);padding:calc(var(--u)*2) calc(var(--u)*6);border-radius:999px;background:var(--yellow);color:var(--ink);
+  box-shadow:0 calc(var(--u)*1.2) 0 var(--yellow-2),0 0 calc(var(--u)*8) rgba(255,201,63,.5)}
+.on .url.in{animation:pop .5s cubic-bezier(.2,1.5,.4,1) forwards,beat .5s ease-in-out infinite;animation-delay:var(--d),calc(var(--d) + .5s)}
+@keyframes beat{0%{transform:scale(1)}15%{transform:scale(1.07)}100%{transform:scale(1)}}
+.giant{font-size:calc(var(--u)*16)}
+.chips{display:flex;flex-wrap:wrap;justify-content:center;gap:calc(var(--u)*1.6)}
+.chips span{font-weight:900;font-size:calc(var(--u)*3.3);padding:calc(var(--u)*.8) calc(var(--u)*2.6);border-radius:999px;background:rgba(255,255,255,.1);border:calc(var(--u)*.35) solid rgba(255,255,255,.25)}
+.heroes{display:flex;gap:calc(var(--u)*1.2)}
+.heroes .mb{width:calc(var(--u)*13);opacity:0}
+.on .heroes .mb{animation:pop .45s cubic-bezier(.2,1.7,.4,1) forwards,float 1.6s ease-in-out infinite alternate;animation-delay:var(--d),calc(var(--d) + .45s)}
+.launch{font-family:var(--hand);font-size:calc(var(--u)*7.4);color:#FFB3D6;transform:rotate(-3deg)}
+
+/* ---------- la barre de pilotage ---------- */
+.bar{flex:none;display:flex;align-items:center;justify-content:center;gap:8px;flex-wrap:wrap;padding:10px 16px 14px;border-top:1px solid var(--ui-line);background:var(--ui-panel)}
+.bar button,.bar select{height:36px;padding:0 14px;border-radius:10px;border:1px solid var(--ui-line);background:#1E2140;color:var(--ui-ink);font-weight:800;font-size:13.5px}
+.bar button:hover{background:#272B52}
+.bar button.rec{background:#E5484D;border-color:#E5484D;color:#fff}
+.bar button.on{background:var(--yellow);color:#24253D;border-color:var(--yellow)}
+.bar .sep{width:1px;height:24px;background:var(--ui-line)}
+.bar .dots{display:flex;gap:4px;flex-wrap:wrap;justify-content:center}
+.bar .dots button{padding:0 9px;font-size:12px;height:30px}
+.hint{font-size:12px;color:#8E93C4;font-weight:700}
+body.film .bar{display:none}
+.loading{position:fixed;inset:0;display:grid;place-items:center;background:var(--ui-bg);font-weight:800;z-index:20}
+@media (max-width:640px){ .bar .hint,.bar .sep{display:none} }
+</style>
+</head>
+<body>
+<div class="loading" id="loading">Préparation des billes…</div>
+<div class="wrap"><div id="stage" aria-label="Vidéo Tikalo : mets pause, ta bille est…"></div></div>
+<div class="bar" id="bar">
+  <button id="b-play">⏸ Pause</button>
+  <button id="b-restart">⏮ Recommencer</button>
+  <button id="b-sound">🔇 Musique coupée</button>
+  <span class="dots" id="dots"></span>
+  <span class="sep"></span>
+  <select id="b-format" aria-label="Format">
+    <option value="9:16">9:16 · Reels, TikTok, Shorts</option>
+    <option value="4:5">4:5 · fil Instagram / Facebook</option>
+    <option value="1:1">1:1 · carré</option>
+  </select>
+  <button id="b-shuffle">🎲 Autres billes</button>
+  <button id="b-film">Mode tournage (H)</button>
+  <button id="b-rec" class="rec">● Enregistrer la vidéo</button>
+  <span class="hint">Espace : pause · ← → : scène · H : cacher la barre · M : musique</span>
+</div>
+
+<script src="../tikalo-demo-rendu.js"></script>
+<script>
+/* =====================================================================
+   LA VIDÉO : 3 scènes, environ 18 secondes, calées sur 120 BPM
+   ===================================================================== */
+const STAGE = document.getElementById("stage");
+const BEAT = .5, STEP = BEAT/4;      // une bille tous les quarts de temps (8 par seconde)
+const famIdx = name => Math.max(0, FAMILIES.findIndex(f=>f.name===name));
+const palIdx = name => Math.max(0, PALETTES.findIndex(p=>p[0]===name));
+const MYTH_FAM = FAMILIES.findIndex(f=>f.myth), HERO_FAM = famIdx("Super-héros");
+let SEED = 7;
+const R = () => { SEED = (SEED*1103515245 + 12345) >>> 0; return SEED / 4294967296 };
+const spec = (type, o={}) => makeSpec(type, {seed:o.seed ?? Math.floor(R()*4e9), ...o});
+const cache = new Map();
+const url = (s, px) => { const k = `${s.seed}|${s.type}|${s.family}|${s.pal}|${s.shiny}|${px}`; if(!cache.has(k)) cache.set(k, marbleURL(s, px)); return cache.get(k) };
+const img = (s, px, attrs="") => `<img class="mb" src="${url(s, px)}" alt="" ${attrs}>`;
+const VX = new Map(); let vxN = 0;
+const vx = (s, px, attrs="") => { const k = "v"+(vxN++); VX.set(k, {s, px}); return `<canvas class="mb vx" data-vx="${k}" width="${px}" height="${px}" ${attrs}></canvas>` };
+const base = () => FAMILIES.map((f,i)=>i).filter(i=>FAM_W[i]>0 && !FAMILIES[i].secret && !FAMILIES[i].depart && !FAMILIES[i].myth);
+const pick = a => a[Math.floor(R()*a.length)];
+const words = (txt, d0, step=BEAT/2, cls="") => txt.split(" ").map((w,i)=>`<span class="word ${cls}" style="--d:${(d0+i*step).toFixed(2)}s;--r:${(i%2?8:-8)}deg">${w}</span>`).join(" ");
+const logoHTML = (cls="") => `<div class="logo ${cls}"><span class="lt">T</span><span class="lt i">ı<img src="${url(LOGO_SPEC,160)}" alt=""></span><span class="lt">k</span><span class="lt">a</span><span class="lt">l</span><span class="lt">o</span></div>`;
+
+/* ---------- les phrases : là où on met pause, « Tu es… » ---------- */
+const SAY = [
+  ["le pote fidèle de la récré", "le prêteur de billes au grand cœur", "toujours premier en rang", "le roi du goûter", "calme, mais redoutable au pot",
+   "le pro du « on recommence ! »", "le compteur de billes du soir", "le spécialiste des tirs ratés 😅", "le champion de la marelle", "l'arbitre de la cour",
+   "le chercheur de billes du bac à sable", "le dernier à rentrer en classe"],
+  ["le roi du troc", "l'explorateur de la cour", "jamais sans une bille dans la poche", "le négociateur de la récré", "la trousse qui fait du bruit", "le chanceux du pot"],
+  ["le champion du pot", "celui avec qui tout le monde veut échanger", "le tireur d'élite 🎯", "le collectionneur qui fait des jaloux", "le maître du château de billes"],
+  ["le caïd de la cour 😎", "l'échange que tout le monde veut", "le cauchemar de la maîtresse", "la star de la récré"],
+  ["la légende du préau", "connu dans toute l'école", "la bille qui a son fan-club"],
+];
+const SHY_SAY = ["la chance incarnée 🍀", "plus brillant que le soleil ✨", "la bonne étoile de la cour 🌟"];
+// un pouvoir par héros (même ordre que les coloris 79 à 83)
+const HERO_SAY = ["Ton pouvoir : courir plus vite que la sonnerie ⚡", "Ton pouvoir : voler au-dessus de la cour 🪽", "Ton pouvoir : disparaître pendant la dictée 🌙",
+  "Ton pouvoir : porter tous les cartables 💪", "Ton pouvoir : faire fondre la neige de la cour 🔥"];
+const SHY_NAME = ["", "Irisée", "Dorée", "Lumineuse"];
+
+/* ---------- les billes du défilement : la mythique passe une seule fois ---------- */
+const N_ROLL = 80, ROLL_AT = .5, MYTH_POS = 59;   // 80 billes de 0,125 s (10 s) ; l'Œil du Dragon vers 7,9 s
+let set = null;
+function newSet(){
+  const fams = base(), byRar = r => fams.filter(f=>FAMILIES[f].rar===r);
+  const used = SAY.map(()=>[]), say = r => { const left = SAY[r].filter(x=>!used[r].includes(x)); const p = pick(left.length ? left : SAY[r]); used[r].push(p); return p };
+  // l'emplacement des billes qui comptent : héros, shiny, légendaires, épiques ; le reste se tire en penchant vers le commun
+  const plan = {9:"h0", 21:"h1", 33:"h2", 47:"h3", 70:"h4", 15:"s1", 40:"s2", 75:"s3", 26:"r4", 53:"r4", 64:"r4", 5:"r3", 18:"r3", 30:"r3", 44:"r3", 57:"r3", 67:"r3", [MYTH_POS]:"m"};
+  const roll = [];
+  let last = -1;
+  for(let i=0;i<N_ROLL;i++){
+    const p = plan[i];
+    let e;
+    if(p==="m") e = {s:{seed:Math.floor(R()*4e9), type:"mammouth", family:MYTH_FAM, pal:palIdx("Rubis"), shiny:0}, rar:5, say:"UNE LÉGENDE 🐉", small:"La bille la plus rare de tout le jeu"};
+    else if(p && p[0]==="h"){ const k = +p[1]; e = {s:spec(pick(["calot","boulet","mammouth"]), {family:HERO_FAM, pal:EVENTS.superheros.palIdx[k]}), rar:4, hero:k, say:HERO_SAY[k]} }
+    else if(p && p[0]==="s"){ const sh = +p[1], r = [1,2,3][sh-1]; e = {s:spec(pick(["bille","calot","boulet"]), {family:pick(byRar(r)), shiny:sh}), rar:r, say:SHY_SAY[sh-1]} }
+    else if(p && p[0]==="r"){ const r = +p[1]; e = {s:spec(r===4 ? pick(["boulet","mammouth"]) : pick(["chinoise","calot","boulet"]), {family:pick(byRar(r))}), rar:r, say:say(r)} }
+    else { let r; do{ r = pickW(R(), [10,6,3]) }while(r===last && R()<.5); last = r;
+      e = {s:spec(pick(r===0 ? ["mini","bille","bille","chinoise"] : ["bille","chinoise","calot"]), {family:pick(byRar(r))}), rar:r, say:say(r)} }
+    roll.push(e);
+  }
+  set = {roll,
+    myth: roll[MYTH_POS].s,
+    heroes: EVENTS.superheros.palIdx.map(p=>spec("calot", {family:HERO_FAM, pal:p})),
+  };
+}
+// le nom affiché : le héros pour un Super-héros, sinon « Motif · Coloris »
+const nameOf = e => e.rar===5 ? "Œil du Dragon" : e.hero!=null ? PALETTES[e.s.pal][0] : `${FAMILIES[e.s.family].name} · ${PALETTES[e.s.pal][0]}`;
+
+/* ---------- les scènes : html() dessine, cues = [temps (s), action] pour le son, les confettis et les secousses ---------- */
+const SCENES = [
+  {name:"Mets pause", dur:ROLL_AT + N_ROLL*STEP + .35, logo:"none", roll:true, cls:"roul", html:()=>`
+      <div class="head">
+        <div class="pause"><i><b></b><b></b></i><h1 class="slam l">${words("METS", .1, .15)} <span class="y">${words("PAUSE !", .3, .15)}</span></h1></div>
+        <p class="sub in up" style="--d:.45s">La bille où tu t'arrêtes, <b>c'est TA bille</b> 👇</p>
+      </div>
+      <div class="wheel" id="wheel"><span class="halo"></span><img class="mb" id="w-img" alt=""><canvas class="mb vx" id="w-vx" width="560" height="560" hidden></canvas></div>
+      <div class="card"><p class="nm" id="w-nm"></p><p class="tags" id="w-tags"></p><p class="verdict" id="w-say"></p></div>
+      <div class="prog"><i id="w-prog"></i></div>`,
+    cues:[[0,"hit"],[.1,"hit"],[.3,"hit2"],[.45,"hit2"],[ROLL_AT + N_ROLL*STEP, "stop"]]},
+  {name:"La légende", dur:3.5, logo:"none", html:()=>`
+      <p class="hand m" style="--d:0s">Et si t'as attrapé celle-là…</p>
+      <div class="hero"><span class="orbit-sp"></span>${vx(set.myth, 560)}</div>
+      <h1 class="slam l">${words("T'ES UNE", 1.1, .2)} <span class="r">${words("LÉGENDE.", 1.5, .2)}</span></h1>`,
+    cues:[[0,"night:1:.25"],[0,"flashred"],[.1,"myth"],[.1,"shake"],[.15,"burst:center:myth:130"],[1.1,"hit"],[1.3,"hit"],[1.5,"boom"],[1.5,"mus:1"],[1.5,"shake"],[1.55,"burst:center:myth:60"]]},
+  {name:"À toi !", dur:5, logo:"big", html:()=>`
+      <h1 class="slam m">${words("T'as eu", .1, .2)} <span class="y">${words("laquelle ? 👇", .5, .25)}</span></h1>
+      <p class="hand s in" style="--d:.9s">Dis-le en commentaire (et tague un pote)</p>
+      ${logoHTML("giant")}
+      <span class="url in" style="--d:1.6s">www.tikalo.fr</span>
+      <div class="chips in up" style="--d:2.1s"><span>Gratuit</span><span>Sans téléchargement</span><span>Téléphone & ordi</span></div>
+      <div class="heroes">${set.heroes.map((s,i)=>img(s, 200, `style="--d:${(2.6+i*.12).toFixed(2)}s"`)).join("")}</div>
+      <p class="launch in" style="--d:3.3s">Le 1<sup>er</sup> novembre, les Super-héros débarquent 🦸</p>`,
+    cues:[[0,"night:0:.4"],[.1,"hit"],[.3,"hit"],[.5,"hit2"],[.75,"hit2"],[1.6,"boom"],[1.6,"shake"],[1.6,"burst:center:gold:80"],[2.6,"arp"],[3.3,"chime"]]},
+];
+
+/* ---------- le défilement : une bille par demi-temps, changée net ---------- */
+let rollK = -1;
+function rollFrame(e){
+  const k = Math.max(0, Math.min(N_ROLL-1, Math.floor((e-ROLL_AT)/STEP)));
+  const p = document.getElementById("w-prog"); if(p) p.style.setProperty("--p", Math.min(1, Math.max(0, (e-ROLL_AT)/(N_ROLL*STEP))).toFixed(3));
+  if(k===rollK || !document.getElementById("wheel")) return;
+  rollK = k; const E = set.roll[k], R5 = DECOR_RAR[E.rar], w = document.getElementById("wheel"), im = document.getElementById("w-img"), cv = document.getElementById("w-vx");
+  const myth = E.rar===5;
+  im.hidden = myth; cv.hidden = !myth;
+  if(!myth) im.src = url(E.s, 560);
+  w.style.setProperty("--w", (52 + 26*scaleOf(E.s.type)) + "%");
+  cv.style.setProperty("--w", "80%");
+  w.className = "wheel" + (E.s.shiny ? " sh"+E.s.shiny : ""); w.style.setProperty("--lc", PALETTES[E.s.pal][2]); void w.offsetWidth; w.classList.add("k");
+  STAGE.style.setProperty("--rc", myth ? "#FF2E44" : R5.c);
+  document.getElementById("w-nm").textContent = nameOf(E);
+  document.getElementById("w-tags").innerHTML = `<span>${E.hero!=null ? "Super-héros" : R5.name}</span><span class="sz">${TYPES[E.s.type].label}</span>`
+    + (E.s.shiny ? `<span class="shy${E.s.shiny===2?" gold":E.s.shiny===3?" lum":""}">✦ ${SHY_NAME[E.s.shiny]}</span>` : "");
+  document.getElementById("w-say").innerHTML = E.hero!=null ? esc(E.say) : `Tu es… ${esc(E.say)}${E.small ? `<small>${esc(E.small)}</small>` : ""}`;
+  night(myth ? .55 : 0, .05);
+  if(paused) return;
+  SND.sfx(myth ? "mythTick" : E.s.shiny || E.rar>=4 ? "tick2" : "tick");
+}
+
+/* ---------- les effets : confettis (canvas), secousses, flash ---------- */
+const FX = (() => {
+  let cv, cx, parts = [], W = 0, H = 0;
+  const PAL = {gold:["#FFC93F","#FFE38A","#F2AE12","#fff"], rainbow:["#FF4FA3","#FFC93F","#2EE6E6","#8B6CFF","#2FCF6A","#fff"],
+    myth:["#FF2E44","#FF8A3D","#FFFFFF","#B0122A","#FFD1D6"]};
+  function fit(){ cv = document.getElementById("fx"); if(!cv) return; const r = cv.getBoundingClientRect(); W = r.width; H = r.height; cv.width = W*devicePixelRatio; cv.height = H*devicePixelRatio; cx = cv.getContext("2d"); cx.setTransform(devicePixelRatio,0,0,devicePixelRatio,0,0) }
+  function burst(where, pal, n){
+    if(!cx) return; const x = W/2, y = H*.45, cols = PAL[pal] || PAL.gold, sp = W/100;
+    for(let i=0;i<n;i++){ const a = Math.random()*Math.PI*2, v = (1.2+Math.random()*3.2)*sp*.55;
+      parts.push({x, y, vx:Math.cos(a)*v, vy:Math.sin(a)*v - sp*.5, g:sp*.045, life:1, d:.008+Math.random()*.012, s:sp*(.5+Math.random()*.9), c:cols[i%cols.length], r:Math.random()*6, vr:(Math.random()-.5)*.4, k:Math.random()<.3 }) }
+  }
+  function frame(){
+    if(cx){ cx.clearRect(0,0,W,H);
+      if(!paused) parts = parts.filter(p=>p.life>0);
+      for(const p of parts){ if(!paused){ p.x += p.vx; p.y += p.vy; p.vy += p.g; p.vx *= .985; p.r += p.vr; p.life -= p.d }
+        cx.save(); cx.globalAlpha = Math.max(0, Math.min(1, p.life*2)); cx.translate(p.x, p.y); cx.rotate(p.r); cx.fillStyle = p.c;
+        if(p.k){ cx.beginPath(); for(let j=0;j<8;j++){ const rr = j%2 ? p.s*.35 : p.s; cx.lineTo(Math.cos(j*Math.PI/4)*rr, Math.sin(j*Math.PI/4)*rr) } cx.fill() }
+        else cx.fillRect(-p.s/2, -p.s/4, p.s, p.s/2);
+        cx.restore() } }
+    requestAnimationFrame(frame);
+  }
+  requestAnimationFrame(frame);
+  return {fit, burst};
+})();
+const kick = (el, c) => { if(!el) return; el.classList.remove(c); void el.offsetWidth; el.classList.add(c) };
+
+/* ---------- la musique et les bruitages (Web Audio, rien à télécharger) ---------- */
+const SND = (() => {
+  let ctx = null, master, musG, music = null, on = false, dest = null;
+  const N = n => 440*Math.pow(2,(n-69)/12);
+  function init(){ if(ctx) return; ctx = new AudioContext(); master = ctx.createGain(); master.gain.value = .8; musG = ctx.createGain(); musG.connect(master);
+    const comp = ctx.createDynamicsCompressor(); master.connect(comp); comp.connect(ctx.destination); dest = ctx.createMediaStreamDestination(); comp.connect(dest) }
+  const noiseBuf = () => { const b = ctx.createBuffer(1, ctx.sampleRate*3, ctx.sampleRate), d = b.getChannelData(0); for(let i=0;i<d.length;i++) d[i] = Math.random()*2-1; return b };
+  let NB = null;
+  function env(node, t, a, peak, dec){ node.gain.setValueAtTime(0, t); node.gain.linearRampToValueAtTime(peak, t+a); node.gain.exponentialRampToValueAtTime(.0001, t+a+dec) }
+  function osc(type, f, t, peak, dec, f2, out=master, a=.004){ const o = ctx.createOscillator(), g = ctx.createGain(); o.type = type; o.frequency.setValueAtTime(f, t); if(f2) o.frequency.exponentialRampToValueAtTime(f2, t+dec);
+    env(g, t, a, peak, dec); o.connect(g); g.connect(out); o.start(t); o.stop(t+a+dec+.05) }
+  function noise(t, peak, dec, ftype="highpass", f=6000, f2, out=master, a=.003){ NB ||= noiseBuf(); const s = ctx.createBufferSource(), fl = ctx.createBiquadFilter(), g = ctx.createGain(); s.buffer = NB;
+    fl.type = ftype; fl.frequency.setValueAtTime(f, t); if(f2) fl.frequency.exponentialRampToValueAtTime(f2, t+a+dec); env(g, t, a, peak, dec); s.connect(fl); fl.connect(g); g.connect(out); s.start(t); s.stop(t+a+dec+.05) }
+  // la boucle : 120 BPM, en la mineur (la, fa, do, sol), une basse qui pousse, des cuivres de dessin animé de super-héros à contretemps
+  const PROG = [[45,57,60,64],[41,57,60,65],[48,60,64,67],[43,59,62,67]];
+  const MEL = [[76,76,79,76,74,72,74,76],[77,77,76,74,72,74,72,69],[79,79,84,83,79,76,79,81],[79,77,76,74,71,74,79,83]];
+  function bar(t, k){
+    const ch = PROG[k%4], mel = MEL[k%4], M = musG;
+    for(let b=0;b<4;b++){ const tb = t+b*BEAT;
+      osc("sine", 140, tb, .75, .22, 42, M);                         // grosse caisse à chaque temps : ça pousse
+      noise(tb+BEAT/2, .1, .05, "highpass", 7500, 0, M);              // charleston
+      if(b%2){ noise(tb, .3, .14, "bandpass", 1800, 0, M) }          // caisse claire
+      osc("sawtooth", N(ch[0]-12), tb, .07, .2, 0, M); osc("sawtooth", N(ch[0]-12), tb+BEAT/2, .06, .15, 0, M);   // basse en croches
+      ch.slice(1).forEach(n=>osc("square", N(n), tb+BEAT/2, .022, .12, 0, M));   // les cuivres, à contretemps
+    }
+    mel.forEach((n,i)=>{ const tn = t+i*BEAT/2; osc("triangle", N(n), tn, .09, .22, 0, M); osc("sine", N(n)*2, tn, .02, .08, 0, M) });
+  }
+  function startMusic(){ init(); if(music) return; let k = 0, next = ctx.currentTime + .05;
+    music = setInterval(()=>{ while(next < ctx.currentTime + .6){ bar(next, k++); next += BEAT*4 } }, 120) }
+  function stopMusic(){ clearInterval(music); music = null }
+  const SFX = {
+    hit(){ const t = ctx.currentTime; osc("sine", 300, t, .5, .14, 80); noise(t, .22, .06, "lowpass", 3000) },
+    hit2(){ const t = ctx.currentTime; osc("sine", 420, t, .5, .16, 110); noise(t, .28, .08, "lowpass", 4000) },
+    boom(){ const t = ctx.currentTime; osc("sine", 90, t, 1, .8, 28); noise(t, .5, .5, "lowpass", 1200, 100) },
+    // le cran de la roue : une bille en verre qui claque
+    tick(){ const t = ctx.currentTime, f = 2400+Math.random()*700; osc("sine", f, t, .12, .035); noise(t, .045, .01, "highpass", 5000) },   // 8 par seconde : plus discret
+    tick2(){ const t = ctx.currentTime; [2637,3136,3951].forEach((f,i)=>osc("sine", f, t+i*.03, .09, .25)); noise(t, .08, .02, "highpass", 6000) },
+    // la mythique qui passe : un petit coup grave et rouge, à peine le temps de l'entendre
+    mythTick(){ const t = ctx.currentTime; osc("sine", 70, t, .8, .35, 30); osc("sawtooth", 220, t, .06, .2, 110); [69,76,81].forEach(n=>osc("sine", N(n+12), t, .06, .3)) },
+    chime(){ const t = ctx.currentTime; [76,83,88].forEach((n,i)=>osc("sine", N(n), t+i*.06, .18, 1.1)) },
+    arp(){ const t = ctx.currentTime; [72,76,79,84,88,91,96].forEach((n,i)=>osc("triangle", N(n), t+i*.055, .14, .7)); noise(t, .2, 1.2, "highpass", 7000) },
+    // la fin du défilement : tout s'arrête net (la musique se coupe, un « tchac »)
+    stop(){ const t = ctx.currentTime; musG.gain.cancelScheduledValues(t); musG.gain.setValueAtTime(0, t); osc("sine", 160, t, .9, .3, 50); noise(t, .45, .18, "bandpass", 1800) },
+    myth(){ const t = ctx.currentTime; osc("sine", 80, t, 1, 1.2, 26); noise(t, .5, .9, "lowpass", 1400, 90); noise(t, .16, 2.2, "highpass", 6000);
+      [57,64,69].forEach(n=>[-.1,.1].forEach(dt=>{ const o = ctx.createOscillator(), f = ctx.createBiquadFilter(), g = ctx.createGain(); o.type = "sawtooth"; o.frequency.value = N(n+dt);
+        f.type = "lowpass"; f.frequency.value = 1500; g.gain.setValueAtTime(0, t); g.gain.linearRampToValueAtTime(.045, t+.3); g.gain.exponentialRampToValueAtTime(.0001, t+2.6);
+        o.connect(f); f.connect(g); g.connect(master); o.start(t); o.stop(t+2.7) }));
+      [0,7,12,16,19,24,28].forEach((n,i)=>osc("sine", N(69+n), t+.15+i*.06, .1, 1.6)) },
+  };
+  return {
+    get on(){ return on }, get stream(){ init(); return dest.stream },
+    toggle(v = !on){ on = v; init(); if(on){ ctx.resume(); startMusic() } else { stopMusic(); ctx.suspend() } return on },
+    pause(p){ if(!ctx || !on) return; p ? ctx.suspend() : ctx.resume() },
+    restart(){ if(!on) return; stopMusic(); musG.gain.cancelScheduledValues(ctx.currentTime); musG.gain.setValueAtTime(1, ctx.currentTime); startMusic() },
+    music(v){ if(!ctx) return; musG.gain.cancelScheduledValues(ctx.currentTime); musG.gain.setTargetAtTime(v, ctx.currentTime, .12) },
+    sfx(name, arg){ if(!on || !ctx || ctx.state!=="running") return; SFX[name]?.(arg) },
+  };
+})();
+
+/* ---------- le moteur : scènes, repères, pause ---------- */
+let cur = -1, t0 = 0, paused = false, pauseAt = 0, recording = null, fired = new Set();
+const elapsed = () => ((paused ? pauseAt : performance.now()) - t0) / 1000;
+function build(){
+  STAGE.innerHTML = `<div class="bg"><div class="glow"></div><div class="burst"></div><div class="dots"></div></div><div id="night"></div>
+    <div class="cam" id="cam"><div class="mini-logo">${logoHTML()}</div>${SCENES.map((S,i)=>`<section class="sc ${S.cls||""}" data-i="${i}"></section>`).join("")}</div>
+    <canvas id="fx"></canvas><div id="flash"></div>`;
+  document.getElementById("dots").innerHTML = SCENES.map((S,i)=>`<button data-i="${i}">${i+1}. ${S.name}</button>`).join("");
+  FX.fit();
+}
+function night(v, secs){ const n = document.getElementById("night"); n.style.setProperty("--nt", secs+"s"); n.style.opacity = v; }
+function show(i){
+  const secs = STAGE.querySelectorAll(".sc"), prev = secs[cur];
+  if(prev && cur!==i){ prev.classList.remove("on"); prev.classList.add("out"); setTimeout(()=>{ prev.classList.remove("out"); if(!prev.classList.contains("on")) prev.innerHTML = "" }, 320) }
+  cur = i; const el = secs[i], S = SCENES[i];
+  VX.clear(); vxN = 0; rollK = -1;
+  el.classList.remove("out","on"); el.innerHTML = S.html(); void el.offsetWidth; el.classList.add("on");
+  STAGE.classList.toggle("big-logo", S.logo==="big"); STAGE.classList.toggle("no-logo", S.logo==="none"); STAGE.classList.toggle("calm", !S.roll);
+  if(i===0){ night(0, .01); SND.music(1) }
+  if(S.roll) rollFrame(0);
+  t0 = performance.now(); fired = new Set(); if(paused) setPaused(false);
+  document.querySelectorAll("#dots button").forEach((b,k)=>b.classList.toggle("on", k===i));
+}
+function cue(what){
+  const [k, a, b, c] = what.split(":");
+  if(k==="burst") return FX.burst(a, b, +c);
+  if(k==="shake") return kick(document.getElementById("cam"), "shake");
+  if(k==="flash"){ document.getElementById("flash").classList.remove("red"); return kick(document.getElementById("flash"), "go") }
+  if(k==="flashred"){ document.getElementById("flash").classList.add("red"); return kick(document.getElementById("flash"), "go") }
+  if(k==="night") return night(+a, +b);
+  if(k==="mus") return SND.music(+a);
+  SND.sfx(k, a===undefined ? undefined : +a);
+}
+// la bille mythique : le shader du jeu la dessine au bon moment de sa boucle, puis on la recopie dans son canevas
+function drawMythic(){
+  const t = performance.now()/1000;
+  STAGE.querySelectorAll(".sc.on canvas.vx:not([hidden]), .sc.out canvas.vx:not([hidden])").forEach(cv=>{
+    const V = cv.id==="w-vx" ? {s:set.myth, px:560} : VX.get(cv.dataset.vx); if(!V || !mainGL) return;
+    mainGL.draw(V.s, V.px, I3, t % MYTH_T); const g = cv.getContext("2d"); g.clearRect(0, 0, V.px, V.px); g.drawImage(mainGL.cv, 0, 0);
+  });
+}
+function tick(){
+  if(!paused && cur>=0){
+    const S = SCENES[cur], e = elapsed();
+    (S.cues||[]).forEach(([t, w], j)=>{ if(e>=t && !fired.has(j)){ fired.add(j); cue(w) } });
+    if(S.roll) rollFrame(e);
+    drawMythic();
+    if(e >= S.dur){
+      if(cur===SCENES.length-1 && recording) stopRec();
+      else if(!FREEZE){ if(cur===SCENES.length-1) SND.restart(); show((cur+1)%SCENES.length) }
+    }
+    // l'image figée : chaque animation est calée exactement à l'instant demandé (les captures sans écran prennent du retard sinon)
+    if(FREEZE && e >= FREEZE.at && !paused){ if(S.roll) rollFrame(FREEZE.at); drawMythic(); setPaused(true); document.getAnimations().forEach(x=>{ try{ x.currentTime = FREEZE.at*1000; x.pause() }catch(_){} }) }
+  }
+  requestAnimationFrame(tick);
+}
+function setPaused(p){
+  if(p===paused) return; paused = p;
+  STAGE.querySelectorAll("*").forEach(x=>x.style.animationPlayState = p ? "paused" : "");
+  if(p) pauseAt = performance.now(); else { t0 += performance.now()-pauseAt }
+  SND.pause(p);
+  document.getElementById("b-play").textContent = p ? "▶ Lecture" : "⏸ Pause";
+}
+
+/* ---------- le format ---------- */
+const FORMATS = {"9:16":[1080,1920], "4:5":[1080,1350], "1:1":[1080,1080]};
+let format = "9:16";
+function layout(){
+  const [W,H] = FORMATS[format], wrap = document.querySelector(".wrap"), film = document.body.classList.contains("film");
+  const aw = wrap.clientWidth - (film?0:32), ah = wrap.clientHeight - (film?0:32), k = Math.min(aw/W, ah/H);
+  const w = Math.floor(W*k), h = Math.floor(H*k);
+  STAGE.style.setProperty("--sw", w+"px"); STAGE.style.setProperty("--sh", h+"px");
+  STAGE.style.setProperty("--u", Math.min(w/100, h/158)+"px");
+  requestAnimationFrame(FX.fit);
+}
+
+/* ---------- l'enregistrement (Chrome / Edge) : l'image de la scène et le son de la page ---------- */
+async function startRec(){
+  if(!navigator.mediaDevices?.getDisplayMedia){ document.querySelector(".hint").textContent = "Ton navigateur ne sait pas enregistrer l'onglet : utilise Win + Alt + R, ou l'enregistreur d'écran du téléphone."; return }
+  let stream;
+  try{ stream = await navigator.mediaDevices.getDisplayMedia({video:{frameRate:60}, audio:false, preferCurrentTab:true, selfBrowserSurface:"include"}) }catch(e){ return }
+  const track = stream.getVideoTracks()[0];
+  try{ if(window.CropTarget && track.cropTo) await track.cropTo(await CropTarget.fromElement(STAGE)) }catch(e){}
+  if(SND.on) SND.stream.getAudioTracks().forEach(t=>stream.addTrack(t));
+  const type = ["video/mp4;codecs=avc1,mp4a.40.2","video/mp4","video/webm;codecs=vp9,opus","video/webm"].find(t=>MediaRecorder.isTypeSupported(t)) || "";
+  const rec = new MediaRecorder(stream, {mimeType:type, videoBitsPerSecond:16e6}), chunks = [];
+  rec.ondataavailable = e=>e.data.size && chunks.push(e.data);
+  rec.onstop = ()=>{ stream.getVideoTracks().forEach(t=>t.stop());
+    const blob = new Blob(chunks, {type:rec.mimeType}), a = document.createElement("a");
+    a.href = URL.createObjectURL(blob); a.download = `tikalo-mets-pause-${format.replace(":","x")}.${rec.mimeType.includes("mp4")?"mp4":"webm"}`; a.click();
+    document.getElementById("b-rec").textContent = "● Enregistrer la vidéo"; recording = null };
+  track.onended = ()=>recording && stopRec();
+  recording = rec; document.getElementById("b-rec").textContent = "■ Arrêter";
+  await new Promise(r=>setTimeout(r,400));
+  SND.restart(); show(0); rec.start(500);
+}
+function stopRec(){ if(recording && recording.state!=="inactive") recording.stop() }
+
+/* ---------- les boutons ---------- */
+const soundBtn = () => { const b = document.getElementById("b-sound"); b.textContent = SND.on ? "🔊 Musique" : "🔇 Musique coupée"; b.classList.toggle("on", SND.on) };
+document.getElementById("b-play").onclick = ()=>setPaused(!paused);
+document.getElementById("b-restart").onclick = ()=>{ SND.restart(); show(0) };
+document.getElementById("b-sound").onclick = ()=>{ SND.toggle(); if(SND.on){ SND.restart(); show(0) } soundBtn() };
+document.getElementById("dots").onclick = e=>{ const b = e.target.closest("button"); if(b) show(+b.dataset.i) };
+document.getElementById("b-format").onchange = e=>{ format = e.target.value; layout() };
+document.getElementById("b-shuffle").onclick = ()=>{ SEED = (Math.random()*4e9)>>>0; newSet(); prerender(); show(cur) };
+document.getElementById("b-film").onclick = ()=>{ document.body.classList.toggle("film"); layout() };
+document.getElementById("b-rec").onclick = ()=>recording ? stopRec() : startRec();
+addEventListener("resize", layout);
+addEventListener("keydown", e=>{
+  if(e.key===" "){ e.preventDefault(); setPaused(!paused) }
+  else if(e.key==="ArrowRight") show((cur+1)%SCENES.length);
+  else if(e.key==="ArrowLeft") show((cur-1+SCENES.length)%SCENES.length);
+  else if(e.key.toLowerCase()==="h"){ document.body.classList.toggle("film"); layout() }
+  else if(e.key.toLowerCase()==="m"){ SND.toggle(); soundBtn() }
+});
+
+/* ---------- démarrage : toutes les billes du défilement sont dessinées d'avance (une image ne doit jamais manquer) ---------- */
+function prerender(){ set.roll.forEach(E=>{ if(E.rar!==5){ const i = new Image(); i.src = url(E.s, 560) } }) }
+const Q = new URLSearchParams(location.search);
+const FREEZE = Q.has("at") ? {at:+Q.get("at")} : null;
+if(Q.has("film")) document.body.classList.add("film");
+document.fonts.ready.then(()=>setTimeout(()=>{
+  newSet(); build(); layout(); prerender();
+  SCENES.forEach(S=>S.html());
+  document.getElementById("loading").remove();
+  const s0 = Math.max(0, Math.min(SCENES.length-1, (+Q.get("s")||1)-1));
+  if(s0>0) SCENES.slice(0, s0).forEach(S=>S.cues.forEach(([,w])=>{ if(w.startsWith("night:")){ const [,v] = w.split(":"); night(+v, .01) } }));
+  show(s0); tick();
+}, 30));
+</script>
+</body>
+</html>

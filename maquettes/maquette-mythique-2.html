@@ -1,0 +1,142 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Tikalo · Mythiques, saison 2</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Lilita+One&family=Nunito:wght@500;600;700;800;900&family=Caveat:wght@600;700&display=swap">
+<style>
+/* Maquette du 11 octobre 2026 : 6 nouvelles idées de motif mythique, à comparer au Vortex (le motif actuel).
+   Rendu : mythique-2-rendu.js, fabriqué par fabriquer-mythique-2.mjs à partir de tikalo-demo-rendu.js + mythique-2.glsl. */
+:root{
+  --bg:#FBF4E6;--panel:#FFFCF6;--line:#EFE3CD;--ink:#24253D;--ink-2:#56546B;--myth:#E0182D;
+  --display:"Lilita One","Arial Rounded MT Bold",sans-serif;--body:"Nunito","Segoe UI",system-ui,sans-serif;--hand:"Caveat",cursive;
+  --shadow:0 1px 0 rgba(120,90,40,.06),0 6px 18px -10px rgba(120,90,40,.25);
+}
+@media (prefers-color-scheme:dark){ :root:not([data-theme="light"]){
+  --bg:#16130F;--panel:#211D18;--line:#352E26;--ink:#F5EEE2;--ink-2:#C8BDAD;--myth:#FF3B4E;
+  --shadow:0 1px 0 rgba(0,0,0,.25),0 8px 22px -12px rgba(0,0,0,.7) } }
+:root[data-theme="dark"]{--bg:#16130F;--panel:#211D18;--line:#352E26;--ink:#F5EEE2;--ink-2:#C8BDAD;--myth:#FF3B4E}
+*{box-sizing:border-box;margin:0}
+body{background:var(--bg);color:var(--ink);font-family:var(--body);font-weight:600;line-height:1.45}
+.wrap{max-width:1180px;margin:0 auto;padding:28px 16px 80px}
+.tag{display:inline-block;font-size:11px;font-weight:900;letter-spacing:.08em;text-transform:uppercase;padding:4px 10px;border-radius:999px;background:var(--ink);color:var(--bg)}
+h1{font-family:var(--display);font-weight:400;font-size:clamp(34px,5vw,52px);line-height:1;margin:12px 0 8px}
+h1 em{font-style:normal;color:var(--myth)}
+.lead{max-width:78ch;color:var(--ink-2)}
+.note{font-family:var(--hand);font-size:22px;color:#C07A0C;margin-top:6px}
+.err{margin-top:14px;padding:12px 14px;border-radius:12px;background:#FDE2E4;color:#8E1B2E;font-weight:800;white-space:pre-wrap;font-size:12px}
+.err:empty{display:none}
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(520px,1fr));gap:16px;margin-top:20px}
+.my{position:relative;overflow:hidden;border-radius:24px;background:#0E0B12;color:#fff;box-shadow:var(--shadow);padding:20px;display:grid;grid-template-columns:240px minmax(0,1fr);gap:18px;isolation:isolate}
+.my::before{content:"";position:absolute;inset:-40%;z-index:-1;background:conic-gradient(from 0deg,transparent,rgba(224,24,45,.35),transparent 30%,rgba(224,24,45,.25),transparent 60%);animation:spin 9s linear infinite}
+.my::after{content:"";position:absolute;inset:2px;z-index:-1;border-radius:22px;background:radial-gradient(circle at 25% 40%,#2A0C12,#0E0B12 70%)}
+.my.ref::before{background:conic-gradient(from 0deg,transparent,rgba(255,255,255,.18),transparent 30%,rgba(255,255,255,.1),transparent 60%)}
+@keyframes spin{to{transform:rotate(1turn)}}
+@media (prefers-reduced-motion:reduce){ .my::before{animation:none} }
+.my canvas.big{width:240px;height:240px;cursor:zoom-in;filter:drop-shadow(0 0 22px rgba(224,24,45,.45))}
+.my .k{font-family:var(--display);font-weight:400;font-size:13px;letter-spacing:.12em;text-transform:uppercase;color:#FF4A5C}
+.my.ref .k{color:#BDB3BA}
+.my h2{font-family:var(--display);font-weight:400;font-size:36px;line-height:1;margin:4px 0 8px}
+.my p{font-size:14px;color:#D8D0D6}
+.my .why{margin-top:10px;font-family:var(--hand);font-size:20px;line-height:1.15;color:#FFC93F}
+.my .n{position:absolute;top:14px;right:16px;font-family:var(--display);font-size:44px;line-height:1;color:rgba(255,255,255,.12)}
+.cols{grid-column:1/-1;display:flex;gap:6px;flex-wrap:wrap}
+.cols button{border:0;background:rgba(255,255,255,.06);border-radius:12px;padding:6px 4px 4px;cursor:zoom-in;text-align:center;font:inherit;color:#CFC6CC;width:calc(12.5% - 6px);min-width:52px}
+.cols canvas{width:100%;max-width:70px;aspect-ratio:1;display:block;margin:0 auto}
+.cols canvas.lum{filter:drop-shadow(0 0 8px var(--lc)) drop-shadow(0 0 18px var(--lc))}
+.cols small{display:block;font-size:10px;font-weight:800;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.sw{display:flex;justify-content:center;gap:3px;margin-top:3px}
+.sw i{width:9px;height:9px;border-radius:50%;box-shadow:0 0 0 1px rgba(255,255,255,.35)}
+.zoom{position:fixed;inset:0;z-index:20;background:rgba(10,4,6,.9);display:grid;place-items:center;padding:16px}
+.zoom[hidden]{display:none}
+.zoom div{text-align:center;color:#fff}
+.zoom canvas{width:min(80vw,72vh,620px);height:min(80vw,72vh,620px);cursor:grab;touch-action:none;filter:drop-shadow(0 0 40px rgba(224,24,45,.5))}
+.zoom b{display:block;font-family:var(--display);font-weight:400;font-size:30px}
+.zoom small{opacity:.75;font-weight:700}
+@media (max-width:600px){ .grid{grid-template-columns:minmax(0,1fr)} .my{grid-template-columns:minmax(0,1fr);justify-items:center;text-align:center} .cols{justify-content:center} .cols button{width:calc(25% - 6px)} }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <span class="tag">Maquette · 11 octobre 2026</span>
+  <h1>Encore plus <em>mythique</em> ?</h1>
+  <p class="lead">6 nouvelles idées de motif mythique, à comparer au <b>Vortex</b> (en premier, c'est le motif actuel). Toutes sont en vrai rendu 3D du jeu, <b>animées en direct</b> et en boucle comme le Vortex, et prennent les couleurs de chaque coloris. Chacune est montrée en 6 coloris, en Mammouth et en shiny Lumineuse.</p>
+  <p class="lead" style="margin-top:8px">Sous chaque coloris, ses 3 couleurs (1re, 2e, 3e). L'<b>Œil du Dragon</b> et le <b>Plasma</b> utilisent les trois : la peau et le cercle de l'iris en 1re, l'iris en 2e, la couronne de la pupille, les éclats et le bord des paupières en 3e ; pour le Plasma, chaque éclair prend une des 3 couleurs à tour de rôle, le cœur est de la 3e, son halo de la 2e et la brume du verre de la 1re.</p>
+  <p class="note">Touche une bille pour la voir en grand et la faire tourner avec le doigt !</p>
+  <p class="err" id="err"></p>
+  <div class="grid" id="grid"></div>
+</div>
+<div class="zoom" id="zoom" hidden><div><canvas id="zc" width="1120" height="1120"></canvas><b id="zn"></b><small>Glisse pour la tourner · touche à côté pour fermer</small></div></div>
+
+<script src="mythique-2-rendu.js"></script>
+<script>
+const palOf = n => PALETTES.findIndex(P=>P[0]===n);
+const COLS = ["Rubis","Azur","Émeraude","Néon","Or rose","Lavande","Réglisse"].map(palOf);
+const MYTH = [
+  {fam:64, ref:true, name:"Vortex", desc:"Le motif actuel : un tourbillon de lumière qui tourne sans fin autour d'un œil noir et aspire les étincelles."},
+  {fam:65, name:"Œil du Dragon", desc:"Un œil de reptile te regarde depuis le fond du verre : l'iris brûle, la pupille fendue s'ouvre et se resserre, le regard se promène et cligne. Autour, une peau d'écailles.",
+    why:"Celui qui fait « waouh » : la bille est vivante et te fixe."},
+  {fam:66, name:"Tesseract", desc:"Un hypercube, un cube en 4 dimensions, qui se retourne comme un gant : le petit cube passe dehors, le grand rentre dedans, sans fin. Des arêtes de lumière, des sommets en étoiles.",
+    why:"L'objet impossible : on n'arrive pas à comprendre comment il bouge."},
+  {fam:67, name:"Sceau arcanique", desc:"Un cercle magique gravé de lumière : un anneau de runes tourne dans un sens, l'étoile à six branches dans l'autre, le triangle du centre encore plus vite, et des étincelles montent.",
+    why:"Le plus « grimoire » : on dirait un sort en train d'être lancé."},
+  {fam:68, name:"Plasma", desc:"Une boule plasma : un cœur brûlant au centre lâche des éclairs qui se tordent et cherchent le bord du verre, où ils s'écrasent en taches de lumière.",
+    why:"Le plus électrique, et tout le monde a déjà eu envie de toucher une boule plasma."},
+  {fam:69, name:"Ouroboros", desc:"Le serpent mythique qui se mord la queue : il fait le tour du verre sans fin, en relief, avec des écailles bordées de lumière et des yeux qui brillent.",
+    why:"Littéralement un mythe : le symbole de l'éternité, et un vrai serpent en 3D dans la bille."},
+  {fam:70, name:"Kaléidoscope infini", desc:"Une rosace à huit branches dans laquelle on plonge sans jamais arriver au fond : les anneaux naissent au bord et s'enfoncent vers le centre, chacun d'une couleur du coloris.",
+    why:"L'effet hypnotique : impossible d'arrêter de le regarder."},
+];
+// les nouveaux numéros (65 à 70) viennent après le Vortex (64)
+MYTH.filter(x=>!x.ref).forEach(x=>{ while(FAMILIES.length<x.fam) FAMILIES.push({name:"(vide)", rar:0, desc:""}); FAMILIES[x.fam] = {name:x.name, rar:5, desc:x.desc, face:true, myth:true} });
+
+const glBig = makeGL(document.createElement("canvas")), glSmall = makeGL(document.createElement("canvas")), glZoom = makeGL(document.getElementById("zc"));
+const items = [];
+const spec = (fam, pal, type="calot", k="", shiny=0) => ({seed:hash("mythique2"+fam+k), type, family:fam, pal, shiny});
+// les 3 couleurs du coloris, en pastilles sous son nom
+const sw = p => `<span class="sw" title="Les 3 couleurs du coloris">${[1,2,3].map(k=>`<i style="background:${PALETTES[p][k]}"></i>`).join("")}</span>`;
+const cv = (s, px, cls, label) => { const i = items.length; items.push({s, px, label, cls});
+  return `<canvas class="${cls}" width="${px}" height="${px}" data-i="${i}"${s.shiny===3?` style="--lc:${PALETTES[s.pal][2]}"`:""}></canvas>` };
+document.getElementById("grid").innerHTML = MYTH.map((x,j)=>`<article class="my${x.ref?" ref":""}"><span class="n">${x.ref?"★":j}</span>
+  <div>${cv(spec(x.fam, COLS[0]), 480, "big", x.name+" · "+PALETTES[COLS[0]][0])}</div>
+  <div><span class="k">${x.ref?"Le motif actuel":"Proposition "+j}</span><h2>${x.name}</h2><p>${x.desc}</p>${x.why?`<p class="why">${x.why}</p>`:""}</div>
+  <div class="cols">${COLS.slice(1).map((p,k)=>`<button>${cv(spec(x.fam,p,"calot","c"+k), 140, "sm", x.name+" · "+PALETTES[p][0])}<small>${PALETTES[p][0]}</small>${sw(p)}</button>`).join("")}
+    <button>${cv(spec(x.fam,COLS[0],"mammouth","m"), 140, "sm", x.name+" · Mammouth")}<small>Mammouth</small></button>
+    <button>${cv(spec(x.fam,COLS[1],"calot","l",3), 140, "sm lum", x.name+" · Lumineuse")}<small>✦ Lumineuse</small></button></div>
+</article>`).join("");
+
+const cvs = [...document.querySelectorAll("canvas[data-i]")].map(c=>({c, ctx:c.getContext("2d"), it:items[+c.dataset.i], vis:true}));
+const io = new IntersectionObserver(es=>es.forEach(e=>{ const x = cvs.find(v=>v.c===e.target); if(x) x.vis = e.isIntersecting }));
+cvs.forEach(x=>io.observe(x.c));
+// les motifs sont « de face » : ils se balancent doucement ; dans le zoom, on les tourne au doigt
+const rotM = (ax, ay) => { const cx=Math.cos(ax), sx=Math.sin(ax), cy=Math.cos(ay), sy=Math.sin(ay); return [cy,0,-sy, sx*sy,cx,sx*cy, cx*sy,-sx,cx*cy] };
+const zoom = document.getElementById("zoom"); let zit = null, zax = 0, zay = 0, drag = null;
+const errs = new Set();
+function draw(gl, it, px, rot){
+  try{ gl.draw(it.s, px, rot); return true }
+  catch(e){ const m = FAMILIES[it.s.family].name+" : "+e.message; if(!errs.has(m)){ errs.add(m); document.getElementById("err").textContent = [...errs].join("\n") } return false }
+}
+function frame(t){
+  const s = t/1000;
+  if(!zoom.hidden && zit && glZoom) draw(glZoom, zit, 1120, rotM(zax, drag ? zay : zay + .35*Math.sin(s*.6)));
+  else cvs.forEach(({c, ctx, it, vis})=>{ if(!vis) return; const gl = it.cls==="big" ? glBig : glSmall; if(!gl) return;
+    if(draw(gl, it, it.px, rotM(0, .35*Math.sin(s*.6)))){ ctx.clearRect(0,0,it.px,it.px); ctx.drawImage(gl.cv, 0, 0) } });
+  requestAnimationFrame(frame);
+}
+requestAnimationFrame(frame);
+document.addEventListener("click", e=>{
+  const c = e.target.closest("canvas[data-i]") || e.target.closest(".cols button")?.querySelector("canvas[data-i]");
+  if(c && !zoom.contains(e.target)){ zit = items[+c.dataset.i]; zax = 0; zay = 0; document.getElementById("zn").textContent = zit.label; zoom.hidden = false; return }
+  if(zoom.contains(e.target) && e.target.id!=="zc") zoom.hidden = true;
+});
+const zc = document.getElementById("zc");
+zc.addEventListener("pointerdown", e=>{ drag = {x:e.clientX, y:e.clientY, ax:zax, ay:zay}; zc.setPointerCapture(e.pointerId) });
+zc.addEventListener("pointermove", e=>{ if(!drag) return; zay = drag.ay + (e.clientX-drag.x)*.01; zax = drag.ax + (e.clientY-drag.y)*.01 });
+zc.addEventListener("pointerup", ()=>{ drag = null });
+document.addEventListener("keydown", e=>{ if(e.key==="Escape") zoom.hidden = true });
+</script>
+</body>
+</html>

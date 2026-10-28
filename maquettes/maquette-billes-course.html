@@ -1,0 +1,238 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Tikalo · maquette billes de la course</title>
+<script type="importmap">{"imports":{"three":"https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.js","cannon-es":"https://cdn.jsdelivr.net/npm/cannon-es@0.20.0/dist/cannon-es.js"}}</script>
+<style>
+/* (16 octobre 2026) Maquette : le rendu des billes dans la Grande Course. La même course du Volcan, la même caméra, trois rendus côte à côte :
+   1. Aujourd'hui : l'image de la vraie bille (moteur de billes, 128 px), redessinée selon sa rotation, plus rarement quand elle est loin.
+   2. Piste 3 : la même image en 256 px redessinée à chaque image, sous une coque de verre éclairée par le soleil de la course (reflets qui glissent).
+   3. Piste 2 : une vraie sphère 3D éclairée par la scène, habillée d'une texture tirée de la vraie bille (motif + coloris, figée) ;
+      la bille chinoise est une pépite aplatie qui reste à plat et tourne sur elle-même.
+   La physique et le circuit viennent de video-insta/course-moteur.js (à refaire avec fabriquer-course.mjs si les circuits changent). */
+:root{--bg:#0E1020;--panel:#171A33;--line:#2C3155;--ink:#E9EBFF;--muted:#9AA0D0;--yellow:#FFC93F}
+*{box-sizing:border-box;margin:0;padding:0}
+html,body{height:100%}
+body{background:var(--bg);color:var(--ink);font:600 14px/1.4 "Segoe UI",system-ui,sans-serif;display:flex;flex-direction:column}
+header{display:flex;flex-wrap:wrap;align-items:center;gap:8px 14px;padding:10px 16px;border-bottom:1px solid var(--line);background:var(--panel)}
+header h1{font-size:16px;margin-right:auto}
+header button{height:34px;padding:0 12px;border-radius:9px;border:1px solid var(--line);background:#20244A;color:var(--ink);font:inherit;cursor:pointer}
+header button.on{background:var(--yellow);color:#22243A;border-color:var(--yellow)}
+.grid{flex:1;min-height:0;display:grid;grid-template-columns:repeat(3,1fr);gap:8px;padding:8px}
+.col{position:relative;min-width:0;min-height:0;border-radius:12px;overflow:hidden;background:#000}
+.col canvas{position:absolute;inset:0;width:100%;height:100%}
+.col .tag{position:absolute;left:10px;top:10px;z-index:2;padding:5px 10px;border-radius:999px;background:rgba(0,0,0,.6);font-size:13px}
+.col .tag small{display:block;font-weight:500;color:var(--muted);font-size:11.5px}
+.legend{display:flex;flex-wrap:wrap;gap:6px 12px;padding:0 16px 10px;color:var(--muted);font-size:12.5px}
+.legend b{color:var(--ink)}
+.loading{position:fixed;inset:0;display:grid;place-items:center;background:var(--bg);z-index:9;font-size:16px}
+@media (max-width:900px){ .grid{grid-template-columns:1fr;grid-auto-rows:minmax(260px,1fr);overflow:auto} }
+</style>
+</head>
+<body>
+<div class="loading" id="loading">La course se calcule et les billes se fabriquent…</div>
+<header>
+  <h1>Billes de la Grande Course : 3 rendus, la même course</h1>
+  <button id="b-play">⏸ Pause</button>
+  <button id="b-slow">Ralenti ×0,25</button>
+  <button id="b-near" class="on">Caméra proche</button>
+  <button id="b-follow">Suivre : la tête</button>
+  <button id="b-restart">⏮ Recommencer</button>
+</header>
+<div class="grid">
+  <div class="col" id="c0"><span class="tag">1. Aujourd'hui<small>image de la bille 128 px</small></span></div>
+  <div class="col" id="c1"><span class="tag">2. Piste 3<small>image 256 px + coque de verre éclairée</small></span></div>
+  <div class="col" id="c2"><span class="tag">3. Piste 2<small>vraie sphère 3D, texture de la vraie bille</small></span></div>
+</div>
+<p class="legend" id="legend"></p>
+
+<script src="tikalo-demo-rendu.js"></script>
+<script src="video-insta/course-moteur.js"></script>
+<script type="module">
+import * as THREE from "three";
+import * as CANNON from "cannon-es";
+const {G3C, G3, g3Simulate, g3Where} = window.COURSE;
+const CID = "volcan", SEED = 40;
+const fam = n => FAMILIES.findIndex(f=>f.name===n), pal = n => PALETTES.findIndex(p=>p[0]===n);
+// huit billes bien différentes : motifs délicats, shiny, mythique, héros et une bille chinoise
+const SPECS = [
+  {type:"calot", family:fam("Galaxie"), pal:pal("Nuit"), shiny:0},
+  {type:"mammouth", family:fam("Œil du Dragon"), pal:pal("Rubis"), shiny:0},
+  {type:"boulet", family:fam("Super-héros"), pal:EVENTS.superheros.palIdx[0], shiny:0},
+  {type:"calot", family:fam("Lave"), pal:pal("Volcan"), shiny:0},
+  {type:"bille", family:fam("Damier"), pal:pal("Azur"), shiny:2},
+  {type:"calot", family:fam("Méduse"), pal:pal("Lagon"), shiny:3},
+  {type:"chinoise", family:fam("Cible"), pal:pal("Cerise"), shiny:0},
+  {type:"bille", family:fam("Pixel"), pal:pal("Citron"), shiny:0},
+].map((s,i)=>({...s, seed:hash("maq-course"+i), id:"m"+i}));
+document.getElementById("legend").innerHTML = SPECS.map((s,i)=>`<span><b>${i+1}.</b> ${FAMILIES[s.family].name} · ${PALETTES[s.pal][0]}${s.shiny?" ✦":""}${s.type==="chinoise"?" (chinoise)":""}</span>`).join("");
+const N = SPECS.length;
+
+/* ---------- la course (calculée une fois) ---------- */
+const SIM = g3Simulate(CANNON, SEED, N, CID), W = SIM.W, TH = G3C[CID].theme;
+const ORDER = SIM.fin.map((x,i)=>i).sort((a,b)=>SIM.fin[a]-SIM.fin[b]);
+function posAt(t, i){ const F = SIM.frames, f = Math.max(0, Math.min(F.length-1.001, t/G3.DT)), a = Math.floor(f), u = f - a, A = F[a], B = F[Math.min(F.length-1, a+1)];
+  return [0,1,2].map(j=>A[i*7+j]*(1-u) + B[i*7+j]*u) }
+function quatAt(t, i){ const F = SIM.frames, a = Math.max(0, Math.min(F.length-1, Math.round(t/G3.DT))); return [3,4,5,6].map(j=>F[a][i*7+j]) }
+
+/* ---------- les textures « piste 2 » : la vraie bille photographiée sous 42 angles, recollée sur une sphère ----------
+   Le moteur de billes dessine la face tournée vers la caméra : le point de l'écran (x, y) montre le point uRot × (x, y, z) de la bille.
+   Pour chaque point de la sphère, on prend la vue où il tombe un peu en bas à droite du centre (loin du reflet du moteur, loin du bord). */
+const bakeGL = makeGL(document.createElement("canvas"));
+const VIEWS = (() => { const out = [], K = 42, ga = Math.PI*(3-Math.sqrt(5));
+  for(let k=0;k<K;k++){ const y = 1 - 2*(k+.5)/K, r = Math.sqrt(1-y*y), a = k*ga, v = [Math.cos(a)*r, y, Math.sin(a)*r];
+    const h = Math.abs(v[1]) < .9 ? [0,1,0] : [1,0,0];
+    let c0 = [h[1]*v[2]-h[2]*v[1], h[2]*v[0]-h[0]*v[2], h[0]*v[1]-h[1]*v[0]]; const l0 = Math.hypot(...c0); c0 = c0.map(x=>x/l0);
+    const c1 = [v[1]*c0[2]-v[2]*c0[1], v[2]*c0[0]-v[0]*c0[2], v[0]*c0[1]-v[1]*c0[0]];
+    out.push({M:[c0, c1, v]}) }   // les colonnes de uRot : vue x, vue y, vue z (le point de la bille face à la caméra)
+  return out })();
+const SWEET = (() => { const s = [.18, -.18, 1], l = Math.hypot(...s); return s.map(x=>x/l) })();
+function bakeSphere(spec, TW=512, TH2=256, PX=192){
+  const gl = bakeGL.gl, shots = VIEWS.map(V=>{ const M = V.M, rot = [...M[0], ...M[1], ...M[2]];   // colonnes, comme l'attend uniformMatrix3fv
+    bakeGL.draw(spec, PX, rot, 3.3); const px = new Uint8Array(PX*PX*4); gl.readPixels(0, 0, PX, PX, gl.RGBA, gl.UNSIGNED_BYTE, px); return px });
+  const c = document.createElement("canvas"); c.width = TW; c.height = TH2; const x = c.getContext("2d"), im = x.createImageData(TW, TH2), D = im.data, uR = .9;
+  for(let r=0;r<TH2;r++){ const th = Math.PI*(r+.5)/TH2, st = Math.sin(th), ct = Math.cos(th);
+    for(let q=0;q<TW;q++){ const ph = 2*Math.PI*(q+.5)/TW, d = [-Math.cos(ph)*st, ct, Math.sin(ph)*st];   // la convention des UV de THREE.SphereGeometry
+      let best = -2, bk = 0, bn = null;
+      for(let k=0;k<VIEWS.length;k++){ const M = VIEWS[k].M, n = [M[0][0]*d[0]+M[0][1]*d[1]+M[0][2]*d[2], M[1][0]*d[0]+M[1][1]*d[1]+M[1][2]*d[2], M[2][0]*d[0]+M[2][1]*d[1]+M[2][2]*d[2]];
+        const s = n[0]*SWEET[0] + n[1]*SWEET[1] + n[2]*SWEET[2]; if(s > best){ best = s; bk = k; bn = n } }
+      const px = Math.min(PX-1, Math.max(0, Math.round((bn[0]*uR + 1)/2*PX))), py = Math.min(PX-1, Math.max(0, Math.round((bn[1]*uR + 1)/2*PX)));
+      const S = shots[bk], o = (py*PX + px)*4, a = S[o+3] || 255, j = (r*TW + q)*4;
+      D[j] = Math.min(255, S[o]*255/a); D[j+1] = Math.min(255, S[o+1]*255/a); D[j+2] = Math.min(255, S[o+2]*255/a); D[j+3] = 255 } }
+  x.putImageData(im, 0, 0);
+  const tx = new THREE.CanvasTexture(c); tx.colorSpace = THREE.SRGBColorSpace; tx.anisotropy = 4; return tx;
+}
+// la bille chinoise : son image vue de dessus, posée à plat sur le dôme d'une pépite
+function bakeTop(spec, PX=256){
+  bakeGL.draw(spec, PX, [1,0,0, 0,0,-1, 0,1,0], 3.3);
+  const c = document.createElement("canvas"); c.width = c.height = PX; c.getContext("2d").drawImage(bakeGL.cv, 0, 0);
+  const tx = new THREE.CanvasTexture(c); tx.colorSpace = THREE.SRGBColorSpace; return tx;
+}
+
+/* ---------- les trois scènes : même circuit, même lumière ---------- */
+function shade(hex, p){ const c = new THREE.Color(hex), h = {}; c.getHSL(h); c.setHSL(h.h, h.s, Math.max(0, Math.min(1, h.l + p/100))); return "#" + c.getHexString() }
+function makeScene(el){
+  const renderer = new THREE.WebGLRenderer({antialias:true});
+  renderer.shadowMap.enabled = true; renderer.shadowMap.type = THREE.PCFSoftShadowMap; renderer.toneMapping = THREE.ACESFilmicToneMapping;
+  renderer.setPixelRatio(Math.min(2, devicePixelRatio)); el.appendChild(renderer.domElement);
+  const scene = new THREE.Scene(), camera = new THREE.PerspectiveCamera(55, 1, .1, 300);
+  { const c = document.createElement("canvas"); c.width = 4; c.height = 256; const x = c.getContext("2d"), g = x.createLinearGradient(0,0,0,256);
+    g.addColorStop(0, "#3F8EF0"); g.addColorStop(.6, "#8CC6FF"); g.addColorStop(1, "#DDF0FF"); x.fillStyle = g; x.fillRect(0,0,4,256);
+    const sky = new THREE.CanvasTexture(c); sky.colorSpace = THREE.SRGBColorSpace; scene.background = sky; scene.fog = new THREE.Fog("#CBE6FF", 60, 170) }
+  scene.add(new THREE.HemisphereLight("#E4F2FF", "#6B8F4E", 1.35));
+  const sun = new THREE.DirectionalLight("#FFF8E6", 2.8); sun.castShadow = true;
+  const bb = [[1e9,1e9,1e9],[-1e9,-1e9,-1e9]]; W.statics.forEach(s=>s.pos.forEach((p,j)=>{ bb[0][j] = Math.min(bb[0][j], p); bb[1][j] = Math.max(bb[1][j], p) }));
+  const mid = bb[0].map((p,j)=>(p+bb[1][j])/2), half = Math.max(...bb[0].map((p,j)=>(bb[1][j]-p)/2)) + 8;
+  sun.position.set(mid[0]-20, mid[1]+40, mid[2]+25); sun.target.position.set(...mid); scene.add(sun.target);
+  sun.shadow.mapSize.set(2048,2048); Object.assign(sun.shadow.camera, {left:-half, right:half, top:half, bottom:-half, near:1, far:half*2+90}); scene.add(sun);
+  const glass = o => new THREE.MeshPhysicalMaterial({color:"#BFE6FF", roughness:.1, transparent:true, opacity:o, depthWrite:false});
+  const MAT = {ramp:new THREE.MeshStandardMaterial({color:TH.ramp, roughness:.65}), tray:new THREE.MeshStandardMaterial({color:TH.tray, roughness:.5}),
+    wall:glass(.28), inner:glass(.22), end:glass(.4), glass:glass(.12), wall2:new THREE.MeshStandardMaterial({color:TH.ramp, roughness:.5}),
+    peg:new THREE.MeshStandardMaterial({color:TH.peg||"#F4E3C2", roughness:.35, metalness:.2}),
+    bump:new THREE.MeshStandardMaterial({color:TH.bump||"#FF4F7A", roughness:.3, metalness:.1, emissive:TH.bump||"#FF4F7A", emissiveIntensity:.25}),
+    spin:new THREE.MeshStandardMaterial({color:TH.spin||"#FFD34D", roughness:.35, metalness:.3}), axle:new THREE.MeshStandardMaterial({color:"#8A8FA3", roughness:.3, metalness:.6}),
+    tower:new THREE.MeshStandardMaterial({color:TH.tower||shade(TH.ramp, -25), roughness:.8}), rock:new THREE.MeshStandardMaterial({color:TH.rock||"#8C949C", roughness:.9}),
+    rail:new THREE.MeshStandardMaterial({color:TH.peg||"#FFD34D", roughness:.3, metalness:.4}),
+    funnel:new THREE.MeshStandardMaterial({color:TH.ramp, roughness:.35, transparent:true, opacity:.72, depthWrite:false, side:THREE.DoubleSide})};
+  const piece = s => { if(s.shape==="group"){ const g = new THREE.Group();
+      s.parts.forEach(q=>g.add(piece({...q, kind:q.kind || s.kind, add:false}))); g.position.set(...s.pos); g.quaternion.set(...s.quat); scene.add(g); return g }
+    const m = new THREE.Mesh(s.shape==="cyl" ? new THREE.CylinderGeometry(s.size[0], s.size[0], s.size[1], 20) : s.shape==="sph" ? new THREE.SphereGeometry(s.size[0], 24, 16)
+      : s.shape==="cone" ? new THREE.CylinderGeometry(s.size[0], s.size[1], s.size[2], 40) : new THREE.BoxGeometry(...s.size), MAT[s.kind] || MAT.ramp);
+    m.position.set(...s.pos); m.quaternion.set(...s.quat); m.castShadow = !/wall|inner|end|glass/.test(s.kind); m.receiveShadow = true; if(s.add!==false) scene.add(m); return m };
+  W.statics.forEach(piece);
+  const kinM = W.kin.map(piece);
+  const floor = new THREE.Mesh(new THREE.PlaneGeometry(400,400), new THREE.MeshStandardMaterial({color:"#7DB35F", roughness:1}));
+  floor.rotation.x = -Math.PI/2; floor.position.y = W.floorY-1; floor.receiveShadow = true; scene.add(floor);
+  return {el, renderer, scene, camera, kinM, balls:[]};
+}
+const S3 = [0,1,2].map(k=>makeScene(document.getElementById("c"+k)));
+
+/* 1 et 2 : l'image de la bille (comme dans le jeu), dans une sphère invisible qui porte l'ombre */
+const sprGL = makeGL(document.createElement("canvas"));
+function addSprites(S, px, shell){
+  S.balls = SPECS.map(spec=>{
+    const m = new THREE.Mesh(new THREE.SphereGeometry(G3.R, 32, 24), new THREE.MeshBasicMaterial({colorWrite:false, depthWrite:false})); m.castShadow = true; S.scene.add(m);
+    const c = document.createElement("canvas"); c.width = c.height = px; const tx = new THREE.CanvasTexture(c); tx.colorSpace = THREE.SRGBColorSpace;
+    const sp = new THREE.Sprite(new THREE.SpriteMaterial({map:tx, transparent:true, depthWrite:false})), k = 2*G3.R/.9; sp.scale.set(k,k,1); sp.renderOrder = 1; S.scene.add(sp);
+    // la coque de verre : noire et ajoutée par-dessus, elle n'apporte que les reflets du soleil et du ciel de la course
+    let sh = null;
+    if(shell){ sh = new THREE.Mesh(new THREE.SphereGeometry(G3.R*1.01, 40, 28), new THREE.MeshPhysicalMaterial({color:"#000", roughness:.12, metalness:0, clearcoat:1, clearcoatRoughness:.04,
+        transparent:true, blending:THREE.AdditiveBlending, depthWrite:false}));
+      sh.renderOrder = 2; if(spec.type==="chinoise") sh.scale.set(1, .6, 1); S.scene.add(sh) }
+    return {m, c, x:c.getContext("2d"), tx, sp, sh, px, last:-99, dy:spec.type==="chinoise" ? .39*G3.R : 0} });
+}
+addSprites(S3[0], 128, false);
+addSprites(S3[1], 256, true);
+/* 3 : les sphères 3D */
+S3[2].balls = SPECS.map(spec=>{
+  if(spec.type==="chinoise"){
+    // une pépite : une demi-sphère aplatie (le dôme) sur un fond plat, l'image de la bille posée dessus vue d'en haut
+    const g = new THREE.SphereGeometry(G3.R, 40, 20, 0, Math.PI*2, 0, Math.PI/2), uv = g.attributes.uv, p = g.attributes.position;
+    for(let i=0;i<p.count;i++) uv.setXY(i, .5 + p.getX(i)/(2*G3.R)*.9, .5 - p.getZ(i)/(2*G3.R)*.9);
+    const mat = new THREE.MeshPhysicalMaterial({map:bakeTop(spec), roughness:.1, clearcoat:1, clearcoatRoughness:.05});
+    const dome = new THREE.Mesh(g, mat); dome.scale.set(1, .62, 1); dome.castShadow = true;
+    const base = new THREE.Mesh(new THREE.CircleGeometry(G3.R, 40), new THREE.MeshStandardMaterial({color:PALETTES[spec.pal][1], roughness:.3})); base.rotation.x = Math.PI/2;
+    const grp = new THREE.Group(); grp.add(dome, base); S3[2].scene.add(grp); return {grp, flat:true} }
+  const m = new THREE.Mesh(new THREE.SphereGeometry(G3.R, 48, 32), new THREE.MeshPhysicalMaterial({map:bakeSphere(spec), roughness:.08, clearcoat:1, clearcoatRoughness:.05}));
+  m.castShadow = true; S3[2].scene.add(m); return {m} });
+
+/* ---------- la lecture ---------- */
+let t = 0, playing = true, slow = false, near = true, follow = "tete", frame = 0;
+const tEnd = SIM.fin[ORDER[0]] + 3;
+const qq = new THREE.Quaternion(), mq = new THREE.Matrix4(), mc = new THREE.Matrix4();
+let cam = null, look = null;
+function camFor(target, k){
+  const {T} = g3Where(W, ...target), h = Math.hypot(T[0], T[2]) || 1, inF = h < .3 || target[1] > -2.5, rr = Math.hypot(target[0], target[2]) || 1, rad = [target[0]/rr, 0, target[2]/rr];
+  const f = near ? .5 : 1;
+  const want = inF ? [target[0] + .6*f, target[1] + 9*f, target[2] - 7*f] : [target[0] + rad[0]*7*f - T[0]/h*3*f, target[1] + 6.5*f + 1.5, target[2] + rad[2]*7*f - T[2]/h*3*f];
+  const lk = [target[0] + (inF ? 0 : T[0]/h*1.2), target[1] - .3, target[2] + (inF ? 0 : T[2]/h*1.2)];
+  cam = cam ? cam.map((v,j)=>v + (want[j]-v)*k) : want; look = look ? look.map((v,j)=>v + (lk[j]-v)*k) : lk;
+}
+function rankLead(){ let best = -1, bi = 0; for(let i=0;i<N;i++){ if(SIM.fin[i] <= t) return ORDER[0]; const s = g3Where(W, ...posAt(t, i)).s; if(s > best){ best = s; bi = i } } return bi }
+let lastNow = performance.now();
+function loop(now){
+  const dt = Math.min(.05, (now - lastNow)/1000); lastNow = now;
+  if(playing){ t += dt*(slow ? .25 : 1); if(t > tEnd) t = 2 }
+  frame++;
+  const who = follow==="tete" ? rankLead() : +follow;
+  camFor(posAt(t, who), Math.min(1, dt*3));
+  S3.forEach((S, k)=>{
+    const {camera} = S; camera.position.set(...cam); camera.lookAt(...look); camera.updateMatrixWorld();
+    if(W.kin.length && SIM.kf.length){ const kq = SIM.kf[Math.max(0, Math.min(SIM.kf.length-1, Math.round(t/G3.DT)))]; S.kinM.forEach((m,i)=>m.quaternion.set(kq[i*4],kq[i*4+1],kq[i*4+2],kq[i*4+3])) }
+    mc.extractRotation(camera.matrixWorld).transpose();
+    S.balls.forEach((B, i)=>{ const p = posAt(t, i), q = quatAt(t, i);
+      if(k<2){ B.m.position.set(...p); B.sp.position.set(p[0], p[1]-B.dy, p[2]); if(B.sh) B.sh.position.set(p[0], p[1]-B.dy*.5, p[2]);
+        // comme dans le jeu : redessinée à chaque image de près, moins souvent de loin (rendu 1) ; à chaque image (rendu 2)
+        const d = camera.position.distanceTo(B.m.position), every = k===1 ? 1 : d<16 ? 1 : d<35 ? 3 : 12;
+        if(frame - B.last >= every || frame < B.last){ B.last = frame;
+          qq.set(...q); mq.makeRotationFromQuaternion(qq).premultiply(mc); const e = mq.elements;
+          const px = k===1 ? B.px : d<16 ? B.px : 64;
+          sprGL.draw(SPECS[i], px, [e[0],e[4],e[8], e[1],e[5],e[9], e[2],e[6],e[10]]);
+          B.x.clearRect(0,0,B.px,B.px); B.x.drawImage(sprGL.cv, 0, 0, B.px, B.px); B.tx.needsUpdate = true } }
+      else if(B.flat){ // la pépite reste à plat : seulement le cap (tourner sur elle-même), descendue pour toucher la piste
+        qq.set(...q); const v = new THREE.Vector3(1,0,0).applyQuaternion(qq); B.grp.position.set(p[0], p[1] - G3.R*.98, p[2]); B.grp.rotation.set(0, Math.atan2(-v.z, v.x), 0) }
+      else { B.m.position.set(...p); B.m.quaternion.set(...q) } });
+    S.renderer.render(S.scene, camera);
+  });
+  requestAnimationFrame(loop);
+}
+function resize(){ S3.forEach(S=>{ const r = S.el.getBoundingClientRect(); S.renderer.setSize(r.width, r.height); S.camera.aspect = r.width/r.height; S.camera.updateProjectionMatrix() }) }
+addEventListener("resize", resize);
+const btn = id => document.getElementById(id);
+btn("b-play").onclick = e=>{ playing = !playing; e.target.textContent = playing ? "⏸ Pause" : "▶ Lecture" };
+btn("b-slow").onclick = e=>{ slow = !slow; e.target.classList.toggle("on", slow) };
+btn("b-near").onclick = e=>{ near = !near; e.target.classList.toggle("on", near) };
+btn("b-follow").onclick = e=>{ follow = follow==="tete" ? "0" : (+follow + 1 < N ? String(+follow + 1) : "tete");
+  e.target.textContent = follow==="tete" ? "Suivre : la tête" : `Suivre : ${+follow+1}. ${FAMILIES[SPECS[+follow].family].name}`; cam = null };
+btn("b-restart").onclick = ()=>{ t = 2; cam = null };
+const Q = new URLSearchParams(location.search);
+if(Q.has("t")){ t = +Q.get("t"); playing = false }
+if(Q.has("suivre")) follow = Q.get("suivre");
+resize(); t = Q.has("t") ? t : 2;
+document.getElementById("loading").remove(); window.__ready = true;
+requestAnimationFrame(loop);
+</script>
+</body>
+</html>

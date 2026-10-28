@@ -1,0 +1,530 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Tikalo · vidéo La chasse aux shiny</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Gluten:wght@900&family=Lilita+One&family=Nunito:wght@700;800;900&family=Caveat:wght@700&display=swap">
+<style>
+/* La 7e vidéo Instagram de Tikalo (18 octobre 2026) : « La chasse aux shiny ». 1 chance sur 2 000 (le vrai taux du sachet gratuit) :
+   un compteur ouvre des billes de plus en plus vite, des petites phrases qui s'impatientent, puis le noir, le souffle et l'éclair :
+   une Lumineuse. Ensuite les 3 shiny côte à côte avec leurs vraies chances (75 / 21 / 4 %), et l'appel final.
+   Même moteur que demo-defi.html (scènes, repères, musique générée à 120 BPM, enregistrement de l'onglet) ; les rebonds de bille
+   et la révélation de la shiny sont les vrais sons du jeu (tikalo-demo-sons.js).
+   Pour vérifier une image précise : demo-shiny.html?s=2&at=9 (scène 2, figée à 9 s), &film pour cacher la barre.
+   L'image de couverture (aperçu du réel) : demo-shiny.html?cover&film, en 1080 × 1920 (couverture-chasse-shiny.png). */
+:root{
+  --night:#1B1446; --night-2:#3A2A8C; --night-3:#0A0724; --ink:#1A1B33;
+  --yellow:#FFC93F; --yellow-2:#F2AE12; --pink:#FF4FA3; --cyan:#2EE6E6; --green:#2FCF6A; --violet:#8B6CFF;
+  --display:"Lilita One","Arial Rounded MT Bold",sans-serif; --logo:"Gluten","Lilita One",sans-serif; --body:"Nunito","Segoe UI",system-ui,sans-serif; --hand:"Caveat",cursive;
+  --ui-bg:#0A0B16; --ui-panel:#15172A; --ui-line:#2C3050; --ui-ink:#E9EBFF;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+html,body{height:100%}
+body{background:var(--ui-bg);color:var(--ui-ink);font-family:var(--body);display:flex;flex-direction:column;overflow:hidden}
+button,select{font:inherit;color:inherit}
+button{background:none;border:0;cursor:pointer}
+
+/* ---------- la scène : un ciel de nuit plein d'étoiles ---------- */
+.wrap{flex:1;min-height:0;display:grid;place-items:center;padding:16px}
+#stage{--rc:#8B6CFF;position:relative;overflow:hidden;width:var(--sw);height:var(--sh);font-size:calc(var(--u)*4);color:#fff;border-radius:18px;
+  background:radial-gradient(60% 40% at 50% 46%,var(--night-2),var(--night) 60%,var(--night-3));box-shadow:0 30px 80px -30px #000}
+body.film .wrap{padding:0} body.film #stage{border-radius:0;box-shadow:none}
+.bg{position:absolute;inset:0;pointer-events:none}
+.bg .stars{position:absolute;inset:0;opacity:.55;
+  background-image:radial-gradient(circle,#fff calc(var(--u)*.22),transparent calc(var(--u)*.3)),radial-gradient(circle,#FFE9A0 calc(var(--u)*.18),transparent calc(var(--u)*.26)),radial-gradient(circle,#BFD8FF calc(var(--u)*.16),transparent calc(var(--u)*.24));
+  background-size:calc(var(--u)*13) calc(var(--u)*17),calc(var(--u)*19) calc(var(--u)*23),calc(var(--u)*7) calc(var(--u)*11);background-position:0 0,calc(var(--u)*6) calc(var(--u)*9),calc(var(--u)*3) calc(var(--u)*2);
+  animation:twinkle 2.4s ease-in-out infinite alternate}
+@keyframes twinkle{to{opacity:.3}}
+.bg .burst{position:absolute;left:50%;top:46%;width:calc(var(--u)*240);height:calc(var(--u)*240);margin:calc(var(--u)*-120);border-radius:50%;
+  background:repeating-conic-gradient(from 0deg,var(--rc) 0 9deg,transparent 9deg 22deg);opacity:.32;-webkit-mask:radial-gradient(circle,#000 8%,transparent 55%);mask:radial-gradient(circle,#000 8%,transparent 55%);
+  animation:spin 14s linear infinite;transition:opacity .4s}
+.bg .glow{position:absolute;left:50%;top:46%;width:calc(var(--u)*110);height:calc(var(--u)*110);margin:calc(var(--u)*-55);border-radius:50%;background:radial-gradient(circle,var(--rc),transparent 62%);opacity:.45}
+#stage.calm .bg .burst{opacity:0}
+#night{position:absolute;inset:0;pointer-events:none;background:radial-gradient(circle at 50% 45%,rgba(20,14,60,.6),rgba(2,1,10,.97) 70%);opacity:0;transition:opacity var(--nt,.8s) ease;z-index:1}
+#fx{position:absolute;inset:0;width:100%;height:100%;pointer-events:none;z-index:8}
+#flash{position:absolute;inset:0;background:#fff;opacity:0;pointer-events:none;z-index:9}
+#flash.go{animation:fl .6s ease-out}
+@keyframes fl{0%{opacity:.95}100%{opacity:0}}
+.cam{position:absolute;inset:0;z-index:2}
+.cam.shake{animation:shake .38s cubic-bezier(.36,.07,.19,.97)}
+@keyframes shake{10%,90%{transform:translate(-1%,0)}20%,80%{transform:translate(1.4%,.6%)}30%,50%,70%{transform:translate(-1.8%,-.6%) rotate(-.6deg)}40%,60%{transform:translate(1.8%,.4%) rotate(.6deg)}}
+
+/* le bas de l'image est laissé libre : sur Instagram, la légende et les boutons passent par-dessus */
+.sc{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:calc(var(--u)*3.6);padding:calc(var(--u)*12) calc(var(--u)*6) calc(var(--u)*18);text-align:center;opacity:0;visibility:hidden}
+.sc.on{opacity:1;visibility:visible}
+.sc.out{visibility:visible;animation:sc-out .3s ease-in forwards}
+@keyframes sc-out{to{opacity:0;transform:scale(1.15);filter:blur(calc(var(--u)*.8))}}
+
+.mini-logo{position:absolute;top:calc(var(--u)*4.6);left:50%;transform:translateX(-50%);z-index:6;transition:opacity .3s}
+#stage.big-logo .mini-logo,#stage.no-logo .mini-logo{opacity:0}
+.logo{display:flex;align-items:flex-end;font-family:var(--logo);font-weight:900;line-height:1;letter-spacing:.02em}
+.logo .lt{display:inline-block;position:relative;color:var(--yellow);-webkit-text-stroke:.16em var(--ink);paint-order:stroke fill;
+  text-shadow:0 .04em 0 #F59E0B,0 .08em 0 #E07B00,0 .13em 0 var(--ink),0 .2em .3em rgba(0,0,0,.5)}
+.logo .lt:nth-child(1){transform:translateY(-.02em) rotate(-6deg)} .logo .lt:nth-child(2){transform:translateY(-.10em) rotate(4deg)}
+.logo .lt:nth-child(3){transform:translateY(.02em) rotate(-3deg)} .logo .lt:nth-child(4){transform:translateY(-.08em) rotate(5deg)}
+.logo .lt:nth-child(5){transform:rotate(-4deg)} .logo .lt:nth-child(6){transform:translateY(-.04em) rotate(3deg)}
+.logo .i img{position:absolute;left:50%;top:-.2em;width:.27em;height:.27em;margin-left:-.12em;border-radius:50%;box-shadow:0 0 0 .05em var(--ink);filter:drop-shadow(0 .06em 0 var(--ink))}
+.mini-logo .logo{font-size:calc(var(--u)*6.5)}
+
+/* ---------- la typo qui claque ---------- */
+.slam{font-family:var(--display);line-height:.92;letter-spacing:.01em;color:#fff;-webkit-text-stroke:calc(var(--u)*.55) var(--ink);paint-order:stroke fill;text-shadow:0 calc(var(--u)*1) 0 var(--ink),0 calc(var(--u)*2) calc(var(--u)*3) rgba(0,0,0,.45)}
+.slam.xl{font-size:calc(var(--u)*16)} .slam.l{font-size:calc(var(--u)*12)} .slam.m{font-size:calc(var(--u)*8.5)} .slam.s{font-size:calc(var(--u)*6.4)}
+.slam .y{color:var(--yellow)}
+.slam .rb{-webkit-text-stroke:0;text-shadow:none;filter:drop-shadow(0 calc(var(--u)*.5) 0 var(--ink)) drop-shadow(0 0 calc(var(--u)*.3) var(--ink));background:linear-gradient(90deg,#FF6FB5,#FFC93F,#6FE3A8,#5AB8FF,#B07BFF,#FF6FB5);background-size:200% 100%;-webkit-background-clip:text;background-clip:text;color:transparent;animation:shim 1.6s linear infinite}
+.word{display:inline-block;opacity:0}
+.on .word{animation:slam .42s cubic-bezier(.2,1.6,.35,1) forwards;animation-delay:var(--d)}
+@keyframes slam{from{opacity:0;transform:scale(2.6) rotate(var(--r,-8deg));filter:blur(calc(var(--u)*.6))}to{opacity:1;transform:rotate(var(--rr,0deg))}}
+.hand{font-family:var(--hand);line-height:1.05;color:#FFE9A0;transform:rotate(-3deg)}
+.hand.l{font-size:calc(var(--u)*10)} .hand.m{font-size:calc(var(--u)*7.6)} .hand.s{font-size:calc(var(--u)*6)}
+.in{opacity:0}
+.on .in{animation:pop .5s cubic-bezier(.2,1.5,.4,1) forwards;animation-delay:var(--d,0s)}
+.on .in.up{animation-name:up;animation-timing-function:cubic-bezier(.2,.9,.3,1)}
+@keyframes pop{from{opacity:0;transform:scale(.4) rotate(var(--r0,0deg))}to{opacity:1;transform:none}}
+@keyframes up{from{opacity:0;transform:translateY(calc(var(--u)*8))}to{opacity:1;transform:none}}
+.mb{display:block;width:100%;height:auto;aspect-ratio:1;filter:drop-shadow(0 calc(var(--u)*1.2) calc(var(--u)*1.4) rgba(0,0,0,.55))}
+@keyframes spin{to{transform:rotate(360deg)}}
+@keyframes float{to{transform:translateY(calc(var(--u)*-1.5)) rotate(5deg)}}
+@keyframes shim{to{background-position:200% 0}}
+
+/* les halos des shiny (comme dans le jeu : arc-en-ciel, rayons d'or, lumière du coloris) */
+.hw{position:relative}
+.hw .halo{position:absolute;inset:6%;border-radius:50%;pointer-events:none;opacity:0}
+.hw.sh1 .halo{opacity:.75;background:conic-gradient(#FF6FB5,#FFB547,#FFE14D,#6FE3A8,#5AB8FF,#B07BFF,#FF6FB5);filter:blur(calc(var(--u)*3));animation:spin 3s linear infinite}
+.hw.sh2 .halo{opacity:.8;inset:-10%;background:repeating-conic-gradient(from 0deg,rgba(255,214,90,.9) 0 6deg,transparent 6deg 18deg);-webkit-mask:radial-gradient(circle,#000 20%,transparent 68%);mask:radial-gradient(circle,#000 20%,transparent 68%);animation:spin 8s linear infinite}
+.hw.sh3 .halo{opacity:.95;inset:-8%;background:radial-gradient(circle,var(--lc,#9FE8FF),transparent 65%)}
+.hw.sh3 .mb{filter:drop-shadow(0 0 calc(var(--u)*1.6) var(--lc,#9FE8FF)) drop-shadow(0 0 calc(var(--u)*4.5) var(--lc,#9FE8FF))}
+.tag{display:inline-block;font-weight:900;font-size:calc(var(--u)*3.2);text-transform:uppercase;letter-spacing:.05em;padding:calc(var(--u)*.7) calc(var(--u)*2.4);border-radius:999px;color:#fff;border:calc(var(--u)*.35) solid var(--ink)}
+.tag.s1{background:linear-gradient(90deg,#FF4FA3,#FFC93F,#2EE6E6,#8B6CFF,#FF4FA3);background-size:200% 100%;animation:shim 1.6s linear infinite}
+.tag.s2{background:linear-gradient(90deg,#FFF3C4,#FFC93F,#E8A317,#FFE38A);color:var(--ink)}
+.tag.s3{background:#E8FBFF;color:var(--ink);box-shadow:0 0 calc(var(--u)*3) #9FE8FF}
+
+/* 1. l'accroche : une shiny cachée, en ombre */
+.mystery{position:relative;width:calc(var(--u)*46)}
+.mystery .mb{filter:brightness(0) drop-shadow(0 0 calc(var(--u)*2.4) rgba(176,123,255,.9))}
+.on .mystery{animation:float 1.6s ease-in-out infinite alternate}
+.mystery b{position:absolute;inset:0;display:grid;place-items:center;font-family:var(--display);font-size:calc(var(--u)*20);color:var(--yellow);-webkit-text-stroke:calc(var(--u)*.6) var(--ink);paint-order:stroke fill}
+
+/* 2. la chasse : le compteur et la bille qui défile */
+.sc.hunt{justify-content:flex-start;gap:calc(var(--u)*1.6);padding-top:calc(var(--u)*14)}
+.ctr-l{font-weight:900;font-size:calc(var(--u)*3.6);text-transform:uppercase;letter-spacing:.12em;color:#C9C2FF}
+.ctr{font-family:var(--display);font-size:calc(var(--u)*17);line-height:.9;color:var(--yellow);-webkit-text-stroke:calc(var(--u)*.6) var(--ink);paint-order:stroke fill;
+  text-shadow:0 calc(var(--u)*1.1) 0 var(--ink),0 0 calc(var(--u)*6) rgba(255,201,63,.35);font-variant-numeric:tabular-nums}
+.ctr small{font-size:.42em;color:#fff;margin-right:.15em}
+.wheel{position:relative;width:calc(var(--u)*70);height:calc(var(--u)*56);display:grid;place-items:center}
+.wheel .mb{position:absolute;width:var(--w,60%);left:50%;top:50%;translate:-50% -50%}
+.wheel.k .mb{animation:kick .09s cubic-bezier(.2,1.8,.4,1)}
+@keyframes kick{from{scale:.86}to{scale:1}}
+.quip{font-family:var(--hand);font-size:calc(var(--u)*8);line-height:1.02;color:#FFE9A0;transform:rotate(-2deg);min-height:calc(var(--u)*9)}
+.quip.k{animation:pop .35s cubic-bezier(.2,1.7,.4,1)}
+.goal{position:absolute;left:calc(var(--u)*10);right:calc(var(--u)*10);bottom:calc(var(--u)*17);display:flex;flex-direction:column;gap:calc(var(--u)*1.2)}
+.goal span{display:flex;justify-content:space-between;font-weight:900;font-size:calc(var(--u)*3);color:#C9C2FF}
+.bar-p{position:relative;height:calc(var(--u)*1.6);border-radius:999px;background:rgba(255,255,255,.14);overflow:hidden}
+.bar-p i{position:absolute;inset:0;transform-origin:0 50%;transform:scaleX(var(--p,0));background:linear-gradient(90deg,#FF6FB5,#FFC93F,#6FE3A8,#5AB8FF,#B07BFF)}
+
+/* 3. la révélation */
+.big{width:calc(var(--u)*66)}
+.on .big{animation:float 1.8s ease-in-out infinite alternate}
+.on .big .mb{animation:revealin .9s cubic-bezier(.2,1.5,.4,1) both}
+@keyframes revealin{from{opacity:0;scale:.1;rotate:-200deg}to{opacity:1;scale:1;rotate:0deg}}
+.no{font-weight:900;font-size:calc(var(--u)*4);color:#C9C2FF}
+.no b{color:var(--yellow)}
+.nm{font-family:var(--display);font-size:calc(var(--u)*5.6);line-height:1;color:#fff;-webkit-text-stroke:calc(var(--u)*.3) var(--ink);paint-order:stroke fill;text-shadow:0 calc(var(--u)*.5) 0 var(--ink)}
+
+/* 4. les trois shiny */
+.trio{display:flex;gap:calc(var(--u)*2);align-items:flex-end;justify-content:center}
+.trio .it{display:flex;flex-direction:column;align-items:center;gap:calc(var(--u)*1.4);width:calc(var(--u)*28);opacity:0}
+.on .trio .it{animation:pop .5s cubic-bezier(.2,1.6,.4,1) forwards;animation-delay:var(--d)}
+.trio .hw{width:100%}
+.trio .it:nth-child(3) .hw{width:112%}
+.on .trio .hw{animation:float 1.5s ease-in-out infinite alternate}
+.odds{font-family:var(--display);font-size:calc(var(--u)*5.2);line-height:1;color:#fff;-webkit-text-stroke:calc(var(--u)*.3) var(--ink);paint-order:stroke fill}
+.odds small{display:block;font-family:var(--body);font-weight:900;font-size:.5em;-webkit-text-stroke:0;color:#C9C2FF;margin-top:calc(var(--u)*.6)}
+.punch{font-family:var(--hand);font-size:calc(var(--u)*7.4);line-height:1.05;color:#FFE9A0;transform:rotate(-2deg)}
+.punch b{color:#BFF3FF;text-shadow:0 0 calc(var(--u)*2) #6FD8FF}
+
+/* 5. l'appel final */
+.url{font-family:var(--display);font-size:calc(var(--u)*8.5);padding:calc(var(--u)*2) calc(var(--u)*6);border-radius:999px;background:var(--yellow);color:var(--ink);
+  box-shadow:0 calc(var(--u)*1.2) 0 var(--yellow-2),0 0 calc(var(--u)*8) rgba(255,201,63,.5)}
+.on .url.in{animation:pop .5s cubic-bezier(.2,1.5,.4,1) forwards,beat .5s ease-in-out infinite;animation-delay:var(--d),calc(var(--d) + .5s)}
+@keyframes beat{0%{transform:scale(1)}15%{transform:scale(1.07)}100%{transform:scale(1)}}
+.giant{font-size:calc(var(--u)*16)}
+.chips{display:flex;flex-wrap:wrap;justify-content:center;gap:calc(var(--u)*1.6)}
+.chips span{font-weight:900;font-size:calc(var(--u)*3.3);padding:calc(var(--u)*.8) calc(var(--u)*2.6);border-radius:999px;background:rgba(255,255,255,.1);border:calc(var(--u)*.35) solid rgba(255,255,255,.25)}
+.launch{font-family:var(--hand);font-size:calc(var(--u)*7.4);color:#FFB3D6;transform:rotate(-3deg)}
+
+/* ---------- l'image de couverture : tout l'important au milieu (la grille du profil coupe le haut et le bas en 3:4) ---------- */
+.cov{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:calc(var(--u)*2.4);text-align:center;padding:0 calc(var(--u)*5)}
+.cov .kick{font-family:var(--display);font-size:calc(var(--u)*8);line-height:1;color:#fff;-webkit-text-stroke:calc(var(--u)*.5) var(--ink);paint-order:stroke fill;text-shadow:0 calc(var(--u)*.9) 0 var(--ink);transform:rotate(-3deg)}
+.cov .ttl{font-family:var(--display);font-size:calc(var(--u)*25);line-height:.85;margin-top:calc(var(--u)*-1);
+  background:linear-gradient(90deg,#FF6FB5,#FFC93F,#6FE3A8,#5AB8FF,#B07BFF);-webkit-background-clip:text;background-clip:text;color:transparent;
+  filter:drop-shadow(0 calc(var(--u)*1) 0 var(--ink)) drop-shadow(0 0 calc(var(--u)*.4) var(--ink)) drop-shadow(0 0 calc(var(--u)*5) rgba(176,123,255,.6))}
+.cov .big{width:calc(var(--u)*64);margin:calc(var(--u)*1) 0}
+.cov .stamp{position:absolute;right:calc(var(--u)*-6);top:calc(var(--u)*4);font-family:var(--display);font-size:calc(var(--u)*4.6);line-height:1;color:var(--ink);background:var(--yellow);
+  padding:calc(var(--u)*1.6) calc(var(--u)*2.6);border-radius:calc(var(--u)*2);border:calc(var(--u)*.5) solid var(--ink);box-shadow:0 calc(var(--u)*.8) 0 var(--ink);transform:rotate(9deg)}
+.cov .stamp small{display:block;font-family:var(--body);font-weight:900;font-size:.55em;letter-spacing:.08em;text-transform:uppercase}
+.cov .odds-c{font-family:var(--display);font-size:calc(var(--u)*9.5);line-height:1;color:var(--yellow);-webkit-text-stroke:calc(var(--u)*.55) var(--ink);paint-order:stroke fill;text-shadow:0 calc(var(--u)*1) 0 var(--ink)}
+.cov .tag{font-size:calc(var(--u)*3.8)}
+.cov .cov-logo{position:absolute;top:calc(var(--u)*9);left:50%;transform:translateX(-50%)}
+.cov .cov-logo .logo{font-size:calc(var(--u)*9)}
+
+/* ---------- la barre de pilotage ---------- */
+.bar{flex:none;display:flex;align-items:center;justify-content:center;gap:8px;flex-wrap:wrap;padding:10px 16px 14px;border-top:1px solid var(--ui-line);background:var(--ui-panel)}
+.bar button,.bar select{height:36px;padding:0 14px;border-radius:10px;border:1px solid var(--ui-line);background:#1E2140;color:var(--ui-ink);font-weight:800;font-size:13.5px}
+.bar button:hover{background:#272B52}
+.bar button.rec{background:#E5484D;border-color:#E5484D;color:#fff}
+.bar button.on{background:var(--yellow);color:#24253D;border-color:var(--yellow)}
+.bar .sep{width:1px;height:24px;background:var(--ui-line)}
+.bar .dots{display:flex;gap:4px;flex-wrap:wrap;justify-content:center}
+.bar .dots button{padding:0 9px;font-size:12px;height:30px}
+.hint{font-size:12px;color:#8E93C4;font-weight:700}
+body.film .bar{display:none}
+.loading{position:fixed;inset:0;display:grid;place-items:center;background:var(--ui-bg);font-weight:800;z-index:20}
+@media (max-width:640px){ .bar .hint,.bar .sep{display:none} }
+</style>
+</head>
+<body>
+<div class="loading" id="loading">Préparation des billes…</div>
+<div class="wrap"><div id="stage" aria-label="Vidéo Tikalo : la chasse aux shiny"></div></div>
+<div class="bar" id="bar">
+  <button id="b-play">⏸ Pause</button>
+  <button id="b-restart">⏮ Recommencer</button>
+  <button id="b-sound">🔇 Son coupé</button>
+  <span class="dots" id="dots"></span>
+  <span class="sep"></span>
+  <select id="b-format" aria-label="Format">
+    <option value="9:16">9:16 · Reels, TikTok, Shorts</option>
+    <option value="4:5">4:5 · fil Instagram / Facebook</option>
+    <option value="1:1">1:1 · carré</option>
+  </select>
+  <button id="b-shuffle">🎲 Autres billes</button>
+  <button id="b-film">Mode tournage (H)</button>
+  <button id="b-rec" class="rec">● Enregistrer la vidéo</button>
+  <span class="hint">Espace : pause · ← → : scène · H : cacher la barre · M : son</span>
+</div>
+
+<script src="../tikalo-demo-rendu.js"></script>
+<script src="tikalo-demo-sons.js"></script>
+<script>
+/* =====================================================================
+   LA VIDÉO : 5 scènes, environ 30 secondes, calées sur 120 BPM
+   ===================================================================== */
+const STAGE = document.getElementById("stage");
+const BEAT = .5;
+const famIdx = name => Math.max(0, FAMILIES.findIndex(f=>f.name===name));
+let SEED = 11;
+const R = () => { SEED = (SEED*1103515245 + 12345) >>> 0; return SEED / 4294967296 };
+const spec = (type, o={}) => makeSpec(type, {seed:o.seed ?? Math.floor(R()*4e9), ...o});
+const cache = new Map();
+const url = (s, px) => { const k = `${s.seed}|${s.type}|${s.family}|${s.pal}|${s.shiny}|${px}`; if(!cache.has(k)) cache.set(k, marbleURL(s, px)); return cache.get(k) };
+const img = (s, px, attrs="") => `<img class="mb" src="${url(s, px)}" alt="" ${attrs}>`;
+const base = () => FAMILIES.map((f,i)=>i).filter(i=>FAM_W[i]>0 && !FAMILIES[i].secret && !FAMILIES[i].depart && !FAMILIES[i].myth);
+const pick = a => a[Math.floor(R()*a.length)];
+const words = (txt, d0, step=BEAT/2, cls="") => txt.split(" ").map((w,i)=>`<span class="word ${cls}" style="--d:${(d0+i*step).toFixed(2)}s;--r:${(i%2?8:-8)}deg">${w}</span>`).join(" ");
+const logoHTML = (cls="") => `<div class="logo ${cls}"><span class="lt">T</span><span class="lt i">ı<img src="${url(LOGO_SPEC,160)}" alt=""></span><span class="lt">k</span><span class="lt">a</span><span class="lt">l</span><span class="lt">o</span></div>`;
+const fr = n => n.toLocaleString("fr-FR");
+const SHY_NAME = ["", "Irisée", "Dorée", "Lumineuse"];
+// les vraies chances (SHINY_RATE du jeu : 1 sur 2 000 dans le sachet gratuit ; Irisée 75 %, Dorée 21 %, Lumineuse 4 %)
+const RATE = 2000, LUM_ONE_IN = Math.round(RATE * SHINIES.reduce((a,x)=>a+(x?x.w:0),0) / SHINIES[3].w);   // 50 000
+
+/* ---------- le compteur de la chasse : lent, puis de plus en plus vite, puis il ralentit avant la shiny ---------- */
+const HUNT = 12.4, FOUND = 1847;
+const CURVE = [[0,0],[.5,1],[1.3,3],[2.2,8],[3.2,30],[4.4,120],[5.6,320],[6.8,650],[8,1000],[9.2,1400],[10.2,1700],[10.9,1810],[11.5,1838],[11.9,1845],[12.2,FOUND]];
+const countAt = e => { if(e<=0) return 0; for(let i=1;i<CURVE.length;i++){ const [t1,v1] = CURVE[i], [t0,v0] = CURVE[i-1]; if(e<=t1) return Math.floor(v0 + (v1-v0)*(e-t0)/(t1-t0)) } return FOUND };
+const QUIPS = [[0,"C'est parti 🍀"],[10,"Toujours rien…"],[100,"Bon. On accélère."],[400,"400 billes… 😐"],[800,"Ça existe vraiment ?"],[1000,"1 000 ! On lâche rien 💪"],[1500,"1 500… 😭"],[1780,"Allez, allez, allez…"],[1844,"…"]];
+
+let set = null;
+function newSet(){
+  const fams = base(), byRar = r => fams.filter(f=>FAMILIES[f].rar===r);
+  // les billes ordinaires du défilement (aucune shiny), en penchant vers le commun
+  const pool = [];
+  for(let i=0;i<56;i++){ const r = pickW(R(), [12,8,4,1.5,.5]);
+    pool.push(spec(pick(r===0 ? ["mini","bille","bille","chinoise"] : ["bille","chinoise","calot","boulet"]), {family:pick(byRar(r).length ? byRar(r) : fams), shiny:0})) }
+  // la trouvaille : une Lumineuse, dans un motif légendaire
+  const found = spec("boulet", {family:pick(byRar(4)), shiny:3});
+  // les trois shiny : la même bille, pour bien voir la différence
+  const tf = pick(byRar(3)), tp = Math.floor(R()*12), ts = Math.floor(R()*4e9);
+  set = {pool, found, trio:[1,2,3].map(sh=>makeSpec("calot", {seed:ts, family:tf, pal:tp, shiny:sh})), hidden:spec("calot", {family:pick(byRar(2)), shiny:0})};
+}
+const lc = s => PALETTES[s.pal][2];
+const nameOf = s => `${FAMILIES[s.family].name} · ${PALETTES[s.pal][0]}`;
+
+/* ---------- les scènes : html() dessine, cues = [temps (s), action] pour le son, les confettis et les secousses ---------- */
+const SCENES = [
+  {name:"1 sur 2 000", dur:3.4, logo:"small", html:()=>`
+      <div class="in" style="--d:.05s"><div class="mystery">${img(set.hidden, 400)}<b>?</b></div></div>
+      <h1 class="slam l">${words("1 CHANCE", .2, .2)}<br><span class="y">${words("SUR 2 000", .6, .2)}</span></h1>
+      <p class="hand m in" style="--d:1.3s">On ouvre des billes jusqu'à<br>tomber sur une <b style="color:#FFB3D6">shiny</b> ✨</p>`,
+    cues:[[.2,"hit"],[.4,"hit"],[.6,"hit2"],[.8,"hit2"],[1,"boom"],[1,"shake"],[1.3,"chime"]]},
+  {name:"La chasse", dur:HUNT, logo:"none", hunt:true, cls:"hunt", html:()=>`
+      <p class="ctr-l">Billes ouvertes</p>
+      <p class="ctr"><small>n°</small><span id="h-n">0</span></p>
+      <div class="wheel" id="wheel"><img class="mb" id="h-img" alt=""></div>
+      <p class="quip" id="h-q"></p>
+      <div class="goal"><span><em>Shiny trouvées : <b id="h-f" style="color:#fff">0</b></em><em>1 chance sur ${fr(RATE)}</em></span><div class="bar-p"><i id="h-p"></i></div></div>`,
+    cues:[[10.2,"riser"],[11.9,"mus:0"],[HUNT-.05,"night:1:.15"]]},
+  {name:"La shiny", dur:5.6, logo:"none", html:()=>`
+      <p class="no in" style="--d:.1s">Bille n° <b>${fr(FOUND)}</b>…</p>
+      <div class="in" style="--d:1.45s"><div class="big hw sh3" style="--lc:${lc(set.found)}"><span class="halo"></span>${img(set.found, 600)}</div></div>
+      <h1 class="slam xl">${words("SHINY !", 1.7, .25, "rb")}</h1>
+      <p class="in" style="--d:2.4s"><span class="tag s3">✦ Lumineuse</span></p>
+      <p class="nm in up" style="--d:2.7s">${esc(nameOf(set.found))}</p>`,
+    cues:[[0,"night:1:.01"],[.05,"suspense:1.4"],[1.45,"night:0:.2"],[1.45,"flash"],[1.45,"lum"],[1.45,"shake"],[1.5,"burst:lum:140"],[1.8,"burst:rainbow:70"],[2.9,"mus:1"]]},
+  {name:"Les 3 shiny", dur:5.6, logo:"small", html:()=>`
+      <h1 class="slam m">${words("Il en existe", .05, .18)} <span class="y">${words("3 :", .45, .2)}</span></h1>
+      <div class="trio">${set.trio.map((s,i)=>`<div class="it" style="--d:${(.7+i*.7).toFixed(2)}s"><div class="hw sh${s.shiny}" style="--lc:${lc(s)}"><span class="halo"></span>${img(s, 360)}</div>
+        <span class="tag s${s.shiny}">${SHY_NAME[s.shiny]}</span><p class="odds">${["","3 sur 4","1 sur 5","1 sur 25"][s.shiny]}<small>des shiny</small></p></div>`).join("")}</div>
+      <p class="punch in up" style="--d:3s">Une <b>Lumineuse</b>, c'est<br>1 bille sur ${fr(LUM_ONE_IN)} 😳</p>`,
+    cues:[[.05,"hit"],[.25,"hit"],[.45,"hit2"],[.7,"iri"],[1.4,"gold"],[2.1,"lumS"],[2.15,"burst:lum:50"],[3,"chime"]]},
+  {name:"À toi !", dur:5.4, logo:"big", html:()=>`
+      <h1 class="slam m">${words("T'en as déjà", .1, .2)} <span class="y">${words("eu une ? 👇", .7, .22)}</span></h1>
+      <p class="hand s in" style="--d:1.2s">Dis-nous laquelle en commentaire ✨</p>
+      ${logoHTML("giant")}
+      <span class="url in" style="--d:1.8s">www.tikalo.fr</span>
+      <div class="chips in up" style="--d:2.3s"><span>Gratuit</span><span>Sans téléchargement</span><span>Téléphone & ordi</span></div>
+      <p class="launch in" style="--d:3s">Lancement officiel le 1<sup>er</sup> novembre 🚀</p>`,
+    cues:[[.1,"hit"],[.3,"hit"],[.7,"hit2"],[.95,"hit2"],[1.8,"boom"],[1.8,"shake"],[1.8,"burst:gold:80"],[3,"arp"]]},
+];
+
+/* ---------- la chasse : le compteur, la bille (changée au plus 16 fois par seconde), les petites phrases ---------- */
+let huntN = -1, huntSwap = -1, huntQ = -1, huntK = 0;
+function huntFrame(e){
+  const n = Math.min(FOUND-1, countAt(e)), el = document.getElementById("h-n"); if(!el) return;
+  const p = document.getElementById("h-p"); p.style.setProperty("--p", (n/RATE).toFixed(4));
+  if(n!==huntN){ huntN = n; el.textContent = fr(n) }
+  const q = QUIPS.reduce((a,[v],i)=>n>=v ? i : a, 0);
+  if(q!==huntQ){ huntQ = q; const qe = document.getElementById("h-q"); qe.textContent = QUIPS[q][1]; qe.classList.remove("k"); void qe.offsetWidth; qe.classList.add("k") }
+  if(n>0 && n!==huntSwap && (e - huntK >= 1/16 || huntSwap<0)){ huntSwap = n; huntK = e;
+    const s = set.pool[n % set.pool.length], w = document.getElementById("wheel"), im = document.getElementById("h-img");
+    im.src = url(s, 480); w.style.setProperty("--w", (48 + 30*scaleOf(s.type)) + "%");
+    w.classList.remove("k"); void w.offsetWidth; w.classList.add("k");
+    STAGE.style.setProperty("--rc", DECOR_RAR[FAMILIES[s.family].rar].c);
+    if(!paused) SND.tick(Math.min(1, n/1500)) }
+}
+
+/* ---------- les effets : confettis (canvas), secousses, flash ---------- */
+const FX = (() => {
+  let cv, cx, parts = [], W = 0, H = 0;
+  const PAL = {gold:["#FFC93F","#FFE38A","#F2AE12","#fff"], rainbow:["#FF6FB5","#FFB547","#FFE14D","#6FE3A8","#5AB8FF","#B07BFF"], lum:["#FFFFFF","#DFF8FF","#9FE6FF","#BFF3FF"]};
+  function fit(){ cv = document.getElementById("fx"); if(!cv) return; const r = cv.getBoundingClientRect(); W = r.width; H = r.height; cv.width = W*devicePixelRatio; cv.height = H*devicePixelRatio; cx = cv.getContext("2d"); cx.setTransform(devicePixelRatio,0,0,devicePixelRatio,0,0) }
+  function burst(pal, n){
+    if(!cx) return; const x = W/2, y = H*.42, cols = PAL[pal] || PAL.gold, sp = W/100;
+    for(let i=0;i<n;i++){ const a = Math.random()*Math.PI*2, v = (1.2+Math.random()*3.2)*sp*.55;
+      parts.push({x, y, vx:Math.cos(a)*v, vy:Math.sin(a)*v - sp*.5, g:sp*.045, life:1, d:.008+Math.random()*.012, s:sp*(.5+Math.random()*.9), c:cols[i%cols.length], r:Math.random()*6, vr:(Math.random()-.5)*.4, k:Math.random()<.45 }) }
+  }
+  function frame(){
+    if(cx){ cx.clearRect(0,0,W,H);
+      if(!paused) parts = parts.filter(p=>p.life>0);
+      for(const p of parts){ if(!paused){ p.x += p.vx; p.y += p.vy; p.vy += p.g; p.vx *= .985; p.r += p.vr; p.life -= p.d }
+        cx.save(); cx.globalAlpha = Math.max(0, Math.min(1, p.life*2)); cx.translate(p.x, p.y); cx.rotate(p.r); cx.fillStyle = p.c;
+        if(p.k){ cx.beginPath(); for(let j=0;j<8;j++){ const rr = j%2 ? p.s*.35 : p.s; cx.lineTo(Math.cos(j*Math.PI/4)*rr, Math.sin(j*Math.PI/4)*rr) } cx.fill() }
+        else cx.fillRect(-p.s/2, -p.s/4, p.s, p.s/2);
+        cx.restore() } }
+    requestAnimationFrame(frame);
+  }
+  requestAnimationFrame(frame);
+  return {fit, burst};
+})();
+const kick = (el, c) => { if(!el) return; el.classList.remove(c); void el.offsetWidth; el.classList.add(c) };
+
+/* ---------- le son : une musique générée (Web Audio), les vrais rebonds de bille et la boîte à musique du jeu ---------- */
+const SND = (() => {
+  let ctx = null, master, musG, music = null, on = false, dest = null, MB = null, hits = null;
+  const N = n => 440*Math.pow(2,(n-69)/12);
+  function init(){ if(ctx) return; ctx = new AudioContext(); master = ctx.createGain(); master.gain.value = .8; musG = ctx.createGain(); musG.connect(master);
+    const comp = ctx.createDynamicsCompressor(); master.connect(comp); comp.connect(ctx.destination); dest = ctx.createMediaStreamDestination(); comp.connect(dest);
+    MB = makeMB(ctx, master);
+    const bin = atob(HIT_WAV), u = new Uint8Array(bin.length); for(let i=0;i<bin.length;i++) u[i] = bin.charCodeAt(i);
+    ctx.decodeAudioData(u.buffer).then(b=>hits=b).catch(()=>{}) }
+  const noiseBuf = () => { const b = ctx.createBuffer(1, ctx.sampleRate*3, ctx.sampleRate), d = b.getChannelData(0); for(let i=0;i<d.length;i++) d[i] = Math.random()*2-1; return b };
+  let NB = null;
+  function env(node, t, a, peak, dec){ node.gain.setValueAtTime(0, t); node.gain.linearRampToValueAtTime(peak, t+a); node.gain.exponentialRampToValueAtTime(.0001, t+a+dec) }
+  function osc(type, f, t, peak, dec, f2, out=master, a=.004){ const o = ctx.createOscillator(), g = ctx.createGain(); o.type = type; o.frequency.setValueAtTime(f, t); if(f2) o.frequency.exponentialRampToValueAtTime(f2, t+dec);
+    env(g, t, a, peak, dec); o.connect(g); g.connect(out); o.start(t); o.stop(t+a+dec+.05) }
+  function noise(t, peak, dec, ftype="highpass", f=6000, f2, out=master, a=.003){ NB ||= noiseBuf(); const s = ctx.createBufferSource(), fl = ctx.createBiquadFilter(), g = ctx.createGain(); s.buffer = NB;
+    fl.type = ftype; fl.frequency.setValueAtTime(f, t); if(f2) fl.frequency.exponentialRampToValueAtTime(f2, t+a+dec); env(g, t, a, peak, dec); s.connect(fl); fl.connect(g); g.connect(out); s.start(t); s.stop(t+a+dec+.05) }
+  // la boucle de la chasse : 120 BPM, en la mineur (la, fa, sol, mi : ça cherche), un arpège en doubles croches qui tourne, une basse qui pousse
+  const PROG = [[45,57,60,64],[41,57,60,65],[43,59,62,67],[40,56,59,64]];
+  function bar(t, k){
+    const ch = PROG[k%4], M = musG;
+    for(let b=0;b<4;b++){ const tb = t+b*BEAT;
+      osc("sine", 140, tb, .7, .22, 42, M);
+      noise(tb+BEAT/2, .09, .05, "highpass", 7500, 0, M);
+      if(b%2) noise(tb, .26, .14, "bandpass", 1800, 0, M);
+      osc("sawtooth", N(ch[0]-12), tb, .07, .2, 0, M); osc("sawtooth", N(ch[0]-12), tb+BEAT/2, .06, .15, 0, M);
+      for(let j=0;j<4;j++) osc("square", N(ch[1+((b*4+j)%3)] + 12), tb+j*BEAT/4, .018, .1, 0, M);   // l'arpège, une note tous les quarts de temps
+    }
+    if(k%2) [ch[3]+12, ch[2]+12].forEach((n,i)=>osc("triangle", N(n), t+2*BEAT+i*BEAT, .07, .4, 0, M));
+  }
+  function startMusic(){ init(); if(music) return; let k = 0, next = ctx.currentTime + .05;
+    music = setInterval(()=>{ while(next < ctx.currentTime + .6){ bar(next, k++); next += BEAT*4 } }, 120) }
+  function stopMusic(){ clearInterval(music); music = null }
+  const ok = () => on && ctx && ctx.state==="running";
+  const SFX = {
+    hit(){ const t = ctx.currentTime; osc("sine", 300, t, .5, .14, 80); noise(t, .22, .06, "lowpass", 3000) },
+    hit2(){ const t = ctx.currentTime; osc("sine", 420, t, .5, .16, 110); noise(t, .28, .08, "lowpass", 4000) },
+    boom(){ const t = ctx.currentTime; osc("sine", 90, t, 1, .8, 28); noise(t, .5, .5, "lowpass", 1200, 100) },
+    chime(){ const t = ctx.currentTime; [76,83,88].forEach((n,i)=>osc("sine", N(n), t+i*.06, .18, 1.1)) },
+    arp(){ const t = ctx.currentTime; [72,76,79,84,88,91,96].forEach((n,i)=>osc("triangle", N(n), t+i*.055, .14, .7)); noise(t, .2, 1.2, "highpass", 7000) },
+    riser(){ const d = MB.bus(), t = ctx.currentTime; MB.riser(d, t, .12, 1.9) },
+    // le suspense du jeu avant une Lumineuse : la boîte à musique qu'on remonte, le noir et le souffle qui monte
+    suspense(dur){ const d = MB.bus(), t = ctx.currentTime; MB.ORCH.boite.roll(d, t, dur-.05); MB.swell(d, t, .09, dur); MB.riser(d, t+dur*.4, .1, dur*.6) },
+    // les vraies signatures des shiny du jeu
+    lum(){ const d = MB.bus(); MB.shinyLum(d, ctx.currentTime, MB.EG.off); MB.boom(d, ctx.currentTime, .5) },
+    iri(){ MB.shinyIri(MB.bus(), ctx.currentTime, MB.EG.off) },
+    gold(){ MB.shinyGold(MB.bus(), ctx.currentTime, MB.EG.off) },
+    lumS(){ MB.shinyLum(MB.bus(), ctx.currentTime, MB.EG.off) },
+  };
+  return {
+    get on(){ return on }, get stream(){ init(); return dest.stream },
+    toggle(v = !on){ on = v; init(); if(on){ ctx.resume(); startMusic() } else { stopMusic(); ctx.suspend() } return on },
+    pause(p){ if(!ctx || !on) return; p ? ctx.suspend() : ctx.resume() },
+    restart(){ if(!on) return; stopMusic(); musG.gain.cancelScheduledValues(ctx.currentTime); musG.gain.setValueAtTime(1, ctx.currentTime); startMusic() },
+    music(v){ if(!ctx) return; musG.gain.cancelScheduledValues(ctx.currentTime); musG.gain.setTargetAtTime(v, ctx.currentTime, v ? .3 : .06) },
+    sfx(name, arg){ if(!ok()) return; SFX[name]?.(arg) },
+    // une bille qui sort : un vrai rebond de bille en verre (rebond_bille.wav), plus sec et plus aigu quand ça s'emballe
+    tick(x){ if(!ok() || !hits) return; const t = ctx.currentTime, n = HIT_SLICES.length, k = HIT_STRONG + Math.floor(Math.random()*(n-HIT_STRONG));
+      const [off, dur] = HIT_SLICES[k], src = ctx.createBufferSource(), g = ctx.createGain(); src.buffer = hits; src.playbackRate.value = (1+x*.35)*(1+(Math.random()-.5)*.08);
+      g.gain.value = .55-.25*x; src.connect(g); g.connect(master); src.start(t, off, dur) },
+  };
+})();
+
+/* ---------- le moteur : scènes, repères, pause ---------- */
+let cur = -1, t0 = 0, paused = false, pauseAt = 0, recording = null, fired = new Set();
+const elapsed = () => ((paused ? pauseAt : performance.now()) - t0) / 1000;
+function build(){
+  STAGE.innerHTML = `<div class="bg"><div class="glow"></div><div class="burst"></div><div class="stars"></div></div><div id="night"></div>
+    <div class="cam" id="cam"><div class="mini-logo">${logoHTML()}</div>${SCENES.map((S,i)=>`<section class="sc ${S.cls||""}" data-i="${i}"></section>`).join("")}</div>
+    <canvas id="fx"></canvas><div id="flash"></div>`;
+  document.getElementById("dots").innerHTML = SCENES.map((S,i)=>`<button data-i="${i}">${i+1}. ${S.name}</button>`).join("");
+  FX.fit();
+}
+function night(v, secs){ const n = document.getElementById("night"); n.style.setProperty("--nt", secs+"s"); n.style.opacity = v; }
+function show(i){
+  const secs = STAGE.querySelectorAll(".sc"), prev = secs[cur];
+  if(prev && cur!==i){ prev.classList.remove("on"); prev.classList.add("out"); setTimeout(()=>{ prev.classList.remove("out"); if(!prev.classList.contains("on")) prev.innerHTML = "" }, 320) }
+  cur = i; const el = secs[i], S = SCENES[i];
+  huntN = huntSwap = huntQ = -1; huntK = 0;
+  el.classList.remove("out","on"); el.innerHTML = S.html(); void el.offsetWidth; el.classList.add("on");
+  STAGE.classList.toggle("big-logo", S.logo==="big"); STAGE.classList.toggle("no-logo", S.logo==="none"); STAGE.classList.toggle("calm", !S.hunt);
+  STAGE.style.setProperty("--rc", i===2 ? lc(set.found) : i===3 ? "#B07BFF" : i===4 ? "#FFC93F" : "#8B6CFF");
+  if(i===0){ night(0, .01); SND.music(1) }
+  if(i===3 || i===4) night(0, .01);
+  if(S.hunt) huntFrame(0);
+  t0 = performance.now(); fired = new Set(); if(paused) setPaused(false);
+  document.querySelectorAll("#dots button").forEach((b,k)=>b.classList.toggle("on", k===i));
+}
+function cue(what){
+  const [k, a, b] = what.split(":");
+  if(k==="burst") return FX.burst(a, +b);
+  if(k==="shake") return kick(document.getElementById("cam"), "shake");
+  if(k==="flash") return kick(document.getElementById("flash"), "go");
+  if(k==="night") return night(+a, +b);
+  if(k==="mus") return SND.music(+a);
+  SND.sfx(k, a===undefined ? undefined : +a);
+}
+function tick(){
+  if(!paused && cur>=0){
+    const S = SCENES[cur], e = elapsed();
+    (S.cues||[]).forEach(([t, w], j)=>{ if(e>=t && !fired.has(j)){ fired.add(j); cue(w) } });
+    if(S.hunt) huntFrame(e);
+    if(e >= S.dur){
+      if(cur===SCENES.length-1 && recording) stopRec();
+      else if(!FREEZE){ if(cur===SCENES.length-1) SND.restart(); show((cur+1)%SCENES.length) }
+    }
+    // l'image figée : chaque animation est calée exactement à l'instant demandé (les captures sans écran prennent du retard sinon)
+    if(FREEZE && e >= FREEZE.at && !paused){ if(S.hunt){ huntK = -1; huntFrame(FREEZE.at) } setPaused(true); document.getAnimations().forEach(x=>{ try{ x.currentTime = FREEZE.at*1000; x.pause() }catch(_){} }) }
+  }
+  requestAnimationFrame(tick);
+}
+function setPaused(p){
+  if(p===paused) return; paused = p;
+  STAGE.querySelectorAll("*").forEach(x=>x.style.animationPlayState = p ? "paused" : "");
+  if(p) pauseAt = performance.now(); else { t0 += performance.now()-pauseAt }
+  SND.pause(p);
+  document.getElementById("b-play").textContent = p ? "▶ Lecture" : "⏸ Pause";
+}
+
+/* ---------- le format ---------- */
+const FORMATS = {"9:16":[1080,1920], "4:5":[1080,1350], "1:1":[1080,1080]};
+let format = "9:16";
+function layout(){
+  const [W,H] = FORMATS[format], wrap = document.querySelector(".wrap"), film = document.body.classList.contains("film");
+  const aw = wrap.clientWidth - (film?0:32), ah = wrap.clientHeight - (film?0:32), k = Math.min(aw/W, ah/H);
+  const w = Math.floor(W*k), h = Math.floor(H*k);
+  STAGE.style.setProperty("--sw", w+"px"); STAGE.style.setProperty("--sh", h+"px");
+  STAGE.style.setProperty("--u", Math.min(w/100, h/158)+"px");
+  requestAnimationFrame(FX.fit);
+}
+
+/* ---------- l'enregistrement (Chrome / Edge) : l'image de la scène et le son de la page ---------- */
+async function startRec(){
+  if(!navigator.mediaDevices?.getDisplayMedia){ document.querySelector(".hint").textContent = "Ton navigateur ne sait pas enregistrer l'onglet : utilise Win + Alt + R, ou l'enregistreur d'écran du téléphone."; return }
+  let stream;
+  try{ stream = await navigator.mediaDevices.getDisplayMedia({video:{frameRate:60}, audio:false, preferCurrentTab:true, selfBrowserSurface:"include"}) }catch(e){ return }
+  const track = stream.getVideoTracks()[0];
+  try{ if(window.CropTarget && track.cropTo) await track.cropTo(await CropTarget.fromElement(STAGE)) }catch(e){}
+  if(SND.on) SND.stream.getAudioTracks().forEach(t=>stream.addTrack(t));
+  const type = ["video/mp4;codecs=avc1,mp4a.40.2","video/mp4","video/webm;codecs=vp9,opus","video/webm"].find(t=>MediaRecorder.isTypeSupported(t)) || "";
+  const rec = new MediaRecorder(stream, {mimeType:type, videoBitsPerSecond:16e6}), chunks = [];
+  rec.ondataavailable = e=>e.data.size && chunks.push(e.data);
+  rec.onstop = ()=>{ stream.getVideoTracks().forEach(t=>t.stop());
+    const blob = new Blob(chunks, {type:rec.mimeType}), a = document.createElement("a");
+    a.href = URL.createObjectURL(blob); a.download = `tikalo-chasse-shiny-${format.replace(":","x")}.${rec.mimeType.includes("mp4")?"mp4":"webm"}`; a.click();
+    document.getElementById("b-rec").textContent = "● Enregistrer la vidéo"; recording = null };
+  track.onended = ()=>recording && stopRec();
+  recording = rec; document.getElementById("b-rec").textContent = "■ Arrêter";
+  await new Promise(r=>setTimeout(r,400));
+  SND.restart(); show(0); rec.start(500);
+}
+function stopRec(){ if(recording && recording.state!=="inactive") recording.stop() }
+
+/* ---------- les boutons ---------- */
+const soundBtn = () => { const b = document.getElementById("b-sound"); b.textContent = SND.on ? "🔊 Son" : "🔇 Son coupé"; b.classList.toggle("on", SND.on) };
+document.getElementById("b-play").onclick = ()=>setPaused(!paused);
+document.getElementById("b-restart").onclick = ()=>{ SND.restart(); show(0) };
+document.getElementById("b-sound").onclick = ()=>{ SND.toggle(); if(SND.on){ SND.restart(); show(0) } soundBtn() };
+document.getElementById("dots").onclick = e=>{ const b = e.target.closest("button"); if(b) show(+b.dataset.i) };
+document.getElementById("b-format").onchange = e=>{ format = e.target.value; layout() };
+document.getElementById("b-shuffle").onclick = ()=>{ SEED = (Math.random()*4e9)>>>0; newSet(); prerender(); show(cur) };
+document.getElementById("b-film").onclick = ()=>{ document.body.classList.toggle("film"); layout() };
+document.getElementById("b-rec").onclick = ()=>recording ? stopRec() : startRec();
+addEventListener("resize", layout);
+addEventListener("keydown", e=>{
+  if(e.key===" "){ e.preventDefault(); setPaused(!paused) }
+  else if(e.key==="ArrowRight") show((cur+1)%SCENES.length);
+  else if(e.key==="ArrowLeft") show((cur-1+SCENES.length)%SCENES.length);
+  else if(e.key.toLowerCase()==="h"){ document.body.classList.toggle("film"); layout() }
+  else if(e.key.toLowerCase()==="m"){ SND.toggle(); soundBtn() }
+});
+
+/* ---------- démarrage : toutes les billes sont dessinées d'avance (une image ne doit jamais manquer) ---------- */
+// l'image de couverture : la Lumineuse au centre, « La chasse aux SHINY », les chances
+function cover(){
+  STAGE.classList.add("calm","no-logo"); STAGE.style.setProperty("--rc", lc(set.found));
+  document.getElementById("cam").innerHTML = `<div class="cov">
+    <div class="cov-logo">${logoHTML()}</div>
+    <p class="kick">La chasse aux</p>
+    <p class="ttl">SHINY</p>
+    <div class="big hw sh3" style="--lc:${lc(set.found)}"><span class="halo"></span>${img(set.found, 700)}<span class="stamp"><small>Bille n°</small>${fr(FOUND)}</span></div>
+    <p class="odds-c">1 chance sur ${fr(RATE)}</p>
+    <p><span class="tag s3">✦ Lumineuse</span></p></div>`;
+  setTimeout(()=>{ FX.burst("lum", 90); setTimeout(()=>{ paused = true }, 700) }, 50);
+}
+function prerender(){ set.pool.forEach(s=>{ const i = new Image(); i.src = url(s, 480) }); url(set.found, 600); set.trio.forEach(s=>url(s, 360)); url(set.hidden, 400) }
+const Q = new URLSearchParams(location.search);
+const FREEZE = Q.has("at") ? {at:+Q.get("at")} : null;
+if(Q.has("film")) document.body.classList.add("film");
+document.fonts.ready.then(()=>setTimeout(()=>{
+  newSet(); build(); layout(); prerender();
+  if(Q.has("cover")){ document.getElementById("loading").remove(); cover(); return }
+  SCENES.forEach(S=>S.html());
+  document.getElementById("loading").remove();
+  const s0 = Math.max(0, Math.min(SCENES.length-1, (+Q.get("s")||1)-1));
+  show(s0); tick();
+}, 30));
+</script>
+</body>
+</html>

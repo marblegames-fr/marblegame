@@ -963,24 +963,33 @@ button.rw:hover{transform:translateY(-2px)}
 .am-after h2{margin:0;font-family:var(--display);font-weight:400;font-size:26px}
 .am-after p{margin:6px 0 14px;opacity:.85}
 @keyframes am-fade{to{opacity:1}}
-/* l'éclat dans le sachet : le reflet avant l'ouverture */
-.bag-stage .bs-glint{position:absolute;inset:8% 14% 6%;overflow:hidden;pointer-events:none;border-radius:26px}
-.bag-stage .bs-glint::after{content:"";position:absolute;top:-20%;bottom:-20%;width:40%;left:-60%;rotate:18deg;background:linear-gradient(90deg,transparent,rgba(183,244,255,.85) 50%,transparent);animation:bs-glint 1.4s .2s ease-in-out 2 both}
-@keyframes bs-glint{to{left:120%}}
-.bag-stage .bs-sp{position:absolute;width:14px;height:14px;opacity:0;pointer-events:none;background:radial-gradient(circle,#fff 0 18%,rgba(183,244,255,.9) 30%,transparent 65%);animation:bs-tw 1.4s ease-in-out 2}
-.bag-stage .bs-sp:nth-of-type(1){left:28%;top:30%}.bag-stage .bs-sp:nth-of-type(2){left:66%;top:24%;animation-delay:.4s}.bag-stage .bs-sp:nth-of-type(3){left:48%;top:64%;animation-delay:.8s}
-@keyframes bs-tw{40%{opacity:1;transform:scale(1.6) rotate(45deg)}}
+/* (28 octobre 2026) l'éclat à ramasser : il tombe, rebondit, puis brille par terre sous les billes */
+.eo-floor{height:0;transition:height .35s ease;flex:none}
+.eo-floor.on{height:112px}
+.eo-shard{position:absolute;left:0;top:0;z-index:5;width:52px;height:62px;padding:0;border:0;background:none;cursor:pointer;line-height:0;filter:drop-shadow(0 0 10px rgba(95,211,232,.9));touch-action:manipulation}
+.eo-shard .shard{width:52px;height:62px}
+.eo-shard::before{content:"";position:absolute;inset:-26px;border-radius:50%;background:radial-gradient(circle,rgba(183,244,255,.45),transparent 65%);opacity:0;transition:opacity .4s}
+.eo-shard.rest::before{opacity:1;animation:eo-breath 1.6s ease-in-out infinite}
+@keyframes eo-breath{50%{transform:scale(1.25);opacity:.6}}
+.eo-shard .eo-sp{position:absolute;width:14px;height:14px;opacity:0;pointer-events:none;background:radial-gradient(circle,#fff 0 18%,rgba(183,244,255,.9) 30%,transparent 65%)}
+.eo-shard.rest .eo-sp{animation:eo-tw 1.8s ease-in-out infinite}
+.eo-shard .eo-sp:nth-of-type(1){left:-6px;top:2px}.eo-shard .eo-sp:nth-of-type(2){right:-8px;top:14px;animation-delay:.6s}.eo-shard .eo-sp:nth-of-type(3){left:12px;bottom:-8px;animation-delay:1.2s}
+@keyframes eo-tw{30%{opacity:1;transform:scale(1.5) rotate(45deg)}60%{opacity:0}}
+.eo-shard.pick{transition:translate .42s cubic-bezier(.2,1.4,.4,1),scale .42s cubic-bezier(.2,1.4,.4,1),filter .42s;filter:drop-shadow(0 0 22px #B7F4FF);translate:0 -70px;scale:1.5}
+.eo-shadow{position:absolute;left:0;top:0;z-index:4;width:40px;height:9px;border-radius:50%;background:rgba(0,0,0,.4);filter:blur(2px);pointer-events:none}
+.eo-tip{position:absolute;z-index:6;translate:-50% 0;padding:5px 12px;border-radius:999px;background:#fff;color:#1D5A78;font-size:13px;font-weight:900;white-space:nowrap;pointer-events:none;box-shadow:0 4px 12px rgba(0,0,0,.3);animation:eo-tipin .4s cubic-bezier(.2,1.6,.4,1) both}
+.eo-tip::after{content:"";position:absolute;left:50%;top:-6px;translate:-50% 0;border:6px solid transparent;border-top:0;border-bottom-color:#fff}
+@keyframes eo-tipin{from{transform:translateY(-8px) scale(.7);opacity:0}}
+.eo-bit{position:absolute;left:0;top:0;z-index:4;width:6px;height:6px;rotate:45deg;background:#DFF9FF;box-shadow:0 0 6px #5FD3E8;pointer-events:none}
+@media (prefers-reduced-motion:reduce){ .eo-shard.rest::before,.eo-shard.rest .eo-sp{animation:none} }
 /* l'éclat dans le sachet : la sortie, puis il file dans la réserve */
 .ov-eclat{flex-basis:100%;display:flex;align-items:center;justify-content:center;gap:10px;flex-wrap:wrap;font-weight:900;color:#DFF9FF}
-.ov-eclat .eo-big{font-size:58px;line-height:0;filter:drop-shadow(0 0 16px rgba(95,211,232,.95));animation:eo-out .9s cubic-bezier(.2,1.6,.4,1) both}
-.ov-eclat .eo-big .shard{animation:eo-spin 2.4s linear infinite}
 @keyframes eo-out{from{transform:scale(0) rotate(-200deg);opacity:0}}
-@keyframes eo-spin{50%{transform:rotateY(180deg)}}
 .eo-n{display:inline-flex;align-items:center;gap:4px;padding:4px 12px;border-radius:999px;background:rgba(95,211,232,.18);border:1.5px solid rgba(183,244,255,.6);font-size:15px}
 .eo-n i{font-style:normal}
 .eo-n.bump{animation:eo-bump .5s cubic-bezier(.2,1.8,.4,1)}
 @keyframes eo-bump{40%{transform:scale(1.3);background:#5FD3E8;color:#fff}}
-.ov-eclat.quiet{animation:eo-out .5s cubic-bezier(.2,1.6,.4,1) both}
+.ov-eclat{animation:eo-out .5s cubic-bezier(.2,1.6,.4,1) both}
 .eo-fly{position:fixed;left:0;top:0;z-index:9999;font-size:32px;line-height:0;pointer-events:none;filter:drop-shadow(0 0 10px rgba(95,211,232,.95))}
 .sum-eclat{display:flex;align-items:center;gap:10px;margin:14px 0 0;padding:10px 12px;border-radius:14px;background:color-mix(in srgb,#5FD3E8 16%,var(--panel));font-size:14px}
 .sum-eclat .shard{font-size:26px}
@@ -5177,7 +5186,9 @@ function compose(style,d,t,z,dr,sh){
       o.connect(g); g.connect(master); o.start(t); o.stop(t+dur+.05) }) }
   const api = {
     get on(){ return on },
-    eclatTink(delay=0){ glass(2900, delay, .35, .05); glass(3600, delay+.12, .3, .035) },   // un reflet passe sur le sachet
+    eclatTink(delay=0){ glass(2900, delay, .35, .05); glass(3600, delay+.12, .3, .035) },   // l'éclat commence à tomber
+    eclatBounce(v=1){ glass(2200+Math.random()*500, 0, .45, .11*v) },                       // chaque rebond, de plus en plus doux
+    eclatPick(){ glass(1318.5, 0, .6, .12); glass(1760, .06, .7, .1); glass(2637, .13, .9, .08) },   // ramassé : un petit arpège de verre
     eclatTing(){ glass(1760, 0, 1.6, .16); glass(2637, .07, 1.3, .08) },                     // l'éclat sort du sachet
     eclatPlop(){ glass(1318.5, 0, .5, .09); glass(1975.5, .08, .6, .07) },                  // rangé dans la boîte
     eclatMini(){ glass(2349, 0, .4, .07) },                                                  // « +1 » dans une suite de sachets
@@ -9014,24 +9025,76 @@ function atelierShow(s, isNew){
       <button class="btn btn-yellow" data-action="close-modal">Génial !</button></div></div>`;
   el.hidden = false; Sound.melt();
 }
-// la sortie d'un éclat, à la fin de l'ouverture du sachet : il tournoie, puis file dans la réserve (le compteur monte)
+// (28 octobre 2026) l'éclat à ramasser (maquettes/maquette-eclat-2.html) : rien ne se voit avant d'ouvrir. Quand la dernière bille est
+// découverte, un éclat tombe du sachet, rebondit en tintant et brille par terre ; on le touche pour le ramasser, et il file dans la réserve.
+// Il est déjà compté (le serveur l'a donné avec le sachet) : jamais perdu, il se ramasse tout seul au bout de 8 s ou si on s'en va.
+// Dans une suite de sachets (eclatQuiet) : il tombe et se ramasse tout seul, juste « +1 ».
 function eclatOut(){
   const st = ovState; if(!st || st.eclatDone || st.demo) return; st.eclatDone = true;
   if(!S.eclat1){ S.eclat1 = 1; st.eclatFirst = true; save() }
-  const n = S.eclats||0, acts = document.getElementById("ov-actions"); if(!acts) return;
-  acts.insertAdjacentHTML("afterbegin", `<span class="ov-eclat${st.eclatQuiet?" quiet":""}">${st.eclatQuiet?"":`<span class="eo-big" id="eo-big">${SHARD_SVG}</span>`}<span>+1 éclat de verre</span><b class="eo-n" id="eo-n">${SHARD_SVG} <i>${fmt(st.eclatQuiet ? n : Math.max(0, n-1))}</i></b></span>`);
-  if(st.eclatQuiet){ Sound.eclatMini(); return }
-  ui.eclatAnimAt = Date.now(); Sound.eclatTing();
-  setTimeout(()=>{ if(ovState!==st) return; const a = document.getElementById("eo-big"), b = document.getElementById("eo-n"); if(!a || !b) return;
-    const r0 = a.getBoundingClientRect(), r1 = b.getBoundingClientRect(), x0 = r0.left+r0.width/2, y0 = r0.top+r0.height/2, x1 = r1.left+18, y1 = r1.top+r1.height/2;
+  const ob = document.getElementById("ov-body"), row = ob?.querySelector(".reveal-row"); if(!row) return;
+  const floor = document.createElement("div"); floor.className = "eo-floor"; row.after(floor); st.eclatFloor = floor;
+  if(!st.eclatQuiet) ui.eclatAnimAt = Date.now();
+  setTimeout(()=>{ if(ovState!==st) return; floor.classList.add("on");
+    const el = document.createElement("button"); el.className = "eo-shard"; el.setAttribute("aria-label", "Ramasser l'éclat de verre");
+    el.innerHTML = SHARD_SVG + `<i class="eo-sp"></i><i class="eo-sp"></i><i class="eo-sp"></i>`;
+    const sh = document.createElement("span"); sh.className = "eo-shadow"; ob.append(sh, el);
+    st.eclatEl = el; st.eclatSh = sh; el.addEventListener("click", ()=>eclatPick(st));
+    const W = ob.clientWidth, landY = row.offsetTop + row.offsetHeight + 40;
+    let x = W/2 + (Math.random()<.5?-1:1)*(20+Math.random()*40), y = Math.max(0, row.offsetTop - 60), vx = (Math.random()-.5)*120, vy = 0, a = Math.random()*360, va = 540, hits = 0, t0 = performance.now();
+    const place = () => { el.style.transform = `translate(${x-26}px,${y-31}px) rotate(${a}deg)`;
+      const k = Math.max(.3, 1-(landY-y)/400); sh.style.transform = `translate(${x-20}px,${landY+24}px) scale(${k})`; sh.style.opacity = k };
+    const rest = () => { a = Math.round(a/360)*360 + 12; place(); el.classList.add("rest"); st.eclatXY = [x, landY];
+      if(!st.eclatQuiet) el.scrollIntoView?.({block:"nearest", behavior:"smooth"});   // sur téléphone, il peut tomber sous le bas de l'écran
+      if(st.eclatQuiet){ setTimeout(()=>eclatPick(st), 250); return }
+      const tip = document.createElement("span"); tip.className = "eo-tip"; tip.textContent = "Touche-le !";
+      tip.style.left = x+"px"; tip.style.top = (landY+40)+"px"; ob.append(tip); st.eclatTip = tip;   // sous l'éclat : les noms des billes restent lisibles
+      st.eclatTimer = setTimeout(()=>eclatPick(st), 8000) };
+    Sound.eclatTink(0);
+    if(FX.reduce()){ y = landY; place(); rest(); return }
+    const step = now => { if(ovState!==st) return; const dt = Math.min(.033, (now-t0)/1000); t0 = now;
+      vy += 2200*dt; x += vx*dt; y += vy*dt; a += va*dt;
+      if(y > landY){ y = landY; hits++;
+        if(hits <= 3 && vy > 200){ Sound.eclatBounce(1/hits); vy = -vy*.42; vx *= .6; va = -va*.5; eclatBits(ob, x, y+20, 4) }
+        else { vy = vx = 0; return rest() } }
+      place(); requestAnimationFrame(step) };
+    place(); requestAnimationFrame(step);
+  }, st.eclatQuiet ? 250 : 650);
+}
+// des petits bouts de verre qui sautent (un rebond, le ramassage)
+function eclatBits(ob, x, y, n){
+  if(!Element.prototype.animate || FX.reduce()) return;
+  for(let i=0;i<n;i++){ const b = document.createElement("i"); b.className = "eo-bit"; ob.append(b);
+    const ang = -Math.PI*(.15+.7*Math.random()), sp = 40+Math.random()*60;
+    b.animate([{transform:`translate(${x}px,${y}px)`, opacity:1},{transform:`translate(${x+Math.cos(ang)*sp}px,${y+Math.sin(ang)*sp}px) scale(.3)`, opacity:0}], {duration:500, easing:"ease-out", fill:"forwards"});
+    setTimeout(()=>b.remove(), 520) }
+}
+// le ramassage : il saute en brillant, « +1 éclat de verre », puis file dans le compteur d'éclats (en bas, avec les boutons)
+function eclatPick(st){
+  const el = st.eclatEl; if(!el || el.dataset.got || ovState!==st) return; el.dataset.got = 1;
+  clearTimeout(st.eclatTimer); st.eclatTip?.remove(); st.eclatSh?.remove(); el.classList.remove("rest");
+  setTimeout(()=>st.eclatFloor?.classList.remove("on"), st.eclatQuiet ? 0 : 900);   // la place sous les billes se referme
+  const ob = document.getElementById("ov-body"), acts = document.getElementById("ov-actions"), n = S.eclats||0;
+  if(acts) acts.insertAdjacentHTML("afterbegin", `<span class="ov-eclat"><span>+1 éclat de verre</span><b class="eo-n" id="eo-n">${SHARD_SVG} <i>${fmt(Math.max(0, n-1))}</i></b></span>`);
+  const done = () => { const b = document.getElementById("eo-n"); if(b){ b.querySelector("i").textContent = fmt(S.eclats||0); b.classList.add("bump") } };
+  if(st.eclatQuiet){ Sound.eclatMini(); el.remove(); done(); return }
+  Sound.eclatPick();
+  const [x, y] = st.eclatXY || [0, 0]; eclatBits(ob, x, y, 8); el.classList.add("pick");
+  setTimeout(()=>{ if(ovState!==st) return; const b = document.getElementById("eo-n"); if(!b){ el.remove(); return }
+    const r0 = el.getBoundingClientRect(), r1 = b.getBoundingClientRect(), x0 = r0.left+r0.width/2, y0 = r0.top+r0.height/2, x1 = r1.left+18, y1 = r1.top+r1.height/2;
     const cx = (x0+x1)/2, cy = Math.min(y0,y1) - 120, fly = document.createElement("span"); fly.className = "eo-fly"; fly.innerHTML = SHARD_SVG; document.body.append(fly);
-    a.style.visibility = "hidden"; Sound.whoosh();
+    el.remove(); Sound.whoosh();
     const T = 700, t0 = performance.now();
     const step = now => { const u = Math.min(1,(now-t0)/T), e = u<.5 ? 2*u*u : 1-(-2*u+2)**2/2;
       const x = (1-e)**2*x0 + 2*(1-e)*e*cx + e*e*x1, y = (1-e)**2*y0 + 2*(1-e)*e*cy + e*e*y1;
       fly.style.transform = `translate(${x-14}px,${y-16}px) scale(${1-.4*e}) rotate(${u*540}deg)`;
-      if(u<1) requestAnimationFrame(step); else { fly.remove(); Sound.eclatPlop(); b.querySelector("i").textContent = fmt(S.eclats||0); b.classList.add("bump") } };
-    requestAnimationFrame(step) }, 1300);
+      if(u<1 && ovState===st) requestAnimationFrame(step); else { fly.remove(); Sound.eclatPlop(); done() } };
+    requestAnimationFrame(step) }, 650);
+}
+// on quitte l'ouverture sans l'avoir ramassé : il est déjà dans la réserve, on le dit
+function eclatLeave(){
+  const st = ovState, el = st?.eclatEl; if(!el || el.dataset.got) return;
+  el.dataset.got = 1; clearTimeout(st.eclatTimer); Sound.eclatPlop(); toast("+1 éclat de verre, rangé dans ta réserve");
 }
 function eclatFirstPop(){
   const el = document.getElementById("modal");
@@ -10477,7 +10540,7 @@ async function openBag(bagId, gift, auto){
   ovState = {bag, results, opened:new Set(), gift, forced:!!pulls.forced, pxp:passXP(bagXP(BAG_XP[bag.id])), autoOpen:!!auto, eclat:!!pulls.eclat,
     eclatQuiet:!!pulls.eclat && !!auto && Date.now()-(ui.eclatAnimAt||0) < 10*60e3};   // une suite de sachets : l'animation entière une fois, ensuite juste « +1 »
   showBagStage();
-  if(ovState.autoOpen) setTimeout(()=>tear(), ovState.eclat && !ovState.eclatQuiet ? 1600 : 0);   // sachet gratuit ou offert enchaîné : il s'ouvre tout seul (après le reflet d'un éclat)
+  if(ovState.autoOpen) setTimeout(()=>tear(), 0);   // sachet gratuit ou offert enchaîné : il s'ouvre tout seul (28 octobre 2026 : plus de reflet d'éclat avant)
 }
 // Taille la plus grosse d'un tirage : 0 (Mini) à 4 (Mammouth), et 6 pour une shiny
 const pullScore = s => s.shiny || s.secret ? 6 : tierOf(s);
@@ -10574,7 +10637,7 @@ function showBagStage(){
     <span class="ov-kicker">${ovState.demo?"Démo : rien n'est gagné":gift?"Offert par le passe de saison":bag.price?`${fmt(bag.price)} ${CUR.many}`:"Offert toutes les 10 minutes"}</span>
     <div class="ov-title">${bag.name}</div>
     <div class="bag-zone${forced?" guar":""}" id="bag-zone"><div class="bag-halo"></div>
-      <button class="bag-stage${ovState.eclat && !ovState.eclatQuiet ? " glint" : ""}" id="bag-stage" aria-label="Ouvrir le sachet">${bagSVG(bag)}${ovState.eclat && !ovState.eclatQuiet ? `<span class="bs-glint" aria-hidden="true"></span><i class="bs-sp"></i><i class="bs-sp"></i><i class="bs-sp"></i>` : ""}</button>
+      <button class="bag-stage" id="bag-stage" aria-label="Ouvrir le sachet">${bagSVG(bag)}</button>
       ${forced?`<div class="guar-seal" role="status" aria-label="Garantie Boulet : au moins un Boulet dans ce sachet"><span class="gs-rays"></span>
         <span class="gs-disc">${mImg({seed:hash("garantie"), type:"boulet", family:0, pal:PEDIA_PAL, shiny:0},160,64,"")}</span><span class="gs-ribbon">${ic("shield",15,2.6)} Boulet garanti</span></div>`:""}
     </div>
@@ -10589,7 +10652,6 @@ function showBagStage(){
   document.body.style.overflow = "hidden";
   FX.fit(); FX.setDust(true);
   bindBag();
-  if(ovState.eclat && !ovState.eclatQuiet){ Sound.eclatTink(.3); Sound.eclatTink(1.7) }   // (27 octobre 2026) le sachet cache un éclat : un reflet de verre et un petit « tink »
   document.getElementById("bag-stage").focus();
   // la garantie Boulet tombe sur ce sachet : le tampon doré s'abat dessus, avec une gerbe d'étincelles
   if(forced) setTimeout(()=>{ const z = document.querySelector(".guar-seal .gs-disc"); if(!z || !ovState) return;
@@ -10937,6 +10999,7 @@ function finishReveal(){
   if(ovState.eclat) eclatOut();
 }
 function closeOv(quiet){
+  if(!quiet) eclatLeave();
   // fermé avant d'avoir tout découvert : les billes sont déjà rangées, on montre quand même ce qu'il y avait
   const missed = !quiet && ovState && !ovState.demo && ovState.results && ovState.opened.size < ovState.results.length ? ovState : null;
   const fini = !quiet && ovState && !ovState.demo && ovState.results ? ovState.results : null;
@@ -16827,7 +16890,7 @@ let bugKeep = null;   // un message qui n'est pas parti : il est reproposé au p
 // on:false cache le bouton (pendant qu'on prépare la mise à jour) ; on:true le remet, avec la pastille si l'id a changé
 // (16 octobre 2026) deux repères : dot = la pastille rouge du bouton, à changer à CHAQUE mise en ligne qui ajoute une ligne au patchnote
 // (avec txt : la date du jour) ; id = la fenêtre d'annonce à l'arrivée, seulement pour les très gros jours
-const NEWS = {on:true, id:"2026-10-27", dot:"2026-10-28-1130", url:"/nouveautes.html", txt:"Mise à jour du 28 oct."};
+const NEWS = {on:true, id:"2026-10-27", dot:"2026-10-28-1300", url:"/nouveautes.html", txt:"Mise à jour du 28 oct."};
 const newsUnseen = () => lsGet("billeo-news-vu")!==NEWS.dot;
 // (14 octobre 2026) à l'arrivée, une fenêtre annonce la mise à jour, une seule fois par mise à jour et par compte (S.newsPop, gardé
 // dans la partie : elle ne revient pas sur un autre appareil) ; on choisit d'aller voir les nouveautés, ou pas
@@ -18315,7 +18378,7 @@ document.addEventListener("click", e=>{
     }
     case "open-free": openDay(false); openBag("gratuit"); break;
     case "bag-pick": ui.bag = t.dataset.bag; renderView(); break;
-    case "open-next-free": FX.stop(); openBag("gratuit", false, true); break;   // « Ouvrir le suivant » : le sachet s'ouvre tout seul
+    case "open-next-free": eclatLeave(); FX.stop(); openBag("gratuit", false, true); break;   // « Ouvrir le suivant » : le sachet s'ouvre tout seul
     case "open-gift": openBag(t.dataset.bag, true); break;
     case "pass-claim": {
       const r = grantReward(t.dataset.track, +t.dataset.t); if(!r) break;
@@ -18530,7 +18593,7 @@ document.addEventListener("click", e=>{
     case "reveal": { const i=+t.dataset.i; if(ovState?.opened.has(i)) reveal(i); else revealDrama(i); break }
     case "reveal-all": revealAll(t); break;
     // (10 octobre 2026) « Ouvrir un autre sachet offert » : le sachet suivant s'ouvre tout seul, sans bouton « Ouvrir le sachet »
-    case "buy-again": openBag(ovState.bag.id, ovState.gift, true); break;
+    case "buy-again": eclatLeave(); openBag(ovState.bag.id, ovState.gift, true); break;
     case "to-bags": closeOv(); go("sacs"); break;
     case "to-collection": closeOv(); ui.tab="billes"; ui.type="all"; go("collection"); break;
     case "to-home": closeOv(); go("accueil"); break;

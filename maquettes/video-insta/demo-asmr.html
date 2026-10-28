@@ -1,0 +1,508 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Tikalo · vidéo ASMR</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Gluten:wght@900&family=Lilita+One&family=Nunito:wght@700;800;900&display=swap">
+<style>
+/* La 5e vidéo Instagram de Tikalo (13 octobre 2026) : « ASMR · j'ouvre 4 sachets de billes ». Pas de musique : seulement les vrais sons du jeu,
+   le sachet secoué (enregistré), les papillotes qui rebondissent (rebonds d'une vraie bille), le papier qui se froisse, et la boîte à musique
+   « Égrené » à chaque bille (tikalo-demo-sons.js, fabriqué depuis index.html par fabriquer-sons-demo.mjs). Les papillotes s'ouvrent comme dans le jeu,
+   un doublon s'efface un peu, les shiny ont leur éclat et leur signature, le dernier sachet garde le suspense pour une Lumineuse légendaire.
+   Même moteur que demo-recre.html. Pour vérifier une image : demo-asmr.html?s=2&at=4 (scène 2, figée à 4 s), &film pour cacher la barre. */
+:root{
+  --felt:#1F4A46; --felt-2:#2C635C; --felt-3:#0E2523; --ink:#24253D; --cream:#F6EBDD;
+  --yellow:#FFC93F; --yellow-2:#F2AE12;
+  --display:"Lilita One","Arial Rounded MT Bold",sans-serif; --logo:"Gluten","Lilita One",sans-serif; --body:"Nunito","Segoe UI",system-ui,sans-serif;
+  --ui-bg:#0A0B16; --ui-panel:#15172A; --ui-line:#2C3050; --ui-ink:#E9EBFF;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+html,body{height:100%}
+body{background:var(--ui-bg);color:var(--ui-ink);font-family:var(--body);display:flex;flex-direction:column;overflow:hidden}
+button,select{font:inherit;color:inherit}
+button{background:none;border:0;cursor:pointer}
+
+/* ---------- la scène : un tapis de feutre sous une lampe, le soir ---------- */
+.wrap{flex:1;min-height:0;display:grid;place-items:center;padding:16px}
+#stage{position:relative;overflow:hidden;width:var(--sw);height:var(--sh);font-size:calc(var(--u)*4);color:#fff;border-radius:18px;
+  background:radial-gradient(70% 45% at 50% 42%,var(--felt-2),var(--felt) 55%,var(--felt-3));box-shadow:0 30px 80px -30px #000}
+body.film .wrap{padding:0} body.film #stage{border-radius:0;box-shadow:none}
+.bg{position:absolute;inset:0;pointer-events:none}
+/* le grain du feutre */
+.bg .grain{position:absolute;inset:0;opacity:.22;background-image:radial-gradient(rgba(255,255,255,.18) 1px,transparent 1.2px),radial-gradient(rgba(0,0,0,.35) 1px,transparent 1.2px);
+  background-size:calc(var(--u)*1.3) calc(var(--u)*1.3),calc(var(--u)*1.7) calc(var(--u)*1.7);background-position:0 0,calc(var(--u)*.6) calc(var(--u)*.4)}
+/* la lumière chaude de la lampe, qui respire à peine */
+.bg .lamp{position:absolute;left:50%;top:40%;width:calc(var(--u)*150);height:calc(var(--u)*150);margin:calc(var(--u)*-75);border-radius:50%;
+  background:radial-gradient(circle,rgba(255,214,150,.22),transparent 60%);animation:lamp 5s ease-in-out infinite alternate}
+@keyframes lamp{to{opacity:.75;transform:scale(1.05)}}
+.bg .vig{position:absolute;inset:0;background:radial-gradient(85% 70% at 50% 45%,transparent 50%,rgba(0,0,0,.55))}
+#night{position:absolute;inset:0;pointer-events:none;background:radial-gradient(circle at 50% 50%,rgba(10,20,40,.25),rgba(0,0,8,.85) 65%);opacity:0;transition:opacity var(--nt,.8s) ease;z-index:2}
+#fx{position:absolute;inset:0;width:100%;height:100%;pointer-events:none;z-index:8}
+#flash{position:absolute;inset:0;background:#fff;opacity:0;pointer-events:none;z-index:9}
+#flash.go{animation:fl .7s ease-out}
+@keyframes fl{0%{opacity:.9}100%{opacity:0}}
+.cam{position:absolute;inset:0}
+
+.sc{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:calc(var(--u)*3);padding:calc(var(--u)*12) calc(var(--u)*5) calc(var(--u)*18);text-align:center;opacity:0;visibility:hidden}
+.sc.on{opacity:1;visibility:visible;animation:fadein .35s ease-out both}
+@keyframes fadein{from{opacity:0}}
+.sc.out{visibility:visible;animation:sc-out .35s ease-in forwards}
+@keyframes sc-out{to{opacity:0;filter:blur(calc(var(--u)*.6))}}
+
+.logo{display:flex;align-items:flex-end;font-family:var(--logo);font-weight:900;line-height:1;letter-spacing:.02em}
+.logo .lt{display:inline-block;position:relative;color:var(--yellow);-webkit-text-stroke:.16em var(--ink);paint-order:stroke fill;
+  text-shadow:0 .04em 0 #F59E0B,0 .08em 0 #E07B00,0 .13em 0 var(--ink),0 .2em .3em rgba(0,0,0,.5)}
+.logo .lt:nth-child(1){transform:translateY(-.02em) rotate(-6deg)} .logo .lt:nth-child(2){transform:translateY(-.10em) rotate(4deg)}
+.logo .lt:nth-child(3){transform:translateY(.02em) rotate(-3deg)} .logo .lt:nth-child(4){transform:translateY(-.08em) rotate(5deg)}
+.logo .lt:nth-child(5){transform:rotate(-4deg)} .logo .lt:nth-child(6){transform:translateY(-.04em) rotate(3deg)}
+.logo .i img{position:absolute;left:50%;top:-.2em;width:.27em;height:.27em;margin-left:-.12em;border-radius:50%;box-shadow:0 0 0 .05em var(--ink);filter:drop-shadow(0 .06em 0 var(--ink))}
+
+/* le bandeau du haut, discret : ASMR et le compte des sachets */
+.top{position:absolute;top:calc(var(--u)*5.5);left:0;right:0;display:flex;justify-content:center;gap:calc(var(--u)*2);z-index:5}
+.pill{font-weight:900;font-size:calc(var(--u)*3.4);letter-spacing:.06em;padding:calc(var(--u)*.9) calc(var(--u)*2.8);border-radius:999px;background:rgba(0,0,0,.28);border:calc(var(--u)*.3) solid rgba(255,255,255,.18);color:var(--cream)}
+.pill b{color:var(--yellow)}
+/* la première accroche : « monte le son » */
+.hook{position:absolute;top:calc(var(--u)*16);left:0;right:0;display:flex;flex-direction:column;align-items:center;gap:calc(var(--u)*1.2);z-index:5;pointer-events:none}
+.hook h1{font-family:var(--display);font-size:calc(var(--u)*9.5);line-height:1;color:var(--cream);text-shadow:0 calc(var(--u)*.6) 0 rgba(0,0,0,.35)}
+.hook p{font-weight:800;font-size:calc(var(--u)*4.2);color:#CFE6DF}
+.on .hook{animation:hook 3.2s ease-in-out both}
+@keyframes hook{0%{opacity:0;transform:translateY(calc(var(--u)*2))}10%,80%{opacity:1;transform:none}100%{opacity:0}}
+
+/* ---------- la table : le sachet, puis les papillotes ---------- */
+.table{position:relative;width:calc(var(--u)*90);height:calc(var(--u)*100)}
+.bag{position:absolute;left:50%;top:34%;width:calc(var(--u)*44);translate:-50% -50%;filter:drop-shadow(0 calc(var(--u)*2) calc(var(--u)*2) rgba(0,0,0,.45))}
+.bag svg{display:block;width:100%;height:auto}
+.on .bag{animation:bagin .5s cubic-bezier(.2,1.4,.4,1) both}
+@keyframes bagin{from{opacity:0;transform:translateY(calc(var(--u)*-10)) scale(.8)}}
+.bag.wig{animation:wig .4s ease-in-out}
+@keyframes wig{0%,100%{rotate:0deg}20%{rotate:-8deg;scale:1.03}45%{rotate:7deg;scale:1.05}70%{rotate:-4deg}85%{rotate:2deg}}
+.bag.torn{animation:torn .5s cubic-bezier(.4,0,.6,1) forwards}
+@keyframes torn{0%{scale:1}30%{scale:1.12 .92}100%{opacity:0;scale:1.5;filter:blur(calc(var(--u)*.6))}}
+.bagname{position:absolute;left:0;right:0;top:58%;font-weight:900;font-size:calc(var(--u)*4);color:var(--cream);opacity:.85;transition:opacity .4s}
+.bagname small{display:block;font-weight:800;font-size:.8em;color:#B8D6CE}
+.table.opened .bagname{opacity:0}
+
+.slot{position:absolute;left:var(--x);top:var(--y);width:calc(var(--u)*30);translate:-50% -50%;display:flex;flex-direction:column;align-items:center;gap:calc(var(--u)*.8);opacity:0}
+/* les papillotes jaillissent du sachet, font une culbute et retombent à leur place */
+.slot.out{animation:jump .62s cubic-bezier(.3,.6,.4,1) both;animation-delay:var(--d)}
+@keyframes jump{0%{opacity:0;transform:translate(var(--fx),var(--fy)) scale(.3) rotate(-160deg)}
+  15%{opacity:1}55%{transform:translate(calc(var(--fx)*.35),calc(var(--fy)*.35 - var(--u)*18)) scale(.9) rotate(-40deg)}
+  82%{transform:translateY(calc(var(--u)*.8)) scale(1.08,.9)}100%{opacity:1;transform:none}}
+.ball{position:relative;width:calc(var(--u)*22);height:calc(var(--u)*22);display:grid;place-items:center}
+.ball .mb{position:absolute;width:var(--bw,80%);opacity:0;scale:.3;transition:scale .5s cubic-bezier(.2,1.6,.4,1),opacity .2s;filter:drop-shadow(0 calc(var(--u)*1.2) calc(var(--u)*1) rgba(0,0,0,.5))}
+.ball .halo{position:absolute;inset:0;border-radius:50%;opacity:0;pointer-events:none}
+.ball .cand{position:absolute;inset:-4%;transition:opacity .2s .3s;filter:drop-shadow(0 0 calc(var(--u)*1) color-mix(in srgb,var(--tc) 65%,transparent)) drop-shadow(0 calc(var(--u)*1) calc(var(--u)*.8) rgba(0,0,0,.4))}
+.candy{display:block;width:100%;height:100%;overflow:visible}
+.candy g{transform-box:fill-box;transition:transform .45s cubic-bezier(.3,1.3,.5,1),opacity .3s .12s}
+.candy .c-l{transform-origin:100% 50%}
+.candy .c-r{transform-origin:0 50%}
+.candy .c-b{transform-origin:50% 50%;transition:transform .38s cubic-bezier(.3,1.5,.5,1),opacity .3s .08s}
+/* juste avant d'ouvrir : les bouts se détortillent un peu */
+.slot.twist .candy .c-l{transform:rotate(-12deg)} .slot.twist .candy .c-r{transform:rotate(12deg)}
+.slot.open .cand{opacity:0}
+.slot.open .candy .c-l{transform:translateX(-30%) rotate(-240deg) scale(.7);opacity:0}
+.slot.open .candy .c-r{transform:translateX(30%) rotate(240deg) scale(.7);opacity:0}
+.slot.open .candy .c-b{transform:scale(1.4);opacity:0}
+.slot.open .ball .mb{opacity:1;scale:1}
+.lbl{display:flex;flex-direction:column;align-items:center;gap:calc(var(--u)*.5);opacity:0;transform:translateY(calc(var(--u)*1.5));transition:opacity .3s .2s,transform .3s .2s}
+.slot.open .lbl{opacity:1;transform:none}
+.lbl b{font-weight:900;font-size:calc(var(--u)*3.2);line-height:1.1;color:var(--cream);white-space:nowrap}
+.stamp{font-weight:900;font-size:calc(var(--u)*2.3);text-transform:uppercase;letter-spacing:.05em;color:#fff;background:var(--dc);padding:calc(var(--u)*.35) calc(var(--u)*1.6);border-radius:999px;box-shadow:0 0 calc(var(--u)*2) calc(var(--u)*-.4) var(--dc)}
+.stamp.leg{animation:decglow 1.6s ease-in-out infinite}
+@keyframes decglow{50%{box-shadow:0 0 calc(var(--u)*4) calc(var(--u)*.4) var(--dc)}}
+.stamp.shy{background:linear-gradient(90deg,#FF6FB5,#FFB547,#6FE3A8,#5AB8FF,#B07BFF);box-shadow:none}
+.stamp.gold{background:linear-gradient(90deg,#FFF3C4,#FFC93F,#E8A317);color:var(--ink)}
+.stamp.lum{background:#E8FBFF;color:var(--ink);box-shadow:0 0 calc(var(--u)*3) var(--lc,#9FE8FF)}
+.stamp.dup{background:rgba(0,0,0,.3);color:#D9CBBB;box-shadow:none}
+/* un doublon : la bille arrive normalement, puis s'efface un peu (comme dans le jeu depuis le 11 octobre) */
+.slot.dupe.open .ball .mb{animation:dupefade .7s .9s ease-out forwards}
+@keyframes dupefade{to{opacity:.5;filter:grayscale(.4) drop-shadow(0 calc(var(--u)*1.2) calc(var(--u)*1) rgba(0,0,0,.35))}}
+.slot.dupe.open .lbl b{color:#D9CBBB;font-weight:800}
+/* les shiny */
+.slot.open.sh1 .halo{opacity:.65;inset:-8%;background:conic-gradient(#FF6FB5,#FFB547,#FFE14D,#6FE3A8,#5AB8FF,#B07BFF,#FF6FB5);filter:blur(calc(var(--u)*2.6));animation:spin 4s linear infinite}
+.slot.open.sh2 .halo{opacity:.9;inset:-30%;background:repeating-conic-gradient(from 0deg,rgba(255,214,90,.75) 0 6deg,transparent 6deg 18deg);-webkit-mask:radial-gradient(circle,#000 20%,transparent 68%);mask:radial-gradient(circle,#000 20%,transparent 68%);animation:spin 12s linear infinite}
+.slot.open.sh3 .halo{opacity:.85;inset:-20%;background:radial-gradient(circle,var(--lc,#9FE8FF),transparent 65%);animation:lumbreathe 2.2s ease-in-out infinite}
+.slot.open.sh3 .ball .mb{filter:drop-shadow(0 0 calc(var(--u)*1.6) var(--lc,#9FE8FF)) drop-shadow(0 0 calc(var(--u)*3.6) var(--lc,#9FE8FF))}
+@keyframes lumbreathe{50%{transform:scale(1.22);opacity:.5}}
+@keyframes spin{to{transform:rotate(360deg)}}
+/* le suspense du dernier : la papillote tremble de plus en plus, sa lueur grossit, tout le reste s'éteint */
+.slot.susp{z-index:3}
+.slot.susp .cand{animation:susp 1.7s ease-in both}
+@keyframes susp{0%{transform:none}10%,30%,50%,70%,90%{transform:translate(-2%,1%) rotate(-4deg)}20%,40%,60%,80%{transform:translate(2%,-1%) rotate(4deg)}95%{transform:rotate(-7deg) scale(1.1)}100%{transform:scale(1.18)}}
+.slot.susp .halo{opacity:1;inset:-25%;background:radial-gradient(circle,var(--tc),transparent 62%);animation:grow 1.7s ease-in both}
+@keyframes grow{from{transform:scale(.5);opacity:.2}to{transform:scale(1.3);opacity:1}}
+.table.dim .slot:not(.susp){opacity:.15!important;transition:opacity .4s}
+/* la grande : elle grossit et passe devant, au milieu */
+.slot.star{z-index:4;transition:left .6s cubic-bezier(.3,1.3,.5,1),top .6s cubic-bezier(.3,1.3,.5,1),scale .6s cubic-bezier(.3,1.3,.5,1);left:50%;top:30%;scale:1.9}
+.table.starred .slot:not(.star){opacity:.22!important;transition:opacity .5s}
+
+/* ---------- la fin : le butin ---------- */
+.loot{display:grid;grid-template-columns:repeat(6,1fr);gap:calc(var(--u)*1.2);width:calc(var(--u)*84)}
+.loot .mb{width:100%;opacity:0;filter:drop-shadow(0 calc(var(--u)*.8) calc(var(--u)*.7) rgba(0,0,0,.45))}
+.loot .mb.dup{filter:grayscale(.4) drop-shadow(0 calc(var(--u)*.8) calc(var(--u)*.7) rgba(0,0,0,.3))}
+.on .loot .mb{animation:pop .4s cubic-bezier(.2,1.7,.4,1) forwards;animation-delay:var(--d)}
+.on .loot .mb.dup{animation-name:popdup}
+@keyframes pop{from{opacity:0;transform:scale(.3)}to{opacity:1;transform:none}}
+@keyframes popdup{from{opacity:0;transform:scale(.3)}to{opacity:.5;transform:none}}
+.sum{font-family:var(--display);font-size:calc(var(--u)*6.2);white-space:nowrap;line-height:1.05;color:var(--cream);text-shadow:0 calc(var(--u)*.6) 0 rgba(0,0,0,.35)}
+.sum b{color:var(--yellow);font-weight:400}
+.in{opacity:0}
+.on .in{animation:pop .5s cubic-bezier(.2,1.5,.4,1) forwards;animation-delay:var(--d,0s)}
+.giant{font-size:calc(var(--u)*15)}
+.url{font-family:var(--display);font-size:calc(var(--u)*8);padding:calc(var(--u)*1.8) calc(var(--u)*5.5);border-radius:999px;background:var(--yellow);color:var(--ink);
+  box-shadow:0 calc(var(--u)*1.1) 0 var(--yellow-2),0 0 calc(var(--u)*7) rgba(255,201,63,.4)}
+.gift{font-weight:900;font-size:calc(var(--u)*4);color:#D7EEE7}
+.gift b{color:#fff}
+.mb{display:block;height:auto;aspect-ratio:1}
+
+/* ---------- la barre de pilotage ---------- */
+.bar{flex:none;display:flex;align-items:center;justify-content:center;gap:8px;flex-wrap:wrap;padding:10px 16px 14px;border-top:1px solid var(--ui-line);background:var(--ui-panel)}
+.bar button,.bar select{height:36px;padding:0 14px;border-radius:10px;border:1px solid var(--ui-line);background:#1E2140;color:var(--ui-ink);font-weight:800;font-size:13.5px}
+.bar button:hover{background:#272B52}
+.bar button.rec{background:#E5484D;border-color:#E5484D;color:#fff}
+.bar button.on{background:var(--yellow);color:#24253D;border-color:var(--yellow)}
+.bar .sep{width:1px;height:24px;background:var(--ui-line)}
+.bar .dots{display:flex;gap:4px;flex-wrap:wrap;justify-content:center}
+.bar .dots button{padding:0 9px;font-size:12px;height:30px}
+.hint{font-size:12px;color:#8E93C4;font-weight:700}
+body.film .bar{display:none}
+.loading{position:fixed;inset:0;display:grid;place-items:center;background:var(--ui-bg);font-weight:800;z-index:20}
+@media (max-width:640px){ .bar .hint,.bar .sep{display:none} }
+</style>
+</head>
+<body>
+<div class="loading" id="loading">Préparation des billes…</div>
+<div class="wrap"><div id="stage" aria-label="Vidéo Tikalo : ASMR, ouverture de sachets de billes"></div></div>
+<div class="bar" id="bar">
+  <button id="b-play">⏸ Pause</button>
+  <button id="b-restart">⏮ Recommencer</button>
+  <button id="b-sound">🔇 Son coupé</button>
+  <span class="dots" id="dots"></span>
+  <span class="sep"></span>
+  <select id="b-format" aria-label="Format">
+    <option value="9:16">9:16 · Reels, TikTok, Shorts</option>
+    <option value="4:5">4:5 · fil Instagram / Facebook</option>
+    <option value="1:1">1:1 · carré</option>
+  </select>
+  <button id="b-shuffle">🎲 Autres billes</button>
+  <button id="b-film">Mode tournage (H)</button>
+  <button id="b-rec" class="rec">● Enregistrer la vidéo</button>
+  <span class="hint">Espace : pause · ← → : scène · H : cacher la barre · M : son</span>
+</div>
+
+<script src="../tikalo-demo-rendu.js"></script>
+<script src="tikalo-demo-sons.js"></script>
+<script>
+/* =====================================================================
+   LA VIDÉO : 4 sachets puis le butin, environ 31 secondes, sans musique
+   ===================================================================== */
+const STAGE = document.getElementById("stage");
+let SEED = 21;
+const R = () => { SEED = (SEED*1103515245 + 12345) >>> 0; return SEED / 4294967296 };
+const spec = (type, o={}) => makeSpec(type, {seed:o.seed ?? Math.floor(R()*4e9), ...o});
+const cache = new Map();
+const url = (s, px) => { const k = `${s.seed}|${s.type}|${s.family}|${s.pal}|${s.shiny}|${px}`; if(!cache.has(k)) cache.set(k, marbleURL(s, px)); return cache.get(k) };
+const img = (s, px, attrs="") => `<img class="mb" src="${url(s, px)}" alt="" ${attrs}>`;
+const base = () => FAMILIES.map((f,i)=>i).filter(i=>FAM_W[i]>0 && !FAMILIES[i].secret && !FAMILIES[i].depart && !FAMILIES[i].myth);
+const pick = a => a[Math.floor(R()*a.length)];
+const logoHTML = (cls="") => `<div class="logo ${cls}"><span class="lt">T</span><span class="lt i">ı<img src="${url(LOGO_SPEC,160)}" alt=""></span><span class="lt">k</span><span class="lt">a</span><span class="lt">l</span><span class="lt">o</span></div>`;
+const SHY = ["", "Irisée", "Dorée", "Lumineuse"];
+
+// la papillote du jeu (candySVG de index.html, 5 octobre 2026), à la couleur du sachet (--tc)
+function candySVG(i){
+  const C = c => `style="fill:${c}"`, tc = "var(--tc)";
+  const lt = a => `color-mix(in srgb,var(--tc) ${a}%,#fff)`, dk = a => `color-mix(in srgb,var(--tc) ${a}%,#000)`;
+  const edge = [[8,58],[11,70],[6,82],[10,94],[5,106],[10,118],[6,130],[11,142]];
+  const fan = `M47 95 L${edge.map(p=>p.join(" ")).join(" L")} L47 105 Z`;
+  const pleats = edge.slice(0,-1).map((p,k)=>{ const q = edge[k+1];
+    return `<path d="M47 100 L${p[0]} ${p[1]} L${q[0]} ${q[1]} Z" ${C(k%2 ? "rgba(0,0,0,.2)" : "rgba(255,255,255,.28)")}/>` }).join("");
+  const end = `<path d="${fan}" ${C(lt(70))} opacity=".93"/>${pleats}
+    <path d="M${edge.map(p=>p.join(" ")).join(" L")}" style="fill:none;stroke:rgba(255,255,255,.65);stroke-width:1.4;stroke-linejoin:round"/>
+    <path d="M60 86 L44 93 L44 107 L60 114 Q55 100 60 86 Z" ${C(dk(80))}/>
+    <path d="M47 92 L55 108 M51 90 L59 107 M44 97 L50 108" style="fill:none;stroke:${lt(40)};stroke-width:1.6;opacity:.7"/>`;
+  return `<svg class="candy" viewBox="0 0 200 200" aria-hidden="true">
+    <defs><radialGradient id="cb${i}" cx="38%" cy="32%" r="75%">
+      <stop offset="0" style="stop-color:${lt(35)}"/><stop offset=".35" style="stop-color:${lt(85)}"/><stop offset=".7" style="stop-color:${tc}"/><stop offset="1" style="stop-color:${dk(55)}"/></radialGradient>
+      <radialGradient id="cs${i}"><stop offset="0" stop-color="#fff" stop-opacity=".95"/><stop offset="1" stop-color="#fff" stop-opacity="0"/></radialGradient></defs>
+    <g class="c-l">${end}</g>
+    <g class="c-r"><g transform="matrix(-1 0 0 1 200 0)">${end}</g></g>
+    <g class="c-b">
+      <ellipse cx="100" cy="100" rx="47" ry="43" fill="url(#cb${i})" style="stroke:${dk(60)};stroke-width:1.5"/>
+      <path d="M57 93 Q78 72 104 70 Q128 72 143 92" style="fill:none;stroke:rgba(255,255,255,.45);stroke-width:2.2;stroke-linecap:round"/>
+      <path d="M58 101 Q82 92 100 95 Q120 98 142 100" style="fill:none;stroke:rgba(255,255,255,.22);stroke-width:1.6"/>
+      <path d="M58 109 Q80 130 102 131 Q126 128 142 108" style="fill:none;stroke:rgba(0,0,0,.2);stroke-width:2"/>
+      <path d="M72 78 L80 92 L76 104 M118 76 L112 90 L120 101 M92 120 L100 112 L110 121" style="fill:none;stroke:rgba(255,255,255,.3);stroke-width:1.2;stroke-linejoin:round"/>
+      <ellipse cx="83" cy="80" rx="17" ry="10" fill="url(#cs${i})" transform="rotate(-20 83 80)"/>
+      <ellipse cx="121" cy="124" rx="9" ry="4" fill="url(#cs${i})" opacity=".45" transform="rotate(-25 121 124)"/>
+      <text x="100" y="114" text-anchor="middle" style="font-family:var(--display);font-size:40px;fill:rgba(255,255,255,.88);stroke:rgba(0,0,0,.25);stroke-width:1.2;paint-order:stroke">?</text>
+    </g></svg>`;
+}
+
+/* ---------- les 4 sachets : [taille, rareté du motif, options] ; dup = déjà dans l'album ---------- */
+const BAGS_PLAN = [
+  {id:"gratuit",   shakes:3, items:[["bille",0],["mini",1],["chinoise",0,{dup:true}]]},
+  {id:"classique", shakes:2, items:[["bille",0,{dup:true}],["chinoise",1],["calot",2],["bille",0],["calot",1,{shiny:1}]]},
+  {id:"premium",   shakes:2, items:[["calot",2],["bille",0,{dup:true}],["boulet",3],["chinoise",1,{dup:true}],["calot",2,{shiny:2}]]},
+  {id:"collector", shakes:2, items:[["calot",1],["boulet",2],["bille",0,{dup:true}],["boulet",3],["mammouth",4,{shiny:3,last:true}]]},
+];
+let set = null;
+function newSet(){
+  const fams = base(), byRar = r => fams.filter(f=>FAMILIES[f].rar===r);
+  set = BAGS_PLAN.map(B=>({...B, bag:BAG_BY[B.id], items:B.items.map(([type, rar, o={}])=>({s:spec(type, {family:pick(byRar(rar)), shiny:o.shiny||0}), rar, dup:!!o.dup, last:!!o.last}))}));
+}
+
+/* ---------- le déroulé d'un sachet : secousses, déchirure, papillotes, ouvertures ---------- */
+const POS = {3:[[18,72],[50,72],[82,72]], 5:[[18,56],[50,56],[82,56],[34,88],[66,88]]};
+const BAG_XY = [50,34];
+function timeline(B, first){
+  const T = [], sh0 = first ? .5 : .35, gap = .5;
+  for(let k=0;k<B.shakes;k++) T.push([sh0+k*.5, "shake", k]);
+  const tear = sh0 + B.shakes*.5 + .05;
+  T.push([tear, "tear"]);
+  const n = B.items.length;
+  B.items.forEach((it,i)=>T.push([tear+.15+i*.1, "jump", i]));
+  let t = tear + .15 + n*.1 + .75;
+  B.items.forEach((it,i)=>{
+    if(it.last){ T.push([t, "susp", i]); t += 1.75; T.push([t, "big", i]); t += 3.2 }
+    else { T.push([t-.18, "twist", i]); T.push([t, "open", i]); t += gap + (it.s.shiny ? .7 : 0) + (it.rar>=3 ? .25 : 0) }
+  });
+  return {T, dur:t + .7};
+}
+function bagScene(k){
+  const B = set[k], first = k===0, P = POS[B.items.length];
+  const tl = timeline(B, first);
+  return {name:`Sachet ${k+1}`, dur:tl.dur, html:()=>`
+      <div class="top"><span class="pill">🎧 ASMR</span><span class="pill">Sachet <b>${k+1}</b> / ${set.length}</span></div>
+      ${first ? `<div class="hook"><h1>Monte le son 🎧</h1><p>J'ouvre 4 sachets de billes</p></div>` : ""}
+      <div class="table" id="table" style="--tc:${B.bag.color}">
+        <div class="bag" id="bag">${bagSVG(B.bag)}</div>
+        <p class="bagname">${esc(B.bag.name)}<small>${B.items.length} billes</small></p>
+        ${B.items.map((it,i)=>{ const D = DECOR_RAR[it.rar], [x,y] = P[i];
+          const st = it.s.shiny ? `<span class="stamp ${["","shy","gold","lum"][it.s.shiny]}">✦ ${SHY[it.s.shiny]}</span>` : it.dup ? `<span class="stamp dup">Doublon</span>` : it.rar ? `<span class="stamp${it.rar>=4?" leg":""}" style="--dc:${D.c}">${D.name}</span>` : "";
+          return `<div class="slot${it.dup && !it.s.shiny ? " dupe" : ""}${it.s.shiny ? " sh"+it.s.shiny : ""}" id="sl${i}" style="--x:${x}%;--y:${y}%;--fx:calc(${BAG_XY[0]-x}*var(--u)*.9);--fy:calc(${BAG_XY[1]-y}*var(--u));--d:0s;--lc:${PALETTES[it.s.pal][2]};--bw:${(52+42*scaleOf(it.s.type)).toFixed(0)}%">
+            <div class="ball"><span class="halo"></span>${img(it.s, 420)}<div class="cand">${candySVG(k*10+i)}</div></div>
+            <p class="lbl"><b>${esc(FAMILIES[it.s.family].name)}</b>${st}</p></div>` }).join("")}
+      </div>`,
+    cues:tl.T.map(([t, a, i])=>[t, ()=>act(B, a, i)])};
+}
+// une étape du sachet en cours : l'image et le son
+function act(B, a, i){
+  const $ = id => document.getElementById(id), it = B.items[i], el = i!=null ? $("sl"+i) : null;
+  if(a==="shake"){ kick($("bag"), "wig"); SND.shake(i) }
+  else if(a==="tear"){ $("bag").classList.add("torn"); $("table").classList.add("opened"); SND.tear(); FX.burst(.5, .32, "paper", 26, B.bag.color) }
+  else if(a==="jump"){ el.classList.add("out"); const X = POS[B.items.length][i][0]; SND.land(.5, (X-50)/50) }
+  else if(a==="twist"){ el.classList.add("twist"); SND.crinkle(.6) }
+  else if(a==="open"){ el.classList.add("open"); SND.crinkle(1); SND.opening(it.rar, it.s.shiny);
+    if(it.s.shiny || it.rar>=3){ const r = el.querySelector(".ball").getBoundingClientRect(), S = STAGE.getBoundingClientRect();
+      FX.burst((r.left+r.width/2-S.left)/S.width, (r.top+r.height/2-S.top)/S.height, it.s.shiny ? "rainbow" : "gold", it.s.shiny ? 40 : 20) } }
+  else if(a==="susp"){ el.classList.add("susp"); $("table").classList.add("dim"); night(.8, .5); SND.suspense(1.7) }
+  else if(a==="big"){ el.classList.remove("susp"); $("table").classList.remove("dim"); night(.35, .3); kick($("flash"), "go");
+    el.classList.add("star", "open"); $("table").classList.add("starred"); SND.crinkle(1.2); SND.opening(it.rar, it.s.shiny); FX.burst(.5, .45, "rainbow", 120); setTimeout(()=>FX.burst(.5, .45, "gold", 60), 500) }
+}
+
+/* ---------- les scènes ---------- */
+const SCENES = [];
+function makeScenes(){
+  SCENES.length = 0;
+  set.forEach((B,k)=>SCENES.push(bagScene(k)));
+  const all = set.flatMap(B=>B.items), shinies = all.filter(it=>it.s.shiny).length;
+  SCENES.push({name:"Le butin", dur:5, html:()=>`
+      <p class="sum in" style="--d:.1s">${set.length} sachets · <b>${all.length} billes</b> · ${shinies} shiny ✨</p>
+      <div class="loot">${all.map((it,i)=>img(it.s, 180, `class="mb${it.dup && !it.s.shiny ? " dup" : ""}" style="--d:${(.3+i*.06).toFixed(2)}s"`).replace('class="mb" ','')).join("")}</div>
+      ${logoHTML("giant in").replace('class="logo giant in"', 'class="logo giant in" style="--d:1.7s"')}
+      <span class="url in" style="--d:2.1s">www.tikalo.fr</span>
+      <p class="gift in" style="--d:2.6s">🎁 <b>Un sachet gratuit</b> toutes les 10 minutes</p>`,
+    cues:[[0, ()=>night(0, .4)], ...all.map((it,i)=>[.3+i*.06, ()=>SND.tink(i)]), [1.7, ()=>SND.outro()]]});
+}
+
+/* ---------- les effets : confettis et bouts de papier (canvas) ---------- */
+const FX = (() => {
+  let cv, cx, parts = [], W = 0, H = 0;
+  const PAL = {gold:["#FFC93F","#FFE38A","#F2AE12","#fff"], rainbow:["#FF4FA3","#FFC93F","#2EE6E6","#8B6CFF","#2FCF6A","#fff"]};
+  function fit(){ cv = document.getElementById("fx"); if(!cv) return; const r = cv.getBoundingClientRect(); W = r.width; H = r.height; cv.width = W*devicePixelRatio; cv.height = H*devicePixelRatio; cx = cv.getContext("2d"); cx.setTransform(devicePixelRatio,0,0,devicePixelRatio,0,0) }
+  // fx, fy : la position, en fraction de l'image ; « paper » : les bouts du sachet déchiré, à sa couleur, qui tombent doucement
+  function burst(fx, fy, pal, n, col){
+    if(!cx) return; const x = W*fx, y = H*fy, paper = pal==="paper", cols = paper ? [col, "#fff", col] : PAL[pal] || PAL.gold, sp = W/100;
+    for(let i=0;i<n;i++){ const a = Math.random()*Math.PI*2, v = (paper ? .6+Math.random()*1.6 : 1.2+Math.random()*3)*sp*.5;
+      parts.push({x, y, vx:Math.cos(a)*v, vy:Math.sin(a)*v - sp*(paper ? .6 : .5), g:sp*(paper ? .025 : .045), life:1, d:paper ? .006+Math.random()*.006 : .008+Math.random()*.012,
+        s:sp*(paper ? .8+Math.random()*1.2 : .5+Math.random()*.9), c:cols[i%cols.length], r:Math.random()*6, vr:(Math.random()-.5)*.3, k:!paper && Math.random()<.3, p:paper}) }
+  }
+  function frame(){
+    if(cx){ cx.clearRect(0,0,W,H);
+      if(!paused) parts = parts.filter(p=>p.life>0);
+      for(const p of parts){ if(!paused){ p.x += p.vx; p.y += p.vy; p.vy += p.g; p.vx *= p.p ? .96 : .985; if(p.p) p.vy *= .97; p.r += p.vr; p.life -= p.d }
+        cx.save(); cx.globalAlpha = Math.max(0, Math.min(1, p.life*2)); cx.translate(p.x, p.y); cx.rotate(p.r); cx.fillStyle = p.c;
+        if(p.k){ cx.beginPath(); for(let j=0;j<8;j++){ const rr = j%2 ? p.s*.35 : p.s; cx.lineTo(Math.cos(j*Math.PI/4)*rr, Math.sin(j*Math.PI/4)*rr) } cx.fill() }
+        else if(p.p){ cx.beginPath(); cx.moveTo(-p.s/2, -p.s/3); cx.lineTo(p.s/2, -p.s/4); cx.lineTo(p.s/3, p.s/3); cx.lineTo(-p.s/2, p.s/4); cx.fill() }
+        else cx.fillRect(-p.s/2, -p.s/4, p.s, p.s/2);
+        cx.restore() } }
+    requestAnimationFrame(frame);
+  }
+  requestAnimationFrame(frame);
+  return {fit, burst};
+})();
+const kick = (el, c) => { if(!el) return; el.classList.remove(c); void el.offsetWidth; el.classList.add(c) };
+
+/* ---------- les sons : les vrais enregistrements du jeu, le papier, la boîte à musique (pas de musique) ---------- */
+const SND = (() => {
+  let ctx = null, master, on = false, dest = null, MB = null, hits = null, shakeBuf = null, NB = null, ready = null;
+  function init(){ if(ctx) return ready; ctx = new AudioContext(); master = ctx.createGain(); master.gain.value = .9;
+    const comp = ctx.createDynamicsCompressor(); master.connect(comp); comp.connect(ctx.destination); dest = ctx.createMediaStreamDestination(); comp.connect(dest);
+    NB = ctx.createBuffer(1, ctx.sampleRate*2, ctx.sampleRate); { const d = NB.getChannelData(0); for(let i=0;i<d.length;i++) d[i] = Math.random()*2-1 }
+    MB = makeMB(ctx, master);
+    const decode = b64 => { const bin = atob(b64), u = new Uint8Array(bin.length); for(let i=0;i<bin.length;i++) u[i] = bin.charCodeAt(i); return ctx.decodeAudioData(u.buffer) };
+    ready = Promise.all([decode(HIT_WAV).then(b=>hits=b), decode(SHAKE_WAV).then(b=>shakeBuf=b)]).catch(()=>{});
+    return ready }
+  const ok = () => on && ctx && ctx.state==="running";
+  function env(g,t,a,att,dec){ g.gain.setValueAtTime(.0001,t); g.gain.exponentialRampToValueAtTime(Math.max(a,.0002),t+att); g.gain.exponentialRampToValueAtTime(.0001,t+att+dec) }
+  function noise(t, dur, filters, out=master){ const s = ctx.createBufferSource(), g = ctx.createGain(); s.buffer = NB; let node = s;
+    filters.forEach(fp=>{ const f = ctx.createBiquadFilter(); f.type = fp.type; f.frequency.setValueAtTime(fp.f, t); if(fp.f2) f.frequency.exponentialRampToValueAtTime(fp.f2, t+dur); if(fp.Q) f.Q.value = fp.Q; node.connect(f); node = f });
+    node.connect(g); g.connect(out); s.start(t, Math.random()*Math.max(0, 1.9-dur), dur+.05); return g }
+  function pan(p){ const g = ctx.createGain(); if(ctx.createStereoPanner){ const sp = ctx.createStereoPanner(); sp.pan.value = Math.max(-.8, Math.min(.8, p)); g.connect(sp); sp.connect(master) } else g.connect(master); return g }
+  // un rebond de vraie bille (rebond_bille.wav), étouffé par le papier de la papillote
+  function hit(t, force, rate, p, vol){ if(!hits) return; const n = HIT_SLICES.length;
+    const k = force>.1 ? Math.min(HIT_STRONG-1, Math.floor((1-force)*(HIT_STRONG-1)+Math.random()*1.5)) : HIT_STRONG+Math.floor(Math.random()*(n-HIT_STRONG));
+    const [off, dur] = HIT_SLICES[k], src = ctx.createBufferSource(), f = ctx.createBiquadFilter(), g = pan(p); src.buffer = hits; src.playbackRate.value = rate*(1+(Math.random()-.5)*.04);
+    f.type = "lowpass"; f.frequency.value = 2500+6000*force; g.gain.value = Math.min(1, .12+Math.pow(force,.85))*vol; src.connect(f); f.connect(g); src.start(t, off, dur) }
+  return {
+    get on(){ return on }, get stream(){ init(); return dest.stream },
+    async toggle(v = !on){ on = v; await init(); if(on) await ctx.resume(); else ctx.suspend(); return on },
+    pause(p){ if(!ctx || !on) return; p ? ctx.suspend() : ctx.resume() },
+    // la vraie secousse du sachet (« Bruit de bille.mp3 ») : une tranche différente à chaque fois
+    shake(k){ if(!ok() || !shakeBuf) return; const t = ctx.currentTime, [off, dur] = SHAKE_SLICES[[2,5,8,4][k%4]];
+      const src = ctx.createBufferSource(), g = pan((k%2 ? .2 : -.2)); src.buffer = shakeBuf; src.playbackRate.value = .97+Math.random()*.06; g.gain.value = .95; src.connect(g); src.start(t, off, dur) },
+    // le sachet qui se déchire : un long craquement de papier, en dents de scie
+    tear(){ if(!ok()) return; const t = ctx.currentTime;
+      env(noise(t, .5, [{type:"bandpass", f:900, f2:3800, Q:.8}]), t, .28, .05, .42);
+      for(let i=0;i<26;i++){ const c = t+.02+i*.016+Math.random()*.01; env(noise(c, .02, [{type:"highpass", f:2500+Math.random()*3000}]), c, .12+Math.random()*.14, .001, .012) } },
+    // une papillote qui atterrit sur le feutre : deux ou trois petits rebonds étouffés
+    land(delay, p){ if(!ok()) return; let t = ctx.currentTime + .38, a = .55;
+      for(let k=0;k<3;k++){ hit(t, a, 1.15, p, .6); t += .1*(1-k*.3); a *= .45 }
+      env(noise(t, .25, [{type:"lowpass", f:600}], pan(p)), t, .05, .01, .22) },
+    // le papier de bonbon qu'on détortille : de petits craquements secs, très proches (le cœur de l'ASMR)
+    crinkle(k=1){ if(!ok()) return; const t = ctx.currentTime, n = Math.round(10*k);
+      for(let i=0;i<n;i++){ const c = t+Math.random()*.22*k; env(noise(c, .018, [{type:"bandpass", f:3000+Math.random()*4500, Q:1.4}]), c, (.05+Math.random()*.09)*k, .001, .01+Math.random()*.012) }
+      env(noise(t, .2*k, [{type:"highpass", f:5000}]), t, .025*k, .03, .17*k) },
+    // l'ouverture du jeu, « Égrené » : la mélodie du motif, et la signature de la shiny calée dessus
+    opening(dr, sh){ if(!ok()) return; const d = MB.bus(), t = ctx.currentTime + .03;
+      MB.egrene(d, t, Math.min(5, dr), sh); if(sh) [0, MB.shinyIri, MB.shinyGold, MB.shinyLum][sh](d, t, MB.EG.off) },
+    // le suspense du jeu : la boîte à musique qu'on remonte, et la lumière qui s'éteint puis le souffle qui monte (avant une Lumineuse)
+    suspense(dur){ if(!ok()) return; const d = MB.bus(), t = ctx.currentTime;
+      MB.ORCH.boite.roll(d, t, dur-.05); MB.swell(d, t, .09, dur); MB.riser(d, t+dur*.4, .1, dur*.6) },
+    // le butin : un petit « ting » de boîte à musique par bille, qui monte
+    tink(i){ if(!ok()) return; MB.mbox(master, ctx.currentTime, MB.NOTE([0,4,7,12,16,19][i%6] + 12*Math.floor(i/6) - 5), .05, .6) },
+    outro(){ if(!ok()) return; const d = MB.bus(), t = ctx.currentTime; [0,4,7,12,16,19,24].forEach((n,i)=>MB.mbox(d, t+i*.09, MB.NOTE(n-5), .09, 1.4)); MB.chime(d, t+.7, MB.NOTE(19), .05, 1.6) },
+  };
+})();
+
+/* ---------- le moteur : scènes, repères, pause ---------- */
+let cur = -1, t0 = 0, paused = false, pauseAt = 0, recording = null, fired = new Set();
+const elapsed = () => ((paused ? pauseAt : performance.now()) - t0) / 1000;
+function build(){
+  STAGE.innerHTML = `<div class="bg"><div class="lamp"></div><div class="grain"></div><div class="vig"></div></div><div id="night"></div>
+    <div class="cam" id="cam">${SCENES.map((S,i)=>`<section class="sc" data-i="${i}"></section>`).join("")}</div>
+    <canvas id="fx"></canvas><div id="flash"></div>`;
+  document.getElementById("dots").innerHTML = SCENES.map((S,i)=>`<button data-i="${i}">${i+1}. ${S.name}</button>`).join("");
+  FX.fit();
+}
+function night(v, secs){ const n = document.getElementById("night"); n.style.setProperty("--nt", secs+"s"); n.style.opacity = v; }
+function show(i){
+  const secs = STAGE.querySelectorAll(".sc"), prev = secs[cur];
+  if(prev && cur!==i){ prev.classList.remove("on"); prev.classList.add("out"); setTimeout(()=>{ prev.classList.remove("out"); if(!prev.classList.contains("on")) prev.innerHTML = "" }, 360) }
+  cur = i; const el = secs[i], S = SCENES[i];
+  el.classList.remove("out","on"); el.innerHTML = S.html(); void el.offsetWidth; el.classList.add("on");
+  night(0, .3); FX.fit();
+  t0 = performance.now(); fired = new Set(); if(paused) setPaused(false);
+  document.querySelectorAll("#dots button").forEach((b,k)=>b.classList.toggle("on", k===i));
+}
+function tick(){
+  if(!paused && cur>=0){
+    const S = SCENES[cur], e = FREEZE ? Math.min(elapsed(), FREEZE.at) : elapsed();   // une capture figée ne joue jamais un repère après l'instant demandé
+    (S.cues||[]).forEach(([t, w], j)=>{ if(e>=t && !fired.has(j)){ fired.add(j); w() } });
+    if(e >= S.dur){
+      if(cur===SCENES.length-1 && recording) stopRec();
+      else if(!FREEZE) show((cur+1)%SCENES.length);
+    }
+    // l'image figée : les captures sans écran prennent du retard, alors chaque animation déjà lancée est menée à sa fin
+    if(FREEZE && e >= FREEZE.at && !paused){ document.getAnimations().forEach(x=>{ try{ if(x.effect.getComputedTiming().iterations!==Infinity) x.finish() }catch(_){} }); setPaused(true) }
+  }
+  requestAnimationFrame(tick);
+}
+function setPaused(p){
+  if(p===paused) return; paused = p;
+  STAGE.querySelectorAll("*").forEach(x=>x.style.animationPlayState = p ? "paused" : "");
+  if(p) pauseAt = performance.now(); else { t0 += performance.now()-pauseAt }
+  SND.pause(p);
+  document.getElementById("b-play").textContent = p ? "▶ Lecture" : "⏸ Pause";
+}
+
+/* ---------- le format ---------- */
+const FORMATS = {"9:16":[1080,1920], "4:5":[1080,1350], "1:1":[1080,1080]};
+let format = "9:16";
+function layout(){
+  const [W,H] = FORMATS[format], wrap = document.querySelector(".wrap"), film = document.body.classList.contains("film");
+  const aw = wrap.clientWidth - (film?0:32), ah = wrap.clientHeight - (film?0:32), k = Math.min(aw/W, ah/H);
+  const w = Math.floor(W*k), h = Math.floor(H*k);
+  STAGE.style.setProperty("--sw", w+"px"); STAGE.style.setProperty("--sh", h+"px");
+  STAGE.style.setProperty("--u", Math.min(w/100, h/158)+"px");
+  requestAnimationFrame(FX.fit);
+}
+
+/* ---------- l'enregistrement (Chrome / Edge) : l'image de la scène et le son de la page ---------- */
+async function startRec(){
+  if(!navigator.mediaDevices?.getDisplayMedia){ document.querySelector(".hint").textContent = "Ton navigateur ne sait pas enregistrer l'onglet : utilise Win + Alt + R, ou l'enregistreur d'écran du téléphone."; return }
+  let stream;
+  try{ stream = await navigator.mediaDevices.getDisplayMedia({video:{frameRate:60}, audio:false, preferCurrentTab:true, selfBrowserSurface:"include"}) }catch(e){ return }
+  const track = stream.getVideoTracks()[0];
+  try{ if(window.CropTarget && track.cropTo) await track.cropTo(await CropTarget.fromElement(STAGE)) }catch(e){}
+  if(SND.on) SND.stream.getAudioTracks().forEach(t=>stream.addTrack(t));
+  const type = ["video/mp4;codecs=avc1,mp4a.40.2","video/mp4","video/webm;codecs=vp9,opus","video/webm"].find(t=>MediaRecorder.isTypeSupported(t)) || "";
+  const rec = new MediaRecorder(stream, {mimeType:type, videoBitsPerSecond:16e6}), chunks = [];
+  rec.ondataavailable = e=>e.data.size && chunks.push(e.data);
+  rec.onstop = ()=>{ stream.getVideoTracks().forEach(t=>t.stop());
+    const blob = new Blob(chunks, {type:rec.mimeType}), a = document.createElement("a");
+    a.href = URL.createObjectURL(blob); a.download = `tikalo-asmr-${format.replace(":","x")}.${rec.mimeType.includes("mp4")?"mp4":"webm"}`; a.click();
+    document.getElementById("b-rec").textContent = "● Enregistrer la vidéo"; recording = null };
+  track.onended = ()=>recording && stopRec();
+  recording = rec; document.getElementById("b-rec").textContent = "■ Arrêter";
+  await new Promise(r=>setTimeout(r,400));
+  show(0); rec.start(500);
+}
+function stopRec(){ if(recording && recording.state!=="inactive") recording.stop() }
+
+/* ---------- les boutons ---------- */
+const soundBtn = () => { const b = document.getElementById("b-sound"); b.textContent = SND.on ? "🔊 Son" : "🔇 Son coupé"; b.classList.toggle("on", SND.on) };
+const soundToggle = async () => { await SND.toggle(); if(SND.on) show(0); soundBtn() };
+document.getElementById("b-play").onclick = ()=>setPaused(!paused);
+document.getElementById("b-restart").onclick = ()=>show(0);
+document.getElementById("b-sound").onclick = soundToggle;
+document.getElementById("dots").onclick = e=>{ const b = e.target.closest("button"); if(b) show(+b.dataset.i) };
+document.getElementById("b-format").onchange = e=>{ format = e.target.value; layout() };
+document.getElementById("b-shuffle").onclick = ()=>{ SEED = (Math.random()*4e9)>>>0; newSet(); makeScenes(); show(cur) };
+document.getElementById("b-film").onclick = ()=>{ document.body.classList.toggle("film"); layout() };
+document.getElementById("b-rec").onclick = ()=>recording ? stopRec() : startRec();
+addEventListener("resize", layout);
+addEventListener("keydown", e=>{
+  if(e.key===" "){ e.preventDefault(); setPaused(!paused) }
+  else if(e.key==="ArrowRight") show((cur+1)%SCENES.length);
+  else if(e.key==="ArrowLeft") show((cur-1+SCENES.length)%SCENES.length);
+  else if(e.key.toLowerCase()==="h"){ document.body.classList.toggle("film"); layout() }
+  else if(e.key.toLowerCase()==="m") soundToggle();
+});
+
+/* ---------- démarrage : les billes sont dessinées d'avance, puis la vidéo tourne ---------- */
+const Q = new URLSearchParams(location.search);
+const FREEZE = Q.has("at") ? {at:+Q.get("at")} : null;
+if(Q.has("film")) document.body.classList.add("film");
+document.fonts.ready.then(()=>setTimeout(()=>{
+  newSet(); makeScenes(); build(); layout();
+  SCENES.forEach(S=>S.html());
+  document.getElementById("loading").remove();
+  show(Math.max(0, Math.min(SCENES.length-1, (+Q.get("s")||1)-1))); tick();
+}, 30));
+</script>
+</body>
+</html>

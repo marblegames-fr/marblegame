@@ -1,4 +1,4 @@
-/* Extrait automatique de index.html du 2026-10-16 (outils/extraire-rendu.mjs) : données, rendu WebGL des billes, icônes, sachets,
+/* Extrait automatique de index.html du 2026-10-19 (outils/extraire-rendu.mjs) : données, rendu WebGL des billes, icônes, sachets,
    aperçus des jeux, marelle, distributeur, chaudron. Ne pas modifier à la main : relancer l'extraction. */
 /* =====================================================================
    DONNÉES DU JEU

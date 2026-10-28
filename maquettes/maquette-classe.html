@@ -1,0 +1,391 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>La Cour des grands</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Lilita+One&family=Nunito:wght@600;700;800;900&family=Caveat:wght@700&display=swap">
+<style>
+/* (19 octobre 2026) Maquette : « La Cour des grands », le mode classé de la Pichenette.
+   Une cote cachée (Elo) + des rangs visibles (Bille de terre → Boulet, puis la Couronne de la cour), des saisons de 15 jours
+   calées sur les events, aucune bille misée. Les parties se jouent dans maquette-pichenette.html?classe (l'ordi tient le rôle de l'adversaire). */
+:root{--bg:#F2E9D7;--panel:#FAF5EB;--panel-2:#F5EEE1;--line:#E6D9C1;--line-2:#DBCAAB;--ink:#24253D;--ink-2:#56546B;--muted:#8E8898;
+  --yellow:#FFC93F;--yellow-2:#F2AE12;--blue:#2E6BE6;--blue-soft:#D6E4FC;--green:#2FA35A;--green-soft:#DAF2D6;--red:#E5484D;--red-soft:#FCE1E1;--violet:#8A4AD6;
+  --display:"Lilita One","Arial Rounded MT Bold","Trebuchet MS",sans-serif;--body:"Nunito","Segoe UI",system-ui,sans-serif;--hand:"Caveat","Segoe Print","Comic Sans MS",cursive}
+*{box-sizing:border-box;margin:0;padding:0}
+body{background:var(--bg);color:var(--ink);font:700 15px/1.45 var(--body);overflow-x:hidden}
+button{font:inherit;cursor:pointer;border:0;color:inherit;background:none;touch-action:manipulation}
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;height:42px;padding:0 20px;border-radius:999px;font-weight:800;font-size:15px;transition:transform .12s,background .12s}
+.btn:active{transform:translateY(2px)}
+.btn-yellow{background:var(--yellow);color:var(--ink);box-shadow:0 3px 0 var(--yellow-2)}
+.btn-yellow:hover{background:#FFD45F}
+.btn-ghost{background:var(--panel);box-shadow:0 0 0 1.5px var(--line-2) inset}
+.btn-ghost:hover{background:#fff}
+.btn-xl{height:56px;padding:0 34px;font-size:19px}
+.btn-sm{height:32px;padding:0 12px;font-size:13px}
+.wrap{max-width:1040px;margin:0 auto;padding:14px 16px 40px}
+.top{display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin-bottom:14px}
+.logo{font:400 30px/1 var(--display);margin-right:auto;display:flex;align-items:center;gap:10px;flex-wrap:wrap}
+.logo small{font:800 12px var(--body);color:var(--muted);padding:3px 8px;border-radius:999px;background:var(--panel);box-shadow:0 0 0 1.5px var(--line) inset}
+.season{display:flex;align-items:center;gap:8px;padding:6px 14px 6px 8px;border-radius:999px;background:var(--ink);color:#fff;font-size:13.5px}
+.season img{width:24px;height:24px}
+.season b{color:var(--yellow)}
+.box{background:var(--panel);border-radius:22px;box-shadow:0 0 0 1.5px var(--line) inset;padding:18px 20px;margin-bottom:14px}
+h2{font:400 24px/1.1 var(--display);margin-bottom:10px;display:flex;align-items:center;gap:10px;flex-wrap:wrap}
+h2 small{font:700 13px var(--body);color:var(--muted)}
+.hand{font:700 21px/1.2 var(--hand);color:var(--ink-2)}
+
+/* mon rang */
+.me{display:grid;grid-template-columns:auto 1fr auto;gap:22px;align-items:center;background:linear-gradient(135deg,#FFF7DD,#FAF5EB 60%);box-shadow:0 0 0 2px var(--yellow) inset,0 20px 40px -26px rgba(201,138,0,.8)}
+.emb{position:relative;width:132px;height:132px}
+.emb img{width:100%;height:100%;filter:drop-shadow(0 8px 10px rgba(60,35,10,.35))}
+.emb .div{position:absolute;right:-6px;bottom:2px;min-width:40px;height:30px;padding:0 8px;border-radius:999px;background:var(--ink);color:#fff;font:400 18px/30px var(--display);text-align:center}
+.emb.pop img{animation:embpop 1s cubic-bezier(.2,1.5,.4,1)}
+@keyframes embpop{0%{transform:scale(.3) rotate(-90deg)}100%{transform:scale(1) rotate(0)}}
+.rk{font:400 40px/1 var(--display)}
+.rk-sub{color:var(--ink-2);margin-top:4px}
+.bar{position:relative;height:18px;border-radius:999px;background:var(--line);margin:14px 0 6px;overflow:hidden;max-width:460px}
+.bar i{position:absolute;inset:0 auto 0 0;border-radius:999px;background:linear-gradient(90deg,var(--yellow-2),var(--yellow));transition:width 1s cubic-bezier(.3,.9,.3,1)}
+.bar span{position:absolute;inset:0;display:grid;place-items:center;font-size:12px;font-weight:900}
+.stats{display:flex;gap:14px;flex-wrap:wrap;font-size:13.5px;color:var(--ink-2)}
+.stats b{color:var(--ink)}
+.shield{display:inline-flex;align-items:center;gap:4px;padding:2px 9px;border-radius:999px;background:var(--blue-soft);color:var(--blue);font-size:12.5px;font-weight:900}
+.play{display:flex;flex-direction:column;align-items:center;gap:8px}
+.play .demo{display:flex;gap:6px;flex-wrap:wrap;justify-content:center}
+.play small{color:var(--muted);font-size:12px}
+
+/* l'échelle des rangs */
+.ladder{display:grid;grid-template-columns:repeat(7,minmax(0,1fr));gap:8px}
+.tier{border-radius:16px;padding:10px 6px;background:var(--panel-2);box-shadow:0 0 0 1.5px var(--line) inset;text-align:center;position:relative}
+.tier img{width:58px;height:58px}
+.tier b{display:block;font:400 15px/1.1 var(--display);margin-top:4px}
+.tier small{display:block;font-size:11.5px;color:var(--muted);margin-top:3px;line-height:1.25}
+.tier.done{opacity:.6}
+.tier.on{background:#FFF7DD;box-shadow:0 0 0 3px var(--yellow-2) inset;transform:translateY(-3px)}
+.tier.on::after{content:"Toi";position:absolute;top:-9px;left:50%;transform:translateX(-50%);background:var(--ink);color:#fff;font-size:11px;padding:1px 8px;border-radius:999px}
+.tier .gift{margin-top:6px;font-size:11.5px;color:var(--ink-2);border-top:1px dashed var(--line-2);padding-top:5px}
+
+/* parties en cours */
+.games{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px}
+.g{display:flex;flex-direction:column;gap:8px;padding:12px 14px;border-radius:16px;background:var(--panel-2);box-shadow:0 0 0 1.5px var(--line) inset}
+.g.mine{box-shadow:0 0 0 2.5px var(--green) inset;background:#F1FAEE}
+.g .h{display:flex;align-items:center;gap:10px}
+.g .h img{width:40px;height:40px}
+.g .h b{font:400 18px/1.1 var(--display)}
+.g .h small{display:block;color:var(--muted);font-size:12px}
+.g .sc{margin-left:auto;font:400 24px/1 var(--display)}
+.g .st{font-size:13px;color:var(--ink-2)}
+.g .st.go{color:var(--green);font-weight:900}
+.g .st.win{color:var(--green)} .g .st.lose{color:var(--red)}
+.tirs{display:flex;gap:3px}
+.tirs i{width:7px;height:7px;border-radius:50%;background:var(--ink-2)}
+.tirs i.off{background:var(--line-2)}
+
+/* le classement */
+.seg{display:inline-flex;border-radius:999px;background:var(--panel-2);box-shadow:0 0 0 1.5px var(--line) inset;padding:3px;gap:2px}
+.seg button{height:30px;padding:0 12px;border-radius:999px;font-size:13px;font-weight:800;color:var(--ink-2)}
+.seg button.on{background:var(--ink);color:#fff}
+table{width:100%;border-collapse:collapse;font-size:14px}
+td{padding:7px 8px;border-bottom:1px solid var(--line);vertical-align:middle}
+td.n{width:44px;font:400 18px var(--display);text-align:center;color:var(--ink-2)}
+td.p{text-align:right;font-weight:900;white-space:nowrap}
+td.vd{text-align:right;color:var(--muted);font-size:12.5px;white-space:nowrap}
+.who{display:flex;align-items:center;gap:8px;min-width:0}
+.who img{width:28px;height:28px;flex:none}
+.who .nm{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.who .rkn{color:var(--muted);font-size:12px;white-space:nowrap}
+tr.you{background:#FFF7DD}
+tr.you td{border-bottom-color:var(--yellow)}
+tr.king td.n{color:var(--yellow-2)}
+.crown{font-size:14px}
+.gap td{text-align:center;color:var(--muted);letter-spacing:4px}
+
+/* comment ça marche */
+.how{columns:2;column-gap:28px;font-size:14.5px;color:var(--ink-2)}
+.how p{margin-bottom:9px;break-inside:avoid}
+.how b{color:var(--ink)}
+
+/* les fenêtres */
+.ov{position:fixed;inset:0;z-index:20;background:rgba(36,37,61,.6);display:grid;place-items:center;padding:16px;overflow:auto}
+.ov[hidden]{display:none}
+.card{background:var(--panel);border-radius:24px;padding:24px;width:min(560px,100%);box-shadow:0 30px 60px -20px rgba(0,0,0,.55);text-align:center}
+.card h3{font:400 34px/1.05 var(--display);margin-bottom:6px}
+.vs{display:flex;align-items:center;justify-content:center;gap:18px;margin:18px 0 10px}
+.vs .pp{display:flex;flex-direction:column;align-items:center;gap:6px;width:150px}
+.vs .pp img{width:84px;height:84px}
+.vs .pp b{font:400 20px/1.1 var(--display)}
+.vs .pp small{color:var(--muted);font-size:12.5px}
+.vs .x{font:400 40px var(--display);color:var(--red)}
+.search{width:84px;height:84px;border-radius:50%;border:6px dashed var(--line-2);animation:spin 1.4s linear infinite;margin:0 auto}
+@keyframes spin{to{transform:rotate(360deg)}}
+.mapname{display:inline-block;margin-top:6px;padding:5px 14px;border-radius:999px;background:var(--panel-2);box-shadow:0 0 0 1.5px var(--line) inset;font-size:14px}
+.game{position:fixed;inset:0;z-index:25;background:var(--bg);display:flex;flex-direction:column}
+.game[hidden]{display:none}
+.game .bar2{display:flex;align-items:center;gap:10px;padding:8px 16px;background:var(--ink);color:#fff;font-size:13.5px}
+.game .bar2 span{margin-right:auto}
+.game .bar2 .btn{height:30px;font-size:13px;padding:0 14px;background:rgba(255,255,255,.12);color:#fff}
+.game iframe{flex:1;border:0;width:100%}
+.res .big{font:400 54px/1 var(--display);margin:4px 0}
+.res .big.win{color:var(--green)} .res .big.lose{color:var(--red)}
+.res .score{font:400 30px var(--display);color:var(--ink-2)}
+.res .delta{display:inline-block;margin:12px 0 4px;padding:6px 16px;border-radius:999px;font:400 24px var(--display)}
+.res .delta.up{background:var(--green-soft);color:var(--green)} .res .delta.down{background:var(--red-soft);color:var(--red)}
+.res .why{font-size:13px;color:var(--muted);margin-top:6px}
+.res .bar{margin:12px auto 6px}
+.promo{margin-top:14px;padding:14px;border-radius:18px;background:#FFF7DD;box-shadow:0 0 0 2px var(--yellow) inset}
+.promo img{width:96px;height:96px;animation:embpop 1.1s cubic-bezier(.2,1.5,.4,1)}
+.promo b{display:block;font:400 26px/1.1 var(--display)}
+.promo.down{background:var(--red-soft);box-shadow:0 0 0 2px var(--red) inset}
+.dbg{margin-top:10px;font-size:12px;color:var(--muted)}
+.go{display:flex;justify-content:center;gap:10px;margin-top:18px;flex-wrap:wrap}
+.confetti{position:fixed;inset:0;pointer-events:none;z-index:40;overflow:hidden}
+.confetti i{position:absolute;top:-20px;width:10px;height:14px;border-radius:2px;animation:fall 2.6s linear forwards}
+@keyframes fall{to{transform:translateY(110vh) rotate(720deg)}}
+
+@media (max-width:760px){
+  .me{grid-template-columns:auto 1fr;gap:14px} .me .play{grid-column:1/-1} .emb{width:92px;height:92px} .rk{font-size:30px}
+  .ladder{grid-template-columns:repeat(4,minmax(0,1fr))} .games{grid-template-columns:1fr} .how{columns:1}
+  .logo{font-size:24px} td.vd{display:none} .vs{gap:8px} .vs .pp{width:120px} .vs .pp img{width:64px;height:64px}
+}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="top">
+    <div class="logo">La Cour des grands <small>maquette · Pichenette classée</small></div>
+    <div class="season" id="season"></div>
+  </div>
+
+  <div class="box me" id="me"></div>
+
+  <div class="box">
+    <h2>Tes parties en cours <small>chacun joue son tir quand il veut · 24 h par tour</small></h2>
+    <div class="games" id="games"></div>
+  </div>
+
+  <div class="box">
+    <h2>Les rangs <small>et ce qu'ils rapportent à la fin de la saison</small></h2>
+    <div class="ladder" id="ladder"></div>
+  </div>
+
+  <div class="box">
+    <h2>Le classement <span class="seg" id="scope"><button data-v="all" class="on">Toute la cour</button><button data-v="amis">Mes copains</button></span></h2>
+    <table id="board"></table>
+  </div>
+
+  <div class="box">
+    <h2>Comment ça marche</h2>
+    <div class="how">
+      <p><b>Une partie classée</b>, c'est une Pichenette normale, contre un joueur de ton niveau. Le terrain est tiré au sort. Ta tireuse, c'est la bille de ta collection que tu veux : elles ont toutes le même poids, ta collection te donne ton style, pas un avantage.</p>
+      <p><b>Ta cote</b> est cachée : elle mesure ton vrai niveau et sert à te trouver des adversaires à ta taille. Battre plus fort que soi rapporte plus, perdre contre plus faible coûte plus.</p>
+      <p><b>Tes points de rang</b>, eux, se voient : 100 points pour monter d'un cran (III → II → I, puis le rang suivant). Si ta cote est au-dessus de ton rang, tu gagnes plus et perds moins : tu remontes vite là où tu dois être.</p>
+      <p><b>Le bouclier</b> : juste après une montée, tes 3 parties suivantes ne peuvent pas te faire redescendre. Et on ne descend jamais sous la Bille de terre III.</p>
+      <p><b>Les Boulets</b> n'ont plus de crans : leurs points s'additionnent. Les 10 premiers Boulets portent <b>la Couronne de la cour</b>, et le n°1 a sa bille mise en avant sur l'accueil.</p>
+      <p><b>Une saison dure 15 jours</b>, comme les events (du 1er au 15, du 16 à la fin du mois). À la fin, chacun reçoit la récompense de son meilleur rang, et sa cote est rapprochée de la moyenne : tout le monde recommence un peu plus bas, personne ne repart de zéro.</p>
+      <p><b>Aucune bille n'est misée</b> : en classé, on ne gagne et ne perd que des points. Les récompenses sont des coloris de saison, non échangeables, hors album.</p>
+      <p><b>Pas de triche</b> : ton téléphone n'envoie que ton geste (ta place, la direction, la force). Le serveur rejoue le tir avec le même moteur et compte lui-même les points.</p>
+    </div>
+  </div>
+  <p class="hand" style="text-align:center">Maquette : l'adversaire est joué par l'ordi, les autres joueurs sont inventés, rien n'est envoyé nulle part.</p>
+  <div class="go"><button class="btn btn-ghost btn-sm" id="b-reset">Tout remettre à zéro</button></div>
+</div>
+
+<!-- recherche d'adversaire -->
+<div class="ov" id="ov-match" hidden><div class="card" id="match"></div></div>
+<!-- la partie -->
+<div class="game" id="game" hidden><div class="bar2"><span id="game-t"></span><button class="btn" id="b-quit">Abandonner</button></div><iframe id="frame" title="Partie"></iframe></div>
+<!-- le résultat -->
+<div class="ov" id="ov-res" hidden><div class="card res" id="res"></div></div>
+
+<script src="tikalo-demo-rendu.js"></script>
+<script src="pichenette-moteur.js"></script>
+<script>
+"use strict";
+const $ = id => document.getElementById(id);
+const fam = n => Math.max(0, FAMILIES.findIndex(f=>f.name===n)), pal = n => Math.max(0, PALETTES.findIndex(p=>p[0]===n));
+const ICONS = new Map();
+const icon = (s, px=96) => { const k = `${s.seed}|${s.type}|${s.family}|${s.pal}|${s.shiny}|${px}`; if(!ICONS.has(k)) ICONS.set(k, marbleURL(s, px)); return ICONS.get(k) };
+
+/* ---------- les rangs ---------- */
+// 5 rangs à 3 crans (III, II, I), puis les Boulets (des points sans plafond) ; les 10 premiers Boulets = la Couronne de la cour
+const TIERS = [
+  {name:"Bille de terre", spec:["bille", "Terre", "Sable", 0],        gift:"Coloris « Craie »"},
+  {name:"Bille de verre", spec:["bille", "Cristal", "Glacier", 0],    gift:"+ 1 sachet offert"},
+  {name:"Agate",          spec:["bille", "Agate", "Ambre", 0],        gift:"+ coloris « Marelle »"},
+  {name:"Œil-de-chat",    spec:["bille", "Œil-de-chat", "Émeraude", 0], gift:"+ cadre de profil"},
+  {name:"Calot",          spec:["calot", "Tourbillon", "Azur", 0],    gift:"+ « Marelle » shiny"},
+  {name:"Boulet",         spec:["boulet", "Galaxie", "Nuit", 0],      gift:"+ titre « Boulet »"},
+  {name:"Couronne de la cour", spec:["boulet", "Aurore", "Citron", 3],     gift:"+ ta bille à l'accueil (n°1)", king:true},
+];
+const tierSpec = t => { const [type, f, p, sh] = TIERS[t].spec; return {type, family:fam(f), pal:pal(p), shiny:sh, seed:hash("classe-rang" + t)} };
+const BOULET = 15;                       // le niveau 15 = Boulet ; 0..14 = 5 rangs × 3 crans
+const DIV = ["III", "II", "I"];
+const tierIdx = lvl => Math.min(5, Math.floor(lvl/3));
+const rankName = (lvl, king) => king ? TIERS[6].name : lvl >= BOULET ? "Boulet" : `${TIERS[tierIdx(lvl)].name} ${DIV[lvl % 3]}`;
+const expCote = lvl => 700 + lvl*55;     // la cote « normale » d'un joueur de ce niveau (Bille de terre III ≈ 700, Boulet ≈ 1525)
+
+/* ---------- l'état (gardé dans ce navigateur seulement : c'est une maquette) ---------- */
+const KEY = "tikalo-maquette-classe";
+const fresh = () => ({cote:1000, lvl:4, pts:35, v:0, d:0, serie:0, bouclier:0, best:4, tireuse:2, games:null});
+let ME = fresh();
+try{ const raw = localStorage.getItem(KEY); if(raw) ME = {...fresh(), ...JSON.parse(raw)} }catch(e){}
+const save = () => { try{ localStorage.setItem(KEY, JSON.stringify(ME)) }catch(e){} };
+
+/* ---------- les autres joueurs (inventés) ---------- */
+const NAMES = ["Zoé", "Malo", "Inès", "Noah", "Jade", "Lucas", "Lina", "Hugo", "Manon", "Nathan", "Chloé", "Tom", "Lou", "Gabin", "Léna", "Sacha", "Romy", "Elio", "Maëlys", "Timéo",
+  "Agathe", "Nino", "Capucine", "Milo", "Rose", "Ethan", "Alix", "Yanis", "Célestine", "Basile", "Nour", "Axel", "Mila", "Robin", "Suzanne", "Kenzo"];
+const AMIS = new Set(["Zoé", "Malo", "Inès", "Hugo", "Lou", "Basile"]);
+const R0 = PICH.rng(hash("classe-joueurs"));
+const PLAYERS = NAMES.map((n, i)=>{ const lvl = Math.min(BOULET, Math.floor(Math.pow(R0(), .8)*17)), pts = lvl >= BOULET ? Math.floor(R0()*420) : Math.floor(R0()*100);
+  const games = 10 + Math.floor(R0()*60), w = Math.round(games*(.4 + lvl/BOULET*.25 + R0()*.1));
+  return {name:n, lvl, pts, v:w, d:games - w, tir:Math.floor(R0()*8)} });
+const tireuseSpec = i => { const L = [["Œil-de-chat","BCKC"],["Galaxie","Nuit"],["Lave","Volcan"],["Agate","Émeraude"],["Ruban","Rubis"],["Aurore","Féerie"],["Méduse","Lagon"],["Damier","Pop"]][i % 8];
+  return {type:"bille", family:fam(L[0]), pal:pal(L[1]), shiny:i===5 ? 3 : 0, seed:hash("pich-t" + i)} };   // les mêmes que dans la Pichenette
+
+/* ---------- les points d'une partie ---------- */
+// gagné : 20 points, + ou − selon l'écart entre ta cote et ton rang ; perdu : 18, pareil dans l'autre sens
+function deltaPts(win){ const ecart = (ME.cote - expCote(ME.lvl))/20;
+  return win ? Math.max(12, Math.min(32, Math.round(20 + ecart))) : -Math.max(8, Math.min(26, Math.round(18 - ecart))) }
+function eloAfter(win, opp){ const e = 1/(1 + Math.pow(10, (opp - ME.cote)/400)); return Math.round(ME.cote + 32*((win ? 1 : 0) - e)) }
+// rend ce qui s'est passé : {delta, from:{lvl,pts}, to:{lvl,pts}, up, down, shield}
+function applyResult(win, opp){
+  const from = {lvl:ME.lvl, pts:ME.pts}, cote0 = ME.cote, delta = deltaPts(win), out = {delta, from, cote0, up:false, down:false, shield:false};
+  ME.cote = eloAfter(win, opp); win ? ME.v++ : ME.d++; ME.serie = win ? Math.max(1, ME.serie + 1) : Math.min(-1, ME.serie - 1);
+  ME.pts += delta;
+  if(ME.lvl < BOULET && ME.pts >= 100){ ME.lvl++; ME.pts = ME.lvl >= BOULET ? ME.pts - 100 : Math.min(30, ME.pts - 100); ME.bouclier = 3; out.up = true }
+  else if(ME.pts < 0){
+    if(ME.lvl===0){ ME.pts = 0 }
+    else if(ME.bouclier > 0){ ME.pts = 0; out.shield = true }
+    else if(ME.lvl >= BOULET && ME.pts > -100){ ME.lvl--; ME.pts = 75; out.down = true }
+    else { ME.lvl--; ME.pts = 75; out.down = true } }
+  if(!out.up && ME.bouclier > 0) ME.bouclier--;
+  ME.best = Math.max(ME.best, ME.lvl); out.to = {lvl:ME.lvl, pts:ME.pts}; save(); return out;
+}
+
+/* ---------- l'affichage ---------- */
+function myPlace(){ const all = PLAYERS.map(p=>({...p})).concat([{name:"Toi", you:true, lvl:ME.lvl, pts:ME.pts, v:ME.v, d:ME.d, tir:ME.tireuse}]);
+  all.sort((a, b)=>b.lvl - a.lvl || b.pts - a.pts); let k = 0; all.forEach((p, i)=>{ p.n = i + 1; p.king = p.lvl >= BOULET && k++ < 10 }); return all }
+function isKing(){ return myPlace().find(p=>p.you).king }
+
+function renderMe(pop){
+  const king = isKing(), t = king ? 6 : tierIdx(ME.lvl), boulet = ME.lvl >= BOULET;
+  const serie = ME.serie >= 2 ? `<span>série <b>${ME.serie} 🔥</b></span>` : ME.serie <= -2 ? `<span>${-ME.serie} défaites d'affilée</span>` : "";
+  $("me").innerHTML = `<div class="emb${pop ? " pop" : ""}"><img src="${icon(tierSpec(t), 160)}" alt="">${boulet ? "" : `<span class="div">${DIV[ME.lvl % 3]}</span>`}</div>
+    <div><div class="rk">${rankName(ME.lvl, king)}</div>
+      <div class="rk-sub">${boulet ? `${ME.pts} points · ${king ? `tu es <b>n°${myPlace().find(p=>p.you).n}</b> de la cour !` : "les 10 premiers Boulets portent la Couronne de la cour"}` : `${100 - ME.pts} points avant ${rankName(ME.lvl + 1)}`}</div>
+      ${boulet ? "" : `<div class="bar"><i style="width:${ME.pts}%"></i><span>${ME.pts} / 100</span></div>`}
+      <div class="stats"><span><b>${ME.v}</b> victoires</span><span><b>${ME.d}</b> défaites</span>${serie}${ME.bouclier ? `<span class="shield">🛡 bouclier · ${ME.bouclier} partie${ME.bouclier > 1 ? "s" : ""}</span>` : ""}</div></div>
+    <div class="play"><button class="btn btn-yellow btn-xl" id="b-play">Partie classée</button>
+      <small>en direct, contre un joueur de ton niveau</small>
+      <div class="demo"><button class="btn btn-ghost btn-sm" data-sim="1">+ victoire</button><button class="btn btn-ghost btn-sm" data-sim="0">+ défaite</button></div>
+      <small>(maquette : pour voir monter et descendre sans jouer)</small></div>`;
+  $("b-play").onclick = ()=>findMatch(false);
+  document.querySelectorAll("[data-sim]").forEach(b=>b.onclick = ()=>{ const win = b.dataset.sim==="1", opp = ME.cote + (Math.random() - .5)*120;
+    const sc = win ? [14 + Math.floor(Math.random()*6), 6 + Math.floor(Math.random()*7)] : [5 + Math.floor(Math.random()*7), 13 + Math.floor(Math.random()*6)];
+    showResult(win, sc, {name:NAMES[Math.floor(Math.random()*NAMES.length)], cote:Math.round(opp)}, applyResult(win, opp)) });
+}
+function renderLadder(){ const king = isKing(), cur = king ? 6 : tierIdx(ME.lvl);
+  $("ladder").innerHTML = TIERS.map((T, t)=>`<div class="tier${t===cur ? " on" : t < cur ? " done" : ""}"><img src="${icon(tierSpec(t))}" alt=""><b>${T.name}</b>
+    <small>${t < 5 ? "III · II · I" : t===5 ? "points sans plafond" : "les 10 premiers Boulets"}</small><div class="gift">${T.gift}</div></div>`).join("") }
+let scope = "all";
+function renderBoard(){
+  let all = myPlace(); if(scope==="amis") all = all.filter(p=>p.you || AMIS.has(p.name));
+  const you = all.findIndex(p=>p.you), show = new Set(); all.forEach((p, i)=>{ if(i < 10 || Math.abs(i - you) <= 2) show.add(i) });
+  let rows = "", prev = -1;
+  all.forEach((p, i)=>{ if(!show.has(i)) return; if(prev >= 0 && i > prev + 1) rows += `<tr class="gap"><td colspan="4">· · ·</td></tr>`; prev = i;
+    const t = p.king ? 6 : tierIdx(p.lvl);
+    rows += `<tr class="${p.you ? "you" : ""}${p.king ? " king" : ""}"><td class="n">${p.n}</td>
+      <td><div class="who"><img src="${icon(tierSpec(t), 56)}" alt=""><div style="min-width:0"><div class="nm">${p.king ? '<span class="crown">👑</span> ' : ""}${esc(p.name)}</div><div class="rkn">${rankName(p.lvl, p.king)}</div></div></div></td>
+      <td class="vd">${p.v} V · ${p.d} D</td><td class="p">${p.lvl >= BOULET ? p.pts + " pts" : p.pts + " / 100"}</td></tr>` });
+  $("board").innerHTML = rows;
+}
+document.querySelectorAll("#scope button").forEach(b=>b.onclick = ()=>{ scope = b.dataset.v; document.querySelectorAll("#scope button").forEach(x=>x.classList.toggle("on", x===b)); renderBoard() });
+
+// les parties en cours (en vrai : asynchrones, un tir chacun son tour ; ici, « Jouer » lance la partie entière contre l'ordi)
+function renderGames(){
+  if(!ME.games) ME.games = [
+    {name:"Zoé", lvl:ME.lvl + 1, tir:6, score:[9, 11], left:[4, 3], etat:"toi", map:"preau", info:"Zoé a joué il y a 2 h"},
+    {name:"Malo", lvl:ME.lvl, tir:1, score:[6, 4], left:[6, 7], etat:"lui", map:"sable", info:"Malo a encore 18 h pour jouer"},
+    {name:"Inès", lvl:Math.max(0, ME.lvl - 1), tir:4, score:[16, 9], left:[0, 0], etat:"fini", win:true, delta:19, map:"cour", info:"hier"}];
+  $("games").innerHTML = ME.games.map((g, i)=>{ const dots = s => Array.from({length:10}, (_, k)=>`<i class="${k < g.left[s] ? "" : "off"}"></i>`).join("");
+    return `<div class="g${g.etat==="toi" ? " mine" : ""}"><div class="h"><img src="${icon(tireuseSpec(g.tir), 80)}" alt=""><div><b>${esc(g.name)}</b><small>${rankName(Math.min(BOULET, g.lvl))} · ${PICH.MAPS[g.map].name}</small></div>
+      <div class="sc">${g.score[0]}–${g.score[1]}</div></div>
+      ${g.etat==="fini" ? `<div class="st ${g.win ? "win" : "lose"}">${g.win ? "Gagnée" : "Perdue"} · ${g.win ? "+" : ""}${g.delta} points · ${g.info}</div>`
+        : `<div style="display:flex;justify-content:space-between;align-items:center"><span class="tirs" title="tes tirs restants">${dots(0)}</span><span class="tirs" title="ses tirs restants">${dots(1)}</span></div>
+          <div class="st${g.etat==="toi" ? " go" : ""}">${g.etat==="toi" ? "À toi de jouer !" : `En attente de ${esc(g.name)}`} · ${g.info}</div>`}
+      ${g.etat==="toi" ? `<button class="btn btn-yellow btn-sm" data-g="${i}">Jouer mon tir</button>` : g.etat==="lui" ? `<button class="btn btn-ghost btn-sm" data-nudge="${i}">Relancer ${esc(g.name)} 👋</button>` : ""}</div>` }).join("");
+  document.querySelectorAll("[data-g]").forEach(b=>b.onclick = ()=>{ const g = ME.games[+b.dataset.g];
+    findMatch({name:g.name, cote:expCote(g.lvl), lvl:g.lvl, tir:g.tir, map:g.map, async:+b.dataset.g}) });
+  document.querySelectorAll("[data-nudge]").forEach(b=>b.onclick = ()=>{ b.textContent = "Relancé ✓"; b.disabled = true });
+}
+function renderSeason(){
+  // la saison en cours : du 1er au 15, ou du 16 à la fin du mois (comme les events)
+  const now = new Date(), d = now.getDate(), end = d <= 15 ? new Date(now.getFullYear(), now.getMonth(), 16) : new Date(now.getFullYear(), now.getMonth() + 1, 1);
+  const left = Math.ceil((end - now)/864e5);
+  $("season").innerHTML = `<img src="${icon(tierSpec(6), 48)}" alt=""><span>Saison du ${d <= 15 ? "1er au 15" : "16 à la fin du mois"} · plus que <b>${left} jour${left > 1 ? "s" : ""}</b></span>`;
+}
+function renderAll(pop){ renderMe(pop); renderLadder(); renderGames(); renderBoard(); renderSeason() }
+
+/* ---------- trouver un adversaire, jouer ---------- */
+let MATCH = null;
+function findMatch(pre){
+  const ov = $("ov-match"), M = $("match"); ov.hidden = false;
+  M.innerHTML = `<h3>On cherche un adversaire…</h3><p class="rk-sub">quelqu'un de ton niveau, dans la cour en ce moment</p><div class="vs"><div class="search"></div></div><div class="go"><button class="btn btn-ghost" id="b-cancel">Annuler</button></div>`;
+  let t = null; $("b-cancel").onclick = ()=>{ clearTimeout(t); ov.hidden = true };
+  t = setTimeout(()=>{
+    const pool = PLAYERS.filter(p=>Math.abs(p.lvl - ME.lvl) <= 2), p = pre || pool[Math.floor(Math.random()*pool.length)] || PLAYERS[0];
+    const opp = pre || {name:p.name, lvl:p.lvl, tir:p.tir, cote:Math.round(expCote(p.lvl) + (Math.random() - .5)*90)};
+    if(opp.tir===ME.tireuse) opp.tir = (opp.tir + 1) % 8;
+    const maps = Object.keys(PICH.MAPS), map = opp.map || maps[Math.floor(Math.random()*maps.length)];
+    const bot = opp.cote < 860 ? "facile" : opp.cote < 1180 ? "moyen" : "fort";
+    MATCH = {opp, map, bot};
+    M.innerHTML = `<h3>${pre ? "Ta partie contre " + esc(opp.name) : "Adversaire trouvé !"}</h3>
+      <div class="vs"><div class="pp"><img src="${icon(tireuseSpec(ME.tireuse))}" alt=""><b>Toi</b><small>${rankName(ME.lvl, isKing())}</small></div><div class="x">VS</div>
+        <div class="pp"><img src="${icon(tireuseSpec(opp.tir))}" alt=""><b>${esc(opp.name)}</b><small>${rankName(Math.min(BOULET, opp.lvl))}</small></div></div>
+      <div>Terrain tiré au sort : <span class="mapname">${PICH.MAPS[map].name}</span></div>
+      <p class="rk-sub" style="margin-top:8px;font-size:13px">Si tu gagnes : <b style="color:var(--green)">+${deltaPts(true)}</b> · si tu perds : <b style="color:var(--red)">${ME.bouclier && ME.pts + deltaPts(false) < 0 ? "0 (bouclier)" : deltaPts(false)}</b></p>
+      ${pre ? `<p class="rk-sub" style="font-size:12.5px">(En vrai, tu jouerais un seul tir puis ce serait à ${esc(opp.name)}. Ici, la maquette joue la partie d'un coup.)</p>` : ""}
+      <div class="go"><button class="btn btn-ghost" id="b-cancel2">Plus tard</button><button class="btn btn-yellow btn-xl" id="b-start">C'est parti !</button></div>`;
+    $("b-cancel2").onclick = ()=>{ ov.hidden = true; MATCH = null };
+    $("b-start").onclick = ()=>{ ov.hidden = true; openGame() };
+  }, pre ? 300 : 1700 + Math.random()*900);
+}
+function openGame(){
+  const {opp, map, bot} = MATCH, Q = new URLSearchParams({classe:"1", map, bot, n0:"Toi", n1:opp.name, p0:ME.tireuse, p1:opp.tir});
+  $("frame").src = "maquette-pichenette.html?" + Q; $("game-t").textContent = `Partie classée · Toi contre ${opp.name} · ${PICH.MAPS[map].name}`; $("game").hidden = false;
+}
+function closeGame(){ $("game").hidden = true; $("frame").src = "about:blank" }
+$("b-quit").onclick = ()=>{ if(!MATCH) return closeGame(); if(!confirm("Abandonner compte comme une défaite. Sûr ?")) return; closeGame(); finishMatch(false, [0, 0]) };
+addEventListener("message", e=>{ const m = e.data; if(!m || m.pich!=="fin" || !MATCH) return; closeGame(); finishMatch(m.winner===0, m.score) });
+function finishMatch(win, score){
+  const {opp} = MATCH, r = applyResult(win, opp.cote);
+  if(opp.async!=null && ME.games){ ME.games[opp.async] = {...ME.games[opp.async], etat:"fini", win, delta:Math.abs(r.delta), score, left:[0, 0], info:"à l'instant"}; save() }
+  MATCH = null; showResult(win, score, opp, r);
+}
+function showResult(win, score, opp, r){
+  const boulet = r.to.lvl >= BOULET, king = isKing();
+  const pctFrom = r.up ? 0 : r.down ? 100 : Math.max(0, Math.min(100, r.from.pts));
+  $("res").innerHTML = `<div class="big ${win ? "win" : "lose"}">${win ? "Victoire !" : "Perdu…"}</div>
+    <div class="score">${score[0]} – ${score[1]} <span style="font-size:16px;color:var(--muted)">contre ${esc(opp.name)}</span></div>
+    <div class="delta ${r.shield ? "" : win ? "up" : "down"}">${r.shield ? "🛡 0 point (bouclier)" : (r.delta > 0 ? "+" : "") + r.delta + " points"}</div>
+    <div class="why">${win ? (r.delta >= 24 ? "Bonus : ta cote est au-dessus de ton rang, tu remontes plus vite." : "") : (r.delta >= -12 ? "Perte réduite : ta cote est au-dessus de ton rang." : "")}</div>
+    ${boulet ? `<div style="margin-top:10px;font:400 22px var(--display)">${r.to.pts} points de Boulet</div>` : `<div class="bar"><i id="res-bar" style="width:${pctFrom}%"></i><span id="res-bar-t">${r.to.pts} / 100</span></div><div class="rk-sub">${rankName(r.to.lvl)}</div>`}
+    ${r.up ? `<div class="promo"><img src="${icon(tierSpec(king ? 6 : tierIdx(r.to.lvl)), 160)}" alt=""><b>${king ? "Tu es Roi de la cour ! 👑" : "Tu montes : " + rankName(r.to.lvl)}</b><span class="rk-sub">🛡 bouclier : tes 3 prochaines parties ne peuvent pas te faire redescendre</span></div>` : ""}
+    ${r.down ? `<div class="promo down"><b>Tu redescends : ${rankName(r.to.lvl)}</b><span class="rk-sub">Ça arrive aux meilleurs. Deux victoires et tu y retournes.</span></div>` : ""}
+    <div class="dbg">(maquette : cote cachée ${r.cote0} → ${ME.cote} · adversaire ${opp.cote})</div>
+    <div class="go"><button class="btn btn-ghost" id="r-close">Retour à la cour</button><button class="btn btn-yellow btn-xl" id="r-again">Rejouer</button></div>`;
+  $("ov-res").hidden = false;
+  requestAnimationFrame(()=>requestAnimationFrame(()=>{ const b = $("res-bar"); if(b) b.style.width = Math.max(0, Math.min(100, r.to.pts)) + "%" }));
+  if(r.up || (win && Math.random() < .3)) confetti();
+  $("r-close").onclick = ()=>{ $("ov-res").hidden = true; renderAll(r.up || r.down) };
+  $("r-again").onclick = ()=>{ $("ov-res").hidden = true; renderAll(r.up || r.down); findMatch(false) };
+}
+function confetti(){ const d = document.createElement("div"); d.className = "confetti"; d.innerHTML = Array.from({length:60}, (_, i)=>`<i style="left:${(i*37) % 100}%;background:${["#FFC93F","#E5484D","#2E8CFF","#2FA35A","#7B6CF6","#F472B6"][i % 6]};animation-delay:${(i % 9)*.11}s;animation-duration:${2.2 + (i % 5)*.3}s"></i>`).join(""); document.body.appendChild(d); setTimeout(()=>d.remove(), 4000) }
+
+$("b-reset").onclick = ()=>{ ME = fresh(); save(); renderAll(true) };
+renderAll(false);
+</script>
+</body>
+</html>

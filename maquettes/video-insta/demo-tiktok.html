@@ -1,0 +1,593 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Tikalo · vidéo TikTok</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Gluten:wght@900&family=Lilita+One&family=Nunito:wght@700;800;900&family=Caveat:wght@700&display=swap">
+<style>
+/* La 1re vidéo TikTok de Tikalo (23 octobre 2026) : présenter le jeu vite, sans détails. Copie de demo-pub.html (v2, « la cour de récré, la nuit »),
+   raccourcie à 6 scènes (~22 s) : accroche, logo, sachet → légendaire shiny, l'album, « et plein d'autres trucs », appel final (lancement 1er décembre).
+   Le bas et la droite de l'image restent libres : sur TikTok, la légende et les boutons passent par-dessus.
+   Image figée : demo-tiktok.html?s=3&at=4&film ; image de couverture : ?cover&film (couverture-tiktok.png, 1080 × 1920).
+   Musique calée sur 120 battements par minute (un temps = 0,5 s), générée dans la page.
+   Tout est dessiné dans #stage au format choisi ; 1 unité (--u) = 1 % de la largeur. La barre du bas sert à piloter. */
+:root{
+  --night:#0E1230; --night-2:#1B1F4A; --violet:#3A1E6B; --ink:#24253D; --paper:#FFFCF6;
+  --yellow:#FFC93F; --yellow-2:#F2AE12; --orange:#FF7A1A; --pink:#FF4FA3; --cyan:#2EE6E6; --blue:#2E6BE6; --red:#E5303A; --green:#2FCF6A;
+  --display:"Lilita One","Arial Rounded MT Bold",sans-serif; --logo:"Gluten","Lilita One",sans-serif; --body:"Nunito","Segoe UI",system-ui,sans-serif; --hand:"Caveat",cursive;
+  --ui-bg:#0A0B16; --ui-panel:#15172A; --ui-line:#2C3050; --ui-ink:#E9EBFF;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+html,body{height:100%}
+body{background:var(--ui-bg);color:var(--ui-ink);font-family:var(--body);display:flex;flex-direction:column;overflow:hidden}
+button,select{font:inherit;color:inherit}
+button{background:none;border:0;cursor:pointer}
+
+/* ---------- la scène ---------- */
+.wrap{flex:1;min-height:0;display:grid;place-items:center;padding:16px}
+#stage{position:relative;overflow:hidden;width:var(--sw);height:var(--sh);font-size:calc(var(--u)*4);color:#fff;border-radius:18px;
+  background:radial-gradient(120% 70% at 50% 0%,var(--night-2) 0,var(--night) 55%,#070918 100%);box-shadow:0 30px 80px -30px #000}
+body.film .wrap{padding:0} body.film #stage{border-radius:0;box-shadow:none}
+/* le décor de fond, toujours là : étoiles, aurore, sol de la cour à la craie */
+.bg{position:absolute;inset:0;pointer-events:none}
+.bg .aur{position:absolute;inset:-20% -30% auto;height:70%;background:radial-gradient(40% 50% at 25% 40%,rgba(90,120,255,.35),transparent 70%),radial-gradient(35% 45% at 75% 30%,rgba(190,90,255,.3),transparent 70%);
+  filter:blur(calc(var(--u)*3));animation:aur 9s ease-in-out infinite alternate}
+@keyframes aur{to{transform:translateX(8%) scaleY(1.15)}}
+.bg .stars{position:absolute;inset:0;background-image:radial-gradient(1.2px 1.2px at 12% 18%,#fff,transparent),radial-gradient(1px 1px at 33% 8%,#fff,transparent),radial-gradient(1.4px 1.4px at 58% 22%,#fff,transparent),
+  radial-gradient(1px 1px at 82% 12%,#fff,transparent),radial-gradient(1.2px 1.2px at 92% 34%,#fff,transparent),radial-gradient(1px 1px at 22% 38%,#fff,transparent),radial-gradient(1.3px 1.3px at 70% 44%,#fff,transparent),
+  radial-gradient(1px 1px at 45% 32%,#fff,transparent),radial-gradient(1.2px 1.2px at 6% 52%,#fff,transparent);opacity:.7;animation:tw 3s ease-in-out infinite alternate}
+@keyframes tw{to{opacity:.35}}
+.bg .floor{position:absolute;left:-10%;right:-10%;bottom:-6%;height:34%;background:linear-gradient(180deg,transparent,rgba(255,255,255,.04) 30%,rgba(255,255,255,.07));
+  border-top:calc(var(--u)*.4) dashed rgba(255,255,255,.12);transform:perspective(calc(var(--u)*60)) rotateX(55deg);transform-origin:50% 100%}
+.halftone{position:absolute;inset:0;pointer-events:none;background-image:radial-gradient(rgba(255,255,255,.07) 22%,transparent 24%);background-size:calc(var(--u)*2.6) calc(var(--u)*2.6);
+  -webkit-mask:radial-gradient(circle at 50% 50%,#000 0,transparent 75%);mask:radial-gradient(circle at 50% 50%,#000 0,transparent 75%)}
+#fx{position:absolute;inset:0;width:100%;height:100%;pointer-events:none;z-index:8}
+#flash{position:absolute;inset:0;background:#fff;opacity:0;pointer-events:none;z-index:9}
+#flash.go{animation:fl .45s ease-out}
+@keyframes fl{0%{opacity:.85}100%{opacity:0}}
+/* la caméra : un léger zoom continu, des secousses sur les impacts */
+.cam{position:absolute;inset:0}
+.cam.shake{animation:shake .38s cubic-bezier(.36,.07,.19,.97)}
+@keyframes shake{10%,90%{transform:translate(-1%,0)}20%,80%{transform:translate(1.4%,.6%)}30%,50%,70%{transform:translate(-1.8%,-.6%) rotate(-.6deg)}40%,60%{transform:translate(1.8%,.4%) rotate(.6deg)}}
+
+.sc{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:calc(var(--u)*3.6);padding:calc(var(--u)*12) calc(var(--u)*9) calc(var(--u)*22) calc(var(--u)*5);text-align:center;opacity:0;visibility:hidden}
+.sc.on{opacity:1;visibility:visible;animation:zoom var(--dur) linear both}
+@keyframes zoom{from{transform:scale(1)}to{transform:scale(1.06)}}
+.sc.out{visibility:visible;animation:sc-out .3s ease-in forwards}
+@keyframes sc-out{to{opacity:0;transform:scale(1.15);filter:blur(calc(var(--u)*.8))}}
+
+/* le petit logo en haut, sauf sur les scènes qui ont le grand */
+.mini-logo{position:absolute;top:calc(var(--u)*4.6);left:50%;transform:translateX(-50%);z-index:6;transition:opacity .3s}
+#stage.big-logo .mini-logo{opacity:0}
+.logo{display:flex;align-items:flex-end;font-family:var(--logo);font-weight:900;line-height:1;letter-spacing:.02em}
+.logo .lt{display:inline-block;position:relative;color:var(--yellow);-webkit-text-stroke:.16em var(--ink);paint-order:stroke fill;
+  text-shadow:0 .04em 0 #F59E0B,0 .08em 0 #E07B00,0 .13em 0 var(--ink),0 .2em .3em rgba(0,0,0,.5)}
+.logo .lt:nth-child(1){transform:translateY(-.02em) rotate(-6deg)} .logo .lt:nth-child(2){transform:translateY(-.10em) rotate(4deg)}
+.logo .lt:nth-child(3){transform:translateY(.02em) rotate(-3deg)} .logo .lt:nth-child(4){transform:translateY(-.08em) rotate(5deg)}
+.logo .lt:nth-child(5){transform:rotate(-4deg)} .logo .lt:nth-child(6){transform:translateY(-.04em) rotate(3deg)}
+.logo .i img{position:absolute;left:50%;top:-.2em;width:.27em;height:.27em;margin-left:-.12em;border-radius:50%;box-shadow:0 0 0 .05em var(--ink);filter:drop-shadow(0 .06em 0 var(--ink))}
+.mini-logo .logo{font-size:calc(var(--u)*8)}
+
+/* ---------- la typo qui claque ---------- */
+.slam{font-family:var(--display);line-height:.92;letter-spacing:.01em;color:#fff;-webkit-text-stroke:calc(var(--u)*.55) var(--ink);paint-order:stroke fill;text-shadow:0 calc(var(--u)*1) 0 var(--ink),0 calc(var(--u)*2) calc(var(--u)*3) rgba(0,0,0,.45)}
+.slam.xl{font-size:calc(var(--u)*15)} .slam.l{font-size:calc(var(--u)*11)} .slam.m{font-size:calc(var(--u)*8)}
+.slam .y{color:var(--yellow)} .slam .p{color:var(--pink)} .slam .c{color:var(--cyan)}
+.word{display:inline-block;opacity:0}
+.on .word{animation:slam .42s cubic-bezier(.2,1.6,.35,1) forwards;animation-delay:var(--d)}
+@keyframes slam{from{opacity:0;transform:scale(2.6) rotate(var(--r,-8deg));filter:blur(calc(var(--u)*.6))}to{opacity:1;transform:rotate(var(--rr,0deg))}}
+.tag{font-family:var(--hand);font-size:calc(var(--u)*7);line-height:1;color:var(--yellow);transform:rotate(-4deg)}
+.lead{font-weight:900;font-size:calc(var(--u)*4.4);line-height:1.2;color:#D9DCFF;max-width:calc(var(--u)*82)}
+.lead b{color:#fff}
+.in{opacity:0}
+.on .in{animation:pop .5s cubic-bezier(.2,1.5,.4,1) forwards;animation-delay:var(--d,0s)}
+.on .in.up{animation-name:up;animation-timing-function:cubic-bezier(.2,.9,.3,1)}
+@keyframes pop{from{opacity:0;transform:scale(.4) rotate(var(--r0,0deg))}to{opacity:1;transform:none}}
+@keyframes up{from{opacity:0;transform:translateY(calc(var(--u)*8))}to{opacity:1;transform:none}}
+.mb{display:block;width:100%;height:auto;aspect-ratio:1;filter:drop-shadow(0 calc(var(--u)*1.2) calc(var(--u)*1.4) rgba(0,0,0,.55))}
+.pill{display:inline-flex;align-items:center;gap:calc(var(--u)*1);font-weight:900;font-size:calc(var(--u)*3.2);padding:calc(var(--u)*.7) calc(var(--u)*2.4);border-radius:999px;background:var(--rb,rgba(255,255,255,.12));color:var(--rc,#fff);border:calc(var(--u)*.3) solid currentColor}
+
+/* 1. l'accroche */
+.roller{position:relative;width:calc(var(--u)*30);height:calc(var(--u)*30)}
+.roller .mb{position:absolute;inset:0}
+.on .roller{animation:rollin 1.1s cubic-bezier(.12,.8,.3,1) both .1s}
+@keyframes rollin{from{transform:translateX(calc(var(--u)*-120)) rotate(-720deg)}to{transform:none}}
+.roller::after{content:"";position:absolute;left:-15%;right:-15%;bottom:-12%;height:18%;border-radius:50%;background:radial-gradient(closest-side,rgba(0,0,0,.6),transparent)}
+.flare{position:absolute;left:50%;top:50%;width:calc(var(--u)*90);height:calc(var(--u)*90);margin:calc(var(--u)*-45);border-radius:50%;
+  background:radial-gradient(circle,rgba(255,240,200,.5),transparent 60%);opacity:0;pointer-events:none}
+.on .flare{animation:flare 1.4s ease-out 1.1s}
+@keyframes flare{0%{opacity:0;transform:scale(.3)}30%{opacity:1}100%{opacity:0;transform:scale(1.4)}}
+
+/* 2. le logo géant */
+.giant{font-size:calc(var(--u)*18)}
+.giant .lt{opacity:0}
+.on .giant .lt{animation:drop .6s cubic-bezier(.25,1.6,.4,1) both;animation-delay:var(--d)}
+@keyframes drop{from{opacity:0;translate:0 calc(var(--u)*-60);scale:1 1.3}60%{opacity:1;translate:0 0;scale:1.08 .86}to{opacity:1;translate:0 0;scale:1}}
+.giant .i img{opacity:0}
+.on .giant .i img{animation:bounce-in .9s cubic-bezier(.3,1.7,.45,1) both 1.55s}
+@keyframes bounce-in{0%{opacity:0;transform:translateY(-4em) rotate(-360deg)}55%{opacity:1;transform:translateY(0) rotate(0)}75%{transform:translateY(-.5em)}100%{opacity:1;transform:none}}
+.ring{position:absolute;left:50%;top:50%;width:calc(var(--u)*20);height:calc(var(--u)*20);margin:calc(var(--u)*-10);border-radius:50%;border:calc(var(--u)*1) solid var(--yellow);opacity:0;pointer-events:none}
+.on .ring{animation:ring .8s ease-out both;animation-delay:var(--d)}
+@keyframes ring{from{opacity:.9;transform:scale(.4)}to{opacity:0;transform:scale(5)}}
+
+/* 3. le sachet */
+.bagzone{position:relative;width:calc(var(--u)*90);height:calc(var(--u)*92)}
+.bag{position:absolute;left:50%;top:50%;width:calc(var(--u)*50);translate:-50% -50%}
+.on .bag{animation:bshake 1.6s ease-in-out .1s both,bgone .3s ease-in 1.75s forwards}
+@keyframes bshake{0%,100%{rotate:0deg}10%,30%,50%,70%{rotate:-7deg;scale:1.02}20%,40%,60%,80%{rotate:7deg;scale:1.04}90%{scale:1.12}}
+@keyframes bgone{to{opacity:0;scale:1.6}}
+.card{position:absolute;left:50%;top:50%;width:calc(var(--u)*26);padding:calc(var(--u)*2) calc(var(--u)*1.2);border-radius:calc(var(--u)*3);background:rgba(20,24,60,.85);
+  border:calc(var(--u)*.55) solid var(--rc);box-shadow:0 0 calc(var(--u)*5) calc(var(--u)*-1) var(--rc);display:flex;flex-direction:column;align-items:center;gap:calc(var(--u)*.6);opacity:0;translate:-50% -50%}
+.on .card{animation:deal .55s cubic-bezier(.2,1.4,.4,1) forwards,dim .4s ease-in forwards;animation-delay:var(--d),3.3s}
+@keyframes deal{from{opacity:0;transform:scale(.2) rotate(0)}to{opacity:1;transform:translate(var(--x),var(--y)) rotate(var(--r)) scale(1)}}
+@keyframes dim{from{opacity:1;transform:translate(var(--x),var(--y)) rotate(var(--r))}to{opacity:.12;transform:translate(calc(var(--x)*1.35),calc(var(--y)*1.35)) rotate(var(--r)) scale(.75)}}
+.card .mb{width:calc(var(--u)*15)}
+.card b{font-weight:900;font-size:calc(var(--u)*2.7);color:#fff}
+.card small{font-weight:900;font-size:calc(var(--u)*2.2);color:var(--rc);text-transform:uppercase;letter-spacing:.06em}
+.star{position:absolute;left:50%;top:48%;display:flex;flex-direction:column;align-items:center;gap:calc(var(--u)*1.2);opacity:0;translate:-50% -50%;z-index:3}
+.on .star{animation:star .7s cubic-bezier(.2,1.6,.4,1) forwards 3.7s}
+@keyframes star{from{opacity:0;scale:.2}to{opacity:1;scale:1}}
+.star .rays{position:absolute;left:50%;top:calc(var(--u)*21);width:calc(var(--u)*120);height:calc(var(--u)*120);margin:calc(var(--u)*-60);z-index:-1;
+  background:repeating-conic-gradient(from 0deg,var(--lc) 0 7deg,transparent 7deg 20deg);-webkit-mask:radial-gradient(circle,#000 15%,transparent 65%);mask:radial-gradient(circle,#000 15%,transparent 65%);opacity:.6}
+.on .star .rays{animation:spin 7s linear infinite}
+@keyframes spin{to{transform:rotate(360deg)}}
+.star .mb{width:calc(var(--u)*44)}
+.on .star .mb{animation:float 1.6s ease-in-out infinite alternate 4.4s}
+@keyframes float{to{transform:translateY(calc(var(--u)*-1.5)) rotate(6deg)}}
+.legend{white-space:nowrap;font-family:var(--display);font-size:calc(var(--u)*9);line-height:1;color:var(--orange);-webkit-text-stroke:calc(var(--u)*.6) #fff;paint-order:stroke fill;text-shadow:0 0 calc(var(--u)*4) rgba(255,122,26,.8)}
+.shiny{font-weight:900;font-size:calc(var(--u)*3.4);padding:calc(var(--u)*.7) calc(var(--u)*3);border-radius:999px;color:#fff;background:linear-gradient(90deg,#FF4FA3,#FFC93F,#2EE6E6,#8B6CFF,#FF4FA3);background-size:200% 100%;animation:shim 1.6s linear infinite}
+@keyframes shim{to{background-position:200% 0}}
+
+/* 4. l'album */
+.album{display:grid;grid-template-columns:repeat(5,1fr);gap:calc(var(--u)*1.8);width:calc(var(--u)*84);padding:calc(var(--u)*3);border-radius:calc(var(--u)*4);background:rgba(255,255,255,.06);border:calc(var(--u)*.4) solid rgba(255,255,255,.14)}
+.slot{aspect-ratio:1;border-radius:calc(var(--u)*2.2);border:calc(var(--u)*.35) dashed rgba(255,255,255,.18);display:grid;place-items:center}
+.slot .mb{width:84%;opacity:0}
+.on .slot .mb{animation:pop .3s cubic-bezier(.2,1.7,.4,1) forwards;animation-delay:var(--d)}
+.count{font-family:var(--display);font-size:calc(var(--u)*13);line-height:.9;color:var(--yellow);-webkit-text-stroke:calc(var(--u)*.5) var(--ink);paint-order:stroke fill;font-variant-numeric:tabular-nums}
+
+/* 5. le chaudron */
+.cz{position:relative;width:calc(var(--u)*80);height:calc(var(--u)*86);--lq:#8E8898}
+.cz .pot{position:absolute;left:50%;bottom:0;width:calc(var(--u)*70);translate:-50% 0;overflow:visible}
+.cz .pot svg{width:100%;height:auto;overflow:visible;filter:drop-shadow(0 calc(var(--u)*2) calc(var(--u)*3) rgba(0,0,0,.6))}
+.cz.boil .pot{animation:wob .26s ease-in-out infinite}
+@keyframes wob{25%{rotate:-1.2deg}75%{rotate:1.2deg}}
+.cz .cz-bub{fill:var(--lq);opacity:0}
+.cz.boil .cz-bub{animation:bub .8s ease-out infinite;animation-delay:var(--d)}
+@keyframes bub{0%{opacity:0;transform:translate(0,4px) scale(.4)}30%{opacity:1}100%{opacity:0;transform:translate(var(--x),-28px) scale(1.3)}}
+.cz .cz-liq{filter:drop-shadow(0 0 10px var(--lq))}
+.cz .cz-fire{transform-origin:120px 196px;animation:fire .3s ease-in-out infinite alternate}
+@keyframes fire{to{transform:scale(1.1,.85)}}
+.cz .drop{position:absolute;left:50%;top:0;width:calc(var(--u)*11);translate:-50% 0;opacity:0}
+.on .cz .drop{animation:dropin .55s cubic-bezier(.5,0,.9,.5) forwards;animation-delay:var(--d)}
+@keyframes dropin{0%{opacity:1;transform:translate(var(--x),0) rotate(0)}100%{opacity:0;transform:translate(0,calc(var(--u)*44)) rotate(300deg) scale(.4)}}
+.cz .tier{position:absolute;left:0;right:0;top:calc(var(--u)*18);font-family:var(--display);font-size:calc(var(--u)*7.5);color:var(--lq);-webkit-text-stroke:calc(var(--u)*.4) #fff;paint-order:stroke fill;text-shadow:0 0 calc(var(--u)*3) var(--lq)}
+.cz .tier.pop{animation:tpop .4s cubic-bezier(.2,1.8,.4,1)}
+@keyframes tpop{from{transform:scale(.5)}}
+.cz .rise{position:absolute;left:50%;bottom:calc(var(--u)*28);width:calc(var(--u)*34);translate:-50% 0;opacity:0}
+.cz .rise.go{animation:rise 1s cubic-bezier(.2,.9,.3,1) forwards}
+@keyframes rise{from{opacity:0;transform:translateY(calc(var(--u)*14)) scale(.2)}35%{opacity:1}to{opacity:1;transform:translateY(calc(var(--u)*-24)) scale(1)}}
+
+/* 6. les jeux */
+.games{display:grid;grid-template-columns:1fr 1fr;gap:calc(var(--u)*2.2);width:calc(var(--u)*88)}
+.game{border-radius:calc(var(--u)*2.6);overflow:hidden;background:#141838;border:calc(var(--u)*.45) solid rgba(255,255,255,.18);opacity:0}
+.on .game{animation:gslam .38s cubic-bezier(.2,1.6,.4,1) forwards;animation-delay:var(--d)}
+@keyframes gslam{from{opacity:0;transform:scale(1.8) rotate(var(--r));filter:brightness(2)}to{opacity:1;transform:none;filter:none}}
+.game svg{display:block;width:100%;height:calc(var(--u)*14)}
+.game b{display:block;padding:calc(var(--u)*.9) 0 calc(var(--u)*1.1);font-family:var(--display);font-weight:400;font-size:calc(var(--u)*3.8);color:#fff}
+.bonus{display:flex;align-items:center;gap:calc(var(--u)*2);font-weight:900;font-size:calc(var(--u)*3.8);padding:calc(var(--u)*1.2) calc(var(--u)*3.4) calc(var(--u)*1.2) calc(var(--u)*1.4);border-radius:999px;background:var(--yellow);color:var(--ink)}
+.bonus .bg2{width:calc(var(--u)*9);height:calc(var(--u)*10);margin:calc(var(--u)*-2) 0}
+.bonus .bg2 svg{width:100%;height:100%}
+
+/* 7. la course */
+.track{position:relative;width:calc(var(--u)*88);padding:calc(var(--u)*2) 0;border-radius:calc(var(--u)*4);background:linear-gradient(180deg,#2E7D3A,#256B30);border:calc(var(--u)*1.2) solid #8B5A2B;box-shadow:0 0 calc(var(--u)*6) rgba(47,207,106,.25)}
+.lane{position:relative;height:calc(var(--u)*9);border-bottom:calc(var(--u)*.3) dashed rgba(255,255,255,.3)}
+.lane:last-child{border-bottom:0}
+.lane .mb{position:absolute;top:50%;left:calc(var(--u)*2);width:calc(var(--u)*7.6);margin-top:calc(var(--u)*-3.8)}
+.on .lane .mb{animation:race var(--t) cubic-bezier(.4,.1,.5,1) .3s forwards}
+@keyframes race{0%{transform:translateX(0) rotate(0)}40%{transform:translateX(calc(var(--u)*var(--a))) rotate(600deg)}100%{transform:translateX(calc(var(--u)*72)) rotate(1600deg)}}
+.lane .who{position:absolute;left:calc(var(--u)*11);top:50%;translate:0 -50%;font-weight:900;font-size:calc(var(--u)*2.4);color:rgba(255,255,255,.55)}
+.finish{position:absolute;top:0;bottom:0;right:calc(var(--u)*5);width:calc(var(--u)*3);background:repeating-conic-gradient(#fff 0 25%,#24253D 0 50%) 0 0/calc(var(--u)*3) calc(var(--u)*3)}
+.clock{display:flex;gap:calc(var(--u)*2.4)}
+.clock span{font-family:var(--display);font-size:calc(var(--u)*7);padding:calc(var(--u)*.6) calc(var(--u)*3.6);border-radius:calc(var(--u)*3);background:#fff;color:var(--ink);box-shadow:0 calc(var(--u)*.8) 0 var(--yellow)}
+
+/* 8. la cour */
+.trade{position:relative;width:calc(var(--u)*86);height:calc(var(--u)*46)}
+.kid{position:absolute;top:0;display:flex;flex-direction:column;align-items:center;gap:calc(var(--u)*1)}
+.kid.a{left:0}.kid.b{right:0}
+.kid .av{display:grid;place-items:center;width:calc(var(--u)*17);height:calc(var(--u)*17);border-radius:50%;font-family:var(--display);font-size:calc(var(--u)*8);color:#fff;background:var(--c);border:calc(var(--u)*.7) solid #fff;box-shadow:0 0 calc(var(--u)*4) var(--c)}
+.kid b{font-weight:900;font-size:calc(var(--u)*3.4)}
+.trade .m1,.trade .m2{position:absolute;top:calc(var(--u)*22);width:calc(var(--u)*17)}
+.trade .m1{left:calc(var(--u)*0)} .trade .m2{right:calc(var(--u)*0)}
+.on .trade .m1{animation:swap1 1.2s cubic-bezier(.5,0,.3,1) .7s forwards}
+.on .trade .m2{animation:swap2 1.2s cubic-bezier(.5,0,.3,1) .7s forwards}
+@keyframes swap1{50%{transform:translate(calc(var(--u)*34),calc(var(--u)*-16)) rotate(360deg) scale(1.2)}to{transform:translate(calc(var(--u)*69),0) rotate(720deg)}}
+@keyframes swap2{50%{transform:translate(calc(var(--u)*-34),calc(var(--u)*12)) rotate(-360deg) scale(1.2)}to{transform:translate(calc(var(--u)*-69),0) rotate(-720deg)}}
+.deal{white-space:nowrap;position:absolute;left:50%;top:calc(var(--u)*6);translate:-50% 0;font-family:var(--display);font-size:calc(var(--u)*6.5);color:var(--green);-webkit-text-stroke:calc(var(--u)*.4) #fff;paint-order:stroke fill;opacity:0}
+.on .deal{animation:pop .4s cubic-bezier(.2,1.6,.4,1) forwards 1.95s}
+.chips{display:flex;flex-wrap:wrap;justify-content:center;gap:calc(var(--u)*1.6)}
+.chips span{font-weight:900;font-size:calc(var(--u)*3.3);padding:calc(var(--u)*.8) calc(var(--u)*2.6);border-radius:999px;background:rgba(255,255,255,.1);border:calc(var(--u)*.35) solid rgba(255,255,255,.25)}
+
+/* 9. l'événement Super-héros */
+.comic{position:absolute;inset:-60%;background:repeating-conic-gradient(from 0deg at 50% 46%,#2E5BFF 0 9deg,#1B2FB5 9deg 18deg);opacity:0}
+.on .comic{animation:comic .3s ease-out forwards .05s,spin 30s linear infinite .05s}
+@keyframes comic{to{opacity:1}}
+.comic::after{content:"";position:absolute;inset:0;background-image:radial-gradient(rgba(0,0,0,.25) 26%,transparent 28%);background-size:calc(var(--u)*2.2) calc(var(--u)*2.2)}
+.heroes{position:relative;width:calc(var(--u)*88);height:calc(var(--u)*76)}
+.hero{position:absolute;display:flex;flex-direction:column;align-items:center;gap:calc(var(--u)*.6);opacity:0}
+.on .hero{animation:hpop .45s cubic-bezier(.2,1.7,.4,1) forwards;animation-delay:var(--d)}
+@keyframes hpop{from{opacity:0;transform:scale(.2) rotate(-40deg)}to{opacity:1;transform:none}}
+.hero .mb{width:var(--w)}
+.hero b{font-family:var(--display);font-weight:400;font-size:calc(var(--u)*3.2);color:#fff;-webkit-text-stroke:calc(var(--u)*.35) var(--ink);paint-order:stroke fill;white-space:nowrap}
+.pow{position:absolute;font-family:var(--display);font-size:calc(var(--u)*9);color:var(--yellow);-webkit-text-stroke:calc(var(--u)*.55) var(--ink);paint-order:stroke fill;opacity:0}
+.on .pow{animation:pow .5s cubic-bezier(.2,1.8,.4,1) forwards;animation-delay:var(--d)}
+@keyframes pow{from{opacity:0;transform:scale(.2) rotate(-30deg)}to{opacity:1;transform:rotate(var(--r))}}
+.dates{font-weight:900;font-size:calc(var(--u)*4);padding:calc(var(--u)*1) calc(var(--u)*3.4);border-radius:999px;background:var(--red);color:#fff;border:calc(var(--u)*.5) solid #fff}
+
+/* 5. et plein d'autres trucs */
+.feats{display:grid;grid-template-columns:1fr 1fr;gap:calc(var(--u)*2.6);width:calc(var(--u)*80)}
+.feat{display:flex;flex-direction:column;align-items:center;gap:calc(var(--u)*1);padding:calc(var(--u)*3) calc(var(--u)*1.5) calc(var(--u)*2.4);border-radius:calc(var(--u)*3.4);
+  background:rgba(255,255,255,.08);border:calc(var(--u)*.45) solid var(--fc);box-shadow:0 0 calc(var(--u)*5) calc(var(--u)*-1.5) var(--fc);opacity:0}
+.on .feat{animation:gslam .38s cubic-bezier(.2,1.6,.4,1) forwards;animation-delay:var(--d)}
+.feat .em{font-size:calc(var(--u)*13);line-height:1;filter:drop-shadow(0 calc(var(--u)*.8) 0 rgba(0,0,0,.5))}
+.feat .em .mb{width:calc(var(--u)*14)}
+.feat b{font-family:var(--display);font-weight:400;font-size:calc(var(--u)*5.2);line-height:1;color:#fff}
+.feat small{font-weight:900;font-size:calc(var(--u)*2.9);color:#C9CCF5}
+
+/* la couverture : tout l'important au milieu (la grille du profil coupe le haut et le bas) */
+.cov{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:calc(var(--u)*3);text-align:center;padding:0 calc(var(--u)*5)}
+.cov .giant{font-size:calc(var(--u)*17)}
+.cov .giant .lt,.cov .giant .i img{opacity:1}
+.cov .big{position:relative;width:calc(var(--u)*50)}
+.cov .big .rays{position:absolute;left:50%;top:50%;width:calc(var(--u)*130);height:calc(var(--u)*130);margin:calc(var(--u)*-65);z-index:-1;
+  background:repeating-conic-gradient(from 0deg,var(--lc) 0 7deg,transparent 7deg 20deg);-webkit-mask:radial-gradient(circle,#000 15%,transparent 65%);mask:radial-gradient(circle,#000 15%,transparent 65%);opacity:.55}
+
+/* 6. l'appel final */
+.url{font-family:var(--display);font-size:calc(var(--u)*8.5);padding:calc(var(--u)*2) calc(var(--u)*6);border-radius:999px;background:var(--yellow);color:var(--ink);
+  box-shadow:0 calc(var(--u)*1.2) 0 var(--yellow-2),0 0 calc(var(--u)*8) rgba(255,201,63,.5)}
+.on .url.in{animation:pop .5s cubic-bezier(.2,1.5,.4,1) forwards,beat .5s ease-in-out infinite;animation-delay:var(--d),calc(var(--d) + .5s)}
+@keyframes beat{0%{transform:scale(1)}15%{transform:scale(1.07)}100%{transform:scale(1)}}
+.launch{font-family:var(--hand);font-size:calc(var(--u)*8);color:var(--pink);transform:rotate(-3deg)}
+.orbit{position:absolute;inset:0;pointer-events:none}
+.orbit .mb{position:absolute;width:var(--w);left:var(--x);top:var(--y);opacity:0}
+.on .orbit .mb{animation:pop .5s cubic-bezier(.2,1.6,.4,1) forwards,float 1.8s ease-in-out infinite alternate;animation-delay:var(--d),calc(var(--d) + .5s)}
+
+/* ---------- la barre de pilotage ---------- */
+.bar{flex:none;display:flex;align-items:center;justify-content:center;gap:8px;flex-wrap:wrap;padding:10px 16px 14px;border-top:1px solid var(--ui-line);background:var(--ui-panel)}
+.bar button,.bar select{height:36px;padding:0 14px;border-radius:10px;border:1px solid var(--ui-line);background:#1E2140;color:var(--ui-ink);font-weight:800;font-size:13.5px}
+.bar button:hover{background:#272B52}
+.bar button.rec{background:#E5484D;border-color:#E5484D;color:#fff}
+.bar button.on{background:var(--yellow);color:#24253D;border-color:var(--yellow)}
+.bar .sep{width:1px;height:24px;background:var(--ui-line)}
+.bar .dots{display:flex;gap:4px;flex-wrap:wrap;justify-content:center}
+.bar .dots button{padding:0 9px;font-size:12px;height:30px}
+.hint{font-size:12px;color:#8E93C4;font-weight:700}
+body.film .bar{display:none}
+.loading{position:fixed;inset:0;display:grid;place-items:center;background:var(--ui-bg);font-weight:800;z-index:20}
+@media (max-width:640px){ .bar .hint,.bar .sep{display:none} }
+@media (prefers-reduced-motion:reduce){ .hint::after{content:" · animations réduites par ton système"} }
+</style>
+</head>
+<body>
+<div class="loading" id="loading">Préparation des billes…</div>
+<div class="wrap"><div id="stage" aria-label="Vidéo promo de Tikalo"></div></div>
+<div class="bar" id="bar">
+  <button id="b-play">⏸ Pause</button>
+  <button id="b-restart">⏮ Recommencer</button>
+  <button id="b-sound">🔇 Musique coupée</button>
+  <span class="dots" id="dots"></span>
+  <span class="sep"></span>
+  <select id="b-format" aria-label="Format">
+    <option value="9:16">9:16 · TikTok, Reels, Shorts</option>
+    <option value="4:5">4:5 · fil Instagram / Facebook</option>
+    <option value="1:1">1:1 · carré</option>
+  </select>
+  <button id="b-shuffle">🎲 Autres billes</button>
+  <button id="b-film">Mode tournage (H)</button>
+  <button id="b-rec" class="rec">● Enregistrer la vidéo</button>
+  <span class="hint">Espace : pause · ← → : scène · H : cacher la barre · M : musique</span>
+</div>
+
+<script src="../tikalo-demo-rendu.js"></script>
+<script>
+/* =====================================================================
+   LA VIDÉO : 6 scènes, environ 22 secondes, calées sur 120 BPM
+   ===================================================================== */
+const STAGE = document.getElementById("stage");
+const BEAT = .5;
+const famIdx = name => Math.max(0, FAMILIES.findIndex(f=>f.name===name));
+let SEED = 11;
+const R = () => { SEED = (SEED*1103515245 + 12345) >>> 0; return SEED / 4294967296 };
+const spec = (type, o={}) => makeSpec(type, {seed:o.seed ?? Math.floor(R()*4e9), ...o});
+const cache = new Map();
+const url = (s, px) => { const k = `${s.seed}|${s.type}|${s.family}|${s.pal}|${s.shiny}|${px}`; if(!cache.has(k)) cache.set(k, marbleURL(s, px)); return cache.get(k) };
+const img = (s, px, attrs="") => `<img class="mb" src="${url(s, px)}" alt="" ${attrs}>`;
+const base = () => FAMILIES.map((f,i)=>i).filter(i=>!FAMILIES[i].event && FAMILIES[i].season==null && !FAMILIES[i].secret && i!==BETA.fam && !FAMILIES[i].depart);
+const pick = a => a[Math.floor(R()*a.length)];
+const words = (txt, d0, step=BEAT/2, cls="") => txt.split(" ").map((w,i)=>`<span class="word ${cls}" style="--d:${(d0+i*step).toFixed(2)}s;--r:${(i%2?8:-8)}deg">${w}</span>`).join(" ");
+const logoHTML = (cls="") => `<div class="logo ${cls}"><span class="lt">T</span><span class="lt i">ı<img src="${url(LOGO_SPEC,160)}" alt=""></span><span class="lt">k</span><span class="lt">a</span><span class="lt">l</span><span class="lt">o</span></div>`;
+const HERO_PAL0 = PALETTES.findIndex(p=>p[0]==="Capitaine Éclair");
+const NB_BILLES = base().length * BASE_PAL_IDS.length * TK.length;   // tous les modèles de l'album
+
+let set = null;
+function newSet(){
+  const fams = base(), byRar = r => fams.filter(f=>FAMILIES[f].rar===r);
+  set = {
+    hook: spec("calot", {family:pick(byRar(3))}),
+    opened: [spec("bille",{family:pick(byRar(0))}), spec("chinoise",{family:pick(byRar(1))}), spec("calot",{family:pick(byRar(2))}), spec("boulet",{family:pick(byRar(3))})],
+    star: spec("mammouth", {family:pick(byRar(4)), shiny:3}),
+    album: Array.from({length:20}, (_,i)=>spec(TK[[0,1,1,2,3,1,0,2,4,1][i%10]], {family:fams[(i*7+(SEED%13))%fams.length]})),
+    fuse: Array.from({length:6}, ()=>spec("bille", {family:pick(fams)})),
+    fuseRes: spec("chinoise", {family:pick(byRar(4))}),
+    racers: Array.from({length:6}, ()=>spec(pick(["bille","calot","chinoise","boulet"]), {family:pick(fams)})),
+    trade: [spec("calot",{family:pick(byRar(3))}), spec("boulet",{family:pick(byRar(2))})],
+    heroes: [0,1,2,3,4].map(i=>({seed:hash("heros"+i), type:["calot","boulet","mammouth","boulet","calot"][i], family:famIdx("Super-héros"), pal:HERO_PAL0+i, shiny:0})),
+    orbit: Array.from({length:7}, (_,i)=>spec(TK[(i*2)%6], {family:pick(fams), shiny:i===3?2:0})),
+  };
+}
+
+/* ---------- les scènes : html() dessine, cues = [temps (s), action] pour le son, les confettis et les secousses ---------- */
+const SCENES = [
+  {name:"Accroche", dur:3, html:()=>`
+      <div class="roller">${img(set.hook, 320)}</div><div class="flare"></div>
+      <h1 class="slam l">${words("Tu te souviens", .9, .25)}<br><span class="y">${words("des billes ?", 1.65, .3)}</span></h1>
+      <p class="lead in up" style="--d:2.3s">Elles reviennent. <b>En ligne.</b></p>`,
+    cues:[[.1,"whoosh"],[1,"thud"],[1.05,"burst:center:gold:30"],[.9,"hit"],[1.15,"hit"],[1.4,"hit"],[1.65,"hit2"],[1.95,"hit2"],[2.3,"pop"]]},
+  {name:"Logo", dur:3, logo:true, html:()=>`
+      <div class="ring" style="--d:1.75s"></div><div class="ring" style="--d:1.95s"></div>
+      ${logoHTML("giant").replace(/<span class="lt([^"]*)">/g, (m,c,o)=>m)}
+      <p class="tag in" style="--d:2.1s">Ta cour de récré, en billes.</p>`,
+    cues:[[.15,"hit"],[.4,"hit"],[.65,"hit"],[.9,"hit"],[1.15,"hit"],[1.4,"hit"],[1.95,"boom"],[1.95,"shake"],[1.95,"flash"],[1.95,"burst:center:rainbow:90"],[2.1,"chime"]]},
+  {name:"Sachet", dur:5.5, html:()=>{
+    const pos = [[-24,-24,-8],[24,-24,7],[-24,24,-5],[24,24,6]];
+    return `<p class="tag in" style="--d:0s">Ouvre des sachets…</p>
+      <div class="bagzone"><div class="bag">${bagSVG(BAG_BY.premium)}</div>
+        ${set.opened.map((s,i)=>{ const Rr = DECOR_RAR[FAMILIES[s.family].rar];
+          return `<div class="card" style="--d:${2+i*.25}s;--x:calc(${pos[i][0]}*var(--u));--y:calc(${pos[i][1]}*var(--u));--r:${pos[i][2]}deg;--rc:${Rr.c}">
+            ${img(s, 200)}<b>${esc(FAMILIES[s.family].name)}</b><small>${Rr.name}</small></div>` }).join("")}
+        <div class="star" style="--lc:${PALETTES[set.star.pal][2]}"><span class="rays"></span>${img(set.star, 460)}
+          <span class="legend">LÉGENDAIRE !</span><span class="shiny">✦ Shiny Lumineuse ✦</span></div>
+      </div>` },
+    cues:[[.2,"rattle"],[.7,"rattle"],[1.2,"rattle"],[1.85,"rip"],[1.85,"flash"],[1.9,"burst:center:gold:50"],[2,"pop"],[2.25,"pop"],[2.5,"pop"],[2.75,"pop"],
+      [3.1,"riser"],[3.75,"boom"],[3.75,"shake"],[3.75,"flash"],[3.8,"burst:center:rainbow:140"],[3.8,"arp"],[4.3,"burst:center:gold:70"]]},
+  {name:"Collection", dur:3.5, html:()=>{
+    const filled = [0,1,2,4,5,6,7,8,10,11,12,13,15,16,17,18,19,21,22,24];
+    return `<div class="album">${Array.from({length:25},(_,i)=>{ const k = filled.indexOf(i), s = set.album[k];
+        return `<div class="slot">${s ? img(s, 140, `style="--d:${(.15+k*.09).toFixed(2)}s"`) : ""}</div>` }).join("")}</div>
+      <p class="count" id="count">0</p>
+      <p class="lead in up" style="--d:.4s"><b>billes à collectionner.</b> Et chacune est unique.</p>` },
+    cues:[...Array.from({length:20},(_,k)=>[.15+k*.09,"tick"]), [0,"count"], [2.2,"chime"], [2.2,"burst:count:gold:40"]]},
+  {name:"Et aussi", dur:4, html:()=>{
+    const F = [["🎲","Mini-jeux","tous les jours","#FF4FA3"],["🏁","Grande Course","à 12 h et 20 h","#2FCF6A"],["🧪","Fusion","de tes doubles","#8B6CFF"],["🤝","Troc","avec tes potes","#2EE6E6"]];
+    return `<h1 class="slam m">${words("Et plein", .05, .2)} <span class="y">${words("d'autres trucs !", .45, .2)}</span></h1>
+      <div class="feats">${F.map(([e,n,s,c],i)=>`<div class="feat" style="--d:${(.9+i*.5).toFixed(2)}s;--r:${i%2?6:-6}deg;--fc:${c}"><span class="em">${e}</span><b>${n}</b><small>${s}</small></div>`).join("")}</div>` },
+    cues:[[.05,"hit"],[.45,"hit2"],[.9,"hit"],[1.4,"hit"],[1.9,"hit"],[2.4,"hit2"],[2.45,"burst:center:rainbow:50"],[2.9,"chime"]]},
+  {name:"Joue !", dur:5.5, logo:true, html:()=>{
+    const O = [[6,12,13],[78,10,14],[42,4,10],[4,128,14],[80,126,15],[28,140,10],[60,142,11]];
+    return `<div class="orbit">${set.orbit.map((s,i)=>img(s,220,`style="--x:calc(${O[i][0]}*var(--u));--y:calc(${O[i][1]}*var(--u)*var(--k,1));--w:calc(${O[i][2]}*var(--u));--d:${(.2+i*.12).toFixed(2)}s"`)).join("")}</div>
+      ${logoHTML("giant")}
+      <p class="slam m in up" style="--d:1.4s">Joue gratuitement sur</p>
+      <span class="url in" style="--d:1.8s">www.tikalo.fr</span>
+      <p class="launch in" style="--d:2.6s">Lancement le 1<sup>er</sup> décembre !</p>
+      <div class="chips in up" style="--d:3s"><span>Bêta ouverte</span><span>Gratuit</span><span>Sans téléchargement</span><span>Téléphone & ordi</span></div>` },
+    cues:[[.15,"hit"],[.4,"hit"],[.65,"hit"],[.9,"hit"],[1.15,"hit"],[1.4,"boom"],[1.8,"boom"],[1.8,"shake"],[1.8,"flash"],[1.8,"burst:center:rainbow:120"],[2.6,"arp"],[3.2,"burst:center:gold:60"]]},
+];
+
+/* ---------- les effets : confettis (canvas), secousses, flash ---------- */
+const FX = (() => {
+  let cv, cx, parts = [], W = 0, H = 0;
+  const PAL = {gold:["#FFC93F","#FFE38A","#F2AE12","#fff"], rainbow:["#FF4FA3","#FFC93F","#2EE6E6","#8B6CFF","#2FCF6A","#fff"], green:["#2FCF6A","#B9F5CF","#fff"],
+    hero:["#2E5BFF","#E5303A","#FFD23F","#fff"], legend:["#D97E06","#FFB347","#FFF3D6","#fff"]};
+  function fit(){ cv = document.getElementById("fx"); if(!cv) return; const r = cv.getBoundingClientRect(); W = r.width; H = r.height; cv.width = W*devicePixelRatio; cv.height = H*devicePixelRatio; cx = cv.getContext("2d"); cx.setTransform(devicePixelRatio,0,0,devicePixelRatio,0,0) }
+  function burst(where, pal, n){
+    if(!cx) return; let x = W/2, y = H*.47;
+    if(where==="right"){ x = W*.85; y = H*.45 } else if(where==="left"){ x = W*.15; y = H*.5 }
+    else if(where!=="center"){ const el = document.getElementById(where==="count"?"count":where==="cz"?"cz-rise":where); if(el){ const r = el.getBoundingClientRect(), s = STAGE.getBoundingClientRect(); x = r.left-s.left+r.width/2; y = r.top-s.top+r.height/2 } }
+    const cols = PAL[pal] || PAL.gold, sp = W/100;
+    for(let i=0;i<n;i++){ const a = Math.random()*Math.PI*2, v = (1.2+Math.random()*3.2)*sp*.55;
+      parts.push({x, y, vx:Math.cos(a)*v, vy:Math.sin(a)*v - sp*.5, g:sp*.045, life:1, d:.008+Math.random()*.012, s:sp*(.5+Math.random()*.9), c:cols[i%cols.length], r:Math.random()*6, vr:(Math.random()-.5)*.4, k:Math.random()<.3 }) }
+  }
+  function frame(){
+    if(cx){ cx.clearRect(0,0,W,H);
+      parts = parts.filter(p=>p.life>0);
+      for(const p of parts){ p.x += p.vx; p.y += p.vy; p.vy += p.g; p.vx *= .985; p.r += p.vr; p.life -= p.d;
+        cx.save(); cx.globalAlpha = Math.min(1, p.life*2); cx.translate(p.x, p.y); cx.rotate(p.r); cx.fillStyle = p.c;
+        if(p.k){ cx.beginPath(); for(let j=0;j<8;j++){ const rr = j%2 ? p.s*.35 : p.s; cx.lineTo(Math.cos(j*Math.PI/4)*rr, Math.sin(j*Math.PI/4)*rr) } cx.fill() }
+        else cx.fillRect(-p.s/2, -p.s/4, p.s, p.s/2);
+        cx.restore() } }
+    requestAnimationFrame(frame);
+  }
+  requestAnimationFrame(frame);
+  return {fit, burst};
+})();
+const kick = (el, c) => { if(!el) return; el.classList.remove(c); void el.offsetWidth; el.classList.add(c) };
+
+/* ---------- la musique et les bruitages (Web Audio, rien à télécharger) ---------- */
+const SND = (() => {
+  let ctx = null, master, music = null, on = false, dest = null;
+  const N = n => 440*Math.pow(2,(n-69)/12);
+  function init(){ if(ctx) return; ctx = new AudioContext(); master = ctx.createGain(); master.gain.value = .8;
+    const comp = ctx.createDynamicsCompressor(); master.connect(comp); comp.connect(ctx.destination); dest = ctx.createMediaStreamDestination(); comp.connect(dest) }
+  const noiseBuf = () => { const b = ctx.createBuffer(1, ctx.sampleRate, ctx.sampleRate), d = b.getChannelData(0); for(let i=0;i<d.length;i++) d[i] = Math.random()*2-1; return b };
+  let NB = null;
+  function env(node, t, a, peak, dec){ node.gain.setValueAtTime(0, t); node.gain.linearRampToValueAtTime(peak, t+a); node.gain.exponentialRampToValueAtTime(.0001, t+a+dec) }
+  function osc(type, f, t, peak, dec, f2){ const o = ctx.createOscillator(), g = ctx.createGain(); o.type = type; o.frequency.setValueAtTime(f, t); if(f2) o.frequency.exponentialRampToValueAtTime(f2, t+dec);
+    env(g, t, .004, peak, dec); o.connect(g); g.connect(master); o.start(t); o.stop(t+dec+.05) }
+  function noise(t, peak, dec, ftype="highpass", f=6000, f2){ NB ||= noiseBuf(); const s = ctx.createBufferSource(), fl = ctx.createBiquadFilter(), g = ctx.createGain(); s.buffer = NB;
+    fl.type = ftype; fl.frequency.setValueAtTime(f, t); if(f2) fl.frequency.exponentialRampToValueAtTime(f2, t+dec); env(g, t, .003, peak, dec); s.connect(fl); fl.connect(g); g.connect(master); s.start(t); s.stop(t+dec+.05) }
+  // la boucle : 120 BPM, 4 temps, grosse caisse, claquement, charleston, basse et accords en mineur qui monte
+  const PROG = [[45,57,60,64],[41,53,57,60],[48,60,64,67],[43,55,59,62]];
+  function bar(t, k){
+    const ch = PROG[k%4];
+    for(let b=0;b<4;b++){ const tb = t+b*BEAT;
+      osc("sine", 150, tb, .9, .32, 42);                       // grosse caisse
+      noise(tb+BEAT/2, .12, .05, "highpass", 8000);             // charleston
+      noise(tb, .05, .03, "highpass", 9000);
+      if(b%2) { noise(tb, .35, .16, "bandpass", 1800); osc("triangle", 220, tb, .12, .08) }   // claquement
+      osc("sawtooth", N(ch[0]-12), tb, .16, .42); osc("square", N(ch[0]), tb+BEAT/2, .05, .2);   // basse
+    }
+    ch.slice(1).forEach(n=>{ osc("triangle", N(n+12), t, .045, 1.6); osc("sine", N(n+24), t+BEAT*2, .02, 1.2) });
+  }
+  function startMusic(){ init(); if(music) return; let k = 0, next = ctx.currentTime + .05;
+    music = setInterval(()=>{ while(next < ctx.currentTime + .6){ bar(next, k++); next += BEAT*4 } }, 120) }
+  function stopMusic(){ clearInterval(music); music = null }
+  const SFX = {
+    hit(){ const t = ctx.currentTime; osc("sine", 300, t, .55, .14, 80); noise(t, .25, .06, "lowpass", 3000) },
+    hit2(){ const t = ctx.currentTime; osc("sine", 420, t, .55, .16, 110); noise(t, .3, .08, "lowpass", 4000) },
+    thud(){ const t = ctx.currentTime; osc("sine", 120, t, .9, .4, 40) },
+    boom(){ const t = ctx.currentTime; osc("sine", 90, t, 1, .8, 28); noise(t, .5, .5, "lowpass", 1200, 100) },
+    whoosh(){ const t = ctx.currentTime; noise(t, .35, .55, "bandpass", 300, 4000) },
+    rip(){ const t = ctx.currentTime; noise(t, .6, .35, "highpass", 1500, 6000) },
+    rattle(){ const t = ctx.currentTime; for(let i=0;i<5;i++) noise(t+i*.05, .18, .04, "bandpass", 2500+Math.random()*1500) },
+    pop(){ const t = ctx.currentTime; osc("sine", 700, t, .4, .12, 1400) },
+    plop(){ const t = ctx.currentTime; osc("sine", 500, t, .45, .18, 160); noise(t+.02, .15, .1, "lowpass", 1200) },
+    tick(){ const t = ctx.currentTime; osc("triangle", 1500+Math.random()*500, t, .14, .05) },
+    chime(){ const t = ctx.currentTime; [76,83,88].forEach((n,i)=>osc("sine", N(n), t+i*.06, .18, 1.1)) },
+    arp(){ const t = ctx.currentTime; [72,76,79,84,88,91,96].forEach((n,i)=>osc("triangle", N(n), t+i*.055, .14, .7)); noise(t, .2, 1.2, "highpass", 7000) },
+    riser(){ const t = ctx.currentTime; noise(t, .25, .65, "bandpass", 400, 6000); osc("sawtooth", 200, t, .06, .65, 900) },
+    tier(i){ const t = ctx.currentTime, n = [0,4,7,12,16][i]; osc("sine", N(72+n), t, .22, .9); osc("triangle", N(84+n), t, .06, .5) },
+    count(){ const t = ctx.currentTime; for(let i=0;i<16;i++) osc("triangle", 1200+i*60, t+i*.12, .06, .04) },
+  };
+  return {
+    get on(){ return on }, get stream(){ init(); return dest.stream },
+    toggle(v = !on){ on = v; init(); if(on){ ctx.resume(); startMusic() } else { stopMusic(); ctx.suspend() } return on },
+    pause(p){ if(!ctx || !on) return; p ? ctx.suspend() : ctx.resume() },
+    restart(){ if(!on) return; stopMusic(); startMusic() },
+    sfx(name, arg){ if(!on || !ctx || ctx.state!=="running") return; SFX[name]?.(arg) },
+  };
+})();
+
+/* ---------- le moteur : scènes, repères, pause ---------- */
+let cur = -1, t0 = 0, paused = false, pauseAt = 0, recording = null, fired = new Set();
+const elapsed = () => ((paused ? pauseAt : performance.now()) - t0) / 1000;
+function build(){
+  STAGE.innerHTML = `<div class="bg"><div class="aur"></div><div class="stars"></div><div class="floor"></div></div>
+    <div class="cam" id="cam"><div class="mini-logo">${logoHTML()}</div>${SCENES.map((S,i)=>`<section class="sc" data-i="${i}"></section>`).join("")}</div>
+    <canvas id="fx"></canvas><div id="flash"></div>`;
+  document.getElementById("dots").innerHTML = SCENES.map((S,i)=>`<button data-i="${i}">${i+1}. ${S.name}</button>`).join("");
+  FX.fit();
+}
+function show(i){
+  const secs = STAGE.querySelectorAll(".sc"), prev = secs[cur];
+  if(prev && cur!==i){ prev.classList.remove("on"); prev.classList.add("out"); setTimeout(()=>{ prev.classList.remove("out"); if(!prev.classList.contains("on")) prev.innerHTML = "" }, 320) }
+  cur = i; const el = secs[i], S = SCENES[i];
+  el.classList.remove("out","on"); el.innerHTML = S.html(); el.style.setProperty("--dur", S.dur+"s"); void el.offsetWidth; el.classList.add("on");
+  STAGE.classList.toggle("big-logo", !!S.logo);
+  if(i===SCENES.length-1) el.style.setProperty("--k", (STAGE.clientHeight/STAGE.clientWidth)/1.7778);
+  t0 = performance.now(); fired = new Set(); if(paused) setPaused(false);
+  document.querySelectorAll("#dots button").forEach((b,k)=>b.classList.toggle("on", k===i));
+}
+function cue(what){
+  const [k, a, b, c] = what.split(":");
+  if(k==="burst") return FX.burst(a, b, +c);
+  if(k==="shake") return kick(document.getElementById("cam"), "shake");
+  if(k==="flash") return kick(document.getElementById("flash"), "go");
+  if(k==="count"){ const el = document.getElementById("count"), t1 = performance.now();
+    const step = () => { if(!el.isConnected) return; const p = Math.min(1, (performance.now()-t1)/1900), e = 1-Math.pow(1-p, 3);
+      el.textContent = String(Math.round(NB_BILLES*e)).replace(/\B(?=(\d{3})+(?!\d))/g, " "); if(p<1) requestAnimationFrame(step) }; step(); return SND.sfx("count") }
+  if(k==="boil") return document.getElementById("cz")?.classList.add("boil");
+  if(k==="tier"){ const n = +a, cz = document.getElementById("cz"), t = document.getElementById("cz-tier"); if(!cz) return;
+    cz.style.setProperty("--lq", DECOR_RAR[n].c); t.textContent = DECOR_RAR[n].name; kick(t, "pop"); FX.burst("cz", "gold", 10+n*8); return SND.sfx("tier", n) }
+  if(k==="rise"){ document.getElementById("cz-rise")?.classList.add("go"); document.getElementById("cz-tier").textContent = ""; return }
+  SND.sfx(k);
+}
+function tick(){
+  if(!paused && cur>=0){
+    const S = SCENES[cur], e = elapsed();
+    (S.cues||[]).forEach(([t, w], j)=>{ if(e>=t && !fired.has(j)){ fired.add(j); cue(w) } });
+    if(e >= S.dur){
+      if(cur===SCENES.length-1 && recording) stopRec();
+      else if(!FREEZE){ if(cur===SCENES.length-1) SND.restart(); show((cur+1)%SCENES.length) }
+    }
+    // l'image figée : chaque animation est calée exactement à l'instant demandé (les captures sans écran prennent du retard sinon)
+    if(FREEZE && e >= FREEZE.at && !paused){ setPaused(true); document.getAnimations().forEach(x=>{ try{ x.currentTime = FREEZE.at*1000; x.pause() }catch(_){} }) }
+  }
+  requestAnimationFrame(tick);
+}
+function setPaused(p){
+  if(p===paused) return; paused = p;
+  STAGE.querySelectorAll("*").forEach(x=>x.style.animationPlayState = p ? "paused" : "");
+  if(p) pauseAt = performance.now(); else { t0 += performance.now()-pauseAt }
+  SND.pause(p);
+  document.getElementById("b-play").textContent = p ? "▶ Lecture" : "⏸ Pause";
+}
+
+/* ---------- le format ---------- */
+const FORMATS = {"9:16":[1080,1920], "4:5":[1080,1350], "1:1":[1080,1080]};
+let format = "9:16";
+function layout(){
+  const [W,H] = FORMATS[format], wrap = document.querySelector(".wrap"), film = document.body.classList.contains("film");
+  const aw = wrap.clientWidth - (film?0:32), ah = wrap.clientHeight - (film?0:32), k = Math.min(aw/W, ah/H);
+  const w = Math.floor(W*k), h = Math.floor(H*k);
+  STAGE.style.setProperty("--sw", w+"px"); STAGE.style.setProperty("--sh", h+"px");
+  STAGE.style.setProperty("--u", Math.min(w/100, h/158)+"px");   // un format moins haut que 9:16 : tout rétrécit pour tenir
+  requestAnimationFrame(FX.fit);
+}
+
+/* ---------- l'enregistrement (Chrome / Edge) : l'image de la scène et le son de la page ---------- */
+async function startRec(){
+  if(!navigator.mediaDevices?.getDisplayMedia){ document.querySelector(".hint").textContent = "Ton navigateur ne sait pas enregistrer l'onglet : utilise Win + Alt + R, ou l'enregistreur d'écran du téléphone."; return }
+  let stream;
+  try{ stream = await navigator.mediaDevices.getDisplayMedia({video:{frameRate:60}, audio:false, preferCurrentTab:true, selfBrowserSurface:"include"}) }catch(e){ return }
+  const track = stream.getVideoTracks()[0];
+  try{ if(window.CropTarget && track.cropTo) await track.cropTo(await CropTarget.fromElement(STAGE)) }catch(e){}
+  if(SND.on) SND.stream.getAudioTracks().forEach(t=>stream.addTrack(t));   // le son vient directement de la page, sans micro
+  const type = ["video/mp4;codecs=avc1,mp4a.40.2","video/mp4","video/webm;codecs=vp9,opus","video/webm"].find(t=>MediaRecorder.isTypeSupported(t)) || "";
+  const rec = new MediaRecorder(stream, {mimeType:type, videoBitsPerSecond:16e6}), chunks = [];
+  rec.ondataavailable = e=>e.data.size && chunks.push(e.data);
+  rec.onstop = ()=>{ stream.getVideoTracks().forEach(t=>t.stop());
+    const blob = new Blob(chunks, {type:rec.mimeType}), a = document.createElement("a");
+    a.href = URL.createObjectURL(blob); a.download = `tikalo-tiktok-${format.replace(":","x")}.${rec.mimeType.includes("mp4")?"mp4":"webm"}`; a.click();
+    document.getElementById("b-rec").textContent = "● Enregistrer la vidéo"; recording = null };
+  track.onended = ()=>recording && stopRec();
+  recording = rec; document.getElementById("b-rec").textContent = "■ Arrêter";
+  await new Promise(r=>setTimeout(r,400));
+  SND.restart(); show(0); rec.start(500);
+}
+function stopRec(){ if(recording && recording.state!=="inactive") recording.stop() }
+
+/* ---------- les boutons ---------- */
+const soundBtn = () => { const b = document.getElementById("b-sound"); b.textContent = SND.on ? "🔊 Musique" : "🔇 Musique coupée"; b.classList.toggle("on", SND.on) };
+document.getElementById("b-play").onclick = ()=>setPaused(!paused);
+document.getElementById("b-restart").onclick = ()=>{ SND.restart(); show(0) };
+document.getElementById("b-sound").onclick = ()=>{ SND.toggle(); if(SND.on){ SND.restart(); show(0) } soundBtn() };
+document.getElementById("dots").onclick = e=>{ const b = e.target.closest("button"); if(b) show(+b.dataset.i) };
+document.getElementById("b-format").onchange = e=>{ format = e.target.value; layout() };
+document.getElementById("b-shuffle").onclick = ()=>{ SEED = (Math.random()*4e9)>>>0; newSet(); show(cur) };
+document.getElementById("b-film").onclick = ()=>{ document.body.classList.toggle("film"); layout() };
+document.getElementById("b-rec").onclick = ()=>recording ? stopRec() : startRec();
+addEventListener("resize", layout);
+addEventListener("keydown", e=>{
+  if(e.key===" "){ e.preventDefault(); setPaused(!paused) }
+  else if(e.key==="ArrowRight") show((cur+1)%SCENES.length);
+  else if(e.key==="ArrowLeft") show((cur-1+SCENES.length)%SCENES.length);
+  else if(e.key.toLowerCase()==="h"){ document.body.classList.toggle("film"); layout() }
+  else if(e.key.toLowerCase()==="m"){ SND.toggle(); soundBtn() }
+});
+
+/* ---------- démarrage : toutes les billes sont dessinées d'avance, puis la vidéo tourne ---------- */
+// l'image de couverture : le logo, « Tu te souviens des billes ? », la légendaire shiny, « Gratuit · tikalo.fr »
+function cover(){
+  STAGE.classList.add("big-logo");
+  document.getElementById("cam").innerHTML = `<div class="cov">
+    <h1 class="slam l">Tu te souviens<br><span class="y">des billes ?</span></h1>
+    <div class="big" style="--lc:${PALETTES[set.star.pal][2]}"><span class="rays"></span>${img(set.star, 520)}</div>
+    ${logoHTML("giant")}
+    <p class="lead"><b>Elles reviennent. En ligne.</b></p>
+    <span class="url">www.tikalo.fr</span></div>`;
+  setTimeout(()=>FX.burst("center", "rainbow", 90), 50);
+}
+const Q = new URLSearchParams(location.search);
+const FREEZE = Q.has("at") ? {at:+Q.get("at")} : null;
+if(Q.has("film")) document.body.classList.add("film");
+document.fonts.ready.then(()=>setTimeout(()=>{
+  newSet(); build(); layout();
+  if(Q.has("cover")){ document.getElementById("loading").remove(); cover(); return }
+  SCENES.forEach(S=>S.html());
+  document.getElementById("loading").remove();
+  show(Math.max(0, Math.min(SCENES.length-1, (+Q.get("s")||1)-1))); tick();
+}, 30));
+</script>
+</body>
+</html>

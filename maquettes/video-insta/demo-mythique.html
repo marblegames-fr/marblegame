@@ -1,0 +1,576 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Tikalo · vidéo Mythique</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Gluten:wght@900&family=Lilita+One&family=Nunito:wght@700;800;900&family=Caveat:wght@700&display=swap">
+<style>
+/* La 2e vidéo Instagram de Tikalo (11 octobre 2026) : « la nuit rouge », autour de la 6e rareté, Mythique, et de son motif unique, l'Œil du Dragon
+   (qui a remplacé le Vortex le 11 octobre 2026).
+   Même moteur que demo-pub.html : 8 scènes calées sur une musique à 120 battements par minute (un temps = 0,5 s), générée dans la page.
+   Les billes mythiques sont de vrais canevas redessinés à chaque image par le shader du jeu : elles bougent comme dans le jeu.
+   Tout est dessiné dans #stage au format choisi ; 1 unité (--u) = 1 % de la largeur. La barre du bas sert à piloter.
+   Pour vérifier une image précise : demo-mythique.html?s=3&at=2.5 (scène 3, figée à 2,5 s), &film pour cacher la barre. */
+:root{
+  --night:#0E1230; --night-2:#1B1F4A; --ink:#24253D;
+  --yellow:#FFC93F; --yellow-2:#F2AE12; --pink:#FF4FA3; --cyan:#2EE6E6; --green:#2FCF6A;
+  --red:#E0182D; --red-2:#FF2E44; --red-3:#FF8A3D; --red-dk:#5A0614;
+  --display:"Lilita One","Arial Rounded MT Bold",sans-serif; --logo:"Gluten","Lilita One",sans-serif; --body:"Nunito","Segoe UI",system-ui,sans-serif; --hand:"Caveat",cursive;
+  --ui-bg:#0A0B16; --ui-panel:#15172A; --ui-line:#2C3050; --ui-ink:#E9EBFF;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+html,body{height:100%}
+body{background:var(--ui-bg);color:var(--ui-ink);font-family:var(--body);display:flex;flex-direction:column;overflow:hidden}
+button,select{font:inherit;color:inherit}
+button{background:none;border:0;cursor:pointer}
+
+/* ---------- la scène ---------- */
+.wrap{flex:1;min-height:0;display:grid;place-items:center;padding:16px}
+#stage{position:relative;overflow:hidden;width:var(--sw);height:var(--sh);font-size:calc(var(--u)*4);color:#fff;border-radius:18px;
+  background:radial-gradient(120% 70% at 50% 0%,var(--night-2) 0,var(--night) 55%,#070918 100%);box-shadow:0 30px 80px -30px #000}
+body.film .wrap{padding:0} body.film #stage{border-radius:0;box-shadow:none}
+.bg{position:absolute;inset:0;pointer-events:none}
+.bg .aur{position:absolute;inset:-20% -30% auto;height:70%;background:radial-gradient(40% 50% at 25% 40%,rgba(90,120,255,.3),transparent 70%),radial-gradient(35% 45% at 75% 30%,rgba(255,46,68,.28),transparent 70%);
+  filter:blur(calc(var(--u)*3));animation:aur 9s ease-in-out infinite alternate}
+@keyframes aur{to{transform:translateX(8%) scaleY(1.15)}}
+.bg .stars{position:absolute;inset:0;background-image:radial-gradient(1.2px 1.2px at 12% 18%,#fff,transparent),radial-gradient(1px 1px at 33% 8%,#fff,transparent),radial-gradient(1.4px 1.4px at 58% 22%,#fff,transparent),
+  radial-gradient(1px 1px at 82% 12%,#fff,transparent),radial-gradient(1.2px 1.2px at 92% 34%,#fff,transparent),radial-gradient(1px 1px at 22% 38%,#fff,transparent),radial-gradient(1.3px 1.3px at 70% 44%,#fff,transparent),
+  radial-gradient(1px 1px at 45% 32%,#fff,transparent),radial-gradient(1.2px 1.2px at 6% 52%,#fff,transparent);opacity:.7;animation:tw 3s ease-in-out infinite alternate}
+@keyframes tw{to{opacity:.35}}
+.bg .floor{position:absolute;left:-10%;right:-10%;bottom:-6%;height:34%;background:linear-gradient(180deg,transparent,rgba(255,255,255,.04) 30%,rgba(255,255,255,.07));
+  border-top:calc(var(--u)*.4) dashed rgba(255,255,255,.12);transform:perspective(calc(var(--u)*60)) rotateX(55deg);transform-origin:50% 100%}
+/* la nuit rouge : elle tombe sur la cour quand une mythique arrive (comme dans le jeu) */
+#night{position:absolute;inset:0;pointer-events:none;background:radial-gradient(circle at 50% 45%,rgba(140,0,20,.45),rgba(12,0,4,.94) 70%);opacity:0;transition:opacity var(--nt,.8s) ease}
+#night.on{opacity:1}
+/* le grand tourbillon rouge de l'apparition */
+.whirl{position:absolute;left:50%;top:46%;width:calc(var(--u)*320);height:calc(var(--u)*320);margin:calc(var(--u)*-160);border-radius:50%;pointer-events:none;opacity:0;
+  background:conic-gradient(from 0deg,transparent 0 8%,rgba(255,46,68,.6) 16%,transparent 26% 41%,rgba(255,140,60,.45) 49%,transparent 59% 74%,rgba(255,46,68,.6) 82%,transparent 92%);
+  -webkit-mask:radial-gradient(circle,transparent calc(var(--u)*10),#000 calc(var(--u)*36),transparent calc(var(--u)*130));mask:radial-gradient(circle,transparent calc(var(--u)*10),#000 calc(var(--u)*36),transparent calc(var(--u)*130))}
+.whirl.go{animation:whirl 4.4s cubic-bezier(.25,0,.25,1) forwards}
+@keyframes whirl{0%{opacity:0;transform:rotate(0) scale(.5)}12%{opacity:1}75%{opacity:.8}100%{opacity:0;transform:rotate(-720deg) scale(1.1)}}
+#fx{position:absolute;inset:0;width:100%;height:100%;pointer-events:none;z-index:8}
+#flash{position:absolute;inset:0;background:#fff;opacity:0;pointer-events:none;z-index:9}
+#flash.red{background:var(--red-2)}
+#flash.go{animation:fl .5s ease-out}
+@keyframes fl{0%{opacity:.85}100%{opacity:0}}
+.cam{position:absolute;inset:0}
+.cam.shake{animation:shake .38s cubic-bezier(.36,.07,.19,.97)}
+@keyframes shake{10%,90%{transform:translate(-1%,0)}20%,80%{transform:translate(1.4%,.6%)}30%,50%,70%{transform:translate(-1.8%,-.6%) rotate(-.6deg)}40%,60%{transform:translate(1.8%,.4%) rotate(.6deg)}}
+
+/* le bas de l'image est laissé libre : sur Instagram, la légende et les boutons passent par-dessus */
+.sc{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:calc(var(--u)*3.6);padding:calc(var(--u)*12) calc(var(--u)*6) calc(var(--u)*18);text-align:center;opacity:0;visibility:hidden}
+.sc.on{opacity:1;visibility:visible;animation:zoom var(--dur) linear both}
+@keyframes zoom{from{transform:scale(1)}to{transform:scale(1.06)}}
+.sc.out{visibility:visible;animation:sc-out .3s ease-in forwards}
+@keyframes sc-out{to{opacity:0;transform:scale(1.15);filter:blur(calc(var(--u)*.8))}}
+
+.mini-logo{position:absolute;top:calc(var(--u)*4.6);left:50%;transform:translateX(-50%);z-index:6;transition:opacity .3s}
+#stage.big-logo .mini-logo,#stage.no-logo .mini-logo{opacity:0}
+.logo{display:flex;align-items:flex-end;font-family:var(--logo);font-weight:900;line-height:1;letter-spacing:.02em}
+.logo .lt{display:inline-block;position:relative;color:var(--yellow);-webkit-text-stroke:.16em var(--ink);paint-order:stroke fill;
+  text-shadow:0 .04em 0 #F59E0B,0 .08em 0 #E07B00,0 .13em 0 var(--ink),0 .2em .3em rgba(0,0,0,.5)}
+.logo .lt:nth-child(1){transform:translateY(-.02em) rotate(-6deg)} .logo .lt:nth-child(2){transform:translateY(-.10em) rotate(4deg)}
+.logo .lt:nth-child(3){transform:translateY(.02em) rotate(-3deg)} .logo .lt:nth-child(4){transform:translateY(-.08em) rotate(5deg)}
+.logo .lt:nth-child(5){transform:rotate(-4deg)} .logo .lt:nth-child(6){transform:translateY(-.04em) rotate(3deg)}
+.logo .i img{position:absolute;left:50%;top:-.2em;width:.27em;height:.27em;margin-left:-.12em;border-radius:50%;box-shadow:0 0 0 .05em var(--ink);filter:drop-shadow(0 .06em 0 var(--ink))}
+.mini-logo .logo{font-size:calc(var(--u)*8)}
+
+/* ---------- la typo qui claque ---------- */
+.slam{font-family:var(--display);line-height:.92;letter-spacing:.01em;color:#fff;-webkit-text-stroke:calc(var(--u)*.55) var(--ink);paint-order:stroke fill;text-shadow:0 calc(var(--u)*1) 0 var(--ink),0 calc(var(--u)*2) calc(var(--u)*3) rgba(0,0,0,.45)}
+.slam.xl{font-size:calc(var(--u)*15)} .slam.l{font-size:calc(var(--u)*11)} .slam.m{font-size:calc(var(--u)*8)}
+.slam .y{color:var(--yellow)} .slam .r{color:var(--red-2)}
+.word{display:inline-block;opacity:0}
+.on .word{animation:slam .42s cubic-bezier(.2,1.6,.35,1) forwards;animation-delay:var(--d)}
+@keyframes slam{from{opacity:0;transform:scale(2.6) rotate(var(--r,-8deg));filter:blur(calc(var(--u)*.6))}to{opacity:1;transform:rotate(var(--rr,0deg))}}
+.tag{font-family:var(--hand);font-size:calc(var(--u)*7);line-height:1;color:var(--yellow);transform:rotate(-4deg)}
+.tag.r{color:#FF8A9A}
+.lead{font-weight:900;font-size:calc(var(--u)*4.4);line-height:1.2;color:#D9DCFF;max-width:calc(var(--u)*84)}
+.lead b{color:#fff}
+.in{opacity:0}
+.on .in{animation:pop .5s cubic-bezier(.2,1.5,.4,1) forwards;animation-delay:var(--d,0s)}
+.on .in.up{animation-name:up;animation-timing-function:cubic-bezier(.2,.9,.3,1)}
+@keyframes pop{from{opacity:0;transform:scale(.4) rotate(var(--r0,0deg))}to{opacity:1;transform:none}}
+@keyframes up{from{opacity:0;transform:translateY(calc(var(--u)*8))}to{opacity:1;transform:none}}
+.mb{display:block;width:100%;height:auto;aspect-ratio:1;filter:drop-shadow(0 calc(var(--u)*1.2) calc(var(--u)*1.4) rgba(0,0,0,.55))}
+.mb.vx{filter:drop-shadow(0 0 calc(var(--u)*3) rgba(255,46,68,.55)) drop-shadow(0 calc(var(--u)*1.2) calc(var(--u)*1.4) rgba(0,0,0,.55))}
+.mythic{white-space:nowrap;font-family:var(--display);line-height:1;color:var(--red-2);-webkit-text-stroke:calc(var(--u)*.6) #fff;paint-order:stroke fill;text-shadow:0 0 calc(var(--u)*4) rgba(255,46,68,.9)}
+.stamp{display:inline-block;font-weight:900;font-size:calc(var(--u)*3.4);letter-spacing:.06em;text-transform:uppercase;padding:calc(var(--u)*.8) calc(var(--u)*3);border-radius:999px;color:#fff;
+  background:linear-gradient(90deg,#9E0F24,#FF2E44,#9E0F24);background-size:200% 100%;animation:shim 1.4s linear infinite;box-shadow:0 0 calc(var(--u)*4) rgba(255,46,68,.6)}
+@keyframes shim{to{background-position:200% 0}}
+.on .in.stamp{animation:pop .5s cubic-bezier(.2,1.5,.4,1) forwards,shim 1.4s linear infinite;animation-delay:var(--d),0s}
+
+/* 1. le secret */
+.ghost{position:relative;width:calc(var(--u)*46)}
+.ghost .mb{filter:brightness(.35) saturate(.6) blur(calc(var(--u)*.25))}
+.on .ghost{animation:beat2 1s ease-in-out infinite .2s}
+@keyframes beat2{0%,100%{transform:scale(1)}8%{transform:scale(1.06)}16%{transform:scale(1)}26%{transform:scale(1.035)}}
+.on .ghost .mb{animation:unveil 3.2s ease-in forwards}
+@keyframes unveil{from{filter:brightness(.12) saturate(.3) blur(calc(var(--u)*.6))}to{filter:brightness(.55) saturate(.9) blur(0)}}
+.ghost::before{content:"";position:absolute;inset:-25%;border-radius:50%;background:radial-gradient(circle,rgba(255,46,68,.35),transparent 65%);animation:glow 1s ease-in-out infinite}
+@keyframes glow{0%,100%{opacity:.4}10%{opacity:1}30%{opacity:.6}}
+
+/* 2. l'échelle des raretés */
+.ladder{display:flex;flex-direction:column-reverse;gap:calc(var(--u)*1.6);width:calc(var(--u)*84)}
+.rung{display:flex;align-items:center;gap:calc(var(--u)*2.4);padding:calc(var(--u)*1) calc(var(--u)*2.6) calc(var(--u)*1) calc(var(--u)*1.2);border-radius:calc(var(--u)*3);
+  background:rgba(20,24,60,.8);border:calc(var(--u)*.5) solid var(--rc);box-shadow:0 0 calc(var(--u)*3) calc(var(--u)*-1) var(--rc);opacity:0}
+.on .rung{animation:rung .4s cubic-bezier(.2,1.6,.4,1) forwards;animation-delay:var(--d)}
+@keyframes rung{from{opacity:0;transform:translateX(calc(var(--u)*var(--sx,-40))) rotate(var(--r,-4deg))}to{opacity:1;transform:none}}
+.rung .mb{width:calc(var(--u)*10);flex:none}
+.rung b{font-family:var(--display);font-weight:400;font-size:calc(var(--u)*5.4);color:var(--rc);-webkit-text-stroke:calc(var(--u)*.25) #fff;paint-order:stroke fill;flex:1;text-align:left;white-space:nowrap}
+.rung small{font-weight:900;font-size:calc(var(--u)*3);color:#C9CCF2;white-space:nowrap}
+.rung small i{font-style:normal;color:#fff}
+.rung.secret{--rc:var(--red-2);background:linear-gradient(90deg,#3A0410,#5A0614,#3A0410);border-style:dashed}
+.on .rung.secret{animation:rung .4s cubic-bezier(.2,1.6,.4,1) forwards,glitch .18s steps(2) infinite;animation-delay:var(--d),calc(var(--d) + .4s)}
+@keyframes glitch{0%{translate:0 0;filter:none}50%{translate:calc(var(--u)*.8) calc(var(--u)*-.3);filter:hue-rotate(-20deg) brightness(1.4)}100%{translate:calc(var(--u)*-.6) calc(var(--u)*.2)}}
+.rung.secret .q{display:grid;place-items:center;width:calc(var(--u)*10);aspect-ratio:1;border-radius:50%;font-family:var(--display);font-size:calc(var(--u)*6);color:var(--red-2);
+  background:radial-gradient(circle at 35% 30%,#5A0614,#14000A);box-shadow:inset 0 0 0 calc(var(--u)*.4) var(--red-2),0 0 calc(var(--u)*3) var(--red-2)}
+
+/* 3. le sachet et l'apparition */
+.bagzone{position:relative;width:calc(var(--u)*90);height:calc(var(--u)*92)}
+.bag{position:absolute;left:50%;top:50%;width:calc(var(--u)*50);translate:-50% -50%}
+.on .bag{animation:bshake 2.4s ease-in .1s both,bgone .3s ease-in 2.65s forwards}
+@keyframes bshake{0%,100%{rotate:0deg}5%,15%,25%,35%{rotate:-4deg}10%,20%,30%,40%{rotate:4deg}45%,55%,65%,75%,85%{rotate:-9deg;scale:1.05}50%,60%,70%,80%,90%{rotate:9deg;scale:1.08}96%{scale:1.15}}
+@keyframes bgone{to{opacity:0;scale:1.7;filter:brightness(3)}}
+.bag svg{filter:drop-shadow(0 0 calc(var(--u)*2) rgba(255,46,68,0))}
+.on .bag svg{animation:bagglow 2.6s ease-in forwards}
+@keyframes bagglow{to{filter:drop-shadow(0 0 calc(var(--u)*6) rgba(255,46,68,.95))}}
+.reveal{position:absolute;left:50%;top:44%;display:flex;flex-direction:column;align-items:center;gap:calc(var(--u)*1.6);opacity:0;translate:-50% -50%;z-index:3}
+.on .reveal{animation:revealin .8s cubic-bezier(.2,1.5,.4,1) forwards 2.75s}
+@keyframes revealin{from{opacity:0;scale:.1;rotate:-200deg}to{opacity:1;scale:1;rotate:0deg}}
+.reveal .rays{position:absolute;left:50%;top:calc(var(--u)*24);width:calc(var(--u)*130);height:calc(var(--u)*130);margin:calc(var(--u)*-65);z-index:-1;
+  background:repeating-conic-gradient(from 0deg,rgba(255,46,68,.75) 0 6deg,transparent 6deg 18deg);-webkit-mask:radial-gradient(circle,#000 15%,transparent 65%);mask:radial-gradient(circle,#000 15%,transparent 65%);opacity:.7}
+.on .reveal .rays{animation:spin 6s linear infinite reverse}
+@keyframes spin{to{transform:rotate(360deg)}}
+.reveal .mb{width:calc(var(--u)*50)}
+.reveal .mythic{font-size:calc(var(--u)*12);opacity:0}
+.on .reveal .mythic{animation:slam .5s cubic-bezier(.2,1.6,.35,1) forwards 3.35s}
+
+/* 4. l'Œil du Dragon */
+.hero{position:relative;width:calc(var(--u)*62)}
+.on .hero{animation:float 1.8s ease-in-out infinite alternate}
+@keyframes float{to{transform:translateY(calc(var(--u)*-1.5)) rotate(4deg)}}
+.hero::before{content:"";position:absolute;inset:-20%;border-radius:50%;background:radial-gradient(circle,rgba(255,46,68,.4),transparent 62%)}
+.orbit-sp{position:absolute;inset:-14%;border-radius:50%;border:calc(var(--u)*.35) dashed rgba(255,138,61,.55);animation:spin 5s linear infinite reverse}
+.orbit-sp::before,.orbit-sp::after{content:"";position:absolute;width:calc(var(--u)*2.2);height:calc(var(--u)*2.2);border-radius:50%;background:#FFD1D6;box-shadow:0 0 calc(var(--u)*2) #FF2E44;top:-1.2%;left:48%}
+.orbit-sp::after{top:auto;bottom:-1.2%;left:auto;right:48%;background:#FF8A3D}
+
+/* 5. le chiffre */
+.odds{display:flex;flex-direction:column;align-items:center;gap:calc(var(--u)*1)}
+.odds .one{font-family:var(--display);font-size:calc(var(--u)*8);color:#fff;-webkit-text-stroke:calc(var(--u)*.4) var(--ink);paint-order:stroke fill}
+.big{font-family:var(--display);font-size:calc(var(--u)*24);line-height:.9;color:var(--red-2);-webkit-text-stroke:calc(var(--u)*.7) #fff;paint-order:stroke fill;font-variant-numeric:tabular-nums;
+  text-shadow:0 0 calc(var(--u)*5) rgba(255,46,68,.8),0 calc(var(--u)*1.4) 0 var(--red-dk)}
+.big.pop{animation:tpop .45s cubic-bezier(.2,1.8,.4,1)}
+@keyframes tpop{from{transform:scale(1.35)}}
+.vs{display:flex;align-items:center;gap:calc(var(--u)*3)}
+.vs .mb{width:calc(var(--u)*20)}
+.vs .x{font-family:var(--display);font-size:calc(var(--u)*10);color:var(--yellow);-webkit-text-stroke:calc(var(--u)*.4) var(--ink);paint-order:stroke fill}
+.vs small{display:block;font-weight:900;font-size:calc(var(--u)*2.8);margin-top:calc(var(--u)*.6)}
+
+/* 6. tous les coloris */
+.grid{display:grid;grid-template-columns:repeat(4,1fr);gap:calc(var(--u)*2.4);width:calc(var(--u)*84)}
+.grid .cell{position:relative;opacity:0}
+.on .grid .cell{animation:pop .35s cubic-bezier(.2,1.7,.4,1) forwards;animation-delay:var(--d)}
+.grid .cell small{display:block;margin-top:calc(var(--u)*.6);font-weight:900;font-size:calc(var(--u)*2.4);color:#C9CCF2;white-space:nowrap}
+.grid .cell.lum small{color:var(--yellow)}
+.grid .cell.lum::before{content:"";position:absolute;left:-12%;right:-12%;top:-12%;aspect-ratio:1;border-radius:50%;background:radial-gradient(circle,rgba(255,232,150,.55),transparent 65%);animation:glow 1.2s ease-in-out infinite}
+
+/* 7. ce qu'il rapporte */
+.vals{display:flex;flex-direction:column;gap:calc(var(--u)*2.6);width:calc(var(--u)*84)}
+.val{display:flex;align-items:center;gap:calc(var(--u)*3);padding:calc(var(--u)*1.6) calc(var(--u)*3);border-radius:calc(var(--u)*3.4);background:rgba(20,24,60,.85);border:calc(var(--u)*.5) solid var(--c);
+  box-shadow:0 0 calc(var(--u)*4) calc(var(--u)*-1) var(--c);opacity:0;text-align:left}
+.on .val{animation:gslam .4s cubic-bezier(.2,1.6,.4,1) forwards;animation-delay:var(--d)}
+@keyframes gslam{from{opacity:0;transform:scale(1.8) rotate(var(--r));filter:brightness(2)}to{opacity:1;transform:none;filter:none}}
+.val .n{flex:none;min-width:calc(var(--u)*25);font-family:var(--display);font-size:calc(var(--u)*11);line-height:1;color:var(--c);-webkit-text-stroke:calc(var(--u)*.45) #fff;paint-order:stroke fill;text-align:center}
+.val span{font-weight:900;font-size:calc(var(--u)*4);line-height:1.15;color:#fff}
+.val span small{display:block;font-size:calc(var(--u)*3);color:#C9CCF2}
+
+/* 8. l'appel final */
+.url{font-family:var(--display);font-size:calc(var(--u)*8.5);padding:calc(var(--u)*2) calc(var(--u)*6);border-radius:999px;background:var(--yellow);color:var(--ink);
+  box-shadow:0 calc(var(--u)*1.2) 0 var(--yellow-2),0 0 calc(var(--u)*8) rgba(255,201,63,.5)}
+.on .url.in{animation:pop .5s cubic-bezier(.2,1.5,.4,1) forwards,beat .5s ease-in-out infinite;animation-delay:var(--d),calc(var(--d) + .5s)}
+@keyframes beat{0%{transform:scale(1)}15%{transform:scale(1.07)}100%{transform:scale(1)}}
+.giant{font-size:calc(var(--u)*17);margin-top:calc(var(--u)*4)}
+.launch{font-family:var(--hand);font-size:calc(var(--u)*8);color:var(--pink);transform:rotate(-3deg)}
+.chips{display:flex;flex-wrap:wrap;justify-content:center;gap:calc(var(--u)*1.6)}
+.chips span{font-weight:900;font-size:calc(var(--u)*3.3);padding:calc(var(--u)*.8) calc(var(--u)*2.6);border-radius:999px;background:rgba(255,255,255,.1);border:calc(var(--u)*.35) solid rgba(255,255,255,.25)}
+.orbit{position:absolute;inset:0;pointer-events:none}
+.orbit .mb{position:absolute;width:var(--w);left:var(--x);top:var(--y);opacity:0}
+.on .orbit .mb{animation:pop .5s cubic-bezier(.2,1.6,.4,1) forwards,float 1.8s ease-in-out infinite alternate;animation-delay:var(--d),calc(var(--d) + .5s)}
+
+/* ---------- la barre de pilotage ---------- */
+.bar{flex:none;display:flex;align-items:center;justify-content:center;gap:8px;flex-wrap:wrap;padding:10px 16px 14px;border-top:1px solid var(--ui-line);background:var(--ui-panel)}
+.bar button,.bar select{height:36px;padding:0 14px;border-radius:10px;border:1px solid var(--ui-line);background:#1E2140;color:var(--ui-ink);font-weight:800;font-size:13.5px}
+.bar button:hover{background:#272B52}
+.bar button.rec{background:#E5484D;border-color:#E5484D;color:#fff}
+.bar button.on{background:var(--yellow);color:#24253D;border-color:var(--yellow)}
+.bar .sep{width:1px;height:24px;background:var(--ui-line)}
+.bar .dots{display:flex;gap:4px;flex-wrap:wrap;justify-content:center}
+.bar .dots button{padding:0 9px;font-size:12px;height:30px}
+.hint{font-size:12px;color:#8E93C4;font-weight:700}
+body.film .bar{display:none}
+.loading{position:fixed;inset:0;display:grid;place-items:center;background:var(--ui-bg);font-weight:800;z-index:20}
+@media (max-width:640px){ .bar .hint,.bar .sep{display:none} }
+</style>
+</head>
+<body>
+<div class="loading" id="loading">Préparation des billes…</div>
+<div class="wrap"><div id="stage" aria-label="Vidéo Tikalo : la rareté Mythique"></div></div>
+<div class="bar" id="bar">
+  <button id="b-play">⏸ Pause</button>
+  <button id="b-restart">⏮ Recommencer</button>
+  <button id="b-sound">🔇 Musique coupée</button>
+  <span class="dots" id="dots"></span>
+  <span class="sep"></span>
+  <select id="b-format" aria-label="Format">
+    <option value="9:16">9:16 · Reels, TikTok, Shorts</option>
+    <option value="4:5">4:5 · fil Instagram / Facebook</option>
+    <option value="1:1">1:1 · carré</option>
+  </select>
+  <button id="b-shuffle">🎲 Autres billes</button>
+  <button id="b-film">Mode tournage (H)</button>
+  <button id="b-rec" class="rec">● Enregistrer la vidéo</button>
+  <span class="hint">Espace : pause · ← → : scène · H : cacher la barre · M : musique</span>
+</div>
+
+<script src="../tikalo-demo-rendu.js"></script>
+<script>
+/* =====================================================================
+   LA VIDÉO : 8 scènes, environ 34 secondes, calées sur 120 BPM
+   ===================================================================== */
+const STAGE = document.getElementById("stage");
+const BEAT = .5;
+const famIdx = name => Math.max(0, FAMILIES.findIndex(f=>f.name===name));
+const palIdx = name => Math.max(0, PALETTES.findIndex(p=>p[0]===name));
+const MYTH_FAM = FAMILIES.findIndex(f=>f.myth);
+let SEED = 7;
+const R = () => { SEED = (SEED*1103515245 + 12345) >>> 0; return SEED / 4294967296 };
+const spec = (type, o={}) => makeSpec(type, {seed:o.seed ?? Math.floor(R()*4e9), ...o});
+const cache = new Map();
+const url = (s, px) => { const k = `${s.seed}|${s.type}|${s.family}|${s.pal}|${s.shiny}|${px}`; if(!cache.has(k)) cache.set(k, marbleURL(s, px)); return cache.get(k) };
+const img = (s, px, attrs="") => `<img class="mb" src="${url(s, px)}" alt="" ${attrs}>`;
+// une bille mythique : un canevas que le shader du jeu redessine à chaque image, pour que l'œil bouge vraiment
+const VX = new Map(); let vxN = 0;
+const vx = (s, px, attrs="") => { const k = "v"+(vxN++); VX.set(k, {s, px}); return `<canvas class="mb vx" data-vx="${k}" width="${px}" height="${px}" ${attrs}></canvas>` };
+const base = () => FAMILIES.map((f,i)=>i).filter(i=>FAM_W[i]>0 && !FAMILIES[i].secret && !FAMILIES[i].depart && !FAMILIES[i].myth);
+const pick = a => a[Math.floor(R()*a.length)];
+const words = (txt, d0, step=BEAT/2, cls="") => txt.split(" ").map((w,i)=>`<span class="word ${cls}" style="--d:${(d0+i*step).toFixed(2)}s;--r:${(i%2?8:-8)}deg">${w}</span>`).join(" ");
+const logoHTML = (cls="") => `<div class="logo ${cls}"><span class="lt">T</span><span class="lt i">ı<img src="${url(LOGO_SPEC,160)}" alt=""></span><span class="lt">k</span><span class="lt">a</span><span class="lt">l</span><span class="lt">o</span></div>`;
+const nb = n => String(n).replace(/\B(?=(\d{3})+(?!\d))/g, " ");
+// les chances, comme dans le jeu (famOdds) : 1 bille sur (somme des poids) / (poids des motifs de cette rareté)
+const FW = FAM_W.reduce((a,b)=>a+b,0);
+const tierOdds = r => Math.round(FW / FAMILIES.reduce((a,f,i)=>a+(f.rar===r ? FAM_W[i] : 0), 0));
+const MYTH_ODDS = Math.round(FW / FAM_W[MYTH_FAM]);
+const LEG_ONE = Math.round(FW / DECOR_RAR[4].w);   // un légendaire précis, pour la comparaison « 10 fois plus rare »
+
+let set = null;
+function newSet(){
+  const fams = base(), byRar = r => fams.filter(f=>FAMILIES[f].rar===r);
+  const mythic = (type, pal, shiny=0) => ({seed:Math.floor(R()*4e9), type, family:MYTH_FAM, pal:palIdx(pal), shiny});
+  set = {
+    ghost: mythic("calot", "Volcan"),
+    ladder: [0,1,2,3,4].map(r=>spec(["bille","chinoise","calot","boulet","mammouth"][r], {family:pick(byRar(r))})),
+    star: mythic("mammouth", "Rubis"),
+    leg: spec("calot", {family:pick(byRar(4))}),
+    small: mythic("calot", "Rubis"),
+    grid: ["Azur","Néon","Émeraude","Féerie","Ambre","Lagon","Tropical","Lavande","Glacier","Crépuscule","Barbe à papa","Paon"]
+      .map((p,i)=>mythic(["calot","boulet","bille","mammouth"][i%4], p, i===5 ? 3 : 0)),   // pas de bille chinoise : ovale, l'œil s'y voit mal
+    orbit: Array.from({length:7}, (_,i)=> i%2===0 ? mythic(["calot","boulet","mammouth"][i%3], pick(["Rubis","Néon","Saphir","Volcan","Féerie"])) : spec(TK[(i*2)%6], {family:pick(fams)})),
+  };
+}
+
+/* ---------- les scènes : html() dessine, cues = [temps (s), action] pour le son, les confettis, la nuit rouge et les secousses ---------- */
+const SCENES = [
+  {name:"Le secret", dur:4, logo:"none", html:()=>`
+      <p class="tag r in" style="--d:.2s">Psst…</p>
+      <div class="ghost">${vx(set.ghost, 380)}</div>
+      <h1 class="slam m">${words("Il y a un secret", .9, .22)}<br><span class="r">${words("dans les sachets…", 1.8, .3)}</span></h1>`,
+    cues:[[0,"mus:0"],[0,"night:1:.01"],[.2,"heart"],[1.2,"heart"],[2.2,"heart"],[3.2,"heart"],[.9,"hit"],[1.12,"hit"],[1.34,"hit"],[1.56,"hit"],[1.8,"hit2"],[2.1,"hit2"],[2.4,"hit2"],[3.6,"riser"]]},
+  {name:"Les raretés", dur:5, html:()=>{
+    const rows = set.ladder.map((s,r)=>`<div class="rung" style="--rc:${DECOR_RAR[r].c};--d:${(.35+r*.3).toFixed(2)}s;--sx:${r%2?40:-40};--r:${r%2?4:-4}deg">
+        ${img(s, 160)}<b>${DECOR_RAR[r].name}</b><small>1 bille sur <i>${nb(tierOdds(r))}</i></small></div>`).join("");
+    return `<h1 class="slam m">${words("5 raretés…", 0, .25)}</h1>
+      <div class="ladder">${rows}<div class="rung secret" style="--d:2.6s;--sx:0;--r:0deg"><span class="q">?</span><b>??????</b><small>1 bille sur <i>?????</i></small></div></div>
+      <h1 class="slam m"><span class="r">${words("…et une 6ᵉ.", 3.1, .3)}</span></h1>` },
+    cues:[[0,"night:0:.4"],[0,"mus:1"],[0,"hit"],[.35,"tier:0"],[.65,"tier:1"],[.95,"tier:2"],[1.25,"tier:3"],[1.55,"tier:4"],
+      [2.6,"glitch"],[2.6,"shake"],[3.1,"hit"],[3.4,"hit2"],[3.4,"burst:center:myth:40"]]},
+  {name:"La nuit rouge", dur:6, logo:"none", html:()=>`
+      <div class="bagzone"><div class="bag">${bagSVG(BAG_BY.collector)}</div>
+        <div class="reveal"><span class="rays"></span>${vx(set.star, 560)}<span class="mythic">MYTHIQUE !</span></div></div>`,
+    cues:[[0,"mus:.25"],[.1,"rattle"],[.6,"rattle"],[.3,"night:1:1.6"],[.4,"swell"],[1.3,"rattle"],[1.7,"rattle"],[2.1,"rattle"],
+      [2.75,"rip"],[2.75,"redflash"],[2.75,"whirl"],[2.8,"myth"],[2.8,"shake"],[2.8,"mus:1"],[2.85,"burst:center:myth:180"],[3.4,"burst:center:myth:120"],
+      [3.35,"boom"],[3.6,"fireworks"]]},
+  {name:"L'Œil", dur:4.5, html:()=>`
+      <div class="hero"><span class="orbit-sp"></span>${vx(set.star, 560)}</div>
+      <h1 class="slam l">${words("L'Œil du", .2, .2)} <span class="r">${words("Dragon", .6, .2)}</span></h1>
+      <p class="lead in up" style="--d:1.1s"><b>Le seul motif mythique.</b> Il te regarde, il cligne… il est vivant.</p>
+      <span class="stamp in" style="--d:1.9s">✦ Animé partout dans le jeu ✦</span>`,
+    cues:[[0,"night:.6:.6"],[.2,"hit"],[.4,"hit2"],[1.1,"pop"],[1.9,"chime"],[2.4,"burst:center:myth:30"]]},
+  {name:"1 sur…", dur:4.5, html:()=>`
+      <div class="odds"><span class="one in" style="--d:0s">1 bille sur</span><span class="big" id="big">0</span></div>
+      <div class="vs in up" style="--d:2.3s"><div>${img(set.leg, 220)}<small style="color:${DECOR_RAR[4].c}">Légendaire</small></div><span class="x">×10</span>
+        <div>${vx(set.small, 220)}<small style="color:var(--red-2)">Mythique</small></div></div>
+      <p class="lead in up" style="--d:2.7s"><b>10 fois plus rare</b> qu'un motif légendaire.</p>`,
+    cues:[[0,"night:0:.4"],[.1,"count"],[2.05,"boom"],[2.05,"bigpop"],[2.05,"shake"],[2.05,"burst:big:myth:80"],[2.7,"chime"]]},
+  {name:"Coloris", dur:4.5, html:()=>`
+      <h1 class="slam m">${words("Dans les", .05, .2)} <span class="y">${words(BASE_PALS+" coloris", .45, .2)}</span></h1>
+      <div class="grid">${set.grid.map((s,i)=>`<div class="cell${s.shiny===3?" lum":""}" style="--d:${(.7+i*.12).toFixed(2)}s">${vx(s, 200)}<small>${s.shiny===3?"✦ Lumineuse":esc(PALETTES[s.pal][0])}</small></div>`).join("")}</div>
+      <p class="lead in up" style="--d:2.4s">Sa peau, son iris et le feu de sa pupille prennent les 3 couleurs du coloris. <b>Et il peut être shiny.</b></p>`,
+    cues:[...Array.from({length:12},(_,i)=>[.7+i*.12,"tick"]),[2.2,"chime"],[2.2,"burst:center:gold:50"]]},
+  {name:"Ce qu'il vaut", dur:4, html:()=>`
+      <h1 class="slam m">${words("Et il rapporte", .05, .2)} <span class="r">${words("gros", .65, .2)}</span></h1>
+      <div class="vals">
+        <div class="val" style="--c:var(--yellow);--d:.9s;--r:-5deg"><b class="n">×20</b><span>en bonbecs<small>quand tu l'échanges</small></span></div>
+        <div class="val" style="--c:var(--cyan);--d:1.4s;--r:5deg"><b class="n">×15</b><span>au classement<small>les autres motifs : ×1 à ×5</small></span></div>
+        <div class="val" style="--c:var(--red-2);--d:1.9s;--r:-5deg"><b class="n">+500</b><span>points<small>pour ton tout premier Œil du Dragon</small></span></div>
+      </div>`,
+    cues:[[.9,"boom"],[.9,"burst:center:gold:40"],[1.4,"boom"],[1.4,"burst:center:rainbow:40"],[1.9,"boom"],[1.9,"shake"],[1.9,"burst:center:myth:60"],[2.3,"arp"]]},
+  {name:"À toi !", dur:5.5, logo:"big", html:()=>{
+    const O = [[6,12,13],[78,10,14],[42,4,10],[4,128,14],[80,126,15],[28,140,10],[60,142,11]];
+    return `<div class="orbit">${set.orbit.map((s,i)=>{ const a = `style="--x:calc(${O[i][0]}*var(--u));--y:calc(${O[i][1]}*var(--u)*var(--k,1));--w:calc(${O[i][2]}*var(--u));--d:${(.2+i*.12).toFixed(2)}s"`;
+        return s.family===MYTH_FAM ? vx(s, 200, a) : img(s, 200, a) }).join("")}</div>
+      <h1 class="slam l">${words("Et toi,", .1, .25)}<br><span class="r">${words("tu l'auras ?", .6, .3)}</span></h1>
+      ${logoHTML("giant")}
+      <span class="url in" style="--d:1.9s">www.tikalo.fr</span>
+      <p class="launch in" style="--d:2.6s">Lancement le 1<sup>er</sup> novembre !</p>
+      <div class="chips in up" style="--d:3s"><span>Gratuit</span><span>Sans téléchargement</span><span>Téléphone & ordi</span></div>` },
+    cues:[[.1,"hit"],[.35,"hit"],[.6,"hit2"],[.9,"hit2"],[1.2,"hit2"],[1.9,"boom"],[1.9,"shake"],[1.9,"flash"],[1.9,"burst:center:myth:110"],[2.6,"arp"],[3.2,"burst:center:gold:60"]]},
+];
+
+/* ---------- les effets : confettis (canvas), secousses, flash ---------- */
+const FX = (() => {
+  let cv, cx, parts = [], W = 0, H = 0;
+  const PAL = {gold:["#FFC93F","#FFE38A","#F2AE12","#fff"], rainbow:["#FF4FA3","#FFC93F","#2EE6E6","#8B6CFF","#2FCF6A","#fff"],
+    myth:["#FF2E44","#FF8A3D","#FFFFFF","#B0122A","#FFD1D6"]};   // myth : MYTH_COLS du jeu
+  function fit(){ cv = document.getElementById("fx"); if(!cv) return; const r = cv.getBoundingClientRect(); W = r.width; H = r.height; cv.width = W*devicePixelRatio; cv.height = H*devicePixelRatio; cx = cv.getContext("2d"); cx.setTransform(devicePixelRatio,0,0,devicePixelRatio,0,0) }
+  function burst(where, pal, n, x0, y0){
+    if(!cx) return; let x = x0 ?? W/2, y = y0 ?? H*.45;
+    if(where==="right"){ x = W*.85; y = H*.45 } else if(where==="left"){ x = W*.15; y = H*.5 }
+    else if(where!=="center" && where!=="at"){ const el = document.getElementById(where); if(el){ const r = el.getBoundingClientRect(), s = STAGE.getBoundingClientRect(); x = r.left-s.left+r.width/2; y = r.top-s.top+r.height/2 } }
+    const cols = PAL[pal] || PAL.gold, sp = W/100;
+    for(let i=0;i<n;i++){ const a = Math.random()*Math.PI*2, v = (1.2+Math.random()*3.2)*sp*.55;
+      parts.push({x, y, vx:Math.cos(a)*v, vy:Math.sin(a)*v - sp*.5, g:sp*.045, life:1, d:.008+Math.random()*.012, s:sp*(.5+Math.random()*.9), c:cols[i%cols.length], r:Math.random()*6, vr:(Math.random()-.5)*.4, k:Math.random()<.3 }) }
+  }
+  // un feu d'artifice rouge en haut de l'image, comme l'apparition mythique du jeu
+  function fireworks(n){ for(let j=0;j<n;j++) setTimeout(()=>burst("at", "myth", 26, W*(.12+Math.random()*.76), H*(.08+Math.random()*.3)), j*170) }
+  function frame(){
+    if(cx){ cx.clearRect(0,0,W,H);
+      if(!paused) parts = parts.filter(p=>p.life>0);
+      for(const p of parts){ if(!paused){ p.x += p.vx; p.y += p.vy; p.vy += p.g; p.vx *= .985; p.r += p.vr; p.life -= p.d }
+        cx.save(); cx.globalAlpha = Math.max(0, Math.min(1, p.life*2)); cx.translate(p.x, p.y); cx.rotate(p.r); cx.fillStyle = p.c;
+        if(p.k){ cx.beginPath(); for(let j=0;j<8;j++){ const rr = j%2 ? p.s*.35 : p.s; cx.lineTo(Math.cos(j*Math.PI/4)*rr, Math.sin(j*Math.PI/4)*rr) } cx.fill() }
+        else cx.fillRect(-p.s/2, -p.s/4, p.s, p.s/2);
+        cx.restore() } }
+    requestAnimationFrame(frame);
+  }
+  requestAnimationFrame(frame);
+  return {fit, burst, fireworks};
+})();
+const kick = (el, c) => { if(!el) return; el.classList.remove(c); void el.offsetWidth; el.classList.add(c) };
+
+/* ---------- la musique et les bruitages (Web Audio, rien à télécharger) ---------- */
+const SND = (() => {
+  let ctx = null, master, musG, music = null, on = false, dest = null;
+  const N = n => 440*Math.pow(2,(n-69)/12);
+  function init(){ if(ctx) return; ctx = new AudioContext(); master = ctx.createGain(); master.gain.value = .8; musG = ctx.createGain(); musG.connect(master);
+    const comp = ctx.createDynamicsCompressor(); master.connect(comp); comp.connect(ctx.destination); dest = ctx.createMediaStreamDestination(); comp.connect(dest) }
+  const noiseBuf = () => { const b = ctx.createBuffer(1, ctx.sampleRate*3, ctx.sampleRate), d = b.getChannelData(0); for(let i=0;i<d.length;i++) d[i] = Math.random()*2-1; return b };
+  let NB = null;
+  function env(node, t, a, peak, dec){ node.gain.setValueAtTime(0, t); node.gain.linearRampToValueAtTime(peak, t+a); node.gain.exponentialRampToValueAtTime(.0001, t+a+dec) }
+  function osc(type, f, t, peak, dec, f2, out=master, a=.004){ const o = ctx.createOscillator(), g = ctx.createGain(); o.type = type; o.frequency.setValueAtTime(f, t); if(f2) o.frequency.exponentialRampToValueAtTime(f2, t+dec);
+    env(g, t, a, peak, dec); o.connect(g); g.connect(out); o.start(t); o.stop(t+a+dec+.05) }
+  function noise(t, peak, dec, ftype="highpass", f=6000, f2, out=master, a=.003){ NB ||= noiseBuf(); const s = ctx.createBufferSource(), fl = ctx.createBiquadFilter(), g = ctx.createGain(); s.buffer = NB;
+    fl.type = ftype; fl.frequency.setValueAtTime(f, t); if(f2) fl.frequency.exponentialRampToValueAtTime(f2, t+a+dec); env(g, t, a, peak, dec); s.connect(fl); fl.connect(g); g.connect(out); s.start(t); s.stop(t+a+dec+.05) }
+  // la boucle : 120 BPM, plus sombre que la 1re vidéo (la mineur, avec le si bémol qui inquiète), grosse caisse, claquement, charleston, basse, nappe
+  const PROG = [[45,57,60,64],[46,58,62,65],[45,57,60,64],[44,56,59,64]];
+  function bar(t, k){
+    const ch = PROG[k%4], M = musG;
+    for(let b=0;b<4;b++){ const tb = t+b*BEAT;
+      osc("sine", 150, tb, .9, .32, 42, M);                         // grosse caisse
+      noise(tb+BEAT/2, .12, .05, "highpass", 8000, 0, M);           // charleston
+      noise(tb+BEAT*.75, .05, .03, "highpass", 9000, 0, M);
+      if(b%2) { noise(tb, .35, .16, "bandpass", 1800, 0, M); osc("triangle", 200, tb, .12, .08, 0, M) }   // claquement
+      osc("sawtooth", N(ch[0]-12), tb, .17, .42, 0, M); osc("square", N(ch[0]), tb+BEAT/2, .05, .2, 0, M);   // basse
+    }
+    ch.slice(1).forEach(n=>{ osc("triangle", N(n+12), t, .04, 1.8, 0, M); osc("sawtooth", N(n), t, .012, 1.9, 0, M, .3) });
+    [0,3,7,12].forEach((n,i)=>osc("sine", N(ch[0]+24+n), t+BEAT*2+i*BEAT/4, .03, .5, 0, M));   // un petit motif de boîte à musique
+  }
+  function startMusic(){ init(); if(music) return; let k = 0, next = ctx.currentTime + .05;
+    music = setInterval(()=>{ while(next < ctx.currentTime + .6){ bar(next, k++); next += BEAT*4 } }, 120) }
+  function stopMusic(){ clearInterval(music); music = null }
+  const SFX = {
+    hit(){ const t = ctx.currentTime; osc("sine", 300, t, .55, .14, 80); noise(t, .25, .06, "lowpass", 3000) },
+    hit2(){ const t = ctx.currentTime; osc("sine", 420, t, .55, .16, 110); noise(t, .3, .08, "lowpass", 4000) },
+    boom(){ const t = ctx.currentTime; osc("sine", 90, t, 1, .8, 28); noise(t, .5, .5, "lowpass", 1200, 100) },
+    rip(){ const t = ctx.currentTime; noise(t, .6, .35, "highpass", 1500, 6000) },
+    rattle(){ const t = ctx.currentTime; for(let i=0;i<5;i++) noise(t+i*.05, .18, .04, "bandpass", 2500+Math.random()*1500) },
+    pop(){ const t = ctx.currentTime; osc("sine", 700, t, .4, .12, 1400) },
+    tick(){ const t = ctx.currentTime; osc("triangle", 1500+Math.random()*500, t, .14, .05) },
+    chime(){ const t = ctx.currentTime; [76,83,88].forEach((n,i)=>osc("sine", N(n), t+i*.06, .18, 1.1)) },
+    arp(){ const t = ctx.currentTime; [69,72,76,81,84,88,93].forEach((n,i)=>osc("triangle", N(n), t+i*.055, .14, .7)); noise(t, .2, 1.2, "highpass", 7000) },
+    riser(){ const t = ctx.currentTime; noise(t, .25, .5, "bandpass", 400, 6000); osc("sawtooth", 200, t, .06, .5, 900) },
+    // le cœur qui bat : boum-boum
+    heart(){ const t = ctx.currentTime; osc("sine", 70, t, 1, .22, 38); osc("sine", 64, t+.24, .7, .26, 34) },
+    // une rareté qui monte d'un cran sur l'échelle
+    tier(i){ const t = ctx.currentTime, n = [0,3,7,10,12][i]; osc("sine", N(69+n), t, .22, .7); osc("triangle", N(81+n), t, .06, .4); noise(t, .12, .05, "lowpass", 3000) },
+    glitch(){ const t = ctx.currentTime; for(let i=0;i<6;i++) osc("square", 120+Math.random()*900, t+i*.045, .08, .04); noise(t, .3, .3, "bandpass", 900, 200) },
+    // la nuit rouge avant une mythique, comme dans le jeu : un souffle qui monte, une note grave qui grimpe, un roulement
+    swell(){ const t = ctx.currentTime; noise(t, .3, .2, "bandpass", 300, 5000, master, 2.1); osc("sine", 55, t, .3, .25, 110, master, 2.1);
+      for(let i=0;i<24;i++) osc("sine", 60+i, t+.6+i*.07, .05+i*.01, .07, 40) },
+    // l'apparition d'une mythique : un grand coup grave, cymbale, chœur sur trois notes, une gerbe de cloches
+    myth(){ const t = ctx.currentTime; osc("sine", 80, t, 1, 1.2, 26); noise(t, .5, .9, "lowpass", 1400, 90); noise(t, .16, 2.8, "highpass", 6000);
+      [57,64,69].forEach(n=>[-.1,.1].forEach(dt=>{ const o = ctx.createOscillator(), f = ctx.createBiquadFilter(), g = ctx.createGain(); o.type = "sawtooth"; o.frequency.value = N(n+dt);
+        f.type = "lowpass"; f.frequency.value = 1500; g.gain.setValueAtTime(0, t); g.gain.linearRampToValueAtTime(.045, t+.3); g.gain.exponentialRampToValueAtTime(.0001, t+3.2);
+        o.connect(f); f.connect(g); g.connect(master); o.start(t); o.stop(t+3.3) }));
+      [0,7,12,16,19,24,28,31,36].forEach((n,i)=>osc("sine", N(69+n), t+.15+i*.06, .1, 2)) },
+    count(){ const t = ctx.currentTime; for(let i=0;i<16;i++) osc("triangle", 500+i*90, t+i*.12, .07, .05) },
+  };
+  return {
+    get on(){ return on }, get stream(){ init(); return dest.stream },
+    toggle(v = !on){ on = v; init(); if(on){ ctx.resume(); startMusic() } else { stopMusic(); ctx.suspend() } return on },
+    pause(p){ if(!ctx || !on) return; p ? ctx.suspend() : ctx.resume() },
+    restart(){ if(!on) return; stopMusic(); musG.gain.cancelScheduledValues(ctx.currentTime); musG.gain.setValueAtTime(1, ctx.currentTime); startMusic() },
+    music(v){ if(!ctx) return; musG.gain.cancelScheduledValues(ctx.currentTime); musG.gain.setTargetAtTime(v, ctx.currentTime, .12) },
+    sfx(name, arg){ if(!on || !ctx || ctx.state!=="running") return; SFX[name]?.(arg) },
+  };
+})();
+
+/* ---------- le moteur : scènes, repères, pause ---------- */
+let cur = -1, t0 = 0, paused = false, pauseAt = 0, recording = null, fired = new Set();
+const elapsed = () => ((paused ? pauseAt : performance.now()) - t0) / 1000;
+function build(){
+  STAGE.innerHTML = `<div class="bg"><div class="aur"></div><div class="stars"></div><div class="floor"></div></div><div id="night"></div><div class="whirl" id="whirl"></div>
+    <div class="cam" id="cam"><div class="mini-logo">${logoHTML()}</div>${SCENES.map((S,i)=>`<section class="sc" data-i="${i}"></section>`).join("")}</div>
+    <canvas id="fx"></canvas><div id="flash"></div>`;
+  document.getElementById("dots").innerHTML = SCENES.map((S,i)=>`<button data-i="${i}">${i+1}. ${S.name}</button>`).join("");
+  FX.fit();
+}
+function night(v, secs){ const n = document.getElementById("night"); n.style.setProperty("--nt", secs+"s"); n.style.opacity = v; }
+function show(i){
+  const secs = STAGE.querySelectorAll(".sc"), prev = secs[cur];
+  if(prev && cur!==i){ prev.classList.remove("on"); prev.classList.add("out"); setTimeout(()=>{ prev.classList.remove("out"); if(!prev.classList.contains("on")) prev.innerHTML = "" }, 320) }
+  cur = i; const el = secs[i], S = SCENES[i];
+  VX.clear(); vxN = 0;
+  el.classList.remove("out","on"); el.innerHTML = S.html(); el.style.setProperty("--dur", S.dur+"s"); void el.offsetWidth; el.classList.add("on");
+  STAGE.classList.toggle("big-logo", S.logo==="big"); STAGE.classList.toggle("no-logo", S.logo==="none");
+  if(i===SCENES.length-1) el.style.setProperty("--k", (STAGE.clientHeight/STAGE.clientWidth)/1.7778);
+  if(i===0) night(0, .01);
+  t0 = performance.now(); fired = new Set(); if(paused) setPaused(false);
+  document.querySelectorAll("#dots button").forEach((b,k)=>b.classList.toggle("on", k===i));
+}
+function cue(what){
+  const [k, a, b, c] = what.split(":");
+  if(k==="burst") return FX.burst(a, b, +c);
+  if(k==="fireworks") return FX.fireworks(10);
+  if(k==="shake") return kick(document.getElementById("cam"), "shake");
+  if(k==="flash"){ document.getElementById("flash").classList.remove("red"); return kick(document.getElementById("flash"), "go") }
+  if(k==="redflash"){ const f = document.getElementById("flash"); f.classList.add("red"); return kick(f, "go") }
+  if(k==="whirl") return kick(document.getElementById("whirl"), "go");
+  if(k==="night") return night(+a, +b);
+  if(k==="mus") return SND.music(+a);
+  if(k==="count"){ const el = document.getElementById("big"), t1 = performance.now();
+    const step = () => { if(!el.isConnected) return; const p = Math.min(1, (performance.now()-t1)/1900), e = 1-Math.pow(1-p, 3);
+      el.textContent = nb(Math.round(MYTH_ODDS*e)); if(p<1) requestAnimationFrame(step) }; step(); return SND.sfx("count") }
+  if(k==="bigpop") return kick(document.getElementById("big"), "pop");
+  SND.sfx(k, a===undefined ? undefined : +a);
+}
+// les billes mythiques de la scène en cours : le shader du jeu dessine chacun au bon moment de sa boucle, puis on le recopie dans son canevas
+function drawMythic(){
+  const t = performance.now()/1000;
+  STAGE.querySelectorAll(".sc.on canvas.vx, .sc.out canvas.vx").forEach(cv=>{
+    const V = VX.get(cv.dataset.vx); if(!V || !mainGL) return;
+    mainGL.draw(V.s, V.px, I3, t % MYTH_T); const g = cv.getContext("2d"); g.clearRect(0, 0, V.px, V.px); g.drawImage(mainGL.cv, 0, 0);
+  });
+}
+function tick(){
+  if(!paused && cur>=0){
+    const S = SCENES[cur], e = elapsed();
+    (S.cues||[]).forEach(([t, w], j)=>{ if(e>=t && !fired.has(j)){ fired.add(j); cue(w) } });
+    drawMythic();
+    if(e >= S.dur){
+      if(cur===SCENES.length-1 && recording) stopRec();
+      else if(!FREEZE){ if(cur===SCENES.length-1) SND.restart(); show((cur+1)%SCENES.length) }
+    }
+    if(FREEZE && e >= FREEZE.at) setPaused(true);
+  }
+  requestAnimationFrame(tick);
+}
+function setPaused(p){
+  if(p===paused) return; paused = p;
+  STAGE.querySelectorAll("*").forEach(x=>x.style.animationPlayState = p ? "paused" : "");
+  if(p) pauseAt = performance.now(); else { t0 += performance.now()-pauseAt }
+  SND.pause(p);
+  document.getElementById("b-play").textContent = p ? "▶ Lecture" : "⏸ Pause";
+}
+
+/* ---------- le format ---------- */
+const FORMATS = {"9:16":[1080,1920], "4:5":[1080,1350], "1:1":[1080,1080]};
+let format = "9:16";
+function layout(){
+  const [W,H] = FORMATS[format], wrap = document.querySelector(".wrap"), film = document.body.classList.contains("film");
+  const aw = wrap.clientWidth - (film?0:32), ah = wrap.clientHeight - (film?0:32), k = Math.min(aw/W, ah/H);
+  const w = Math.floor(W*k), h = Math.floor(H*k);
+  STAGE.style.setProperty("--sw", w+"px"); STAGE.style.setProperty("--sh", h+"px");
+  STAGE.style.setProperty("--u", Math.min(w/100, h/158)+"px");   // un format moins haut que 9:16 : tout rétrécit pour tenir
+  requestAnimationFrame(FX.fit);
+}
+
+/* ---------- l'enregistrement (Chrome / Edge) : l'image de la scène et le son de la page ---------- */
+async function startRec(){
+  if(!navigator.mediaDevices?.getDisplayMedia){ document.querySelector(".hint").textContent = "Ton navigateur ne sait pas enregistrer l'onglet : utilise Win + Alt + R, ou l'enregistreur d'écran du téléphone."; return }
+  let stream;
+  try{ stream = await navigator.mediaDevices.getDisplayMedia({video:{frameRate:60}, audio:false, preferCurrentTab:true, selfBrowserSurface:"include"}) }catch(e){ return }
+  const track = stream.getVideoTracks()[0];
+  try{ if(window.CropTarget && track.cropTo) await track.cropTo(await CropTarget.fromElement(STAGE)) }catch(e){}
+  if(SND.on) SND.stream.getAudioTracks().forEach(t=>stream.addTrack(t));   // le son vient directement de la page, sans micro
+  const type = ["video/mp4;codecs=avc1,mp4a.40.2","video/mp4","video/webm;codecs=vp9,opus","video/webm"].find(t=>MediaRecorder.isTypeSupported(t)) || "";
+  const rec = new MediaRecorder(stream, {mimeType:type, videoBitsPerSecond:16e6}), chunks = [];
+  rec.ondataavailable = e=>e.data.size && chunks.push(e.data);
+  rec.onstop = ()=>{ stream.getVideoTracks().forEach(t=>t.stop());
+    const blob = new Blob(chunks, {type:rec.mimeType}), a = document.createElement("a");
+    a.href = URL.createObjectURL(blob); a.download = `tikalo-mythique-${format.replace(":","x")}.${rec.mimeType.includes("mp4")?"mp4":"webm"}`; a.click();
+    document.getElementById("b-rec").textContent = "● Enregistrer la vidéo"; recording = null };
+  track.onended = ()=>recording && stopRec();
+  recording = rec; document.getElementById("b-rec").textContent = "■ Arrêter";
+  await new Promise(r=>setTimeout(r,400));
+  SND.restart(); show(0); rec.start(500);
+}
+function stopRec(){ if(recording && recording.state!=="inactive") recording.stop() }
+
+/* ---------- les boutons ---------- */
+const soundBtn = () => { const b = document.getElementById("b-sound"); b.textContent = SND.on ? "🔊 Musique" : "🔇 Musique coupée"; b.classList.toggle("on", SND.on) };
+document.getElementById("b-play").onclick = ()=>setPaused(!paused);
+document.getElementById("b-restart").onclick = ()=>{ SND.restart(); show(0) };
+document.getElementById("b-sound").onclick = ()=>{ SND.toggle(); if(SND.on){ SND.restart(); show(0) } soundBtn() };
+document.getElementById("dots").onclick = e=>{ const b = e.target.closest("button"); if(b) show(+b.dataset.i) };
+document.getElementById("b-format").onchange = e=>{ format = e.target.value; layout() };
+document.getElementById("b-shuffle").onclick = ()=>{ SEED = (Math.random()*4e9)>>>0; newSet(); show(cur) };
+document.getElementById("b-film").onclick = ()=>{ document.body.classList.toggle("film"); layout() };
+document.getElementById("b-rec").onclick = ()=>recording ? stopRec() : startRec();
+addEventListener("resize", layout);
+addEventListener("keydown", e=>{
+  if(e.key===" "){ e.preventDefault(); setPaused(!paused) }
+  else if(e.key==="ArrowRight") show((cur+1)%SCENES.length);
+  else if(e.key==="ArrowLeft") show((cur-1+SCENES.length)%SCENES.length);
+  else if(e.key.toLowerCase()==="h"){ document.body.classList.toggle("film"); layout() }
+  else if(e.key.toLowerCase()==="m"){ SND.toggle(); soundBtn() }
+});
+
+/* ---------- démarrage : les billes fixes sont dessinées d'avance, puis la vidéo tourne ---------- */
+const Q = new URLSearchParams(location.search);
+const FREEZE = Q.has("at") ? {at:+Q.get("at")} : null;
+if(Q.has("film")) document.body.classList.add("film");
+document.fonts.ready.then(()=>setTimeout(()=>{
+  newSet(); build(); layout();
+  SCENES.forEach(S=>S.html());
+  document.getElementById("loading").remove();
+  const s0 = Math.max(0, Math.min(SCENES.length-1, (+Q.get("s")||1)-1));
+  // une scène vue seule : la nuit rouge et la musique sont dans l'état où les scènes d'avant les auraient laissées
+  if(s0>0) SCENES.slice(0, s0).forEach(S=>S.cues.forEach(([,w])=>{ if(w.startsWith("night:")){ const [,v] = w.split(":"); night(+v, .01) } }));
+  show(s0); tick();
+}, 30));
+</script>
+</body>
+</html>

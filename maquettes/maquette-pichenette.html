@@ -520,6 +520,8 @@ function hud(bump){
 
 /* ---------- la fin ---------- */
 function finish(){
+  // (19 octobre 2026) ?classe : la partie est lancée par maquette-classe.html (dans un cadre) ; on lui rend le score, c'est elle qui affiche la fin
+  if(CLASSE){ hud(); SND.fin(); setTimeout(()=>parent.postMessage({pich:"fin", score:G.score, winner:G.winner, tirs:G.log.length, butin:[G.butin[0].length, G.butin[1].length]}, "*"), 1400); return }
   hud(); const w = G.winner, end = $("end"), b = s => G.butin[s].map(id=>`<img src="${icon(specOfId(id))}" alt="">`).join("") || "<small>rien…</small>";
   end.innerHTML = `<div class="trophy">🏆</div><h2>${w==null ? "Égalité !" : `${S.names[w]} gagne !`}</h2>
     <div class="final"><span style="color:${PDARK[0]}">${G.score[0]}</span>–<span style="color:${PDARK[1]}">${G.score[1]}</span></div>
@@ -596,6 +598,14 @@ openStart();
 requestAnimationFrame(loop);
 // (tests) ?auto : l'ordi contre l'ordi, tout de suite
 { const Q = new URLSearchParams(location.search); if(Q.has("map")) S.map = Q.get("map"); if(Q.has("auto")){ S.auto = true; S.mode = "fort"; start() } }
+// (19 octobre 2026) ?classe&bot=moyen&n0=Toi&n1=Zoé&p0=2&p1=5 : une partie classée contre l'ordi (qui joue l'adversaire), sans l'écran de départ
+var CLASSE = null;
+{ const Q = new URLSearchParams(location.search);
+  if(Q.has("classe")){ CLASSE = true; S.mode = Q.get("bot") || "moyen"; S.rules = {...PICH.RULES};
+    $("n0").value = Q.get("n0") || "Toi"; $("n1").value = Q.get("n1") || "L'adversaire";
+    S.pick = [(+Q.get("p0") || 0) % TIREUSES.length, (+Q.get("p1") || 1) % TIREUSES.length]; if(S.pick[0]===S.pick[1]) S.pick[1] = (S.pick[1] + 1) % TIREUSES.length;
+    ["b-new", "b-bench"].forEach(id=>$(id).style.display = "none"); document.querySelector(".logo small").textContent = "partie classée";
+    start() } }
 </script>
 </body>
 </html>

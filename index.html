@@ -4402,6 +4402,7 @@ body.gc-open{overflow:hidden}
 .cour-v2 .mk::before{content:"";position:absolute;top:7px;left:50%;width:11px;height:11px;translate:-50% 0;border-radius:50%;background:var(--bg);box-shadow:inset 0 1px 2px rgba(0,0,0,.5);z-index:2}
 .cour-v2 .mk.ench{--tg1:#E8604C;--tg2:#B8352B;color:#fff}
 .cour-v2 .mk-vis{background:radial-gradient(circle at 50% 56%,rgba(255,255,255,.35),transparent 62%);height:118px}
+.cour-v2 .mk[style*="--mr"] .mk-vis{background:radial-gradient(circle 54px at 50% 56%,color-mix(in srgb,var(--mr) 80%,transparent) 30%,transparent)}
 .cour-v2 .mk .avg,.cour-v2 .mk .p-lbl,.cour-v2 .mk .mk-meta{color:#6E5A3E}
 .cour-v2 .mk.ench .avg,.cour-v2 .mk.ench .p-lbl,.cour-v2 .mk.ench .mk-meta{color:rgba(255,255,255,.88)}
 .cour-v2 .mk.ench .price{color:#FFE14D}
@@ -18039,7 +18040,8 @@ function sellHint(p){
 }
 // une carte du marché : achat immédiat ou enchère (mesEnch : dans « Mes enchères », on montre si on est en tête ou dépassé)
 function mkCard(a, mesEnch){
-  const x = a.bille, E = a.enchere, deal = !a.moi && !E && a.moyen && a.prix <= a.moyen*.85;
+  // (28 octobre 2026) la rareté du motif se voit comme dans le troc : une lueur de sa couleur derrière la bille (pickGlow)
+  const x = a.bille, rc = pickGlow(x), E = a.enchere, deal = !a.moi && !E && a.moyen && a.prix <= a.moyen*.85;
   const rib = a.moi ? `<span class="mk-rib">Ta bille</span>`
     : E && a.en_tete ? `<span class="mk-rib lead">${ic("trophy",11,2.6)} Tu es en tête</span>`
     : E && mesEnch ? `<span class="mk-rib out">Dépassé</span>`
@@ -18050,7 +18052,7 @@ function mkCard(a, mesEnch){
         : `<button class="btn btn-orange btn-sm" data-action="mk-encherir" data-id="${a.id}">${ic("gavel",15,2.4)} Enchérir · ${fmt(a.min)}</button>`)
     : libres()<a.prix ? `<button class="btn btn-yellow btn-sm" disabled>Il te manque ${fmt(a.prix-libres())}</button>`
     : `<button class="btn btn-yellow btn-sm" data-action="mk-acheter" data-id="${a.id}" data-prix="${a.prix}">Acheter</button>`;
-  return `<div class="mk${a.moi?" mine":""}${E?" ench":""}" data-q="${esc(mkTxt(a))}"${!mesEnch && mkHid(a)?" hidden":""} style="${tstyle(x.type)}">${rib}${E?`<span class="mk-tag">${ic("gavel",12,2.4)} Enchère</span>`:`<span class="mk-tag fixe">${ic("candy",12,2.4)} Prix fixe</span>`}
+  return `<div class="mk${a.moi?" mine":""}${E?" ench":""}" data-q="${esc(mkTxt(a))}"${!mesEnch && mkHid(a)?" hidden":""} style="${tstyle(x.type)}${rc?`;--mr:${rc}`:""}">${rib}${E?`<span class="mk-tag">${ic("gavel",12,2.4)} Enchère</span>`:`<span class="mk-tag fixe">${ic("candy",12,2.4)} Prix fixe</span>`}
     <span class="mk-vis" data-action="cour-see" data-k="${courSpec(x, a.moi?"Ta bille en vente.":E?`Aux enchères, par ${a.vendeur}.`:`En vente par ${a.vendeur}.`)}">${mImg(x,160,Math.round(44*scaleOf(x.type)+30),"")}</span>
     <div class="mk-info"><b>${esc(specName(x))}</b><span class="pills">${typePill(x.type)}${shinyPill(x)}</span>
     ${a.moi ? "" : ownTag((mkCard.own||ownInfo())(x))}

@@ -1,4 +1,4 @@
-/* Extrait automatique de index.html du 2026-10-19 (outils/extraire-rendu.mjs) : données, rendu WebGL des billes, icônes, sachets,
+/* Extrait automatique de index.html du 2026-10-28 (outils/extraire-rendu.mjs) : données, rendu WebGL des billes, icônes, sachets,
    aperçus des jeux, marelle, distributeur, chaudron. Ne pas modifier à la main : relancer l'extraction. */
 /* =====================================================================
    DONNÉES DU JEU
@@ -104,8 +104,34 @@ const FAMILIES = [
   {name:"Circuit",       rar:1, desc:"Une carte électronique : ses pistes s'allument et la lumière y court d'un point à l'autre."},
   {name:"Feu d'artifice", rar:4, desc:"Des bouquets de lumière qui éclatent dans un verre de nuit, chacun de sa couleur."},
   {name:"Œil du Dragon", rar:5, face:true, myth:true, desc:"Le motif mythique : un œil de dragon te regarde depuis le fond du verre. Son iris brûle, sa pupille fendue s'ouvre et se resserre, il cligne… Sa peau, son iris et le feu de sa pupille prennent les 3 couleurs du coloris."},   // (11 octobre 2026) remplace le Vortex, même numéro 64
+  // (20 octobre 2026) 21 nouveaux motifs de toutes les raretés (maquettes/maquette-motifs-2.html), chacun avec les 3 couleurs du coloris, toujours à la fin
+  {name:"Tricolore",     rar:0, desc:"Trois bandes bien égales qui font le tour de la bille, une par couleur du coloris, comme un drapeau enroulé."},
+  {name:"Sucette",       rar:0, face:true, desc:"Une spirale de sucre en quatre bandes (les 3 couleurs et du blanc) qui part du milieu, comme une sucette de fête foraine."},
+  {name:"Fleurettes",    rar:0, desc:"De petites fleurs à cinq pétales semées sur un fond clair, chacune avec son cœur : la robe d'été."},
+  {name:"Losanges",      rar:0, desc:"Des losanges de deux couleurs traversés de fins pointillés d'une troisième, comme sur les chaussettes écossaises."},
+  {name:"Marinière",     rar:0, desc:"De fines rayures bien droites, avec une rayure d'une autre couleur de temps en temps et un liseré : le pull du marin."},
+  {name:"Rosace",        rar:0, face:true, desc:"Des couronnes de pétales autour du centre, une couleur par couronne, comme une rosace de vitrail."},
+  {name:"Agrume",        rar:0, face:true, desc:"Une tranche d'orange (ou de citron, selon le coloris) de chaque côté, avec ses quartiers, et la peau tout autour."},
+  {name:"Vichy",         rar:0, desc:"Le carreau des nappes de pique-nique, en 3 couleurs, avec la trame du tissu."},
+  {name:"Shérif",        rar:0, face:true, desc:"Une grande étoile au milieu, cerclée d'anneaux, de chaque côté : l'insigne du shérif de la cour."},
+  {name:"Girafe",        rar:1, desc:"De grandes taches aux coins arrondis, séparées par des chemins couleur crème, comme le pelage d'une girafe."},
+  {name:"Briques",       rar:1, desc:"Un mur de briques bien rangées, décalées d'un rang à l'autre, avec leur joint de ciment : le mur de la cour."},
+  {name:"Puzzle",        rar:1, desc:"Des pièces de puzzle de trois couleurs, chacune avec ses tenons et ses creux, emboîtées tout autour de la bille."},
+  {name:"Labyrinthe",    rar:1, desc:"Des murs posés au hasard d'une case à l'autre qui dessinent des couloirs : trouve la sortie !"},
+  {name:"Pop",           rar:1, desc:"Des points de trame de bande dessinée, gros et petits, en deux couleurs sur un fond d'une troisième."},
+  {name:"Bulles",        rar:2, desc:"Un verre teinté rempli de grosses bulles de savon, leur fine paroi aux reflets de couleur."},
+  {name:"Jungle",        rar:2, desc:"De grandes feuilles qui se chevauchent dans la pénombre, avec leurs nervures, une couleur du coloris chacune."},
+  {name:"Ammonite",      rar:2, face:true, desc:"Un coquillage fossile enroulé en spirale, de chaque côté, pris dans la pierre depuis des millions d'années."},
+  {name:"Lucioles",      rar:3, face:true, desc:"Une nuit d'été dans le verre : des herbes hautes en ombre chinoise et des lucioles qui brillent."},
+  {name:"Tornade",       rar:3, face:true, desc:"Un entonnoir de vent enroulé en spirale, une bande par couleur du coloris, qui descend d'un nuage d'orage et soulève au sol un anneau de poussière lumineuse."},
+  {name:"Comète",        rar:4, face:true, desc:"Une comète file dans un verre de nuit : son cœur éblouissant, une queue droite et une queue courbe."},
+  {name:"Constellation", rar:4, face:true, desc:"Les étoiles d'une vraie constellation reliées par des traits de lumière, devant la Voie lactée : la Grande Ourse, Cassiopée ou Orion, selon la bille."},
 ];
-const FAM_W = FAMILIES.map(f=>f.event || f.season!=null || f.beta ? 0 : DECOR_RAR[f.rar].w);
+// (20 octobre 2026) chaque rareté garde la part des billes qu'elle avait avec la tier list du 10 octobre (RAR_N0 motifs à DECOR_RAR.w chacun) :
+// quand on ajoute des motifs, ce sont ses motifs qui se partagent cette part (même calcul dans supabase/serveur.sql, interne.tirer_decor)
+const RAR_N0 = [13,13,11,8,4,1];
+const RAR_N = DECOR_RAR.map((_,r)=>FAMILIES.filter(f=>f.rar===r && !f.event && f.season==null && !f.beta).length);
+const FAM_W = FAMILIES.map(f=>f.event || f.season!=null || f.beta ? 0 : DECOR_RAR[f.rar].w*RAR_N0[f.rar]/RAR_N[f.rar]);
 // motifs hors album : ceux des événements et ceux des saisons
 const extraFam = f => !!(FAMILIES[f]?.event || FAMILIES[f]?.season!=null || FAMILIES[f]?.beta);
 // les motifs de l'album (sans ceux des événements)
@@ -120,7 +146,7 @@ const FMT_TIER = {mini:0, bille:1, chinoise:2, calot:3, boulet:4, mammouth:5};
 const BIG = FMT_TIER.boulet;   // "un gros" : Boulet ou Mammouth
 const tierOf = s => FMT_TIER[s.type];
 const SHINY_COLS = ["#FF6FB5","#FFB547","#6FE3A8","#5AB8FF","#B07BFF"];
-const OPAQUE_FAMS = [3,7,8,9,10,12,14,17,18,19,20,21,22,23,24,25,26,27,28,29,33,52,53,54,55,56,57,58,59,60,62];   // les motifs de saison sont tous en verre ; le Pirate aussi depuis le 3 octobre 2026   // les motifs de saison sont tous en verre
+const OPAQUE_FAMS = [3,7,8,9,10,12,14,17,18,19,20,21,22,23,24,25,26,27,28,29,33,52,53,54,55,56,57,58,59,60,62,65,66,67,68,69,70,71,72,73,74,75,76,77,78,80,81];   // les motifs de saison sont tous en verre ; le Pirate aussi depuis le 3 octobre 2026   // les motifs de saison sont tous en verre
 const FIGURES = ["étoile","cœur","lune","fleur"];
 
 const PALETTES = [
@@ -210,7 +236,8 @@ Object.values(EVENTS).filter(E=>!E.late).forEach(E=>{ E.palIdx = E.pals.map(P=>{
 // Au lancement : open:false ici et interne.beta_ouverte() à false dans supabase/serveur.sql.
 // Un verre précieux par taille (Mini → Mammouth), toujours avec le β d'or : coloris 70 à 75, dans l'ordre des tailles (même règle dans serveur.sql).
 // (16 octobre 2026) la bêta se ferme toute seule le 1er novembre 2026 à 0 h (Paris) : plus rien à faire le jour J (serveur : interne.beta_ouverte)
-const BETA = {fam:47, end:Date.parse("2026-11-01T00:00:00+01:00"), get open(){ return Date.now() < this.end }, ed:"Bêta 2026", pals:[
+// (22 octobre 2026) reculée au 1er décembre 2026 à 0 h (Paris), pour faire venir plus de testeurs
+const BETA = {fam:47, end:Date.parse("2026-12-01T00:00:00+01:00"), get open(){ return Date.now() < this.end }, ed:"Bêta 2026", pals:[
   ["Rubis","#5E0B1A","#D7263D","#FFC94A","#FFE3E6"],
   ["Émeraude","#06402B","#1FA463","#FFC94A","#DDF7EA"],
   ["Saphir","#0A1F5C","#2F6BEA","#FFC94A","#DFE8FF"],
@@ -258,6 +285,9 @@ const eventLive = E => !!E && Date.now()>=E.start && Date.now()<=E.end;
 // Mêmes valeurs dans serveur.sql (taux_evenement, ouvrir_sac).
 const EV_DROP = {classique:.25, premium:.25, collector:.25};   // (11 octobre 2026) 50 % → 25 % par bille (la collection se finissait trop vite) ; la dernière du sachet reste toujours une bille d'événement
 const evOptOn = bagId => !!(S.evOpt && EV_DROP[bagId] && liveEventKey());
+// (23 octobre 2026) l'album de l'événement est fini (tous les coloris dans les 6 tailles) : la case des sachets le dit
+const evFini = k => { const f = FAMILIES.findIndex(F=>F.event===k), E = EVENTS[k];
+  return f>=0 && new Set(S.specs.filter(x=>x.family===f).map(x=>x.type+"|"+x.pal)).size >= TK.length*E.palIdx.length };
 // un événement pas encore commencé reste une surprise (Billepedia, album, Confiserie) : seule l'accueil l'annonce, billes floutées, 7 jours avant
 const evSoon = E => Date.now() < E.start;
 const liveEventKey = () => Object.keys(EVENTS).find(k=>eventLive(EVENTS[k]));
@@ -308,14 +338,14 @@ const bonusTag = () => `${ic("bag",16)} ${BAG_BY[QUEST_BONUS].name}`;
 // la vedette. Plus le sachet est cher, plus le plancher est haut (pas de Mini dans le Premium, rien sous la Chinoise dans le Collector).
 // Mêmes valeurs dans supabase/serveur.sql (interne.sac).
 const sizeOdds = a => Object.fromEntries(TK.map((k,i)=>[k,a[i]]));
-const FREE_BAG = {id:"gratuit", name:"Sachet gratuit", desc:"3 billes offertes. Un nouveau sachet toutes les 10 minutes, jusqu'à 10 en stock.", price:0, n:3, color:"#C98E4E", tint:"#F6E3C8", shiny:SHINY_RATE,
+const FREE_BAG = {id:"gratuit", name:"Sachet gratuit", desc:"3 billes · toutes les 10 min (10 max)", price:0, n:3, color:"#C98E4E", tint:"#F6E3C8", shiny:SHINY_RATE,
   slots:[sizeOdds([75,25,0,0,0,0]),sizeOdds([55,35,10,0,0,0]),sizeOdds([30,33,20,12,4,1])]};
 const BAGS = [FREE_BAG,
-  {id:"classique", name:"Sachet Classique", desc:"5 billes, avec de meilleures chances que le sachet gratuit. 2 fois plus de chances de shiny.", price:30, n:5, color:"#2A8A74", tint:"#D5EFE7", shiny:SHINY_RATE*2,
+  {id:"classique", name:"Sachet Classique", desc:"5 billes · 2× plus de shiny", price:30, n:5, color:"#2A8A74", tint:"#D5EFE7", shiny:SHINY_RATE*2,
    slots:[sizeOdds([70,30,0,0,0,0]),sizeOdds([50,38,12,0,0,0]),sizeOdds([35,40,20,5,0,0]),sizeOdds([20,35,30,13,2,0]),sizeOdds([10,25,30,20,12,3])]},
-  {id:"premium", name:"Sachet Premium", desc:"5 billes, dont au moins un Calot ou mieux. 4 fois plus de chances de shiny.", price:60, n:5, guarantee:"calot", color:"#34469C", tint:"#DCE0F6", shiny:SHINY_RATE*4,
+  {id:"premium", name:"Sachet Premium", desc:"5 billes · au moins un Calot · 4× plus de shiny", price:60, n:5, guarantee:"calot", color:"#34469C", tint:"#DCE0F6", shiny:SHINY_RATE*4,
    slots:[sizeOdds([0,80,20,0,0,0]),sizeOdds([0,60,35,5,0,0]),sizeOdds([0,40,45,15,0,0]),sizeOdds([0,0,55,38,7,0]),sizeOdds([0,0,0,60,34,6])]},
-  {id:"collector", name:"Sachet Collector", desc:"5 billes, dont au moins un Boulet ou plus gros. 10 fois plus de chances de shiny.", price:150, n:5, guarantee:"boulet", color:"#D9A020", tint:"#FBEBC0", shiny:SHINY_RATE*10,
+  {id:"collector", name:"Sachet Collector", desc:"5 billes · au moins un Boulet · 10× plus de shiny", price:150, n:5, guarantee:"boulet", color:"#D9A020", tint:"#FBEBC0", shiny:SHINY_RATE*10,
    slots:[sizeOdds([0,0,85,15,0,0]),sizeOdds([0,0,65,35,0,0]),sizeOdds([0,0,40,50,10,0]),sizeOdds([0,0,0,60,38,2]),sizeOdds([0,0,0,0,87,13])]},
 ];
 // par bille en moyenne (pour les chances d'une bille précise), et « au moins une » de chaque taille dans un sachet
@@ -381,7 +411,7 @@ function specParams(s){
   const P = PALETTES[s.pal];
   let tint = hex01(P[4]);
   const opaque = OPAQUE_FAMS.includes(s.family);
-  if(s.family===2||s.family===30||s.family===34||s.family===42||s.family===44||s.family===47||s.family===49||s.family===50||s.family===51||s.family===63||s.family===64) tint = hex01(shade(P[1],-.1)).map(v=>Math.max(.08,v*.8));
+  if(s.family===2||s.family===30||s.family===34||s.family===42||s.family===44||s.family===47||s.family===49||s.family===50||s.family===51||s.family===63||s.family===64||s.family===82||s.family===83||s.family===84||s.family===85) tint = hex01(shade(P[1],-.1)).map(v=>Math.max(.08,v*.8));
   const p = {
     seed:[r(),r(),r(),r()],
     par:[(r()-.5)*5, [3,4,4,5,6][Math.floor(r()*5)], .05+r()*.07, 2+Math.floor(r()*4)],
@@ -458,6 +488,15 @@ vec2 sph(vec3 u){ return vec2(atan(u.z,u.x)/6.2831853, asin(clamp(u.y,-1.0,1.0))
 
 float sdCap(vec3 p, vec3 a, vec3 b, float r){ vec3 pa=p-a, ba=b-a; return length(pa-ba*clamp(dot(pa,ba)/dot(ba,ba),0.0,1.0))-r; }
 
+#if MODE==68 || MODE==72 || MODE==76 || MODE==77 || MODE==78
+// (20 octobre 2026) la bille découpée en 6 faces de cube, pour les motifs en grille. xy : la place sur la face (-1..1, à angles égaux :
+// les cases gardent presque la même taille jusqu'au bord), w : le numéro de la face
+vec4 cubeF(vec3 u){ vec3 a=abs(u); vec2 p; float f;
+  if(a.x>=a.y && a.x>=a.z){ p=vec2(u.z,u.y)/a.x; f=u.x>0.0?0.0:1.0; }
+  else if(a.y>=a.z){ p=vec2(u.x,u.z)/a.y; f=u.y>0.0?2.0:3.0; }
+  else { p=vec2(u.x,u.y)/a.z; f=u.z>0.0?4.0:5.0; }
+  return vec4(atan(p)*1.2732395, 0.0, f); }
+#endif
 vec4 fam(vec3 q, out vec3 e){
   e=vec3(0.0);
   float r=length(q); vec3 so=uSeed.xyz*40.0;
@@ -1441,6 +1480,310 @@ vec4 fam(vec3 q, out vec3 e){
     float skinA=(1.0-inE)*lay*30.0*smoothstep(0.98,0.9,length(q));
     return vec4(mix(uC1*0.2,skin,clamp(skinA,0.0,1.0)), 0.9+pup*iris*inE*lay*80.0+skinA);
   }
+// (20 octobre 2026) les 21 nouveaux motifs (65 à 85)
+#elif MODE==65
+  { // tricolore : trois bandes égales qui font le tour de la bille, comme un drapeau enroulé
+    vec3 u=normalize(q); float y=u.y+0.035*sin(atan(u.z,u.x)*3.0+so.x);
+    vec3 c=y>0.33?uC1:(y<-0.33?uC2:uC3);
+    float ed=min(abs(y-0.33),abs(y+0.33));
+    c*=mix(0.8,1.0,smoothstep(0.004,0.022,ed));
+    return vec4(c, 200.0);
+  }
+#elif MODE==66
+  { // sucette : une spirale de sucre en trois couleurs qui part du centre de la bille, comme une sucette de fête foraine
+    vec3 u=normalize(q); float th=acos(clamp(u.z,-1.0,1.0)), ph=atan(u.y,u.x);
+    float s=ph/6.2831853*4.0+th*(3.6+nb*0.4);
+    float m=mod(floor(s),4.0); vec3 c=m<1.0?uC1:(m<2.0?vec3(0.98,0.97,0.95):(m<3.0?uC2:uC3));
+    float fs=fract(s); c*=mix(0.82,1.0,smoothstep(0.0,0.12,fs))*mix(1.0,0.92,smoothstep(0.75,1.0,fs));
+    c=mix(c,vec3(1.0),0.5*smoothstep(0.28,0.0,th));   // le petit bout blanc au centre
+    return vec4(c, 200.0);
+  }
+#elif MODE==67
+  { // fleurettes : de petites fleurs à cinq pétales semées sur un fond clair, avec leur cœur (deux semis décalés : il y en a partout)
+    vec3 u=normalize(q); vec3 t1=normalize(cross(u,vec3(0.0,1.0,0.013))), t2=cross(u,t1);
+    vec3 bg=mix(uC2,vec3(0.98,0.97,0.94),0.78), c=bg;
+    for(int i=0;i<2;i++){ vec3 g=u*2.4+so+float(i)*vec3(0.5,0.37,0.61); vec3 id=floor(g)+float(i)*31.0, f=fract(g)-0.5;
+      vec2 p=vec2(dot(f,t1),dot(f,t2)); float L=length(p), a=atan(p.y,p.x)+h31(id+5.0)*6.2831853;
+      float on=step(0.15,h31(id))*step(abs(dot(f,u)),0.22), sz=0.17+0.08*h31(id+3.0);
+      float pet=sz*(0.5+0.5*pow(abs(cos(a*2.5)),0.6));
+      float fl=smoothstep(pet+0.012,pet-0.012,L)*on;
+      float ctr=smoothstep(sz*0.3+0.012,sz*0.3-0.012,L)*on;
+      vec3 pc=h31(id+2.0)<0.6?uC1:vec3(0.99,0.98,0.97);
+      c=mix(c,pc*mix(0.85,1.0,smoothstep(0.0,pet,L)),fl);
+      c=mix(c,mix(uC3,vec3(1.0,0.82,0.25),0.45),ctr); }
+    return vec4(c, 200.0);
+  }
+#elif MODE==68
+  { // losanges : le motif des chaussettes écossaises, des losanges de deux couleurs et de fins traits d'une 3e
+    vec3 u=normalize(q); vec4 cf=cubeF(u); vec2 p=cf.xy*(1.3+nb*0.2)+so.xy;
+    float a=p.x+p.y, b=p.x-p.y; vec3 c=mod(floor(a)+floor(b),2.0)<1.0?uC1:uC2;
+    float la=abs(fract(a)-0.5), lb=abs(fract(b)-0.5);
+    float dash=step(0.5,fract((a+b)*3.0));
+    c=mix(c,uC3,smoothstep(0.055,0.03,min(la,lb))*dash);
+    return vec4(c, 200.0);
+  }
+#elif MODE==69
+  { // marinière : de fines rayures bien droites, avec une rayure d'une autre couleur de temps en temps et un liseré
+    vec3 u=normalize(q); float y=u.y*(10.0+nb)+so.x;
+    float fy=fract(y), m=mod(floor(y),5.0);
+    vec3 c=fy<0.42?(m<0.5?uC2:uC1):vec3(0.97,0.96,0.93);
+    c=mix(c,uC3,smoothstep(0.035,0.015,abs(fy-0.71)));
+    c*=mix(0.88,1.0,smoothstep(0.0,0.05,min(abs(fy),abs(fy-0.42))));
+    return vec4(c, 200.0);
+  }
+#elif MODE==70
+  { // rosace : des couronnes de pétales autour du centre, une couleur par couronne
+    vec3 u=normalize(q); float th=acos(clamp(abs(u.z),0.0,1.0)), ph=atan(u.y,u.x);
+    float rf=th*(2.4+nb*0.3), ri=floor(rf), fr=fract(rf);
+    float n=4.0+ri*5.0; float pa=abs(fract(ph/6.2831853*n+ri*0.5)-0.5)*2.0;
+    float w=sin(fr*3.14159)*0.92;
+    float pet=smoothstep(0.04,-0.02,pa-w);
+    float m=mod(ri,3.0); vec3 pc=m<1.0?uC1:(m<2.0?uC2:uC3);
+    vec3 c=mix(vec3(0.97,0.95,0.9),pc*(0.78+0.3*(1.0-pa)),pet);
+    c=mix(c,uC3,smoothstep(0.17,0.15,th));
+    return vec4(c, 200.0);
+  }
+#elif MODE==71
+  { // agrume : une tranche d'orange (ou de citron, selon le coloris) de chaque côté, et la peau tout autour
+    vec3 u=normalize(q); float th=acos(clamp(abs(u.z),0.0,1.0)), ph=atan(u.y,u.x);
+    vec3 peel=uC1*(0.85+0.2*noise(u*45.0+so));
+    vec3 c=peel;
+    if(th<1.05){
+      float seg=abs(fract(ph/6.2831853*10.0+so.x)-0.5);
+      vec3 flesh=mix(uC2,uC3,0.3+0.5*noise(vec3(ph*20.0,th*30.0,so.y)))*(0.85+0.2*smoothstep(0.5,1.0,noise(vec3(ph*40.0,th*60.0,so.z))));
+      c=flesh;
+      c=mix(c,vec3(0.98,0.96,0.88),smoothstep(0.035,0.015,seg*th*2.0+0.0)*step(0.08,th));   // les fines peaux entre les quartiers
+      c=mix(c,vec3(0.98,0.96,0.88),smoothstep(0.1,0.06,th));
+      c=mix(c,vec3(0.98,0.96,0.88),smoothstep(0.9,0.95,th));   // le blanc sous la peau
+    }
+    return vec4(c, 200.0);
+  }
+#elif MODE==72
+  { // vichy : le carreau des nappes de pique-nique, en 3 couleurs, avec la trame du tissu
+    vec3 u=normalize(q); vec4 cf=cubeF(u); vec2 p=cf.xy*(2.2+nb*0.3)+so.xy;
+    float sx=step(fract(p.x),0.5), sy=step(fract(p.y),0.5);
+    vec3 c=sx*sy>0.5?uC1:(sx+sy>0.5?uC2:mix(uC3,vec3(1.0),0.55));
+    c*=0.92+0.1*step(0.5,fract((p.x+p.y)*28.0));
+    return vec4(c, 200.0);
+  }
+#elif MODE==73
+  { // shérif : une grande étoile au milieu, cerclée d'anneaux, de chaque côté : l'insigne du shérif de la cour
+    vec3 u=normalize(q); float th=acos(clamp(abs(u.z),0.0,1.0));
+    vec3 c=uC2;
+    c=th<1.02?uC1:c; c=th<0.86?vec3(0.97,0.96,0.93):c; c=th<0.7?uC1:c; c=th<0.56?uC2:c;
+    float st=sdStar(u.xy*1.8);
+    c=mix(c,mix(uC3,vec3(1.0),0.1),smoothstep(0.02,-0.02,st));
+    c*=mix(0.7,1.0,smoothstep(0.0,0.03,abs(st)));
+    float rr=min(min(abs(th-1.02),abs(th-0.86)),min(abs(th-0.7),abs(th-0.56)));
+    c*=mix(0.75,1.0,smoothstep(0.0,0.012,rr));
+    return vec4(c, 200.0);
+  }
+#elif MODE==74
+  { // girafe : de grandes taches aux coins arrondis, séparées par des chemins clairs
+    vec3 u=normalize(q); vec3 g=u*(1.9+nb*0.15)+so; vec3 i0=floor(g), f0=fract(g);
+    float d1=9.0, d2=9.0; vec3 cid=vec3(0.0);
+    for(int x=-1;x<=1;x++) for(int y=-1;y<=1;y++) for(int z=-1;z<=1;z++){ vec3 o=vec3(float(x),float(y),float(z));
+      vec3 pt=o+0.15+0.7*vec3(h31(i0+o),h31(i0+o+7.1),h31(i0+o+3.3)); float d=length(pt-f0);
+      if(d<d1){ d2=d1; d1=d; cid=i0+o; } else if(d<d2) d2=d; }
+    float ed=d2-d1+0.07*(noise(g*3.0)-0.5);
+    float pat=smoothstep(0.07,0.1,ed);
+    vec3 pc=mix(uC1,uC2,0.45*h31(cid+1.0))*(0.8+0.25*smoothstep(0.15,0.5,ed))*(0.92+0.12*noise(g*9.0));
+    vec3 cream=mix(uC3,vec3(0.98,0.94,0.84),0.72);
+    return vec4(mix(cream,pc,pat), 200.0);
+  }
+#elif MODE==75
+  { // briques : un mur de briques bien rangées, décalées d'un rang à l'autre, avec leur ciment
+    vec3 u=normalize(q); float lat=asin(clamp(u.y,-1.0,1.0)); float R=8.0+nb;
+    float rf=(lat/3.14159265+0.5)*R, row=floor(rf), fy=fract(rf);
+    float lc=((row+0.5)/R-0.5)*3.14159265, nk=max(1.0,floor(R*1.15*cos(lc)+0.5));
+    float cf=(atan(u.z,u.x)/6.2831853+0.5)*nk+mod(row,2.0)*0.5+h31(vec3(row,so.x,1.0)), fx=fract(cf);
+    vec3 bid=vec3(row,mod(floor(cf),nk),so.y);
+    float mx=min(fx,1.0-fx)*6.2831853*max(cos(lat),0.05)/nk, my=min(fy,1.0-fy)*3.14159265/R;
+    float mort=smoothstep(0.014,0.03,min(mx,my));
+    float hb=h31(bid);
+    vec3 br=(hb<0.6?uC1:(hb<0.85?uC2:uC3))*(0.78+0.3*h31(bid+2.0))*(0.88+0.18*noise(u*35.0+so));
+    br*=mix(0.85,1.0,smoothstep(0.03,0.07,min(mx,my)));   // l'arête de la brique, un peu plus sombre
+    vec3 cem=mix(vec3(0.86,0.84,0.8),uC3,0.3)*(0.9+0.1*noise(u*80.0));
+    return vec4(mix(cem,br,mort), 200.0);
+  }
+#elif MODE==76
+  { // puzzle : des pièces de puzzle de trois couleurs, chacune avec ses tenons et ses creux
+    vec3 u=normalize(q); vec4 cf=cubeF(u); float N=2.0+floor(nb*0.5);
+    vec2 G=(cf.xy*0.5+0.5)*N; vec2 id=min(floor(G),N-1.0), p=G-id;
+    vec2 own=id; float dmin=9.0, r=0.17;
+    for(int k=0;k<4;k++){
+      vec2 n=k==0?vec2(1.0,0.0):(k==1?vec2(-1.0,0.0):(k==2?vec2(0.0,1.0):vec2(0.0,-1.0)));
+      vec2 nb2=id+n; float edge=k<2?(n.x>0.0?1.0:0.0):(n.y>0.0?1.0:0.0);
+      bool border=nb2.x<0.0||nb2.y<0.0||nb2.x>N-1.0||nb2.y>N-1.0;   // au bord d'une face du cube : pas de tenon
+      vec2 em=k<2?vec2(edge,0.5):vec2(0.5,edge);
+      float dl=k<2?abs(p.x-edge):abs(p.y-edge);
+      if(border){ dmin=min(dmin,dl); continue; }
+      vec2 eid=min(id,nb2)+abs(n)*0.5;   // le même identifiant vu des deux pièces
+      float sgn=h31(vec3(eid*7.3,cf.w+so.x))<0.5?1.0:-1.0; sgn*=n.x+n.y;   // tiré une fois par bord (vu de la pièce du bas ou de gauche), puis retourné pour l’autre côté ; +1 : le tenon part chez la voisine ; -1 : celui de la voisine entre chez nous
+      vec2 c=em+n*sgn*0.13; float Lk=length(p-c);
+      vec2 pr=k<2?vec2(edge,p.y):vec2(p.x,edge);
+      if(length(pr-c)>r) dmin=min(dmin,dl);
+      if(sgn<0.0){ dmin=min(dmin,abs(Lk-r)); if(Lk<r) own=nb2; }
+    }
+    float par=mod(own.x+own.y*2.0+cf.w,3.0);
+    vec3 c=par<1.0?uC1:(par<2.0?uC2:mix(uC3,vec3(0.97,0.95,0.9),0.3));
+    c*=mix(0.75,1.0,smoothstep(0.0,0.09,dmin))*(0.95+0.07*noise(u*30.0+so));
+    c=mix(c*0.35,c,smoothstep(0.008,0.022,dmin));
+    return vec4(c, 200.0);
+  }
+#elif MODE==77
+  { // labyrinthe : des murs en diagonale, au hasard d'une case à l'autre, qui dessinent des couloirs sans fin
+    vec3 u=normalize(q); vec4 cf=cubeF(u); float N=4.0+nb;
+    vec2 G=(cf.xy*0.5+0.5)*N; vec2 id=min(floor(G),N-1.0), p=G-id;
+    float fl=h31(vec3(id*3.1,cf.w*7.0+so.x));
+    float d=fl<0.5?abs(p.x-p.y):abs(p.x+p.y-1.0); d*=0.7071;
+    float wall=smoothstep(0.1,0.075,d);
+    vec3 floorc=mix(uC3,vec3(0.98,0.97,0.94),0.6);
+    vec3 wc=mix(uC1,uC2,smoothstep(0.075,0.0,d)*0.45);
+    float sh=smoothstep(0.24,0.1,d)*0.18;   // l'ombre du mur sur le sol
+    return vec4(mix(floorc*(1.0-sh),wc,wall), 200.0);
+  }
+#elif MODE==78
+  { // pop : des points de trame de BD, gros et petits, en deux couleurs sur un fond d'une 3e
+    vec3 u=normalize(q); vec4 cf=cubeF(u); vec3 c=mix(uC3,vec3(1.0),0.5);
+    for(int i=0;i<2;i++){ float an=float(i)*0.65; vec2 p=cf.xy*(5.0+nb); p=vec2(cos(an)*p.x-sin(an)*p.y, sin(an)*p.x+cos(an)*p.y);
+      vec2 f=fract(p)-0.5; float v=smoothstep(0.38,0.68,fbm(u*1.7+so+float(i)*9.0));
+      float rad=0.5*sqrt(v); float dt=smoothstep(rad,rad-0.07,length(f));
+      c=mix(c,i==0?uC1:uC2,dt*(i==1?0.9:1.0)); }
+    return vec4(c, 200.0);
+  }
+#elif MODE==79
+  { // bulles : un verre teinté rempli de grosses bulles de savon, leur fine paroi aux reflets de couleur
+    float r=length(q); vec3 g=q*3.2+so; vec3 id=floor(g), fc=fract(g)-0.5;
+    vec3 off=(vec3(h31(id+3.1),h31(id+7.7),h31(id+1.9))-0.5)*0.3; float rb=0.14+0.17*h31(id+1.3);
+    float d=length(fc-off);
+    float sh=step(0.3,h31(id))*smoothstep(0.035,0.0,abs(d-rb))*smoothstep(0.93,0.75,r);
+    float k=fract((fc.y-off.y)*2.5+h31(id)*3.0)*3.0;
+    vec3 film=k<1.0?mix(uC2,uC3,k):(k<2.0?mix(uC3,vec3(1.0),k-1.0):mix(vec3(1.0),uC2,k-2.0));
+    film=mix(film,0.5+0.5*cos(6.2831*(vec3(0.0,0.33,0.67)+k*0.4)),0.3);
+    e=film*sh*4.5;
+    return vec4(mix(uC1,film,sh), 0.32+sh*22.0);
+  }
+#elif MODE==80
+  { // jungle : de grandes feuilles qui se chevauchent, avec leurs nervures, dans les 3 couleurs du coloris
+    vec3 u=normalize(q); vec3 t1=normalize(cross(u,vec3(0.0,1.0,0.013))), t2=cross(u,t1);
+    vec3 c=uC1*0.25;
+    for(int i=0;i<4;i++){ vec3 g=u*1.45+so+float(i)*vec3(0.5,0.37,0.61); vec3 id=floor(g)+float(i)*17.0, f=fract(g)-0.5;
+      vec2 p=vec2(dot(f,t1),dot(f,t2)); float a=h31(id+5.0)*6.2831853; p=vec2(cos(a)*p.x-sin(a)*p.y, sin(a)*p.x+cos(a)*p.y);
+      float on=step(abs(dot(f,u)),0.3)*step(0.12,h31(id));
+      float lw=0.27*sqrt(max(0.0,1.0-pow(p.y/0.45,2.0)))*(1.0-0.35*p.y);
+      float leaf=smoothstep(0.01,-0.01,abs(p.x)-lw)*step(abs(p.y),0.45)*on;
+      float vein=max(smoothstep(0.016,0.006,abs(p.x)), smoothstep(0.07,0.025,abs(fract((p.y-abs(p.x)*1.2)*7.0)-0.5))*step(abs(p.x),lw*0.85));
+      float k=h31(id+2.0); vec3 lc=k<0.4?uC1:(k<0.75?uC2:uC3);
+      lc=mix(lc,vec3(0.15,0.45,0.2),0.2)*(0.65+0.45*smoothstep(lw,0.0,abs(p.x)))*(1.0+0.35*vein);
+      c=mix(c*0.8,lc,leaf); }   // une feuille du dessus fait de l'ombre à celle d'en dessous
+    return vec4(c, 200.0);
+  }
+#elif MODE==81
+  { // ammonite : un coquillage fossile enroulé en spirale, de chaque côté, pris dans la pierre
+    vec3 u=normalize(q); float th=acos(clamp(abs(u.z),0.0,1.0)), ph=atan(u.y,u.x)*(u.z>0.0?1.0:-1.0);
+    vec3 c=mix(uC1,vec3(0.55,0.52,0.48),0.55)*(0.8+0.3*noise(u*30.0+so));
+    float R=1.05;
+    if(th<R){ float kk=0.3; float s=log(max(th,1e-3)/R)/(kk*6.2831853)+ph/6.2831853; float w=fract(s);
+      float sep=abs(fract(ph/6.2831853*16.0+0.12*sin(w*18.0))-0.5);
+      vec3 sh=mix(uC3,uC2,w)*(0.6+0.55*sin(w*3.14159));
+      sh=mix(uC1*0.5,sh,smoothstep(0.0,0.06,w)*smoothstep(1.0,0.94,w));
+      sh=mix(uC1*0.6,sh,smoothstep(0.015,0.04,sep*th*3.0));
+      c=mix(c,sh,smoothstep(R,R-0.03,th)); }
+    return vec4(c, 200.0);
+  }
+#elif MODE==82
+  { // lucioles : une nuit d'été dans le verre, des herbes hautes en ombre chinoise et des lucioles qui brillent
+    float r=length(q); e=vec3(0.0);
+    vec3 g=q*5.0+so; vec3 id=floor(g), fc=fract(g)-0.5; vec3 off=(vec3(h31(id+1.0),h31(id+2.0),h31(id+3.0))-0.5)*0.6;
+    float L=length(fc-off); float on=step(0.55,h31(id))*smoothstep(0.9,0.6,r)*step(-0.35,q.y);
+    vec3 fcol=mix(vec3(0.8,1.0,0.3),uC3,0.45);
+    e+=fcol*on*(exp(-L*28.0)*14.0+exp(-L*8.0)*1.6);
+    float gr=0.0;   // les herbes : des brins pointus qui montent du bas, sur deux rangs
+    for(int i=0;i<2;i++){ float fi=float(i); float x=(i==0?q.x:q.z+0.3*q.x)*9.0+so.x+fi*3.7; float bi=floor(x), bx=fract(x)-0.5;
+      float hgt=-0.5+0.45*h31(vec3(bi,fi,so.y)); float lean=(h31(vec3(bi,fi,4.0))-0.5)*0.5;
+      float w=0.42*clamp((hgt-q.y)/(hgt+0.95),0.0,1.0);
+      gr=max(gr,step(abs(bx-lean*(q.y+0.95)),w)*step(q.y,hgt)); }
+    e+=mix(uC2,vec3(0.4,0.5,1.0),0.3)*0.7*smoothstep(-0.6,0.9,q.y)*smoothstep(0.98,0.6,r);   // le ciel encore un peu clair en haut
+    if(gr>0.5) return vec4(mix(uC1,vec3(0.02,0.06,0.03),0.75), 300.0);
+    return vec4(uC1*0.14, 0.45);
+  }
+#elif MODE==83
+  { // tornade : un entonnoir de vent enroulé en spirale (une bande par couleur du coloris), qui descend d'un nuage d'orage
+    // de la 1re couleur jusqu'au sol, où il soulève un tourbillon de poussière lumineuse de la 3e ; des débris tournent autour
+    float r=length(q), y=q.y; float t=clamp((y+0.72)/1.32,0.0,1.0);
+    vec2 c=vec2(0.12*sin(y*2.6+so.x),0.06*cos(y*2.2+so.y))*(1.0-t)*(1.0-t);   // la pointe ondule un peu
+    vec2 pxz=q.xz-c; float rho=length(pxz), ang=atan(pxz.y,pxz.x);
+    float R=0.03+0.29*pow(t,1.6);
+    float inY=smoothstep(-0.74,-0.68,y)*smoothstep(0.62,0.52,y);
+    float th=0.04+0.06*t;
+    float wall=smoothstep(th,th*0.35,abs(rho-R))*inY;
+    // les bandes : elles s'enroulent autour de l'entonnoir en montant
+    float s=ang/6.2831853*3.0+y*7.0+0.3*fbm(q*3.0+so);
+    float m=mod(floor(s),3.0), fs=fract(s);
+    vec3 band=m<1.0?uC1/max(max(uC1.r,max(uC1.g,uC1.b)),0.45):(m<2.0?uC2:uC3);
+    float streak=0.75+0.35*noise(vec3(ang*6.0,y*30.0,so.z));   // les filets de vent
+    band*=streak*mix(0.7,1.0,smoothstep(0.0,0.12,fs)*smoothstep(1.0,0.88,fs));
+    float side=0.6+0.5*clamp(dot(normalize(vec3(pxz.x,0.0,pxz.y)+vec3(0.0001)),normalize(vec3(-0.6,0.0,0.8))),0.0,1.0);   // éclairé d'un côté
+    // le nuage d'orage, en haut, de la 1re couleur
+    float cn=fbm(q*2.8+so);
+    float cloud=smoothstep(0.42,0.6,y+0.3*cn)*smoothstep(0.98,0.8,r);
+    vec3 cc=mix(uC1/max(max(uC1.r,max(uC1.g,uC1.b)),0.45)*0.35,mix(uC1,vec3(0.85),0.55),smoothstep(0.4,0.75,cn));
+    // la poussière au sol, de la 3e couleur, qui tourne en anneau
+    float dust=exp(-abs(y+0.7)*10.0)*smoothstep(0.55,0.1,abs(rho-0.22))*(0.5+0.5*fbm(q*6.0+so+2.0))*smoothstep(0.95,0.75,r);
+    vec3 g=q*12.0+so; vec3 fg=fract(g)-0.5;
+    float chips=step(0.88,h31(floor(g)))*smoothstep(0.18,0.08,length(fg))*smoothstep(0.14,0.0,abs(rho-R*1.25-0.03))*inY;
+    e=mix(uC3,vec3(1.0),0.25)*dust*5.0+band*wall*0.35+mix(uC2,vec3(1.0),0.4)*exp(-max(y-0.45,0.0)*8.0)*smoothstep(0.55,0.4,y)*exp(-rho*6.0)*0.25;
+    vec3 col=mix(uC1*0.12,mix(uC2,vec3(0.6),0.5)*0.35,smoothstep(-0.8,0.6,y));   // le ciel, plus clair vers le haut
+    col=mix(col,cc,cloud);
+    col=mix(col,band*side,clamp(wall*1.6,0.0,1.0));
+    col=mix(col,mix(uC3,vec3(0.2),0.4),chips);
+    return vec4(col, 0.35+wall*7.0+cloud*6.0+chips*60.0+dust*1.5);
+  }
+#elif MODE==84
+  { // comète : une comète file dans un verre de nuit, son cœur éblouissant et ses deux queues (une droite, une courbe)
+    float r=length(q); vec3 N=vec3(0.3,0.25,0.0); vec3 d=q-N; float L=length(d);
+    e=mix(vec3(1.0),uC3,0.25)*(exp(-L*50.0)*40.0+exp(-L*13.0)*3.5);
+    vec3 A=normalize(vec3(-1.0,-0.62,0.05));
+    float al=dot(d,A), pe=length(d-A*al);
+    float ion=step(0.0,al)*exp(-pe/(0.01+max(al,0.0)*0.035))*exp(-al*1.3)*(0.65+0.35*noise(vec3(al*18.0,pe*50.0,so.x)));
+    vec3 B=normalize(vec3(-0.85,-0.85,0.0)), Bn=normalize(vec3(0.7,-0.7,0.0));
+    float s=dot(d,B); vec3 cc=B*s+Bn*s*s*0.45; float dd=length(d-cc);
+    float dust=step(0.0,s)*exp(-dd/(0.015+max(s,0.0)*0.13))*exp(-s*1.1)*(0.55+0.45*fbm(q*6.0+so));
+    e+=mix(uC2,vec3(0.55,0.75,1.0),0.35)*ion*16.0+mix(uC3,vec3(1.0,0.88,0.65),0.35)*dust*9.0;
+    vec3 g=q*15.0+so; vec3 fc=fract(g)-0.5;
+    e+=vec3(step(0.968,h31(floor(g)))*smoothstep(0.2,0.0,length(fc)))*6.0*step(0.5,r);
+    return vec4(uC1*0.1, 0.45);
+  }
+#elif MODE==85
+  { // constellation : les étoiles d'une vraie constellation (la Grande Ourse, Cassiopée ou Orion) reliées par des traits de lumière
+    float r=length(q); e=vec3(0.0);
+    vec2 P0,P1,P2,P3,P4,P5,P6,X0,X1; float nc=7.0; float hc=h31(so+0.7);
+    if(hc<0.34){   // la Grande Ourse (la casserole)
+      P0=vec2(-0.66,0.3); P1=vec2(-0.42,0.25); P2=vec2(-0.2,0.15); P3=vec2(0.0,0.06); P4=vec2(0.06,-0.2); P5=vec2(0.4,-0.18); P6=vec2(0.44,0.08); X0=P6; X1=P3;
+    } else if(hc<0.67){   // Cassiopée (le W)
+      P0=vec2(-0.6,0.12); P1=vec2(-0.3,-0.2); P2=vec2(0.0,0.02); P3=vec2(0.28,-0.24); P4=vec2(0.58,0.08); P5=P4; P6=P4; nc=5.0; X0=P4; X1=P4;
+    } else {   // Orion : les épaules, la ceinture, les pieds
+      P0=vec2(-0.3,-0.55); P1=vec2(-0.12,-0.04); P2=vec2(-0.28,0.48); P3=vec2(0.3,0.42); P4=vec2(0.14,0.04); P5=vec2(0.32,-0.5); P6=vec2(0.01,0.0); X0=P1; X1=P4; nc=6.0;
+    }
+    float zp=0.25; float dl=9.0, ds=9.0;
+    for(int i=0;i<7;i++){ float fi=float(i);
+      vec2 A=i==0?P0:(i==1?P1:(i==2?P2:(i==3?P3:(i==4?P4:(i==5?P5:P6)))));
+      vec2 B=i==0?P1:(i==1?P2:(i==2?P3:(i==3?P4:(i==4?P5:P6))));
+      ds=min(ds,length(q-vec3(A,zp)));
+      if(fi<nc-1.0){ vec3 a=vec3(A,zp), b=vec3(B,zp), pa=q-a, ba=b-a; dl=min(dl,length(pa-ba*clamp(dot(pa,ba)/dot(ba,ba),0.0,1.0))); }
+    }
+    { vec3 a=vec3(X0,zp), b=vec3(X1,zp), pa=q-a, ba=b-a; if(dot(ba,ba)>1e-4) dl=min(dl,length(pa-ba*clamp(dot(pa,ba)/dot(ba,ba),0.0,1.0))); }
+    vec3 lc=mix(uC2,vec3(0.8,0.9,1.0),0.4), sc=mix(uC3,vec3(1.0),0.45);
+    e+=lc*(exp(-dl*110.0)*3.5+exp(-dl*25.0)*0.25);
+    e+=sc*(exp(-ds*70.0)*40.0+exp(-ds*16.0)*2.5);
+    // la Voie lactée en fond, et beaucoup de petites étoiles
+    float mw=smoothstep(0.45,0.0,abs(q.y-0.55*q.x+0.1+0.15*fbm(q*2.0+so)))*fbm(q*5.0+so+3.0);
+    e+=mix(uC2,uC3,0.5)*mw*0.8*smoothstep(0.95,0.6,r);
+    vec3 g=q*17.0+so; vec3 fc=fract(g)-0.5;
+    e+=vec3(step(0.965,h31(floor(g)))*smoothstep(0.2,0.0,length(fc)))*5.0;
+    return vec4(uC1*0.1, 0.45);
+  }
 #else
   { // à pois
     vec3 g=q*2.6+so; vec3 id=floor(g); vec3 f=fract(g)-0.5;
@@ -1463,7 +1806,8 @@ vec4 pattern(vec3 q, vec3 qs, out vec3 e){
     float fl=step(0.66,h31(floor(g)))*smoothstep(0.3,0.06,length(fc))*smoothstep(0.97,0.8,length(q));
     e+=vec3(1.0,0.78,0.3)*fl*11.0; c.a+=fl*30.0; c.rgb=mix(c.rgb,vec3(1.0,0.8,0.35),fl);
   }
-  if(uShiny>2.5){ e+=c.rgb*min(c.a,25.0)*0.09+uC2*0.25; }
+  // (28 octobre 2026) la Lumineuse : le motif éclaire de sa couleur, moins quand cette couleur est déjà claire (sinon tout part au blanc)
+  if(uShiny>2.5){ float lk=clamp(1.3-dot(c.rgb,vec3(0.299,0.587,0.114))*1.2,0.2,1.0); e+=(c.rgb*min(c.a,25.0)*0.09+uC2*0.25)*lk; }
   return c;
 }
 
@@ -1578,7 +1922,7 @@ void main(){
 #if MODE==49
     const int GSTEPS=96;   // le Prisme : des faces nettes, sans grain (pas réguliers)
     float jit=0.5;
-#elif MODE==32 || MODE==48 || MODE==50 || MODE==51 || MODE==61 || MODE==63 || MODE==64
+#elif MODE==32 || MODE==48 || MODE==50 || MODE==51 || MODE==61 || MODE==63 || MODE==64 || MODE==79 || MODE==82 || MODE==83 || MODE==84 || MODE==85
     const int GSTEPS=64;
     float jit=fract(sin(dot(gl_FragCoord.xy,vec2(12.9898,78.233)))*43758.5453);   // pas décalés d'un pixel à l'autre : pas de stries
 #else
@@ -1638,9 +1982,12 @@ void main(){
   }
   if(uShiny>2.5){
     // lumineuse : elle s'éclaire de l'intérieur, dans la couleur de son coloris (sans taches), et respire doucement
+    // (28 octobre 2026) la lueur se règle sur la clarté de la bille : sur un coloris pâle (Opale…), ajouter de la lumière la rendait
+    // toute blanche et le motif disparaissait. Plus la bille est claire, moins on ajoute ; le grand halo CSS autour ne change pas
     float pulse=0.85+0.15*sin(uTime*1.6);
-    col+=uC2*0.18*pulse;                                                     // une lueur intérieure, de sa couleur
-    col+=mix(uC2,vec3(1.0),0.25)*0.5*pow(1.0-n.z,2.2)*pulse;                 // le bord rayonne (le grand halo est fait autour, en CSS)   // le bord rayonne (le grand halo est fait autour, en CSS : le motif reste lisible)
+    float lu=dot(col,vec3(0.299,0.587,0.114)), room=clamp(1.0-lu*1.25,0.0,1.0);
+    col+=uC2*0.18*pulse*room;                                                // une lueur intérieure, de sa couleur
+    col+=mix(uC2,vec3(1.0),0.25)*0.5*pow(1.0-n.z,2.2)*pulse*mix(0.4,1.0,room);   // le bord rayonne (le grand halo est fait autour, en CSS : le motif reste lisible)
   }
   col*=mix(0.8,1.0,smoothstep(0.0,0.35,n.z));
   // les blancs s'arrondissent au lieu d'être coupés net (sinon un anneau dur autour des reflets)
@@ -1657,27 +2004,54 @@ class MarbleGL{
     if(!gl) throw new Error("webgl indisponible");
     this.gl=gl;
     this.progs=new Map(); this.cur=null;
+    // (21 octobre 2026) la compilation en parallèle, à côté de la page : sans elle, une première visite (ou la première après
+    // une mise à jour du shader) figeait la page 4 à 6 secondes, une variante après l'autre (300 à 900 ms chacune)
+    this.par=gl.getExtension("KHR_parallel_shader_compile"); this.busy=null; this.wait=new Map();
     const b=gl.createBuffer(); gl.bindBuffer(gl.ARRAY_BUFFER,b);
     gl.bufferData(gl.ARRAY_BUFFER,new Float32Array([-1,-1,1,-1,-1,1,1,1]),gl.STATIC_DRAW);
   }
   // un petit programme par famille × (verre|opaque), compilé à la demande :
   // un seul gros shader met plusieurs minutes à compiler sous Windows (ANGLE/D3D) et fige le navigateur
-  use(mode,opaque,hero=0){
+  // prog() lance la compilation sans en attendre la fin ; use() l'attend (seulement si elle n'est pas finie) et vérifie qu'elle a réussi
+  prog(mode,opaque,hero=0){
     const gl=this.gl, key=mode*2+opaque+hero*1000;
     let p=this.progs.get(key);
     if(!p){
-      const sh=(t,src)=>{const o=gl.createShader(t);gl.shaderSource(o,src);gl.compileShader(o);if(!gl.getShaderParameter(o,gl.COMPILE_STATUS))throw new Error(gl.getShaderInfoLog(o));return o};
-      const pr=gl.createProgram();
-      gl.attachShader(pr,sh(gl.VERTEX_SHADER,"attribute vec2 p;void main(){gl_Position=vec4(p,0.0,1.0);}"));
-      gl.attachShader(pr,sh(gl.FRAGMENT_SHADER,`#define MODE ${mode}
+      const sh=(t,src)=>{const o=gl.createShader(t);gl.shaderSource(o,src);gl.compileShader(o);return o};
+      const pr=gl.createProgram(), vs=sh(gl.VERTEX_SHADER,"attribute vec2 p;void main(){gl_Position=vec4(p,0.0,1.0);}"), fs=sh(gl.FRAGMENT_SHADER,`#define MODE ${mode}
 #define OPAQUE ${opaque}
 #define HERO ${hero}
-`+FS));
+`+FS);
+      gl.attachShader(pr,vs); gl.attachShader(pr,fs);
       gl.linkProgram(pr);
-      if(!gl.getProgramParameter(pr,gl.LINK_STATUS)) throw new Error(gl.getProgramInfoLog(pr));
-      p={pr, loc:gl.getAttribLocation(pr,"p"), u:{}};
-      ["uRes","uSeed","uPar","uPorc","uShiny","uSulf","uFig","uR","uAsp","uC1","uC2","uC3","uTint","uRot","uSRot","uTime"].forEach(n=>p.u[n]=gl.getUniformLocation(pr,n));
+      p={pr, vs, fs, ok:false, done:false, u:{}};
       this.progs.set(key,p);
+    }
+    return p;
+  }
+  // la bille peut-elle être dessinée tout de suite, sans attendre la fin d'une compilation ? (lance la compilation sinon)
+  ready(s){
+    if(!this.par || this.gl.isContextLost()) return true;
+    try{ const P=specParams(s), key=P.mode*2+P.opaque+P.hero*1000;
+      this.pump();
+      let p=this.progs.get(key);
+      if(!p){ if(this.busy){ this.wait.set(key,[P.mode,P.opaque,P.hero]); return false } p=this.busy=this.prog(P.mode,P.opaque,P.hero) }
+      return p.done || (p.done=this.gl.getProgramParameter(p.pr,this.par.COMPLETION_STATUS_KHR)) }catch(e){ return true }
+  }
+  // une seule compilation lancée à la fois : la carte graphique les traite dans l'ordre, et le moindre dessin attendait derrière
+  // toutes celles lancées avant lui (8 d'un coup au démarrage : encore 2 secondes de page figée)
+  pump(){
+    const b=this.busy;
+    if(b && (b.done || (b.done=this.gl.getProgramParameter(b.pr,this.par.COMPLETION_STATUS_KHR)))) this.busy=null;
+    while(!this.busy && this.wait.size){ const [k,a]=this.wait.entries().next().value; this.wait.delete(k); if(!this.progs.has(k)) this.busy=this.prog(...a) }
+  }
+  use(mode,opaque,hero=0){
+    const gl=this.gl, p=this.prog(mode,opaque,hero);
+    if(!p.ok){
+      if(!gl.getProgramParameter(p.pr,gl.LINK_STATUS)){
+        throw new Error(gl.getShaderInfoLog(p.fs) || gl.getShaderInfoLog(p.vs) || gl.getProgramInfoLog(p.pr)) }
+      p.loc=gl.getAttribLocation(p.pr,"p"); p.ok=p.done=true;
+      ["uRes","uSeed","uPar","uPorc","uShiny","uSulf","uFig","uR","uAsp","uC1","uC2","uC3","uTint","uRot","uSRot","uTime"].forEach(n=>p.u[n]=gl.getUniformLocation(p.pr,n));
     }
     if(this.cur!==p){ gl.useProgram(p.pr); gl.enableVertexAttribArray(p.loc); gl.vertexAttribPointer(p.loc,2,gl.FLOAT,false,0,0); this.cur=p }
     return p.u;
@@ -1701,7 +2075,15 @@ const pxRatio = () => (window.devicePixelRatio||1)*uiZoom();
 // sinon chaque image coûte 4 à 6 fois plus de pixels pour une différence invisible. GAME_PX : largeur maxi d'un terrain (900 unités),
 // SCREEN_PX : nombre maxi de pixels d'un canevas plein écran (Grande Course, pluie de billes).
 const GAME_PX = 1600, SCREEN_PX = 2.4e6;
-const gamePx = cssW => Math.min(Math.round(cssW*pxRatio()), GAME_PX);
+// (21 octobre 2026) une machine qui n'arrive pas à suivre (écran 4K sur une petite carte graphique : 5-6 images par seconde) :
+// la netteté des terrains baisse d'un cran (jusqu'à la moitié) tant que les images sont trop lentes. Elle ne remonte pas pendant la visite.
+const GameQ = {q:1, T:[], last:0,
+  tick(t){ const dt = t-this.last; this.last = t;
+    if(dt<=0 || dt>400 || document.visibilityState!=="visible") return;   // (onglet caché, retour d'un autre onglet : ne compte pas)
+    this.T.push(dt); if(this.T.length<45) return;
+    const m = this.T.sort((a,b)=>a-b)[22]; this.T = [];
+    if(m>34 && this.q>.5) this.q = Math.max(.5, this.q*.8) }};
+const gamePx = cssW => Math.round(Math.min(cssW*pxRatio(), GAME_PX)*GameQ.q);
 const screenDpr = (w, h, d=Math.min(2, devicePixelRatio||1)) => d*Math.min(1, Math.sqrt(SCREEN_PX/Math.max(1, w*h*d*d)));
 function makeGL(cv){ try{ return new MarbleGL(cv) }catch(e){ console.warn("Rendu WebGL indisponible :",e.message); return null } }
 const mainGL = makeGL(document.createElement("canvas"));
@@ -1747,17 +2129,39 @@ function marbleURLAsync(s,size){
     urlCache.set(k,u); return u }));
   return urlPend.get(k);
 }
+// (21 octobre 2026) une image de bille dans la page dont le shader compile encore (première visite, ou première après une mise à jour
+// du shader) : une image vide tout de suite, remplacée dès que la compilation (à côté, en parallèle) est finie, au lieu de figer la page
+const softWait = new Map(); let softT = 0;
+function marbleSrc(s,size=160){
+  const k=urlKey(s,size);
+  if(urlCache.has(k) || !mainGL || mainGL.ready(s)) return marbleURL(s,size);
+  let w=softWait.get(k); if(!w){ w={m:`${LAZY_PX}#w${softWait.size+1}-${Date.now()%1e6}`, s:{...s}, size}; softWait.set(k,w) }
+  if(!softT) softT=setTimeout(softPoll, 40);
+  return w.m;
+}
+function softPoll(){
+  softT=0;
+  for(const [k,w] of softWait){ if(!mainGL.ready(w.s)) continue;
+    softWait.delete(k); const u=marbleURL(w.s,w.size);
+    document.querySelectorAll(`img[src="${w.m}"]`).forEach(im=>im.src=u);
+    document.querySelectorAll("image").forEach(im=>{ if(im.getAttribute("href")===w.m) im.setAttribute("href",u) });
+    document.querySelectorAll(`link[href="${w.m}"]`).forEach(l=>l.href=u) }
+  if(softWait.size) softT=setTimeout(softPoll, 40);
+}
 // b) les billes pas encore dessinées le sont seulement quand elles arrivent à l'écran, quelques-unes par image (la page reste fluide)
 const LAZY_PX = "data:image/gif;base64,R0lGODlhAQABAAAAACH5BAEKAAEALAAAAAABAAEAAAICTAEAOw==";
-const lazyTodo = new Map(); let lazyN = 0, lazyQ = [], lazyBusy = false, lazyTok = 0;
+const lazyTodo = new Map(); let lazyN = 0, lazyQ = [], lazyBusy = false, lazyTok = 0, lazyWait = [], lazyWaitT = 0;
 // (un jeton plutôt que l'identifiant de requestAnimationFrame : ailleurs, un cancelAnimationFrame d'un vieil identifiant pouvait l'annuler par erreur)
 function lazyRun(){
   if(lazyBusy || !lazyQ.length) return;
   lazyBusy = true; const tok = ++lazyTok;
   const step = () => { if(tok!==lazyTok) return; lazyTok++; lazyBusy = false; const t0 = performance.now();
-    while(lazyQ.length && performance.now()-t0 < 12){ const im = lazyQ.shift(), j = lazyTodo.get(im.dataset.mq); lazyTodo.delete(im.dataset.mq);
+    while(lazyQ.length && performance.now()-t0 < 12){ const im = lazyQ.shift(), j = lazyTodo.get(im.dataset.mq);
+      if(j && im.isConnected && mainGL && !mainGL.ready(j.s)){ lazyWait.push(im); continue }   // (21 octobre 2026) son shader compile encore : on la reprend après
+      lazyTodo.delete(im.dataset.mq);
       if(j && im.isConnected){ im.removeAttribute("data-mq");
         marbleURLAsync(j.s, j.size).then(u=>{ if(u && im.getAttribute("src")===LAZY_PX) im.src = u }) } }   // (le motif mythique a peut-être déjà mis sa propre image)
+    if(!lazyQ.length && lazyWait.length && !lazyWaitT) lazyWaitT = setTimeout(()=>{ lazyWaitT = 0; lazyQ.push(...lazyWait); lazyWait = []; lazyRun() }, 50);
     lazyRun() };
   requestAnimationFrame(step); setTimeout(step, 120);
 }
@@ -1842,6 +2246,9 @@ const ghost = (type,family) => ({seed:hash(type+family), type, family, pal:EX_PA
 
 
 const ICON = {
+  cup:'<path d="M7 4h10l2.2 15H4.8z"/><path d="M6 9.5h12"/><path d="M3.5 20.5h17"/>',
+  top:'<path d="M12 2.5v4"/><path d="M4.5 9.5c0-1.7 3.4-3 7.5-3s7.5 1.3 7.5 3"/><path d="M4.5 9.5 12 21.5l7.5-12"/>',
+  claw:'<path d="M12 2.5v5"/><rect x="8.5" y="7.5" width="7" height="3.5" rx="1.2"/><path d="M9.5 11 6.5 15.5 9 20"/><path d="M14.5 11l3 4.5L15 20"/><path d="M12 11v6"/>',
   home:'<path d="M3 11l9-7 9 7v9a1 1 0 0 1-1 1h-5v-6h-6v6H4a1 1 0 0 1-1-1z"/>',
   bag:'<path d="M9 7.5h6"/><path d="M8.5 7.5 7 4h10l-1.5 3.5"/><path d="M8.5 7.5C5.5 10 4 13 4 16a4 4 0 0 0 4 4h8a4 4 0 0 0 4-4c0-3-1.5-6-4.5-8.5"/><circle cx="12" cy="14.5" r="2"/>',
   layers:'<path d="M12 3l9 5-9 5-9-5 9-5z"/><path d="M3 12.5l9 5 9-5"/><path d="M3 16.5l9 5 9-5"/>',
@@ -2293,7 +2700,7 @@ function marPrize(c){
   const L = marLot(c), [u,v] = marMid(c), [x,y] = marP(u,v), s = marS(v), col = L.c;
   const txt = (tx, ty, size, t, fill="#FFFFFF") => `<text x="${tx}" y="${ty}" font-size="${size}" fill="${fill}" class="mrl-lot">${t}</text>`;
   let lot;
-  if(L.roue) lot = `<ellipse cx="0" cy="-13" rx="36" ry="30" fill="#FFE14D" opacity=".22"/><image href="${marbleURL(exSpec("mammouth"),128)}" x="-27" y="-40" width="54" height="54"/>${txt(0, 30, 26, "Mammouth", "#FFE14D")}`;
+  if(L.roue) lot = `<ellipse cx="0" cy="-13" rx="36" ry="30" fill="#FFE14D" opacity=".22"/><image href="${marbleSrc(exSpec("mammouth"),128)}" x="-27" y="-40" width="54" height="54"/>${txt(0, 30, 26, "Mammouth", "#FFE14D")}`;
   else if(L.sac) lot = bagSVG(BAG_BY[L.sac]).replace("<svg", `<svg x="-22" y="-26" width="44" height="53"`) + txt(0, 50, 25, esc(L.lbl), col);
   else lot = `<g transform="translate(-30 18)"><path d="M-25 -11 L-11 0 L-25 11 Z M25 -11 L11 0 L25 11 Z" fill="${col}" stroke="#20232C" stroke-width="2.5" stroke-linejoin="round"/>
       <ellipse rx="15" ry="12" fill="${col}" stroke="#20232C" stroke-width="2.5"/><path d="M-6 -8 L2 8 M3 -9 L9 5" stroke="#fff" stroke-width="3" stroke-linecap="round" opacity=".8"/></g>${txt(20, 36, 50, L.j)}`;

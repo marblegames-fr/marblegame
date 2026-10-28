@@ -1,0 +1,49 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Tikalo · Aperçu des Lumineuses</title>
+<style>
+/* (28 octobre 2026) la shiny Lumineuse sur des coloris du plus clair au plus sombre, à côté de la même bille non shiny */
+body{margin:0;font:700 14px/1.4 "Nunito","Segoe UI",sans-serif;background:#F2E9D7;color:#24253D;padding:18px}
+h1{font:400 26px/1.1 "Lilita One","Trebuchet MS",sans-serif;margin:0 0 4px}
+.lead{color:#8E8898;margin:0 0 14px}
+.ctrl{display:flex;gap:8px;margin-bottom:14px;flex-wrap:wrap}
+.ctrl button{font:inherit;padding:8px 14px;border-radius:999px;border:1px solid #E6D9C1;background:#FAF5EB;cursor:pointer}
+.ctrl button[aria-pressed="true"]{background:#24253D;color:#fff}
+.board{border-radius:22px;padding:14px 10px;background:radial-gradient(ellipse at 50% 30%,#5A4630,#1E1710 80%);color:#fff}
+.board.clair{background:#FAF5EB;color:#24253D}
+.row{display:grid;grid-template-columns:120px repeat(4,minmax(0,1fr));align-items:center;gap:6px;padding:8px 0;border-bottom:1px solid rgba(128,128,128,.2)}
+.row:last-child{border:0}
+.row b small{display:block;font-weight:700;opacity:.6;font-size:12px}
+.pair{display:flex;gap:8px;justify-content:center;align-items:center}
+.pair img{width:min(78px,9vw);height:auto}
+.head{font-size:12px;opacity:.7;text-align:center}
+[data-lum]{animation:lumpulse 3.6s ease-in-out infinite both}
+@keyframes lumpulse{
+  0%,100%{filter:drop-shadow(0 0 2px color-mix(in srgb,var(--lc) 60%,#fff)) drop-shadow(0 0 10px var(--lc)) drop-shadow(0 0 24px var(--lc)) drop-shadow(0 0 48px color-mix(in srgb,var(--lc) 60%,transparent))}
+  50%{filter:drop-shadow(0 0 3px color-mix(in srgb,var(--lc) 40%,#fff)) drop-shadow(0 0 14px var(--lc)) drop-shadow(0 0 34px var(--lc)) drop-shadow(0 0 70px color-mix(in srgb,var(--lc) 80%,transparent))}}
+@media (max-width:640px){ .row{grid-template-columns:70px repeat(4,minmax(0,1fr))} .pair{flex-direction:column;gap:4px} }
+</style>
+</head>
+<body>
+<h1>Les Lumineuses, du plus clair au plus sombre</h1>
+<p class="lead">Dans chaque case : à gauche la bille normale, à droite la même en Lumineuse (avec son halo). La ligne « Opale » avec la Marinière, c'est la bille de Freakmax.</p>
+<div class="ctrl"><button data-f="sombre" aria-pressed="true">Fond sombre (ouverture)</button><button data-f="clair" aria-pressed="false">Fond clair (boîte à billes)</button></div>
+<div class="board" id="board"></div>
+<script src="tikalo-demo-rendu.js"></script>
+<script>
+// les coloris : les 4 plus clairs, Opale, deux moyens, puis les 4 plus sombres
+const PALS = [13, 24, 33, 17, 21, 1, 0, 18, 25, 6, 34];
+const FAMS = [69, 0, 4, 40];   // Marinière, Œil-de-chat, Opaline, Soleil
+const board = document.getElementById("board");
+board.innerHTML = `<div class="row"><span></span>${FAMS.map(f=>`<span class="head">${FAMILIES[f].name}</span>`).join("")}</div>` +
+  PALS.map(p=>`<div class="row"><b>${PALETTES[p][0]}${p===21?"<small>Freakmax</small>":""}</b>${FAMS.map(f=>{
+    const s = {seed: p===21 && f===69 ? 1841983748 : 1000+p*31+f*7, type:"calot", family:f, pal:p};
+    return `<span class="pair"><img src="${marbleURL({...s, shiny:0},180)}" alt=""><img src="${marbleURL({...s, shiny:3},180)}" data-lum style="--lc:${PALETTES[p][2]}" alt=""></span>`}).join("")}</div>`).join("");
+document.addEventListener("click", e=>{ const b = e.target.closest("[data-f]"); if(!b) return;
+  document.querySelectorAll("[data-f]").forEach(x=>x.setAttribute("aria-pressed", x===b)); board.classList.toggle("clair", b.dataset.f==="clair") });
+</script>
+</body>
+</html>

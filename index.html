@@ -6766,7 +6766,8 @@ vec4 pattern(vec3 q, vec3 qs, out vec3 e){
     float fl=step(0.66,h31(floor(g)))*smoothstep(0.3,0.06,length(fc))*smoothstep(0.97,0.8,length(q));
     e+=vec3(1.0,0.78,0.3)*fl*11.0; c.a+=fl*30.0; c.rgb=mix(c.rgb,vec3(1.0,0.8,0.35),fl);
   }
-  if(uShiny>2.5){ e+=c.rgb*min(c.a,25.0)*0.09+uC2*0.25; }
+  // (28 octobre 2026) la Lumineuse : le motif éclaire de sa couleur, moins quand cette couleur est déjà claire (sinon tout part au blanc)
+  if(uShiny>2.5){ float lk=clamp(1.3-dot(c.rgb,vec3(0.299,0.587,0.114))*1.2,0.2,1.0); e+=(c.rgb*min(c.a,25.0)*0.09+uC2*0.25)*lk; }
   return c;
 }
 
@@ -6941,9 +6942,12 @@ void main(){
   }
   if(uShiny>2.5){
     // lumineuse : elle s'éclaire de l'intérieur, dans la couleur de son coloris (sans taches), et respire doucement
+    // (28 octobre 2026) la lueur se règle sur la clarté de la bille : sur un coloris pâle (Opale…), ajouter de la lumière la rendait
+    // toute blanche et le motif disparaissait. Plus la bille est claire, moins on ajoute ; le grand halo CSS autour ne change pas
     float pulse=0.85+0.15*sin(uTime*1.6);
-    col+=uC2*0.18*pulse;                                                     // une lueur intérieure, de sa couleur
-    col+=mix(uC2,vec3(1.0),0.25)*0.5*pow(1.0-n.z,2.2)*pulse;                 // le bord rayonne (le grand halo est fait autour, en CSS)   // le bord rayonne (le grand halo est fait autour, en CSS : le motif reste lisible)
+    float lu=dot(col,vec3(0.299,0.587,0.114)), room=clamp(1.0-lu*1.25,0.0,1.0);
+    col+=uC2*0.18*pulse*room;                                                // une lueur intérieure, de sa couleur
+    col+=mix(uC2,vec3(1.0),0.25)*0.5*pow(1.0-n.z,2.2)*pulse*mix(0.4,1.0,room);   // le bord rayonne (le grand halo est fait autour, en CSS : le motif reste lisible)
   }
   col*=mix(0.8,1.0,smoothstep(0.0,0.35,n.z));
   // les blancs s'arrondissent au lieu d'être coupés net (sinon un anneau dur autour des reflets)
@@ -7826,7 +7830,7 @@ const CHALLENGES = [
   {id:"t-roi", icon:"trophy", cat:"jeux", title:"Roi de la cour", desc:"Fais 3 étoiles au Château et gagne une partie de Tic.", goal:2, prog:()=>["chateau","tic"].filter(k=>S.stats.best3[k]).length, rew:{j:80, title:"Roi de la cour"}, retire:1},
   {id:"t-gobelets", icon:"cup", cat:"jeux", title:"Œil de lynx", desc:"Joue 30 parties de Gobelets.", goal:30, prog:()=>srvN("gobelets", S.stats.gobelets), rew:{j:50, title:"Œil de lynx"}},
   {id:"t-tierce", icon:"flag", cat:"jeux", title:"Turfiste", desc:"Cours 30 fois au Tiercé.", goal:30, prog:()=>srvN("tierce", S.stats.tierce), rew:{j:50, title:"Turfiste"}},
-  {id:"t-toupie", icon:"top", cat:"jeux", title:"Toupie folle", desc:"Lance 30 fois la Toupie.", goal:30, prog:()=>srvN("toupie", S.stats.toupie), rew:{j:50}},
+  {id:"t-toupie", icon:"top", cat:"jeux", title:"Toupie folle", desc:"Lance 30 fois la Toupie.", goal:30, prog:()=>srvN("toupie", S.stats.toupie), rew:{j:50}, retire:1},
   {id:"t-pince", icon:"claw", cat:"jeux", title:"Main de fer", desc:"Attrape 30 boules à la Pince.", goal:30, prog:()=>srvN("pince", S.stats.pince), rew:{j:50, title:"Main de fer"}},
   // --- les habitudes
   {id:"streak7", cat:"habitudes", icon:"clock", title:"Fidèle au poste", desc:"Récupère le bonbec du jour 7 jours d'affilée.", goal:7, prog:()=>bestStreak(), rew:{j:50}},
@@ -8432,6 +8436,7 @@ function renderView(force){
   if(ui.view!=="grattage") gratFlush();   // un ticket pas fini de gratter : le lot arrive quand même
   if(ui.view==="course") ui.view = "jeux";   // la Course sur la plage a été retirée (2 octobre 2026) : un vieux lien ramène aux jeux
   if(["tir","chateau","tic"].includes(ui.view)) ui.view = "jeux";   // (22 octobre 2026) remplacés par les Gobelets, le Tiercé, la Toupie et la Pince
+  if(ui.view==="toupie" && touRetiree()) ui.view = "jeux";   // (28 octobre 2026) la Toupie est retirée à minuit
   chanceFlush(ui.view);   // une partie pas finie d'un autre jeu de chance : le lot arrive quand même
   const v = document.getElementById("view");
   const map = {cour:viewCour, succes:viewSucces, accueil:viewHome, sacs:viewBags, collection:viewCollection, jeux:viewGames, gobelets:viewGobelets, tierce:viewTierce, toupie:viewToupie, pince:viewPince, tir:viewGame, marelle:viewMarelle, pot:viewArena, chateau:viewArena, casse:viewCasse, roue:viewRoue, grattage:viewGrattage, distributeur:viewDistributeur, loterie:viewLoterie, tic:viewArena, pachinko:viewPachinko, course:viewArena, grandecourse:viewGrandeCourse, quetes:viewQuests, billepedia:viewPedia, passe:viewPass, profil:viewProfile, atelier:viewCraft, confiserie:viewConfiserie};
@@ -9375,7 +9380,7 @@ function viewPass(){
         <li>${ic("gift",20)}<span>Récupérer le bonbec du jour</span><b>+${PASS_XP.daily}</b></li>
         <li>${ic("quest",20)}<span>Récupérer une quête du jour</span><b>+${PASS_XP.quest}</b></li>
         <li>${ic("trophy",20)}<span>Bonus des ${QUESTS_N} quêtes</span><b>+${PASS_XP.bonus}</b></li>
-        <li>${ic("pad",20)}<span>Partie offerte des Gobelets, du Tiercé, de la Toupie ou de la Pince</span><b>+${PASS_XP.jeu}</b></li>
+        <li>${ic("pad",20)}<span>Partie offerte des Gobelets, du Tiercé${touRetiree() ? "" : ", de la Toupie"} ou de la Pince</span><b>+${PASS_XP.jeu}</b></li>
         <li>${ic("candy",20)}<span>Échanger une bille à la Confiserie</span><b>+${PASS_XP.recycle}</b></li>
         <li>${ic("flask",20)}<span>Fusionner à la Confiserie</span><b>+${PASS_XP.craft}</b></li>
       </ul>
@@ -10087,7 +10092,7 @@ function statsPanel(){
     ${group("Confiserie", "flask", [cell("Fusions réussies", n(S.crafts)), cell("Billes échangées", n(mx(ST.recycled, C.recyclees)), "contre des bonbecs")])}
     ${group("Atelier du verrier", "flask", [cell("Éclats trouvés", n(ST.eclats||0), "dans les sachets"), cell("Billes fabriquées", n(ST.atelier||0)), cell("Éclats en réserve", n(S.eclats||0))])}
     ${group("Mini-jeux", "pad", [jeu("Les Gobelets", mx(ST.gobelets, G.gobelets), "partie", "parties"), jeu("Le Tiercé", mx(ST.tierce, G.tierce), "course", "courses"),
-      jeu("La Toupie", mx(ST.toupie, G.toupie), "lancer", "lancers"), jeu("La Pince", mx(ST.pince, G.pince), "boule attrapée", "boules attrapées"),
+      jeu(touRetiree() ? "La Toupie (retirée)" : "La Toupie", mx(ST.toupie, G.toupie), "lancer", "lancers"), jeu("La Pince", mx(ST.pince, G.pince), "boule attrapée", "boules attrapées"),
       jeu("La Marelle", mx(ST.marelle, G.marelle), "bille lancée", "billes lancées"),
       jeu("La Roue", mx(ST.roue, G.roue), "tour de roue", "tours de roue"), jeu("Le Plinko", mx(ST.pachi, G.pachinko), "bille lâchée", "billes lâchées"),
       jeu("Le Ticket", mx(ST.grattage, G.grattage), "ticket gratté", "tickets grattés"), jeu("Le Distributeur", mx(ST.distributeur, G.distributeur), "tour de manivelle", "tours de manivelle"),
@@ -13431,7 +13436,7 @@ function viewGames(){
     chanceTile("distributeur", "Le Distributeur", "Tourne la manivelle : une boule tombe avec une bille dedans.", artDistributeur(), "un Mammouth"),
     chanceTile("gobelets", "Les Gobelets", "Trois lots sous trois gobelets : ils se mélangent à toute vitesse, choisis le bon !", artGobelets(), "un Mammouth"),
     chanceTile("tierce", "Le Tiercé", "Ta bille court contre 3 autres : 3 lots sur le podium, ta place te donne le tien.", artTierce(), "un Mammouth"),
-    chanceTile("toupie", "La Toupie", "Lance la toupie : la zone où elle tombe, c'est ton lot.", artToupie(), "un Mammouth"),
+    ...(touRetiree() ? [] : [chanceTile("toupie", "La Toupie", "Lance la toupie : la zone où elle tombe, c'est ton lot.", artToupie(), "un Mammouth")]),
     chanceTile("pince", "La Pince", "La machine choisit une boule, la pince l'attrape : le lot dedans est pour toi.", artPince(), "un Mammouth"),
   ];
   const multi = [];
@@ -13878,12 +13883,16 @@ const GAMES_BONUS = "premium";
 // tirés ce jour-là ne changent pas de place) ; à partir du 23 octobre, 9 jeux avec la Pince, tous au même rang (plus de jeu d'adresse en premier)
 const JEUX_8 = ["gobelets","marelle","tierce","toupie","roue","pachinko","grattage","distributeur"];
 const JEUX_TOUS = ["gobelets","marelle","tierce","toupie","pince","roue","pachinko","grattage","distributeur"];
+// (28 octobre 2026) la Toupie est retirée (trop proche de la Roue) : à partir du 29 octobre, 8 jeux sans elle. Ce jour-là elle reste
+// jouable jusqu'à minuit, parce qu'elle fait partie des 3 jeux du jour (même date dans supabase/toupie-retiree.sql)
+const TOUPIE_FIN = "2026-10-29", touRetiree = () => dayKey() >= TOUPIE_FIN;
+const JEUX_SANS_TOUPIE = JEUX_TOUS.filter(k=>k!=="toupie");
 const JEUX_NOM = {tir:"Le Tir", marelle:"La Marelle", pot:"Le Pot", chateau:"Le Château", tic:"La Tic", roue:"La Roue", pachinko:"Le Plinko", grattage:"Le Ticket", distributeur:"Le Distributeur",
   gobelets:"Les Gobelets", tierce:"Le Tiercé", toupie:"La Toupie", pince:"La Pince"};
 function jeuxDuJour(key=dayKey()){
   const [y,m,dd] = key.split("-").map(Number), d = Math.round((Date.UTC(y,m-1,dd)-Date.UTC(2026,0,1))/864e5);
   let x = (d*7919 + 12345) % 65521; const nx = () => (x = (x*x + 7) % 65521);
-  const L = Date.UTC(y,m-1,dd) < Date.UTC(2026,9,23) ? JEUX_8 : JEUX_TOUS, n = L===JEUX_8 ? 4 : L.length;
+  const L = Date.UTC(y,m-1,dd) < Date.UTC(2026,9,23) ? JEUX_8 : key < TOUPIE_FIN ? JEUX_TOUS : JEUX_SANS_TOUPIE, n = L===JEUX_8 ? 4 : L.length;
   nx(); const a = L[nx()%n], r1 = L.filter(k=>k!==a), b = r1[nx()%(L.length-1)], r2 = r1.filter(k=>k!==b), c = r2[nx()%(L.length-2)];
   return [a, b, c];
 }
@@ -13915,7 +13924,7 @@ function dayChip(key){ const g = dayGame(key);
   return `<span class="gt-state${g?"":" ok"}" id="day-chip">${!g ? `${ic("gift",14)} Partie du jour · jusqu'à ${DAY_GAMES[key].max} ${CUR.many}`
     : `${ic("check",14,3)} Partie du jour jouée${g.rew?` · +${g.rew} ${CUR.many}`:""} · la prochaine dans <b data-quest-timer>${untilMidnight()}</b>`}</span>` }
 // le jeu suivant qui reste à jouer aujourd'hui : d'abord les jeux du jour (ils rapportent le sachet bonus), puis les autres
-const nextGame = key => { const left = k => k!==key && !jeuFait(k); return jeuxDuJour().find(left) || JEUX_TOUS.find(left) || null };
+const nextGame = key => { const left = k => k!==key && !jeuFait(k); return jeuxDuJour().find(left) || (touRetiree() ? JEUX_SANS_TOUPIE : JEUX_TOUS).find(left) || null };
 // la fin de chaque partie (8 octobre 2026) : toujours la même organisation, quel que soit le jeu.
 // En gros, une seule suite logique (le jeu suivant, ou le retour aux jeux quand tout est joué) ; en dessous, où on en est
 // des jeux du jour ; en petit, rejouer pour le plaisir et la liste des jeux.
@@ -16818,7 +16827,7 @@ let bugKeep = null;   // un message qui n'est pas parti : il est reproposé au p
 // on:false cache le bouton (pendant qu'on prépare la mise à jour) ; on:true le remet, avec la pastille si l'id a changé
 // (16 octobre 2026) deux repères : dot = la pastille rouge du bouton, à changer à CHAQUE mise en ligne qui ajoute une ligne au patchnote
 // (avec txt : la date du jour) ; id = la fenêtre d'annonce à l'arrivée, seulement pour les très gros jours
-const NEWS = {on:true, id:"2026-10-27", dot:"2026-10-28-0040", url:"/nouveautes.html", txt:"Mise à jour du 28 oct."};
+const NEWS = {on:true, id:"2026-10-27", dot:"2026-10-28-1130", url:"/nouveautes.html", txt:"Mise à jour du 28 oct."};
 const newsUnseen = () => lsGet("billeo-news-vu")!==NEWS.dot;
 // (14 octobre 2026) à l'arrivée, une fenêtre annonce la mise à jour, une seule fois par mise à jour et par compte (S.newsPop, gardé
 // dans la partie : elle ne revient pas sur un autre appareil) ; on choisit d'aller voir les nouveautés, ou pas
@@ -18721,7 +18730,7 @@ const lieeJusqu = s => s.lie===true ? Infinity : +s.lie||0;
 const estLiee = s => lieeJusqu(s) > Date.now();
 const libres = () => Math.max(0, S.jetons - Math.min(S.depart||0, S.jetons));
 const departTxt = () => S.depart ? ` (tes ${fmt(Math.min(S.depart, S.jetons))} ${CUR.many} de départ servent seulement à jouer)` : "";
-const ECO_ERR = {pas_assez_eclats:"Il te manque des éclats de verre pour cette bille.", motif_interdit:"Ce motif ne se fabrique pas à l'atelier.", taille_inconnue:"Cette taille n'existe pas.", limite_jeu:`Tu as déjà acheté tes parties du jour : reviens demain !`, limite_plinko:`Tu as déjà lâché tes ${PACHI_MAX} billes du jour au Plinko : reviens demain !`, bonbecs_depart:`Les ${CUR.many} de ton cadeau de départ servent à ouvrir des sachets et à jouer, pas aux trocs ni au marché.`, evenement_fini:"L'événement est terminé : ce sachet n'est plus en vente.", pas_assez:`Il te manque des ${CUR.many}.`, pas_encore:"Ton sachet gratuit n'est pas encore prêt.", plus_de_sac:"Tu n'as plus de sachet offert de ce type.",
+const ECO_ERR = {jeu_retire:"Ce jeu a été retiré.", pas_assez_eclats:"Il te manque des éclats de verre pour cette bille.", motif_interdit:"Ce motif ne se fabrique pas à l'atelier.", taille_inconnue:"Cette taille n'existe pas.", limite_jeu:`Tu as déjà acheté tes parties du jour : reviens demain !`, limite_plinko:`Tu as déjà lâché tes ${PACHI_MAX} billes du jour au Plinko : reviens demain !`, bonbecs_depart:`Les ${CUR.many} de ton cadeau de départ servent à ouvrir des sachets et à jouer, pas aux trocs ni au marché.`, evenement_fini:"L'événement est terminé : ce sachet n'est plus en vente.", pas_assez:`Il te manque des ${CUR.many}.`, pas_encore:"Ton sachet gratuit n'est pas encore prêt.", plus_de_sac:"Tu n'as plus de sachet offert de ce type.",
   reseau:"Pas de connexion : réessaie dans un instant.", fusion_invalide:"Cette fusion n'est pas possible.", bille_indisponible:"Une de ces billes est en vente ou dans un troc en attente : elle ne peut pas fusionner.", reserve_aux_testeurs:"Ces outils sont réservés aux comptes de test."};
 // (16 octobre 2026) verrouiller une bille : ni vente, ni troc, ni Confiserie, ni fusion (le serveur le vérifie : supabase/verrou.sql)
 function lockToggle(x){

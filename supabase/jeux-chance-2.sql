@@ -74,6 +74,7 @@ create or replace function public.toupie(payer boolean default false)
 returns jsonb language plpgsql security definer set search_path = public as $$
 declare qui uuid := interne.moi(); j record; k int; b jsonb;
 begin
+  if interne.aujourdhui() >= date '2026-10-29' then raise exception 'jeu_retire'; end if;
   select * into j from interne.jeu_chance(qui, 'toupie', payer, 15);
   k := interne.roue_tirage();
   b := interne.roue_verser(qui, k, j.lie, 'toupie', payer);
@@ -135,7 +136,12 @@ begin
     r := array_remove(tous, a);  x := (x * x + 7) % 65521; b := r[1 + x % 7];
     r := array_remove(r, b);     x := (x * x + 7) % 65521; c := r[1 + x % 6];
   else
-    tous := array['gobelets','marelle','tierce','toupie','pince','roue','pachinko','grattage','distributeur']; n := 9;
+    if j < date '2026-10-29' then
+      tous := array['gobelets','marelle','tierce','toupie','pince','roue','pachinko','grattage','distributeur'];
+    else
+      tous := array['gobelets','marelle','tierce','pince','roue','pachinko','grattage','distributeur'];
+    end if;
+    n := array_length(tous, 1);
     x := (x * x + 7) % 65521; x := (x * x + 7) % 65521; a := tous[1 + x % n];
     r := array_remove(tous, a);  x := (x * x + 7) % 65521; b := r[1 + x % (n-1)];
     r := array_remove(r, b);     x := (x * x + 7) % 65521; c := r[1 + x % (n-2)];

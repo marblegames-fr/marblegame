@@ -7815,7 +7815,7 @@ const CHALLENGES = [
   {id:"shiny3", cat:"rare", icon:"star", title:"Double éclat", desc:"Possède 2 billes shiny trouvées dans les sachets ou les fusions.", goal:2, prog:()=>SC().filter(s=>s.shiny&&!isSeason(s)).length, rew:{j:300, title:"Chasseur d'éclats"}},
   {id:"secrets", cat:"rare", icon:"lock", title:"Détective de la cour", desc:"Trouve toutes les billes secrètes.", goal:Object.keys(SECRETS).length, prog:()=>S.specs.filter(s=>SECRETS[s.secret]).length, rew:{j:300, title:"Détective"}},
   // --- jeux de la cour
-  // (22 octobre 2026) le Tir, le Château et la Tic sont retirés : leurs succès (retire) ne se voient plus, sauf ceux déjà réussis
+  // (22 octobre 2026) le Tir, le Château et la Tic sont retirés ; (28 octobre 2026) la Toupie aussi : leurs succès (retire) ne se voient plus du tout
   {id:"t-golf", cat:"jeux", icon:"target", title:"Golfeur du dimanche", desc:"Réussis 20 trous au Tir.", goal:20, prog:()=>S.holes||0, rew:{j:40}, retire:1},
   {id:"t-parcours", cat:"jeux", icon:"target", title:"Le grand parcours", desc:`Réussis les ${LEVELS.length} trous différents du Tir (un nouveau chaque jour).`, goal:LEVELS.length, prog:()=>Object.keys(S.best).filter(k=>LEVELS[k]).length, rew:{j:200, bag:"premium", title:"Pro du Tir"}, retire:1},
   {id:"t-marelle", icon:"marelle", cat:"jeux", title:"Champion de la marelle", desc:"Lance 25 billes à la Marelle.", goal:25, prog:()=>S.stats.marelle||0, rew:{j:50, title:"Champion de la marelle"}},   // remplace « Champion du pot » (9 octobre 2026)
@@ -7849,7 +7849,7 @@ const wishFound = k => S.specs.some(x=>colorKey(x)===k);
 // catégorie de chaque succès (pour la page Succès)
 const CHAL_CATS = [["debut","Premiers pas","play"],["album","L'album","book"],["coloris","Les coloris","star"],["tailles","Les tailles","layers"],["decors","Les motifs","star"],["rare","Les grandes trouvailles","trophy"],["jeux","Jeux de la cour","target"],["habitudes","Les habitudes","clock"]];
 const CHAL_BY = Object.fromEntries(CHALLENGES.map(c=>[c.id,c]));
-const chalVis = () => CHALLENGES.filter(c=>!c.retire || S.chal.includes(c.id));   // les succès qu'on voit (un retiré seulement s'il a été réussi)
+const chalVis = () => CHALLENGES.filter(c=>!c.retire);   // les succès qu'on voit : (28 octobre 2026) plus du tout ceux des jeux retirés, même réussis (les titres gagnés restent)
 const chalProg = c => Math.min(c.goal, c.prog());
 const chalClaimable = () => CHALLENGES.filter(c=>!c.retire && !S.chal.includes(c.id) && chalProg(c)>=c.goal).length;
 const rewChips = r => [r.j?`<span class="rew">${COIN}${fmt(r.j)}</span>`:"", r.bag?`<span class="rew">${ic("bag",14)}${BAG_BY[r.bag].name.replace("Sachet ","")}</span>`:"", r.title?`<span class="rew">${ic("trophy",14)}Titre « ${r.title} »</span>`:""].join("");
@@ -8385,7 +8385,7 @@ function renderTop(){
 // Petit tableau de bord du joueur, sous son profil en haut à droite
 function renderProfPop(){
   const a = ownActive(), found = albumFound().size;
-  const nChal = CHALLENGES.filter(c=>S.chal.includes(c.id)).length, claim = chalClaimable()+(onbOk("journee") ? questsClaimable() : 0);   // (22 octobre 2026) pas les quêtes avant « Ta journée » (pendant le démarrage)
+  const nChal = chalVis().filter(c=>S.chal.includes(c.id)).length, claim = chalClaimable()+(onbOk("journee") ? questsClaimable() : 0);   // (22 octobre 2026) pas les quêtes avant « Ta journée » (pendant le démarrage)
   document.getElementById("prof-pop").innerHTML = `
     <div class="pp-head"><span class="av-ring big" style="--p:${Math.max(1.5,found/ALBUM_TOTAL*100)}"><span class="avatar">${avatarHTML(a,160,56)}</span></span>
       <div><b>${invite() ? "Invité" : esc(S.name)}</b><small>${esc(S.title)}</small>${a?`<small class="pp-ball">Joue avec : ${esc(specName(a))}</small>`:""}</div></div>
@@ -10072,7 +10072,7 @@ function statsPanel(){
   const nSecret = new Set(S.specs.filter(x=>SECRETS[x.secret]).map(x=>x.secret)).size, nShiny = S.specs.filter(x=>x.shiny).length;
   const nEvent = S.specs.filter(x=>eventOf(x)).length, nSeason = S.specs.filter(isSeason).length;
   const rare = S.specs.filter(x=>chanceOf(x)>0).sort((a,b)=>chanceOf(a)-chanceOf(b))[0];
-  const nChal = CHALLENGES.filter(c=>S.chal.includes(c.id)).length;
+  const nChal = chalVis().filter(c=>S.chal.includes(c.id)).length;
   // les sachets (compteurs de l'appareil : au premier sachet, ils partent de ce qu'il y a dans la boîte)
   const pulled = ST.pulled ?? S.specs.length, shinyF = ST.shinyFound ?? nShiny;
   // la série du bonbec du jour : en cours seulement si on l'a récupéré aujourd'hui ou hier

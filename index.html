@@ -16899,7 +16899,7 @@ let bugKeep = null;   // un message qui n'est pas parti : il est reproposé au p
 // on:false cache le bouton (pendant qu'on prépare la mise à jour) ; on:true le remet, avec la pastille si l'id a changé
 // (16 octobre 2026) deux repères : dot = la pastille rouge du bouton, à changer à CHAQUE mise en ligne qui ajoute une ligne au patchnote
 // (avec txt : la date du jour) ; id = la fenêtre d'annonce à l'arrivée, seulement pour les très gros jours
-const NEWS = {on:true, id:"2026-10-27", dot:"2026-10-28-1300", url:"/nouveautes.html", txt:"Mise à jour du 28 oct."};
+const NEWS = {on:true, id:"2026-10-27", dot:"2026-10-28-1500", url:"/nouveautes.html", txt:"Mise à jour du 28 oct."};
 const newsUnseen = () => lsGet("billeo-news-vu")!==NEWS.dot;
 // (14 octobre 2026) à l'arrivée, une fenêtre annonce la mise à jour, une seule fois par mise à jour et par compte (S.newsPop, gardé
 // dans la partie : elle ne revient pas sur un autre appareil) ; on choisit d'aller voir les nouveautés, ou pas
@@ -17834,10 +17834,10 @@ const pickCard = (x, side, on, hid, nw, cnt) => `<button class="pick${nw?` miss 
 // la recherche (par nom, shiny, rareté…) cache les billes sans tout redessiner ; elle est gardée dans PQ pour les redessins
 const PQ = {};
 const pqWords = side => fold(PQ[side]||"").trim().split(/\s+/).filter(Boolean);
+// (28 octobre 2026) 30 billes par page : avec des milliers de billes, tout dessiner d'un coup bloquait la page (« Vendre une bille », troc)
+const PK_PAGE = 30, PL = {};
 function pickList(list, side, sel, filt, missFn){
   if(!list) return courWait();
-  const shown = list.filter(x=>!filt || x.type===filt), q = pqWords(side);
-  const hid = x => !q.every(w=>pickTxt(x).includes(w)), none = shown.every(hid);
   const miss = missFn || (side==="want" ? missOf() : () => ""), nd = list.filter(x=>miss(x)==="dec").length, nc = list.filter(x=>miss(x)==="col").length;
   const te = missFn ? "lui" : "te";   // (16 octobre 2026) côté « Tu donnes » : ce qui manque au copain
   const leg = nd||nc ? `<p class="miss-leg">${nd?`<span class="dec">${SPARK} ${nd} motif${nd>1?"s":""} qui ${te} manque${nd>1?"nt":""}</span>`:""}${nc?`<span class="col">${SPARK} ${nc} coloris qui ${te} manque${nc>1?"nt":""}</span>`:""}</p>` : "";
@@ -17847,7 +17847,16 @@ function pickList(list, side, sel, filt, missFn){
   const own = ownInfo(), cnt = x => { const n = own(x).n;
     return side==="want" ? (n ? `<span class="pick-n have" title="Tu l'as déjà">${ic("check",10,3)}${n>1?`×${n}`:""}</span>` : "")
       : n>1 ? `<span class="pick-n" title="Tu en as ${n}">×${n}</span>` : "" };
-  return list.length ? search + chips + leg + `<div class="pick-grid" data-side="${side}">${shown.map(x=>pickCard(x, side, sel.includes(x.id), hid(x), miss(x), cnt(x))).join("")}</div><p class="meta pick-none" data-side="${side}"${none?"":" hidden"}>Aucune bille ne correspond.</p>` : `<p class="empty">Aucune bille à troquer.</p>`;
+  PL[side] = {list, sel, filt, miss, cnt};
+  return list.length ? search + chips + leg + `<div class="pick-res" data-side="${side}">${pickRes(side)}</div>` : `<p class="empty">Aucune bille à troquer.</p>`;
+}
+// la page de billes affichée (recherche et taille appliquées à toute la liste), et ses flèches
+function pickRes(side){
+  const {list, sel, filt, miss, cnt} = PL[side], q = pqWords(side);
+  const shown = list.filter(x=>(!filt || x.type===filt) && q.every(w=>pickTxt(x).includes(w)));
+  if(!shown.length) return `<p class="meta pick-none">Aucune bille ne correspond.</p>`;
+  const P = courPages(shown.length, PK_PAGE, "pk"+side);
+  return `<div class="pick-grid" data-side="${side}">${shown.slice(P.from, P.from+PK_PAGE).map(x=>pickCard(x, side, sel.includes(x.id), false, miss(x), cnt(x))).join("")}</div>${courPager(P, "pk"+side, "Billes")}`;
 }
 function trocCompose(){
   const C = cour.compose;
@@ -17876,13 +17885,12 @@ function trocCompose(){
 }
 document.addEventListener("input", e=>{
   if(!e.target.classList?.contains("troc-q")) return;
-  const side = e.target.dataset.side; PQ[side] = e.target.value;
-  const q = pqWords(side); let n = 0;
-  document.querySelectorAll(`.pick-grid[data-side="${side}"] .pick`).forEach(c=>{ const ok = q.every(w=>c.dataset.q.includes(w)); c.hidden = !ok; n += ok });
-  document.querySelector(`.pick-none[data-side="${side}"]`)?.toggleAttribute("hidden", n>0);
+  const side = e.target.dataset.side; PQ[side] = e.target.value; ui["pk"+side] = 0;
+  clearTimeout(pickQT); pickQT = setTimeout(()=>{ const el = document.querySelector(`.pick-res[data-side="${side}"]`); if(el && PL[side]) el.innerHTML = pickRes(side) }, 150);
 });
+let pickQT = 0;
 function trocStart(id, pre){
-  PQ.give = PQ.want = "";
+  PQ.give = PQ.want = ""; ui.pkgive = ui.pkwant = 0;
   const a = (cour.moi?.amis||[]).find(x=>x.id===id); if(!a) return;
   cour.compose = {id, pseudo:a.pseudo, mine:null, theirs:null, give:[...(pre?.give||[])], want:[...(pre?.want||[])], mot:"", remplace:pre?.remplace||null, gb:pre?.gb||0, wb:pre?.wb||0};
   ui.courTab = "troc"; closeModal(); if(ui.view!=="cour") go("cour"); else renderView();
@@ -18071,7 +18079,7 @@ function bidAsk(id){
 }
 function sellStart(pick){
   if(!document.getElementById("ov").hidden) closeOv(true);   // depuis l'ouverture d'un sachet : on la referme, sinon elle cache le marché
-  cour.sell = {list:null, pick:pick||null, prix:"", mode:"fixe"}; PQ.sell = "";
+  cour.sell = {list:null, pick:pick||null, prix:"", mode:"fixe"}; PQ.sell = ""; ui.pksell = 0;
   ui.courTab = "marche"; closeModal(); if(ui.view!=="cour") go("cour"); else renderView();
   const X = cour.sell;
   Cloud.cour.echangeables(sync.uid).then(l=>{ if(cour.sell===X){ X.list = l.filter(x=>x.id!==S.active); renderView() } }, courFail);
@@ -18236,7 +18244,7 @@ document.addEventListener("click", e=>{
     }
     case "troc-new": trocStart(t.dataset.id); break;
     case "troc-want": trocStart(t.dataset.id, {want:[t.dataset.bille]}); break;   // (20 octobre 2026) depuis une carte des trouvailles rares
-    case "cp-page": ui[t.dataset.k] = (ui[t.dataset.k]||0) + +t.dataset.d; renderView(); break;
+    case "cp-page": ui[t.dataset.k] = (ui[t.dataset.k]||0) + +t.dataset.d; if(cour.compose) cour.compose.mot = document.getElementById("troc-mot")?.value ?? cour.compose.mot; renderView(); break;
     case "troc-contre": {   // contre-proposition : on repart du troc reçu, à l'envers, et on le modifie
       const T0 = (cour.trocs?.recus||[]).find(x=>x.id===+t.dataset.id); if(!T0) break;
       trocStart(T0.de, {give:T0.demande.map(x=>x.id), want:T0.donne.map(x=>x.id), gb:T0.demande_bonbecs, wb:T0.donne_bonbecs, remplace:T0.id});
@@ -18244,12 +18252,12 @@ document.addEventListener("click", e=>{
     }
     case "troc-close": cour.compose = null; renderView(); break;
     case "troc-filt": { const X = t.dataset.side==="sell" ? cour.sell : cour.compose; if(!X) break;
-      X[{give:"fg", want:"fw", sell:"f"}[t.dataset.side]] = t.dataset.t; renderView(); break }
-    case "sell-dbl": { const X = cour.sell; if(!X) break; X.dbl = t.checked; renderView(); break }
-    case "troc-dbl": { const C = cour.compose; if(!C) break; C.dbl = t.checked; C.mot = document.getElementById("troc-mot")?.value || C.mot; renderView(); break }
-    case "troc-manque": { const C = cour.compose; if(!C) break; C.manque = t.checked; C.mot = document.getElementById("troc-mot")?.value || C.mot; renderView(); break }
-    case "troc-lmanque": { const C = cour.compose; if(!C) break; C.lmanque = t.checked; C.mot = document.getElementById("troc-mot")?.value || C.mot; renderView(); break }
-    case "troc-sdbl": { const C = cour.compose; if(!C) break; C.sdbl = t.checked; C.mot = document.getElementById("troc-mot")?.value || C.mot; renderView(); break }
+      X[{give:"fg", want:"fw", sell:"f"}[t.dataset.side]] = t.dataset.t; ui["pk"+t.dataset.side] = 0; renderView(); break }
+    case "sell-dbl": { const X = cour.sell; if(!X) break; X.dbl = t.checked; ui.pksell = 0; renderView(); break }
+    case "troc-dbl": { const C = cour.compose; if(!C) break; C.dbl = t.checked; ui.pkgive = 0; C.mot = document.getElementById("troc-mot")?.value || C.mot; renderView(); break }
+    case "troc-manque": { const C = cour.compose; if(!C) break; C.manque = t.checked; ui.pkwant = 0; C.mot = document.getElementById("troc-mot")?.value || C.mot; renderView(); break }
+    case "troc-lmanque": { const C = cour.compose; if(!C) break; C.lmanque = t.checked; ui.pkgive = 0; C.mot = document.getElementById("troc-mot")?.value || C.mot; renderView(); break }
+    case "troc-sdbl": { const C = cour.compose; if(!C) break; C.sdbl = t.checked; ui.pkwant = 0; C.mot = document.getElementById("troc-mot")?.value || C.mot; renderView(); break }
     case "troc-pick": {
       if(t.dataset.side==="sell"){ cour.sell.pick = t.dataset.id; renderView(); document.getElementById("sell-prix")?.focus(); break }
       const C = cour.compose, list = t.dataset.side==="give" ? C.give : C.want, i = list.indexOf(t.dataset.id);

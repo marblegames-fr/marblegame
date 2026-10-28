@@ -3457,9 +3457,9 @@ button.cp-who:hover b{text-decoration:underline}
 .pick .ball img{filter:drop-shadow(0 4px 3px rgba(0,0,0,.3))}
 .pick.miss{--mc:#F2B33D}
 .pick.miss.col{--mc:#3FB6E8}
-.pick.miss .ball{position:relative}
-.pick.miss .ball::before{content:"";position:absolute;inset:-8px -14px;border-radius:50%;background:radial-gradient(closest-side,color-mix(in srgb,var(--gc,var(--mc)) 80%,transparent) 30%,transparent);pointer-events:none}
-.pick.miss .ball img{position:relative}
+.pick.miss .ball,.pick.rar .ball{position:relative}
+.pick.rar .ball::before,.pick.miss .ball::before{content:"";position:absolute;inset:-8px -14px;border-radius:50%;background:radial-gradient(closest-side,color-mix(in srgb,var(--gc,var(--mc)) 80%,transparent) 30%,transparent);pointer-events:none}
+.pick.miss .ball img,.pick.rar .ball img{position:relative}
 .miss-sp{position:absolute;top:6px;left:6px;width:13px;height:13px;color:var(--mc);filter:drop-shadow(0 0 3px var(--mc))}
 .miss-sp svg{display:block;width:100%;height:100%}
 /* (7 octobre 2026) combien d'exemplaires on a déjà : ×2 = un double à vendre ou troquer */
@@ -17831,7 +17831,8 @@ function missOf(){
 // Événement : rose, saison : turquoise (couleurs à part : le Pirate était rouge comme le mythique, les Super-héros bleus comme le rare)
 const pickGlow = x => { const F = FAMILIES[x.family], r = decorRar(x);
   return F?.event ? "#FF5FD2" : F?.season!=null || isSeason(x) ? "#2EE6C8" : r>=1 ? MOTIF_COL[r] : r===0 ? "#FFFFFF" : mvBg(x).c };
-const pickCard = (x, side, on, hid, nw, cnt) => `<button class="pick${nw?` miss ${nw}`:""}"${nw?` style="--gc:${pickGlow(x)}"`:""} data-action="troc-pick" data-q="${esc(pickTxt(x))}"${hid?" hidden":""} data-side="${side}" data-id="${x.id}" aria-pressed="${on}">${cnt||""}<span class="ball">${mImg(x,120,Math.round(28*scaleOf(x.type)+18),"")}</span>${nw?`<span class="miss-sp" title="${side==="give" ? (nw==="dec"?"Un motif que ton copain n'a pas dans cette taille":"Un coloris que ton copain n'a pas") : nw==="dec"?"Un motif que tu n'as pas dans cette taille":"Un coloris que tu n'as pas"}">${SPARK}</span>`:""}${esc(specName(x))}<small class="meta">${TYPES[x.type].label}</small></button>`;
+// (28 octobre 2026) « Vendre une bille » : chaque bille a la lueur de la rareté de son motif (au troc, seulement celles qui manquent)
+const pickCard = (x, side, on, hid, nw, cnt) => `<button class="pick${nw?` miss ${nw}`:side==="sell"?" rar":""}"${nw||side==="sell"?` style="--gc:${pickGlow(x)}"`:""} data-action="troc-pick" data-q="${esc(pickTxt(x))}"${hid?" hidden":""} data-side="${side}" data-id="${x.id}" aria-pressed="${on}">${cnt||""}<span class="ball">${mImg(x,120,Math.round(28*scaleOf(x.type)+18),"")}</span>${nw?`<span class="miss-sp" title="${side==="give" ? (nw==="dec"?"Un motif que ton copain n'a pas dans cette taille":"Un coloris que ton copain n'a pas") : nw==="dec"?"Un motif que tu n'as pas dans cette taille":"Un coloris que tu n'as pas"}">${SPARK}</span>`:""}${esc(specName(x))}<small class="meta">${TYPES[x.type].label}</small></button>`;
 // la recherche (par nom, shiny, rareté…) cache les billes sans tout redessiner ; elle est gardée dans PQ pour les redessins
 const PQ = {};
 const pqWords = side => fold(PQ[side]||"").trim().split(/\s+/).filter(Boolean);

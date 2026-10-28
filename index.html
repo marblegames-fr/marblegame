@@ -17469,11 +17469,11 @@ function clSemaine(){
         <p class="meta">Les lots arrivent tout seuls dans tes sachets offerts, lundi après minuit.</p></section>
       <details class="panel cl-bareme"><summary class="panel-head"><h3>${ic("quest",18)} Voir le barème</h3>${ic("chev",16,2.6)}</summary>
         <ul class="cl-rules">
-          <li><b>Chaque bille tirée cette semaine</b><span>${TK.map(t=>`${TYPES[t].label} ${String(SCORE.taille[TIDX[t]]/10).replace(".",",")}`).join(" · ")}</span><small>× la rareté du motif, même pour un double.</small></li>
+          <li><b>Chaque bille tirée cette semaine</b><span>${TK.map(t=>`${TYPES[t].label} ${String(SCORE.taille[TIDX[t]]/10).replace(".",",")}`).join(" · ")}</span><small>× la rareté du motif : ${DECOR_RAR.slice(0,5).map((r,i)=>`${r.name.toLowerCase()} ×${String(SCORE.decor[i]).replace(".",",")}`).join(", ")}. Même pour un double.</small></li>
           <li><b>Une case vide remplie</b><span>la bille compte double</span><small>Un nouveau motif dans une taille que tu n'avais pas.</small></li>
           <li><b>Une shiny</b><span>${SHINIES.slice(1).map((x,i)=>`${x.name} +${SCORE.shiny[i]/10}`).join(" · ")}</span></li>
           <li><b>Une bille troquée ou achetée au marché</b><span>comme une bille tirée</span><small>Seulement si c'est ton premier exemplaire de cette bille (pas un double).</small></li>
-        </ul><p class="meta">Ne comptent pas : les doubles reçus par troc ou au marché, les billes des fusions et de l'atelier, d'événement et de saison. Tout repart à zéro chaque lundi à minuit.</p></details>
+        </ul><p class="meta">Ne comptent pas : le motif mythique, les doubles reçus par troc ou au marché, les billes des fusions et de l'atelier, d'événement et de saison. Tout repart à zéro chaque lundi à minuit.</p></details>
     </div>
   </div>`;
 }

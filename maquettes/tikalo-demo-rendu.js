@@ -1807,7 +1807,12 @@ vec4 pattern(vec3 q, vec3 qs, out vec3 e){
     e+=vec3(1.0,0.78,0.3)*fl*11.0; c.a+=fl*30.0; c.rgb=mix(c.rgb,vec3(1.0,0.8,0.35),fl);
   }
   // (28 octobre 2026) la Lumineuse : le motif éclaire de sa couleur, moins quand cette couleur est déjà claire (sinon tout part au blanc)
-  if(uShiny>2.5){ float lk=clamp(1.3-dot(c.rgb,vec3(0.299,0.587,0.114))*1.2,0.2,1.0); e+=(c.rgb*min(c.a,25.0)*0.09+uC2*0.25)*lk; }
+  // (28 octobre 2026) et ses 3 couleurs restent bien distinctes : chacune devient plus franche (surtout les pâles, presque grises de loin)
+  if(uShiny>2.5){ float lu0=dot(c.rgb,vec3(0.299,0.587,0.114)), lk=clamp(1.3-lu0*1.2,0.2,1.0);
+    float sat=mix(1.35,2.4,smoothstep(0.45,0.85,lu0));
+    c.rgb=clamp(mix(vec3(lu0),c.rgb,sat),0.0,1.0);
+    vec3 ce=clamp(mix(vec3(lu0),c.rgb,1.6),0.0,1.0);   // la lumière qu'il donne est encore plus colorée : elle teinte au lieu de blanchir
+    e+=(ce*min(c.a,25.0)*0.09+uC2*0.12)*lk; }
   return c;
 }
 
@@ -1986,7 +1991,8 @@ void main(){
     // toute blanche et le motif disparaissait. Plus la bille est claire, moins on ajoute ; le grand halo CSS autour ne change pas
     float pulse=0.85+0.15*sin(uTime*1.6);
     float lu=dot(col,vec3(0.299,0.587,0.114)), room=clamp(1.0-lu*1.25,0.0,1.0);
-    col+=uC2*0.18*pulse*room;                                                // une lueur intérieure, de sa couleur
+    // la lueur intérieure prend la couleur de chaque morceau du motif (avant : la 2e couleur partout, qui noyait les deux autres)
+    col+=col*0.3*pulse*room;
     col+=mix(uC2,vec3(1.0),0.25)*0.5*pow(1.0-n.z,2.2)*pulse*mix(0.4,1.0,room);   // le bord rayonne (le grand halo est fait autour, en CSS : le motif reste lisible)
   }
   col*=mix(0.8,1.0,smoothstep(0.0,0.35,n.z));

@@ -13,7 +13,12 @@ try{ document.documentElement.dataset.theme = localStorage.getItem("billeo-theme
 window.RECOVERY_LINK = /(^|[#&?])type=recovery(&|$)/.test(location.hash + "&" + location.search.slice(1));
 // (19 octobre 2026) compteur de fréquentation : appareil jamais venu (aucune clé du jeu ni session) et provenance, notés avant que le jeu n'écrive quoi que ce soit
 try{ let n=true; for(let i=0;i<localStorage.length;i++){ const k=localStorage.key(i)||""; if(k.startsWith("billeo-")||k.startsWith("sb-")) n=false } window.TK_NEUF=n }catch(e){ window.TK_NEUF=false }
-window.TK_SRC = /(^|[?&])(fbclid|utm_source=(ig|insta|fb|facebook))/i.test(location.search) || /instagram|facebook/i.test(document.referrer) || /Instagram|FBAN|FBAV/.test(navigator.userAgent) ? "insta" : "autre";</script>
+// (28 octobre 2026) + « tiktok » (appli TikTok, lien de la bio ?utm_source=tiktok, ttclid) et « robot » (robots d'aperçu de lien, navigateurs pilotés)
+window.TK_SRC = (()=>{ const q = location.search, r = document.referrer, u = navigator.userAgent;
+  if(navigator.webdriver || /(?<!cu)bot\b|bot\/|crawl|spider|slurp|preview|headless|lighthouse|externalhit|facebookcatalog|bytespider|tiktokspider|petalbot|phantomjs|puppeteer|playwright/i.test(u)) return "robot";
+  if(/(^|[?&])(ttclid|utm_source=(tiktok|tt)\b)/i.test(q) || /tiktok\.com/i.test(r) || /musical_ly|BytedanceWebview|TikTok|trill_/i.test(u)) return "tiktok";
+  if(/(^|[?&])(fbclid|utm_source=(ig|insta|fb|facebook))/i.test(q) || /instagram|facebook/i.test(r) || /Instagram|FBAN|FBAV/.test(u)) return "insta";
+  return "autre" })();</script>
 <!-- mesure d'audience Vercel Web Analytics : sans cookie, anonyme (voir legal.html) -->
 <script>window.va = window.va || function(){ (window.vaq = window.vaq || []).push(arguments) };
 window.TK_PAS_COMPTER = (()=>{ try{ return localStorage.getItem("billeo-pas-compter")==="1" }catch(e){ return false } })();   // refusé dans legal.html
@@ -16973,7 +16978,7 @@ function bugAdminHTML(){
   </section>`;
 }
 // (19 octobre 2026) le compteur de fréquentation anonyme, pour l'admin, dans Paramètres
-const FREQ_ETAPES = [["visite","Visites"],["arrivee","Nouveaux appareils"],["invite","Jouer en invité"],["inscription","Inscription commencée"],["envoye","Formulaire envoyé"],["compte","Compte activé"],["depart","Bille de départ"],["sachet","1er sachet"]];
+const FREQ_ETAPES = [["visite","Visites"],["arrivee","Nouveaux appareils"],["geste","A touché la page"],["invite","Jouer en invité"],["inscription","Inscription commencée"],["envoye","Formulaire envoyé"],["compte","Compte activé"],["depart","Bille de départ"],["sachet","1er sachet"]];
 const freqAdm = {list:null, busy:false, err:""};
 async function freqLoad(){
   freqAdm.busy = true; freqAdm.err = ""; if(ui.view==="parametres") renderView();
@@ -16983,11 +16988,12 @@ async function freqLoad(){
 function freqAdminHTML(){
   if(!freqAdm.list && !freqAdm.busy && !freqAdm.err) setTimeout(freqLoad);
   const L = freqAdm.list || [], jours = [...new Set(L.map(r=>r.jour))];
-  const cell = (rows, e) => { const n = rows.filter(r=>r.etape===e).reduce((a,r)=>a+r.n,0), i = rows.filter(r=>r.etape===e && r.source==="insta").reduce((a,r)=>a+r.n,0);
-    return `<td>${n ? fmt(n) : "·"}${i ? `<small>${fmt(i)} insta</small>` : ""}</td>` };
+  // le chiffre principal ne compte pas les robots ; en petit : la part insta, tiktok, et les robots écartés
+  const cell = (rows, e) => { const of = s => rows.filter(r=>r.etape===e && (s ? r.source===s : r.source!=="robot")).reduce((a,r)=>a+r.n,0), n = of(), sub = ["insta","tiktok","robot"].map(s=>[s, of(s)]).filter(([,k])=>k);
+    return `<td>${n ? fmt(n) : "·"}${sub.map(([s,k])=>`<small>${fmt(k)} ${s==="robot" ? "robot"+(k>1?"s":"") : s}</small>`).join("")}</td>` };
   const day = d => new Date(d+"T12:00:00").toLocaleDateString("fr-FR", {weekday:"short", day:"numeric", month:"short"});
   return `<section class="panel"><div class="panel-head"><h3>Fréquentation (14 jours)</h3><button class="btn btn-ghost" data-action="freq-load">Actualiser</button></div>
-    <p class="meta">Compteur anonyme. Les étapes ne comptent que les appareils venus pour la première fois, une fois chacune. « insta » = arrivé par Instagram ou Facebook. Pour les pages vues et les pays : tableau de bord Vercel, onglet Analytics.</p>
+    <p class="meta">Compteur anonyme. Les étapes ne comptent que les appareils venus pour la première fois, une fois chacune. « insta » / « tiktok » = arrivé par Instagram (ou Facebook) / TikTok. Les robots sont écartés du chiffre principal ; « A touché la page » ne compte que les vrais humains. Pour les pages vues et les pays : tableau de bord Vercel, onglet Analytics.</p>
     ${freqAdm.err ? `<p>${freqAdm.err}</p>` : freqAdm.busy && !freqAdm.list ? `<p class="meta">Chargement…</p>` : !L.length ? `<p class="meta">Rien de compté pour l'instant.</p>` :
       `<div class="freq-t"><table><tr><th>Jour</th>${FREQ_ETAPES.map(([,t])=>`<th>${t}</th>`).join("")}</tr>
         ${jours.map(j=>`<tr><td>${day(j)}</td>${FREQ_ETAPES.map(([e])=>cell(L.filter(r=>r.jour===j), e)).join("")}</tr>`).join("")}
@@ -18928,6 +18934,9 @@ const Parcours = (()=>{
   const etape = e => { if(!P.neuf || P.faits[e]) return; P.faits[e] = 1; keep(); send(e) };
   return {etape, start(){
     etape("arrivee"); keep();
+    // (28 octobre 2026) « geste » : un vrai doigt ou une vraie souris a touché la page (les robots ne touchent jamais rien)
+    if(P.neuf && !P.faits.geste){ const g = ev => { if(ev.isTrusted===false) return; ["pointerdown","keydown","wheel","touchstart"].forEach(t=>removeEventListener(t, g, true)); etape("geste") };
+      ["pointerdown","keydown","wheel","touchstart"].forEach(t=>addEventListener(t, g, {capture:true, passive:true})) }
     const j = new Date().toLocaleDateString("fr-CA", {timeZone:"Europe/Paris"});
     if(P.jour!==j){ P.jour = j; keep(); send("visite") }
   }};

@@ -6,6 +6,7 @@
 --  formulaire envoyé, premier passage du compte, bille de départ, premier sachet (une seule fois par appareil),
 --  plus une visite par appareil et par jour. Rien ne permet de savoir QUI : juste un total par jour, par étape
 --  et par provenance (« insta » = arrivé par Instagram/Facebook, « autre » sinon).
+--  (28 octobre 2026) provenances « tiktok » et « robot », étape « geste » (premier vrai toucher : un humain).
 --  Seuls les comptes de public.testeurs (l'admin) lisent les totaux, depuis Paramètres.
 -- =====================================================================
 
@@ -23,8 +24,8 @@ create or replace function public.compter(etape text, source text)
 returns void language plpgsql security definer set search_path = public as $$
 declare e text := compter.etape; s text := compter.source;   -- mêmes noms que les colonnes : on les recopie
 begin
-  if e not in ('arrivee','visite','invite','inscription','envoye','compte','depart','sachet') then return; end if;
-  if s is null or s not in ('insta','autre') then s := 'autre'; end if;
+  if e not in ('arrivee','visite','geste','invite','inscription','envoye','compte','depart','sachet') then return; end if;
+  if s is null or s not in ('insta','tiktok','robot','autre') then s := 'autre'; end if;
   insert into frequentation as f (jour, etape, source, n) values ((now() at time zone 'Europe/Paris')::date, e, s, 1)
     on conflict on constraint frequentation_pkey do update set n = f.n + 1;
 end $$;

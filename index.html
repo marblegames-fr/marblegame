@@ -4425,7 +4425,7 @@ body.gc-open{overflow:hidden}
 .cour-v2 .cl-row.me{background:rgba(255,211,77,.14);border-radius:10px}
 .cour-v2 .cl-list .cl-gap{color:rgba(246,242,232,.66)}
 /* ---------- Historique : un carnet, un encadré par événement ---------- */
-.cour-v2.t-journal .cour-grid > .panel{position:relative;padding-left:54px;color-scheme:light;
+.cour-v2.t-journal .cour-grid > .panel,.cour-v2 .tr-carnet{position:relative;padding-left:54px;color-scheme:light;
   --panel:#FBF6EA;--panel-2:#F4ECDA;--line:#E6D9C1;--line-2:#D9C7A5;--ink:#24253D;--ink-2:#45435A;--muted:#6E6878;color:var(--ink);border:3px solid #2B2233;border-radius:6px 18px 6px 6px;
   background:linear-gradient(90deg,transparent 40px,rgba(220,85,85,.45) 40px 42px,transparent 42px 45px,rgba(220,85,85,.45) 45px 46px,transparent 46px),
     repeating-linear-gradient(180deg,transparent 0 31px,rgba(60,110,180,.22) 31px 32px),repeating-linear-gradient(180deg,transparent 0 7px,rgba(60,110,180,.07) 7px 8px),#F9F3E3;
@@ -4433,7 +4433,16 @@ body.gc-open{overflow:hidden}
 .cour-v2.t-journal .cour-grid > .panel .jr{background:color-mix(in srgb,var(--ec) 10%,#fff)}
 .cour-v2.t-journal .cour-grid > .panel .chip{background:#fff;color:#45435A;border-color:#D9C7A5}
 .cour-v2.t-journal .cour-grid > .panel .chip[aria-pressed="true"]{background:#2B2233;color:#fff;border-color:#2B2233}
-.cour-v2.t-journal .cp-pager .btn-ghost{background:#fff;color:#24253D;border-color:#D9C7A5}
+.cour-v2.t-journal .cp-pager .btn-ghost,.cour-v2 .tr-carnet .cp-pager .btn-ghost,.cour-v2 .tr-carnet .troc-act .btn-ghost{background:#fff;color:#24253D;border-color:#D9C7A5}
+/* (28 octobre 2026) les trocs sur le même carnet que l'historique : chaque offre est un encadré blanc (plus de petit mot Seyès ni de scotch) */
+.cour-v2 .tr-carnet .troc{background:#fff;border:1.5px solid #E2D4B8;border-left:5px solid #A9A2B3;border-radius:12px;padding:14px 14px 12px;box-shadow:0 2px 0 rgba(43,34,51,.06)}
+.cour-v2 .tr-carnet .troc::before{display:none}
+.cour-v2 .tr-carnet .troc + .troc{margin-top:12px}
+.cour-v2 .tr-carnet .troc.recu{border-left-color:#F2AE12;box-shadow:0 2px 0 rgba(43,34,51,.06)}
+.cour-v2 .tr-carnet .troc.envoye{border-left-color:#2E6BE6}
+.cour-v2 .tr-carnet .troc-side{background:color-mix(in srgb,var(--pc) 8%,#fff)}
+.cour-v2 .tr-carnet .troc-arrow{background:var(--yellow)}
+.cour-v2 .tr-carnet .empty{color:var(--muted)}
 .cour-v2 .jr-day{font-family:var(--display);font-weight:400;font-size:19px;color:var(--ink);margin:18px 0 8px;padding-bottom:4px;border-bottom:2px solid var(--line-2);text-transform:none;letter-spacing:0}
 .cour-v2 .jr{--ec:#8E8898;margin:8px 0;padding:9px 12px;border-radius:12px;border:1.5px solid color-mix(in srgb,var(--ec) 35%,transparent)!important;border-left:5px solid var(--ec)!important;background:color-mix(in srgb,var(--ec) 9%,var(--panel))}
 .cour-v2 .jr.k-troc{--ec:#2FA35A}.cour-v2 .jr.k-vendue{--ec:#E85D9A}.cour-v2 .jr.k-achat{--ec:#2E6BE6}.cour-v2 .jr.k-gagnee,.cour-v2 .jr[class*="k-ench"]{--ec:#E8743B}
@@ -17765,7 +17774,7 @@ function courTroc(){
 `
         : `<p class="cour-lead">Pour troquer, ajoute d'abord des copains dans l'onglet Copains.</p>`}</section>
     <div class="chips tr-tabs">${st("recus","Offres reçues",T.recus.length)}${st("envoyes","Offres envoyées",T.envoyes.length)}${st("finis","Terminés")}</div>
-    <section class="panel">${list.length ? (P => list.slice(P.from, P.from+TR_PAGE).map(t=>trocCard(t,kind)).join("") + courPager(P, "trPage"+tab, "Trocs"))(courPages(list.length, TR_PAGE, "trPage"+tab)) : `<p class="empty">${vide}</p>`}</section>
+    <section class="panel tr-carnet">${list.length ? (P => list.slice(P.from, P.from+TR_PAGE).map(t=>trocCard(t,kind)).join("") + courPager(P, "trPage"+tab, "Trocs"))(courPages(list.length, TR_PAGE, "trPage"+tab)) : `<p class="empty">${vide}</p>`}</section>
   </div>`;
 }
 // (10 octobre 2026) le copain du troc : on écrit son pseudo, les copains qui correspondent s'affichent dessous

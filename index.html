@@ -18093,7 +18093,8 @@ function sellView(){
   // étape 1 : la bille (en premier tant qu'aucune n'est choisie) ; étape 2 : la façon de vendre, le prix et la durée
   const pick = `<section class="panel">${step(1, p ? "Ta bille" : "Choisis la bille à vendre", !p)}
       ${X.list?.length ? `<label class="tr-dbl"><input type="checkbox" data-action="sell-dbl"${X.dbl?" checked":""}> Seulement mes doubles</label>` : ""}
-      ${X.dbl && X.list && !X.list.some(x=>trocDups().has(x.id)) ? `<p class="empty">Tu n'as aucun double à vendre.</p>` : pickList(X.dbl && X.list ? X.list.filter(x=>trocDups().has(x.id)) : X.list, "sell", X.pick?[X.pick]:[], X.f)}</section>`;
+      ${(()=>{ const dd = X.dbl && X.list ? trocDups() : null, L = dd ? X.list.filter(x=>dd.has(x.id)) : X.list;   // (28 octobre 2026) les doubles calculés une seule fois (avant : une fois par bille, très lent avec une grosse boîte)
+        return dd && !L.length ? `<p class="empty">Tu n'as aucun double à vendre.</p>` : pickList(L, "sell", X.pick?[X.pick]:[], X.f) })()}</section>`;
   const form = p ? `<section class="panel">${step(2, "Comment tu la vends ?", true)}
       <div class="sell-card"><span class="sell-vis" style="${tstyle(p.type)}">${mImg(p,200,Math.round(50*scaleOf(p.type)+50),"")}</span>
         <div><h4>${esc(specName(p))}</h4><span class="pills">${typePill(p.type)}${shinyPill(p)}</span><p class="meta">À la Confiserie, elle vaut ${fmt(recycleValue(p))} ${CUR.many}.</p>

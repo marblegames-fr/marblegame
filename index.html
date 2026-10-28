@@ -17234,7 +17234,9 @@ function courNews(welcome){
     const news = list.filter(isNews);
     courRefresh("journal");   // la cloche et l'historique
     if(!news.length) return;
-    if(!(ui.view==="cour" && ui.courTab==="journal")) cour.unread = (cour.unread||0) + news.length;
+    // (28 octobre 2026) la pastille de l'Historique : pour un troc, seulement quand il est accepté ou refusé (une offre reçue a déjà la pastille du Troc)
+    const histN = news.filter(e=>e.k!=="troc" || ["accepte","refuse"].includes(e.statut)).length;
+    if(!(ui.view==="cour" && ui.courTab==="journal")) cour.unread = (cour.unread||0) + histN;
     if(news.some(e=>e.k==="troc")) courRefresh("trocs"); if(news.some(e=>e.k!=="troc")) courRefresh("annonces","encheres","marche");
     if(news.some(e=>["vendue","depasse","gagnee"].includes(e.k) || (e.k==="troc" && e.statut==="accepte" && (e.bonbecs_recus||e.bonbecs_donnes)))) ecoRefresh();
     if(news.some(e=>e.k==="gagnee")) syncMarbles(true);

@@ -9036,8 +9036,8 @@ function atelierShow(s, isNew){
       <button class="btn btn-yellow" data-action="close-modal">Génial !</button></div></div>`;
   el.hidden = false; Sound.melt();
 }
-// (28 octobre 2026) l'éclat à ramasser (maquettes/maquette-eclat-2.html) : rien ne se voit avant d'ouvrir. Quand la dernière bille est
-// découverte, un éclat tombe du sachet, rebondit en tintant et brille par terre ; on le touche pour le ramasser, et il file dans la réserve.
+// (28 octobre 2026) l'éclat à ramasser (maquettes/maquette-eclat-2.html) : rien ne se voit avant d'ouvrir. Quand la dernière papillote
+// est posée (avant : quand la dernière bille était découverte), un éclat tombe du sachet, rebondit en tintant et brille par terre ; on le touche pour le ramasser, et il file dans la réserve.
 // Il est déjà compté (le serveur l'a donné avec le sachet) : jamais perdu, il se ramasse tout seul au bout de 8 s ou si on s'en va.
 // Dans une suite de sachets (eclatQuiet) : il tombe et se ramasse tout seul, juste « +1 ».
 function eclatOut(){
@@ -10828,9 +10828,12 @@ function showReveal(){
     <div class="ov-actions" id="ov-actions">
       <button class="btn btn-ghost" data-action="reveal-all">Tout révéler</button>
     </div>`;
-  if(!FX.reduce() && ovState.from && Element.prototype.animate) rollOut();
+  let land;
+  if(!FX.reduce() && ovState.from && Element.prototype.animate) land = rollOut();
   // chaque bille tombe du sachet et rebondit (les gros formats sonnent plus grave)
-  else results.forEach(({s},i)=>Sound.drop(i*.13+.32, 1.25-scaleOf(s.type)*.5+Math.random()*.08));
+  else { results.forEach(({s},i)=>Sound.drop(i*.13+.32, 1.25-scaleOf(s.type)*.5+Math.random()*.08)); land = results.length*.13+.6 }
+  // (28 octobre 2026) l'éclat tombe juste après la dernière papillote posée, plus à la fin du déballage (en ouvrant vite, on ne le voyait pas)
+  if(ovState.eclat){ const st = ovState; setTimeout(()=>{ if(ovState===st) eclatOut() }, Math.max(0, land*1000-350)) }
 }
 // Une papillote de bonbon dessinée en SVG : papier métallisé froissé à la couleur du sachet (--tc), deux cous torsadés,
 // deux bouts en éventail plissé (plis clairs et sombres, bord ondulé et un peu transparent), un « ? » imprimé.
@@ -10868,6 +10871,7 @@ function candySVG(i){
 function rollOut(){
   const [fx,fy] = ovState.from, g = 3200, slots = document.querySelectorAll(".slot");
   const many = slots.length>3, gap = many ? .13 : .19, vol = (many ? .8 : 1)*.75;
+  let end = 0;   // quand la dernière papillote est posée (en s)
   slots.forEach((el,i)=>{
     const orb = el.querySelector(".orb"), spin = el.querySelector(".orb-spin"), sh = el.querySelector(".ball-shadow");
     if(!orb) return;
@@ -10903,7 +10907,9 @@ function rollOut(){
     const s = ovState.results[i].s, rate = 1.2-(scaleOf(s.type)-.5)*.9+(Math.random()-.5)*.06, pan = ((r.left+r.width/2)/innerWidth*2-1)*.7;
     Sound.bounce(delay+T1, Math.min(1,vi/900), rate, pan, vol);
     hops.forEach(([h0,d,hv])=>Sound.bounce(delay+h0+d, Math.min(1,hv/900), rate, pan, vol));
+    end = Math.max(end, delay+T);
   });
+  return end;
 }
 function reveal(i){
   if(!ovState) return;
@@ -11006,7 +11012,9 @@ function finishReveal(){
     document.getElementById("ov-actions").innerHTML = `<button class="btn btn-yellow" data-action="${ovState.demoAct||"shiny-demo"}">Revoir la démo</button><button class="btn btn-ghost" data-action="close-ov">Fermer</button>`; return }
   const nc = results.filter(r=>r.isNew||r.evNew).length, ncol = results.filter(r=>!r.isNew&&!r.evNew&&r.newColor).length, nsh = results.filter(r=>r.newShiny).length;
   const nbLeg = nc||ncol||nsh ? `<span class="nb-leg">${nc?`<span><span class="nb-dot">${SPARK}</span>${nc} nouveau${nc>1?"x":""} motif${nc>1?"s":""}</span>`:""}${ncol?`<span><span class="nb-dot col">${SPARK}</span>${ncol} nouveau${ncol>1?"x":""} coloris</span>`:""}${nsh?`<span><span class="nb-dot sh">${SPARK}</span>${nsh} nouvelle${nsh>1?"s":""} shiny</span>`:""}</span>` : "";
+  const oe = document.querySelector("#ov-actions .ov-eclat");   // l'éclat déjà ramassé garde son « +1 »
   document.getElementById("ov-actions").innerHTML = `${nbLeg}<span class="ov-xp" style="flex-basis:100%;justify-content:center">${ic("ticket",18)} +${ovState.pxp} XP de saison</span>${again}<button class="btn btn-ghost" data-action="to-home">Revenir à l'accueil</button>`;
+  if(oe) document.getElementById("ov-actions").prepend(oe);
   if(ovState.eclat) eclatOut();
 }
 function closeOv(quiet){
@@ -16901,7 +16909,7 @@ let bugKeep = null;   // un message qui n'est pas parti : il est reproposé au p
 // on:false cache le bouton (pendant qu'on prépare la mise à jour) ; on:true le remet, avec la pastille si l'id a changé
 // (16 octobre 2026) deux repères : dot = la pastille rouge du bouton, à changer à CHAQUE mise en ligne qui ajoute une ligne au patchnote
 // (avec txt : la date du jour) ; id = la fenêtre d'annonce à l'arrivée, seulement pour les très gros jours
-const NEWS = {on:true, id:"2026-10-27", dot:"2026-10-28-1500", url:"/nouveautes.html", txt:"Mise à jour du 28 oct."};
+const NEWS = {on:true, id:"2026-10-27", dot:"2026-10-28-1700", url:"/nouveautes.html", txt:"Mise à jour du 28 oct."};
 const newsUnseen = () => lsGet("billeo-news-vu")!==NEWS.dot;
 // (14 octobre 2026) à l'arrivée, une fenêtre annonce la mise à jour, une seule fois par mise à jour et par compte (S.newsPop, gardé
 // dans la partie : elle ne revient pas sur un autre appareil) ; on choisit d'aller voir les nouveautés, ou pas

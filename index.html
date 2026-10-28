@@ -19109,7 +19109,8 @@ document.addEventListener("visibilitychange", async ()=>{
 const AuthFx = (()=>{
   let cv, g, bg, shadow, W=0, H=0, dpr=1, ring={x:0,y:0,r:0}, balls=[], sparks=[], ripples=[];
   let raf=0, running=false, last=0, t0=0, nextShot=0, idleT=0, drag=null, heard=false, lastHit=0, reduce=false;
-  let off = lsGet("billeo-cour-billes")==="off";   // le joueur a rangé les billes
+  // (28 octobre 2026) rangées par défaut : préparer les billes (images, shaders) ralentissait la première visite ; « on » = le joueur les a sorties
+  let off = lsGet("billeo-cour-billes")!=="on";
   const FAMS = [0,1,2,3,6,7];
   const PLAN = ["mammouth","boulet","boulet","calot","calot","bille","bille","calot","bille","bille","mini","bille","mini","bille","mini","bille","mini","bille"];
   const rand = (a,b) => a+Math.random()*(b-a);
@@ -19184,7 +19185,7 @@ const AuthFx = (()=>{
     W = innerWidth; H = innerHeight; dpr = screenDpr(W, H);
     cv.width = W*dpr; cv.height = H*dpr;
     layout(); paintBg();
-    if(first){ makeBalls(); pack() }
+    if(first || !balls.length){ if(!off){ if(!balls.length) makeBalls(); pack() } }   // rangées : rien n'est préparé tant qu'on ne les sort pas
     else if(!balls[3].inside){ pack() }   // le paquet n'est pas encore cassé : on le recentre dans le rond
     else balls.forEach(b=>{ if(b.inside){ b.x = Math.min(W-b.r, Math.max(b.r, b.x)); b.y = Math.min(H-b.r, Math.max(b.r, b.y)) } });
     if(!running) draw();
@@ -19325,11 +19326,11 @@ const AuthFx = (()=>{
     get off(){ return off },
     // ranger les billes (tout s'arrête) ou les ressortir (le calot recasse le paquet)
     setOff(v){
-      off = v; lsSet("billeo-cour-billes", v ? "off" : null);
+      off = v; lsSet("billeo-cour-billes", v ? null : "on");
       running = false; cancelAnimationFrame(raf); drag = null; sparks = []; t0 = 0;
       if(!cv) return;
       paintBg();
-      if(!v) pack();
+      if(!v){ if(!balls.length) makeBalls(); pack() }
       this.start(cv);
     },
   };

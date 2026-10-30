@@ -15585,7 +15585,7 @@ function g3Trampo(k, r, n, o){
   // droite (les billes rebondissent en biais, certaines ratent leur saut), des boules rebondissantes suspendues, et en dessous une piste
   // de secours avec des plots qui mène aussi à l'étage suivant. Au bout d'un étage, tout le monde tombe sur le début du suivant.
   const NL = o.etages || 4, np = o.np || 11, pas = o.pas || 3.3, dy = o.dy || .55, PL = 2.4, PW = 2.7, CW = 5.2, STEP = o.step || 11.5;
-  const tilt = 2*Math.PI/180, x0 = 3, xe = x0 + (np-1)*pas, path = [];
+  const tilt = 2*Math.PI/180, x0 = 3, xe = x0 + (np-1)*pas, path = [], yt = -(NL-1)*STEP - (np-1)*dy - 7;   // yt : le fond du bac d'arrivée
   // la goulotte de départ, qui arrive au-dessus du premier trampoline
   const P0 = g3Trace([["S", 16]], {pente:.1, from:[x0 - 18, 3.2 + 1.6, 0]});
   const st = g3TroughStart(k, P0, {WID:3.2}, n, r); path.push(...g3Trough(k, P0, {WID:3.2, mur:1.4}).path);
@@ -15612,11 +15612,13 @@ function g3Trampo(k, r, n, o){
     // (des murs hauts : les boules suspendues envoient parfois une bille bien au-dessus des trampolines)
     [-1, 1].forEach(sd=>k.box([xe - x0 + 6, STEP + 6, .3], [xm, ym + 3, sd*(CW/2 + .15)], [0, 0, -dir*ang], "wall"));
     // le mur du bout : de haut en bas, jusqu'à l'étage suivant (sinon une bille lancée passait dessous et tombait dans le vide)
-    k.box([.3, STEP + 6, CW], [dir>0 ? xe + pas*.5 + 1.4 : x0 - pas*.5 - 1.4, Y(np-1) - STEP/2 + 1.5, 0], [0,0,0], "end");
+    // (30 octobre 2026) au dernier étage, il s'arrête au bord du bac (avant, il descendait jusque sous le bac : une grande vitre le coupait en deux)
+    const hautM = Y(np-1) + 4.5, basM = L===NL-1 ? yt + 6 : Y(np-1) - STEP - 1.5;
+    k.box([.3, hautM - basM, CW], [dir>0 ? xe + pas*.5 + 1.4 : x0 - pas*.5 - 1.4, (hautM + basM)/2, 0], [0,0,0], "end");
     if(L>0) k.box([.3, 4, CW], [dir>0 ? x0 - pas*.5 - 1.2 : xe + pas*.5 + 1.2, Y(0) + 1.5, 0], [0,0,0], "end");
   }
   // le bac : sous le bout du dernier étage
-  const dirL = (NL-1)%2 ? -1 : 1, yt = -(NL-1)*STEP - (np-1)*dy - 7, xt = dirL>0 ? xe + 4 : x0 - 4;
+  const dirL = (NL-1)%2 ? -1 : 1, xt =dirL>0 ? xe + 4 : x0 - 4;
   k.box([12, .4, 10], [xt, yt, 0], [0,0,0], "tray");
   [[0, 5.2, 12, .4], [0, -5.2, 12, .4], [6*dirL, 0, .4, 10.8], [-6*dirL, 0, .4, 10.8]].forEach(([dx, dz, sx, sz], j)=>k.box([sx, j===3 ? 2 : 6, sz], [xt + dx, yt + (j===3 ? 1 : 3), dz], [0,0,0], j===3 ? "glass" : "wall"));
   path.push([xt, yt + 1, 0]);

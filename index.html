@@ -4606,7 +4606,7 @@ const FAMILIES = [
   // la bille des bêta-testeurs : jamais dans les sachets ni dans l'album
   {name:"Bêta",          rar:4, beta:true, desc:"Un β d'or qui brille au cœur d'un verre précieux (une pierre différente pour chaque taille), cerclé d'un anneau d'or : la bille de ceux qui ont testé Tikalo avant tout le monde."},
   // événement de novembre 2026 « Super-héros ! » (numéro 48 : toujours à la fin, les numéros ne bougent jamais)
-  {name:"Super-héros",   rar:4, event:"superheros", desc:"Chaque coloris est un héros de la cour, avec son blason derrière les rayons d'une case de bande dessinée : l'écusson de Capitaine Éclair, les ailes de Fulgura, le masque d'Ombre violette, le poing du Titan vert et la flamme de Flamme écarlate."},
+  {name:"Super-héros",   rar:4, event:"superheros", desc:"Un héros sculpté au cœur du verre : la cape au-dessus des nuages, l'éclair, la chauve-souris devant la lune, le poing qui fêle le verre, l'araignée sur sa toile."},
   // (7 octobre 2026) nouveaux motifs : un légendaire (49, le Prisme, qui remplace l'Œil de dragon du même jour ; épique depuis le 8 octobre) et deux épiques (50, 51)
   {name:"Prisme",        rar:3, face:true, desc:"Un prisme de cristal au cœur d'un verre profond : un rayon de lumière blanche le traverse et ressort en arc-en-ciel."},
   {name:"Orage",         rar:3, desc:"Un ciel d'orage enfermé dans le verre, traversé d'éclairs qui l'illuminent de l'intérieur."},
@@ -4745,11 +4745,12 @@ const EVENTS = {
   superheros: {name:"Super-héros !", fam:"Super-héros", color:"#2E5BFF", late:true,
     start:Date.parse("2026-11-01T00:00:00+01:00"), end:Date.parse("2026-11-15T23:59:59+01:00"),   // (16 octobre 2026) les événements suivent les demi-mois : 1-15 ou 16-fin
     desc:"Deux semaines de billes Super-héros : coche la case sur un sachet payant.",
-    pals:[["Capitaine Éclair","#1E4FD8","#E5303A","#FFD23F","#1A3FA8"],
-          ["Fulgura","#1A1A22","#FFD23F","#E5303A","#24242C"],
-          ["Ombre violette","#2B1450","#8E3FE0","#F1ECFF","#341A5E"],
-          ["Titan vert","#0E5E35","#7B2FC0","#9BF26A","#14703F"],
-          ["Flamme écarlate","#B5121B","#FF8A1F","#FFF0B0","#C21E24"]]},
+    // (31 octobre 2026) renommés avec les nouveaux dessins (le serveur ne garde que le numéro du coloris : rien à changer en base)
+    pals:[["Cape d'azur","#1E4FD8","#E5303A","#FFD23F","#1A3FA8"],
+          ["Éclair d'or","#1A1A22","#FFD23F","#E5303A","#24242C"],
+          ["Aile de nuit","#2B1450","#8E3FE0","#F1ECFF","#341A5E"],
+          ["Poing de jade","#0E5E35","#7B2FC0","#9BF26A","#14703F"],
+          ["Toile écarlate","#B5121B","#FF8A1F","#FFF0B0","#C21E24"]]},
 };
 Object.values(EVENTS).filter(E=>!E.late).forEach(E=>{ E.palIdx = E.pals.map(P=>{ PALETTES.push(P); return PALETTES.length-1 }) });
 // La bille Bêta : un cadeau pour ceux qui testent Tikalo avant sa sortie, une de chaque taille, gardée à la remise à zéro du lancement.
@@ -5406,7 +5407,7 @@ function specParams(s){
     srot: FAMILIES[s.family]?.season!=null || FAMILIES[s.family]?.beta || FAMILIES[s.family]?.event==="superheros" || FAMILIES[s.family]?.face ? rotAxis(1,0,0,-.22) : rotAxis(r()-.5,r()-.5,r()-.5,r()*TAU),
     c1:hex01(P[1]), c2:hex01(P[2]), c3:hex01(P[3]), tint,
     mode:s.family, opaque:opaque?1:0, porc:0, sulf:0, fig:s.family%4, shiny:s.shiny||0, asp:s.type==="chinoise"?1.45:1,
-    // (11 octobre 2026) Super-héros : un blason par héros (coloris 79 à 83), chacun son petit programme (#define HERO)
+    // (11 octobre 2026) Super-héros : un héros par coloris (79 à 83), chacun son petit programme (#define HERO)
     hero: FAMILIES[s.family]?.event==="superheros" ? Math.max(0, EVENTS.superheros.palIdx.indexOf(s.pal)) : 0,
   };
   paramCache.set(key,p); return p;
@@ -5453,18 +5454,129 @@ float sdBeta(vec2 p){   // la lettre β : une hampe et deux panses
 #ifndef HERO
 #define HERO 0
 #endif
+// (31 octobre 2026) chaque héros est un objet sculpté au cœur du verre : la cape, l'éclair, la chauve-souris, le poing, l'araignée.
+// Chaque variante (HERO) ne compile que ses propres outils (un shader de plus en plus gros fige Chrome sous Windows)
 float sdEll(vec2 p, vec2 r){ return (length(p/r)-1.0)*min(r.x,r.y); }   // une ellipse (distance approchée, assez bonne pour un dessin)
 float sdRBox(vec2 p, vec2 b, float r){ vec2 d=abs(p)-b+r; return length(max(d,0.0))+min(max(d.x,d.y),0.0)-r; }
-float sdDrop(vec2 p, float r, float h){   // une goutte pointue vers le haut : un rond de rayon r, une pointe à la hauteur h
-  float y=p.y, w=y<0.0 ? sqrt(max(0.0,r*r-y*y)) : r*pow(max(0.0,1.0-y/h),1.3)*(1.0+0.6*y/h);
-  return max(max(abs(p.x)-w,-(y+r)),y-h);
+#if HERO==1
+// l'éclair : un polygone à 7 sommets, aux pointes vives (distance exacte, pour ses facettes)
+vec2 boltV(int i){ if(i==0) return vec2(0.02,0.82); if(i==1) return vec2(0.4,0.82); if(i==2) return vec2(0.14,0.2);
+  if(i==3) return vec2(0.4,0.2); if(i==4) return vec2(-0.22,-0.84); if(i==5) return vec2(-0.02,-0.06); return vec2(-0.3,-0.06); }
+float sdBolt(vec2 p){ float d=dot(p-boltV(0),p-boltV(0)), s=1.0;
+  for(int i=0;i<7;i++){ vec2 vi=boltV(i), vj=boltV(i==0?6:i-1); vec2 e=vj-vi, w=p-vi;
+    vec2 b=w-e*clamp(dot(w,e)/dot(e,e),0.0,1.0); d=min(d,dot(b,b));
+    bvec3 c=bvec3(p.y>=vi.y, p.y<vj.y, e.x*w.y>e.y*w.x); if(all(c)||all(not(c))) s=-s; }
+  return s*sqrt(d); }
+#elif HERO==2
+// la chauve-souris : la moitié droite (on la replie sur l'axe), les oreilles, les ailes et leurs festons pointus
+vec2 batV(int i){ if(i==0) return vec2(0.0,0.13); if(i==1) return vec2(0.06,0.17); if(i==2) return vec2(0.095,0.36);
+  if(i==3) return vec2(0.14,0.12); if(i==4) return vec2(0.46,0.22); if(i==5) return vec2(0.93,0.42); if(i==6) return vec2(0.8,0.02);
+  if(i==7) return vec2(0.67,0.12); if(i==8) return vec2(0.56,-0.14); if(i==9) return vec2(0.42,-0.04); if(i==10) return vec2(0.3,-0.3);
+  if(i==11) return vec2(0.17,-0.2); if(i==12) return vec2(0.0,-0.52); if(i==13) return vec2(-0.3,-0.52); return vec2(-0.3,0.13); }
+float sdBat(vec2 p){ float d=dot(p-batV(0),p-batV(0)), s=1.0;
+  for(int i=0;i<15;i++){ vec2 vi=batV(i), vj=batV(i==0?14:i-1); vec2 e=vj-vi, w=p-vi;
+    vec2 b=w-e*clamp(dot(w,e)/dot(e,e),0.0,1.0); d=min(d,dot(b,b));
+    bvec3 c=bvec3(p.y>=vi.y, p.y<vj.y, e.x*w.y>e.y*w.x); if(all(c)||all(not(c))) s=-s; }
+  return s*sqrt(d); }
+#elif HERO==3
+float hb2(vec2 p){ return fract(sin(dot(p,vec2(127.1,311.7)))*43758.5453); }
+// un doigt replié du poing, vu de face : de 0 (l'index) à 3 (l'auriculaire), collés, de plus en plus étroits
+float fistFinger(vec2 p, float fi){
+  float hw=0.108-0.009*fi, x=-0.3+fi*0.19-0.006*fi*fi;
+  float top=0.36+0.05*(1.0-abs(fi-1.2)/1.8)-0.05*step(2.5,fi);
+  return sdRBox(p-vec2(x,(top-0.02)*0.5),vec2(hw,(top+0.02)*0.5),0.07);
 }
-float sdFlame(vec2 p, float k){   // une flamme : une grande langue au milieu, deux plus petites sur les côtés, penchées vers l'extérieur
-  p/=k; vec2 w=vec2(abs(p.x),p.y);
-  float d=sdDrop(p-vec2(0.03*sin(p.y*5.0),-0.3),0.36,1.05);
-  vec2 s=w-vec2(0.2,-0.4); s=vec2(0.94*s.x-0.34*s.y,0.34*s.x+0.94*s.y);
-  d=min(d,sdDrop(s,0.22,0.62));
-  return d*k;
+float fistThumb(vec2 p){ return min(sdSeg2(p,vec2(-0.47,-0.1),vec2(-0.18,0.03)), sdSeg2(p,vec2(-0.18,0.03),vec2(0.12,0.06)))-0.11; }
+// une fêlure : un trait brisé qui part du centre dans la direction a0, de r0 à r1
+float zigzag(vec2 p, float a0, float r0, float r1, float sd, float jag){
+  vec2 dir=vec2(cos(a0),sin(a0)); float u=dot(p,dir), v=dot(p,vec2(-dir.y,dir.x));
+  float k=u*7.0+sd*13.0, i=floor(k), f=fract(k);
+  float off=mix(hb2(vec2(i,sd))-0.5, hb2(vec2(i+1.0,sd))-0.5, f)*jag*u;
+  return u<r0||u>r1 ? 1e3 : abs(v-off)+0.004*(u-r0);
+}
+#elif HERO==4
+// les 8 pattes de l'araignée (4 de chaque côté), en deux morceaux chacune
+float spiderLegs(vec2 w){
+  float d=1e3;
+  for(int i=0;i<4;i++){ float fi=float(i);
+    vec2 hip=vec2(0.08,0.17-fi*0.07), knee=vec2(0.36+0.06*min(fi,3.0-fi), 0.44-fi*0.2), foot=vec2(0.5+0.12*min(fi,3.0-fi), 0.74-fi*0.42);
+    d=min(d, min(sdSeg2(w,hip,knee)-0.042, sdSeg2(w,knee,foot)-0.032+0.01*clamp(length(w-knee)/0.4,0.0,1.0)));
+  }
+  return d;
+}
+#endif
+// la forme du héros : renvoie sa silhouette ; det = ses détails, body/detc : leurs couleurs, glow : ce qui brille
+float blason(vec2 p, out float det, out float glow, out vec3 body, out vec3 detc){
+  float shield; glow=0.0; body=uC2; detc=uC3; det=1e3;
+  vec2 w=vec2(abs(p.x),p.y);
+#if HERO==1
+  // Éclair d'or : un gros éclair taillé en facettes
+  shield=sdBolt(p);
+#elif HERO==2
+  // Aile de nuit : la chauve-souris, ailes déployées ; ses yeux brillent dans le noir
+  shield=sdBat(w);
+  det=sdEll(w-vec2(0.05,0.07),vec2(0.05,0.026)); detc=vec3(1.0); glow=smoothstep(0.01,-0.02,det)*3.0;
+#elif HERO==3
+  // Poing de jade : le poing serré, vu de face : les doigts collés (un pli au milieu), le gros pouce en travers devant,
+  // la paume, le poignet et un bout de manche violette déchirée ; des traits vert sombre séparent tout
+  float f=1e3, fl=1e3;
+  for(int i=0;i<4;i++){ float fi=float(i), d=fistFinger(p,fi), x=-0.3+fi*0.19-0.006*fi*fi;
+    f=min(f,d); fl=min(fl,abs(d));
+    fl=min(fl, max(sdSeg2(p,vec2(x-0.07,0.2),vec2(x+0.07,0.21)), d)); }
+  float th=fistThumb(p);
+  float palm=sdRBox(p-vec2(-0.04,-0.17),vec2(0.38,0.13),0.12);
+  float wrist=sdRBox(p-vec2(0.0,-0.4),vec2(0.24,0.15),0.06);
+  float cuff=max(sdRBox(p-vec2(0.0,-0.6),vec2(0.28,0.09),0.03), -(p.y+0.66-0.05*abs(sin(p.x*22.0))));   // le bas en dents de scie
+  shield=min(min(min(f,th),min(palm,wrist)),cuff);
+  float lines=max(fl,-th);
+  lines=min(lines, abs(th));
+  lines=min(lines, max(abs(palm),-min(f,th)));
+  lines=min(lines, max(abs(wrist),-min(palm,min(f,th))));
+  lines-=0.011;
+  body=uC3;
+  float nail=sdEll(p-vec2(0.1,0.065),vec2(0.06,0.055));   // l'ongle du pouce
+  if(cuff<0.01){ det=cuff; detc=uC2; }
+  else if(nail<0.0){ det=max(nail,-lines); detc=mix(uC3,vec3(1.0),0.5); if(lines<0.0){ det=lines; detc=uC1*0.45; } }
+  else { det=lines; detc=uC1*0.45; }
+#elif HERO==4
+  // Toile écarlate : une araignée noire aux grands yeux blancs (sa toile est dans le verre, voir le motif)
+  shield=min(min(sdEll(p-vec2(0.0,0.13),vec2(0.14,0.13)), sdEll(p-vec2(0.0,-0.2),vec2(0.19,0.25))), spiderLegs(w));
+  det=sdEll(vec2(w.x-0.06,p.y-0.16),vec2(0.05,0.065)); body=vec3(0.07,0.06,0.09); detc=vec3(1.0);
+#else
+  // Cape d'azur : une cape rouge, fine, qui flotte au vent, les plis qui se creusent vers le bas, une agrafe d'or au col
+  float yy=clamp((0.55-p.y)/1.2,0.0,1.0), xs=p.x-0.18*yy*yy, hw=mix(0.12,0.46,pow(yy,0.9));
+  float hem=-0.64+0.05*sin(xs*13.0+1.0);
+  shield=max(abs(xs)-hw, max(p.y-0.55, hem-p.y));
+  shield=min(shield, sdEll(p-vec2(0.0,0.56),vec2(0.2,0.065)));   // le col
+  vec2 cq=p-vec2(0.0,0.52); det=(abs(cq.x)+abs(cq.y))*0.75-0.075;
+#endif
+  return shield;
+}
+float blasonS(vec2 p){ float a,b; vec3 c,d; return blason(p,a,b,c,d); }
+// le relief de l'objet : bombé depuis le bord (en facettes pour l'éclair), plus les plis de la cape, les os des ailes, les doigts
+float relief(vec2 p){
+  float h=clamp(-blasonS(p)/0.12,0.0,1.0);
+#if HERO==1
+  float r=h;
+#else
+  float r=sqrt(h*(2.0-h));
+#endif
+#if HERO==0
+  float yy=clamp((0.55-p.y)/1.2,0.0,1.0), xs=p.x-0.18*yy*yy, hw=mix(0.12,0.46,pow(yy,0.9));
+  r+=0.4*(0.5+0.5*cos(xs/hw*9.42))*smoothstep(0.42,-0.3,p.y);   // les plis
+#elif HERO==2
+  vec2 w=vec2(abs(p.x),p.y), sh=vec2(0.14,0.1);
+  float b=min(min(sdSeg2(w,sh,vec2(0.93,0.42)),sdSeg2(w,sh,vec2(0.8,0.02))),min(sdSeg2(w,sh,vec2(0.56,-0.14)),sdSeg2(w,sh,vec2(0.3,-0.3))));
+  r+=0.4*smoothstep(0.035,0.0,b);   // les os des ailes
+#elif HERO==3
+  float m=0.0;   // chaque morceau bombé à part : le pouce devant, les doigts (la jointure plus que le bout), la paume, le poignet
+  for(int i=0;i<4;i++){ m=max(m, sqrt(clamp(-fistFinger(p,float(i))/0.08,0.0,1.0))*(0.75+0.35*smoothstep(0.0,0.35,p.y))); }
+  m=max(m, 0.45+sqrt(clamp(-fistThumb(p)/0.09,0.0,1.0)));
+  m=max(m, 0.55*sqrt(clamp(-sdRBox(p-vec2(-0.04,-0.17),vec2(0.38,0.13),0.12)/0.1,0.0,1.0)));
+  m=max(m, 0.5*sqrt(clamp(-sdRBox(p-vec2(0.0,-0.4),vec2(0.24,0.15),0.06)/0.1,0.0,1.0)));
+  r=r*0.25+m*0.85;
+#endif
+  return r;
 }
 #endif
 #if MODE==22
@@ -6083,73 +6195,71 @@ vec4 fam(vec3 q, out vec3 e){
     return vec4(vec3(1.0), 0.12+fl*60.0);
   }
 #elif MODE==48
-  { // super-héros (événement de novembre 2026) : un verre teinté de la couleur du héros ; au cœur, comme une bille sulfure,
-    // son blason, un par héros (HERO, voir plus bas), cerclé d'un liseré ; derrière, les rayons d'une case de bande dessinée
-    float n=fbm(q*4.0+so), r=length(q);
-    vec3 glass=mix(uC1, uC2, 0.12)*(0.6+0.3*n);
-    float dens=0.26+0.2*n;
-    // la bille chinoise se regarde par le dessus : le blason y est couché à plat (comme le β de la Bêta)
+  { // super-héros (événement de novembre 2026). (31 octobre 2026) chaque coloris est un héros, sculpté au cœur d'un verre net,
+    // avec son décor : la cape au-dessus des nuages, l'éclair et ses images fantômes, la chauve-souris devant la lune,
+    // le poing qui fêle le verre, l'araignée sur sa toile. Tout est à la profondeur du centre : quand la bille tourne, tout tourne
+    // d'un bloc (un décor derrière le centre glisserait à contresens, et la bille aurait l'air de tourner à l'envers)
+    float r=length(q);
+    vec3 glass=mix(uC1, uC2, 0.08)*(0.7+0.25*smoothstep(0.95,0.2,r)), pe=vec3(0.0);
+    float dens=0.22;
+    // la bille chinoise se regarde par le dessus : le héros y est couché à plat (comme le β de la Bêta)
     bool couche=uAsp>1.2; vec2 p=(couche?vec2(q.x,-q.z):q.xy)*1.7; float bz=couche?q.y:q.z;
-    // (11 octobre 2026) chaque héros a son blason : shield = la silhouette, det = ses détails ; body/detc : leurs couleurs
-    float shield, det, glow=0.0; vec3 body=uC2, detc=uC3;
-#if HERO==1
-    // Fulgura, la plus rapide de la cour : des ailes aux pieds, comme le casque ailé du messager des dieux ; au centre, un éclair
-    vec2 w=vec2(abs(p.x),p.y);
-    shield=length(p)-0.22;
-    for(int i=0;i<3;i++){ float fi=float(i), a=0.3+fi*0.5, L=0.72-fi*0.14;
-      shield=min(shield, sdSeg2(w,vec2(0.12,-0.05),vec2(0.12,-0.05)+L*vec2(cos(a),sin(a)))-(0.09-fi*0.012)); }
-    float bolt=min(min(sdSeg2(p,vec2(0.07,0.15),vec2(-0.04,0.0)), sdSeg2(p,vec2(-0.04,0.0),vec2(0.05,0.0))), sdSeg2(p,vec2(0.05,0.0),vec2(-0.06,-0.16)))-0.035;
-    det=max(length(p)-0.17,-bolt);
-    for(int i=0;i<3;i++){ float fi=float(i), a=0.3+fi*0.5;   // le trait de chaque plume
-      det=min(det, sdSeg2(w,vec2(0.12,-0.05)+0.3*vec2(cos(a),sin(a)),vec2(0.12,-0.05)+(0.68-fi*0.14)*vec2(cos(a),sin(a)))-0.014); }
-#elif HERO==2
-    // Ombre violette, justicier de la nuit : le loup (le masque des justiciers masqués) et deux yeux qui brillent dans le noir
-    vec2 w=vec2(abs(p.x),p.y);
-    vec2 m=w-vec2(0.3,0.02); m=vec2(m.x, m.y+0.22*m.x);   // les deux moitiés du loup, un peu relevées vers l'extérieur
-    shield=min(sdEll(m,vec2(0.42,0.27)), sdRBox(p-vec2(0.0,0.06),vec2(0.2,0.14),0.08));
-    shield=max(shield, -sdEll(p-vec2(0.0,-0.2),vec2(0.12,0.12)));   // l'échancrure du nez
-    shield=min(shield, sdSeg2(w,vec2(0.66,0.04),vec2(0.86,-0.28))-0.055);   // les bouts du ruban
-    float eye=sdEll(vec2(m.x+0.02,m.y-0.02),vec2(0.19,0.085));
-    det=eye; detc=vec3(1.0); glow=smoothstep(0.02,-0.05,eye)*1.5;
-#elif HERO==3
-    // Titan vert, le colosse en colère : son poing serré, vert, avec un liseré violet
-    float f=1e3;
-    for(int i=0;i<4;i++){ f=min(f, sdRBox(p-vec2(-0.33+float(i)*0.22,0.2-0.03*abs(float(i)-1.5)),vec2(0.108,0.2),0.1)); }
-    float th=sdSeg2(p,vec2(-0.4,-0.08),vec2(0.12,-0.08))-0.115;   // le pouce, replié devant
-    float palm=sdRBox(p-vec2(0.0,-0.24),vec2(0.44,0.24),0.14);
-    shield=min(min(f,th),palm);
-    det=min(abs(f)-0.014, abs(th)-0.014);
-    det=max(det,-(th+0.01));   // les doigts passent derrière le pouce
-    body=uC3; detc=uC1*0.6;
-#elif HERO==4
-    // Flamme écarlate, l'enfant de feu : une flamme vive, avec son cœur jaune qui rayonne
-    shield=sdFlame(p,1.0);
-    float core=sdFlame(p-vec2(0.0,-0.14),0.55);
-    det=core; glow=smoothstep(0.03,-0.08,core)*0.8;
+    float det, glow; vec3 body, detc;
+    float shield=blason(p,det,glow,body,detc), rr=length(p), ang=atan(p.y,p.x);
+    float sw=smoothstep(0.3,0.08,abs(bz));
+    // le relief ne se calcule que dans la silhouette (c'est le plus coûteux : tout le reste du verre s'en passe)
+    float H0=shield<0.0 && abs(bz)<0.21 ? relief(p) : 0.0;
+#if HERO==0
+    float thk=0.035+0.055*min(H0,1.4);   // la cape : une étoffe mince
 #else
-    // Capitaine Éclair : l'écusson frappé d'un éclair
-    float hw=p.y>-0.12 ? 0.5 : 0.5*clamp((p.y+0.8)/0.68,0.0,1.0);   // l'écusson : le haut droit, le bas en pointe
-    shield=max(abs(p.x)-hw, abs(p.y+0.13)-0.67);
-    det=min(min(sdSeg2(p,vec2(0.18,0.42),vec2(-0.1,0.0)), sdSeg2(p,vec2(-0.1,0.0),vec2(0.11,0.0))), sdSeg2(p,vec2(0.11,0.0),vec2(-0.15,-0.52)))-0.07;
+    float thk=0.06+0.1*min(H0,1.4);
 #endif
-    float rim=abs(shield+0.06)-0.03;
-#if HERO==3
-    rim=abs(shield+0.04)-0.045;
-    vec3 rimc=uC2;   // le liseré violet du Titan
-#else
-    vec3 rimc=uC3;
-#endif
-    float sh=smoothstep(0.02,-0.02,shield)*smoothstep(0.13,0.06,abs(bz));
-    if(sh>0.01){
-      vec3 c=body*(0.82+0.25*n);
-      c=mix(c, rimc*(0.95+0.1*n), smoothstep(0.015,-0.015,rim));
-      c=mix(c, detc*(0.95+0.1*n), smoothstep(0.015,-0.015,det));
-      e=detc*glow*sh*1.5;
-      return vec4(mix(glass,c,sh), mix(dens,90.0,sh));
+    if(shield<0.0 && abs(bz)<thk){
+      // l'objet : sa surface suit le relief, un vernis brillant
+      vec2 g=vec2(relief(p+vec2(0.01,0.0))-H0, relief(p+vec2(0.0,0.01))-H0)/0.01;
+      vec3 nrm=normalize(vec3(-0.22*g,1.0));
+      vec3 Lp=normalize(vec3(-0.5,0.62,0.6)), Hh=normalize(Lp+vec3(0.0,0.0,1.0));
+      float dif=max(dot(nrm,Lp),0.0), sp=max(dot(nrm,Hh),0.0);
+      vec3 c=mix(body, detc, smoothstep(0.012,-0.012,det));
+      e=detc*glow*3.0;
+      return vec4(c*(0.28+0.85*dif)+vec3(1.0)*(pow(sp,60.0)*1.3+pow(sp,10.0)*0.12), 150.0);
     }
-    float ang=atan(p.y,p.x), rx=length(p)/1.7;
-    float ray=smoothstep(0.55,0.85,abs(sin(ang*8.0)))*smoothstep(0.4,0.6,rx)*smoothstep(0.9,0.72,r)*smoothstep(0.0,-0.15,bz);
-    if(ray>0.02) return vec4(mix(glass, uC3, 0.55*ray), mix(dens, 4.0, ray));
+#if HERO==1
+    // l'éclair va si vite qu'il laisse deux images fantômes derrière lui, et un halo jaune
+    if(abs(bz)<0.05){
+      if(sdBolt(p+vec2(0.24,0.06))<0.0){ e=uC3*2.2; return vec4(mix(glass,uC3,0.55), 9.0); }
+      if(sdBolt(p+vec2(0.48,0.12))<0.0){ e=uC3*1.1; return vec4(mix(glass,uC3*0.8,0.35), 4.0); }
+    }
+    pe+=uC2*exp(-max(shield,0.0)*14.0)*0.8*smoothstep(0.1,0.03,abs(bz));
+#elif HERO==2
+    // une pleine lune derrière la chauve-souris, ses cratères et son halo
+    vec2 mc=p-vec2(0.0,0.08); float rm=length(mc);
+    if(rm<0.6 && abs(bz)<0.06){
+      float cr=fbm(vec3(mc*3.2,2.0)+so);
+      vec3 c=mix(mix(uC3,vec3(1.0,0.97,0.88),0.4), uC3*0.72, smoothstep(0.45,0.68,cr))*(0.85+0.15*smoothstep(0.6,0.0,rm));
+      e=uC3*0.35; return vec4(c, 90.0);
+    }
+    pe+=mix(uC3,uC2,0.3)*exp(-(rm-0.6)*5.0)*0.7*sw;
+#elif HERO==3
+    // le coup de poing a fêlé le verre : les fêlures luisent de vert tout autour
+    float d=1e3;
+    for(int i=0;i<9;i++){ float fi=float(i), a0=fi*0.698+0.25*(hb2(vec2(fi,4.0))-0.5);
+      d=min(d, zigzag(p, a0, 0.62, 1.2+0.4*hb2(vec2(fi,8.0)), fi*2.9, 0.9));
+      d=min(d, zigzag(p, a0+0.9*(hb2(vec2(fi,6.0))-0.5), 0.95, 1.45, fi*4.3+1.0, 1.0)+0.004); }
+    pe+=mix(uC3,vec3(1.0),0.35)*(exp(-d*110.0)*9.0+exp(-d*20.0)*1.0)*sw;
+#elif HERO==4
+    // la toile, dans le plan de l'araignée : 10 fils qui rayonnent, et les tours qui pendent un peu entre deux fils
+    float al=0.6283185, ph=(fract((ang+0.3)/al)-0.5)*al;
+    float rp=rr*cos(ph)/cos(al*0.5); rp/=1.0-0.07*(1.0-abs(ph)/(al*0.5));
+    float th=min(abs(rr*sin(ph)), abs(rp-(0.34+0.17*clamp(floor((rp-0.34)/0.17+0.5),0.0,7.0))));
+    pe+=mix(uC3,vec3(1.0),0.6)*smoothstep(0.022,0.006,th)*smoothstep(1.62,1.5,rr)*smoothstep(0.08,0.02,abs(bz))*3.5;
+#else
+    // une mer de nuages en bas de la bille : la cape vole au-dessus
+    float cl=fbm(vec3(p*vec2(1.5,2.6),bz*2.0)+so*0.1);
+    float c=smoothstep(0.4,0.6,cl)*smoothstep(-0.3,-0.85,p.y+0.12*sin(p.x*3.0+so.x))*smoothstep(0.98,0.8,r)*smoothstep(0.55,0.25,abs(bz));
+    if(c>0.01){ vec3 cc=mix(vec3(0.7,0.78,0.95),vec3(1.0),smoothstep(0.5,0.72,cl)); e=cc*c*0.35; return vec4(mix(glass,cc,c), dens+c*16.0); }
+#endif
+    e=pe;
     return vec4(glass, dens);
   }
 #elif MODE==49
@@ -16922,7 +17032,7 @@ let bugKeep = null;   // un message qui n'est pas parti : il est reproposé au p
 // on:false cache le bouton (pendant qu'on prépare la mise à jour) ; on:true le remet, avec la pastille si l'id a changé
 // (16 octobre 2026) deux repères : dot = la pastille rouge du bouton, à changer à CHAQUE mise en ligne qui ajoute une ligne au patchnote
 // (avec txt : la date du jour) ; id = la fenêtre d'annonce à l'arrivée, seulement pour les très gros jours
-const NEWS = {on:true, id:"2026-10-27", dot:"2026-10-28-2300", url:"/nouveautes.html", txt:"Mise à jour du 28 oct."};
+const NEWS = {on:true, id:"2026-10-27", dot:"2026-10-31-2300", url:"/nouveautes.html", txt:"Mise à jour du 31 oct."};
 const newsUnseen = () => lsGet("billeo-news-vu")!==NEWS.dot;
 // (14 octobre 2026) à l'arrivée, une fenêtre annonce la mise à jour, une seule fois par mise à jour et par compte (S.newsPop, gardé
 // dans la partie : elle ne revient pas sur un autre appareil) ; on choisit d'aller voir les nouveautés, ou pas

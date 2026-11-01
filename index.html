@@ -11940,7 +11940,7 @@ function pachiSprite(spec, px){ const key = `${spec.seed}|${px}`; if(pachiSpr?.k
   const im = new Image(); im.src = marbleURL(spec, Math.max(48, px*2)); pachiSpr = {key, img:im}; return im }
 // le chemin : une suite de gauche/droite qui mène à la case tirée (autant de « droite » que le numéro de la case), dans un ordre au hasard
 function pachiPath(slot){ const d = Array.from({length:PACHI_ROWS}, (_,i)=>i<slot?1:0); for(let i=d.length-1;i>0;i--){ const j = Math.floor(Math.random()*(i+1)); [d[i],d[j]] = [d[j],d[i]] } return d }
-const PACHI_HOP = .3;   // secondes entre deux clous
+const PACHI_HOP = .27;   // secondes entre deux clous (.3 jusqu'au 1er novembre 2026)
 function pachiPos(B, now){
   if(!B.pts){ const pts = [{x:PW/2, y:18}]; let right = 0;
     for(let r=0;r<PACHI_ROWS;r++){ const p = pachiPeg(r, right); pts.push({x:p.x, y:p.y-19, r, i:right}); right += B.path[r] }
@@ -13486,26 +13486,26 @@ async function pzInit(){
   const loop = now => {
     if(!document.body.contains(cv)){ cancelAnimationFrame(pz.raf); return }
     const c = pz.claw, x0 = c.x, k = pz.lt ? Math.min(3, (now - pz.lt)/16.7) : 1; pz.lt = now;
-    if(pz.st==="travel"){ c.x = toward(c.x, pz.target.x, 1.6*k); if((motor += k) > 9){ motor = 0; Sound.hit?.(.02) } if(c.x===pz.target.x){ pz.st = "down"; Sound.whoosh?.() } }
-    if(pz.st==="down"){ c.x = toward(c.x, pz.target.x, .8*k); c.y += 2*k; if(c.y >= pz.target.y - RB*.35){ pz.st = "close"; pz.target.vx = pz.target.vy = 0 } }
-    if(pz.st==="close"){ c.open = Math.max(0, c.open - .02*k); if(c.open===0){ pz.held = pz.target; Sound.tap(0, .8, 1.2); pz.st = "up"; c.wob = 0 } }
-    if(pz.st==="up"){ c.y -= 1.8*k; c.wob = (c.wob||0) + k;
+    if(pz.st==="travel"){ c.x = toward(c.x, pz.target.x, 2.3*k); if((motor += k) > 9){ motor = 0; Sound.hit?.(.02) } if(c.x===pz.target.x){ pz.st = "down"; Sound.whoosh?.() } }
+    if(pz.st==="down"){ c.x = toward(c.x, pz.target.x, 1.1*k); c.y += 2.8*k; if(c.y >= pz.target.y - RB*.35){ pz.st = "close"; pz.target.vx = pz.target.vy = 0 } }
+    if(pz.st==="close"){ c.open = Math.max(0, c.open - .03*k); if(c.open===0){ pz.held = pz.target; Sound.tap(0, .8, 1.2); pz.st = "up"; c.wob = 0 } }
+    if(pz.st==="up"){ c.y -= 2.5*k; c.wob = (c.wob||0) + k;
       if(pz.real && pz.held && c.y <= pz.slipY){   // ça glisse ! la boule retombe dans le tas, la pince repart vers la bonne
         const b = pz.held; b.x = c.x; b.y = c.y + 6; b.vx = (Math.random()-.5)*2; b.vy = 0; pz.held = null;
         pz.target = pz.real; pz.real = null; pz.slipped = true; Sound.tap(0, .6, .6); chanceBtnsAt("pince", "Oh ! Elle a glissé…") }
-      if(pz.slipped) c.open = Math.min(1, c.open + .04*k);
-      if(c.y <= TOPY){ c.y = TOPY; if(pz.slipped){ pz.slipped = false; pz.st = "travel"; setTimeout(()=>pz.st==="travel" && chanceBtnsAt("pince", "Elle y retourne…"), 500) } else pz.st = "carry" } }
-    if(pz.st==="carry"){ c.x = toward(c.x, HOLE+2, 4.2*k); if((motor += k) > 9){ motor = 0; Sound.hit?.(.02) } if(c.x===HOLE+2) pz.st = "drop" }
-    if(pz.st==="drop"){ c.open = Math.min(1, c.open + .05*k);
+      if(pz.slipped) c.open = Math.min(1, c.open + .055*k);
+      if(c.y <= TOPY){ c.y = TOPY; if(pz.slipped){ pz.slipped = false; pz.st = "travel"; setTimeout(()=>pz.st==="travel" && chanceBtnsAt("pince", "Elle y retourne…"), 350) } else pz.st = "carry" } }
+    if(pz.st==="carry"){ c.x = toward(c.x, HOLE+2, 5.6*k); if((motor += k) > 9){ motor = 0; Sound.hit?.(.02) } if(c.x===HOLE+2) pz.st = "drop" }
+    if(pz.st==="drop"){ c.open = Math.min(1, c.open + .07*k);
       if(c.open > .5 && pz.held){ pz.falling = {b:pz.held, x:c.x, y:c.y+6, vy:0}; pz.balls.splice(pz.balls.indexOf(pz.held), 1); pz.held = null; pz.target = null }
       if(c.open===1) pz.st = "home" }
-    if(pz.st==="home") c.x = toward(c.x, HOME, 4*k);
+    if(pz.st==="home") c.x = toward(c.x, HOME, 5.6*k);
     // le balancement : la pince traîne un peu derrière quand elle bouge, puis oscille
     c.vx = c.x - x0; c.sw += (-c.vx*.05 - c.sw)*.08 + (pz.st==="up" ? Math.sin((c.wob||0)/5)*.004 : 0); c.sw *= .97;
     if(pz.falling){ const f = pz.falling; f.vy += .5; f.y += f.vy; if(f.y > BOX.f+20){ Sound.tap(0, .9, .7); pz.tray = {b:f.b, x:60, y:BOX.f+90, open:0, t0:now}; pz.falling = null } }
-    if(pz.tray && !pz.tray.done){ const t = pz.tray, k = (now - t.t0)/1000; t.x = Math.min(111, 60 + k*90);
-      if(k > .9){ t.open = Math.min(1, (k-.9)/.5); if(!t.popped && t.open > .1){ t.popped = true; Sound.pop?.() } }
-      if(k > 1.6){ t.done = true; pzFinish() } }
+    if(pz.tray && !pz.tray.done){ const t = pz.tray, k = (now - t.t0)/1000; t.x = Math.min(111, 60 + k*120);
+      if(k > .65){ t.open = Math.min(1, (k-.65)/.4); if(!t.popped && t.open > .1){ t.popped = true; Sound.pop?.() } }
+      if(k > 1.2){ t.done = true; pzFinish() } }
     phys(pz.st==="down");
     draw(now); pz.raf = requestAnimationFrame(loop);
   };
@@ -17040,7 +17040,7 @@ let bugKeep = null;   // un message qui n'est pas parti : il est reproposé au p
 // on:false cache le bouton (pendant qu'on prépare la mise à jour) ; on:true le remet, avec la pastille si l'id a changé
 // (16 octobre 2026) deux repères : dot = la pastille rouge du bouton, à changer à CHAQUE mise en ligne qui ajoute une ligne au patchnote
 // (avec txt : la date du jour) ; id = la fenêtre d'annonce à l'arrivée, seulement pour les très gros jours
-const NEWS = {on:true, id:"2026-10-27", dot:"2026-11-01-1200", url:"/nouveautes.html", txt:"Mise à jour du 1er nov."};
+const NEWS = {on:true, id:"2026-10-27", dot:"2026-11-01-1500", url:"/nouveautes.html", txt:"Mise à jour du 1er nov."};
 const newsUnseen = () => lsGet("billeo-news-vu")!==NEWS.dot;
 // (14 octobre 2026) à l'arrivée, une fenêtre annonce la mise à jour, une seule fois par mise à jour et par compte (S.newsPop, gardé
 // dans la partie : elle ne revient pas sur un autre appareil) ; on choisit d'aller voir les nouveautés, ou pas

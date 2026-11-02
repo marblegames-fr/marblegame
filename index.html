@@ -4217,6 +4217,34 @@ button.cp-who:hover b{text-decoration:underline}
 .abs-pop .btns{gap:10px;flex-wrap:wrap}
 .abs-ic{flex:none;display:grid;place-items:center;width:34px;height:34px;border-radius:50%;background:var(--yellow);color:#24253D}
 .abs-tot{margin:6px 0 0;font-size:15px}.abs-tot .coin{width:18px;height:18px;vertical-align:-3px}
+/* (2 novembre 2026) l'annonce d'une bille mythique : une grande carte nuit-rouge, la bille au centre dans ses rayons, des braises qui montent */
+.modal.myth-pop{display:block;width:min(440px,100%);padding:26px 22px 22px;text-align:center;color:#FFF3F0;overflow:hidden;isolation:isolate;
+  background:radial-gradient(120% 80% at 50% 34%,#5A0716 0%,#2A0309 48%,#120105 100%);border:2px solid rgba(255,70,90,.55);
+  box-shadow:0 0 0 1px rgba(0,0,0,.4),0 0 60px -6px rgba(224,24,45,.65),0 30px 60px -20px rgba(0,0,0,.7);animation:mpIn .7s cubic-bezier(.2,1.4,.4,1) both}
+@keyframes mpIn{from{opacity:0;transform:scale(.7) translateY(20px)}}
+.myth-pop .close-x{color:#FFD1D6}
+.mp-kick{display:inline-flex;align-items:center;gap:6px;padding:5px 14px;border-radius:999px;font-size:12px;font-weight:900;letter-spacing:.08em;text-transform:uppercase;color:#fff;
+  background:linear-gradient(90deg,#9E0F24,#FF2E44,#9E0F24);background-size:200% 100%;animation:mpKick 2.4s linear infinite;box-shadow:0 0 18px -2px #FF2E44}
+@keyframes mpKick{to{background-position:-200% 0}}
+.mp-stage{position:relative;width:250px;height:250px;margin:12px auto 4px;display:grid;place-items:center}
+.mp-rays{position:absolute;inset:-40px;z-index:-1;border-radius:50%;background:repeating-conic-gradient(from 0deg,rgba(255,60,80,.5) 0 7deg,transparent 7deg 20deg);
+  -webkit-mask:radial-gradient(circle,#000 18%,transparent 66%);mask:radial-gradient(circle,#000 18%,transparent 66%);animation:mythspin 18s linear infinite}
+.mp-halo{position:absolute;inset:30px;z-index:-1;border-radius:50%;background:radial-gradient(circle,rgba(255,90,60,.75),rgba(224,24,45,.25) 55%,transparent 72%);animation:mpPulse 2.2s ease-in-out infinite}
+@keyframes mpPulse{50%{transform:scale(1.12);opacity:.75}}
+.mp-ball{animation:mpBall .9s .15s cubic-bezier(.2,1.6,.4,1) both}
+.mp-ball img{display:block;filter:drop-shadow(0 16px 14px rgba(0,0,0,.6)) drop-shadow(0 0 22px rgba(255,46,68,.7))}
+@keyframes mpBall{from{opacity:0;transform:scale(.2) rotate(-90deg)}}
+.mp-ember{position:absolute;bottom:0;width:5px;height:5px;border-radius:50%;background:#FF8A3D;box-shadow:0 0 8px #FF5A2E;opacity:0;animation:mpEmber 3.6s linear infinite}
+@keyframes mpEmber{0%{opacity:0;transform:translateY(0)}15%{opacity:1}100%{opacity:0;transform:translateY(-330px) translateX(var(--dx))}}
+.myth-pop h2{font-family:var(--display);font-weight:400;font-size:34px;line-height:1.05;margin:8px 0 4px;color:#fff;text-shadow:0 2px 0 #5A0716,0 0 24px rgba(255,46,68,.8)}
+.mp-what{margin:0;font-size:17px;font-weight:800;color:#FFD1D6}
+.mp-name{margin:6px 0 0;font-family:var(--display);font-size:24px;color:#FF8A3D;text-shadow:0 0 16px rgba(255,90,40,.6)}
+.mp-info{display:flex;justify-content:center;flex-wrap:wrap;gap:6px;margin:12px 0 4px}
+.mp-info span{padding:4px 10px;border-radius:999px;font-size:12px;font-weight:800;background:rgba(255,255,255,.08);border:1px solid rgba(255,140,150,.28);color:#FFE4E6}
+.myth-pop .btns{display:flex;justify-content:center;flex-wrap:wrap;gap:10px;margin-top:16px}
+.myth-pop .btn-ghost{color:#FFE4E6;border-color:rgba(255,160,170,.4);background:rgba(255,255,255,.06)}
+@media (prefers-reduced-motion:reduce){ .myth-pop,.mp-kick,.mp-rays,.mp-halo,.mp-ball,.mp-ember{animation:none} .mp-ember{display:none} }
+@media (max-width:420px){ .mp-stage{width:200px;height:200px} .myth-pop h2{font-size:28px} }
 body.gc-open{overflow:hidden}
 .gc-ov{position:fixed;inset:0;z-index:80;background:#141220;color:#fff;overflow:hidden}
 .g3-stage{position:absolute;inset:0}
@@ -17053,7 +17081,7 @@ let bugKeep = null;   // un message qui n'est pas parti : il est reproposé au p
 // on:false cache le bouton (pendant qu'on prépare la mise à jour) ; on:true le remet, avec la pastille si l'id a changé
 // (16 octobre 2026) deux repères : dot = la pastille rouge du bouton, à changer à CHAQUE mise en ligne qui ajoute une ligne au patchnote
 // (avec txt : la date du jour) ; id = la fenêtre d'annonce à l'arrivée, seulement pour les très gros jours
-const NEWS = {on:true, id:"2026-10-27", dot:"2026-11-02-1200", url:"/nouveautes.html", txt:"Mise à jour du 2 nov."};
+const NEWS = {on:true, id:"2026-10-27", dot:"2026-11-02-1900", url:"/nouveautes.html", txt:"Mise à jour du 2 nov."};
 const newsUnseen = () => lsGet("billeo-news-vu")!==NEWS.dot;
 // (14 octobre 2026) à l'arrivée, une fenêtre annonce la mise à jour, une seule fois par mise à jour et par compte (S.newsPop, gardé
 // dans la partie : elle ne revient pas sur un autre appareil) ; on choisit d'aller voir les nouveautés, ou pas
@@ -17616,11 +17644,11 @@ function clSemaine(){
         <p class="meta">Les lots arrivent tout seuls dans tes sachets offerts, lundi après minuit.</p></section>
       <details class="panel cl-bareme"><summary class="panel-head"><h3>${ic("quest",18)} Voir le barème</h3>${ic("chev",16,2.6)}</summary>
         <ul class="cl-rules">
-          <li><b>Chaque bille tirée cette semaine</b><span>${TK.map(t=>`${TYPES[t].label} ${String(SCORE.taille[TIDX[t]]/10).replace(".",",")}`).join(" · ")}</span><small>× la rareté du motif : ${DECOR_RAR.slice(0,5).map((r,i)=>`${r.name.toLowerCase()} ×${String(SCORE.decor[i]).replace(".",",")}`).join(", ")}. Même pour un double.</small></li>
+          <li><b>Chaque bille tirée cette semaine</b><span>${TK.map(t=>`${TYPES[t].label} ${String(SCORE.taille[TIDX[t]]/10).replace(".",",")}`).join(" · ")}</span><small>× la rareté du motif : ${DECOR_RAR.slice(0,6).map((r,i)=>`${r.name.toLowerCase()} ×${String(SCORE.decor[i]).replace(".",",")}`).join(", ")}. Même pour un double.</small></li>
           <li><b>Une case vide remplie</b><span>la bille compte double</span><small>Un nouveau motif dans une taille que tu n'avais pas.</small></li>
           <li><b>Une shiny</b><span>${SHINIES.slice(1).map((x,i)=>`${x.name} +${SCORE.shiny[i]/10}`).join(" · ")}</span></li>
           <li><b>Une bille troquée ou achetée au marché</b><span>comme une bille tirée</span><small>Seulement si c'est ton premier exemplaire de cette bille (pas un double).</small></li>
-        </ul><p class="meta">Ne comptent pas : le motif mythique, les doubles reçus par troc ou au marché, les billes des fusions et de l'atelier, d'événement et de saison. Tout repart à zéro chaque lundi à minuit.</p></details>
+        </ul><p class="meta">Ne comptent pas : les doubles reçus par troc ou au marché, les billes des fusions et de l'atelier, d'événement et de saison. Tout repart à zéro chaque lundi à minuit.</p></details>
     </div>
   </div>`;
 }
@@ -19036,7 +19064,7 @@ function dropLocal(id){
 function srvAdopt(list){ list.forEach(x=>sync.known.add(x.id)); return list }
 // première connexion avec le serveur : il reprend les bonbecs et les sachets offerts de la partie
 async function ecoStart(){
-  try{ applyEco(await Cloud.eco.start(S.jetons, S.bagInv||{}, S.pity||0)); eco.ready = true; netMark("eco", true); eventGifts(); gainsFlush(); msgsLoad() }
+  try{ applyEco(await Cloud.eco.start(S.jetons, S.bagInv||{}, S.pity||0)); eco.ready = true; netMark("eco", true); eventGifts(); gainsFlush(); msgsLoad(); mythLoad() }
   catch(e){ eco.ready = false; if(e.code!=="serveur_absent") netMark("eco", false); if(e.code!=="serveur_absent") console.warn("Serveur indisponible, la partie continue sur l'appareil", e);
     if(!eco.retry) ecoRetry([5e3,15e3,30e3][eco.tries++] ?? 60e3) }   // pendant un nouvel essai, c'est ecoRetry qui prévoit le suivant
 }
@@ -20018,6 +20046,31 @@ async function msgPop(){
   Sound.ding(); await lu;
   srv(()=>Cloud.eco.messageLu(m.id)).then(e=>{ applyEco(e); if(cad) toast(`Tu as reçu ${cad} !`) }, srvFail);
 }
+// (2 novembre 2026) l'annonce d'une bille mythique (supabase/mythiques.sql) : tout le monde la voit une fois, celui qui l'a trouvée aussi
+// (seulement celles des 7 derniers jours) ; rechargée toutes les 3 minutes, pour l'annoncer aussi aux joueurs déjà sur le site
+let mythBoot = [];
+function mythLoad(){ srv(()=>Cloud.eco.mythiques()).then(l=>{ if(!Array.isArray(l)) return;
+  l.forEach(m=>{ if(m?.id && m.s && !mythBoot.some(x=>x.id===m.id)) mythBoot.push(m) }) }, ()=>{}) }
+setInterval(()=>{ if(eco.ready && document.visibilityState==="visible") mythLoad() }, 180000);
+const nieme = n => n===1 ? "1re" : `${n}e`;
+function mythPop(){
+  const m = mythBoot.shift(); if(!m) return false;
+  srv(()=>Cloud.eco.mythiqueVue(m.id)).catch(()=>{});   // vue dès qu'elle s'affiche : elle ne reviendra pas
+  const s = Object.assign({}, m.s, {srv:true}); if(!TYPES[s.type] || !FAMILIES[s.family] || !PALETTES[s.pal]) return false;
+  const quoi = m.n===1 ? "la première mythique du serveur" : `la ${nieme(m.n)} mythique du serveur`;
+  const embers = Array.from({length:14}, (_,i)=>`<i class="mp-ember" style="left:${5+i*6.6}%;--dx:${Math.round(Math.sin(i*2.3)*40)}px;animation-delay:${(i*.53)%3.6}s"></i>`).join("");
+  const el = document.getElementById("modal");
+  el.innerHTML = `<div class="modal myth-pop" role="dialog" aria-modal="true" aria-label="Une bille mythique a été trouvée"><button class="close-x" data-action="close-modal" aria-label="Fermer">×</button>
+    ${embers}<span class="mp-kick">${ic("star",13,2.6)} ${m.n===1 ? "Première mythique !" : `${nieme(m.n)} mythique`}</span>
+    <div class="mp-stage"><span class="mp-rays"></span><span class="mp-halo"></span><span class="mp-ball">${mImg(s,240,Math.round(150*Math.min(1.2, .75+scaleOf(s.type)*.3)),esc(specName(s)))}</span></div>
+    <h2>${m.moi ? "C'est toi !" : esc(m.who)}</h2>
+    <p class="mp-what">${m.moi ? "Tu as trouvé" : "a trouvé"} ${quoi} !</p><p class="mp-name">${esc(FAMILIES[s.family].name)}</p>
+    <div class="mp-info"><span>${esc(TYPES[s.type].label)}</span><span>${esc(PALETTES[s.pal][0])}</span>${s.shiny ? `<span>${esc(SHINIES[s.shiny].name)}</span>` : ""}<span>${esc(timeAgo(m.at))}</span></div>
+    <div class="btns">${m.moi ? "" : `<button class="btn btn-ghost" data-action="ami-voir" data-id="${esc(m.qui)}">Voir sa fiche</button>`}<button class="btn btn-yellow btn-xl" data-action="close-modal">${m.moi ? "Trop fort !" : "Incroyable !"}</button></div></div>`;
+  el.hidden = false;
+  setTimeout(()=>{ const r = el.querySelector(".mp-ball")?.getBoundingClientRect(); if(r) mythFX(r.left+r.width/2, r.top+r.height/2) }, 350);
+  return true;
+}
 function bootPopups(){
   if(winsAtBoot===null) winsAtBoot = (S.unshown||[]).slice();
   if(!popupsFree()) return;
@@ -20026,6 +20079,7 @@ function bootPopups(){
   if(departDue()){ departPick(); return }
   if(newsPopDue()){ newsPop(); return }   // (14 octobre 2026) une nouvelle mise à jour : la première fenêtre à l'arrivée, une seule fois
   if(msgsBoot.length){ msgPop(); return }
+  if(mythBoot.length && mythPop()) return;   // (2 novembre 2026) une bille mythique trouvée sur le serveur
   if(onbPopup()) return;
   if(winsAtBoot?.length && winsPopup()) return;
   const P = S.pendingBag;
@@ -20043,7 +20097,7 @@ setTimeout(bootPopups, 800);
 // une fenêtre déjà ouverte (ou un sachet en cours) : on repasse dès qu'elle se ferme ; au retour sur l'onglet après minuit aussi
 // le premier lancement en cours sans bulle ni fenêtre (fenêtre fermée par erreur, sachet qui n'a pas pu s'ouvrir…) : on la remet
 setInterval(()=>{ if(tutoOn() && document.visibilityState==="visible" && !document.getElementById("tuto") && popupsFree()) tutoShow() }, 2500);
-setInterval(()=>{ if(document.visibilityState==="visible" && (tutoDue() || departDue() || newsPopDue() || msgsBoot.length || S.onb?.pop || dailyDue() || heldNews || gcDue() || lotDue() || absDue()) && popupsFree() && !inGame()) bootPopups() }, 2000);
+setInterval(()=>{ if(document.visibilityState==="visible" && (tutoDue() || departDue() || newsPopDue() || msgsBoot.length || mythBoot.length || S.onb?.pop || dailyDue() || heldNews || gcDue() || lotDue() || absDue()) && popupsFree() && !inGame()) bootPopups() }, 2000);
 setInterval(()=>{ if(onbOn()) onbCheck() }, 5000);   // « Reviens demain » : on regarde de temps en temps si on a changé de jour
 // petits secrets
 document.getElementById("logo-marble").addEventListener("click", e=>{

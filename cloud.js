@@ -133,6 +133,9 @@
       // (20 octobre 2026) un mot de l'équipe, avec son cadeau versé à la lecture (supabase/messages.sql)
       messages: () => rpc("messages_a_lire"),
       messageLu: mid => rpc("message_lu", {mid}),
+      // (2 novembre 2026) l'annonce des billes mythiques, une fois pour chaque joueur (supabase/mythiques.sql)
+      mythiques: () => rpc("mythiques_a_voir"),
+      mythiqueVue: bid => rpc("mythique_vue", {bid}),
     },
     // ---------- la Grande Course, à 12 h et à 20 h (supabase/course.sql) ----------
     course: {

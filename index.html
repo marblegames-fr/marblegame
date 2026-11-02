@@ -4210,6 +4210,13 @@ button.cp-who:hover b{text-decoration:underline}
 .modal.gc-pop{display:block;width:min(480px,100%);padding:28px 24px 22px;text-align:center}
 .gc-pop h2{font-family:var(--display);font-weight:400;font-size:30px;margin:10px 0 6px}
 .gc-pop .btns{display:flex;justify-content:center;margin-top:14px}
+.abs-list{list-style:none;margin:14px 0 8px;padding:0;display:grid;gap:8px;text-align:left;max-height:46vh;overflow-y:auto}
+.abs-list li{display:flex;align-items:center;gap:10px;padding:10px 12px;border-radius:14px;background:var(--panel-2);border:2px solid var(--line)}
+.abs-list li>span:nth-child(2){flex:1;min-width:0}.abs-list b{display:block;font-size:14px}.abs-list small{display:block;color:var(--muted);font-size:12px}
+.abs-list em{display:block;font-style:normal;font-weight:800;font-size:12.5px;color:var(--ink-2);margin-top:2px}
+.abs-pop .btns{gap:10px;flex-wrap:wrap}
+.abs-ic{flex:none;display:grid;place-items:center;width:34px;height:34px;border-radius:50%;background:var(--yellow);color:#24253D}
+.abs-tot{margin:6px 0 0;font-size:15px}.abs-tot .coin{width:18px;height:18px;vertical-align:-3px}
 body.gc-open{overflow:hidden}
 .gc-ov{position:fixed;inset:0;z-index:80;background:#141220;color:#fff;overflow:hidden}
 .g3-stage{position:absolute;inset:0}
@@ -12754,7 +12761,7 @@ function artMarelle(){
 
 /* ---------- la Loterie de la semaine ---------- */
 const lot = {data:null, loading:false, fresh:null};
-const LOT_PRIX = [{bons:3, txt:"Un Mammouth + un Sachet Collector + 500 bonbecs"}, {bons:2, txt:"Un Sachet Premium + 50 bonbecs"}, {bons:1, txt:"15 bonbecs"}];   // 7 octobre 2026 : mêmes lots dans supabase/chance.sql
+const LOT_PRIX = [{bons:3, txt:"Un Mammouth + un Sachet Collector + 500 bonbecs", j:500, sac:"collector"}, {bons:2, txt:"Un Sachet Premium + 50 bonbecs", j:50, sac:"premium"}, {bons:1, txt:"15 bonbecs", j:15}];   // 7 octobre 2026 : mêmes lots dans supabase/chance.sql
 const lotBall = (n, on) => `<span class="lt-ball${on?" on":""}">${n}</span>`;
 function lotLoad(force){
   if(!srvOn() || lot.loading || (lot.data && !force)) return;
@@ -12764,11 +12771,12 @@ function lotLoad(force){
 }
 function lotWins(g){
   (g||[]).forEach(w=>{ if(w.bille){ const s = srvAdopt([w.bille])[0]; S.specs.push(s); S.unseen.push(s.id); logFind(s); lot.mamm = s } });
-  if(g?.length){ save(); const best = Math.max(...g.map(w=>w.bons));
-    if(lotDue()) return;   // la fenêtre des résultats va s'ouvrir (même sur la page de la Loterie) : c'est elle qui fête les lots et lance la roulette du Mammouth
-    if(best===3 && lot.mamm){ const m = lot.mamm; lot.mamm = null; setTimeout(()=>mammRoulette(m, "loterie"), 600); return }
-    toast(best===3 ? "Loterie : 3 bons numéros, un Mammouth est à toi !" : `Loterie : tu as gagné ${g.length} lot${g.length>1?"s":""} !`);
-    Sound.ding(); FX.fireworks(SHINY_COLS, best===3 ? 8 : 3) }
+  if(!g?.length) return; save();
+  // le dernier tirage a sa fenêtre des résultats (elle fête ses lots et lance la roulette du Mammouth) ;
+  // (2 novembre 2026) les autres (plusieurs dimanches sans venir) vont dans « Des lots t'attendaient ! » au lieu d'un petit message
+  const popT = lotDue() ? lotDraw().tirage : null, rest = g.filter(w=>w.tirage!==popT);
+  absAdd("lot", rest.map(w=>({tirage:w.tirage, bons:w.bons, k:`${w.tirage}|${(w.numeros||[]).join("-")}`})));
+  if(!popT && lot.mamm){ const m = lot.mamm; lot.mamm = null; setTimeout(()=>mammRoulette(m, "loterie"), 600) }
 }
 function viewLoterie(){
   if(!srvOn()) return `<div class="page-head"><div><button class="back-link" data-action="nav" data-view="jeux">${ic("chevl",14)} Tous les jeux</button><h1>La Loterie</h1><p>Connecte-toi pour jouer à la loterie.</p></div></div>`;
@@ -14859,9 +14867,14 @@ const gc = {etat:null, busy:false, pick:null, live:null};
 function gcLoad(force){
   if(!srvOn() || gc.busy || (gc.etat && !force)) return;
   gc.busy = true;
-  Cloud.course.etat().then(e=>{ gc.etat = e; netMark("gc", true); if(ui.view==="grandecourse") renderView(); renderNav() },
+  Cloud.course.etat().then(e=>{ gcSet(e); netMark("gc", true); if(ui.view==="grandecourse") renderView(); renderNav() },
     ()=>{ netMark("gc", false); setTimeout(()=>gcLoad(true), 15000) }).finally(()=>{ gc.busy = false });   // sans réponse : on retente, sinon la page croit qu'on n'est pas inscrit
 }
+// (2 novembre 2026) les courses plus anciennes que les deux dernières : le serveur verse leurs lots tout seul (« verses ») ;
+// avant, rien ne s'affichait (revenir 2-3 jours après s'être inscrit : pas de fenêtre). Elles vont dans « Des lots t'attendaient ! »
+function gcSet(e){ gc.etat = e; const v = e?.verses||[]; if(!v.length) return;
+  const w = v.filter(x=>x.rang===1).length; if(w) S.stats.gcWins = (S.stats.gcWins||0) + w;   // succès « Maillot jaune »
+  absAdd("gc", v.map(x=>({...x, k:`${x.jour}|${x.heure}`}))); ecoRefresh() }
 const isoDay = (d=new Date()) => `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,"0")}-${String(d.getDate()).padStart(2,"0")}`;
 // sans compte (ou avant la réponse du serveur) : la prochaine course, calculée ici
 function gcNext(){
@@ -15082,7 +15095,7 @@ document.addEventListener("input", e=>{
 function gcRegister(){
   const s = (gc.pick && specById(gc.pick)) || gcDefault(), bid = s && sync.known?.has(s.id) ? s.id : null;
   const was = gc.etat?.inscrit;
-  srv(()=>Cloud.course.inscrire(bid)).then(e=>{ gc.etat = e; gc.pick = null; renderView(); renderNav(); toast(was ? `C'est noté : tu cours avec ${s ? specName(s) : "ta bille"}.` : `Inscrit ! Rendez-vous ${(e.heure||20)===12 ? (e.jour===isoDay() ? "ce midi et ce soir" : "demain midi et demain soir") : gcWhen({jour:e.jour, heure:e.heure||20})}.`); Sound.ding() }, srvFail);
+  srv(()=>Cloud.course.inscrire(bid)).then(e=>{ gcSet(e); gc.pick = null; renderView(); renderNav(); toast(was ? `C'est noté : tu cours avec ${s ? specName(s) : "ta bille"}.` : `Inscrit ! Rendez-vous ${(e.heure||20)===12 ? (e.jour===isoDay() ? "ce midi et ce soir" : "demain midi et demain soir") : gcWhen({jour:e.jour, heure:e.heure||20})}.`); Sound.ding() }, srvFail);
 }
 // toutes les secondes : le compte à rebours ; au départ (12 h ou 20 h), la course commence pour les inscrits qui sont sur le site
 setInterval(()=>{
@@ -17040,7 +17053,7 @@ let bugKeep = null;   // un message qui n'est pas parti : il est reproposé au p
 // on:false cache le bouton (pendant qu'on prépare la mise à jour) ; on:true le remet, avec la pastille si l'id a changé
 // (16 octobre 2026) deux repères : dot = la pastille rouge du bouton, à changer à CHAQUE mise en ligne qui ajoute une ligne au patchnote
 // (avec txt : la date du jour) ; id = la fenêtre d'annonce à l'arrivée, seulement pour les très gros jours
-const NEWS = {on:true, id:"2026-10-27", dot:"2026-11-01-1500", url:"/nouveautes.html", txt:"Mise à jour du 1er nov."};
+const NEWS = {on:true, id:"2026-10-27", dot:"2026-11-02-1200", url:"/nouveautes.html", txt:"Mise à jour du 2 nov."};
 const newsUnseen = () => lsGet("billeo-news-vu")!==NEWS.dot;
 // (14 octobre 2026) à l'arrivée, une fenêtre annonce la mise à jour, une seule fois par mise à jour et par compte (S.newsPop, gardé
 // dans la partie : elle ne revient pas sur un autre appareil) ; on choisit d'aller voir les nouveautés, ou pas
@@ -17559,20 +17572,13 @@ function finTxt(ms){ const s = Math.max(0, ms-Date.now())/1000, j = Math.floor(s
 const clFace = (x, px) => x.active ? mImg(x.active,160,Math.round(px*(.55+.45*scaleOf(x.active.type))),"") : avatarIni(x.pseudo, Math.round(px*.8));
 const clVoir = x => x.id ? ` data-action="ami-voir" data-id="${x.id}" role="button" tabindex="0" title="${x.moi?"Voir ma fiche, comme les autres la voient":"Voir sa collection"}"` : "";
 const clChamp = x => x.champion>0 ? `<span class="cl-champ" title="${x.champion} fois champion de la semaine">${ic("trophy",11,2.4)}${x.champion>1?`×${x.champion}`:""}</span>` : "";
-// les lots du lundi : une fenêtre par semaine gagnée (le serveur a déjà versé les sachets)
+// les lots du lundi (le serveur a déjà versé les sachets) : (2 novembre 2026) dans la fenêtre « Des lots t'attendaient ! », avec le reste
 function semaineLots(d){
   const l = (d?.a_voir||[]).filter(x=>!(cour.semVu||=new Set()).has(x.semaine)); if(!l.length) return;
   l.forEach(x=>cour.semVu.add(x.semaine));
   if(l.some(x=>x.rang===1) && !S.titles.includes(SEMAINE_TITRE)){ S.titles.push(SEMAINE_TITRE); save() }
   ecoRefresh();
-  (async()=>{ for(const x of l){
-    Sound.coin();
-    const voir = await ask({title:x.rang===1 ? "Champion de la semaine !" : `Tu as fini ${rangTxt(x.rang)} de la semaine !`,
-      text:`Semaine ${semTxt(x.semaine)} : ${fmt(x.pts)} pts. Ton lot : <b>${esc(semLotTxt(x))}</b>${x.sac?", rangé dans tes sachets offerts":""}.${x.rang===1?` Et le titre « ${SEMAINE_TITRE} », à choisir dans ton profil.`:""}`,
-      ok:"Super !", no:"Voir le palmarès"});
-    srv(()=>Cloud.cour.semaineVu(x.semaine)).catch(()=>{});
-    if(!voir){ ui.courTab = "classement"; ui.clVue = "palmares"; go("cour"); break }
-  } })();
+  absAdd("sem", l.map(x=>({semaine:x.semaine, rang:x.rang, pts:x.pts, sac:x.sac, bonbecs:x.bonbecs, k:x.semaine})));
 }
 function courClassement(){
   const V = ui.clVue || "general", vb = (k,l,i) => `<button class="chip" data-action="cl-vue" data-v="${k}" aria-pressed="${V===k}">${ic(i,14)} ${l}</button>`;
@@ -18578,7 +18584,8 @@ document.addEventListener("click", e=>{
       { const g = document.getElementById("gc-grid"); if(g) g.innerHTML = gcPickGrid() } break;
     case "gc-pick": gc.pick = S.gcBille = t.dataset.id; S.ballChanged = 1; save(); closeModal(); if(gc.etat?.inscrit) gcRegister(); else renderView(); break;
     case "gc-reg": gcRegister(); break;
-    case "gc-unreg": srv(()=>Cloud.course.desinscrire()).then(e=>{ gc.etat = e; renderView(); renderNav(); toast("Tu n'es plus inscrit à la Grande Course.") }, srvFail); break;
+    case "abs-palmares": closeModal(); ui.courTab = "classement"; ui.clVue = "palmares"; go("cour"); break;
+    case "gc-unreg": srv(()=>Cloud.course.desinscrire()).then(e=>{ gcSet(e); renderView(); renderNav(); toast("Tu n'es plus inscrit à la Grande Course.") }, srvFail); break;
     case "gc-watch": { const D = gc.etat?.rediffs?.[t.dataset.h] || gc.etat?.derniere; if(D){ closeModal(); gcWatch(D) } break }
     case "gc-claim": { const D = gc.etat?.rediffs?.[t.dataset.h]; if(D){ t.disabled = true; closeModal(); gcClaim(D).catch(()=>{ t.disabled = false }) } break }
     case "gc-test": if(!devTools()) break; closeModal(); gcTest(t.dataset.c); break;   // courses d'essai : compte admin seulement
@@ -19968,6 +19975,38 @@ function winsPopup(){
     <button class="btn btn-yellow btn-xl" data-action="close-modal">Super !</button></div>`;
   el.hidden = false; Sound.ding(); return true;
 }
+// (2 novembre 2026) « Des lots t'attendaient ! » : tout ce que le serveur a versé tout seul pendant qu'on n'était pas là,
+// dans une seule fenêtre : les Grandes Courses plus anciennes que les deux dernières, les tirages de Loterie (sauf le dernier,
+// qui a sa fenêtre), les lots de la semaine. Gardé dans S.abs (rien n'est perdu si on ferme la page avant de la voir) ;
+// on attend 2,5 s après le dernier arrivé pour tout regrouper (les réponses du serveur arrivent l'une après l'autre).
+function absAdd(k, l){ if(!l?.length) return;
+  const A = S.abs ||= {gc:[], lot:[], sem:[]}; A[k] ||= [];
+  l.forEach(x=>{ if(!A[k].some(y=>y.k===x.k)) A[k].push(x) }); A.t = Date.now(); save() }
+const absN = () => { const A = S.abs; return A ? (A.gc?.length||0) + (A.lot?.length||0) + (A.sem?.length||0) : 0 };
+const absDue = () => absN()>0 && Date.now()-(S.abs.t||0)>2500;
+function absPopup(){
+  const A = S.abs; delete S.abs; save();
+  const day = d => new Date(d+"T12:00:00").toLocaleDateString("fr-FR", {weekday:"short", day:"numeric", month:"short"});
+  const lotOf = j => [j.sac && BAG_BY[j.sac] ? BAG_BY[j.sac].name : "", j.j>0 ? `${fmt(j.j)} ${CUR.many}` : ""].filter(Boolean).join(" + ");
+  const byK = (a,b) => a.k<b.k ? -1 : 1;
+  let tj = 0, ts = 0; const rows = [];
+  (A.gc||[]).sort(byK).forEach(x=>{ tj += x.prix||0; if(x.sac) ts++;
+    rows.push({ic:"flag", t:`Grande Course · ${day(x.jour)} ${x.heure===12?"midi":"soir"}`, s:`${rangTxt(x.rang)} sur ${x.nb}`, l:lotOf({j:x.prix, sac:x.sac})}) });
+  (A.lot||[]).sort(byK).forEach(x=>{ const P = LOT_PRIX.find(p=>p.bons===x.bons); if(!P) return; tj += P.j; if(P.sac) ts++;
+    rows.push({ic:"ticket", t:`Loterie · ${day(x.tirage)}`, s:`${x.bons} bon${x.bons>1?"s":""} numéro${x.bons>1?"s":""}`, l:(P.bons===3 ? "Un Mammouth + " : "") + lotOf(P)}) });
+  (A.sem||[]).sort(byK).forEach(x=>{ tj += x.bonbecs||0; if(x.sac) ts++;
+    rows.push({ic:"trophy", t:`Semaine ${semTxt(x.semaine)}`, s:x.rang===1 ? `Champion ! Titre « ${SEMAINE_TITRE} »` : `${rangTxt(x.rang)} · ${fmt(x.pts)} pts`, l:lotOf({j:x.bonbecs, sac:x.sac})});
+    srv(()=>Cloud.cour.semaineVu(x.semaine)).catch(()=>{}) });
+  if(!rows.length) return false;
+  const tot = [tj ? `${COIN} ${fmt(tj)}` : "", ts ? `${ts} sachet${ts>1?"s":""} offert${ts>1?"s":""}` : ""].filter(Boolean).join(" + ");
+  const el = document.getElementById("modal");
+  el.innerHTML = `<div class="modal gc-pop abs-pop" role="dialog" aria-modal="true" aria-label="Des lots t'attendaient"><button class="close-x" data-action="close-modal" aria-label="Fermer">×</button>
+    <span class="gh-kick">${ic("gift",14)} ${rows.length} lot${rows.length>1?"s":""}</span><h2>Des lots t'attendaient !</h2>
+    <ul class="abs-list">${rows.map(r=>`<li><span class="abs-ic">${ic(r.ic,18)}</span><span><b>${esc(r.t)}</b><small>${esc(r.s)}</small><em>${esc(r.l)}</em></span></li>`).join("")}</ul>
+    ${tot ? `<p class="abs-tot">En tout : <b>${tot}</b></p>` : ""}<p class="meta">Déjà dans ta poche.</p>
+    <div class="btns">${A.sem?.length ? `<button class="btn btn-ghost" data-action="abs-palmares">Voir le palmarès</button>` : ""}<button class="btn btn-yellow btn-xl" data-action="close-modal">Super !</button></div></div>`;
+  el.hidden = false; Sound.coin(); FX.fireworks(SHINY_COLS, 3); return true;
+}
 // (20 octobre 2026) un mot de l'équipe (supabase/messages.sql) : une excuse après un bug, avec un cadeau versé quand on le ferme
 let msgsBoot = [];
 function msgsLoad(){ srv(()=>Cloud.eco.messages()).then(l=>{ msgsBoot = Array.isArray(l) ? l : [] }, ()=>{}) }
@@ -19997,13 +20036,14 @@ function bootPopups(){
   if(dailyDue()){ S.dailySeen = dayKey(); save(); openDaily(); return }
   if(heldNews){ showHeldNews(); return }
   if(gcDue()){ gcResultPopup(); return }
-  if(lotDue()) lotResultPopup();
+  if(lotDue()){ lotResultPopup(); return }
+  if(absDue()) absPopup();
 }
 setTimeout(bootPopups, 800);
 // une fenêtre déjà ouverte (ou un sachet en cours) : on repasse dès qu'elle se ferme ; au retour sur l'onglet après minuit aussi
 // le premier lancement en cours sans bulle ni fenêtre (fenêtre fermée par erreur, sachet qui n'a pas pu s'ouvrir…) : on la remet
 setInterval(()=>{ if(tutoOn() && document.visibilityState==="visible" && !document.getElementById("tuto") && popupsFree()) tutoShow() }, 2500);
-setInterval(()=>{ if(document.visibilityState==="visible" && (tutoDue() || departDue() || newsPopDue() || msgsBoot.length || S.onb?.pop || dailyDue() || heldNews || gcDue() || lotDue()) && popupsFree() && !inGame()) bootPopups() }, 2000);
+setInterval(()=>{ if(document.visibilityState==="visible" && (tutoDue() || departDue() || newsPopDue() || msgsBoot.length || S.onb?.pop || dailyDue() || heldNews || gcDue() || lotDue() || absDue()) && popupsFree() && !inGame()) bootPopups() }, 2000);
 setInterval(()=>{ if(onbOn()) onbCheck() }, 5000);   // « Reviens demain » : on regarde de temps en temps si on a changé de jour
 // petits secrets
 document.getElementById("logo-marble").addEventListener("click", e=>{

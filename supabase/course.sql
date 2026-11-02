@@ -151,7 +151,7 @@ $$;
 
 -- tout ce que la page a besoin de savoir : la prochaine course, mon inscription, la dernière course de midi et celle du soir
 create or replace function public.course_etat() returns jsonb language plpgsql security definer set search_path = public as $$
-declare qui uuid := interne.moi(); n record; d record; c courses; c12 courses; c20 courses; i course_inscrits; x jsonb;
+declare qui uuid := interne.moi(); n record; d record; c courses; c12 courses; c20 courses; i course_inscrits; x jsonb; rg int; v jsonb := '[]';
 begin
   select * into n from interne.course_suivante();
   -- les courses passées pas encore tirées (personne ne s'est connecté depuis le départ) : on les tire maintenant
@@ -165,18 +165,24 @@ begin
   select * into c20 from courses where heure = 20 and interne.course_depart(jour, heure) <= now()
     order by jour desc, (resultats @> jsonb_build_array(jsonb_build_object('joueur', qui))) desc, manche limit 1;
   -- une course plus ancienne n'est plus visible sur le site : mes lots pas encore récupérés sont versés tout de suite
+  -- (2 novembre 2026) et renvoyés dans « verses » : le jeu les montre dans la fenêtre « Des lots t'attendaient ! » (avant, rien ne s'affichait)
   for c in select y.* from courses y join course_inscrits ci on ci.jour = y.jour and ci.heure = y.heure and coalesce(ci.manche, 1) = y.manche and ci.joueur = qui and ci.lots_le is null
             where not (y.jour = c12.jour and y.heure = 12) is true and not (y.jour = c20.jour and y.heure = 20) is true
-              and interne.course_depart(y.jour, y.heure) <= now() loop
-    select e into x from jsonb_array_elements(c.resultats) e where e->>'joueur' = qui::text;
+              and interne.course_depart(y.jour, y.heure) <= now() order by y.jour, y.heure loop
+    x := null; rg := null;
+    select t.e, t.o into x, rg from jsonb_array_elements(c.resultats) with ordinality t(e, o) where t.e->>'joueur' = qui::text;
     update course_inscrits set lots_le = now() where jour = c.jour and heure = c.heure and joueur = qui;
-    if x is not null then perform interne.crediter(qui, (x->>'prix')::int, x->>'sac'); end if;
+    if x is not null then
+      perform interne.crediter(qui, (x->>'prix')::int, x->>'sac');
+      v := v || jsonb_build_array(jsonb_build_object('jour', c.jour, 'heure', c.heure, 'rang', rg, 'nb', jsonb_array_length(c.resultats),
+                                                     'prix', (x->>'prix')::int, 'sac', x->>'sac'));
+    end if;
   end loop;
   select * into i from course_inscrits where jour = n.jour and heure = n.heure and joueur = qui;
   return jsonb_build_object(
     'jour', n.jour, 'heure', n.heure, 'depart', floor(extract(epoch from interne.course_depart(n.jour, n.heure))*1000)::bigint,
     'inscrits', (select count(*) from course_inscrits where jour = n.jour and heure = n.heure),
-    'inscrit', i.joueur is not null, 'bille', i.bille,
+    'inscrit', i.joueur is not null, 'bille', i.bille, 'verses', v,
     -- les inscrits de la prochaine course (pseudo et bille choisie), dans l'ordre d'inscription
     'participants', (select coalesce(jsonb_agg(jsonb_build_object('pseudo', pr.pseudo, 'moi', ci.joueur = qui, 'bille', b.donnees) order by ci.inscrit_le), '[]'::jsonb)
       from course_inscrits ci join profils pr on pr.id = ci.joueur

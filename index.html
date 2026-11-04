@@ -16156,7 +16156,7 @@ const G3C = {
   // La forêt : à la fourche, un raccourci plein de racines (plots) et de souches, ou un grand détour tranquille sous les arbres
   foret:{name:"La Forêt", desc:"Deux fourches : à chacune, les billes partent d'un côté ou de l'autre, entre raccourcis pleins de racines et de troncs qui tournent, et grands détours. Quatre chemins, une seule gagnante !",
     theme:{bg:"#13261A", ramp:"#9B7348", tray:"#7CC46A", peg:"#5E3F22", rock:"#6E5034"}, form:"fourche",
-    build(k, r, n){ return g3Fourche(k, r, n, {pente:.09, obs:{A1:["plots","bosse","plots","bosse","plots","champis","plots"], B1:["champis","plots","bosse"],
+    build(k, r, n){ return g3Fourche(k, r, n, {pente:.09, bankMax:.15, obs:{A1:["plots","bosse","plots","bosse","plots","champis","plots"], B1:["champis","plots","bosse"],
       A2:["moulin","plots","moulin","bosse","moulin"], B2:["plots","champis","plots"]}}) }},
 
   // La mine, le soir : le raccourci passe par des portes qui tournent (les wagonnets !), le détour fait le tour de la galerie

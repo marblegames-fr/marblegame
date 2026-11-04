@@ -73,7 +73,9 @@ $$;
 -- prix : 1er, 2e, 3e (bonbecs + un sachet), puis la participation (les billes de la cour, ajoutées s'il y a moins de 8 coureurs, ne gagnent rien)
 -- Sachets (2 octobre 2026) : Collector au 1er, Premium au 2e, Classique au 3e. Mêmes valeurs que COURSE_PRIX dans index.html.
 create or replace function interne.course_prix(rang int, out j int, out sac text) language sql immutable as $$
-  select case rang when 1 then 50 when 2 then 30 when 3 then 20 else 10 end,   -- ÷10 le 6 octobre 2026 ; participation 5 → 10 le 27 octobre 2026
+  -- ÷10 le 6 octobre 2026 ; participation 5 → 10 le 27 octobre 2026 ;
+  -- (4 novembre 2026) 30 pour chacun des 3 premiers (avec leur sachet), puis 25 au 4e et 1 de moins par place (5 au 24e)
+  select case when rang <= 3 then 30 else greatest(5, 29 - rang) end,
          case rang when 1 then 'collector' when 2 then 'premium' when 3 then 'classique' end
 $$;
 

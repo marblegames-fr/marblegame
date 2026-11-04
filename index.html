@@ -15024,7 +15024,9 @@ function cbLoop(t){
    Le site ne garde que la dernière course de midi et la dernière du soir (les rediffusions).
    Ici on ne fait que mettre la course en scène à partir de la graine et de l'ordre d'arrivée : tout le monde voit la même course.
    ===================================================================== */
-const COURSE_PRIX = [{j:50, sac:"collector"}, {j:30, sac:"premium"}, {j:20, sac:"classique"}], COURSE_PART = 10;   // mêmes valeurs que interne.course_prix (participation 5 → 10 le 27 octobre 2026)
+// mêmes valeurs que interne.course_prix (participation 5 → 10 le 27 octobre 2026)
+// (4 novembre 2026) 30 bonbecs pour chacun des 3 premiers (avant 50, 30, 20) ; puis 25 au 4e et 1 de moins par place, 5 au 24e (avant 10 pour tous)
+const COURSE_PRIX = [{j:30, sac:"collector"}, {j:30, sac:"premium"}, {j:30, sac:"classique"}], COURSE_PART = i => Math.max(5, 25 - (i - 3));
 const gc = {etat:null, busy:false, pick:null, live:null};
 function gcLoad(force){
   if(!srvOn() || gc.busy || (gc.etat && !force)) return;
@@ -15113,6 +15115,7 @@ function viewGrandeCourse(){
       <div class="gc-clock"><small>Départ dans</small><b data-gc-timer>${gcLeft(N.depart-Date.now())}</b></div>
       ${reg}
       <div class="gc-prizes">${prize(0,"1er")}${prize(1,"2e")}${prize(2,"3e")}</div>
+      <p class="meta gc-suite">Puis ${COIN} 25 au 4e, 1 de moins par place</p>
       <p class="meta">${E ? `${E.inscrits} inscrit${E.inscrits>1?"s":""}${gcManches(E.inscrits)>1?` (${gcManches(E.inscrits)} manches)`:""} · ` : ""}jusqu'à ${N.heure===12?"11 h 59":"19 h 59"}</p>
     </div>
     <div class="gc-side"><div class="gc-prev">${gcPrevSVG(cN)}<span>${whenS} : ${esc(G3C[cN].name)}</span></div>
@@ -17151,7 +17154,7 @@ function gcHud(order, t){
   x.strokeStyle = V.T.th.track; x.lineWidth = 3; x.stroke();
   order.forEach(q=>{ x.fillStyle = q.o.me ? "#FFE14D" : q.o.col; x.beginPath(); x.arc(q.x*sx, q.y*sy, q.o.me?4.5:3, 0, TAU); x.fill() });
 }
-const gcLot = i => i<3 ? COURSE_PRIX[i] : {j:COURSE_PART};
+const gcLot = i => i<3 ? COURSE_PRIX[i] : {j:COURSE_PART(i)};
 // le lot écrit dans les résultats par le serveur (au moment du tirage) ; sinon le barème du moment
 const gcLotTxt = (o,i) => { if(o.bot) return "pas de lot"; if(GCV.race?.test) return "pour de faux";
   const L = o.prix!=null ? {j:o.prix, sac:o.sac} : gcLot(i); return `+${L.j} ${CUR.many}${L.sac?` + ${BAG_BY[L.sac].name}`:""}` };
@@ -17224,7 +17227,7 @@ let bugKeep = null;   // un message qui n'est pas parti : il est reproposé au p
 // on:false cache le bouton (pendant qu'on prépare la mise à jour) ; on:true le remet, avec la pastille si l'id a changé
 // (16 octobre 2026) deux repères : dot = la pastille rouge du bouton, à changer à CHAQUE mise en ligne qui ajoute une ligne au patchnote
 // (avec txt : la date du jour) ; id = la fenêtre d'annonce à l'arrivée, seulement pour les très gros jours
-const NEWS = {on:true, id:"2026-10-27", dot:"2026-11-04-1800", url:"/nouveautes.html", txt:"Mise à jour du 4 nov."};
+const NEWS = {on:true, id:"2026-10-27", dot:"2026-11-04-2000", url:"/nouveautes.html", txt:"Mise à jour du 4 nov."};
 const newsUnseen = () => lsGet("billeo-news-vu")!==NEWS.dot;
 // (14 octobre 2026) à l'arrivée, une fenêtre annonce la mise à jour, une seule fois par mise à jour et par compte (S.newsPop, gardé
 // dans la partie : elle ne revient pas sur un autre appareil) ; on choisit d'aller voir les nouveautés, ou pas

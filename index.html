@@ -12586,7 +12586,9 @@ async function distGo(pay, turned){
   const finish = () => { if(done) return; done = true; give(); dist.busy = false; if(!pay) gamesBonus(); const b = $d("ds-btns"); if(b) b.innerHTML = chanceBtns("distributeur","ds-go","Tourner la manivelle");
     const cr = $d("ds-crank"); if(cr){ cr.style.transition = "none"; cr.style.transform = ""; void cr.getBoundingClientRect(); cr.style.transition = "" } dist.can?.() };
   // la bille est à lui dès que la boule tombe ; s'il s'en va sans l'ouvrir, elle est quand même rangée
-  setTimeout(()=>{ give(); dist.busy = false; if(!alive()) finish() }, 2700);
+  // (4 novembre 2026) le distributeur reste occupé jusqu'à l'ouverture de la boule (finish) : avant, dist.busy repassait à false ici
+  // et on pouvait retourner la manivelle sans avoir ouvert la boule
+  setTimeout(()=>{ give(); if(!alive()) finish() }, 2700);
   const bump = (el, c) => { el.classList.remove(c); void el.offsetWidth; el.classList.add(c) };
   const ring = (x, y, c) => { const e = document.createElement("span"); e.className = "ds-ring"; e.style.cssText = `left:${x}px;top:${y}px;--rc:${c}`; st.appendChild(e); setTimeout(()=>e.remove(), 800) };
   if(!alive()) return finish();

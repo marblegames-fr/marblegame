@@ -9420,6 +9420,11 @@ function lockMany(v){
     .then(fin, e=>{ if(e?.code==="en_vente") toast("Une de ces billes vient d'être mise en vente : retire d'abord son annonce."); else srvFail(e); syncMarbles(true) });
 }
 const BILLES_DEBUT = 50, BILLES_PAQUET = 100;
+// (4 novembre 2026) l'Album, la Confiserie et la Fusion aussi : 50 cartes, puis « Afficher plus » par paquets de 100, comme Mes billes.
+// Le compte repart à 50 quand le filtre, la taille ou la recherche changent (pk) ; il reste tel quel quand on ajoute une bille au chaudron, etc.
+const PLUS = {};
+const plusN = (k, pk) => { if(!PLUS[k] || PLUS[k].pk!==pk) PLUS[k] = {pk, n:BILLES_DEBUT}; return PLUS[k].n };
+const plusRow = (k, shown, total) => total>shown ? `<div class="more-row"><button class="btn btn-ghost" data-action="plus" data-k="${k}">${ic("plus",16,2.6)} Afficher ${Math.min(total-shown, BILLES_PAQUET)} de plus</button><small class="meta">${fmt(shown)} sur ${fmt(total)} cartes</small></div>` : "";
 function viewCollection(){
   if(ui.sel && ui.tab!=="billes") ui.sel = null;
   const slots = slotsOwned(), found = albumFound();
@@ -9528,7 +9533,7 @@ function viewCollection(){
   let body;
   if(ui.tab==="album"){
 
-    body = types.map(t=>{
+    const secs = types.map(t=>{
       const have = DECOR_IDS.filter(f=>slots.has(t+"|"+f)).length;
       const cards = FAM_ORDER.map(f=>{
         const F = FAMILIES[f], list = slots.get(t+"|"+f);
@@ -9542,12 +9547,18 @@ function viewCollection(){
           ${full?`<span class="full-tag">${ic("star",11,2.6)} Complet</span>`:""}${isNew?`<span class="new">Nouveau</span>`:""}
           <span class="ball">${mImg(best,160,Math.round(84*scaleOf(t)+6))}</span><b>${F.name}</b>${rarTag(f)}
           <span class="case-prog"><span class="bar"><i style="width:${got/BASE_PALS*100}%"></i></span><small>${got} / ${BASE_PALS} coloris</small></span></button>`;
-      }).join("") + EVENT_FAMS.map(f=>evCard(t,f)).join("") + SEASON_FAMS.map(f=>seCard(t,f)).join("");
+      }).concat(EVENT_FAMS.map(f=>evCard(t,f)), SEASON_FAMS.map(f=>seCard(t,f))).filter(c=>c.trim());
+      return {t, have, cards} });
+    const nTot = secs.reduce((a,x)=>a+x.cards.length,0);
+    let reste = plusN("album", [ui.type, show, ui.q||"", !!ui.hideMissing].join("|"));
+    body = secs.map(({t, have, cards: all})=>{
+      if(reste<=0 && all.length) return "";   // plus de place : les tailles suivantes arrivent avec « Afficher plus »
+      const cards = all.slice(0, reste).join(""); reste -= all.length;
       return `<section class="type-block">
         <div class="th-line" style="${tstyle(t)}"><h2>${TYPES[t].label}</h2><span class="th-n">${have} / ${N_DECORS}</span><span class="bar"><i class="${have===N_DECORS?"done":""}" style="width:${have/N_DECORS*100}%"></i></span></div>
         ${cards.trim()?`<div class="card-grid">${cards}</div>`:`<p class="empty">${qw.length?"Aucun motif ne correspond à ta recherche dans cette taille.":show==="all"?`Aucune ${TYPES[t].label.toLowerCase()} pour l'instant.`:"Rien avec ce filtre dans cette taille."}</p>`}
       </section>`;
-    }).join("");
+    }).join("") + plusRow("album", Math.min(nTot, plusN("album", PLUS.album.pk)), nTot);
     if(show==="dups" && recyclableDups().length) body = dupsBar() + body;
   }
   if(ui.tab==="album" && show==="event"){
@@ -9830,6 +9841,7 @@ function viewCraft(){
       <button class="btn btn-yellow" data-action="craft-lot" data-n="${lotN}">${ic("flask",18)} Fusionner ×${lotN}</button></div></div>`;
   const nDup = ([,l]) => cnt[dupKey(l[0])]||0;   // exemplaires en tout (cnt est rangé par dupKey, pas par colorKey)
   const groups = byModel(pool.filter(craftFilt)).sort((a,b)=>nDup(b)-nDup(a)), F = ui.craftF||{}, nEv = evPool().length;
+  const nF = plusN("craft", [C.t, F.rar??"", F.q||""].join("|"));
   const fChip = (v,l) => `<button class="chip" data-action="craft-f" data-v="${v}" aria-pressed="${String(F.rar??"")===String(v)}">${l}</button>`;
   const craftBar = `<div class="craft-filters"><div class="chips">${fChip("","Tous les motifs")}${DECOR_RAR.map((R,k)=>fChip(k, R.name)).join("")}
       ${nEv?`<button class="chip ev" data-action="craft-ev">${ic("flag",13)} Billes d'événement (${nEv})</button>`:""}</div>
@@ -9856,10 +9868,10 @@ function viewCraft(){
   <section>
     ${craftBar}
     <div class="panel-head"><h2>Tes ${RAR_PL[C.t]} (${groups.reduce((a,[k,l])=>a+l.length,0)}${groups.reduce((a,[k,l])=>a+l.length,0)<pool.length?` sur ${pool.length}`:""})</h2></div>
-    ${groups.length ? `<div class="cf-grid">${groups.map(([k,l])=>{ const x=l[0], inn=l.filter(y=>C.sel.includes(y.id)).length;
+    ${groups.length ? `<div class="cf-grid">${groups.slice(0, nF).map(([k,l])=>{ const x=l[0], inn=l.filter(y=>C.sel.includes(y.id)).length;
       return `<div class="cf-card${inn?" in":""}" style="${tstyle(x.type)}">${nDup([k,l])>1?`<span class="dup-tag">Double</span>`:""}${l.length>1?`<span class="cf-n">×${l.length}</span>`:""}
         <button class="ball" data-action="spec" data-id="${x.id}" aria-label="Voir ${esc(specName(x))}">${mImg(x,160,Math.round(58*scaleOf(x.type)+14),"")}</button><b>${esc(specName(x))}</b>
-        <div class="cf-step"><button data-action="craft-rm" data-k="${k}" ${inn?"":"disabled"} aria-label="En retirer une">−</button><b>${inn}</b><button data-action="craft-add" data-k="${k}" ${inn<l.length&&!full?"":"disabled"} aria-label="En ajouter une">+</button></div></div>` }).join("")}</div>`
+        <div class="cf-step"><button data-action="craft-rm" data-k="${k}" ${inn?"":"disabled"} aria-label="En retirer une">−</button><b>${inn}</b><button data-action="craft-add" data-k="${k}" ${inn<l.length&&!full?"":"disabled"} aria-label="En ajouter une">+</button></div></div>` }).join("")}</div>${plusRow("craft", Math.min(nF, groups.length), groups.length)}`
       : `<p class="empty">Aucune bille à fusionner</p>`}
     <p class="meta" style="margin-top:12px">Sauf shiny, bille active, vitrine, saison</p>
   </section>`;
@@ -10282,7 +10294,7 @@ function confEchange(dups, dupVal){
         <button class="btn btn-yellow btn-xl" data-action="recycle-dups" ${dups.length?"":"disabled"}>${ic("candy",20)} Tout échanger · +${fmt(dupVal)}</button></div>
     </section>`}
   ${base.length ? filters : ""}
-  ${groups.length ? `${sz!=="all"||cat!=="all" ? `<p class="meta cf-count">${list.length} bille${list.length>1?"s":""} · ${fmt(total)} ${CUR.many}${!seules&&list.length>1?` <button class="cf-all" data-action="recycle-ids" data-ids="${list.map(x=>x.id).join(",")}">Échanger ces ${list.length} · +${fmt(total)}</button>`:""}</p>` : ""}<div class="cf-grid">${groups.map(card).join("")}</div>`
+  ${groups.length ? `${sz!=="all"||cat!=="all" ? `<p class="meta cf-count">${list.length} bille${list.length>1?"s":""} · ${fmt(total)} ${CUR.many}${!seules&&list.length>1?` <button class="cf-all" data-action="recycle-ids" data-ids="${list.map(x=>x.id).join(",")}">Échanger ces ${list.length} · +${fmt(total)}</button>`:""}</p>` : ""}<div class="cf-grid">${groups.slice(0, plusN("conf", [seules, sz, cat].join("|"))).map(card).join("")}</div>${plusRow("conf", Math.min(PLUS.conf.n, groups.length), groups.length)}`
     : `<p class="empty">${base.length ? "Aucune bille avec ces filtres." : seules ? "Aucune bille unique à échanger." : "Pas de double pour l'instant. Reviens après avoir ouvert quelques sachets !"}</p>`}
 `;
 }
@@ -10448,26 +10460,34 @@ function openPicker(i){
   el.innerHTML = `<div class="modal picker" role="dialog" aria-modal="true" aria-label="Choisir une bille pour la vitrine">
     <button class="close-x" data-action="close-modal" aria-label="Fermer">×</button>
     <div class="picker-body"><h2>Choisis une bille à exposer</h2><p class="meta">Les plus rares en premier.</p>
-      ${pickFilter(list)}<div class="card-grid">${list.map(s=>`<button class="m-card${s.shiny?" is-shiny":""}" data-action="vit-set" data-i="${i}" data-id="${s.id}" ${pickData(s)}>${s.shiny?`<span class="shiny-mark">${shinyPill(s)}</span>`:""}<span class="ball">${mImg(s,160,Math.round(70*scaleOf(s.type)+10))}</span><b>${esc(specName(s))}</b>${typePill(s.type)}</button>`).join("")}</div>
+      ${pickFilter(list)}${pickGrid(list, s=>`<button class="m-card${s.shiny?" is-shiny":""}" data-action="vit-set" data-i="${i}" data-id="${s.id}">${s.shiny?`<span class="shiny-mark">${shinyPill(s)}</span>`:""}<span class="ball">${mImg(s,160,Math.round(70*scaleOf(s.type)+10))}</span><b>${esc(specName(s))}</b>${typePill(s.type)}</button>`, "card-grid")}
     </div></div>`;
-  el.hidden = false;
+  applyPick(); el.hidden = false;
   (el.querySelector(".pick-q")||el.querySelector(".close-x")).focus();
 }
 // Recherche dans les listes de billes à choisir (ta bille, la vitrine) : par nom (motif, coloris), shiny, rareté, et par taille.
 // On cache les cartes sans tout redessiner.
 const fold = x => x.normalize("NFD").replace(/[\u0300-\u036f]/g,"").toLowerCase();
 const pickText = s => fold([specName(s), TYPES[s.type].label, s.shiny?"shiny "+SHINIES[s.shiny].name:"", FAMILIES[s.family].rar!=null&&!extraFam(s.family)?DECOR_RAR[FAMILIES[s.family].rar].name:"", isBeta(s)?"beta":"", eventOf(s)?.name||""].join(" "));
-const pickData = s => `data-q="${esc(pickText(s))}" data-t="${s.type}"`;
 const pickFilter = list => list.length<8 ? "" : `<div class="pick-filter">
   <input type="search" class="pick-q" placeholder="Chercher : Galaxie, Rubis, shiny, légendaire…" aria-label="Chercher une bille" autocomplete="off" spellcheck="false">
   <div class="chips">${["",...TK.filter(t=>list.some(s=>s.type===t))].map(t=>`<button class="chip" data-action="pick-t" data-t="${t}" aria-pressed="${!t}">${t?TYPES[t].label:"Toutes"}</button>`).join("")}</div>
   <p class="meta pick-none" hidden>Aucune bille ne correspond.</p></div>`;
-function applyPick(){
-  const box = document.getElementById("modal"), q = fold(box.querySelector(".pick-q")?.value||"").trim().split(/\s+/).filter(Boolean);
+// (4 novembre 2026) vitrine, bille active, bille de profil : 50 billes dessinées, puis « Afficher plus » par 100 (comme Mes billes) ;
+// la recherche et la taille cherchent dans toute la liste (PICK), pas seulement dans les cartes affichées
+let PICK = null;
+const pickGrid = (list, card, cls="pick-grid") => { PICK = {list, card, n:BILLES_DEBUT, txt:new Map()}; return `<div class="${cls}" id="pick-grid"></div><div id="pick-more"></div>` };
+function applyPick(more){
+  const box = document.getElementById("modal"), g = box.querySelector("#pick-grid"); if(!g || !PICK) return;
+  const q = fold(box.querySelector(".pick-q")?.value||"").trim().split(/\s+/).filter(Boolean);
   const t = box.querySelector('.pick-filter .chip[aria-pressed="true"]')?.dataset.t || "";
-  let n = 0;
-  box.querySelectorAll("[data-q]").forEach(c=>{ const ok = (!t || c.dataset.t===t) && q.every(w=>c.dataset.q.includes(w)); c.hidden = !ok; n += ok });
-  box.querySelector(".pick-none")?.toggleAttribute("hidden", n>0);
+  const txt = s => PICK.txt.get(s.id) ?? (PICK.txt.set(s.id, pickText(s)), PICK.txt.get(s.id));
+  const ok = PICK.list.filter(s=>(!t || s.type===t) && (!q.length || q.every(w=>txt(s).includes(w))));
+  const avant = g.children.length;
+  if(more){ PICK.n += BILLES_PAQUET; g.insertAdjacentHTML("beforeend", ok.slice(avant, PICK.n).map(PICK.card).join("")) }
+  else { PICK.n = BILLES_DEBUT; g.innerHTML = ok.slice(0, PICK.n).map(PICK.card).join("") }
+  box.querySelector("#pick-more").innerHTML = plusRow("pick", Math.min(PICK.n, ok.length), ok.length);
+  box.querySelector(".pick-none")?.toggleAttribute("hidden", ok.length>0);
 }
 document.addEventListener("input", e=>{ if(e.target.classList?.contains("pick-q")) applyPick() });
 document.addEventListener("click", e=>{ document.querySelectorAll("details.bx-filt[open]").forEach(d=>{ if(!d.contains(e.target)) d.open = false }) });
@@ -17175,7 +17195,7 @@ let bugKeep = null;   // un message qui n'est pas parti : il est reproposé au p
 // on:false cache le bouton (pendant qu'on prépare la mise à jour) ; on:true le remet, avec la pastille si l'id a changé
 // (16 octobre 2026) deux repères : dot = la pastille rouge du bouton, à changer à CHAQUE mise en ligne qui ajoute une ligne au patchnote
 // (avec txt : la date du jour) ; id = la fenêtre d'annonce à l'arrivée, seulement pour les très gros jours
-const NEWS = {on:true, id:"2026-10-27", dot:"2026-11-03-2200", url:"/nouveautes.html", txt:"Mise à jour du 3 nov."};
+const NEWS = {on:true, id:"2026-10-27", dot:"2026-11-04-1200", url:"/nouveautes.html", txt:"Mise à jour du 4 nov."};
 const newsUnseen = () => lsGet("billeo-news-vu")!==NEWS.dot;
 // (14 octobre 2026) à l'arrivée, une fenêtre annonce la mise à jour, une seule fois par mise à jour et par compte (S.newsPop, gardé
 // dans la partie : elle ne revient pas sur un autre appareil) ; on choisit d'aller voir les nouveautés, ou pas
@@ -18620,6 +18640,8 @@ document.addEventListener("click", e=>{
     case "sel-toggle": selToggle(t); break;
     case "sel-all": if(!ui.sel) break; (ui.selPool||[]).forEach(([id, ids])=>{ const x = specById(id); if(x && !x.secret) ui.sel.set(id, ids) });
       document.querySelectorAll(".card-grid.sel-mode .m-card[data-id]").forEach(c=>{ if(ui.sel.has(c.dataset.id)){ c.classList.add("picked"); c.setAttribute("aria-pressed", true) } }); selRefresh(); break;
+    case "plus": { if(t.dataset.k==="pick"){ applyPick(true); break }
+      const P = PLUS[t.dataset.k], y = scrollY; if(P){ P.n += BILLES_PAQUET; renderView(); scrollTo(0, y) } break }
     case "billes-plus": { const y = scrollY; ui.billesN = (ui.billesN||BILLES_DEBUT) + BILLES_PAQUET; renderView(); scrollTo(0, y); break }
     case "sel-none": if(!ui.sel) break; ui.sel.clear(); document.querySelectorAll(".card-grid.sel-mode .m-card.picked").forEach(c=>{ c.classList.remove("picked"); c.setAttribute("aria-pressed", false) }); selRefresh(); break;
     case "sel-lock": lockMany(t.dataset.v==="1"); break;
@@ -18644,8 +18666,8 @@ document.addEventListener("click", e=>{
       el.innerHTML = `<div class="modal bag-sum pick-modal" role="dialog" aria-modal="true" aria-label="${pub?"Choisir la bille que voient les autres joueurs":"Choisir la bille de ta photo de profil"}"><button class="close-x" data-action="close-modal" aria-label="Fermer">×</button>
         <h2>${pub ? "Quelle bille montrer aux autres joueurs ?" : "Quelle bille en photo de profil ?"}</h2><p class="meta">${pub ? "Ta photo reste visible seulement par toi. Les autres joueurs voient cette bille dans le classement et sur ta fiche." : "Une des billes de ta boîte, à la place de ta photo. Les autres joueurs la voient aussi."}</p>
         ${S.avatar&&specById(S.avatar)?`<p><button class="btn btn-ghost" data-action="set-avatar" data-id=""${P}>Reprendre ma bille active</button></p>`:""}
-        ${pickFilter(list)}<div class="pick-grid">${list.map(x=>`<button class="m-card${x.id===cur?" on":""}" data-action="set-avatar" data-id="${x.id}"${P} ${pickData(x)} style="${tstyle(x.type)}"><span class="ball">${mImg(x,120,Math.round(40*scaleOf(x.type)+14),"")}</span><b>${esc(specName(x))}</b>${typePill(x.type)}</button>`).join("")}</div></div>`;
-      el.hidden = false; (el.querySelector(".pick-q")||el.querySelector(".close-x")).focus(); break }
+        ${pickFilter(list)}${pickGrid(list, x=>`<button class="m-card${x.id===cur?" on":""}" data-action="set-avatar" data-id="${x.id}"${P} style="${tstyle(x.type)}"><span class="ball">${mImg(x,120,Math.round(40*scaleOf(x.type)+14),"")}</span><b>${esc(specName(x))}</b>${typePill(x.type)}</button>`)}</div>`;
+      applyPick(); el.hidden = false; (el.querySelector(".pick-q")||el.querySelector(".close-x")).focus(); break }
     case "set-avatar": { const pub = t.dataset.pub==="1"; if(!pub) delete S.photo; if(t.dataset.id) S.avatar = t.dataset.id; else delete S.avatar; save(); closeModal(); renderTop(); renderView();
       toast(pub ? "C'est la bille que voient les autres joueurs !" : "C'est ta nouvelle photo de profil !"); break }
     case "bug-report": toggleProfPop(false); bugReport(); break;
@@ -18657,8 +18679,8 @@ document.addEventListener("click", e=>{
     case "pick-active": { const el = document.getElementById("modal"), list = [...S.specs].sort(tierSort);
       el.innerHTML = `<div class="modal bag-sum pick-modal" role="dialog" aria-modal="true" aria-label="Choisir ta bille"><button class="close-x" data-action="close-modal" aria-label="Fermer">×</button>
         <h2>Avec quelle bille tu joues ?</h2><p class="meta">Plus elle est grosse, plus elle frappe fort.</p>
-        ${pickFilter(list)}<div class="pick-grid">${list.map(x=>`<button class="m-card${x.id===S.active?" on":""}" data-action="set-active" data-id="${x.id}" ${pickData(x)} style="${tstyle(x.type)}"><span class="ball">${mImg(x,120,Math.round(40*scaleOf(x.type)+14),"")}</span><b>${esc(specName(x))}</b>${typePill(x.type)}</button>`).join("")}</div></div>`;
-      el.hidden = false; (el.querySelector(".pick-q")||el.querySelector(".close-x")).focus(); break }
+        ${pickFilter(list)}${pickGrid(list, x=>`<button class="m-card${x.id===S.active?" on":""}" data-action="set-active" data-id="${x.id}" style="${tstyle(x.type)}"><span class="ball">${mImg(x,120,Math.round(40*scaleOf(x.type)+14),"")}</span><b>${esc(specName(x))}</b>${typePill(x.type)}</button>`)}</div>`;
+      applyPick(); el.hidden = false; (el.querySelector(".pick-q")||el.querySelector(".close-x")).focus(); break }
     case "pick-t": t.parentNode.querySelectorAll(".chip").forEach(c=>c.setAttribute("aria-pressed", c===t)); applyPick(); break;
     case "set-active": S.active=t.dataset.id; save(); renderTop(); renderNav(); closeModal();
       if(!swapGameBall(activeSpec())) renderView();

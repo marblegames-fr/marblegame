@@ -172,7 +172,7 @@
       // page : 0 = la page où je suis, 1 = la première… (sans page : les 50 premiers, comme avant le 10 octobre 2026)
       classement: (portee, page) => rpc("classement", page==null ? {portee:portee||"tous"} : {portee:portee||"tous", page}),
       // (14 octobre 2026) le classement de la semaine, le palmarès des semaines closes, et « j'ai vu mon lot »
-      semaine: portee => rpc("classement_semaine", {portee:portee||"tous"}),
+      semaine: (portee, page) => rpc("classement_semaine", page==null ? {portee:portee||"tous"} : {portee:portee||"tous", page}),   // (4 novembre 2026) par pages de 10, comme le général
       palmares: () => rpc("palmares_semaines"),
       semaineVu: s => rpc("semaine_vu", {s}),
       annonces: () => rpc("mes_annonces"),

@@ -792,7 +792,10 @@ begin
 end $$;
 
 -- le classement de la semaine en cours (tout le monde, ou moi et mes copains) + mes lots pas encore vus
-create or replace function public.classement_semaine(portee text default 'tous') returns jsonb language plpgsql security definer set search_path = public as $$
+-- (4 novembre 2026) par pages de 10, comme le classement général : sans « page », les 50 premiers (anciennes pages du site) ;
+-- page = 0 : le podium et la page de 10 où je suis ; page >= 1 : cette page-là
+drop function if exists public.classement_semaine(text);
+create or replace function public.classement_semaine(portee text default 'tous', page int default null) returns jsonb language plpgsql security definer set search_path = public as $$
 declare moi uuid := auth.uid(); d date;
 begin
   if moi is null then raise exception 'connexion_requise'; end if;
@@ -803,11 +806,18 @@ begin
         row_number() over (order by s.pts desc, s.nouvelles desc, s.joueur)::int pos
       from interne.semaine_pts(d) s where s.pts > 0
         and (portee <> 'copains' or s.joueur = moi or s.joueur in (select ami from amis where joueur = moi))),
-    m as (select r.* from r where r.joueur = moi)
+    m as (select r.* from r where r.joueur = moi),
+    nb as (select count(*)::int n, greatest(1, ceil(count(*) / 10.0))::int pages from r),
+    pg as (select case when page is null then null when page >= 1 then least(page, nb.pages)
+                       else coalesce((select ceil(m.pos / 10.0)::int from m), 1) end p from nb),
+    ligne as (select r.pos, interne.carte(r.joueur) || jsonb_build_object('rang', r.rang, 'pos', r.pos, 'total', r.pts,
+                 'billes', r.billes, 'nouvelles', r.nouvelles, 'moi', r.joueur = moi) j from r
+              where r.pos <= 3 or (select p from pg) is null and r.pos <= 50
+                 or r.pos between ((select p from pg) - 1) * 10 + 1 and (select p from pg) * 10)
     select jsonb_build_object('semaine', d, 'fin', floor(extract(epoch from interne.semaine_t(d + 7))*1000)::bigint,
-      'nb', (select count(*) from r),
-      'liste', coalesce((select jsonb_agg(interne.carte(r.joueur) || jsonb_build_object('rang', r.rang, 'pos', r.pos, 'total', r.pts,
-                 'billes', r.billes, 'nouvelles', r.nouvelles, 'moi', r.joueur = moi) order by r.pos) from r where r.pos <= 50), '[]'),
+      'nb', nb.n,
+      'liste', coalesce((select jsonb_agg(l.j order by l.pos) from ligne l
+                 where (pg.p is null and l.pos <= 50) or (pg.p is not null and l.pos between (pg.p - 1) * 10 + 1 and pg.p * 10)), '[]'),
       'moi', (select jsonb_build_object('rang', m.rang, 'pos', m.pos, 'total', m.pts, 'billes', m.billes, 'nouvelles', m.nouvelles) from m),
       'devant', (select jsonb_build_object('pseudo', interne.pseudo(r.joueur), 'total', r.pts) from r, m where r.pos = m.pos - 1),
       'lots', (select jsonb_agg(jsonb_build_object('de', l.de, 'a', l.a, 'sac', l.sac, 'bonbecs', l.bonbecs, 'pas', l.pas) order by l.de) from interne.lots_semaine() l),
@@ -816,7 +826,10 @@ begin
       -- (14 octobre 2026) ma place la dernière semaine close (la notification de la cloche, pour tous les classés)
       'derniere', (select jsonb_build_object('semaine', p.semaine, 'rang', p.rang, 'pts', p.pts, 'sac', p.sac, 'bonbecs', p.bonbecs,
                      'nb', (select count(*) from palmares q where q.semaine = p.semaine), 'fin', floor(extract(epoch from interne.semaine_t(p.semaine + 7))*1000)::bigint)
-                   from palmares p where p.joueur = moi and p.semaine = (select max(semaine) from semaines))));
+                   from palmares p where p.joueur = moi and p.semaine = (select max(semaine) from semaines)))
+      || case when pg.p is null then '{}'::jsonb else jsonb_build_object('page', pg.p, 'pages', nb.pages,
+           'podium', coalesce((select jsonb_agg(l.j order by l.pos) from ligne l where l.pos <= 3), '[]')) end
+    from nb, pg);
 end $$;
 
 -- le palmarès : les semaines closes (les plus récentes d'abord), leur podium et ma place
@@ -900,7 +913,7 @@ do $$ declare f text; begin
     'billes_echangeables(uuid)','collection_copain(uuid)','fil_amis()','troc_proposer(uuid,uuid[],uuid[],text,bigint,int,int)','troc_repondre(bigint,boolean)','troc_annuler(bigint)',
     'mes_trocs()','vendre(uuid,int,int,int)','retirer_annonce(bigint)','acheter(bigint)','marche(text,int,int,boolean,text,int,text)','mes_annonces()','cour_journal(bigint,int)',
     'mettre_aux_encheres(uuid,int,int)','prix_modele(text,int,int,boolean)','encherir(bigint,int)','mes_encheres()','classement(text,int)','cour_stats()',
-    'classement_semaine(text)','palmares_semaines()','semaine_vu(date)'] loop
+    'classement_semaine(text,int)','palmares_semaines()','semaine_vu(date)'] loop
     execute format('revoke all on function public.%s from public, anon', f);
     execute format('grant execute on function public.%s to authenticated', f);
   end loop;

@@ -17369,7 +17369,7 @@ let bugKeep = null;   // un message qui n'est pas parti : il est reproposé au p
 // on:false cache le bouton (pendant qu'on prépare la mise à jour) ; on:true le remet, avec la pastille si l'id a changé
 // (16 octobre 2026) deux repères : dot = la pastille rouge du bouton, à changer à CHAQUE mise en ligne qui ajoute une ligne au patchnote
 // (avec txt : la date du jour) ; id = la fenêtre d'annonce à l'arrivée, seulement pour les très gros jours
-const NEWS = {on:true, id:"2026-10-27", dot:"2026-11-04-2200", url:"/nouveautes.html", txt:"Mise à jour du 4 nov."};
+const NEWS = {on:true, id:"2026-10-27", dot:"2026-11-04-2300", url:"/nouveautes.html", txt:"Mise à jour du 4 nov."};
 const newsUnseen = () => lsGet("billeo-news-vu")!==NEWS.dot;
 // (14 octobre 2026) à l'arrivée, une fenêtre annonce la mise à jour, une seule fois par mise à jour et par compte (S.newsPop, gardé
 // dans la partie : elle ne revient pas sur un autre appareil) ; on choisit d'aller voir les nouveautés, ou pas
@@ -17517,7 +17517,7 @@ function viewSoon(){
    LA COUR DE RÉCRÉ : copains, troc, marché (supabase/cour.sql)
    Tout se décide sur le serveur ; ici on affiche et on envoie les demandes.
    ===================================================================== */
-var cour = {ok:null, moi:null, fil:null, trocs:null, marche:null, annonces:null, encheres:null, classement:null, absent:{}, loading:{}, at:{}, f:{taille:"", shiny:"", tri:"recent", genre:""},
+var cour = {ok:null, wait:{}, again:{}, moi:null, fil:null, trocs:null, marche:null, annonces:null, encheres:null, classement:null, absent:{}, loading:{}, at:{}, f:{taille:"", shiny:"", tri:"recent", genre:""},
   compose:null, sell:null, specs:[]};
 const COUR_ERR = {inconnu:"Personne ne s'appelle comme ça dans la cour.", soi_meme:"C'est toi ! Donne plutôt ton pseudo à tes copains.",
   deja_ami:"Vous êtes déjà copains.", trop_amis:"Tu as déjà 200 copains !", trop_demandes:"Tu as déjà beaucoup de demandes en attente.",
@@ -17540,22 +17540,28 @@ function courLoad(kind, force){
   const f = {moi:()=>Cloud.cour.moi(), fil:()=>Cloud.cour.fil(), trocs:()=>Cloud.cour.trocs(),
     marche:()=>Cloud.cour.marche(cour.f), annonces:()=>Cloud.cour.annonces(), journal:()=>Cloud.cour.journal(0, 120),
     encheres:()=>Cloud.cour.encheres(), classement:()=>Cloud.cour.classement(ui.clPortee, ui.clPage||0),
-    semaine:()=>Cloud.cour.semaine(ui.semPortee), palmares:()=>Cloud.cour.palmares()}[kind];
-  f().then(d=>{ const prev = cour[kind]; cour[kind] = d; cour.ok = true; if(kind==="classement" && !cour.clAgain) cour.clWait = false; if(kind==="moi") netMark("cour", true);
+    semaine:()=>Cloud.cour.semaine(ui.semPortee, ui.semPage||0), palmares:()=>Cloud.cour.palmares()}[kind];
+  f().then(d=>{ const prev = cour[kind]; cour[kind] = d; cour.ok = true; if(CL_PG[kind] && !cour.again[kind]) cour.wait[kind] = false; if(kind==="moi") netMark("cour", true);
       if(kind==="moi") courMoiNews(prev, d);
       if(kind==="semaine") semaineLots(d);
       const same = ["fil","annonces","trocs"].includes(kind) && JSON.stringify(prev)===JSON.stringify(d);   // un rechargement sans rien de neuf : on ne redessine pas
       if(!same && (ui.view==="cour" || (["fil","moi","encheres","classement"].includes(kind) && ui.view==="accueil") || (["annonces","trocs"].includes(kind) && ((ui.view==="collection" && ui.tab==="billes") || (ui.view==="confiserie" && document.getElementById("ov").hidden))))) renderView();
       if(kind==="moi") renderNav();
       if(kind==="moi" || kind==="journal" || kind==="semaine") renderBell() },
-    e=>{ if(kind==="classement") cour.clWait = false; if(e.code==="serveur_absent"){ if(kind==="moi") cour.ok = false; else cour.absent[kind] = true } else { if(kind==="moi") netMark("cour", false); if(ui.view==="cour") courFail(e) } if(ui.view==="cour") renderView() })
+    e=>{ if(CL_PG[kind]) cour.wait[kind] = false; if(e.code==="serveur_absent"){ if(kind==="moi") cour.ok = false; else cour.absent[kind] = true } else { if(kind==="moi") netMark("cour", false); if(ui.view==="cour") courFail(e) } if(ui.view==="cour") renderView() })
     .finally(()=>{ cour.loading[kind] = false;
       // on a changé de page du classement pendant un chargement : on charge la bonne page
-      if(kind==="classement" && cour.clAgain){ cour.clAgain = false; courLoad("classement", true) } });
+      if(CL_PG[kind] && cour.again[kind]){ cour.again[kind] = false; courLoad(kind, true) } });
 }
 const courRefresh = (...kinds) => kinds.forEach(k=>courLoad(k, true));
-// le classement, page p (0 = la page où je suis)
-function clGo(p){ ui.clPage = p; cour.clWait = true; if(cour.loading.classement) cour.clAgain = true; else courLoad("classement", true); renderView() }
+// le classement (général ou de la semaine), page p (0 = la page où je suis)
+const CL_PG = {classement:"clPage", semaine:"semPage"};
+function clGo(p, kind="classement"){ ui[CL_PG[kind]] = p; cour.wait[kind] = true; if(cour.loading[kind]) cour.again[kind] = true; else courLoad(kind, true); renderView() }
+// les boutons de pages (podium à part, pages de 10)
+function clPager(C, kind){ const pg = C.page || 1, pgs = C.pages || 1;
+  const b = (p, icon, lbl, off) => `<button class="btn btn-ghost btn-sm" data-action="cl-page" data-k="${kind}" data-p="${p}" ${off||cour.wait[kind]?"disabled":""} aria-label="${lbl}">${ic(icon,15,2.6)}</button>`;
+  return pgs>1 ? `<div class="cp-pager cl-pager">${b(1,"chevll","Première page",pg<=1)}${b(pg-1,"chevl","Page précédente",pg<=1)}
+      <span>Page <b>${pg}</b> / ${pgs}</span>${b(pg+1,"chev","Page suivante",pg>=pgs)}${b(pgs,"chevrr","Dernière page",pg>=pgs)}</div>` : "" }
 // « moi » rechargé : une nouvelle demande de copain, ou un joueur qui a accepté la nôtre → un petit message (et la cloche)
 function courMoiNews(prev, d){
   if(!prev || !d) return;
@@ -17907,7 +17913,9 @@ function clSemaine(){
   const C = cour.semaine; if(!C) return courWait();
   const P = ui.semPortee || "tous", M = C.moi, lots = C.lots?.length ? C.lots : SEMAINE_LOTS;
   const chip = (k,l) => `<button class="chip" data-action="sem-portee" data-p="${k}" aria-pressed="${P===k}">${l}</button>`;
-  const top = C.liste.slice(0,3), podium = [top[1], top[0], top[2]].filter(Boolean), liste = C.liste.slice(3);
+  // (4 novembre 2026) comme le général : le podium à part, la liste par pages de 10 (on arrive sur la page où on est)
+  const top = C.podium || C.liste.slice(0,3), podium = [top[1], top[0], top[2]].filter(Boolean), liste = C.liste.filter(x=>(x.pos ?? x.rang) > 3);
+  const enVue = C.liste.some(x=>x.moi) || top.some(x=>x.moi);
   const row = x => `<div class="cl-row${x.moi?" me":""}"${clVoir(x)}><span class="cl-rank">${x.rang}</span><span class="cl-face">${clFace(x,40)}</span>
       <span class="who">${esc(x.pseudo)}${x.moi?` <em>toi</em>`:""}</span>
       <span class="cl-pts">${fmt(x.total)}<small>pts</small></span></div>`;
@@ -17924,7 +17932,8 @@ function clSemaine(){
         <span class="cl-face">${clFace(x, x.rang===1?84:66)}</span><b>${esc(x.pseudo)}</b><span class="cl-pts">${fmt(x.total)}<small>pts</small></span>
         <span class="cl-step"><i>${x.rang}</i></span></div>`).join("")}</div>
       ${liste.length ? `<div class="cl-list">${liste.map(row).join("")}</div>` : ""}
-      ${M && M.pos>50 ? `<div class="cl-list"><div class="cl-gap">…</div>${row(Object.assign({pseudo:S.name, moi:true, active:avatarSpec(specById(S.active))}, M))}</div>` : ""}
+      ${M && !enVue ? `<div class="cl-list"><div class="cl-gap">…</div><div class="cl-back" data-action="cl-page" data-k="semaine" data-p="0" role="button" tabindex="0" title="Aller à ma place">${row(Object.assign({pseudo:S.name, moi:true, active:avatarSpec(specById(S.active))}, M))}</div></div>` : ""}
+      ${clPager(C, "semaine")}
     </section>` : `<section class="panel"><p class="empty">Personne n'a encore tiré de bille cette semaine. Ouvre un sachet et prends la tête !</p></section>`}
     <div class="row-2">
       <section class="panel"><div class="panel-head"><h3>${ic("gift",18)} À gagner lundi</h3></div>
@@ -17967,12 +17976,10 @@ function clGeneral(){
   const voir = x => x.id ? ` data-action="ami-voir" data-id="${x.id}" role="button" tabindex="0" title="${x.moi?"Voir ma fiche, comme les autres la voient":"Voir sa collection"}"` : "";
   // depuis le 10 octobre 2026 : le podium à part, et la liste par pages de 10 (on arrive sur la page où on est)
   const top = C.podium || C.liste.slice(0,3), podium = [top[1], top[0], top[2]].filter(Boolean);
-  const liste = C.liste.filter(x=>(x.pos ?? x.rang) > 3), pg = C.page || 1, pgs = C.pages || 1;
+  const liste = C.liste.filter(x=>(x.pos ?? x.rang) > 3);
   const devant = C.devant || (M.rang>1 && C.liste[M.rang-2]);
   const enVue = C.liste.some(x=>x.moi) || top.some(x=>x.moi);
-  const pbtn = (p, icon, lbl, off) => `<button class="btn btn-ghost btn-sm" data-action="cl-page" data-p="${p}" ${off||cour.clWait?"disabled":""} aria-label="${lbl}">${ic(icon,15,2.6)}</button>`;
-  const pager = pgs>1 ? `<div class="cp-pager cl-pager">${pbtn(1,"chevll","Première page",pg<=1)}${pbtn(pg-1,"chevl","Page précédente",pg<=1)}
-      <span>Page <b>${pg}</b> / ${pgs}</span>${pbtn(pg+1,"chev","Page suivante",pg>=pgs)}${pbtn(pgs,"chevrr","Dernière page",pg>=pgs)}</div>` : "";
+  const pager = clPager(C, "classement");
   const row = x => `<div class="cl-row${x.moi?" me":""}"${voir(x)}><span class="cl-rank">${x.rang}</span><span class="cl-face">${face(x,40)}</span>
       <span class="who">${esc(x.pseudo)}${x.moi?` <em>toi</em>`:""}</span>
       <span class="cl-pts">${fmt(x.total)}<small>pts</small></span></div>`;
@@ -18676,7 +18683,7 @@ document.addEventListener("click", e=>{
     // ----- la cour de récré -----
     case "cour-tab": ui.courTab = t.dataset.tab; cour.compose = null; cour.sell = null;
       if(t.dataset.tab==="troc") courRefresh("trocs"); if(t.dataset.tab==="marche") courRefresh("marche","annonces","encheres");
-      if(t.dataset.tab==="classement"){ ui.clPage = 0; courRefresh("classement") }
+      if(t.dataset.tab==="classement"){ ui.clPage = 0; ui.semPage = 0; courRefresh("classement") }
       if(t.dataset.tab==="journal") courSeeJournal();
       renderView(); break;
     case "cour-see": openModal(null, cour.specs[+t.dataset.k]); break;
@@ -18789,9 +18796,9 @@ document.addEventListener("click", e=>{
     case "news-see": closeModal(); ui.courTab = "journal"; cour.compose = null; cour.sell = null; courSeeJournal(); if(ui.view!=="cour") go("cour"); else renderView(); break;
     case "jr-filt": ui.jf = t.dataset.f; ui.jrPage = 0; renderView(); break;
     case "cl-portee": ui.clPortee = t.dataset.p; ui.clPage = 0; cour.classement = null; courRefresh("classement"); renderView(); break;
-    case "cl-vue": ui.clVue = t.dataset.v; renderView(); break;
-    case "sem-portee": ui.semPortee = t.dataset.p; cour.semaine = null; courRefresh("semaine"); renderView(); break;
-    case "cl-page": clGo(+t.dataset.p); break;
+    case "cl-vue": ui.clVue = t.dataset.v; if(t.dataset.v==="semaine" && ui.semPage){ ui.semPage = 0; courRefresh("semaine") } renderView(); break;
+    case "sem-portee": ui.semPortee = t.dataset.p; ui.semPage = 0; cour.semaine = null; courRefresh("semaine"); renderView(); break;
+    case "cl-page": clGo(+t.dataset.p, t.dataset.k==="semaine" ? "semaine" : "classement"); break;
     case "tab": if(t.dataset.tab==="defis"){ closeModal(); go("succes"); break }
       if(ui.view==="collection" && ui.tab!==t.dataset.tab) Sound.page();
       ui.tab=t.dataset.tab; closeModal(); if(ui.view!=="collection") go("collection"); else renderView(); break;

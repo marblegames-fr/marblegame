@@ -69,7 +69,7 @@ body{background:var(--bg);color:var(--ink);font:600 14px/1.35 Nunito,system-ui,s
 <div class="end" id="end" hidden></div>
 
 <script type="importmap">{"imports":{"three":"https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.js","three/addons/":"https://cdn.jsdelivr.net/npm/three@0.160.0/examples/jsm/","cannon-es":"https://cdn.jsdelivr.net/npm/cannon-es@0.20.0/dist/cannon-es.js"}}</script>
-<script src="courses-inedites-moteur.js"></script>
+<script>document.write('<script src="courses-inedites-moteur.js?v=' + Date.now() + '"><' + '/script>')</script>
 <script type="module">
 import * as THREE from "three";
 import * as CANNON from "cannon-es";
@@ -117,6 +117,10 @@ function colorOf(kind, th){
     case "peg": case "rail": return {c:th.peg || "#F4EEDC"};
     case "bump": return {c:th.bump || "#FF6FB5", em:.25};
     case "spin": return {c:th.spin || "#FFD34D", em:.15};
+    case "roulR": return {c:"#C8102E"};
+    case "roulN": return {c:"#1C1A22"};
+    case "roulV": return {c:"#0E8A4B"};
+    case "roulOr": return {c:"#E8B73A", em:.2};
     default: return {c:th.rock || "#8A8496"};
   }
 }
@@ -164,7 +168,8 @@ function start(){
     const v = build(sim.W, C.theme);
     const order = sim.fin.map((x, i)=>i).sort((a, b)=>sim.fin[a]-sim.fin[b]);
     $("labels").innerHTML = sim.W.balls.map((_, i)=>`<span id="lb${i}" style="color:#${COLS[i].getHexString()}">${NOMS[i]}</span>`).join("");
-    R = {sim, v, order, seed, calc, t0:performance.now(), follow:null, camP:null, camL:null, ended:false, said:""};
+    // ?t=40 : démarrer la course à 40 s (pour regarder la fin)
+    R = {sim, v, order, seed, calc, t0:performance.now() - (+Q.get("t") || 0)*1000, follow:null, camP:null, camL:null, ended:false, said:""};
     const p0 = sim.W.balls[0].position; camera.position.set(p0.x - 12, p0.y + 8, p0.z + 12);
     $("wait").hidden = true;
   }, 30);

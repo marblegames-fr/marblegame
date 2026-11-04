@@ -823,7 +823,8 @@ function g3Tour(k, r, n, o){
       rings.forEach(([r1, r2], ring)=>{
         if(ring===rings.length - 1 && Math.abs(dAng(a, ah)) < HL/2) return;   // la trappe : seulement dans l'anneau du bord
         const rad = angAt(a), rc = (r1 + r2)/2, X = v3.norm([rad[0]*Math.cos(TL), -Math.sin(TL), rad[2]*Math.cos(TL)]), Z = [-Math.sin(a), 0, Math.cos(a)], Y = v3.cross(Z, X);
-        lot.push({size:[(r2 - r1)/Math.cos(TL) + .1, .3, 2*r2*Math.sin(da/2)*1.1], pos:v3.add(C, [rad[0]*rc, top(yk, rc) - yk - .15, rad[2]*rc]), quat:g3Basis(X, Y, Z), kind:"ramp"}) }) }
+        const kd = roul ? (ring===0 ? "roulV" : j%2 ? "roulR" : "roulN") : "ramp";   // la roulette : des cases rouges et noires
+        lot.push({size:[(r2 - r1)/Math.cos(TL) + .1, .3, 2*r2*Math.sin(da/2)*1.1], pos:v3.add(C, [rad[0]*rc, top(yk, rc) - yk - .15, rad[2]*rc]), quat:g3Basis(X, Y, Z), kind:kd}) }) }
     // le mur du bord (en verre, pour voir les billes) et le moyeu au milieu
     const NW = 40;
     for(let j=0; j<NW; j++){ const a = (j + .5)*2*Math.PI/NW, X = angAt(a), Z = [-Math.sin(a), 0, Math.cos(a)];
@@ -831,7 +832,7 @@ function g3Tour(k, r, n, o){
       const bas = L===0 && Math.abs(dAng(a, Math.PI)) < .4, hm = L===0 ? (bas ? 2.55 : 4.2) : H + .2;
       lot.push({size:[.25, hm, 2*(RO + .2)*Math.sin(Math.PI/NW)*1.12], pos:v3.add(C, [X[0]*(RO + .14), top(yk, RO) - yk + hm/2 - .3, X[2]*(RO + .14)]), quat:g3Basis(X, [0,1,0], Z), kind:"glass"}) }
     for(let i=0; i<lot.length; i+=20) g3Deco(k.boxes(lot.slice(i, i + 20)));
-    g3Deco(k.cyl(RI, 1.4, [0, yk + .6, 0], null, "peg"));
+    g3Deco(k.cyl(RI, 1.4, [0, yk + .6, 0], null, roul ? "roulOr" : "peg"));
     // le tourniquet : deux barres en croix (4 pales), un peu au-dessus du fond
     const ph = r()*Math.PI, w = sens*(roul ? (o.wRoul || .6) : W*(.75 + .55*r()));
     [0, Math.PI/2].forEach(b=>g3Rotor(k.spin([2*(RO - .14), .9, .24], [0, yk + .55, 0], [0, ph + b, 0], [0, w, 0])));
@@ -875,15 +876,16 @@ function g3Couloirs(k, r, n, o){
       // un aiguillage dans un passage sur deux : une barre qui tourne à plat, à cheval sur les deux couloirs (elle envoie les billes à côté)
       if(j < iG - 4 && r() < .55){ const fm = F[Math.round(j + g/2)]; g3Rotor(k.spin([2.3, .55, .22], at(j + g/2, z, .36), fm.q, v3.mul(fm.Y, (r() < .5 ? -1 : 1)*(1.3 + .5*r())))) }
       i = j + g } }
-  // chaque couloir a son caractère (tiré au hasard à chaque course) : les portes (on attend ou on passe d'un coup),
-  // les champignons en quinconce (ça rebondit, on perd un peu de temps mais on ne s'arrête jamais), le dégagé (rien… mais les aiguillages y envoient du monde)
-  const types = ["portes", "champis", "degage"].sort(()=>r() - .5);
+  // chaque couloir a son caractère (tiré au hasard à chaque course), avec autant d'obstacles que les autres : les portes (on attend
+  // ou on passe d'un coup), les champignons en quinconce (ça rebondit, on ne s'arrête jamais), les moulins (une barre qui tourne à plat :
+  // on passe sur le côté, ou on se fait renvoyer). (4 novembre 2026 : le 3e couloir était dégagé, pas juste.)
+  const types = ["portes", "champis", "moulins"].sort(()=>r() - .5);
   for(let c=0; c<NC; c++){ const zc = -WID/2 + (c + .5)*LW, ty = types[c % 3];
     for(let i = i0 + 16 + c*3 + r()*3, j = 0; i < iG - 5; j++){
       const f = F[Math.round(i)];
-      if(ty==="portes"){ g3Rotor(k.spin([.3, 2.1, LW - .2], at(i, zc, 1.45), f.q, v3.mul(f.Z, 1.6 + .6*r()))); i += 17 + r()*5 }
-      else if(ty==="champis"){ k.cyl(.28, 1, at(i, zc + (j%2 ? .35 : -.35), .5), f.q, "bump", "rebond"); i += 5 + r()*1.5 }
-      else { if(r() < .4) k.cyl(.35, 1, at(i, zc, .5), f.q, "bump", "rebond"); i += 18 + r()*6 }
+      if(ty==="portes"){ g3Rotor(k.spin([.3, 2.1, LW - .2], at(i, zc, 1.45), f.q, v3.mul(f.Z, 1.15 + .4*r()))); i += 15 + r()*4 }
+      else if(ty==="champis"){ k.cyl(.28, 1, at(i, zc + (j%2 ? .35 : -.35), .5), f.q, "bump", "rebond"); i += 10 + r()*3 }
+      else { g3Rotor(k.spin([1.3, .45, .45], at(i, zc, .5), f.q, v3.mul(f.Y, (j%2 ? 1 : -1)*(1.3 + .5*r())))); i += 9 + r()*3 }
     } }
   // le goulot : deux murets en biais (de la largeur de la piste à GW), puis le passage étroit et sa porte
   const iF = iG + 12, fq = F[Math.round((iG + iF)/2)];
@@ -899,7 +901,7 @@ Object.assign(G3C, {
   tour:{name:"La Tour", desc:"Huit plateaux empilés qui tournent une fois dans un sens, une fois dans l'autre : un tourniquet pousse les billes jusqu'à la trappe. Et tout en bas, la roulette : une toute petite trappe, et tout se joue !",
     theme:{bg:"#1B1030", ramp:"#C9955C", tray:"#FFD34D", spin:"#FF5FA2", peg:"#FFD34D"}, form:"tour", peloton:0, patience:12,
     build(k, r, n){ return g3Tour(k, r, n, {etages:8, w:.75}) }},
-  couloirs:{name:"Les Couloirs", desc:"Trois couloirs : un plein de portes, un plein de champignons, un tout dégagé… et des aiguillages qui envoient les billes à côté. À la fin, tout le monde se retrouve dans le goulot !",
+  couloirs:{name:"Les Couloirs", desc:"Trois couloirs : un de portes, un de champignons, un de moulins… et des aiguillages qui envoient les billes à côté. À la fin, tout le monde se retrouve dans le goulot !",
     theme:{bg:"#0F2230", ramp:"#3FA7D6", tray:"#FFD34D", spin:"#FFD34D", bump:"#FF6FB5", peg:"#FFFFFF"}, form:"couloirs",
     build(k, r, n){ return g3Couloirs(k, r, n, {pente:.1, len:135}) }},
 });

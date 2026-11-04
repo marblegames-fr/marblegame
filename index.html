@@ -15549,7 +15549,7 @@ async function g3Load(){
 // et les pichenettes), et d'où la caméra regarde (cam). Un circuit par course : celui de midi et celui du soir sont toujours différents.
 // Les pièces qui bougent (moulins) tournent à vitesse fixe : tout le monde voit exactement la même course.
 const G3_ORDER = ["lacets","plinko","spirale","toboggan","moulins","flipper","ski","labyrinthe","cascade","billard","pinball","fantome",
-  "aquatique","bobsleigh","foret","mine","tourbillon","entonnoirs","volcan","roue","nuages","cirque"];
+  "aquatique","bobsleigh","foret","mine","tourbillon","entonnoirs","volcan","roue","nuages","cirque","tour","tourNuit","couloirs","couloirsNuit"];
 // (14 octobre 2026) chaque moment a ses circuits : ceux de midi en plein air, ceux du soir dans une ambiance de fête foraine la nuit.
 // Rangés par forme : les rampes en zigzag, le mur (Plinko, Grande Roue), la spirale, la goulotte qui serpente, la fourche (chemins qui
 // se séparent), les entonnoirs, les trampolines. Le tirage choisit d'abord une forme (jamais celle de la course d'avant), puis un circuit.
@@ -15557,7 +15557,10 @@ const G3_MIDI = {zigzag:["lacets","toboggan","ski","labyrinthe","cascade","billa
   entonnoirs:["tourbillon"], spirale:["volcan"], trampo:["nuages"]};
 const G3_SOIR = {zigzag:["moulins","flipper","pinball","fantome"], mur:["roue"], spirale:["spirale"], serpent:["bobsleigh"], fourche:["mine"],
   entonnoirs:["entonnoirs"], trampo:["cirque"]};
-const g3Midi = cid => Object.values(G3_MIDI).some(l=>l.includes(cid));
+// (4 novembre 2026) deux formes en plus à partir du 5 novembre : la Tour et les Couloirs (une version de jour, une de nuit).
+// Les courses d'avant gardent leur tirage (les rediffusions montrent le même circuit) : ces paquets ne s'ouvrent qu'à partir de ce jour-là.
+const G3_NOUV = "2026-11-05", G3_MIDI2 = {...G3_MIDI, tour:["tour"], couloirs:["couloirs"]}, G3_SOIR2 = {...G3_SOIR, tour:["tourNuit"], couloirs:["couloirsNuit"]};
+const g3Midi = cid => Object.values(G3_MIDI2).some(l=>l.includes(cid));
 // le circuit d'une course : tiré au hasard d'après le jour (le même pour tout le monde), jamais le même le midi et le soir.
 // G3_FORCE : une course dont on a choisi le circuit à la main (le Grand Plinko pour la première course de midi avec les circuits).
 const G3_FORCE = {"2026-10-03|12":"plinko"};
@@ -15574,7 +15577,9 @@ function g3CircuitOf(race){
   if(g3Tirage.has(key)) return g3Tirage.get(key);
   const mele = (a, sd) => { const r = rng(hash(sd)), b = a.slice(); for(let i=b.length-1;i>0;i--){ const j = Math.floor(r()*(i+1)); [b[i], b[j]] = [b[j], b[i]] } return b };
   const paq = {}, tour = {}; let prevF = "";
-  for(let d=0; d<=nd; d++) for(const hh of [12, 20]){ const T = hh===12 ? G3_MIDI : G3_SOIR;
+  const [ny, nm, ndd] = G3_NOUV.split("-").map(Number), dNouv = Math.round((Date.UTC(ny, nm-1, ndd) - d0)/864e5);
+  for(let d=0; d<=nd; d++) for(const hh of [12, 20]){ const T = d>=dNouv ? (hh===12 ? G3_MIDI2 : G3_SOIR2) : (hh===12 ? G3_MIDI : G3_SOIR);
+    if(d===dNouv && !paq["nouv"+hh]){ paq["nouv"+hh] = 1; paq[hh] = [] }   // le jour où les nouvelles formes arrivent : un paquet de formes neuf (avec elles)
     if(!paq[hh]?.length){ tour[hh] = (tour[hh]||0) + 1; paq[hh] = mele([...Object.keys(T), "zigzag"], `${hh}|formes|${tour[hh]}`) }
     let i = paq[hh].findIndex(f=>f!==prevF);
     if(i<0){ tour[hh]++; paq[hh].push(...mele([...Object.keys(T), "zigzag"], `${hh}|formes|${tour[hh]}`)); i = paq[hh].findIndex(f=>f!==prevF) }   // fin du paquet : on en ouvre un nouveau
@@ -15947,6 +15952,118 @@ function g3Obstacles(k, frames, WID, liste, r){
 // la caméra des goulottes : derrière la bille et au-dessus, dans le sens de la piste
 const g3ChaseCam = (p, T) => { const h = Math.hypot(T[0], T[2]) || 1; return [p[0] - T[0]/h*10, p[1]+8.5, p[2] - T[2]/h*10] };   // (14 octobre 2026) un peu plus loin
 
+// ===== (4 novembre 2026) deux formes nouvelles : la Tour et les Couloirs (maquette : maquettes/maquette-courses-inedites.html) =====
+// Les pièces qui tournent (corps « kinematic ») ne se cognent pas au décor : sans ça le moteur teste à chaque pas
+// chaque pale contre chaque morceau de plateau (aucun effet, mais très lent). Groupe 2 pour elles, le décor ne les regarde pas.
+const g3Rotor = b => { b.collisionFilterGroup = 2; b.collisionFilterMask = 1; return b };
+const g3Deco = b => { if(b) b.collisionFilterMask = -1 & ~2; return b };
+
+// ---------- LA TOUR : des plateaux ronds empilés ----------
+// Sur chaque étage, un tourniquet (4 pales) pousse les billes en rond le long du bord. Le fond a une trappe :
+// une bille tombe à l'étage du dessous quand sa case passe au-dessus. Où elle atterrit par rapport à la trappe suivante,
+// c'est la chance : une bille en tête peut faire presque un tour entier, une bille derrière tomber tout de suite.
+function g3Tour(k, r, n, o){
+  const NL = o.etages || 6, RO = 5.4, RI = 1.3, RH = 2.9, H = o.h || 4.2, HOLE = o.trou || .95, TL = 4*Math.PI/180, W = o.w || .7;
+  const path = [], tl = Math.tan(TL);
+  const top = (yk, rr) => yk - (rr - RI)*tl;   // le dessus du fond, penché vers le bord (les billes roulent contre le mur)
+  const angAt = a => [Math.cos(a), 0, Math.sin(a)];
+  const dAng = (a, b) => { let d = (a - b) % (2*Math.PI); if(d > Math.PI) d -= 2*Math.PI; if(d < -Math.PI) d += 2*Math.PI; return d };
+  // la goulotte de départ arrive par la gauche (angle π) au-dessus du premier plateau
+  const y0 = 0, LC = 20, pc = .12;
+  const P0 = g3Trace([["S", LC]], {pente:pc, from:[-RO - LC + 2.2, y0 + 2.1 + LC*pc, 0]});
+  path.push(...g3Trough(k, P0, {WID:3.6, mur:1.4, pente:pc}).path);
+  const st = g3TroughStart(k, P0, {WID:3.6}, n, r);
+  // (4 novembre 2026, 2e version) un étage sur deux tourne dans l'autre sens, chacun à sa vitesse ; le dernier étage est la « roulette » :
+  // une petite trappe tout au bord et un tourniquet lent, toutes les billes s'y retrouvent et l'ordre de sortie s'y joue.
+  // sens 1 : les pales font diminuer l'angle (w > 0 autour de y) ; sens -1 : l'inverse. La trappe est un peu plus loin dans le sens du tour.
+  let entree = Math.PI;
+  const trappes = [];
+  for(let L=0; L<NL; L++){
+    const yk = y0 - L*H, C = [0, yk, 0], lot = [];
+    const sens = L%2 ? -1 : 1, roul = L===NL - 1;
+    const ah = entree - sens*((o.ecart || 2.5) + (r() - .5)*.6);   // la trappe de cet étage
+    // les anneaux du fond ; la trappe est dans le dernier (à la roulette : seulement tout au bord, et plus étroite)
+    const rings = roul ? [[RI, RH], [RH, 4.4], [4.4, RO]] : [[RI, RH], [RH, RO]], HL = roul ? (o.trouRoul || .6) : HOLE;
+    trappes.push(ah);
+    const NS = 36;
+    for(let j=0; j<NS; j++){ const a = (j + .5)*2*Math.PI/NS, da = 2*Math.PI/NS;
+      rings.forEach(([r1, r2], ring)=>{
+        if(ring===rings.length - 1 && Math.abs(dAng(a, ah)) < HL/2) return;   // la trappe : seulement dans l'anneau du bord
+        const rad = angAt(a), rc = (r1 + r2)/2, X = v3.norm([rad[0]*Math.cos(TL), -Math.sin(TL), rad[2]*Math.cos(TL)]), Z = [-Math.sin(a), 0, Math.cos(a)], Y = v3.cross(Z, X);
+        const kd = roul ? (ring===0 ? "roulV" : j%2 ? "roulR" : "roulN") : "ramp";   // la roulette : des cases rouges et noires
+        lot.push({size:[(r2 - r1)/Math.cos(TL) + .1, .3, 2*r2*Math.sin(da/2)*1.1], pos:v3.add(C, [rad[0]*rc, top(yk, rc) - yk - .15, rad[2]*rc]), quat:g3Basis(X, Y, Z), kind:kd}) }) }
+    // le mur du bord (en verre, pour voir les billes) et le moyeu au milieu
+    const NW = 40;
+    for(let j=0; j<NW; j++){ const a = (j + .5)*2*Math.PI/NW, X = angAt(a), Z = [-Math.sin(a), 0, Math.cos(a)];
+      // au premier étage, une ouverture au-dessus du mur là où arrive la goulotte : le mur est plus bas de ce côté
+      const bas = L===0 && Math.abs(dAng(a, Math.PI)) < .4, hm = L===0 ? (bas ? 2.55 : 4.2) : H + .2;
+      lot.push({size:[.25, hm, 2*(RO + .2)*Math.sin(Math.PI/NW)*1.12], pos:v3.add(C, [X[0]*(RO + .14), top(yk, RO) - yk + hm/2 - .3, X[2]*(RO + .14)]), quat:g3Basis(X, [0,1,0], Z), kind:"tourVerre"}) }
+    for(let i=0; i<lot.length; i+=20) g3Deco(k.boxes(lot.slice(i, i + 20)));
+    g3Deco(k.cyl(RI, 1.4, [0, yk + .6, 0], null, roul ? "roulOr" : "peg"));
+    // le tourniquet : deux barres en croix (4 pales), un peu au-dessus du fond
+    const ph = r()*Math.PI, w = sens*(roul ? (o.wRoul || .6) : W*(.75 + .55*r()));
+    [0, Math.PI/2].forEach(b=>g3Rotor(k.spin([2*(RO - .14), .9, .24], [0, yk + .55, 0], [0, ph + b, 0], [0, w, 0])));
+    // le chemin pour le classement en direct : l'arc parcouru de l'entrée jusqu'à la trappe, puis la chute
+    const dist = ((sens*(entree - ah)) % (2*Math.PI) + 2*Math.PI) % (2*Math.PI);
+    for(let d=0; d<dist; d += .25){ const p = angAt(entree - sens*d); path.push([p[0]*4.3, top(yk, 4.3) + .5, p[2]*4.3]) }
+    const ph2 = angAt(ah); path.push([ph2[0]*4.3, top(yk, 4.3) + .5, ph2[2]*4.3]);
+    entree = ah;
+  }
+  // le bac d'arrivée sous la dernière trappe, large comme la tour
+  const yT = y0 - NL*H - .4, S = 2*RO + 4;
+  g3Deco(k.box([S, .4, S], [0, yT, 0], [0,0,0], "tray"));
+  [[1,0],[-1,0],[0,1],[0,-1]].forEach(([a, b])=>g3Deco(k.box(a ? [.4, 2.4, S] : [S, 2.4, .4], [a*S/2, yT + 1.2, b*S/2], [0,0,0], "glass")));
+  const pe = angAt(entree); path.push([pe[0]*4.3, yT + 1, pe[2]*4.3]);
+  // la caméra : dehors, du côté de la bille suivie, un peu au-dessus
+  const cam = p => { const a = Math.atan2(p[2], p[0]); return [Math.cos(a)*15, p[1] + 6.5, Math.sin(a)*15] };
+  return {path, ...st, finishY:yT + 1.2, floorY:yT - 3, trayR:12, cam, look:p => [p[0]*.4, p[1] - 1, p[2]*.4]};
+}
+
+// ---------- LES COULOIRS : une grande piste à 3 couloirs ----------
+// Des murets séparent les couloirs, avec des passages pour changer de couloir. Dans chaque couloir, des portes tournantes
+// (une barre qui tourne à plat, presque aussi large que le couloir) : on passe quand elle est dans l'axe, sinon on attend
+// ou on est renvoyé en arrière. Des champignons font sauter les billes d'un couloir à l'autre.
+function g3Couloirs(k, r, n, o){
+  const NC = o.nc || 3, LW = o.lw || 3.4, WID = NC*LW, p = o.pente || .1, LEN = o.len || 100, path = [];
+  const P = g3Trace([["S", 14 + LEN]], {pente:p, from:[-14, (14 + LEN)*p, 0]});
+  const T = g3Trough(k, P, {WID, mur:1.4, pente:p});
+  path.push(...T.path);
+  const st = g3TroughStart(k, P, {WID}, n, r);
+  const F = T.frames, at = (i, z, h) => { const f = F[Math.max(0, Math.min(F.length - 1, Math.round(i)))]; return v3.add(f.M, v3.add(v3.mul(f.Z, z), v3.mul(f.Y, h))) };
+  const i0 = 18, i1 = F.length - 4;   // les couloirs commencent après la grille de départ et finissent avant le bac
+  // (4 novembre 2026, 2e version) le goulot : les 3 couloirs se rejoignent en un passage étroit avec une dernière porte, juste avant l'arrivée
+  const iG = i1 - 24, GW = o.goulot || 3;
+  // les murets : 3, avec des passages de 2,4 (décalés au hasard d'un muret à l'autre)
+  for(let d=1; d<NC; d++){ const z = -WID/2 + d*LW; let i = i0;
+    while(i < iG - 2){ const lon = 7 + Math.floor(r()*6), j = Math.min(iG, i + lon);
+      k.seg(at(i, z, 0), at(j, z, 0), F[Math.round((i + j)/2)].Y, .8, "rail");
+      // les bouts arrondis : une bille qui arrive pile sur le bout d'un muret plat s'y arrêtait net
+      [i, j].forEach(e=>k.cyl(.2, .8, at(e, z, .4), F[Math.round(e)].q, "rail"));
+      const g = 3 + r()*.8;
+      // un aiguillage dans un passage sur deux : une barre qui tourne à plat, à cheval sur les deux couloirs (elle envoie les billes à côté)
+      if(j < iG - 4 && r() < .55){ const fm = F[Math.round(j + g/2)]; g3Rotor(k.spin([2.3, .55, .22], at(j + g/2, z, .36), fm.q, v3.mul(fm.Y, (r() < .5 ? -1 : 1)*(1.3 + .5*r())))) }
+      i = j + g } }
+  // chaque couloir a son caractère (tiré au hasard à chaque course), avec autant d'obstacles que les autres : les portes (on attend
+  // ou on passe d'un coup), les champignons en quinconce (ça rebondit, on ne s'arrête jamais), les moulins (une barre qui tourne à plat :
+  // on passe sur le côté, ou on se fait renvoyer). (4 novembre 2026 : le 3e couloir était dégagé, pas juste.)
+  const types = ["portes", "champis", "moulins"].sort(()=>r() - .5);
+  for(let c=0; c<NC; c++){ const zc = -WID/2 + (c + .5)*LW, ty = types[c % 3];
+    for(let i = i0 + 16 + c*3 + r()*3, j = 0; i < iG - 5; j++){
+      const f = F[Math.round(i)];
+      if(ty==="portes"){ g3Rotor(k.spin([.3, 2.1, LW - .2], at(i, zc, 1.45), f.q, v3.mul(f.Z, 1.15 + .4*r()))); i += 15 + r()*4 }
+      else if(ty==="champis"){ k.cyl(.28, 1, at(i, zc + (j%2 ? .35 : -.35), .5), f.q, "bump", "rebond"); i += 10 + r()*3 }
+      else { g3Rotor(k.spin([1.3, .45, .45], at(i, zc, .5), f.q, v3.mul(f.Y, (j%2 ? 1 : -1)*(1.3 + .5*r())))); i += 9 + r()*3 }
+    } }
+  // le goulot : deux murets en biais (de la largeur de la piste à GW), puis le passage étroit et sa porte
+  const iF = iG + 12, fq = F[Math.round((iG + iF)/2)];
+  [-1, 1].forEach(sd=>{ k.seg(at(iG, sd*(WID/2 - .05), 0), at(iF, sd*GW/2, 0), fq.Y, 1.2, "rail");
+    k.seg(at(iF, sd*GW/2, 0), at(i1, sd*GW/2, 0), F[Math.round((iF + i1)/2)].Y, 1.2, "rail");
+    k.cyl(.2, 1.2, at(i1, sd*GW/2, .6), F[Math.round(i1)].q, "rail") });
+  { const fd = F[Math.round(iF + 4)]; g3Rotor(k.spin([.3, 2.1, GW - .2], at(iF + 4, 0, 1.45), fd.q, v3.mul(fd.Z, o.wGoulot || 2.6))) }
+  const end = g3TroughEnd(k, P, path, {});
+  return {path, ...st, ...end, cam:g3ChaseCam};
+}
+
 const G3C = {
   // Cinq rampes en zigzag et des plots qui font rebondir les billes dans tous les sens
   lacets:{name:"Le circuit des lacets", desc:"Cinq rampes en zigzag, des plots qui font rebondir les billes dans tous les sens, et l'arrivée dans le grand bac bleu.",
@@ -16289,6 +16406,21 @@ const G3C = {
   nuages:{name:"Les Nuages", desc:"Des nuages qui font trampoline en plein ciel, sur quatre étages : les billes sautent de nuage en nuage en zigzag, et gare à celles qui tombent à l'étage du dessous !",
     theme:{bg:"#4A7BC0", ramp:"#9FC3EA", tray:"#FFD34D", tramp:"#FFFFFF", peg:"#FFB547"}, form:"trampo", tramp:.6, vitesse:1.15,
     build(k, r, n){ return g3Trampo(k, r, n, {pas:3.4, dy:.6}) }},
+
+  // (4 novembre 2026) La Tour : huit plateaux en sens alternés, la roulette en bas. Le midi en bois clair, le soir aux néons.
+  tour:{name:"La Tour", desc:"Huit plateaux empilés qui tournent une fois dans un sens, une fois dans l'autre : un tourniquet pousse les billes jusqu'à la trappe. Et tout en bas, la roulette : une toute petite trappe, et tout se joue !",
+    theme:{bg:"#1B1030", ramp:"#C9955C", tray:"#FFD34D", spin:"#FF5FA2", peg:"#FFD34D"}, form:"tour", peloton:0, patience:12,
+    build(k, r, n){ return g3Tour(k, r, n, {etages:8, w:.75}) }},
+  tourNuit:{name:"La Tour aux néons", desc:"La Tour, la nuit : huit plateaux qui tournent dans un sens puis dans l'autre, des tourniquets lumineux… et la roulette tout en bas pour finir !",
+    theme:{bg:"#0D0818", ramp:"#5B4596", tray:"#FFD34D", spin:"#39E6FF", peg:"#FFB547"}, form:"tour", peloton:0, patience:12,
+    build(k, r, n){ return g3Tour(k, r, n, {etages:8, w:.75}) }},
+  // (4 novembre 2026) Les Couloirs : 3 couloirs (portes, champignons, moulins), des aiguillages, le goulot à la fin
+  couloirs:{name:"Les Couloirs", desc:"Trois couloirs : un de portes, un de champignons, un de moulins… et des aiguillages qui envoient les billes à côté. À la fin, tout le monde se retrouve dans le goulot !",
+    theme:{bg:"#0F2230", ramp:"#3FA7D6", tray:"#FFD34D", spin:"#FFD34D", bump:"#FF6FB5", peg:"#FFFFFF"}, form:"couloirs",
+    build(k, r, n){ return g3Couloirs(k, r, n, {pente:.1, len:135}) }},
+  couloirsNuit:{name:"Les Couloirs néon", desc:"Les Couloirs, la nuit : portes, champignons et moulins qui brillent, des aiguillages… et le goulot pour finir au coude à coude !",
+    theme:{bg:"#0A0F1E", ramp:"#2B3F8F", tray:"#FFD34D", spin:"#FF4FD8", bump:"#39E6FF", peg:"#FFD34D"}, form:"couloirs",
+    build(k, r, n){ return g3Couloirs(k, r, n, {pente:.1, len:135}) }},
 };
 
 // l'aura d'une shiny dans la Grande Course : un halo (anneau arc-en-ciel pour l'Irisée, or pour la Dorée, la couleur de la bille pour la Lumineuse)
@@ -16458,6 +16590,7 @@ async function gcWatch3D(race){
       <button class="btn btn-yellow gc-skip" data-action="g3-cam" id="g3-cam" hidden>${ic("flag",14)} La tête de course</button>
       <button class="btn btn-ghost gc-skip" data-action="g3-libre" id="g3-libre" title="Tourner, zoomer et déplacer la vue soi-même">${ic("target",14)} Caméra libre</button>
       <button class="btn btn-ghost gc-skip" data-action="g3-skip" id="g3-skip">Voir l'arrivée</button>
+      <button class="btn btn-ghost gc-skip gc-x2" data-action="g3-x2" id="g3-x2" aria-pressed="false" title="Accélérer la course">×2</button>
       <button class="btn btn-yellow gc-skip" data-action="gc-classe" id="gc-classe" hidden>${ic("trophy",14)} Afficher le classement</button>
       <button class="gc-x" data-action="gc-close" aria-label="Quitter la course">×</button></div>
     <div class="gc-board" id="gc-board"></div><div class="gc-big" id="gc-big"></div><div class="gc-end" id="gc-end" hidden></div>
@@ -16516,11 +16649,15 @@ async function gcWatch3D(race){
     ghost:new THREE.MeshStandardMaterial({color:TH.ghost||"#E6F0FF", emissive:TH.ghost||"#E6F0FF", emissiveIntensity:night ? .8 : .3, transparent:true, opacity:.7}),
     tramp:std({color:TH.tramp||"#FF4F7A", roughness:.4, emissive:TH.tramp||"#FF4F7A", emissiveIntensity:night ? .7 : .15}),
     funnel:new THREE.MeshPhysicalMaterial({color:rampC, roughness:.35, clearcoat:P ? .4 : 0, transparent:true, opacity:.72, depthWrite:false, side:THREE.DoubleSide, envMapIntensity:envK}),
-    water:new THREE.MeshPhysicalMaterial({color:"#5EC8FF", roughness:.05, transparent:true, opacity:.28, depthWrite:false})};
+    water:new THREE.MeshPhysicalMaterial({color:"#5EC8FF", roughness:.05, transparent:true, opacity:.28, depthWrite:false}),
+    // (4 novembre 2026) la Tour : la roulette (cases rouges et noires, centre vert, moyeu doré) et le verre de la tour
+    roulR:std({color:"#C8102E", roughness:.35}), roulN:std({color:"#1C1A22", roughness:.35}), roulV:std({color:"#0E8A4B", roughness:.5}),
+    roulOr:std({color:"#E8B73A", roughness:.25, metalness:.6, ...(night ? {emissive:"#E8B73A", emissiveIntensity:.35} : {})}),
+    tourVerre:Object.assign(new THREE.MeshPhysicalMaterial({color:"#CFE8FF", roughness:.08, transparent:true, opacity:night ? .1 : .16, depthWrite:false, envMapIntensity:envK*.6}), {userData:{fondre:true}})};
   // rendu studio : les boîtes aux bords arrondis, les cylindres plus ronds
   const boxGeo = sz => P ? new FX.RoundedBoxGeometry(sz[0], sz[1], sz[2], 3, Math.min(.1, Math.min(...sz)*.45)) : new THREE.BoxGeometry(...sz);
   // (16 octobre 2026, le soir) solids : ce sur quoi une bille peut rouler (pas les vitres), pour poser la pépite chinoise sur la pente
-  const solids = [], see = k => !/wall|inner|end|glass|back|water|ghost/.test(k);
+  const solids = [], see = k => !/wall|inner|end|glass|back|water|ghost|tourVerre/.test(k);
   const piece = s => { if(s.shape==="group"){ const g = new THREE.Group();
       s.parts.forEach(q=>g.add(piece({...q, kind:q.kind || s.kind, add:false}))); g.position.set(...s.pos); g.quaternion.set(...s.quat); scene.add(g); solids.push(g); return g }
     const m = new THREE.Mesh(s.shape==="cyl" ? new THREE.CylinderGeometry(s.size[0], s.size[0], s.size[1], P ? 40 : 20) : s.shape==="sph" ? new THREE.SphereGeometry(s.size[0], P ? 32 : 24, P ? 20 : 16)
@@ -16533,7 +16670,7 @@ async function gcWatch3D(race){
   W.statics.forEach(s=>{
     if(!FX?.mergeGeometries || s.shape==="group"){ piece(s); return }
     const m = piece({...s, add:false}), mat = m.material;
-    if(mat.transparent || mat.transmission){ scene.add(m); if(see(s.kind)) solids.push(m); return }
+    if((mat.transparent || mat.transmission) && !mat.userData.fondre){ scene.add(m); if(see(s.kind)) solids.push(m); return }
     m.updateMatrixWorld(); if(see(s.kind)) solids.push(m);
     const key = mat.uuid + "|" + m.castShadow; if(!lots.has(key)) lots.set(key, {mat, cast:m.castShadow, list:[]});
     lots.get(key).list.push(m) });
@@ -16723,7 +16860,12 @@ function g3Cam(){ const G = GCV.g3v; if(!G) return; G.follow = null; G.lb = 0; g
 // (celle qui est en tête à cet instant, pas forcément celle qui va gagner)
 // (4 novembre 2026) le temps de la course (en secondes de simulation) : le compte à rebours (3 s) à vitesse normale, la suite × G.vit
 // (les 4 circuits les plus longs se regardent un peu plus vite : G3C[…].vitesse) ; G.skip : le saut de « Voir l'arrivée »
-function g3Time(G, now = performance.now()){ const e = (now - G.t0)/1000; return (e < 3 ? e : 3 + (e - 3)*(G.vit || 1)) + (G.skip || 0) }
+// (4 novembre 2026) G.boost : le bouton « ×2 » (en plus de la vitesse du circuit)
+function g3Time(G, now = performance.now()){ const e = (now - G.t0)/1000; return (e < 3 ? e : 3 + (e - 3)*(G.vit || 1)*(G.boost || 1)) + (G.skip || 0) }
+// « ×2 » : la course va deux fois plus vite (ou revient à la normale) ; G.skip est recalé pour qu'elle reparte d'où elle en est, sans sauter
+function g3X2(){ const G = GCV.g3v; if(!G) return; const now = performance.now(), t = g3Time(G, now);
+  G.boost = G.boost===2 ? 1 : 2; G.skip = (G.skip || 0) + t - g3Time(G, now);
+  const b = document.getElementById("g3-x2"); if(b){ b.setAttribute("aria-pressed", G.boost===2); b.classList.toggle("btn-yellow", G.boost===2); b.classList.toggle("btn-ghost", G.boost!==2) } }
 function gcClasseBtn(on){ const b = document.getElementById("gc-classe"); if(b && b.hidden === on){ b.hidden = !on; if(on){ const k = document.getElementById("g3-skip"); if(k) k.hidden = true } } }
 function g3Skip(){ const G = GCV.g3v; if(!G) return; const sim = G.sim, nowT = g3Time(G);
   const target = Math.max(3, Math.min(...sim.fin)-5); if(nowT >= target) return;
@@ -17227,7 +17369,7 @@ let bugKeep = null;   // un message qui n'est pas parti : il est reproposé au p
 // on:false cache le bouton (pendant qu'on prépare la mise à jour) ; on:true le remet, avec la pastille si l'id a changé
 // (16 octobre 2026) deux repères : dot = la pastille rouge du bouton, à changer à CHAQUE mise en ligne qui ajoute une ligne au patchnote
 // (avec txt : la date du jour) ; id = la fenêtre d'annonce à l'arrivée, seulement pour les très gros jours
-const NEWS = {on:true, id:"2026-10-27", dot:"2026-11-04-2000", url:"/nouveautes.html", txt:"Mise à jour du 4 nov."};
+const NEWS = {on:true, id:"2026-10-27", dot:"2026-11-04-2200", url:"/nouveautes.html", txt:"Mise à jour du 4 nov."};
 const newsUnseen = () => lsGet("billeo-news-vu")!==NEWS.dot;
 // (14 octobre 2026) à l'arrivée, une fenêtre annonce la mise à jour, une seule fois par mise à jour et par compte (S.newsPop, gardé
 // dans la partie : elle ne revient pas sur un autre appareil) ; on choisit d'aller voir les nouveautés, ou pas
@@ -18770,6 +18912,7 @@ document.addEventListener("click", e=>{
     case "g3-cam": g3Cam(); break;
     case "g3-libre": g3Libre(); break;
     case "g3-skip": g3Skip(); break;
+    case "g3-x2": g3X2(); break;
     case "gc-classe": if(!GCV.done){ GCV.done = true; t.hidden = true; gcPodium() } break;
     case "gc-close": gcClose(); break;
     case "gc-vue": GCV.vue = GCV.vue==='tv' ? 'ciel' : 'tv'; lsSet("billeo-gc-vue", GCV.vue); V_vueBtn(); break;

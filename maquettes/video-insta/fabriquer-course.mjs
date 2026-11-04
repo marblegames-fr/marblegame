@@ -12,7 +12,7 @@ function decl(nom){
   return L.slice(a, b).join("\n");
 }
 // les mêmes morceaux que outils/banc-course.mjs
-const NOMS = ["TAU","hash","rng","v3","g3Basis","G3","g3Kit","g3Zigzag","g3ZigStart","g3ZigCam","g3TableCam","g3Log","g3Trace","g3Trough","g3TroughStart","g3TroughEnd","g3Semis","g3Obstacles","g3Fourche","g3Funnel","g3Entonnoirs","g3FunnelCam","g3Trampo","g3ChaseCam","G3_ORDER","G3C","g3World","g3Where","g3Peloton","g3Simulate"];
+const NOMS = ["TAU","hash","rng","v3","g3Basis","G3","g3Kit","g3Zigzag","g3ZigStart","g3ZigCam","g3TableCam","g3Log","g3Trace","g3Trough","g3TroughStart","g3TroughEnd","g3Semis","g3Obstacles","g3Fourche","g3Funnel","g3Entonnoirs","g3FunnelCam","g3Trampo","g3ChaseCam","g3Rotor","g3Deco","g3Tour","g3Couloirs","G3_ORDER","G3C","g3World","g3Where","g3Peloton","g3Simulate"];
 const out = "// Fichier fabriqué par fabriquer-course.mjs à partir de index.html : ne pas modifier à la main.\n"
   + "window.COURSE = (() => {\n" + NOMS.map(decl).join("\n\n") + "\nreturn {G3C, G3, g3Simulate, g3Where, v3, TAU};\n})();\n";
 fs.writeFileSync("maquettes/video-insta/course-moteur.js", out);

@@ -16,7 +16,7 @@ function decl(nom){
   let b = a + 1; while(b < L.length && !DEBUT.test(L[b])) b++;
   return L.slice(a, b).join("\n");
 }
-const NOMS = ["TAU","hash","rng","v3","g3Basis","G3","g3Kit","g3Zigzag","g3ZigStart","g3ZigCam","g3TableCam","g3Log","g3Trace","g3Trough","g3TroughStart","g3TroughEnd","g3Semis","g3Obstacles","g3Fourche","g3Funnel","g3Entonnoirs","g3FunnelCam","g3Trampo","g3ChaseCam","G3_ORDER","G3C","g3World","g3Where","g3Peloton","g3Simulate"];
+const NOMS = ["TAU","hash","rng","v3","g3Basis","G3","g3Kit","g3Zigzag","g3ZigStart","g3ZigCam","g3TableCam","g3Log","g3Trace","g3Trough","g3TroughStart","g3TroughEnd","g3Semis","g3Obstacles","g3Fourche","g3Funnel","g3Entonnoirs","g3FunnelCam","g3Trampo","g3ChaseCam","g3Rotor","g3Deco","g3Tour","g3Couloirs","G3_ORDER","G3C","g3World","g3Where","g3Peloton","g3Simulate"];
 // EXTRA=fichier.js : des circuits en plus (une maquette), collés après G3C (ex. EXTRA=maquettes/courses-inedites.js)
 const extra = process.env.EXTRA ? "\n" + fs.readFileSync(process.env.EXTRA, "utf8") : "";
 const code = NOMS.map(decl).join("\n\n") + extra + "\nreturn {G3C, G3_ORDER, g3Simulate, g3Where, G3};";

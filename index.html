@@ -12806,7 +12806,7 @@ function viewMarelle(){
         <div class="rq-win mrl-win${(mar.at?.v||0)>400?" bas":""}" id="mrl-win" ${mar.win ? "" : "hidden"}>${mar.win||""}</div>
       </div>
       <div class="pachi-btns" id="mrl-btns">${mar.busy ? `<button class="btn btn-yellow btn-xl" disabled>${ic("marelle",18)} La bille vole…</button>` : chanceBtns("marelle","mrl-go","Lancer ma bille")}</div>
-      ${activeSpec() ? `<p class="mrl-pick"><span>${mImg(activeSpec(),96,24,"")} Tu lances <b id="mrl-bn">${esc(specName(activeSpec()))}</b></span><button class="btn btn-ghost btn-sm" data-action="mrl-ball">Changer de bille</button></p>` : ""}
+      ${activeSpec() ? `<p class="mrl-pick"><span>${mImg(activeSpec(),96,24,"")} Tu lances <b id="mrl-bn">${esc(specName(activeSpec()))}</b></span></p>` : ""}
     </section>
     <aside><section class="panel"><div class="panel-head"><h3>Les cases</h3><span class="sample-tag">Chances</span></div>
       <ul class="rewards-list">${MAR_CASES.map(c=>({c, p:P(c)})).reverse().map(({c,p})=>`<li><span><i class="pachi-dot" style="background:${marLot(c).c}"></i><b class="mrl-cn">${c.ciel?"Ciel":c.n}</b> ${prize(c)}</span><b>${pct(+(p*100).toFixed(p<.01?1:0))}</b></li>`).join("")}</ul>
@@ -17197,7 +17197,7 @@ let bugKeep = null;   // un message qui n'est pas parti : il est reproposé au p
 // on:false cache le bouton (pendant qu'on prépare la mise à jour) ; on:true le remet, avec la pastille si l'id a changé
 // (16 octobre 2026) deux repères : dot = la pastille rouge du bouton, à changer à CHAQUE mise en ligne qui ajoute une ligne au patchnote
 // (avec txt : la date du jour) ; id = la fenêtre d'annonce à l'arrivée, seulement pour les très gros jours
-const NEWS = {on:true, id:"2026-10-27", dot:"2026-11-04-1500", url:"/nouveautes.html", txt:"Mise à jour du 4 nov."};
+const NEWS = {on:true, id:"2026-10-27", dot:"2026-11-04-1530", url:"/nouveautes.html", txt:"Mise à jour du 4 nov."};
 const newsUnseen = () => lsGet("billeo-news-vu")!==NEWS.dot;
 // (14 octobre 2026) à l'arrivée, une fenêtre annonce la mise à jour, une seule fois par mise à jour et par compte (S.newsPop, gardé
 // dans la partie : elle ne revient pas sur un autre appareil) ; on choisit d'aller voir les nouveautés, ou pas

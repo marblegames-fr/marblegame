@@ -17,7 +17,9 @@ function decl(nom){
   return L.slice(a, b).join("\n");
 }
 const NOMS = ["TAU","hash","rng","v3","g3Basis","G3","g3Kit","g3Zigzag","g3ZigStart","g3ZigCam","g3TableCam","g3Log","g3Trace","g3Trough","g3TroughStart","g3TroughEnd","g3Semis","g3Obstacles","g3Fourche","g3Funnel","g3Entonnoirs","g3FunnelCam","g3Trampo","g3ChaseCam","G3_ORDER","G3C","g3World","g3Where","g3Peloton","g3Simulate"];
-const code = NOMS.map(decl).join("\n\n") + "\nreturn {G3C, G3_ORDER, g3Simulate, g3Where, G3};";
+// EXTRA=fichier.js : des circuits en plus (une maquette), collés après G3C (ex. EXTRA=maquettes/courses-inedites.js)
+const extra = process.env.EXTRA ? "\n" + fs.readFileSync(process.env.EXTRA, "utf8") : "";
+const code = NOMS.map(decl).join("\n\n") + extra + "\nreturn {G3C, G3_ORDER, g3Simulate, g3Where, G3};";
 
 const [quels, nb = "30", lib = "cannon-es.js"] = process.argv.slice(2);
 const CANNON = await import(pathToFileURL(path.resolve(lib)).href);

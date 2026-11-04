@@ -16043,7 +16043,7 @@ const G3C = {
 
   // Un grand escalier de flipper : des marches et des champignons qui renvoient les billes
   flipper:{name:"Le Flipper", desc:"Un grand escalier de flipper : les billes dégringolent les marches et rebondissent sur des champignons à ressort.",
-    theme:{bg:"#1A0F22", ramp:"#3A4E9C", tray:"#FF6FB5", bump:"#FF4F7A"},
+    theme:{bg:"#1A0F22", ramp:"#3A4E9C", tray:"#FF6FB5", bump:"#FF4F7A"}, vitesse:1.25,
     build(k, r, n){ const o = {RAMPS:4, LEN:34, WID:8, STEP:9.5, ANG:12*Math.PI/180, noRamp:true, wallBumps:[.265,.395,.525,.655,.85]};
       const z = g3Zigzag(k, o, (i, {dir, y, rot, cx, sY})=>{
         // la rampe en marches : 6 marches, chacune un peu plus bas que la droite de la pente
@@ -16136,7 +16136,7 @@ const G3C = {
   // Un toboggan aquatique : une longue goulotte bleue qui serpente, des virages relevés, et (le soir même, 14 octobre) des obstacles
   // tout du long pour le suspense : tourniquets, portes qui tournent, champignons, plots
   aquatique:{name:"Le Toboggan aquatique", desc:"Une longue piste bleue qui serpente : des virages relevés, des tourniquets qui balaient la piste, des champignons qui renvoient les billes et des plots. Rien n'est joué !",
-    theme:{bg:"#0E2A3A", ramp:"#3FB6E8", tray:"#FFD34D", spin:"#FFD34D", bump:"#FF6FB5", peg:"#FFFFFF"}, form:"serpent",
+    theme:{bg:"#0E2A3A", ramp:"#3FB6E8", tray:"#FFD34D", spin:"#FFD34D", bump:"#FF6FB5", peg:"#FFFFFF"}, form:"serpent", vitesse:1.2,
     build(k, r, n){ const o = {WID:4.4, mur:1.6, pente:.14};
       const P = g3Trace([["S",14],["D",7,110],["S",12],["G",7,180],["S",12],["D",6,180],["S",12],["G",7,180],["S",12],["D",6,180],["S",12],["G",8,160],["S",12],["D",6,180],["S",14]], o);
       const {path, frames} = g3Trough(k, P, o), L = g3Semis(P, ["champis","moulin","plots","bosse","moulin","champis"], r);
@@ -16262,11 +16262,11 @@ const G3C = {
   // ---------- (14 octobre 2026) les trampolines ----------
   // Le cirque, le soir : une suite de trampolines rouges sous les projecteurs ; une bille qui rate son saut finit par la piste du dessous
   cirque:{name:"Le Cirque", desc:"Quatre étages de trampolines sous les projecteurs, décalés à gauche et à droite, des boules qui renvoient les billes en l'air… et celles qui ratent leur saut continuent par la piste du dessous !",
-    theme:{bg:"#1A0B14", ramp:"#3A2A5E", tray:"#FFD34D", tramp:"#EF3B4F", peg:"#FFD34D"}, form:"trampo", tramp:.62,
+    theme:{bg:"#1A0B14", ramp:"#3A2A5E", tray:"#FFD34D", tramp:"#EF3B4F", peg:"#FFD34D"}, form:"trampo", tramp:.62, vitesse:1.15,
     build(k, r, n){ return g3Trampo(k, r, n, {}) }},
   // Les nuages, à midi : des trampolines blancs comme des nuages, en plein ciel
   nuages:{name:"Les Nuages", desc:"Des nuages qui font trampoline en plein ciel, sur quatre étages : les billes sautent de nuage en nuage en zigzag, et gare à celles qui tombent à l'étage du dessous !",
-    theme:{bg:"#4A7BC0", ramp:"#9FC3EA", tray:"#FFD34D", tramp:"#FFFFFF", peg:"#FFB547"}, form:"trampo", tramp:.6,
+    theme:{bg:"#4A7BC0", ramp:"#9FC3EA", tray:"#FFD34D", tramp:"#FFFFFF", peg:"#FFB547"}, form:"trampo", tramp:.6, vitesse:1.15,
     build(k, r, n){ return g3Trampo(k, r, n, {pas:3.4, dy:.6}) }},
 };
 
@@ -16437,6 +16437,7 @@ async function gcWatch3D(race){
       <button class="btn btn-yellow gc-skip" data-action="g3-cam" id="g3-cam" hidden>${ic("flag",14)} La tête de course</button>
       <button class="btn btn-ghost gc-skip" data-action="g3-libre" id="g3-libre" title="Tourner, zoomer et déplacer la vue soi-même">${ic("target",14)} Caméra libre</button>
       <button class="btn btn-ghost gc-skip" data-action="g3-skip" id="g3-skip">Voir l'arrivée</button>
+      <button class="btn btn-yellow gc-skip" data-action="gc-classe" id="gc-classe" hidden>${ic("trophy",14)} Afficher le classement</button>
       <button class="gc-x" data-action="gc-close" aria-label="Quitter la course">×</button></div>
     <div class="gc-board" id="gc-board"></div><div class="gc-big" id="gc-big"></div><div class="gc-end" id="gc-end" hidden></div>
     <div class="gc-hint" id="gc-hint">${ic("target",14)} Touche un nom dans le classement pour suivre sa bille.</div>`;
@@ -16590,7 +16591,7 @@ async function gcWatch3D(race){
   cancelAnimationFrame(GCV.raf);
   Object.keys(GCV).forEach(k=>{ if(k!=="raf") delete GCV[k] });
   Object.assign(GCV, {race, R, T:{th:{name:C.name}}, done:false, g3:true});
-  const G3V = {t0:performance.now() - (live ? since*1000 : 0), follow:null, said:{}, renderer, onResize, sim, who, lastF:-1, lastHit:0, snap:true, camera, THREE, look:camLook, comp, env};
+  const G3V = {t0:performance.now() - (live ? since*1000 : 0), vit:C.vitesse || 1, follow:null, said:{}, renderer, onResize, sim, who, lastF:-1, lastHit:0, snap:true, camera, THREE, look:camLook, comp, env};
   GCV.g3v = G3V;
   // les vraies billes, une à une (sans moteur de billes : elles gardent leur sphère aux couleurs du coloris)
   (async()=>{ if(!ballGL || ballGL.gl.isContextLost()) return;
@@ -16613,10 +16614,11 @@ async function gcWatch3D(race){
   const loop = now => {
     if(!document.getElementById("g3-stage") || GCV.g3v!==G3V){ g3Free(G3V); Sound.rollStop(); return }
     GCV.raf = requestAnimationFrame(loop);
-    const t = (now-G3V.t0)/1000 + (G3V.skip||0), f = Math.max(0, Math.min(sim.frames.length-1, Math.floor(t/G3.DT))), F = sim.frames[f];
+    const t = g3Time(G3V, now), ff = Math.max(0, Math.min(sim.frames.length-1, t/G3.DT)), f = Math.floor(ff), F = sim.frames[f], F2 = sim.frames[f+1] || F, fa = ff - f;
     const cd = t<1 ? "3" : t<2 ? "2" : t<3 ? "1" : "go";
     if(cd!==G3V.cd){ G3V.cd = cd; big(cd==="go" ? "Partez !" : cd); if(cd==="go") Sound.ding(); else Sound.tap?.(0,.5) }
-    for(let i=0;i<n;i++){ meshes[i].position.set(F[i*7],F[i*7+1],F[i*7+2]); meshes[i].quaternion.set(F[i*7+3],F[i*7+4],F[i*7+5],F[i*7+6]);
+    // (4 novembre 2026) entre deux images de la simulation : la position est interpolée (lecture plus rapide sur les longs circuits, sans à-coups)
+    for(let i=0;i<n;i++){ meshes[i].position.set(F[i*7]+(F2[i*7]-F[i*7])*fa, F[i*7+1]+(F2[i*7+1]-F[i*7+1])*fa, F[i*7+2]+(F2[i*7+2]-F[i*7+2])*fa); meshes[i].quaternion.set(F[i*7+3],F[i*7+4],F[i*7+5],F[i*7+6]);
       if(flats[i]) layFlat(i, F) }
     auras.forEach(({au, i})=>{ au.position.copy(meshes[i].position); if(flats[i]) au.position.y -= .39*G3.R; au.material.opacity = .7 + .3*Math.sin(now/260 + i*1.7); au.material.rotation = now/900 });
     if(kinM.length){ const K = sim.kf[f]; kinM.forEach((m,j)=>m.quaternion.set(K[j*4],K[j*4+1],K[j*4+2],K[j*4+3])) }
@@ -16666,8 +16668,10 @@ async function gcWatch3D(race){
     for(let i=0;i<n;i++){ const el = document.getElementById("g3l"+i); if(!el) continue; v.set(F[i*7], F[i*7+1]+.8, F[i*7+2]).project(camera);
       const vis = v.z<1 && Math.abs(v.x)<1.1 && Math.abs(v.y)<1.1 && camera.position.distanceTo(meshes[i].position)<40;
       el.style.opacity = vis ? 1 : 0; el.style.transform = `translate(${(v.x*.5+.5)*SW}px,${(-v.y*.5+.5)*SH}px) translate(-50%,-100%)` }
+    // (4 novembre 2026) la course va jusqu'à la dernière bille ; dès que les 3 premières sont arrivées, « Afficher le classement » permet de passer la fin
     const lastFin = Math.max(...sim.fin.filter(x=>x<900));
-    if(!GCV.done && tt > Math.min(lastFin+1.5, sim.fin[order[0]]+15)){ GCV.done = true; gcPodium() }
+    if(!GCV.done) gcClasseBtn(tt >= sim.fin[order[Math.min(2, n-1)]]);
+    if(!GCV.done && tt > lastFin+1.5){ GCV.done = true; gcPodium() }
   };
   GCV.raf = requestAnimationFrame(loop);
 }
@@ -16696,7 +16700,11 @@ function g3CamBtn(){ const b = document.getElementById("g3-cam"); if(b) b.hidden
 function g3Cam(){ const G = GCV.g3v; if(!G) return; G.follow = null; G.lb = 0; g3CamBtn() }
 // « Voir l'arrivée » : on saute 5 s avant que le vainqueur passe la ligne, et la caméra se pose sur la bille qui mène à ce moment-là
 // (celle qui est en tête à cet instant, pas forcément celle qui va gagner)
-function g3Skip(){ const G = GCV.g3v; if(!G) return; const sim = G.sim, nowT = (performance.now()-G.t0)/1000 + (G.skip||0);
+// (4 novembre 2026) le temps de la course (en secondes de simulation) : le compte à rebours (3 s) à vitesse normale, la suite × G.vit
+// (les 4 circuits les plus longs se regardent un peu plus vite : G3C[…].vitesse) ; G.skip : le saut de « Voir l'arrivée »
+function g3Time(G, now = performance.now()){ const e = (now - G.t0)/1000; return (e < 3 ? e : 3 + (e - 3)*(G.vit || 1)) + (G.skip || 0) }
+function gcClasseBtn(on){ const b = document.getElementById("gc-classe"); if(b && b.hidden === on){ b.hidden = !on; if(on){ const k = document.getElementById("g3-skip"); if(k) k.hidden = true } } }
+function g3Skip(){ const G = GCV.g3v; if(!G) return; const sim = G.sim, nowT = g3Time(G);
   const target = Math.max(3, Math.min(...sim.fin)-5); if(nowT >= target) return;
   G.skip = (G.skip||0) + target - nowT;
   const f = Math.min(sim.frames.length-1, Math.floor(target/G3.DT)), F = sim.frames[f];
@@ -16715,7 +16723,7 @@ function gcWatch2D(race){
   ov.innerHTML = `<canvas id="gc-cv"></canvas><div class="gc-vig"></div>
     <div class="gc-top"><div class="chip"><small>${new Date(race.depart).toLocaleDateString("fr-FR",{weekday:"long", day:"numeric"})}${race.test?" · course d'essai":""}</small><b>${esc(T.th.name)}</b></div>
       <div class="chip" id="gc-chrono"><small>Temps</small><b>—</b></div><span class="sp"></span>
-      <button class="btn btn-yellow gc-skip gc-auto" data-action="gc-auto" id="gc-auto" hidden>${ic("flag",14)} Suivre la course</button><button class="btn btn-ghost gc-skip" data-action="gc-vue" id="gc-vue"></button><button class="btn btn-ghost gc-skip" data-action="gc-skip">Passer à l'arrivée</button>
+      <button class="btn btn-yellow gc-skip gc-auto" data-action="gc-auto" id="gc-auto" hidden>${ic("flag",14)} Suivre la course</button><button class="btn btn-ghost gc-skip" data-action="gc-vue" id="gc-vue"></button><button class="btn btn-ghost gc-skip" data-action="gc-skip">Passer à l'arrivée</button><button class="btn btn-yellow gc-skip" data-action="gc-classe" id="gc-classe" hidden>${ic("trophy",14)} Afficher le classement</button>
       <button class="gc-x" data-action="gc-close" aria-label="Quitter la course">×</button></div>
     <div class="gc-lights" id="gc-lights">${"<i></i>".repeat(5)}</div>
     <div class="gc-board" id="gc-board"></div><canvas class="gc-mini" id="gc-mini" width="240" height="134"></canvas>
@@ -16807,7 +16815,8 @@ function gcLoop(now){
   if(V.vue==='tv') gcDraw3D(cv, pos, t, p); else { gcSkyCam(pos, order, t, dt); gcDrawSky(cv, pos, t) }
   gcHud(order, t);
   const lastFin = V.R[V.R.length-1].fin;
-  if(!V.done && t>Math.min(lastFin+1.5, V.R[0].fin+12)){ V.done = true; gcPodium() }
+  if(!V.done) gcClasseBtn(t >= V.R[Math.min(2, V.R.length-1)].fin);
+  if(!V.done && t>lastFin+1.5){ V.done = true; gcPodium() }
   GCV.raf = requestAnimationFrame(gcLoop);
 }
 // La physique de la course : chaque bille avance selon son plan (qui fixe l'ordre d'arrivée tiré par le serveur),
@@ -17197,7 +17206,7 @@ let bugKeep = null;   // un message qui n'est pas parti : il est reproposé au p
 // on:false cache le bouton (pendant qu'on prépare la mise à jour) ; on:true le remet, avec la pastille si l'id a changé
 // (16 octobre 2026) deux repères : dot = la pastille rouge du bouton, à changer à CHAQUE mise en ligne qui ajoute une ligne au patchnote
 // (avec txt : la date du jour) ; id = la fenêtre d'annonce à l'arrivée, seulement pour les très gros jours
-const NEWS = {on:true, id:"2026-10-27", dot:"2026-11-04-1530", url:"/nouveautes.html", txt:"Mise à jour du 4 nov."};
+const NEWS = {on:true, id:"2026-10-27", dot:"2026-11-04-1800", url:"/nouveautes.html", txt:"Mise à jour du 4 nov."};
 const newsUnseen = () => lsGet("billeo-news-vu")!==NEWS.dot;
 // (14 octobre 2026) à l'arrivée, une fenêtre annonce la mise à jour, une seule fois par mise à jour et par compte (S.newsPop, gardé
 // dans la partie : elle ne revient pas sur un autre appareil) ; on choisit d'aller voir les nouveautés, ou pas
@@ -17764,7 +17773,7 @@ function clSemaine(){
           <li><b>Une case vide remplie</b><span>la bille compte double</span><small>Un nouveau motif dans une taille que tu n'avais pas.</small></li>
           <li><b>Une shiny</b><span>${SHINIES.slice(1).map((x,i)=>`${x.name} +${SCORE.shiny[i]/10}`).join(" · ")}</span></li>
           <li><b>Une bille troquée ou achetée au marché</b><span>comme une bille tirée</span><small>Seulement si c'est ton premier exemplaire de cette bille (pas un double).</small></li>
-        </ul><p class="meta">Ne comptent pas : les doubles reçus par troc ou au marché, les billes des fusions et de l'atelier, d'événement et de saison. Tout repart à zéro chaque lundi à minuit.</p></details>
+        </ul><p class="meta">Les fusions et l'atelier comptent. Pas les doubles reçus par troc ou au marché, ni les billes d'événement et de saison. Tout repart à zéro chaque lundi à minuit.</p></details>
     </div>
   </div>`;
 }
@@ -18740,6 +18749,7 @@ document.addEventListener("click", e=>{
     case "g3-cam": g3Cam(); break;
     case "g3-libre": g3Libre(); break;
     case "g3-skip": g3Skip(); break;
+    case "gc-classe": if(!GCV.done){ GCV.done = true; t.hidden = true; gcPodium() } break;
     case "gc-close": gcClose(); break;
     case "gc-vue": GCV.vue = GCV.vue==='tv' ? 'ciel' : 'tv'; lsSet("billeo-gc-vue", GCV.vue); V_vueBtn(); break;
     case "gc-auto": GCV.free = false; GCV.follow = null; break;

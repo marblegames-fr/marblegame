@@ -4,7 +4,7 @@
 --
 --  Quand quelqu'un trouve une bille mythique, tous les joueurs voient une grande fenêtre, une seule fois chacun :
 --  « Tcherno Bille a trouvé la 1re mythique du serveur ! ». Celui qui l'a trouvée la voit aussi (« C'est toi ! »).
---  Seulement les mythiques des 7 derniers jours (un joueur qui revient après un mois n'a pas une pile d'annonces).
+--  Seulement les mythiques trouvées après la création du compte (4 novembre 2026), et des 7 derniers jours (un joueur qui revient après un mois n'a pas une pile d'annonces).
 --  Ne comptent pas : les billes de test, les secrètes, et les comptes de test (table testeurs).
 --  Le numéro (1re, 2e…) compte toutes les mythiques du serveur, depuis le début.
 -- =====================================================================
@@ -40,6 +40,7 @@ begin
       'at', floor(extract(epoch from m.le)*1000)::bigint, 's', interne.bille_json(m.b)) order by m.le)
     from interne.mythiques() m
     where m.le > now() - interval '7 days'
+      and m.le > (select u.created_at from auth.users u where u.id = moi)   -- (4 novembre 2026) seulement les mythiques trouvées après la création de ton compte : un nouveau joueur ne voit pas les anciennes
       and not exists (select 1 from mythiques_vues v where v.joueur = moi and v.bille = m.bille)), '[]');
 end $$;
 

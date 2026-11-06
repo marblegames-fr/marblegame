@@ -7918,7 +7918,7 @@ setInterval(()=>{
     const k = im.dataset.myth, R = mythReg.get(k); if(!R) return;
     let F = mythFrames.get(k);
     // F.u[j] : l'adresse de l'image (prête et décodée), 1 pendant qu'elle se fabrique, 0 si elle a raté (on réessaiera)
-    if(!F){ F = {u:[], keep:[], ok:0, sz:Math.min(R.size, Math.max(48, Math.ceil(r.width*pxRatio()/8)*8))}; mythFrames.set(k, F) }
+    if(!F){ F = {u:[], keep:[], ok:0, sz:Math.min(R.size, Math.max(48, Math.ceil(Math.max(im.offsetWidth, r.width)*pxRatio()/8)*8))}; mythFrames.set(k, F) }   // (6 novembre 2026) offsetWidth : la vraie taille, même pendant une animation qui la rétrécit (les mythiques de l'annonce étaient floues)
     F.seen = now;
     // tant que la boucle n'est pas complète : on en fabrique autant que possible en ~10 ms (partagées entre les billes à l'écran)
     for(let j=0; j<MYTH_N && F.ok<MYTH_N && performance.now()-t0<10; j++){

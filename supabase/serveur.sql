@@ -624,7 +624,7 @@ end $$;
 -- Tous les autres gains : chacun ne paie qu'une fois, et jamais plus que ce que le jeu peut donner
 create or replace function public.gagner(source text, cle text, montant int, sac text default null)
 returns jsonb language plpgsql security definer set search_path = public as $$
-declare qui uuid := interne.moi(); today text := interne.aujourdhui()::text; k text; maxi int; nq int; ev record;
+declare qui uuid := interne.moi(); today text := interne.aujourdhui()::text; k text; maxi int; nq int; ev record; ev_t jsonb;
         -- (8 octobre 2026) les 4 mêmes quêtes chaque jour (QUESTS dans index.html)
         quetes jsonb := '{"sachets20":15,"jeux6":15,"boulets3":15,"confiserie":5}';
 begin
@@ -652,8 +652,9 @@ begin
             and g.cle in (select today || '|' || case when x = 'tir' then 'tir|0' else x end from unnest(interne.jeux_du_jour(today::date)) x)) < 3
         then raise exception 'pas_encore'; end if;
       k := today;
-    when 'succes' then
-      if montant > 1000 then raise exception 'montant_invalide'; end if;
+    when 'succes' then   -- (6 novembre 2026) seulement les vrais succès, à leur montant et avec leur sachet (interne.succes_tarif, dans succes-verifies.sql)
+      ev_t := interne.succes_tarif(cle);
+      if ev_t is null or montant > (ev_t->>'j')::int or (sac is not null and sac is distinct from ev_t->>'sac') then raise exception 'montant_invalide'; end if;
       k := cle;
     when 'serie' then   -- (8 octobre 2026) les séries à thème ont été retirées du jeu
       raise exception 'deja';   -- 'deja' : une vieille page encore ouverte ne montre pas d'erreur

@@ -3506,6 +3506,8 @@ button.cp-who:hover b{text-decoration:underline}
 .miss-leg .dec svg{color:#F2B33D;filter:drop-shadow(0 0 3px #F2B33D)}
 .miss-leg .col svg{color:#3FB6E8;filter:drop-shadow(0 0 3px #3FB6E8)}
 .pick-filters{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:10px}
+/* (6 novembre 2026) « Vendre une bille » : filtre par rareté du motif, pastille de la couleur de la lueur */
+.pick-filters.pk-rf .chip i{display:inline-block;width:9px;height:9px;border-radius:50%;background:var(--rc);margin-right:6px;box-shadow:0 0 5px var(--rc);vertical-align:0}
 .pick-srch{margin-bottom:10px}
 .pick-srch input{width:100%}
 .pick[hidden]{display:none}
@@ -17384,7 +17386,7 @@ let bugKeep = null;   // un message qui n'est pas parti : il est reproposé au p
 // on:false cache le bouton (pendant qu'on prépare la mise à jour) ; on:true le remet, avec la pastille si l'id a changé
 // (16 octobre 2026) deux repères : dot = la pastille rouge du bouton, à changer à CHAQUE mise en ligne qui ajoute une ligne au patchnote
 // (avec txt : la date du jour) ; id = la fenêtre d'annonce à l'arrivée, seulement pour les très gros jours
-const NEWS = {on:true, id:"2026-10-27", dot:"2026-11-06-1200", url:"/nouveautes.html", txt:"Mise à jour du 6 nov."};
+const NEWS = {on:true, id:"2026-10-27", dot:"2026-11-06-1800", url:"/nouveautes.html", txt:"Mise à jour du 6 nov."};
 const newsUnseen = () => lsGet("billeo-news-vu")!==NEWS.dot;
 // (14 octobre 2026) à l'arrivée, une fenêtre annonce la mise à jour, une seule fois par mise à jour et par compte (S.newsPop, gardé
 // dans la partie : elle ne revient pas sur un autre appareil) ; on choisit d'aller voir les nouveautés, ou pas
@@ -18322,6 +18324,9 @@ const pickGlow = x => { const F = FAMILIES[x.family], r = decorRar(x);
 const pickCard = (x, side, on, hid, nw, cnt) => `<button class="pick${nw?` miss ${nw}`:side==="sell"?" pk-rar":""}"${nw||side==="sell"?` style="--gc:${pickGlow(x)}"`:""} data-action="troc-pick" data-q="${esc(pickTxt(x))}"${hid?" hidden":""} data-side="${side}" data-id="${x.id}" aria-pressed="${on}">${cnt||""}<span class="ball">${mImg(x,120,Math.round(28*scaleOf(x.type)+18),"")}</span>${nw?`<span class="miss-sp" title="${side==="give" ? (nw==="dec"?"Un motif que ton copain n'a pas dans cette taille":"Un coloris que ton copain n'a pas") : nw==="dec"?"Un motif que tu n'as pas dans cette taille":"Un coloris que tu n'as pas"}">${SPARK}</span>`:""}${esc(specName(x))}<small class="meta">${TYPES[x.type].label}</small></button>`;
 // la recherche (par nom, shiny, rareté…) cache les billes sans tout redessiner ; elle est gardée dans PQ pour les redessins
 const PQ = {};
+// (6 novembre 2026) la rareté du motif, pour le filtre de « Vendre une bille » : comme la lueur (événement et saison à part)
+const pickRarK = x => { const F = FAMILIES[x.family], r = decorRar(x); return F?.event ? "ev" : F?.season!=null || isSeason(x) ? "sa" : r>=0 ? String(r) : "" };
+const PICK_RAR = [["0",DECOR_RAR[0].name,"#FFFFFF"],["1",DECOR_RAR[1].name,MOTIF_COL[1]],["2",DECOR_RAR[2].name,MOTIF_COL[2]],["3",DECOR_RAR[3].name,MOTIF_COL[3]],["4",DECOR_RAR[4].name,MOTIF_COL[4]],["5",DECOR_RAR[5].name,MOTIF_COL[5]],["ev","Événement","#FF5FD2"],["sa","Saison","#2EE6C8"]];
 const pqWords = side => fold(PQ[side]||"").trim().split(/\s+/).filter(Boolean);
 // (28 octobre 2026) 30 billes par page : avec des milliers de billes, tout dessiner d'un coup bloquait la page (« Vendre une bille », troc)
 const PK_PAGE = 30, PL = {};
@@ -18332,17 +18337,20 @@ function pickList(list, side, sel, filt, missFn){
   const leg = nd||nc ? `<p class="miss-leg">${nd?`<span class="dec">${SPARK} ${nd} motif${nd>1?"s":""} qui ${te} manque${nd>1?"nt":""}</span>`:""}${nc?`<span class="col">${SPARK} ${nc} coloris qui ${te} manque${nc>1?"nt":""}</span>`:""}</p>` : "";
   const search = list.length<6 ? "" : `<div class="cp-search pick-srch">${ic("search",15)}<input type="search" class="troc-q" data-side="${side}" value="${esc(PQ[side]||"")}" placeholder="Chercher : Galaxie, Rubis, shiny…" aria-label="Chercher une bille" autocomplete="off" spellcheck="false"></div>`;
   const chips = `<div class="pick-filters"><button class="chip" data-action="troc-filt" data-side="${side}" data-t="" aria-pressed="${!filt}">Toutes</button>${TK.filter(t=>list.some(x=>x.type===t)).map(t=>`<button class="chip" data-action="troc-filt" data-side="${side}" data-t="${t}" aria-pressed="${filt===t}">${TYPES[t].pl}</button>`).join("")}</div>`;
+  const rf = side!=="sell" ? "" : (()=>{ const ks = new Set(list.map(pickRarK)), R = PICK_RAR.filter(([k])=>ks.has(k));
+    return R.length<2 ? "" : `<div class="pick-filters pk-rf"><button class="chip" data-action="pick-rar" data-r="" aria-pressed="${!cour.sell?.rf}">Tous les motifs</button>${R.map(([k,l,c])=>`<button class="chip" data-action="pick-rar" data-r="${k}" style="--rc:${c}" aria-pressed="${cour.sell?.rf===k}"><i></i>${l}</button>`).join("")}</div>` })();
   // le nombre d'exemplaires : chez toi, ×2 et plus = un double ; chez le copain, ce que tu as déjà
   const own = ownInfo(), cnt = x => { const n = own(x).n;
     return side==="want" ? (n ? `<span class="pick-n have" title="Tu l'as déjà">${ic("check",10,3)}${n>1?`×${n}`:""}</span>` : "")
       : n>1 ? `<span class="pick-n" title="Tu en as ${n}">×${n}</span>` : "" };
   PL[side] = {list, sel, filt, miss, cnt};
-  return list.length ? search + chips + leg + `<div class="pick-res" data-side="${side}">${pickRes(side)}</div>` : `<p class="empty">Aucune bille à troquer.</p>`;
+  return list.length ? search + chips + rf + leg + `<div class="pick-res" data-side="${side}">${pickRes(side)}</div>` : `<p class="empty">Aucune bille à troquer.</p>`;
 }
 // la page de billes affichée (recherche et taille appliquées à toute la liste), et ses flèches
 function pickRes(side){
   const {list, sel, filt, miss, cnt} = PL[side], q = pqWords(side);
-  const shown = list.filter(x=>(!filt || x.type===filt) && q.every(w=>pickTxt(x).includes(w)));
+  const rf = side==="sell" && cour.sell?.rf;
+  const shown = list.filter(x=>(!filt || x.type===filt) && (!rf || pickRarK(x)===rf) && q.every(w=>pickTxt(x).includes(w)));
   if(!shown.length) return `<p class="meta pick-none">Aucune bille ne correspond.</p>`;
   const P = courPages(shown.length, PK_PAGE, "pk"+side);
   return `<div class="pick-grid" data-side="${side}">${shown.slice(P.from, P.from+PK_PAGE).map(x=>pickCard(x, side, sel.includes(x.id), false, miss(x), cnt(x))).join("")}</div>${courPager(P, "pk"+side, "Billes")}`;
@@ -18744,6 +18752,7 @@ document.addEventListener("click", e=>{
     case "troc-close": cour.compose = null; renderView(); break;
     case "troc-filt": { const X = t.dataset.side==="sell" ? cour.sell : cour.compose; if(!X) break;
       X[{give:"fg", want:"fw", sell:"f"}[t.dataset.side]] = t.dataset.t; ui["pk"+t.dataset.side] = 0; renderView(); break }
+    case "pick-rar": { const X = cour.sell; if(!X) break; X.rf = t.dataset.r; ui.pksell = 0; renderView(); break }
     case "sell-dbl": { const X = cour.sell; if(!X) break; X.dbl = t.checked; ui.pksell = 0; renderView(); break }
     case "troc-dbl": { const C = cour.compose; if(!C) break; C.dbl = t.checked; ui.pkgive = 0; C.mot = document.getElementById("troc-mot")?.value || C.mot; renderView(); break }
     case "troc-manque": { const C = cour.compose; if(!C) break; C.manque = t.checked; ui.pkwant = 0; C.mot = document.getElementById("troc-mot")?.value || C.mot; renderView(); break }

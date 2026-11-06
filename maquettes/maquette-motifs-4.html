@@ -92,8 +92,8 @@ img.wait{background:radial-gradient(circle at 40% 35%,var(--line),transparent 62
 <body>
 <div class="wrap">
   <span class="tag">Maquette · 6 novembre 2026</span>
-  <h1>La grande fournée : 66 motifs à choisir</h1>
-  <p class="lead"><b>33 motifs tout neufs</b> dans toutes les raretés, <b>2 nouveaux mythiques animés</b> (l'Astrolabe et le Kraken), et tout ce qui avait déjà été proposé sans être gardé : les 26 motifs du 3 novembre et les 5 mythiques du 11 octobre. Tous en vrai rendu 3D du jeu, avec les 3 couleurs du coloris ; seuls les mythiques bougent. Chaque rareté garde la même part des billes.</p>
+  <h1>La grande fournée : 200 motifs à choisir</h1>
+  <p class="lead"><b>50 Communs, 50 Peu communs, 40 Rares, 30 Épiques, 20 Légendaires et 10 Mythiques</b> : 169 tout neufs, plus ce qui avait déjà été proposé sans être gardé (26 motifs du 3 novembre, 5 mythiques du 11 octobre). Tous en vrai rendu 3D du jeu, avec les 3 couleurs du coloris ; seuls les mythiques bougent. Chaque rareté garde la même part des billes.</p>
   <p class="note">Touche une bille pour l'agrandir et la faire tourner (les mythiques s'animent) !</p>
   <nav class="jump" id="jump"></nav>
   <div class="bar" id="bar"></div>
@@ -116,7 +116,12 @@ img.wait{background:radial-gradient(circle at 40% 35%,var(--line),transparent 62
 <script>
 /* Maquette du 6 novembre 2026. Rendu : motifs-4-rendu.js, fabriqué par fabriquer-motifs-4.mjs à partir de tikalo-demo-rendu.js
    + motifs-3.glsl (86 à 116) + motifs-4.glsl (117 à 149, 155, 156) + mythique-2.glsl (renumérotés 150 à 154).
-   Les numéros d'ici ne sont pas ceux du jeu : les motifs gardés prendront les numéros 91, 92… dans l'ordre. */
+   + motifs-5.glsl (157 à 198), motifs-6.glsl (199 à 254), motifs-7.glsl (255 à 290).
+   Les numéros d'ici ne sont pas ceux du jeu : les motifs gardés prendront les numéros 91, 92… dans l'ordre.
+   Pour remettre une fournée plus tard : écrire les blocs « #elif MODE==291 … » dans un nouveau motifs-8.glsl (l'ajouter dans
+   fabriquer-motifs-4.mjs, et dans la liste NUIT s'il est en verre de nuit), relancer node maquettes/fabriquer-motifs-4.mjs,
+   puis ajouter une ligne N(291, rareté, "Nom", "Description", {verre, face, myth}) dans la liste NEW ci-dessous.
+   Les motifs intégrés au jeu passent dans IN_GAME (ils comptent alors dans l'album d'aujourd'hui). */
 const TIERS = DECOR_RAR;
 const palOf = n => PALETTES.findIndex(P=>P[0]===n);
 const AZUR = palOf("Azur"), VARS = ["Grenat","Émeraude","Miel","Lavande","Réglisse"].map(palOf);
@@ -197,6 +202,146 @@ const NEW = [
   N(152,5,"Plasma","Une boule plasma : des éclairs partent du cœur et cherchent le bord du verre.",{src:"oct", verre:true, face:true, myth:true}),
   N(153,5,"Ouroboros","Le serpent qui se mord la queue fait le tour du verre, en relief.",{src:"oct", verre:true, face:true, myth:true}),
   N(154,5,"Kaléidoscope infini","Une rosace dans laquelle on plonge sans jamais arriver au fond.",{src:"oct", verre:true, face:true, myth:true}),
+  // ---------- 6 novembre, 2e partie : encore des Communs ----------
+  N(157,0,"Dragées","Des bonbons plats et brillants éparpillés, comme des pastilles enrobées."),
+  N(158,0,"Ballons","Des ballons de baudruche avec leur petit nœud et leur ficelle."),
+  N(159,0,"Étoiles de mer","Des étoiles de mer aux bras arrondis sur un fond de sable."),
+  N(160,0,"Croissants","Des croissants de lune et de petits points."),
+  N(161,0,"Dégradé","Les 3 couleurs fondues l'une dans l'autre, comme un coucher de soleil."),
+  N(162,0,"Mondrian","De grands carrés de couleur séparés par des traits noirs."),
+  N(163,0,"Pâquerettes","Des marguerites aux pétales clairs dans un pré."),
+  N(164,0,"Ronds dans l'eau","Des cercles qui s'élargissent autour de gouttes tombées dans l'eau."),
+  N(165,0,"Hachures","Des traits de stylo serrés qui se croisent par endroits."),
+  N(166,0,"Tampons","Des ronds, carrés et triangles tamponnés à l'encre."),
+  N(167,0,"Brindilles","De petites branches avec leurs feuilles et une baie."),
+  N(168,0,"Coccinelles","Des petites bêtes à bon Dieu à points."),
+  N(169,0,"Musique","Des portées et des notes de musique."),
+  N(170,0,"Éclairs","De petits éclairs au cœur blanc sur un fond sombre."),
+  N(171,0,"Sourires","Des petites têtes rondes qui sourient."),
+  N(199,0,"Cartes","Cœur, carreau, pique et trèfle, comme un jeu de cartes."),
+  N(200,0,"Ancres","Des ancres de marin sur un fond rayé."),
+  N(201,0,"Couronnes","De petites couronnes d'or serties de pierres."),
+  N(202,0,"Clés","De vieilles clés à anneau."),
+  N(203,0,"Flèches","Des flèches d'archer aux plumes colorées."),
+  N(204,0,"Soleils","De petits soleils rayonnants dans le ciel."),
+  N(205,0,"Cerises","Des paires de cerises avec leur feuille."),
+  N(206,0,"Pommes","Des pommes avec leur queue et une feuille."),
+  N(207,0,"Poissons","De petits poissons rayés qui nagent dans tous les sens."),
+  N(208,0,"Oiseaux","De petits oiseaux tout ronds."),
+  N(209,0,"Pattes","Des traces de pattes de chat qui se promènent."),
+  N(210,0,"Chats","Des têtes de chat aux oreilles pointues."),
+  N(211,0,"Fraises","Des fraises avec leurs grains et leur collerette."),
+  N(212,0,"Glands","Des glands de chêne et leur chapeau quadrillé."),
+  N(213,0,"Biais","Des rayures en biais de toutes les largeurs, comme une cravate."),
+  N(214,0,"Hexagones","Des carreaux à six côtés bien serrés."),
+  N(215,0,"Arcs","Des carrés coupés de quarts de cercle, comme une affiche des années 20."),
+  N(216,0,"Pyjama","De fines rayures doubles et de petits pois entre elles."),
+  N(217,0,"Bayadère","Plein de rayures de toutes les largeurs et de toutes les teintes."),
+  N(218,0,"Boussoles","Des roses des vents à quatre pointes."),
+  N(219,0,"Cactus","De petits cactus à deux bras dans leur pot, avec une fleur."),
+  N(220,0,"Avions en papier","Des avions de papier et leur trajet en pointillés."),
+  N(221,0,"Bateaux en papier","De petits bateaux de papier sur des vaguelettes."),
+  N(222,0,"Glaces","Des cornets de glace à deux boules."),
+  // ---------- encore des Peu communs ----------
+  N(172,1,"Zèbre","Des rayures qui ondulent et se fourchent."),
+  N(173,1,"Plumes","Des plumes en rangées serrées qui se chevauchent."),
+  N(174,1,"Kilim","Les bandes d'un tapis tissé, des losanges en escalier."),
+  N(175,1,"Batik","Un tissu teint, craquelé de fines veines, avec des fleurs gardées par la cire."),
+  N(176,1,"Cordage","Des torons enroulés en hélice comme une grosse corde."),
+  N(177,1,"Tortue","Les plaques d'une carapace de tortue et leurs anneaux."),
+  N(178,1,"Grillage","Un grillage en losanges devant un fond de deux couleurs."),
+  N(179,1,"Pavés","Des pavés posés en éventail, comme dans une vieille rue."),
+  N(180,1,"Tuiles","Un toit de tuiles arrondies, rang par rang."),
+  N(181,1,"Éponge","Une éponge pleine de trous."),
+  N(182,1,"Vermicelles","Un glaçage brillant couvert de vermicelles de sucre."),
+  N(183,1,"Python","La peau d'un serpent, ses petites écailles et ses grandes taches."),
+  N(184,1,"Relief","Une carte de randonnée et ses courbes de niveau."),
+  N(185,1,"Point de croix","Une broderie de petites croix qui dessinent des losanges."),
+  N(186,1,"Moiré","Deux séries de cercles fins qui se croisent et font des vagues."),
+  N(223,1,"Dentelle","Une dentelle blanche, ses rosaces et son filet, sur un fond sombre."),
+  N(224,1,"Ikat","Des losanges tissés aux bords flous."),
+  N(225,1,"Shibori","Un tissu teint où les plis ont gardé des ronds clairs."),
+  N(226,1,"Velours côtelé","Les côtes du velours, en larges bandes douces."),
+  N(227,1,"Tweed","Un lainage en chevrons moucheté de brins de couleur."),
+  N(228,1,"Cachemire","Des gouttes recourbées pleines de petits dessins."),
+  N(229,1,"Art déco","Des éventails de rayons bordés de fins arcs d'or."),
+  N(230,1,"Liberty","Un semis serré de toutes petites fleurs et leurs feuilles."),
+  N(231,1,"Ananas","La peau d'ananas, ses losanges bombés et leur pointe."),
+  N(232,1,"Croco","La peau de crocodile, ses grosses écailles brillantes."),
+  N(233,1,"Coquillages","Des coquilles Saint-Jacques côtelées sur le sable."),
+  N(234,1,"Pomme de pin","Des écailles en spirale qui couvrent toute la bille."),
+  N(235,1,"Tournesol","Un tournesol de chaque côté, ses graines en spirale.",{face:true}),
+  N(236,1,"Bargello","La broderie en flammes, des pics en escalier en dégradé."),
+  N(237,1,"Fanions","Des guirlandes de petits drapeaux qui font le tour de la bille."),
+  N(238,1,"Nuancier","Des pastilles de couleur rangées comme chez le peintre."),
+  N(239,1,"Guirlande lumineuse","Des fils où brillent de petites ampoules, la nuit."),
+  // ---------- encore des Rares ----------
+  N(187,2,"Œil-de-tigre","Une pierre en bandes soyeuses dont l'éclat glisse quand on la tourne."),
+  N(188,2,"Turquoise","Une pierre parcourue d'une toile de veines sombres."),
+  N(189,2,"Feuille d'or","Des éclats de feuille d'or, brillants comme un miroir, sur une laque profonde."),
+  N(190,2,"Perlée","Des perles rondes bien rangées, chacune avec son reflet de nacre."),
+  N(191,2,"Pétillante","Un verre teinté où montent des colonnes de toutes petites bulles.",{verre:true}),
+  N(192,2,"Mercure","Des gouttes de métal liquide, brillantes comme un miroir."),
+  N(193,2,"Jade","Une pierre translucide voilée de nuages et veinée.",{verre:true}),
+  N(194,2,"Strass","Des pierres taillées serrées dans leur serti d'argent."),
+  N(195,2,"Marqueterie","Des pièces de trois bois teintés, avec le fil du bois."),
+  N(196,2,"Porcelaine","Une porcelaine blanche peinte au pinceau de fleurs et de volutes."),
+  N(197,2,"Pierre de lune","Une pierre laiteuse où flotte un voile de lumière.",{verre:true}),
+  N(198,2,"Néons","Des tubes de lumière (un anneau, un cœur, un zigzag) dans un verre de nuit.",{verre:true, face:true}),
+  N(240,2,"Labradorite","Une pierre gris-noir où s'allument des éclairs de couleur selon l'angle."),
+  N(241,2,"Argent gravé","De l'argent poli gravé de volutes, incrusté de pierres et de filets d'or."),
+  N(242,2,"Guilloché","Des ondes gravées très fines sous un émail transparent."),
+  N(243,2,"Mica","Une pierre feuilletée en mille paillettes plates."),
+  N(244,2,"Fleurs séchées","De petites fleurs pressées et des feuilles prises dans une résine claire.",{verre:true, face:true}),
+  N(245,2,"Verre de mer","Un morceau de verre poli par la mer, laiteux.",{verre:true}),
+  N(246,2,"Pierre de soleil","Une pierre translucide pleine de minuscules paillettes qui s'allument.",{verre:true}),
+  N(247,2,"Dendrites","Une pierre laiteuse où ont poussé des fougères de pierre.",{verre:true}),
+  N(248,2,"Quartz rutile","Un cristal clair traversé de fines aiguilles d'or.",{verre:true}),
+  N(249,2,"Pyrite","Des cubes de métal doré poussés les uns dans les autres."),
+  N(250,2,"Bois pétrifié","Un tronc devenu pierre, ses cernes et ses fentes."),
+  N(251,2,"Laque","Une laque profonde peinte à l'or de vagues et de nuages."),
+  N(252,2,"Titane","Un métal chauffé jusqu'à prendre les 3 couleurs en reflets."),
+  N(253,2,"Obsidienne","Un verre de volcan noir traversé de reflets soyeux."),
+  N(254,2,"Céladon","Un émail pâle craquelé d'un fin réseau."),
+  // ---------- encore des Épiques ----------
+  N(255,3,"Île","Une petite île de sable et son palmier au milieu de la mer.",{verre:true, face:true}),
+  N(256,3,"Montagne","Des sommets enneigés sous la nuit et la lune.",{verre:true, face:true}),
+  N(257,3,"Cerf-volant","Un cerf-volant en losange dans un ciel de nuages, avec sa queue à nœuds.",{verre:true, face:true}),
+  N(258,3,"Moulin","Un moulin à vent sur sa colline.",{verre:true, face:true}),
+  N(259,3,"Igloo","Un igloo de blocs de glace sous une aurore.",{verre:true, face:true}),
+  N(260,3,"Dirigeable","Un ballon dirigeable rayé entre les nuages.",{verre:true, face:true}),
+  N(261,3,"Sous-marin","Un petit sous-marin aux hublots allumés, dans l'eau profonde.",{verre:true, face:true}),
+  N(262,3,"Tortue de mer","Une tortue nage dans l'eau claire.",{verre:true, face:true}),
+  N(263,3,"Pieuvre","Une pieuvre déploie ses huit bras.",{verre:true, face:true}),
+  N(264,3,"Oasis","Une mare au milieu des dunes, deux palmiers, sous la lune.",{verre:true, face:true}),
+  N(265,3,"Arc-en-ciel","Un arc de lumière qui sort d'un nuage et retombe dans un autre.",{verre:true, face:true}),
+  N(266,3,"Nuage de pluie","Un gros nuage tout rond d'où tombent des gouttes sur une flaque.",{verre:true, face:true}),
+  N(267,3,"Ovni","Une soucoupe volante et son rayon de lumière dans la nuit.",{verre:true, face:true}),
+  N(268,3,"Lanterne","Une lanterne de papier qui brille dans la nuit.",{verre:true, face:true}),
+  N(269,3,"Bougie","Une bougie, ses coulures de cire et sa flamme.",{verre:true, face:true}),
+  N(270,3,"Ampoule","Une ampoule dont le filament brille.",{verre:true, face:true}),
+  N(271,3,"Perle","Une huître entrouverte qui garde une grosse perle.",{verre:true, face:true}),
+  N(272,3,"Hibou","Un hibou sur sa branche, ses grands yeux qui brillent.",{verre:true, face:true}),
+  N(273,3,"Chat de nuit","Un chat noir sur un toit, devant une grosse lune.",{verre:true, face:true}),
+  N(274,3,"Cascade","Une chute d'eau entre deux falaises, dans un bassin plein d'écume.",{verre:true, face:true}),
+  N(275,3,"Toupie","Une toupie rayée qui tourne sur sa pointe.",{verre:true, face:true}),
+  // ---------- encore des Légendaires ----------
+  N(276,4,"Château","Un château de conte, ses toits pointus et ses fenêtres allumées.",{verre:true, face:true}),
+  N(277,4,"Arbre de vie","Un arbre aux branches de lumière, ses feuilles brillantes qui tombent.",{verre:true, face:true}),
+  N(278,4,"Astronaute","Un petit astronaute flotte dans l'espace devant une planète.",{verre:true, face:true}),
+  N(279,4,"Supernova","Une étoile qui explose, son cœur aveuglant et sa coquille de filaments.",{verre:true, face:true}),
+  N(280,4,"Pulsar","Une étoile minuscule lance deux faisceaux de lumière.",{verre:true, face:true}),
+  N(281,4,"Cristal de pouvoir","Un grand cristal flotte et brille, entouré d'éclats et d'un anneau d'énergie.",{verre:true, face:true}),
+  N(282,4,"Couronne","Une couronne royale d'or sur un coussin de velours.",{verre:true, face:true}),
+  N(283,4,"Coffre au trésor","Un coffre ouvert qui déborde de pièces d'or et de pierres.",{verre:true, face:true}),
+  N(284,4,"Œuf de dragon","Un œuf écaillé fendu de lumière, posé dans des braises.",{verre:true, face:true}),
+  N(285,4,"Lampe magique","Une lampe d'or d'où sort une fumée enchantée.",{verre:true, face:true}),
+  N(286,4,"Pagode","Une pagode à trois toits recourbés et ses lanternes, sous la lune.",{verre:true, face:true}),
+  N(287,4,"Boule de cristal","Une boule de voyante où tourbillonne une brume.",{verre:true, face:true}),
+  // ---------- encore des Mythiques (animés) ----------
+  N(288,5,"Horloge du Temps","Une horloge enchantée : une aiguille tourne à l'endroit, l'autre à l'envers, le balancier se balance.",{verre:true, face:true, myth:true}),
+  N(289,5,"Cœur de cristal","Un cœur taillé bat au milieu du verre et lance une onde de lumière à chaque battement.",{verre:true, face:true, myth:true}),
+  N(290,5,"Koï","Deux carpes koï tournent l'une après l'autre dans un bassin, comme le yin et le yang.",{verre:true, face:true, myth:true}),
 ];
 const SRC_TXT = {neuf:"Tout nouveau", nov:"Proposé le 3 nov.", oct:"Proposé le 11 oct."};
 const N0 = FAMILIES.length;   // 86 : le rendu de démo s'arrête à la Constellation

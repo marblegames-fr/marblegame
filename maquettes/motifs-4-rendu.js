@@ -411,7 +411,7 @@ function specParams(s){
   const P = PALETTES[s.pal];
   let tint = hex01(P[4]);
   const opaque = OPAQUE_FAMS.includes(s.family);
-  if(s.family===2||s.family===30||s.family===34||s.family===42||s.family===44||s.family===47||s.family===49||s.family===50||s.family===51||s.family===63||s.family===64||s.family===82||s.family===83||s.family===84||s.family===85||[108,111,112,113,114,115,116,140,143,144,145,146,147,148,149,150,151,152,153,154,155,156].includes(s.family)) tint = hex01(shade(P[1],-.1)).map(v=>Math.max(.08,v*.8));
+  if(s.family===2||s.family===30||s.family===34||s.family===42||s.family===44||s.family===47||s.family===49||s.family===50||s.family===51||s.family===63||s.family===64||s.family===82||s.family===83||s.family===84||s.family===85||[108,111,112,113,114,115,116,140,143,144,145,146,147,148,149,150,151,152,153,154,155,156,198,256,259,264,267,268,269,270,272,273,276,277,278,279,280,281,282,283,284,285,286,287,288,289,290].includes(s.family)) tint = hex01(shade(P[1],-.1)).map(v=>Math.max(.08,v*.8));
   const p = {
     seed:[r(),r(),r(),r()],
     par:[(r()-.5)*5, [3,4,4,5,6][Math.floor(r()*5)], .05+r()*.07, 2+Math.floor(r()*4)],
@@ -521,6 +521,52 @@ float vorF(vec3 g, out vec3 cid, out float d2){ vec3 i0=floor(g), f0=fract(g); f
     vec3 pt=o+0.15+0.7*vec3(h31(i0+o),h31(i0+o+7.1),h31(i0+o+3.3)); float d=length(pt-f0);
     if(d<d1){ d2=d1; d1=d; cid=i0+o; } else if(d<d2) d2=d; }
   return d1; }
+// des petits dessins semés : la place du point dans le repère de sa case (-0,5..0,5), le numéro de la case (id), et s'il y a de la place (on)
+vec2 scatP(vec3 u, float sc, float i, out vec3 id, out float on){ vec3 t1=normalize(cross(u,vec3(0.0,1.0,0.013))), t2=cross(u,t1);
+  vec3 g=u*sc*0.72+uSeed.xyz*40.0+i*vec3(0.5,0.37,0.61); id=floor(g)+i*17.0; vec3 f=fract(g)-0.5;
+  on=step(abs(dot(f,u)),0.36); return vec2(dot(f,t1),dot(f,t2))*0.8; }
+float dot2(vec2 v){ return dot(v,v); }
+float heartD(vec2 p){ p.x=abs(p.x); if(p.y+p.x>1.0) return sqrt(dot2(p-vec2(0.25,0.75)))-0.3535534;
+  return sqrt(min(dot2(p-vec2(0.0,1.0)),dot2(p-0.5*max(p.x+p.y,0.0))))*sign(p.x-p.y); }   // un cœur, la pointe en bas (0,0), le haut vers y=1
+float inTri(vec2 p, vec2 a, vec2 b, vec2 c){ float s1=sign((b.x-a.x)*(p.y-a.y)-(b.y-a.y)*(p.x-a.x)), s2=sign((c.x-b.x)*(p.y-b.y)-(c.y-b.y)*(p.x-b.x)), s3=sign((a.x-c.x)*(p.y-c.y)-(a.y-c.y)*(p.x-c.x));
+  return step(2.5,abs(s1+s2+s3)); }   // 1 dans le triangle
+#endif
+#if MODE>=255
+vec3 starsE(vec3 q, float th){ vec3 g=q*15.0+uSeed.xyz*40.0; vec3 fc=fract(g)-0.5; return vec3(step(0.972,h31(floor(g)))*smoothstep(0.2,0.0,length(fc)))*5.0*step(th,length(q)); }   // des étoiles au bord du verre
+float lit(vec3 n){ return 0.4+0.7*clamp(dot(n,normalize(vec3(-0.5,0.6,0.6))),0.0,1.0); }
+#endif
+// les motifs en métal de la 3e partie : la teinte du métal et où il y en a (a)
+#if MODE==241
+#define HAS_METAL
+vec4 metalF(vec3 q){ vec3 u=normalize(q), so=uSeed.xyz*40.0; vec3 cid; float d2; float d1=vorF(u*2.2+so,cid,d2);
+  float inl=max(step(d1,0.09),smoothstep(0.03,0.015,d2-d1)); float sc=0.5+0.5*sin(dot(u,vec3(30.0,12.0,20.0))+6.0*fbm(u*3.0+so));
+  float eng=smoothstep(0.7,0.95,sc); vec3 t=vec3(0.92,0.93,0.96)*(1.0-0.45*eng);
+  float niel=smoothstep(0.62,0.64,fbm(u*4.0+so+3.0)); return vec4(t, (1.0-inl)*(1.0-niel)); }
+#endif
+#if MODE==249
+#define HAS_METAL
+vec4 metalF(vec3 q){ vec3 u=normalize(q), so=uSeed.xyz*40.0; vec3 g=u*4.0+so; vec3 id=floor(g), f=fract(g)-0.5;
+  float cube=step(max(abs(f.x),max(abs(f.y),abs(f.z))),0.25+0.2*h31(id))*step(0.3,h31(id+1.0));
+  float m=max(cube,smoothstep(0.5,0.55,fbm(u*2.5+so)));
+  vec3 t=mix(vec3(0.95,0.8,0.45),uC3,0.3)*(0.75+0.35*h31(id+2.0)); return vec4(t, m); }
+#endif
+#if MODE==252
+#define HAS_METAL
+vec4 metalF(vec3 q){ vec3 u=normalize(q), so=uSeed.xyz*40.0; float t=dot(u,normalize(vec3(0.3,1.0,0.2)))*0.5+0.5+0.2*(fbm(u*2.0+so)-0.5);
+  vec3 c=t<0.5?mix(brt(uC1,0.5),uC2,smoothstep(0.1,0.5,t)):mix(uC2,uC3,smoothstep(0.5,0.9,t));
+  c=mix(vec3(0.8),c,0.75)*(0.9+0.1*sin(dot(u,vec3(3.0,1.0,7.0))*120.0)); return vec4(c, 1.0); }
+#endif
+#if MODE==187
+const vec3 TIGRE_AX=vec3(0.28,0.92,0.27);
+float tigreV(vec3 q){ vec3 u=normalize(q), so=uSeed.xyz*40.0; return dot(u,TIGRE_AX)*11.0+2.5*fbm(u*1.5+so); }
+#endif
+#if MODE==189
+vec2 orM(vec3 q){ vec3 u=normalize(q), so=uSeed.xyz*40.0; vec3 cid; float d2; float d1=vorF(u*4.5+so,cid,d2);
+  float m=step(0.42,h31(cid))*smoothstep(0.42,0.5,noise(u*3.0+so)+0.25)*smoothstep(0.01,0.03,d2-d1+0.02*(noise(u*40.0+so)-0.5));
+  return vec2(m, step(0.85,h31(cid+3.0))); }
+#endif
+#if MODE==192
+float mercM(vec3 q){ vec3 u=normalize(q), so=uSeed.xyz*40.0; return smoothstep(0.6,0.62,fbm(u*2.2+so)+0.12*noise(u*8.0+so)); }
 #endif
 #if MODE==135
 float damasV(vec3 q){ vec3 u=normalize(q), so=uSeed.xyz*40.0; vec3 w=u*1.3+so; w+=1.1*vec3(fbm(w),fbm(w+4.0),fbm(w+8.0)); return dot(w,vec3(0.3,1.0,0.2))*6.0; }   // les couches de l'acier damassé
@@ -2906,6 +2952,1606 @@ vec4 fam(vec3 q, out vec3 e){
       e+=mix(uC2,vec3(1.0),0.4)*smoothstep(0.012,0.0,abs(length(q-P)-0.022))*2.0*sin(3.14159*y); }
     return vec4(col, den>1.0?den:0.4);
   }
+// (6 novembre 2026, 2e partie) encore des Communs (157 à 171), des Peu communs (172 à 186) et des Rares (187 à 198)
+// ===================== Communs =====================
+#elif MODE==157
+  { // dragées : des bonbons plats et brillants, comme des pastilles de chocolat enrobées, éparpillés
+    vec3 u=normalize(q); vec3 c=mix(uC3,vec3(0.98,0.97,0.94),0.85);
+    for(int i=0;i<3;i++){ vec3 id; float on; vec2 p=scatP(u,2.6,float(i),id,on); p=mrot(h31(id+5.0)*6.2831853)*p;
+      on*=step(0.15,h31(id)); float k=h31(id+2.0);
+      vec3 dc=k<0.3?brt(uC1,0.45):(k<0.6?uC2:(k<0.85?uC3:vec3(0.97)));
+      vec2 e2=p/vec2(0.2,0.15); float L=length(e2);
+      vec3 cc=dc*(0.72+0.35*(1.0-L*L))+vec3(1.0)*smoothstep(0.35,0.0,length(e2-vec2(-0.35,0.4)))*0.6;
+      c=mix(c,c*0.78,step(1.0,L)*step(L,1.18)*on);
+      c=mix(c,cc,step(L,1.0)*on); }
+    return vec4(c, 200.0);
+  }
+#elif MODE==158
+  { // ballons : des ballons de baudruche des 3 couleurs, avec leur petit nœud et leur ficelle
+    vec3 u=normalize(q); vec3 c=mix(uC3,vec3(0.98,0.97,0.95),0.82);
+    for(int i=0;i<2;i++){ vec3 id; float on; vec2 p=scatP(u,1.9,float(i),id,on); p=mrot((h31(id+5.0)-0.5)*0.8)*p;
+      on*=step(0.12,h31(id)); float k=h31(id+2.0); vec3 bc=k<0.34?brt(uC1,0.45):(k<0.67?uC2:uC3);
+      vec2 b=(p-vec2(0.0,0.1))/vec2(0.15,0.19); float L=length(b);
+      float str=step(abs(p.x-0.025*sin(p.y*22.0)),0.007)*step(p.y,-0.1)*step(-0.45,p.y);
+      float knot=step(abs(p.x),0.035-(-0.09-p.y)*0.6)*step(p.y,-0.08)*step(-0.12,p.y);
+      c=mix(c,vec3(0.45),str*on); c=mix(c,bc*0.8,knot*on);
+      vec3 cc=bc*(0.7+0.35*(1.0-L*L))+vec3(1.0)*smoothstep(0.3,0.0,length(b-vec2(-0.4,0.45)))*0.7;
+      c=mix(c,cc,step(L,1.0)*on); }
+    return vec4(c, 200.0);
+  }
+#elif MODE==159
+  { // étoiles de mer : des étoiles de mer aux bras arrondis, piquées de petits points, sur un fond de sable
+    vec3 u=normalize(q); vec3 c=mix(uC3,vec3(0.96,0.92,0.84),0.7)*(0.92+0.1*noise(u*60.0+so));
+    for(int i=0;i<2;i++){ vec3 id; float on; vec2 p=scatP(u,2.0,float(i),id,on); p=mrot(h31(id+5.0)*6.2831853)*p;
+      on*=step(0.15,h31(id)); float r=length(p), a=atan(p.y,p.x);
+      float R=0.25*(0.35+0.65*pow(0.5+0.5*cos(a*5.0),1.6));
+      vec3 sc=h31(id+2.0)<0.5?brt(uC1,0.45):uC2;
+      float dots=step(0.6,noise(vec3(p*45.0,id.x)));
+      vec3 cc=mix(sc*(0.75+0.35*(1.0-r/max(R,0.01))),mix(uC3,vec3(1.0),0.4),dots*0.8);
+      c=mix(c,cc,step(r,R)*on); }
+    return vec4(c, 200.0);
+  }
+#elif MODE==160
+  { // croissants : des croissants de lune des deux premières couleurs, et de petits points de la 3e, sur un fond clair
+    vec3 u=normalize(q); vec3 c=vec3(0.97,0.96,0.93);
+    for(int i=0;i<2;i++){ vec3 id; float on; vec2 p=scatP(u,2.2,float(i),id,on); p=mrot(h31(id+5.0)*6.2831853)*p;
+      on*=step(0.15,h31(id)); float sz=0.16+0.06*h31(id+3.0);
+      float cr=step(length(p),sz)*step(sz*0.85,length(p-vec2(sz*0.45,sz*0.2)));
+      c=mix(c,h31(id+2.0)<0.5?brt(uC1,0.45):uC2,cr*on); }
+    vec3 g=u*12.0+so; c=mix(c,uC3,step(0.82,h31(floor(g)))*smoothstep(0.14,0.1,length(fract(g)-0.5)));
+    return vec4(c, 200.0);
+  }
+#elif MODE==161
+  { // dégradé : les 3 couleurs du coloris fondues l'une dans l'autre d'un pôle à l'autre, comme un coucher de soleil
+    vec3 u=normalize(q); vec3 ax=normalize(vec3(h31(so)-0.5,1.0,h31(so+1.0)-0.5));
+    float t=dot(u,ax)*0.5+0.5+0.04*sin(dot(u,vec3(7.0,3.0,5.0))+so.x);
+    vec3 c=t<0.5?mix(brt(uC1,0.45),uC2,smoothstep(0.0,0.5,t)):mix(uC2,uC3,smoothstep(0.5,1.0,t));
+    c*=0.96+0.06*noise(u*90.0+so);
+    return vec4(c, 200.0);
+  }
+#elif MODE==162
+  { // mondrian : de grands carrés de couleur séparés par des traits noirs, comme un tableau moderne
+    vec3 u=normalize(q); vec4 cf=cubeF(u); vec2 p=cf.xy; float fw=cf.w;
+    float x1=-0.5+0.35*h31(vec3(fw,1.0,so.x)), x2=0.15+0.5*h31(vec3(fw,2.0,so.x)), y1=-0.55+0.4*h31(vec3(fw,3.0,so.x)), y2=0.1+0.5*h31(vec3(fw,4.0,so.x));
+    float ix=p.x<x1?0.0:(p.x<x2?1.0:2.0), iy=p.y<y1?0.0:(p.y<y2?1.0:2.0);
+    float k=h31(vec3(ix+fw*3.0,iy,so.y));
+    vec3 c=k<0.2?brt(uC1,0.4):(k<0.38?uC2:(k<0.54?uC3:vec3(0.96,0.95,0.92)));
+    float ln=min(min(abs(p.x-x1),abs(p.x-x2)),min(abs(p.y-y1),abs(p.y-y2)));
+    ln=min(ln,1.0-max(abs(p.x),abs(p.y)));
+    return vec4(mix(vec3(0.07),c,smoothstep(0.022,0.032,ln)), 200.0);
+  }
+#elif MODE==163
+  { // pâquerettes : des marguerites aux pétales clairs (3e couleur) et au cœur de la 2e, dans un pré de la 1re
+    vec3 u=normalize(q); vec3 c=mix(brt(uC1,0.45)*0.6,brt(uC1,0.45)*0.85,noise(u*8.0+so));
+    for(int i=0;i<2;i++){ vec3 id; float on; vec2 p=scatP(u,2.2,float(i),id,on); p=mrot(h31(id+5.0)*6.2831853)*p;
+      on*=step(0.1,h31(id)); float r=length(p), a=atan(p.y,p.x), sz=0.19+0.06*h31(id+3.0);
+      float pet=step(r,sz*(0.72+0.28*abs(cos(a*6.0))))*step(0.05,r);
+      vec3 pc=mix(uC3,vec3(1.0),0.55)*(0.8+0.25*abs(cos(a*6.0)));
+      c=mix(c,pc,pet*on);
+      c=mix(c,uC2*(0.8+0.3*step(0.6,noise(vec3(p*60.0,id.x)))),step(r,0.065)*on); }
+    return vec4(c, 200.0);
+  }
+#elif MODE==164
+  { // ronds dans l'eau : des cercles qui s'élargissent autour de gouttes tombées dans une eau de la 1re couleur
+    vec3 u=normalize(q); vec3 c=brt(uC1,0.45)*(0.6+0.15*noise(u*4.0+so));
+    for(int i=0;i<3;i++){ vec3 id; float on; vec2 p=scatP(u,1.6,float(i),id,on);
+      on*=step(0.2,h31(id)); float L=length(p), R=0.3+0.15*h31(id+3.0);
+      float rg=smoothstep(0.25,0.0,abs(fract(L*22.0-h31(id)*3.0)-0.5)-0.25)*smoothstep(R,R*0.3,L);
+      c=mix(c,mod(float(i)+floor(L*22.0),2.0)<1.0?uC2:uC3,rg*on*0.85); }
+    return vec4(c, 200.0);
+  }
+#elif MODE==165
+  { // hachures : des traits de stylo serrés, dans trois sens et trois couleurs, qui se croisent par endroits sur un papier blanc
+    vec3 u=normalize(q); vec3 c=vec3(0.98,0.97,0.94);
+    for(int i=0;i<3;i++){ float fi=float(i);
+      vec3 dir=normalize(vec3(h31(so+fi*1.3),h31(so+fi*2.1),h31(so+fi*3.7))-0.5+0.001);
+      float l=smoothstep(0.14,0.04,abs(fract(dot(u,dir)*34.0+0.4*noise(u*4.0+fi))-0.5)-0.28);
+      float m=smoothstep(0.5,0.56,noise(u*2.4+so+fi*7.0));
+      c=mix(c,i==0?brt(uC1,0.4)*0.8:(i==1?uC2:uC3),l*m*0.9); }
+    return vec4(c, 200.0);
+  }
+#elif MODE==166
+  { // tampons : des formes tamponnées à l'encre (ronds, carrés, triangles), un peu baveuses, de 3 couleurs
+    vec3 u=normalize(q); vec3 c=vec3(0.98,0.97,0.94);
+    for(int i=0;i<3;i++){ vec3 id; float on; vec2 p=scatP(u,2.2,float(i),id,on); p=mrot(h31(id+5.0)*6.2831853)*p;
+      on*=step(0.2,h31(id)); float k=h31(id+4.0), sz=0.15+0.05*h31(id+3.0); vec2 a=abs(p);
+      float d=k<0.34?length(p)-sz:(k<0.67?max(a.x,a.y)-sz*0.85:max(a.x*0.866+p.y*0.5,-p.y)-sz*0.5);
+      float ink=step(d,0.0)*(0.55+0.45*smoothstep(0.3,0.6,noise(vec3(p*30.0,id.x))));
+      float k2=h31(id+2.0); vec3 ic=k2<0.34?brt(uC1,0.4):(k2<0.67?uC2:uC3);
+      c=mix(c,ic,ink*on); }
+    return vec4(c, 200.0);
+  }
+#elif MODE==167
+  { // brindilles : de petites branches avec leurs feuilles (1re et 2e couleurs) et des baies de la 3e
+    vec3 u=normalize(q); vec3 c=mix(uC3,vec3(0.98,0.97,0.94),0.85);
+    for(int i=0;i<2;i++){ vec3 id; float on; vec2 p=scatP(u,1.8,float(i),id,on); p=mrot(h31(id+5.0)*6.2831853)*p;
+      on*=step(0.12,h31(id)); vec3 lc=h31(id+2.0)<0.5?brt(uC1,0.45):uC2;
+      float stem=step(abs(p.x),0.008)*step(abs(p.y),0.3);
+      float lf=0.0, rib=0.0;
+      for(int j=0;j<4;j++){ float y0=-0.2+float(j)*0.13, sd=mod(float(j),2.0)<1.0?1.0:-1.0;
+        vec2 q2=mrot(0.8*sd)*(p-vec2(0.0,y0)); q2.x*=sd; q2-=vec2(0.09,0.0);
+        float w=0.045*(1.0-pow(q2.x/0.09,2.0)); lf=max(lf,step(abs(q2.y),w)*step(abs(q2.x),0.09)); rib=max(rib,step(abs(q2.y),0.005)*step(abs(q2.x),0.08)); }
+      float berry=step(length(p-vec2(0.0,0.32)),0.04);
+      c=mix(c,lc*0.6,stem*on); c=mix(c,lc*(1.0-0.3*rib),lf*on); c=mix(c,uC3*(0.8+0.4*step(length(p-vec2(-0.012,0.333)),0.012)),berry*on); }
+    return vec4(c, 200.0);
+  }
+#elif MODE==168
+  { // coccinelles : de petites bêtes à bon Dieu, la carapace de la 2e ou de la 3e couleur, les points et la tête de la 1re
+    vec3 u=normalize(q); vec3 c=mix(uC3,vec3(0.98,0.97,0.94),0.82);
+    vec3 dk=brt(uC1,0.2)*0.22;
+    for(int i=0;i<2;i++){ vec3 id; float on; vec2 p=scatP(u,2.1,float(i),id,on); p=mrot(h31(id+5.0)*6.2831853)*p;
+      on*=step(0.12,h31(id)); vec3 sc=h31(id+2.0)<0.5?uC2:uC3;
+      float body=step(length(p/vec2(0.15,0.17)),1.0), head=step(length((p-vec2(0.0,0.17))/vec2(0.08,0.06)),1.0);
+      float sp=0.0; for(int j=0;j<3;j++){ float fj=float(j); vec2 s=vec2(0.075,-0.07+fj*0.07);
+        sp=max(sp,step(length(vec2(abs(p.x),p.y)-s),0.032)); }
+      float line=step(abs(p.x),0.008)*step(p.y,0.15);
+      vec3 cc=sc*(0.75+0.35*(1.0-length(p)/0.17))+vec3(1.0)*smoothstep(0.06,0.0,length(p-vec2(-0.06,0.08)))*0.5;
+      cc=mix(cc,dk,max(sp,line));
+      c=mix(c,dk,head*on); c=mix(c,cc,body*on); }
+    return vec4(c, 200.0);
+  }
+#elif MODE==169
+  { // musique : des portées de musique qui font le tour de la bille, et des notes de deux couleurs dessus
+    vec3 u=normalize(q); vec3 c=mix(uC3,vec3(0.98,0.97,0.94),0.8);
+    float y=u.y*9.0; float grp=floor(y/1.6), fy=fract(y/1.6)*1.6;
+    float st=step(fy,1.0)*smoothstep(0.035,0.015,abs(fract(fy*4.0+0.5)-0.5)/4.0);
+    c=mix(c,brt(uC1,0.4)*0.6,st*0.8);
+    for(int i=0;i<2;i++){ vec3 id; float on; vec2 p=scatP(u,2.4,float(i),id,on); p=mrot((h31(id+5.0)-0.5)*0.6)*p;
+      on*=step(0.25,h31(id)); vec3 nc=h31(id+2.0)<0.5?uC2:brt(uC1,0.4);
+      vec2 hp=mrot(0.45)*(p-vec2(-0.05,-0.12)); float head=step(length(hp/vec2(0.07,0.05)),1.0);
+      float stem=step(abs(p.x-0.012),0.012)*step(-0.12,p.y)*step(p.y,0.18);
+      float flag=step(0.0,p.x-0.02)*step(p.x-0.02,0.08)*step(abs(p.y-0.15+(p.x-0.02)*1.2),0.03);
+      c=mix(c,nc,max(max(head,stem),flag)*on); }
+    return vec4(c, 200.0);
+  }
+#elif MODE==170
+  { // éclairs : des petits éclairs de la 2e et de la 3e couleur, au cœur blanc, sur un fond de la 1re
+    vec3 u=normalize(q); vec3 c=brt(uC1,0.4)*(0.55+0.15*noise(u*5.0+so));
+    for(int i=0;i<2;i++){ vec3 id; float on; vec2 p=scatP(u,2.0,float(i),id,on); p=mrot(h31(id+5.0)*6.2831853)*p;
+      on*=step(0.15,h31(id));
+      float d=segM(p,vec2(0.06,0.26),vec2(-0.06,0.02)); d=min(d,segM(p,vec2(-0.06,0.02),vec2(0.06,0.03))); d=min(d,segM(p,vec2(0.06,0.03),vec2(-0.05,-0.26)));
+      vec3 bc=h31(id+2.0)<0.5?uC2:uC3;
+      c=mix(c,bc,smoothstep(0.05,0.04,d)*on); c=mix(c,vec3(1.0),smoothstep(0.018,0.01,d)*on*0.8); }
+    return vec4(c, 200.0);
+  }
+#elif MODE==171
+  { // sourires : des petites têtes rondes qui sourient, de la 2e et de la 3e couleur, les yeux et la bouche de la 1re
+    vec3 u=normalize(q); vec3 c=vec3(0.97,0.96,0.93); vec3 dk=brt(uC1,0.3)*0.4;
+    for(int i=0;i<2;i++){ vec3 id; float on; vec2 p=scatP(u,2.2,float(i),id,on); p=mrot((h31(id+5.0)-0.5)*1.2)*p;
+      on*=step(0.12,h31(id)); float L=length(p), R=0.15;
+      vec3 fc=h31(id+2.0)<0.5?uC2:uC3;
+      float eyes=step(length(vec2(abs(p.x)-0.05,p.y-0.04)),0.022);
+      float sm=step(abs(length(p-vec2(0.0,0.02))-0.085),0.014)*step(p.y,-0.02);
+      vec3 cc=mix(fc*(0.85+0.2*(1.0-L/R)),dk,max(eyes,sm));
+      c=mix(c,dk,step(L,R+0.014)*on); c=mix(c,cc,step(L,R)*on); }
+    return vec4(c, 200.0);
+  }
+// ===================== Peu communs =====================
+#elif MODE==172
+  { // zèbre : des rayures qui ondulent et se fourchent, de la 1re et de la 2e couleur, sur un fond clair de la 3e
+    vec3 u=normalize(q); vec3 ax=normalize(vec3(0.2,1.0,0.1));
+    float v=dot(u,ax)*9.0+2.2*fbm(u*1.6+so)+0.6*noise(u*5.0+so);
+    float s=step(0.5,fract(v)); float m=mod(floor(v),2.0);
+    vec3 c=mix(mix(uC3,vec3(1.0),0.55),m<1.0?brt(uC1,0.3)*0.5:uC2,s);
+    return vec4(c, 200.0);
+  }
+#elif MODE==173
+  { // plumes : des plumes en rangées serrées qui se chevauchent, avec leur tuyau et leurs barbes, une couleur par rang
+    vec3 u=normalize(q); vec4 cf=cubeF(u); vec2 g=cf.xy*(3.0+nb*0.3)+so.xy;
+    vec3 c=brt(uC1,0.3)*0.2;
+    for(int j=1;j>=-1;j--){ float row=floor(g.y)+float(j); float x0=mod(row,2.0)*0.5;
+      for(int k=-1;k<=1;k++){ float kx=floor(g.x-x0)+float(k); vec2 C=vec2(kx+x0+0.5,row+0.75); vec2 p=g-C;
+        float w=0.42*sqrt(max(0.0,1.0-pow((p.y+0.25)/0.9,2.0)));
+        if(abs(p.x)<w && p.y<0.6 && p.y>-1.1){ float m=mod(row,3.0); vec3 fc=m<1.0?brt(uC1,0.45):(m<2.0?uC2:uC3);
+          float barb=0.8+0.2*sin((p.y*1.0+abs(p.x)*1.4)*60.0);
+          float shaft=smoothstep(0.03,0.01,abs(p.x));
+          c=mix(fc*barb*(0.65+0.45*(1.0-abs(p.x)/max(w,0.01))),vec3(0.95),shaft*0.7); } } }
+    return vec4(c, 200.0);
+  }
+#elif MODE==174
+  { // kilim : les bandes d'un tapis tissé, des losanges en escalier de 3 couleurs et des dents blanches entre les bandes
+    vec3 u=normalize(q); float lon=atan(u.z,u.x), lat=u.y;
+    float y=lat*4.5+2.0; float b=floor(y), fy=fract(y)-0.5;
+    float N=10.0; float lx=fract(lon/6.2831853*N)-0.5;
+    vec2 p=vec2(lx*1.6*sqrt(max(0.05,1.0-lat*lat)),fy); p=floor(p*14.0)/14.0;
+    float dm=abs(p.x)+abs(p.y);
+    float m=mod(b,3.0);
+    vec3 bg=m<1.0?uC2:(m<2.0?brt(uC1,0.45):uC3), c1=m<1.0?brt(uC1,0.45):(m<2.0?uC3:uC2), c2=m<1.0?uC3:(m<2.0?uC2:brt(uC1,0.45));
+    vec3 c=dm<0.36?(dm<0.2?(dm<0.07?vec3(0.97):c2):c1):bg;
+    float teeth=step(0.42,abs(fy))*step(0.5,fract(lon/6.2831853*N*4.0+(fy>0.0?0.5:0.0)));
+    c=mix(c,vec3(0.96,0.94,0.88),teeth);
+    c*=0.9+0.12*step(0.5,fract(lon*120.0))*step(0.5,fract(lat*90.0));
+    return vec4(c, 200.0);
+  }
+#elif MODE==175
+  { // batik : un tissu teint de la 1re couleur, craquelé de fines veines de la 2e, avec des fleurs gardées par la cire, de la 3e
+    vec3 u=normalize(q); vec3 c=brt(uC1,0.4)*(0.6+0.2*fbm(u*3.0+so));
+    float cr=1.0-abs(2.0*noise(u*7.0+so)-1.0), cr2=1.0-abs(2.0*noise(u*13.0+so+5.0)-1.0);
+    c=mix(c,uC2,smoothstep(0.93,0.98,max(cr,cr2*0.98)));
+    for(int i=0;i<2;i++){ vec3 id; float on; vec2 p=scatP(u,1.7,float(i),id,on); on*=step(0.15,h31(id));
+      float r=length(p), a=atan(p.y,p.x);
+      float fl=step(r,0.26*(0.6+0.4*abs(cos(a*4.0))))*step(0.07,r)*step(abs(r-0.15),0.06+0.0);
+      float ring=step(abs(r-0.24),0.012)+step(r,0.045);
+      c=mix(c,mix(uC3,vec3(1.0),0.3),max(fl,min(ring,1.0))*on); }
+    return vec4(c, 200.0);
+  }
+#elif MODE==176
+  { // cordage : des torons de 3 couleurs enroulés en hélice comme une grosse corde, avec leurs fibres
+    vec3 u=normalize(q); float lon=atan(u.z,u.x), lat=asin(clamp(u.y,-1.0,1.0));
+    float v=lon/6.2831853*3.0+lat*3.5+so.x; float f=fract(v), m=mod(floor(v),3.0);
+    vec3 c=m<1.0?brt(uC1,0.45):(m<2.0?uC2:uC3);
+    float sh=0.45+0.6*sin(3.14159*f);
+    float fib=0.85+0.15*sin((lon*3.0-lat*9.0)*20.0+f*6.0);
+    return vec4(c*sh*fib, 200.0);
+  }
+#elif MODE==177
+  { // tortue : les plaques d'une carapace de tortue, chacune avec ses anneaux de croissance, de 3 couleurs, et le joint sombre
+    vec3 u=normalize(q); vec3 cid; float d2; float d1=vorF(u*2.6+so,cid,d2);
+    float k=h31(cid+4.0); vec3 pc=k<0.34?brt(uC1,0.45):(k<0.67?uC2:uC3);
+    float ed=d2-d1;
+    pc*=0.8+0.25*smoothstep(0.0,0.4,ed)*(0.85+0.15*sin(ed*70.0));
+    pc=mix(pc,mix(uC2,vec3(0.2),0.5),0.25*smoothstep(0.6,0.8,noise(u*12.0+so)));
+    return vec4(mix(brt(uC1,0.2)*0.15,pc,smoothstep(0.02,0.05,ed)), 200.0);
+  }
+#elif MODE==178
+  { // grillage : un grillage en losanges de la 3e couleur devant un fond de deux couleurs
+    vec3 u=normalize(q); vec4 cf=cubeF(u); vec2 p=mrot(0.7853982)*cf.xy*(4.5+nb*0.4)+so.xy;
+    vec3 c=mix(brt(uC1,0.45)*0.7,uC2*0.8,smoothstep(0.4,0.6,fbm(u*2.0+so)));
+    vec2 f=abs(fract(p)-0.5);
+    float wa=smoothstep(0.06,0.035,f.x), wb=smoothstep(0.06,0.035,f.y);
+    vec2 id=floor(p+0.5); bool over=mod(id.x+id.y,2.0)<1.0;
+    vec3 wc=mix(uC3,vec3(1.0),0.3);
+    float w=over?max(wa,wb*(1.0-wa)):max(wb,wa*(1.0-wb));
+    float sh=over?(wa>0.0?1.0-f.x*8.0:1.0-f.y*8.0):(wb>0.0?1.0-f.y*8.0:1.0-f.x*8.0);
+    c=mix(c*0.85,c,smoothstep(0.03,0.09,min(f.x,f.y)+0.02));
+    return vec4(mix(c,wc*(0.6+0.5*clamp(sh,0.0,1.0)),w), 200.0);
+  }
+#elif MODE==179
+  { // pavés : des pavés posés en éventail, comme dans une vieille rue, chacun d'une pierre teintée d'une des 3 couleurs
+    vec3 u=normalize(q); vec4 cf=cubeF(u); vec2 g=cf.xy*(2.0+nb*0.25)+so.xy;
+    vec2 id=floor(g), f=fract(g); vec2 pp=f-vec2(0.5,0.0);
+    pp*=0.5; float r=length(pp), a=atan(pp.x,pp.y);
+    float ri=floor(r*6.0), ai=floor(a*(2.0+ri*1.6)/1.5708);
+    vec2 sc=vec2(fract(r*6.0), fract(a*(2.0+ri*1.6)/1.5708));
+    float k=h31(vec3(id+vec2(ri*7.0,ai*3.0),cf.w));
+    vec3 c=k<0.34?brt(uC1,0.45):(k<0.67?uC2:uC3); c=mix(c,vec3(0.55),0.35)*(0.8+0.3*h31(vec3(id,ri+ai*5.0)));
+    float jt=min(min(sc.x,1.0-sc.x),min(sc.y,1.0-sc.y)*(0.6+r));
+    c*=0.6+0.4*smoothstep(0.0,0.15,jt);
+    return vec4(mix(vec3(0.3,0.28,0.26),c,smoothstep(0.04,0.1,jt)*step(r,1.0)), 200.0);
+  }
+#elif MODE==180
+  { // tuiles : un toit de tuiles arrondies qui se recouvrent rang par rang, de 3 couleurs
+    vec3 u=normalize(q); vec4 cf=cubeF(u); vec2 g=cf.xy*vec2(4.0,5.0)*(1.0+nb*0.08)+so.xy;
+    float row=floor(g.y), off=mod(row,2.0)*0.5; float kx=floor(g.x-off); vec2 f=vec2(fract(g.x-off),fract(g.y));
+    float bot=0.5-sqrt(max(0.0,0.25-pow(f.x-0.5,2.0)))*0.6;
+    vec3 c;
+    if(f.y>bot*0.6){ float k=h31(vec3(kx,row,cf.w+so.z)); c=k<0.34?brt(uC1,0.45):(k<0.67?uC2:uC3);
+      c*=0.6+0.5*f.y; c*=0.85+0.2*sin(f.x*3.14159); }
+    else { float k=h31(vec3(floor(g.x-mod(row-1.0,2.0)*0.5),row-1.0,cf.w+so.z)); c=k<0.34?brt(uC1,0.45):(k<0.67?uC2:uC3); c*=0.45; }
+    return vec4(c, 200.0);
+  }
+#elif MODE==181
+  { // éponge : une éponge pleine de trous, claire de la 3e couleur, avec des zones de la 2e et des trous sombres de la 1re
+    vec3 u=normalize(q); vec3 cid; float d2; float d1=vorF(u*7.0+so,cid,d2);
+    vec3 c=mix(uC3,vec3(1.0),0.3)*(0.85+0.2*noise(u*30.0+so));
+    c=mix(c,uC2,smoothstep(0.5,0.56,fbm(u*2.0+so)));
+    float hole=smoothstep(0.32*(0.5+h31(cid)),0.22*(0.5+h31(cid)),d1)*step(0.35,h31(cid+3.0));
+    vec3 cid2; float e2; float d3=vorF(u*15.0+so+3.0,cid2,e2); hole=max(hole,smoothstep(0.2,0.12,d3)*step(0.5,h31(cid2))*0.8);
+    return vec4(mix(c,brt(uC1,0.3)*0.35,hole), 200.0);
+  }
+#elif MODE==182
+  { // vermicelles : un glaçage brillant de la 2e couleur couvert de petits vermicelles de sucre de la 1re, de la 3e et blancs
+    vec3 u=normalize(q); vec3 c=uC2*(0.9+0.1*noise(u*6.0+so));
+    for(int i=0;i<3;i++){ vec3 id; float on; vec2 p=scatP(u,5.5,float(i),id,on); p=mrot(h31(id+5.0)*6.2831853)*p;
+      on*=step(0.2,h31(id)); float d=segM(p,vec2(-0.14,0.0),vec2(0.14,0.0));
+      float k=h31(id+2.0); vec3 sc=k<0.4?brt(uC1,0.45):(k<0.8?uC3:vec3(0.98));
+      float m=smoothstep(0.06,0.045,d)*on;
+      c=mix(c,sc*(0.8+0.3*smoothstep(0.05,0.0,d)),m); }
+    return vec4(c, 200.0);
+  }
+#elif MODE==183
+  { // python : la peau d'un serpent, ses petites écailles en losange et ses grandes taches sombres cerclées de la 2e couleur
+    vec3 u=normalize(q); vec4 cf=cubeF(u); vec2 p=mrot(0.7853982)*cf.xy*(11.0+nb);
+    vec2 f=abs(fract(p)-0.5); float sc=smoothstep(0.0,0.12,min(f.x,f.y));
+    float n=fbm(u*2.4+so)+0.1*noise(u*9.0+so);
+    vec3 c=mix(uC3,vec3(0.92,0.86,0.7),0.4);
+    c=mix(c,uC2,smoothstep(0.5,0.52,n));
+    c=mix(c,brt(uC1,0.2)*0.3,smoothstep(0.56,0.58,n));
+    c*=0.75+0.3*sc;
+    return vec4(c, 200.0);
+  }
+#elif MODE==184
+  { // relief : une carte de randonnée, ses courbes de niveau, ses vallées de la 1re couleur et ses sommets de la 3e
+    vec3 u=normalize(q); float h=fbm(u*1.8+so)+0.3*fbm(u*4.0+so+5.0);
+    float v=h*12.0; float b=floor(v)/12.0;
+    vec3 c=b<0.55?mix(mix(brt(uC1,0.45),vec3(1.0),0.25),uC2,smoothstep(0.3,0.55,b)):mix(uC2,mix(uC3,vec3(1.0),0.3),smoothstep(0.55,0.85,b));
+    c=mix(c,c*0.55,smoothstep(0.08,0.0,abs(fract(v)-0.5)-0.42));
+    c=mix(c,c*0.4,smoothstep(0.1,0.0,abs(fract(v/5.0)-0.5)*5.0-2.4));
+    return vec4(c, 200.0);
+  }
+#elif MODE==185
+  { // point de croix : une broderie de petites croix en 3 couleurs, qui dessinent des losanges sur une toile claire
+    vec3 u=normalize(q); vec4 cf=cubeF(u); vec2 g=cf.xy*14.0; vec2 id=floor(g), f=fract(g)-0.5;
+    vec2 m=mod(id,8.0)-3.5; float dm=abs(m.x)+abs(m.y);
+    float k=dm<1.5?2.0:(dm<3.0?1.0:(dm>5.5?0.0:-1.0));
+    vec3 c=mix(vec3(0.95,0.93,0.88),uC3,0.08)*(0.9+0.1*step(0.5,fract(g.x*2.0))*step(0.5,fract(g.y*2.0)));
+    if(k>-0.5){ vec3 sc=k<0.5?brt(uC1,0.45):(k<1.5?uC2:uC3);
+      float x=min(abs(f.x-f.y),abs(f.x+f.y))*0.7071;
+      float st=smoothstep(0.12,0.07,x)*step(max(abs(f.x),abs(f.y)),0.42);
+      c=mix(c,sc*(0.75+0.3*smoothstep(0.1,0.0,x)),st); }
+    return vec4(c, 200.0);
+  }
+#elif MODE==186
+  { // moiré : deux séries de cercles fins qui se croisent et dessinent des vagues mouvantes, de la 1re et de la 2e couleur sur la 3e
+    vec3 u=normalize(q); vec3 a1=normalize(vec3(0.3,1.0,0.1)), a2=normalize(vec3(0.5,0.9,-0.3)+0.2*(vec3(h31(so),h31(so+1.0),h31(so+2.0))-0.5));
+    float l1=smoothstep(0.3,0.1,abs(fract(acos(dot(u,a1))*15.0)-0.5)), l2=smoothstep(0.3,0.1,abs(fract(acos(dot(u,a2))*15.0)-0.5));
+    vec3 c=mix(uC3,vec3(1.0),0.4);
+    c=mix(c,brt(uC1,0.4),l1*0.85); c=mix(c,uC2,l2*0.75);
+    return vec4(c, 200.0);
+  }
+// ===================== Rares =====================
+#elif MODE==187
+  { // œil-de-tigre : une pierre en bandes soyeuses, faite de fibres, dont l'éclat glisse quand on la tourne
+    float v=tigreV(q); float m=mod(floor(v),3.0);
+    vec3 c=m<1.0?brt(uC1,0.4)*0.55:(m<2.0?uC2*0.8:uC3);
+    return vec4(c, 200.0);
+  }
+#elif MODE==188
+  { // turquoise : une pierre de la 2e couleur, parcourue d'une toile de veines sombres de la 1re, avec des taches de la 3e
+    vec3 u=normalize(q); vec3 cid; float d2; float d1=vorF(u*3.0+so+0.2*vec3(noise(u*6.0),noise(u*6.0+3.0),noise(u*6.0+5.0)),cid,d2);
+    vec3 c=mix(uC2,mix(uC2,vec3(1.0),0.35),noise(u*5.0+so))*(0.9+0.15*noise(u*25.0+so));
+    c=mix(c,uC3,smoothstep(0.66,0.7,noise(u*6.0+so+9.0))*0.8);
+    float vein=smoothstep(0.035,0.01,d2-d1+0.02*(noise(u*20.0+so)-0.5));
+    return vec4(mix(c,brt(uC1,0.2)*0.25,vein), 200.0);
+  }
+#elif MODE==189
+  { // feuille d'or : des éclats de feuille d'or (miroir, au rendu) posés sur une laque profonde de la 1re couleur, quelques-uns teintés de la 2e
+    vec3 u=normalize(q); vec3 c=brt(uC1,0.3)*(0.35+0.2*noise(u*4.0+so));
+    vec2 m=orM(q);
+    return vec4(mix(c,m.y>0.5?mix(vec3(0.85,0.85,0.9),uC2,0.4):mix(vec3(1.0,0.8,0.35),uC3,0.25),m.x), 200.0);
+  }
+#elif MODE==190
+  { // perlée : des perles rondes bien rangées, chacune avec son reflet de nacre, de 3 couleurs
+    vec3 u=normalize(q); vec4 cf=cubeF(u); vec2 g=cf.xy*(5.0+nb*0.4)+so.xy;
+    float row=floor(g.y), off=mod(row,2.0)*0.5; vec2 id=vec2(floor(g.x-off),row), f=vec2(fract(g.x-off),fract(g.y))-0.5;
+    float L=length(f)/0.47;
+    float k=h31(vec3(id,cf.w)); vec3 pc=k<0.34?brt(uC1,0.5):(k<0.67?uC2:uC3); pc=mix(pc,vec3(0.95),0.25);
+    vec3 nc=pc*(0.6+0.45*sqrt(max(0.0,1.0-L*L)))+vec3(1.0)*smoothstep(0.35,0.0,length(f-vec2(-0.13,0.15)))*0.7;
+    nc+=0.12*(0.5+0.5*cos(6.2831*(vec3(0.0,0.33,0.67)+L*1.5)))*L;   // l'irisé de la nacre au bord
+    return vec4(mix(brt(uC1,0.2)*0.15,nc,step(L,1.0)), 200.0);
+  }
+#elif MODE==191
+  { // pétillante : un verre teinté de la 2e couleur où montent des colonnes de toutes petites bulles, avec des éclats de la 3e
+    float r=length(q); e=vec3(0.0);
+    for(int i=0;i<9;i++){ float fi=float(i); vec2 C=(vec2(h31(so+fi*1.3),h31(so+fi*2.7))-0.5)*1.1;
+      float dx=length(q.xz-C+0.02*sin(q.y*12.0+fi)); float y=fract(q.y*7.0+fi*0.37);
+      float b=smoothstep(0.025,0.01,abs(length(vec2(dx,(y-0.5)/7.0))-0.018));
+      e+=mix(vec3(1.0),uC3,0.4)*b*5.0*smoothstep(0.9,0.7,r); }
+    vec3 g=q*20.0+so; vec3 fc=fract(g)-0.5;
+    e+=uC3*step(0.985,h31(floor(g)))*smoothstep(0.2,0.0,length(fc))*2.0;
+    float bot=smoothstep(-0.4,-0.9,q.y);
+    return vec4(mix(uC2,brt(uC1,0.45),bot*0.7), 0.5+bot*2.0);
+  }
+#elif MODE==192
+  { // mercure : des gouttes de métal liquide (miroir, au rendu) roulent sur un fond de la 1re couleur piqué de la 3e
+    vec3 u=normalize(q); vec3 c=brt(uC1,0.35)*(0.5+0.2*noise(u*5.0+so));
+    c=mix(c,uC3,step(0.9,h31(floor(u*50.0+so)))*0.8);
+    float m=mercM(q);
+    return vec4(mix(c,mix(vec3(0.8),uC2,0.2),m), 200.0);
+  }
+#elif MODE==193
+  { // jade : une pierre translucide de la 2e couleur, voilée de nuages plus clairs et veinée de la 1re et de la 3e
+    float r=length(q); vec3 w=q*2.0+so; w+=0.4*vec3(fbm(w),fbm(w+3.0),fbm(w+6.0));
+    float cl=fbm(w*1.4), v1=smoothstep(0.04,0.0,abs(fbm(w*1.1+10.0)-0.5)), v3=smoothstep(0.035,0.0,abs(fbm(w*1.3+20.0)-0.5));
+    vec3 c=mix(uC2*0.7,mix(uC2,vec3(1.0),0.4),cl);
+    c=mix(c,brt(uC1,0.4)*0.6,v1*0.9); c=mix(c,uC3,v3*0.9);
+    e=uC2*0.05;
+    return vec4(c, 2.2+cl*2.0+(v1+v3)*6.0);
+  }
+#elif MODE==194
+  { // strass : des pierres taillées serrées dans leur serti d'argent, de 3 couleurs, qui lancent des éclats
+    vec3 u=normalize(q); vec4 cf=cubeF(u); vec2 g=cf.xy*(4.0+nb*0.3)+so.xy;
+    vec2 id=floor(g), f=fract(g)-0.5; float L=length(f), a=atan(f.y,f.x);
+    float k=h31(vec3(id,cf.w)); vec3 sc=k<0.34?brt(uC1,0.5):(k<0.67?uC2:uC3);
+    float fa=floor(a/0.7853982+0.5), ring=step(0.18,L);
+    float br=h31(vec3(id+fa*3.0,cf.w+ring*7.0));
+    vec3 gc=sc*(0.45+0.9*br)+vec3(1.0)*pow(br,8.0)*0.8;
+    gc=mix(gc,mix(sc,vec3(1.0),0.5),step(L,0.12));   // la table
+    vec3 set=vec3(0.75,0.76,0.8)*(0.6+0.4*sin(L*20.0));
+    return vec4(mix(set,gc,step(L,0.38)), 200.0);
+  }
+#elif MODE==195
+  { // marqueterie : des cubes en trompe-l'œil faits de trois bois teintés des 3 couleurs, avec le fil du bois
+    vec3 u=normalize(q); vec4 cf=cubeF(u); vec2 g=cf.xy*(2.6+nb*0.3)+so.xy;
+    vec2 s=vec2(g.x*1.1547, g.y+g.x*0.57735); vec2 id=floor(s), f=fract(s);
+    float t=f.x>f.y?1.0:0.0;
+    vec2 hs=vec2(id.x, id.y); float k=mod(hs.x+hs.y*2.0+t,3.0);
+    vec3 wc=k<1.0?brt(uC1,0.45):(k<2.0?uC2:uC3);
+    wc=mix(wc,vec3(0.6,0.42,0.25),0.3);
+    float grain=0.85+0.15*sin((k<1.0?g.x:(k<2.0?g.y:g.x+g.y))*40.0+fbm(vec3(g*3.0,k))*6.0);
+    float ed=min(min(f.x,f.y),min(1.0-f.x,min(1.0-f.y,abs(f.x-f.y))));
+    return vec4(mix(vec3(0.2,0.14,0.1),wc*grain*(k<1.0?1.05:(k<2.0?0.8:0.6)),smoothstep(0.01,0.03,ed)), 200.0);
+  }
+#elif MODE==196
+  { // porcelaine : une porcelaine blanche peinte au pinceau de fleurs et de volutes de la 1re couleur, des cœurs de la 2e et des filets de la 3e
+    vec3 u=normalize(q); vec3 c=vec3(0.97,0.97,0.99);
+    vec3 pc=brt(uC1,0.4)*0.85;
+    for(int i=0;i<2;i++){ vec3 id; float on; vec2 p=scatP(u,1.8,float(i),id,on); p=mrot(h31(id+5.0)*6.2831853)*p;
+      on*=step(0.15,h31(id)); float r=length(p), a=atan(p.y,p.x);
+      float pet=step(r,0.2*(0.55+0.45*abs(cos(a*2.5))))*step(0.05,r);
+      float shade=0.55+0.45*smoothstep(0.2,0.05,r);
+      float vol=smoothstep(0.012,0.0,abs(fract(r*5.0-a/6.2831853)-0.5)-0.47)*step(0.22,r)*step(r,0.42);
+      c=mix(c,mix(vec3(0.97),pc,shade),pet*on); c=mix(c,pc,vol*on*0.8);
+      c=mix(c,uC2,step(r,0.05)*on); }
+    c=mix(c,uC3,smoothstep(0.012,0.004,abs(abs(u.y)-0.82)));
+    c=mix(c,uC3,smoothstep(0.008,0.002,abs(abs(u.y)-0.76)));
+    return vec4(c, 200.0);
+  }
+#elif MODE==197
+  { // pierre de lune : une pierre laiteuse de la 1re couleur où flotte un voile de lumière de la 2e et de la 3e
+    float r=length(q); vec3 w=q*2.2+so;
+    float veil=exp(-pow((q.z-0.15*sin(q.x*3.0+so.x))/0.12,2.0))*smoothstep(0.8,0.3,length(q.xy));
+    float n=fbm(w);
+    e=mix(uC2,uC3,smoothstep(0.3,0.7,n))*veil*(0.5+n)*6.0;
+    return vec4(mix(mix(brt(uC1,0.4),vec3(0.95),0.65),vec3(1.0),n*0.3), 0.7+n*0.8);
+  }
+#elif MODE==198
+  { // néons : des tubes de lumière en forme de cœur, d'étoile et d'éclair flottent dans un verre de nuit, un par couleur
+    float h=q.z; vec2 p=q.xy*1.05; float lay=exp(-h*h/0.006); e=vec3(0.0);
+    vec2 a=p-vec2(-0.32,0.25); float d1=abs(length(a)-0.2);   // un anneau
+    vec2 b=p-vec2(0.3,0.22); vec2 b2=vec2(abs(b.x),b.y); float d2=abs(length(b2-vec2(0.09,0.03))-0.1)*step(-0.01,b.y)+step(b.y,-0.01)*segM(b2,vec2(0.0,-0.2),vec2(0.17,-0.04));   // un cœur
+    d2=min(d2,abs(length(b2-vec2(0.09,0.03))-0.1)+step(-0.01,-b.y)*0.0);
+    vec2 c=p-vec2(0.0,-0.3); float d3=segM(c,vec2(-0.3,0.05),vec2(-0.12,-0.08)); d3=min(d3,segM(c,vec2(-0.12,-0.08),vec2(0.05,0.08))); d3=min(d3,segM(c,vec2(0.05,0.08),vec2(0.3,-0.06)));   // un zigzag
+    vec3 c1=brt(uC1,0.5);
+    e+=lay*(c1*(exp(-d1*120.0)*6.0+exp(-d1*18.0)*0.5)+uC2*(exp(-d2*120.0)*6.0+exp(-d2*18.0)*0.5)+uC3*(exp(-d3*120.0)*6.0+exp(-d3*18.0)*0.5));
+    e+=lay*vec3(1.0)*(exp(-d1*400.0)+exp(-d2*400.0)+exp(-d3*400.0))*2.0;
+    return vec4(c1*0.05, 0.4);
+  }
+// (6 novembre 2026, 3e partie) encore des Communs (199 à 222), des Peu communs (223 à 239) et des Rares (240 à 254)
+// ===================== Communs =====================
+#elif MODE==199
+  { // cartes : les quatre couleurs du jeu de cartes, cœur et carreau de la 2e couleur, pique et trèfle de la 1re, sur un fond de la 3e
+    vec3 u=normalize(q); vec3 c=mix(uC3,vec3(0.98,0.97,0.95),0.75);
+    for(int i=0;i<2;i++){ vec3 id; float on; vec2 p=scatP(u,2.2,float(i),id,on); p=mrot((h31(id+5.0)-0.5)*0.9)*p;
+      on*=step(0.12,h31(id)); float k=floor(h31(id+2.0)*4.0), d;
+      if(k<0.5) d=heartD(p*vec2(1.0,-1.0)/0.3+vec2(0.0,0.55));
+      else if(k<1.5) d=abs(p.x)/0.13+abs(p.y)/0.19-1.0;
+      else if(k<2.5){ d=heartD(p/0.3+vec2(0.0,0.45)); d=min(d,max(abs(p.x)-0.02*(1.0+(-p.y-0.1)*8.0),abs(p.y+0.17)-0.06)/0.3); }
+      else { d=min(min(length(p-vec2(0.0,0.07)),length(p-vec2(-0.07,-0.03))),length(p-vec2(0.07,-0.03)))-0.065; d=min(d,max(abs(p.x)-0.02*(1.0+(-p.y-0.05)*8.0),abs(p.y+0.13)-0.08)); }
+      c=mix(c,k<1.5?uC2:brt(uC1,0.3)*0.5,step(d,0.0)*on); }
+    return vec4(c, 200.0);
+  }
+#elif MODE==200
+  { // ancres : des ancres de marin de la 1re et de la 2e couleur, sur un fond clair rayé de la 3e
+    vec3 u=normalize(q); vec3 c=mix(vec3(0.97,0.96,0.93),uC3,0.18*step(0.5,fract(u.y*7.0)));
+    for(int i=0;i<2;i++){ vec3 id; float on; vec2 p=scatP(u,2.0,float(i),id,on); p=mrot((h31(id+5.0)-0.5)*1.0)*p;
+      on*=step(0.12,h31(id));
+      float d=segM(p,vec2(0.0,0.18),vec2(0.0,-0.2)); d=min(d,segM(p,vec2(-0.09,0.11),vec2(0.09,0.11)));
+      d=min(d,abs(length(p-vec2(0.0,0.23))-0.04));
+      d=min(d,abs(length(p-vec2(0.0,-0.02))-0.17)+step(-0.08,p.y));
+      d=min(d,min(segM(p,vec2(-0.17,-0.03),vec2(-0.2,-0.08)),segM(p,vec2(0.17,-0.03),vec2(0.2,-0.08))));
+      c=mix(c,h31(id+2.0)<0.5?brt(uC1,0.4)*0.75:uC2,smoothstep(0.028,0.02,d)*on); }
+    return vec4(c, 200.0);
+  }
+#elif MODE==201
+  { // couronnes : de petites couronnes d'or (3e couleur), sertie de pierres de la 1re et de la 2e couleur
+    vec3 u=normalize(q); vec3 c=vec3(0.97,0.96,0.93); vec3 gold=mix(vec3(1.0,0.8,0.32),uC3,0.45);
+    for(int i=0;i<2;i++){ vec3 id; float on; vec2 p=scatP(u,2.1,float(i),id,on); p=mrot((h31(id+5.0)-0.5)*0.8)*p;
+      on*=step(0.12,h31(id)); float s=(p.x+0.17)/0.34*3.0, tri=abs(fract(s)-0.5)*2.0;
+      float body=step(abs(p.x),0.17)*step(-0.12,p.y)*step(p.y,0.13-0.15*tri);
+      float balls=0.0; for(int j=0;j<3;j++){ balls=max(balls,step(length(p-vec2(-0.113+0.113*float(j),0.15)),0.028)); }
+      float band=step(-0.12,p.y)*step(p.y,-0.05);
+      float gem=step(length(vec2(fract(p.x/0.085+0.5)-0.5,(p.y+0.085)/0.085)),0.3)*band*step(abs(p.x),0.16);
+      vec3 cc=gold*(0.75+0.35*smoothstep(-0.12,0.1,p.y)); cc=mix(cc,gold*0.7,band*0.5);
+      cc=mix(cc,mod(floor(p.x/0.085+0.5),2.0)<1.0?brt(uC1,0.45):uC2,gem);
+      c=mix(c,cc,max(body,balls)*on); }
+    return vec4(c, 200.0);
+  }
+#elif MODE==202
+  { // clés : de vieilles clés à anneau, de 3 couleurs, semées sur un fond clair
+    vec3 u=normalize(q); vec3 c=vec3(0.97,0.96,0.93);
+    for(int i=0;i<2;i++){ vec3 id; float on; vec2 p=scatP(u,2.0,float(i),id,on); p=mrot(h31(id+5.0)*6.2831853)*p;
+      on*=step(0.12,h31(id));
+      float d=abs(length(p-vec2(0.0,0.14))-0.07)-0.022;
+      d=min(d,segM(p,vec2(0.0,0.07),vec2(0.0,-0.22))-0.02);
+      d=min(d,max(abs(p.x-0.045)-0.035,abs(p.y+0.19)-0.022)); d=min(d,max(abs(p.x-0.035)-0.025,abs(p.y+0.12)-0.018));
+      float k=h31(id+2.0); vec3 kc=k<0.34?brt(uC1,0.45):(k<0.67?uC2:uC3);
+      c=mix(c,kc*(0.8+0.3*smoothstep(0.0,-0.02,d)),step(d,0.0)*on); }
+    return vec4(c, 200.0);
+  }
+#elif MODE==203
+  { // flèches : des flèches d'archer aux plumes colorées, qui filent dans tous les sens
+    vec3 u=normalize(q); vec3 c=mix(uC3,vec3(0.98,0.97,0.95),0.82);
+    for(int i=0;i<2;i++){ vec3 id; float on; vec2 p=scatP(u,2.0,float(i),id,on); p=mrot(h31(id+5.0)*6.2831853)*p;
+      on*=step(0.12,h31(id));
+      float shaft=step(segM(p,vec2(-0.22,0.0),vec2(0.12,0.0)),0.012);
+      float head=step(0.08,p.x)*step(p.x,0.25)*step(abs(p.y),(0.25-p.x)*0.55);
+      float fl=step(-0.25,p.x)*step(p.x,-0.13)*step(abs(p.y),0.06-(p.x+0.25)*0.3)*step(0.012,abs(p.y));
+      float k=h31(id+2.0); vec3 fc=k<0.5?uC2:brt(uC1,0.45);
+      c=mix(c,vec3(0.45,0.3,0.18),shaft*on); c=mix(c,vec3(0.55),head*on); c=mix(c,fc,fl*on); }
+    return vec4(c, 200.0);
+  }
+#elif MODE==204
+  { // soleils : de petits soleils rayonnants, le cœur de la 3e couleur, les rayons de la 2e, sur un ciel de la 1re
+    vec3 u=normalize(q); vec3 c=mix(brt(uC1,0.45),vec3(1.0),0.15);
+    for(int i=0;i<2;i++){ vec3 id; float on; vec2 p=scatP(u,2.1,float(i),id,on); p=mrot(h31(id+5.0)*6.2831853)*p;
+      on*=step(0.15,h31(id)); float r=length(p), a=atan(p.y,p.x);
+      float ray=step(0.11,r)*step(r,0.21)*step(abs(fract(a/6.2831853*10.0)-0.5),0.22*(0.21-r)/0.1);
+      c=mix(c,uC2,ray*on); c=mix(c,mix(uC3,vec3(1.0),0.25)*(0.85+0.2*(1.0-r/0.1)),step(r,0.1)*on); }
+    return vec4(c, 200.0);
+  }
+#elif MODE==205
+  { // cerises : des paires de cerises de la 2e couleur, leurs queues de la 1re et une feuille de la 3e
+    vec3 u=normalize(q); vec3 c=vec3(0.97,0.96,0.93);
+    for(int i=0;i<2;i++){ vec3 id; float on; vec2 p=scatP(u,2.0,float(i),id,on); p=mrot((h31(id+5.0)-0.5)*1.4)*p;
+      on*=step(0.12,h31(id)); vec2 a=vec2(-0.08,-0.1), b=vec2(0.08,-0.12), t=vec2(0.02,0.17);
+      float st=min(segM(p,a+vec2(0.02,0.06),t),segM(p,b+vec2(-0.01,0.06),t));
+      float leaf=step(length((mrot(0.6)*(p-vec2(0.08,0.17)))/vec2(0.07,0.03)),1.0);
+      c=mix(c,brt(uC1,0.4)*0.7,smoothstep(0.014,0.008,st)*on); c=mix(c,uC3,leaf*on);
+      for(int j=0;j<2;j++){ vec2 C=j==0?a:b; float L=length(p-C)/0.075;
+        c=mix(c,uC2*(0.7+0.35*(1.0-L*L))+vec3(1.0)*smoothstep(0.3,0.0,length((p-C)/0.075-vec2(-0.35,0.35)))*0.6,step(L,1.0)*on); } }
+    return vec4(c, 200.0);
+  }
+#elif MODE==206
+  { // pommes : des pommes de la 1re et de la 2e couleur, avec leur queue et une feuille de la 3e
+    vec3 u=normalize(q); vec3 c=mix(uC3,vec3(0.98,0.97,0.95),0.82);
+    for(int i=0;i<2;i++){ vec3 id; float on; vec2 p=scatP(u,2.0,float(i),id,on); p=mrot((h31(id+5.0)-0.5)*0.8)*p;
+      on*=step(0.12,h31(id));
+      float d=min(length(p-vec2(-0.05,-0.01)),length(p-vec2(0.05,-0.01)))-0.12;
+      d=max(d,-(length(p-vec2(0.0,0.16))-0.045));
+      vec3 ac=h31(id+2.0)<0.5?brt(uC1,0.45):uC2;
+      float st=step(segM(p,vec2(0.0,0.08),vec2(0.02,0.18)),0.012);
+      float leaf=step(length((mrot(-0.5)*(p-vec2(0.07,0.16)))/vec2(0.065,0.03)),1.0);
+      c=mix(c,vec3(0.35,0.22,0.12),st*on); c=mix(c,uC3*0.85,leaf*on);
+      c=mix(c,ac*(0.75+0.3*smoothstep(0.0,-0.12,d))+vec3(1.0)*smoothstep(0.05,0.0,length(p-vec2(-0.07,0.05)))*0.5,step(d,0.0)*on); }
+    return vec4(c, 200.0);
+  }
+#elif MODE==207
+  { // poissons : de petits poissons rayés qui nagent dans tous les sens, de 3 couleurs, sur une eau claire
+    vec3 u=normalize(q); vec3 c=mix(uC3,vec3(0.94,0.97,1.0),0.8);
+    for(int i=0;i<2;i++){ vec3 id; float on; vec2 p=scatP(u,2.1,float(i),id,on); p=mrot(h31(id+5.0)*6.2831853)*p;
+      on*=step(0.12,h31(id)); float k=h31(id+2.0); vec3 fc=k<0.34?brt(uC1,0.45):(k<0.67?uC2:uC3), sc=k<0.34?uC2:(k<0.67?uC3:brt(uC1,0.45));
+      float body=step(length((p-vec2(0.03,0.0))/vec2(0.15,0.085)),1.0);
+      float tail=step(-0.21,p.x)*step(p.x,-0.1)*step(abs(p.y),(-0.1-p.x)*1.1);
+      float strp=step(0.5,fract((p.x+0.1)*14.0))*step(abs(p.x),0.08);
+      vec3 cc=mix(fc,sc,strp);
+      cc=mix(cc,vec3(0.05),step(length(p-vec2(0.11,0.02)),0.016));
+      c=mix(c,sc,tail*on); c=mix(c,cc,body*on); }
+    return vec4(c, 200.0);
+  }
+#elif MODE==208
+  { // oiseaux : de petits oiseaux tout ronds, de la 1re et de la 2e couleur, le bec et l'aile de la 3e
+    vec3 u=normalize(q); vec3 c=vec3(0.97,0.97,0.95);
+    for(int i=0;i<2;i++){ vec3 id; float on; vec2 p=scatP(u,2.1,float(i),id,on); p=mrot((h31(id+5.0)-0.5)*0.8)*p;
+      if(h31(id+6.0)<0.5) p.x=-p.x; on*=step(0.12,h31(id));
+      vec3 bc=h31(id+2.0)<0.5?brt(uC1,0.45):uC2;
+      float body=step(length((p-vec2(0.0,-0.02))/vec2(0.13,0.1)),1.0), head=step(length(p-vec2(0.1,0.07)),0.065);
+      float beak=step(0.15,p.x)*step(p.x,0.21)*step(abs(p.y-0.07),(0.21-p.x)*0.5);
+      float tail=step(-0.22,p.x)*step(p.x,-0.1)*step(abs(p.y-0.04-(-0.1-p.x)*0.6),0.03);
+      float wing=step(length((mrot(0.3)*(p-vec2(-0.02,-0.01)))/vec2(0.08,0.045)),1.0);
+      c=mix(c,bc*0.8,tail*on); c=mix(c,bc,max(body,head)*on); c=mix(c,uC3,max(beak,wing)*on);
+      c=mix(c,vec3(0.05),step(length(p-vec2(0.12,0.09)),0.013)*on); }
+    return vec4(c, 200.0);
+  }
+#elif MODE==209
+  { // pattes : des traces de pattes de chat, de la 1re et de la 2e couleur, qui se promènent sur un fond de la 3e
+    vec3 u=normalize(q); vec3 c=mix(uC3,vec3(0.98,0.97,0.95),0.7);
+    for(int i=0;i<2;i++){ vec3 id; float on; vec2 p=scatP(u,2.3,float(i),id,on); p=mrot(h31(id+5.0)*6.2831853)*p;
+      on*=step(0.12,h31(id)); vec3 pc=h31(id+2.0)<0.5?brt(uC1,0.4)*0.8:uC2;
+      float d=length((p-vec2(0.0,-0.05))/vec2(0.085,0.07))-1.0;
+      float t=min(min(length(p-vec2(-0.095,0.05)),length(p-vec2(-0.035,0.105))),min(length(p-vec2(0.035,0.105)),length(p-vec2(0.095,0.05))))-0.034;
+      c=mix(c,pc,step(min(d,t/0.07),0.0)*on); }
+    return vec4(c, 200.0);
+  }
+#elif MODE==210
+  { // chats : des têtes de chat aux oreilles pointues, de la 1re et de la 2e couleur, les yeux de la 3e
+    vec3 u=normalize(q); vec3 c=vec3(0.97,0.96,0.93);
+    for(int i=0;i<2;i++){ vec3 id; float on; vec2 p=scatP(u,2.1,float(i),id,on); p=mrot((h31(id+5.0)-0.5)*0.9)*p;
+      on*=step(0.12,h31(id)); vec3 hc=h31(id+2.0)<0.5?brt(uC1,0.3)*0.6:uC2;
+      float head=step(length(p/vec2(0.15,0.12)),1.0);
+      vec2 e2=vec2(abs(p.x),p.y);
+      float ear=inTri(e2,vec2(0.05,0.08),vec2(0.15,0.06),vec2(0.13,0.2));
+      float eye=step(length((e2-vec2(0.06,0.02))/vec2(0.03,0.04)),1.0), pup=step(abs(e2.x-0.06),0.007)*eye;
+      float nose=inTri(p,vec2(-0.02,-0.03),vec2(0.02,-0.03),vec2(0.0,-0.055));
+      vec3 cc=mix(hc,uC3,eye); cc=mix(cc,vec3(0.05),pup); cc=mix(cc,mix(uC2,vec3(1.0,0.7,0.75),0.5),nose);
+      c=mix(c,cc,max(head,ear)*on); }
+    return vec4(c, 200.0);
+  }
+#elif MODE==211
+  { // fraises : des fraises de la 2e couleur, leurs petits grains de la 3e et leur collerette de feuilles de la 1re
+    vec3 u=normalize(q); vec3 c=vec3(0.97,0.96,0.93);
+    for(int i=0;i<2;i++){ vec3 id; float on; vec2 p=scatP(u,2.1,float(i),id,on); p=mrot((h31(id+5.0)-0.5)*0.9)*p;
+      on*=step(0.12,h31(id));
+      float wdt=0.13*(0.35+0.65*smoothstep(-0.2,0.07,p.y));
+      float body=step(length(vec2(p.x/wdt,(p.y+0.02)/0.16)),1.0);
+      vec2 sg=fract(vec2(p.x*20.0+0.5*floor(p.y*20.0),p.y*20.0))-0.5; float seed=step(length(sg*vec2(1.0,0.7)),0.18);
+      vec3 cc=mix(uC2*(0.75+0.3*(1.0-abs(p.x)/0.13)),mix(uC3,vec3(1.0),0.3),seed);
+      float lv=step(sdStar(mrot(0.3)*(p-vec2(0.0,0.13))*4.5)/4.5,0.0);
+      c=mix(c,cc,body*on); c=mix(c,brt(uC1,0.45)*0.8,lv*on); }
+    return vec4(c, 200.0);
+  }
+#elif MODE==212
+  { // glands : des glands de chêne, le fruit de la 2e couleur et le chapeau quadrillé de la 1re, avec une feuille de la 3e
+    vec3 u=normalize(q); vec3 c=mix(uC3,vec3(0.98,0.97,0.95),0.85);
+    for(int i=0;i<2;i++){ vec3 id; float on; vec2 p=scatP(u,2.1,float(i),id,on); p=mrot((h31(id+5.0)-0.5)*1.2)*p;
+      on*=step(0.12,h31(id));
+      float nut=step(length((p-vec2(0.0,-0.05))/vec2(0.08,0.11)),1.0)*step(p.y,0.04);
+      float cap=step(length((p-vec2(0.0,0.04))/vec2(0.1,0.06)),1.0)*step(0.03,p.y);
+      float st=step(segM(p,vec2(0.0,0.09),vec2(0.02,0.14)),0.012);
+      float hatch=step(0.5,fract((p.x+p.y)*35.0))*0.25;
+      c=mix(c,uC2*(0.75+0.35*(1.0-abs(p.x)/0.08)),nut*on); c=mix(c,brt(uC1,0.4)*(0.65-hatch),max(cap,st)*on); }
+    return vec4(c, 200.0);
+  }
+#elif MODE==213
+  { // biais : des rayures en biais de toutes les largeurs, des 3 couleurs et du blanc, comme une cravate d'écolier
+    vec3 u=normalize(q); vec3 dir=normalize(vec3(0.7,0.7,0.2)+0.2*(vec3(h31(so),h31(so+1.0),h31(so+2.0))-0.5));
+    float v=dot(u,dir)*10.0; float b=floor(v), f=fract(v); float m=mod(b,5.0);
+    vec3 c=m<1.0?brt(uC1,0.45):(m<2.0?vec3(0.97):(m<3.0?uC2:(m<4.0?uC3:vec3(0.97))));
+    c=mix(c,m<2.5?uC3:brt(uC1,0.45),step(abs(f-0.5),0.06)*step(0.5,mod(b,2.0)));
+    return vec4(c, 200.0);
+  }
+#elif MODE==214
+  { // hexagones : des carreaux à six côtés de 3 couleurs et blancs, bien serrés, avec leur joint
+    vec3 u=normalize(q); vec4 cf=cubeF(u); vec2 p=cf.xy*(3.5+nb*0.3)+so.xy;
+    vec2 R=vec2(1.0,1.7320508), H=R*0.5; vec2 a=mod(p,R)-H, b=mod(p-H,R)-H; vec2 gv=dot(a,a)<dot(b,b)?a:b; vec2 id=p-gv;
+    float hd=max(dot(abs(gv),vec2(0.5,0.8660254)),abs(gv.x));
+    float k=h31(vec3(floor(id*2.0+0.5),cf.w)); vec3 c=k<0.3?brt(uC1,0.45):(k<0.6?uC2:(k<0.85?uC3:vec3(0.97)));
+    c*=0.88+0.15*smoothstep(0.5,0.1,hd);
+    return vec4(mix(vec3(0.95,0.94,0.9),c,smoothstep(0.47,0.44,hd)), 200.0);
+  }
+#elif MODE==215
+  { // arcs : des carrés coupés de quarts et de demi-cercles de 3 couleurs, comme une affiche des années 20
+    vec3 u=normalize(q); vec4 cf=cubeF(u); vec2 p=cf.xy*(2.5+nb*0.25)+so.xy; vec2 id=floor(p), f=fract(p);
+    float k=h31(vec3(id,cf.w)), o=floor(h31(vec3(id,cf.w+3.0))*4.0);
+    vec2 cn=o<1.0?vec2(0.0):(o<2.0?vec2(1.0,0.0):(o<3.0?vec2(1.0):vec2(0.0,1.0)));
+    float inC=k<0.6?step(length(f-cn),1.0):step(length(f-vec2(0.5,cn.y)),0.5);
+    float k2=h31(vec3(id,cf.w+7.0)); vec3 a=k2<0.34?brt(uC1,0.45):(k2<0.67?uC2:uC3), b=k2<0.34?uC3:(k2<0.67?brt(uC1,0.45):uC2);
+    vec3 c=mix(b,a,inC); if(h31(vec3(id,cf.w+9.0))<0.15) c=vec3(0.96,0.95,0.91);
+    vec2 ed=min(f,1.0-f); c*=mix(0.85,1.0,smoothstep(0.0,0.03,min(ed.x,ed.y)));
+    return vec4(c, 200.0);
+  }
+#elif MODE==216
+  { // pyjama : de fines rayures doubles de la 1re et de la 2e couleur, avec de petits pois de la 3e entre elles
+    vec3 u=normalize(q); float lon=atan(u.z,u.x); float x=lon/6.2831853*24.0; float f=fract(x)-0.5;
+    vec3 c=vec3(0.97,0.96,0.93);
+    c=mix(c,mod(floor(x),2.0)<1.0?brt(uC1,0.45):uC2,step(abs(abs(f)-0.12),0.035));
+    vec2 d=vec2(abs(f+0.5)<0.5?0.0:0.0,0.0);
+    float y=u.y*9.0; vec2 dp=vec2(fract(x+0.5)-0.5,(fract(y+0.5*mod(floor(x+0.5),2.0))-0.5)*1.4);
+    c=mix(c,uC3,step(length(dp),0.12)*step(0.3,abs(f)));
+    return vec4(c, 200.0);
+  }
+#elif MODE==217
+  { // bayadère : plein de rayures de toutes les largeurs et de toutes les teintes du coloris, séparées d'un trait sombre
+    vec3 u=normalize(q); float y=u.y*5.0+so.x; float b=floor(y*3.0), f=fract(y*3.0);
+    float k=h31(vec3(b,so.y,1.0)), t=h31(vec3(b,so.y,2.0));
+    vec3 c=k<0.33?mix(brt(uC1,0.45),uC2,t):(k<0.66?mix(uC2,uC3,t):mix(uC3,vec3(0.97),t*0.7));
+    c*=mix(0.45,1.0,smoothstep(0.0,0.05,f)*smoothstep(1.0,0.95,f));
+    c*=0.92+0.1*step(0.5,fract(atan(u.z,u.x)*60.0));
+    return vec4(c, 200.0);
+  }
+#elif MODE==218
+  { // boussoles : des roses des vents à quatre pointes, le nord de la 2e couleur, cerclées de la 1re, sur un fond de la 3e
+    vec3 u=normalize(q); vec3 c=mix(uC3,vec3(0.98,0.96,0.92),0.75);
+    for(int i=0;i<2;i++){ vec3 id; float on; vec2 p=scatP(u,2.0,float(i),id,on); p=mrot((h31(id+5.0)-0.5)*1.0)*p;
+      on*=step(0.15,h31(id)); float r=length(p);
+      float ring=step(abs(r-0.19),0.012)+step(abs(r-0.165),0.005);
+      float s1=abs(p.x)/0.05+abs(p.y)/0.2, s2=abs(p.x)/0.2+abs(p.y)/0.05, s3=abs(dot(p,vec2(0.7071)))/0.035+abs(dot(p,vec2(-0.7071,0.7071)))/0.12, s4=abs(dot(p,vec2(-0.7071,0.7071)))/0.035+abs(dot(p,vec2(0.7071)))/0.12;
+      vec3 cc=c; cc=mix(cc,uC3*0.6,step(min(s3,s4),1.0));
+      cc=mix(cc,brt(uC1,0.4)*(p.x>0.0?0.6:0.9),step(min(s1,s2),1.0));
+      cc=mix(cc,uC2,step(s1,1.0)*step(0.0,p.y));
+      cc=mix(cc,brt(uC1,0.4)*0.7,min(ring,1.0));
+      c=mix(c,cc,step(r,0.2)*on); }
+    return vec4(c, 200.0);
+  }
+#elif MODE==219
+  { // cactus : de petits cactus de la 2e couleur à deux bras, piqués d'épines, une fleur de la 3e, dans un pot de la 1re
+    vec3 u=normalize(q); vec3 c=mix(vec3(0.97,0.92,0.82),uC3,0.12);
+    for(int i=0;i<2;i++){ vec3 id; float on; vec2 p=scatP(u,2.0,float(i),id,on); p=mrot((h31(id+5.0)-0.5)*0.6)*p;
+      on*=step(0.12,h31(id));
+      float d=segM(p,vec2(0.0,-0.1),vec2(0.0,0.15))-0.045;
+      d=min(d,segM(p,vec2(-0.1,0.0),vec2(-0.1,0.08))-0.028); d=min(d,segM(p,vec2(-0.1,0.0),vec2(-0.03,0.0))-0.028);
+      d=min(d,segM(p,vec2(0.09,0.04),vec2(0.09,0.11))-0.026); d=min(d,segM(p,vec2(0.09,0.04),vec2(0.03,0.04))-0.026);
+      float pot=step(-0.22,p.y)*step(p.y,-0.1)*step(abs(p.x),0.07+(p.y+0.22)*0.25);
+      float spk=step(0.82,h31(vec3(floor(p*55.0),id.x)));
+      vec3 cc=uC2*(0.7+0.3*smoothstep(0.0,-0.04,d))*(0.9+0.1*sin(p.x*120.0)); cc=mix(cc,vec3(1.0),spk*0.8);
+      c=mix(c,cc,step(d,0.0)*on); c=mix(c,brt(uC1,0.45)*0.8,pot*on);
+      c=mix(c,uC3,step(sdStar((p-vec2(0.0,0.19))*12.0)/12.0,0.0)*on); }
+    return vec4(c, 200.0);
+  }
+#elif MODE==220
+  { // avions en papier : des avions de papier pliés, de la 1re et de la 2e couleur, avec leur trajet en pointillés de la 3e
+    vec3 u=normalize(q); vec3 c=mix(uC3,vec3(0.98,0.97,0.95),0.85);
+    for(int i=0;i<2;i++){ vec3 id; float on; vec2 p=scatP(u,1.9,float(i),id,on); p=mrot(h31(id+5.0)*6.2831853)*p;
+      on*=step(0.12,h31(id)); vec3 pc=h31(id+2.0)<0.5?brt(uC1,0.45):uC2;
+      float w1=inTri(p,vec2(0.2,0.0),vec2(-0.14,0.13),vec2(-0.06,0.0)), w2=inTri(p,vec2(0.2,0.0),vec2(-0.06,0.0),vec2(-0.12,-0.06));
+      float tr=step(abs(p.y+0.04*sin(p.x*12.0)-0.02),0.008)*step(p.x,-0.17)*step(0.5,fract(p.x*18.0));
+      c=mix(c,uC3*0.8,tr*on); c=mix(c,pc,w1*on); c=mix(c,pc*0.65,w2*on); }
+    return vec4(c, 200.0);
+  }
+#elif MODE==221
+  { // bateaux en papier : de petits bateaux de papier de la 1re et de la 2e couleur, sur des vaguelettes de la 3e
+    vec3 u=normalize(q); vec3 c=vec3(0.97,0.97,0.96);
+    for(int i=0;i<2;i++){ vec3 id; float on; vec2 p=scatP(u,2.0,float(i),id,on); p=mrot((h31(id+5.0)-0.5)*0.5)*p;
+      on*=step(0.12,h31(id)); vec3 pc=h31(id+2.0)<0.5?brt(uC1,0.45):uC2;
+      float hull=step(-0.1,p.y)*step(p.y,-0.01)*step(abs(p.x),0.12+(p.y+0.1)*0.9);
+      float sail=inTri(p,vec2(-0.08,-0.01),vec2(0.1,-0.01),vec2(0.0,0.17));
+      float wv=step(abs(p.y+0.14-0.015*sin(p.x*40.0)),0.008)*step(abs(p.x),0.22);
+      c=mix(c,uC3,wv*on); c=mix(c,pc*0.75,hull*on); c=mix(c,pc*(p.x<0.0?1.0:0.8),sail*on); }
+    return vec4(c, 200.0);
+  }
+#elif MODE==222
+  { // glaces : des cornets de glace à deux boules (1re et 2e couleurs) sur un cornet gaufré de la 3e
+    vec3 u=normalize(q); vec3 c=vec3(0.97,0.96,0.94);
+    for(int i=0;i<2;i++){ vec3 id; float on; vec2 p=scatP(u,2.0,float(i),id,on); p=mrot((h31(id+5.0)-0.5)*0.8)*p;
+      on*=step(0.12,h31(id));
+      float cone=inTri(p,vec2(-0.075,-0.02),vec2(0.075,-0.02),vec2(0.0,-0.25));
+      float waf=max(step(abs(fract((p.x+p.y)*28.0)-0.5),0.1),step(abs(fract((p.x-p.y)*28.0)-0.5),0.1));
+      float s1=length(p-vec2(0.0,0.03))/0.085, s2=length(p-vec2(0.0,0.14))/0.075;
+      c=mix(c,mix(uC3,vec3(0.85,0.65,0.4),0.4)*(1.0-0.3*waf),cone*on);
+      c=mix(c,brt(uC1,0.45)*(0.8+0.25*(1.0-s1)),step(s1,1.0)*on);
+      c=mix(c,uC2*(0.8+0.25*(1.0-s2)),step(s2,1.0)*on); }
+    return vec4(c, 200.0);
+  }
+// ===================== Peu communs =====================
+#elif MODE==223
+  { // dentelle : une dentelle blanche, ses rosaces et son filet, posée sur un fond de la 1re couleur, avec des perles de la 2e
+    vec3 u=normalize(q); vec4 cf=cubeF(u); vec2 p=cf.xy*(2.4+nb*0.25)+so.xy; vec2 f=fract(p)-0.5;
+    float r=length(f), a=atan(f.y,f.x);
+    vec3 lace=mix(vec3(0.98),uC3,0.2);
+    float ros=step(abs(r-0.3),0.025)+step(abs(r-0.18*(0.8+0.2*cos(a*8.0))),0.02)+step(r,0.3)*step(0.3*0.5,r)*step(abs(fract(a/6.2831853*16.0)-0.5),0.06);
+    vec2 n=abs(fract(mrot(0.7853982)*p*6.0)-0.5); float net=step(min(n.x,n.y),0.06)*step(0.33,r);
+    vec3 c=brt(uC1,0.4)*0.55;
+    c=mix(c,lace,min(ros+net,1.0)); c=mix(c,uC2,step(r,0.05));
+    return vec4(c, 200.0);
+  }
+#elif MODE==224
+  { // ikat : des losanges tissés aux bords flous, comme si les fils avaient bougé à la teinture, en 3 couleurs
+    vec3 u=normalize(q); float lon=atan(u.z,u.x), lat=u.y;
+    float y=lat*4.0, b=floor(y); float N=8.0;
+    vec2 p=vec2((fract(lon/6.2831853*N+0.5*mod(b,2.0))-0.5)*1.6*sqrt(max(0.05,1.0-lat*lat)),fract(y)-0.5);
+    float jit=0.08*(noise(vec3(0.0,lat*90.0,so.x))-0.5);
+    float dm=abs(p.x+jit)+abs(p.y);
+    float m=mod(b,3.0); vec3 bg=m<1.0?uC3:(m<2.0?mix(uC3,vec3(1.0),0.5):uC2);
+    vec3 c=dm<0.42?(dm<0.24?(dm<0.1?uC2:mix(uC3,vec3(1.0),0.4)):brt(uC1,0.45)):bg;
+    c*=0.9+0.1*step(0.5,fract(lat*120.0));
+    return vec4(c, 200.0);
+  }
+#elif MODE==225
+  { // shibori : un tissu teint de la 1re couleur où les plis ont gardé des ronds clairs (3e couleur) rayés de plis, avec un halo de la 2e
+    vec3 u=normalize(q); vec4 cf=cubeF(u); vec2 p=cf.xy*(2.2+nb*0.25)+so.xy; vec2 f=fract(p)-0.5;
+    float r=length(f), a=atan(f.y,f.x);
+    float sp=0.03*noise(vec3(a*4.0,r*10.0,cf.w));
+    vec3 c=brt(uC1,0.4)*(0.45+0.15*noise(u*20.0+so));
+    c=mix(c,uC2,smoothstep(0.42,0.3,r+sp)*0.6);
+    float fold=0.7+0.3*step(0.5,fract(a/6.2831853*12.0));
+    c=mix(c,mix(uC3,vec3(1.0),0.5)*fold,smoothstep(0.27,0.24,r+sp));
+    c=mix(c,brt(uC1,0.4)*0.6,step(r,0.04));
+    return vec4(c, 200.0);
+  }
+#elif MODE==226
+  { // velours côtelé : les côtes du velours, bien rondes, en larges bandes douces des 3 couleurs
+    vec3 u=normalize(q); float lon=atan(u.z,u.x);
+    float rib=0.5+0.5*sin(lon*48.0);
+    float t=fbm(vec3(u.x,u.y*0.3,u.z)*1.5+so);
+    vec3 c=t<0.45?brt(uC1,0.45):(t<0.55?uC2:uC3);
+    c*=0.55+0.5*pow(rib,0.6);
+    c*=0.94+0.08*noise(u*120.0+so);
+    return vec4(c, 200.0);
+  }
+#elif MODE==227
+  { // tweed : un lainage en chevrons de deux couleurs, moucheté de brins de la 3e et de blanc
+    vec3 u=normalize(q); vec4 cf=cubeF(u); vec2 p=cf.xy*(14.0+nb);
+    float col=floor(p.x/2.0); float s=mod(col,2.0)<1.0?1.0:-1.0;
+    float v=fract((p.y+s*p.x)*1.0);
+    vec3 c=mix(brt(uC1,0.4)*0.6,uC2*0.8,step(0.5,v));
+    float fl=step(0.9,h31(vec3(floor(p*2.5),cf.w)));
+    c=mix(c,h31(vec3(floor(p*2.5),cf.w+1.0))<0.6?uC3:vec3(0.95),fl);
+    c*=0.85+0.2*noise(vec3(p*3.0,cf.w));
+    return vec4(c, 200.0);
+  }
+#elif MODE==228
+  { // cachemire : des gouttes recourbées pleines de petits dessins, de la 2e couleur cerclées de la 3e, sur un fond de la 1re
+    vec3 u=normalize(q); vec3 c=brt(uC1,0.4)*0.55;
+    for(int i=0;i<2;i++){ vec3 id; float on; vec2 p=scatP(u,1.8,float(i),id,on); p=mrot(h31(id+5.0)*6.2831853)*p;
+      on*=step(0.12,h31(id));
+      float t=clamp((p.y+0.05)/0.28,0.0,1.0); vec2 cp=vec2(0.1*t*t,p.y);
+      float d=p.y<-0.05?length(p-vec2(0.0,-0.05))-0.13:abs(p.x-0.1*t*t)-0.13*(1.0-t);
+      float d2=p.y<-0.05?length(p-vec2(0.0,-0.05))-0.08:abs(p.x-0.1*t*t)-0.08*(1.0-t);
+      vec3 cc=uC2;
+      cc=mix(cc,uC3,step(abs(d),0.018));
+      cc=mix(cc,mix(uC3,vec3(1.0),0.3),step(d2,0.0)*step(0.5,fract(length(p-vec2(0.0,-0.05))*30.0)));
+      cc=mix(cc,brt(uC1,0.4)*0.6,step(length(p-vec2(0.0,-0.05)),0.03));
+      c=mix(c,cc,step(d,0.018)*on); }
+    return vec4(c, 200.0);
+  }
+#elif MODE==229
+  { // art déco : des éventails de rayons de deux couleurs, bordés de fins arcs d'or de la 3e, rang par rang
+    vec3 u=normalize(q); vec4 cf=cubeF(u); vec2 g=cf.xy*(2.2+nb*0.25)+so.xy;
+    float row=floor(g.y), x0=mod(row,2.0)*0.5; vec2 f=vec2(fract(g.x-x0)-0.5,fract(g.y));
+    float r=length(f), a=atan(f.x,f.y);
+    vec3 gold=mix(vec3(1.0,0.82,0.42),uC3,0.4);
+    vec3 c=mod(floor(a*8.0/3.14159+8.0),2.0)<1.0?brt(uC1,0.45):uC2;
+    c=mix(c,gold,step(abs(r-0.45),0.015)+step(abs(r-0.3),0.01)+step(r,0.08));
+    c=r>0.5?brt(uC1,0.3)*0.3:c;
+    c=mix(c,gold,step(abs(r-0.5),0.015));
+    return vec4(c, 200.0);
+  }
+#elif MODE==230
+  { // liberty : un semis serré de toutes petites fleurs de la 1re et de la 2e couleur, avec leurs feuilles, sur un fond de la 3e
+    vec3 u=normalize(q); vec3 c=mix(uC3,vec3(1.0),0.4);
+    for(int i=0;i<3;i++){ vec3 id; float on; vec2 p=scatP(u,4.2,float(i),id,on); p=mrot(h31(id+5.0)*6.2831853)*p;
+      on*=step(0.1,h31(id)); float r=length(p), a=atan(p.y,p.x);
+      float lf=step(length((p-vec2(0.17,0.0))/vec2(0.09,0.04)),1.0);
+      float fl=step(r,0.15*(0.6+0.4*abs(cos(a*2.5))));
+      vec3 fc=h31(id+2.0)<0.5?brt(uC1,0.45):uC2;
+      c=mix(c,mix(uC2,vec3(0.2,0.4,0.2),0.5),lf*on); c=mix(c,fc,fl*on); c=mix(c,vec3(0.98,0.9,0.5),step(r,0.035)*on); }
+    return vec4(c, 200.0);
+  }
+#elif MODE==231
+  { // ananas : la peau d'ananas, ses losanges bombés et leur petite pointe, de la 3e couleur vers la 2e, cernés de la 1re
+    vec3 u=normalize(q); vec4 cf=cubeF(u); vec2 p=mrot(0.7853982)*cf.xy*(5.0+nb*0.4)+so.xy; vec2 f=fract(p)-0.5;
+    float dm=max(abs(f.x),abs(f.y));
+    vec3 c=mix(uC3,uC2,smoothstep(0.0,0.5,dm)+0.2*noise(vec3(floor(p),cf.w)));
+    c*=0.7+0.4*smoothstep(0.5,0.0,dm);
+    c=mix(c,brt(uC1,0.4)*0.5,smoothstep(0.42,0.48,dm));
+    c=mix(c,brt(uC1,0.4)*0.4,step(length(f-vec2(0.0,0.12)),0.05));
+    return vec4(c, 200.0);
+  }
+#elif MODE==232
+  { // croco : la peau de crocodile, ses grosses écailles bombées et brillantes, de la 1re et de la 2e couleur, le ventre de la 3e
+    vec3 u=normalize(q); vec3 cid; float d2; float d1=vorF(vec3(u.x*2.5,u.y*5.0,u.z*2.5)+so,cid,d2);
+    float ed=d2-d1;
+    vec3 c=h31(cid+4.0)<0.6?brt(uC1,0.4)*0.6:uC2*0.8;
+    c=mix(c,mix(uC3,vec3(1.0),0.3),smoothstep(0.25,0.15,abs(u.y+0.05))*0.8);
+    c*=0.5+0.6*smoothstep(0.0,0.3,ed);
+    return vec4(mix(brt(uC1,0.2)*0.12,c,smoothstep(0.02,0.06,ed)), 200.0);
+  }
+#elif MODE==233
+  { // coquillages : des coquilles Saint-Jacques côtelées, de 3 couleurs, sur un fond de sable
+    vec3 u=normalize(q); vec3 c=mix(vec3(0.96,0.91,0.8),uC3,0.1)*(0.92+0.1*noise(u*60.0+so));
+    for(int i=0;i<2;i++){ vec3 id; float on; vec2 p=scatP(u,2.0,float(i),id,on); p=mrot(h31(id+5.0)*6.2831853)*p;
+      on*=step(0.12,h31(id)); vec2 pp=p-vec2(0.0,-0.12); float r=length(pp), a=atan(pp.x,pp.y);
+      float sh=step(r,0.26)*step(abs(a),1.1)*step(0.02,r);
+      float ear=step(abs(pp.x),0.09)*step(-0.02,pp.y)*step(pp.y,0.05);
+      float rib=0.75+0.25*abs(cos(a*7.0));
+      float k=h31(id+2.0); vec3 sc=k<0.34?brt(uC1,0.45):(k<0.67?uC2:uC3);
+      c=mix(c,sc*rib*(0.8+0.25*r/0.26),sh*on); c=mix(c,sc*0.75,ear*on*(1.0-sh)); }
+    return vec4(c, 200.0);
+  }
+#elif MODE==234
+  { // pomme de pin : des écailles en spirale qui couvrent toute la bille, chacune bombée, rang par rang de 3 couleurs
+    vec3 u=normalize(q); float lon=atan(u.z,u.x), lat=asin(clamp(u.y,-1.0,1.0));
+    float s1=lon/6.2831853*8.0+lat*2.6, s2=lon/6.2831853*13.0-lat*4.2;
+    vec2 id=floor(vec2(s1,s2)), f=fract(vec2(s1,s2))-0.5;
+    float dm=max(abs(f.x),abs(f.y));
+    float m=mod(id.x+id.y,3.0); vec3 c=m<1.0?brt(uC1,0.45):(m<2.0?uC2:uC3);
+    c=mix(c,vec3(0.4,0.28,0.18),0.25)*(0.5+0.65*smoothstep(0.5,0.0,dm)*(0.6+0.4*(0.5-f.y)));
+    return vec4(mix(brt(uC1,0.2)*0.12,c,smoothstep(0.5,0.42,dm)), 200.0);
+  }
+#elif MODE==235
+  { // tournesol : un tournesol de chaque côté, ses graines en spirale (1re couleur), sa couronne de la 2e et ses pétales de la 3e
+    vec3 u=normalize(q); float rho=length(u.xy), a=atan(u.y,u.x);
+    vec3 c=mix(uC3,vec3(1.0,0.9,0.4),0.3);
+    float pet=fract(a/6.2831853*18.0); c*=0.75+0.3*sin(pet*3.14159);
+    c=rho>0.8?mix(uC2,vec3(0.2,0.45,0.2),0.4)*(0.7+0.2*noise(u*20.0+so)):c;
+    if(rho<0.62*(0.85+0.15*sin(pet*3.14159))){ c=uC2*0.9; }
+    if(rho<0.45){ float v1=fract(a/6.2831853*21.0+rho*14.0), v2=fract(a/6.2831853*34.0-rho*22.0);
+      float seed=smoothstep(0.5,0.25,length(vec2(v1,v2)-0.5));
+      c=mix(brt(uC1,0.3)*0.25,brt(uC1,0.3)*0.65,seed); }
+    return vec4(c, 200.0);
+  }
+#elif MODE==236
+  { // bargello : la broderie en flammes, des pics en escalier qui montent et descendent, en dégradés des 3 couleurs
+    vec3 u=normalize(q); float lon=atan(u.z,u.x); float x=lon/6.2831853*10.0;
+    float tri=abs(fract(x)-0.5)*2.0;
+    float y=u.y*5.0+tri*1.4+0.3*abs(fract(x*3.0)-0.5); y=floor(y*6.0)/6.0;
+    float b=mod(floor(y*3.0),6.0);
+    vec3 c=b<1.0?brt(uC1,0.45):(b<2.0?mix(brt(uC1,0.45),uC2,0.5):(b<3.0?uC2:(b<4.0?mix(uC2,uC3,0.5):(b<5.0?uC3:mix(uC3,vec3(1.0),0.5)))));
+    c*=0.85+0.15*step(0.5,fract(lon*80.0));
+    return vec4(c, 200.0);
+  }
+#elif MODE==237
+  { // fanions : des guirlandes de petits drapeaux triangulaires qui font le tour de la bille, aux 3 couleurs
+    vec3 u=normalize(q); float lon=atan(u.z,u.x); vec3 c=vec3(0.97,0.97,0.95);
+    for(int i=0;i<3;i++){ float fi=float(i); float y0=-0.5+0.5*fi+0.06*sin(lon*3.0+fi*2.0);
+      float N=14.0+fi*2.0; float x=lon/6.2831853*N+fi*0.3; float lx=fract(x)-0.5;
+      float d=(y0-u.y)/0.18;
+      float flag=step(0.0,d)*step(d,1.0-2.0*abs(lx)*1.1);
+      float m=mod(floor(x),3.0); vec3 fc=m<1.0?brt(uC1,0.45):(m<2.0?uC2:uC3);
+      c=mix(c,vec3(0.35),step(abs(u.y-y0),0.006));
+      c=mix(c,fc*(0.85+0.15*(1.0-d)),flag); }
+    return vec4(c, 200.0);
+  }
+#elif MODE==238
+  { // nuancier : des pastilles de couleur rangées comme chez le peintre, chacune une teinte entre les 3 couleurs du coloris, avec son étiquette
+    vec3 u=normalize(q); vec4 cf=cubeF(u); vec2 g=cf.xy*vec2(3.0,2.2)+so.xy; vec2 id=floor(g), f=fract(g);
+    float t=h31(vec3(id,cf.w)), k=h31(vec3(id,cf.w+2.0));
+    vec3 c=k<0.5?mix(brt(uC1,0.45),uC2,t):mix(uC2,uC3,t);
+    c=f.y<0.25?vec3(0.97):c;
+    c=mix(c,vec3(0.3),step(f.y,0.25)*step(abs(f.y-0.12),0.02)*step(abs(f.x-0.4),0.25));
+    vec2 ed=min(f,1.0-f); return vec4(mix(vec3(0.85,0.84,0.8),c,smoothstep(0.03,0.06,min(ed.x,ed.y))), 200.0);
+  }
+#elif MODE==239
+  { // guirlande lumineuse : des fils où brillent de petites ampoules de la 2e, de la 3e couleur et blanches, sur un fond de nuit de la 1re
+    vec3 u=normalize(q); float lon=atan(u.z,u.x); vec3 c=brt(uC1,0.3)*0.2;
+    for(int i=0;i<4;i++){ float fi=float(i); float y0=-0.6+0.4*fi+0.08*sin(lon*2.0+fi*1.7);
+      c=mix(c,vec3(0.15),step(abs(u.y-y0),0.005));
+      float N=16.0; float x=lon/6.2831853*N+fi*0.5; float lx=(fract(x)-0.5)*6.2831853/N*sqrt(max(0.05,1.0-y0*y0));
+      vec2 p=vec2(lx,u.y-y0+0.035); float L=length(p/vec2(0.022,0.032));
+      float m=mod(floor(x)+fi,3.0); vec3 bc=m<1.0?uC2:(m<2.0?uC3:vec3(1.0,0.95,0.8));
+      c+=bc*exp(-length(p)*28.0)*0.6;
+      c=mix(c,mix(bc,vec3(1.0),0.5),step(L,1.0)); }
+    return vec4(c, 200.0);
+  }
+// ===================== Rares =====================
+#elif MODE==240
+  { // labradorite : une pierre gris-noir où s'allument, selon l'angle, des éclairs de la 1re, de la 2e et de la 3e couleur
+    vec3 u=normalize(q); vec3 cid; float d2; float d1=vorF(u*3.0+so,cid,d2);
+    vec3 c=mix(vec3(0.16,0.17,0.19),brt(uC1,0.3)*0.25,0.4)*(0.8+0.4*noise(u*14.0+so));
+    c*=0.85+0.15*sin(dot(u,vec3(40.0,10.0,25.0))+h31(cid)*6.0);
+    return vec4(c, 200.0);
+  }
+#elif MODE==241
+  { // argent gravé : de l'argent poli (miroir, au rendu) gravé de volutes, incrusté de nielle de la 1re, de pierres de la 2e et de filets d'or de la 3e
+    vec3 u=normalize(q); vec4 mt=metalF(q);
+    vec3 cid; float d2; float d1=vorF(u*2.2+so,cid,d2);
+    vec3 c=mix(brt(uC1,0.3)*0.3,step(d1,0.09)>0.5?uC2:mix(vec3(1.0,0.8,0.35),uC3,0.4),step(d1,0.09)+smoothstep(0.03,0.015,d2-d1));
+    return vec4(mix(c,mt.rgb,mt.a), 200.0);
+  }
+#elif MODE==242
+  { // guilloché : des ondes gravées très fines sous un émail transparent de la 2e couleur, un médaillon de la 1re et des filets d'or de la 3e
+    vec3 u=normalize(q); float th=acos(clamp(abs(u.y),0.0,1.0)), a=atan(u.z,u.x);
+    float w=sin(th*90.0+sin(a*12.0)*1.5)*0.5+0.5;
+    vec3 c=uC2*(0.55+0.45*w);
+    c=mix(c,brt(uC1,0.45)*(0.6+0.4*w),step(th,0.35));
+    c=mix(c,mix(vec3(1.0,0.82,0.4),uC3,0.4),step(abs(th-0.37),0.02)+step(abs(th-1.2),0.02));
+    return vec4(c, 200.0);
+  }
+#elif MODE==243
+  { // mica : une pierre feuilletée en mille paillettes plates, chacune d'une teinte du coloris, qui brillent l'une après l'autre
+    vec3 u=normalize(q); vec3 cid; float d2; float d1=vorF(u*6.0+so,cid,d2);
+    float k=h31(cid+4.0); vec3 c=k<0.34?brt(uC1,0.5):(k<0.67?uC2:uC3);
+    c*=0.35+1.0*pow(h31(cid+9.0),2.0);
+    c=mix(c,vec3(1.0),step(0.93,h31(cid+11.0))*0.7);
+    c=mix(c*0.6,c,smoothstep(0.0,0.04,d2-d1));
+    return vec4(c, 200.0);
+  }
+#elif MODE==244
+  { // fleurs séchées : de petites fleurs pressées (une par couleur du coloris) et des feuilles prises dans une résine claire, avec des bulles
+    float h=q.z; vec2 p=q.xy*1.3; float lay=exp(-h*h/0.006); e=vec3(0.0);
+    vec3 col=vec3(0.95,0.94,0.9); float den=0.15;
+    for(int i=0;i<5;i++){ float fi=float(i); vec2 C=(vec2(h31(so+fi*1.3),h31(so+fi*2.9))-0.5)*1.0;
+      vec2 pp=p-C; float r=length(pp), a=atan(pp.y,pp.x)+fi;
+      float pet=step(r,0.13*(0.5+0.5*abs(cos(a*2.5))));
+      vec3 fc=mod(fi,3.0)<1.0?brt(uC1,0.45):(mod(fi,3.0)<2.0?uC2:uC3);
+      if(pet>0.5){ col=mix(fc,vec3(0.98,0.85,0.4),step(r,0.025)); den=40.0*lay; }
+      float lf=step(length((mrot(fi*1.7)*(pp-vec2(0.15,0.05)))/vec2(0.08,0.025)),1.0);
+      if(lf>0.5 && pet<0.5){ col=mix(uC2,vec3(0.3,0.45,0.2),0.6); den=40.0*lay; } }
+    vec3 g=q*10.0+so; vec3 fc2=fract(g)-0.5;
+    e+=vec3(0.9)*step(0.97,h31(floor(g)))*smoothstep(0.12,0.06,abs(length(fc2)-0.1))*1.2;
+    return vec4(col, max(den,0.15));
+  }
+#elif MODE==245
+  { // verre de mer : un morceau de verre poli par la mer, laiteux, teinté de la 2e couleur avec des voiles de la 1re et de la 3e
+    float r=length(q); float n=fbm(q*2.5+so);
+    vec3 c=mix(uC2,vec3(0.95),0.45);
+    c=mix(c,brt(uC1,0.45),smoothstep(0.55,0.7,fbm(q*2.0+so+5.0))*0.6);
+    c=mix(c,uC3,smoothstep(0.58,0.72,fbm(q*2.2+so+11.0))*0.6);
+    return vec4(c, 1.4+n*1.5+3.0*smoothstep(0.75,0.95,r));
+  }
+#elif MODE==246
+  { // pierre de soleil : une pierre translucide de la 3e couleur pleine de minuscules paillettes de cuivre qui s'allument (1re et 2e couleurs)
+    float r=length(q); e=vec3(0.0);
+    vec3 g=q*26.0+so; vec3 fc=fract(g)-0.5; float sp=step(0.9,h31(floor(g)))*smoothstep(0.25,0.0,length(fc));
+    float k=h31(floor(g)+3.0);
+    e+=(k<0.5?brt(uC1,0.5):uC2)*sp*14.0*smoothstep(0.95,0.8,r);
+    return vec4(mix(uC3,vec3(1.0,0.75,0.5),0.25), 0.7+0.6*fbm(q*3.0+so));
+  }
+#elif MODE==247
+  { // dendrites : une calcédoine laiteuse où ont poussé des fougères de pierre sombre (1re couleur), de la mousse (2e) et un voile de la 3e
+    float r=length(q); vec3 w=q*2.0+so;
+    float br=1.0-abs(2.0*noise(w*3.0)-1.0), br2=1.0-abs(2.0*noise(w*7.0+4.0)-1.0);
+    float den=smoothstep(0.88,0.96,br*0.6+br2*0.4+0.2*smoothstep(0.4,0.9,r));
+    float moss=smoothstep(0.6,0.7,fbm(w*1.5+9.0));
+    vec3 c=mix(vec3(0.92,0.92,0.9),uC3,0.25);
+    c=mix(c,uC2*0.8,moss); c=mix(c,brt(uC1,0.3)*0.3,den);
+    return vec4(c, 0.6+moss*3.0+den*30.0);
+  }
+#elif MODE==248
+  { // quartz rutile : un cristal clair traversé de fines aiguilles d'or (3e couleur) et de quelques-unes de la 2e, à peine teinté de la 1re
+    float r=length(q); e=vec3(0.0);
+    for(int i=0;i<22;i++){ float fi=float(i);
+      vec3 o=(vec3(h31(so+fi*1.3),h31(so+fi*2.9),h31(so+fi*4.1))-0.5)*0.9;
+      vec3 d=normalize(vec3(h31(so+fi*5.3),h31(so+fi*6.7),h31(so+fi*7.9))-0.5+0.001);
+      vec3 pa=q-o; float t=clamp(dot(pa,d),-0.35,0.35); float ds=length(pa-d*t);
+      e+=(mod(fi,5.0)<1.0?uC2:mix(vec3(1.0,0.8,0.35),uC3,0.4))*exp(-ds*120.0)*9.0; }
+    e*=smoothstep(0.95,0.8,r);
+    return vec4(mix(vec3(0.96),brt(uC1,0.45),0.15), 0.2);
+  }
+#elif MODE==249
+  { // pyrite : des cubes de métal doré (miroir, au rendu) poussés les uns dans les autres, sur une roche de la 1re couleur
+    vec4 mt=metalF(q); vec3 u=normalize(q);
+    vec3 c=brt(uC1,0.3)*0.3*(0.8+0.4*noise(u*20.0+so));
+    return vec4(mix(c,mt.rgb,mt.a), 200.0);
+  }
+#elif MODE==250
+  { // bois pétrifié : un tronc devenu pierre, ses cernes et ses fentes, en bandes des 3 couleurs piquées de cristaux
+    vec3 u=normalize(q); float rho=length(u.xz)+0.06*fbm(u*4.0+so), a=atan(u.z,u.x);
+    float v=rho*14.0+0.5*fbm(u*3.0+so);
+    float m=mod(floor(v),3.0); vec3 c=m<1.0?brt(uC1,0.45):(m<2.0?uC2:uC3);
+    c=mix(c,vec3(0.6,0.5,0.45),0.25)*(0.8+0.25*fract(v));
+    c=mix(c,c*0.4,smoothstep(0.03,0.0,abs(fract(a/6.2831853*7.0+0.2*noise(u*5.0))-0.5)-0.47)*step(0.3,rho));
+    c=mix(c,vec3(1.0),step(0.96,h31(floor(u*80.0+so)))*0.6);
+    return vec4(c, 200.0);
+  }
+#elif MODE==251
+  { // laque : une laque profonde de la 1re couleur, peinte à l'or (3e couleur) de vagues et de nuages, avec des touches de la 2e
+    vec3 u=normalize(q); vec3 c=brt(uC1,0.3)*0.3;
+    float lat=u.y*6.0+0.4*sin(atan(u.z,u.x)*3.0);
+    float wv=fract(lat); float crest=smoothstep(0.03,0.0,abs(wv-0.5-0.15*sin(atan(u.z,u.x)*18.0))-0.01);
+    vec3 gold=mix(vec3(1.0,0.8,0.35),uC3,0.35);
+    c=mix(c,gold,crest);
+    float cl=smoothstep(0.66,0.68,fbm(u*2.5+so))-smoothstep(0.7,0.72,fbm(u*2.5+so));
+    c=mix(c,gold,cl);
+    c=mix(c,uC2,smoothstep(0.7,0.72,fbm(u*2.5+so)));
+    c=mix(c,gold,step(0.97,h31(floor(u*60.0+so)))*0.8);
+    return vec4(c, 200.0);
+  }
+#elif MODE==252
+  { // titane : un métal (miroir, au rendu) chauffé jusqu'à prendre les 3 couleurs du coloris en reflets, avec un fin brossage
+    vec4 mt=metalF(q); return vec4(mt.rgb, 200.0);
+  }
+#elif MODE==253
+  { // obsidienne : un verre de volcan noir, poli, traversé de reflets soyeux de la 2e et de la 3e couleur, et de flocons de la 1re
+    vec3 u=normalize(q); vec3 c=vec3(0.04,0.04,0.05);
+    float v=dot(u,normalize(vec3(0.3,1.0,0.2)))*14.0+1.5*fbm(u*2.0+so);
+    float sh=pow(0.5+0.5*sin(v),6.0);
+    c+=mix(uC2,uC3,0.5+0.5*sin(v*0.37))*sh*0.45;
+    vec3 cid; float d2; float d1=vorF(u*7.0+so,cid,d2);
+    c=mix(c,mix(brt(uC1,0.45),vec3(0.9),0.4),smoothstep(0.12,0.08,d1)*step(0.8,h31(cid)));
+    return vec4(c, 200.0);
+  }
+#elif MODE==254
+  { // céladon : un émail de la 2e couleur, pâle et craquelé d'un fin réseau de la 1re, plus épais dans les creux, cerclé de la 3e
+    vec3 u=normalize(q); vec3 cid; float d2; float d1=vorF(u*5.0+so+0.1*vec3(noise(u*10.0),noise(u*10.0+2.0),0.0),cid,d2);
+    vec3 c=mix(uC2,vec3(0.95),0.4)*(0.88+0.18*fbm(u*3.0+so));
+    c=mix(c,brt(uC1,0.3)*0.35,smoothstep(0.025,0.008,d2-d1)*0.8);
+    vec3 cid2; float e2; float d3=vorF(u*13.0+so+5.0,cid2,e2); c=mix(c,brt(uC1,0.3)*0.5,smoothstep(0.015,0.004,e2-d3)*0.4);
+    c=mix(c,uC3,smoothstep(0.02,0.008,abs(abs(u.y)-0.85)));
+    return vec4(c, 200.0);
+  }
+// (6 novembre 2026, 4e partie) encore des Épiques (255 à 275), des Légendaires (276 à 287) et des Mythiques animés (288 à 290), tous dans le verre
+// ===================== Épiques =====================
+#elif MODE==255
+  { // île : une petite île de sable (3e couleur) avec son palmier (2e) au milieu d'une mer de la 1re, sous le soleil
+    float r=length(q); q=q*0.85; e=vec3(0.0);
+    float wv=-0.22+0.015*sin(q.x*16.0+so.x)+0.012*sin(q.z*20.0);
+    float isl=length((q-vec3(0.0,-0.3,0.0))*vec3(1.0,2.2,1.4))-0.28;
+    if(isl<0.0) return vec4(mix(uC3,vec3(0.95,0.87,0.65),0.5)*(0.8+0.25*noise(q*40.0)), 400.0);
+    if(q.y<wv) return vec4(brt(uC1,0.45)*(0.45+0.35*noise(q*10.0+so))+vec3(0.9)*smoothstep(-0.01,0.0,q.y-wv)*0.6, 400.0);
+    vec3 t0=vec3(0.02,-0.2,0.0), t1=vec3(0.07,0.0,0.0), t2=vec3(0.03,0.2,0.0);
+    float d=min(sdCap(q,t0,t1,0.025),sdCap(q,t1,t2,0.02));
+    if(d<0.0) return vec4(vec3(0.5,0.35,0.2)*(0.8+0.2*step(0.5,fract(q.y*40.0))), 400.0);
+    for(int i=0;i<6;i++){ float a=float(i)*1.0472+0.3; vec3 dir=vec3(cos(a),-0.25,sin(a)*0.6);
+      vec3 pa=q-t2; float t=clamp(dot(pa,dir)/0.22,0.0,1.0); vec3 pp=t2+dir*0.22*t+vec3(0.0,-0.12*t*t,0.0);
+      if(length(q-pp)<0.035*(1.0-t*0.7)) return vec4(uC2*(0.6+0.4*t), 400.0); }
+    e=mix(uC3,vec3(1.0,0.9,0.6),0.4)*(exp(-length(q-vec3(-0.35,0.32,-0.2))*10.0)*2.5);
+    return vec4(mix(vec3(0.75,0.88,1.0),uC3,0.1), 0.2);
+  }
+#elif MODE==256
+  { // montagne : des sommets enneigés sous la nuit, la roche de la 1re couleur, la neige bleutée de la 2e, une lune de la 3e
+    float r=length(q); e=vec3(0.0);
+    float h=-0.05+0.42*(1.0-abs(q.x+0.08)*1.6)+0.18*(1.0-abs(q.x-0.32)*3.0)*step(0.0,q.x)+0.06*(fbm(vec3(q.x*6.0,0.0,q.z*6.0)+so)-0.5)-abs(q.z)*0.5;
+    if(q.y<max(h,-0.45)){ float snow=smoothstep(h-0.12,h-0.06,q.y)*step(0.0,q.y+0.05*noise(q*20.0));
+      vec3 rock=brt(uC1,0.4)*0.35*(0.7+0.5*noise(q*25.0+so));
+      return vec4(mix(rock,mix(uC2,vec3(1.0),0.6),snow)*(q.x<-0.08?1.0:0.65), 400.0); }
+    vec3 M=vec3(0.35,0.35,-0.2); float dm=length(q.xy-M.xy);
+    e+=mix(uC3,vec3(1.0),0.4)*(smoothstep(0.08,0.07,dm)*3.0*exp(-pow((q.z-M.z)/0.06,2.0))+exp(-dm*8.0)*0.3);
+    e+=starsE(q,0.5)*step(0.0,q.y);
+    return vec4(mix(uC1*0.06,uC2*0.15,smoothstep(0.5,-0.3,q.y)), 0.45);
+  }
+#elif MODE==257
+  { // cerf-volant : un cerf-volant en losange de 4 couleurs (les 3 du coloris et du blanc) dans un ciel de nuages, avec sa queue à nœuds
+    float r=length(q); e=vec3(0.0); vec3 p=q-vec3(0.05,0.12,0.0);
+    vec2 k=mrot(0.25)*p.xy;
+    if(abs(p.z)<0.03 && abs(k.x)/0.2+abs(k.y-0.05*sign(k.y))/(k.y>0.0?0.22:0.34)<1.0){
+      float qd=(k.x>0.0?1.0:0.0)+(k.y>0.0?2.0:0.0);
+      vec3 c=qd<0.5?brt(uC1,0.45):(qd<1.5?uC2:(qd<2.5?uC3:vec3(0.97)));
+      return vec4(c*(abs(k.x)<0.008||abs(k.y)<0.008?0.5:1.0), 400.0); }
+    vec2 tl=mrot(0.25)*vec2(0.0,-0.34)+vec2(0.05,0.12);
+    for(int i=0;i<6;i++){ float t=float(i)/5.0; vec2 P=tl+vec2(0.08*sin(t*5.0),-0.07*float(i));
+      if(length(vec3(q.xy-P,q.z))<0.028) return vec4(mod(float(i),3.0)<1.0?uC2:(mod(float(i),3.0)<2.0?uC3:brt(uC1,0.45)), 400.0); }
+    float cloud=smoothstep(0.58,0.72,fbm(q*2.6+so))*smoothstep(0.95,0.75,r);
+    return vec4(mix(mix(vec3(0.7,0.85,1.0),uC2,0.1),vec3(1.0),cloud), 0.22+cloud*3.0);
+  }
+#elif MODE==258
+  { // moulin : un moulin à vent sur sa colline (2e couleur), le toit et les ailes de la 1re, la porte et les fenêtres de la 3e
+    float r=length(q); vec3 c1=brt(uC1,0.45);
+    if(q.y<-0.38+0.1*(1.0-q.x*q.x*3.0)*0.0-0.06*q.x) return vec4(uC2*(0.6+0.3*noise(q*20.0)), 400.0);
+    float y=q.y+0.38, rt=0.13-0.05*y/0.5;
+    if(y>0.0 && y<0.5 && length(q.xz)<rt){ vec3 c=vec3(0.92,0.9,0.85)*(0.6+0.5*clamp(0.5-q.x*4.0+q.z*2.0,0.0,1.0));
+      if(q.z>0.0 && abs(q.x)<0.035 && y<0.1) c=uC3*0.7; if(q.z>0.0 && abs(q.x)<0.02 && abs(y-0.3)<0.03) c=uC3;
+      return vec4(c, 400.0); }
+    if(y>0.5 && y<0.62 && length(q.xz)<0.09*(1.0-(y-0.5)/0.12)) return vec4(c1*0.7, 400.0);
+    vec3 hub=vec3(0.0,0.1,0.12); vec2 b=q.xy-hub.xy;
+    if(abs(q.z-0.12)<0.03){ for(int i=0;i<4;i++){ vec2 bb=mrot(float(i)*1.5708+0.4)*b;
+      if(bb.x>0.02 && bb.x<0.34 && abs(bb.y-0.03)<0.035) return vec4(mix(c1,vec3(0.9),step(0.5,fract(bb.x*25.0))*0.5), 400.0); } }
+    float cloud=smoothstep(0.6,0.72,fbm(q*2.5+so))*smoothstep(0.95,0.75,r);
+    return vec4(mix(vec3(0.72,0.86,1.0),vec3(1.0),cloud), 0.2+cloud*3.0);
+  }
+#elif MODE==259
+  { // igloo : un igloo de blocs de glace sur la banquise, sa porte éclairée, et une aurore de la 2e et de la 3e couleur dans le ciel
+    float r=length(q); e=vec3(0.0); vec3 p=q-vec3(0.0,-0.3,0.0);
+    if(q.y<-0.3) return vec4(mix(vec3(0.9,0.94,1.0),uC2,0.12)*(0.85+0.15*noise(q*20.0)), 400.0);
+    float L=length(p);
+    if(L<0.3){ vec3 n=p/L; float lat=asin(n.y), lon=atan(n.z,n.x);
+      float row=floor(lat*9.0), joint=min(abs(fract(lat*9.0)-0.5),abs(fract(lon*6.0+row*0.5)-0.5));
+      vec3 c=mix(vec3(0.92,0.95,1.0),uC2,0.15)*lit(n)*mix(0.7,1.0,smoothstep(0.0,0.06,joint));
+      if(n.z>0.6 && abs(n.x)<0.25 && n.y<0.35){ c=mix(uC3,vec3(1.0,0.8,0.5),0.4)*1.2; e=c; }
+      return vec4(c, 400.0); }
+    float aur=smoothstep(0.03,0.0,abs(q.y-0.3-0.08*sin(q.x*6.0+so.x)-0.05*fbm(q*4.0)))*0.0+exp(-pow((q.y-0.28-0.08*sin(q.x*5.0+so.x))/0.08,2.0))*step(-0.2,q.y);
+    e=mix(uC2,uC3,0.5+0.5*sin(q.x*4.0))*aur*(0.6+0.4*noise(vec3(q.x*20.0,0.0,so.y)))*1.5+starsE(q,0.5);
+    return vec4(uC1*0.06, 0.45);
+  }
+#elif MODE==260
+  { // dirigeable : un ballon dirigeable rayé de la 1re et de la 2e couleur, ses ailerons et sa nacelle de la 3e, entre les nuages
+    float r=length(q); vec3 p=q-vec3(0.0,0.08,0.0);
+    float eb=length(p/vec3(0.42,0.17,0.17));
+    if(eb<1.0){ vec3 n=normalize(p/vec3(0.1764,0.0289,0.0289)); float a=atan(p.z,p.y);
+      vec3 c=mod(floor(a*6.0/3.14159+6.0),2.0)<1.0?brt(uC1,0.45):uC2;
+      return vec4(c*lit(n), 400.0); }
+    vec3 t=p-vec3(-0.38,0.0,0.0);
+    if(t.x<0.08 && t.x>-0.08 && ((abs(t.z)<0.02 && abs(t.y)<0.17-abs(t.x)*0.6) || (abs(t.y)<0.02 && abs(t.z)<0.17-abs(t.x)*0.6))) return vec4(uC3, 400.0);
+    vec3 g=p-vec3(0.05,-0.22,0.0); if(abs(g.x)<0.09 && abs(g.y)<0.035 && abs(g.z)<0.04) return vec4(uC3*0.8, 400.0);
+    float cloud=smoothstep(0.6,0.72,fbm(q*2.3+so))*smoothstep(0.95,0.75,r);
+    return vec4(mix(vec3(0.75,0.87,1.0),vec3(1.0),cloud), 0.2+cloud*3.0);
+  }
+#elif MODE==261
+  { // sous-marin : un petit sous-marin de la 3e couleur, ses hublots allumés, dans une eau profonde de la 1re traversée de rayons
+    float r=length(q); e=vec3(0.0); vec3 c1=brt(uC1,0.45);
+    vec3 p=q-vec3(0.0,-0.02,0.0);
+    float d=sdCap(p,vec3(-0.25,0.0,0.0),vec3(0.25,0.0,0.0),0.12);
+    d=min(d,max(abs(p.x-0.02)-0.07,max(abs(p.y-0.15)-0.06,abs(p.z)-0.05)));
+    if(d<0.0){ vec3 c=mix(uC3,vec3(1.0,0.85,0.3),0.2)*(0.55+0.5*clamp(0.5+p.y*4.0,0.0,1.0));
+      for(int i=0;i<3;i++){ vec2 h=vec2(-0.13+0.13*float(i),0.0); if(p.z>0.0 && length(p.xy-h)<0.035){ c=mix(uC2,vec3(1.0),0.5); e=c*2.0; } }
+      return vec4(c, 400.0); }
+    if(abs(p.x+0.3)<0.015 && length(p.yz)<0.08) return vec4(vec3(0.5), 400.0);
+    e+=mix(uC2,vec3(1.0),0.5)*pow(noise(vec3(q.x*5.0+q.y*1.5,q.z*5.0,so.x)),3.0)*smoothstep(-0.6,0.6,q.y)*0.8;
+    for(int i=0;i<7;i++){ vec3 P=vec3(0.3+0.02*sin(float(i)*2.0),0.05+float(i)*0.08,0.0); e+=vec3(0.9)*smoothstep(0.015,0.0,abs(length(q-P)-0.015))*2.0; }
+    return vec4(mix(c1*0.1,c1*0.35,smoothstep(-0.8,0.8,q.y)), 0.6);
+  }
+#elif MODE==262
+  { // tortue de mer : une tortue nage dans l'eau claire, sa carapace en plaques de la 2e couleur, sa peau de la 3e, l'eau de la 1re
+    float r=length(q); e=vec3(0.0); vec3 c1=brt(uC1,0.45);
+    vec3 p=q; p.xy=mrot(0.25)*p.xy;
+    float sh=length(p/vec3(0.3,0.22,0.12));
+    if(sh<1.0){ vec3 cid; float d2; float d1=vorF(p*9.0+so,cid,d2);
+      vec3 c=uC2*(0.6+0.45*h31(cid))*mix(0.5,1.0,smoothstep(0.02,0.07,d2-d1));
+      return vec4(c*lit(normalize(p/vec3(0.09,0.05,0.0144))), 400.0); }
+    vec3 hd=p-vec3(0.33,0.02,0.0); if(length(hd/vec3(0.09,0.06,0.06))<1.0) return vec4(uC3*0.8, 400.0);
+    for(int i=0;i<4;i++){ float sx=i<2?1.0:-1.0, sz=mod(float(i),2.0)<1.0?1.0:-1.0;
+      vec3 f=p-vec3(0.14*sx,-0.05,0.13*sz); f.xy=mrot(sx*0.6)*f.xy;
+      if(length(f/vec3(i<2?0.2:0.1,0.035,0.06))<1.0) return vec4(uC3*0.7, 400.0); }
+    e=mix(uC2,vec3(1.0),0.5)*pow(noise(vec3(q.x*5.0+q.y*1.5,q.z*5.0,so.x)),3.0)*smoothstep(-0.5,0.6,q.y)*0.7;
+    return vec4(mix(c1*0.2,c1*0.55,smoothstep(-0.8,0.8,q.y)), 0.45);
+  }
+#elif MODE==263
+  { // pieuvre : une pieuvre de la 2e couleur déploie ses huit bras dans l'eau de la 1re, ses ventouses de la 3e
+    float r=length(q); e=vec3(0.0); vec3 c1=brt(uC1,0.45);
+    vec3 hp=q-vec3(0.0,0.18,0.0); float hd=length(hp/vec3(0.17,0.2,0.16));
+    if(hd<1.0){ vec3 c=uC2*lit(normalize(hp)); if(hp.z>0.0 && length(vec2(abs(hp.x)-0.06,hp.y+0.03))<0.03) c=vec3(0.05); return vec4(c, 400.0); }
+    for(int i=0;i<8;i++){ float a=float(i)*0.785+0.2; vec3 d=vec3(cos(a),0.0,sin(a)*0.7);
+      vec3 P0=vec3(0.0,0.05,0.0), P1=P0+d*0.18+vec3(0.0,-0.12,0.0), P2=P1+d*0.14+vec3(0.0,-0.1,0.0)+vec3(-d.z,0.0,d.x)*0.08, P3=P2+vec3(-d.z,0.08,d.x)*0.12;
+      float t0=sdCap(q,P0,P1,0.045), t1=sdCap(q,P1,P2,0.032), t2=sdCap(q,P2,P3,0.018);
+      float dd=min(t0,min(t1,t2));
+      if(dd<0.0){ float sk=step(0.5,fract(length(q-P0)*30.0))*step(q.y,-0.0+P1.y*0.0+0.06)*step(-0.008,dd)*0.0;
+        vec3 c=mix(uC2*0.85,mix(uC3,vec3(1.0),0.3),step(0.6,noise(q*50.0))*0.8);
+        return vec4(c, 400.0); } }
+    e=vec3(0.8)*step(0.98,h31(floor(q*12.0+so)))*0.8;
+    return vec4(mix(c1*0.12,c1*0.4,smoothstep(-0.8,0.8,q.y)), 0.5);
+  }
+#elif MODE==264
+  { // oasis : une mare de la 1re couleur au milieu des dunes de la 3e, deux palmiers de la 2e, sous la lune
+    float r=length(q); e=vec3(0.0);
+    float dy=-0.25+0.04*sin(q.x*6.0+so.x)+0.03*sin(q.z*7.0);
+    float pond=length(q.xz*vec2(1.0,1.6))-0.28;
+    if(q.y<dy){ if(pond<0.0 && q.y>dy-0.03) return vec4(brt(uC1,0.45)*0.5+vec3(0.3)*pow(noise(q*15.0),2.0), 400.0);
+      return vec4(mix(uC3,vec3(0.9,0.75,0.5),0.4)*(0.55+0.3*smoothstep(-0.35,-0.2,q.y)), 400.0); }
+    for(int k=0;k<2;k++){ vec3 B=k==0?vec3(-0.26,-0.25,0.0):vec3(0.3,-0.25,-0.05); vec3 T=B+vec3(k==0?0.06:-0.05,0.38,0.0);
+      if(sdCap(q,B,T,0.02)<0.0) return vec4(vec3(0.4,0.28,0.16), 400.0);
+      for(int i=0;i<6;i++){ float a=float(i)*1.0472; vec3 dir=vec3(cos(a),-0.2,sin(a)*0.6); vec3 pa=q-T; float t=clamp(dot(pa,dir)/0.18,0.0,1.0);
+        if(length(q-(T+dir*0.18*t+vec3(0.0,-0.1*t*t,0.0)))<0.03*(1.0-t*0.7)) return vec4(uC2*0.7, 400.0); } }
+    vec3 M=vec3(-0.05,0.38,-0.2); float dm=length(q.xy-M.xy);
+    e=mix(uC3,vec3(1.0),0.4)*(smoothstep(0.08,0.07,dm)*3.0*exp(-pow((q.z-M.z)/0.06,2.0))+exp(-dm*8.0)*0.3)+starsE(q,0.5)*step(0.0,q.y);
+    return vec4(mix(uC1*0.06,uC3*0.15,smoothstep(0.4,-0.3,q.y)), 0.45);
+  }
+#elif MODE==265
+  { // arc-en-ciel : un arc de lumière en 3 bandes (les 3 couleurs) qui sort d'un nuage et retombe dans un autre, dans un ciel clair
+    float r=length(q); e=vec3(0.0); vec3 p=q-vec3(0.0,-0.25,0.0);
+    float rho=length(p.xy), t=(rho-0.38)/0.24;
+    if(t>0.0 && t<1.0 && p.y>0.0 && abs(p.z)<0.05){ float b=t*3.0; vec3 c=b<1.0?brt(uC1,0.5):(b<2.0?uC2:uC3); e=c*0.6; return vec4(c, 300.0); }
+    float cl=9.0; for(int i=0;i<2;i++){ float sx=i==0?-1.0:1.0; cl=min(cl,min(length(q-vec3(0.5*sx,-0.25,0.0))-0.14,min(length(q-vec3(0.38*sx,-0.28,0.05))-0.11,length(q-vec3(0.62*sx,-0.3,-0.03))-0.1))); }
+    if(cl+0.02*noise(q*20.0)<0.0) return vec4(vec3(0.97)*(0.8+0.25*clamp(q.y*3.0+1.0,0.0,1.0)), 400.0);
+    return vec4(mix(vec3(0.72,0.86,1.0),uC2,0.1), 0.2);
+  }
+#elif MODE==266
+  { // nuage de pluie : un gros nuage tout rond d'où tombent des gouttes de la 2e couleur, sur une flaque de la 3e, dans un ciel de la 1re
+    float r=length(q); e=vec3(0.0);
+    float cl=min(min(length(q-vec3(0.0,0.2,0.0))-0.2,length(q-vec3(-0.2,0.12,0.0))-0.15),min(length(q-vec3(0.2,0.12,0.02))-0.16,length(q-vec3(0.08,0.3,-0.02))-0.13));
+    if(cl+0.02*noise(q*18.0)<0.0) return vec4(vec3(0.85,0.87,0.92)*(0.6+0.45*clamp((q.y-0.05)*3.0,0.0,1.0)), 400.0);
+    if(q.y<-0.45 && length(q.xz*vec2(1.0,1.5))<0.35) return vec4(mix(uC3,vec3(1.0),0.3)*(0.7+0.3*noise(q*20.0)), 400.0);
+    vec2 g=vec2(q.x*14.0,q.y*4.0+q.x*0.0); vec2 id=floor(g), f=fract(g);
+    float rain=step(0.55,h31(vec3(id,floor(q.z*6.0))))*smoothstep(0.08,0.0,abs(f.x-0.5)-0.02)*step(0.6,f.y)*step(q.y,0.0)*step(-0.45,q.y)*step(abs(q.x),0.32);
+    e=mix(uC2,vec3(1.0),0.3)*rain*1.5;
+    return vec4(mix(brt(uC1,0.45)*0.4,vec3(0.7,0.75,0.85),0.4), 0.25);
+  }
+#elif MODE==267
+  { // ovni : une soucoupe volante de métal, son dôme de la 2e couleur, ses feux de la 3e, et un rayon de lumière qui descend dans la nuit
+    float r=length(q); e=vec3(0.0); vec3 p=q-vec3(0.0,0.12,0.0);
+    float sc=length(p/vec3(0.36,0.07,0.36));
+    if(sc<1.0){ float a=atan(p.z,p.x); vec3 c=vec3(0.6,0.62,0.66)*lit(normalize(p/vec3(0.13,0.005,0.13)))+brt(uC1,0.45)*0.15;
+      if(abs(p.y)<0.02 && abs(fract(a/6.2831853*12.0)-0.5)<0.15){ c=uC3; e=uC3*3.0; }
+      return vec4(c, 400.0); }
+    vec3 dp=p-vec3(0.0,0.05,0.0); if(length(dp)<0.14 && dp.y>0.0){ e=uC2*0.5; return vec4(mix(uC2,vec3(1.0),0.3), 400.0); }
+    float beam=step(q.y,0.06)*step(length(q.xz),0.08+(0.06-q.y)*0.35)*step(-0.6,q.y);
+    e+=mix(uC3,vec3(1.0),0.5)*beam*0.9;
+    if(q.y<-0.5) return vec4(brt(uC1,0.4)*0.2+uC3*0.3*smoothstep(0.35,0.0,length(q.xz)), 400.0);
+    e+=starsE(q,0.5);
+    return vec4(uC1*0.06, 0.45);
+  }
+#elif MODE==268
+  { // lanterne : une lanterne de papier de la 2e couleur qui brille dans la nuit, allumée de la 3e, avec son pompon de la 1re
+    float r=length(q); e=vec3(0.0); vec3 p=q-vec3(0.0,0.04,0.0);
+    float L=length(p/vec3(0.3,0.26,0.3));
+    if(L<1.0){ float rib=step(0.85,abs(sin(p.y*40.0))); vec3 c=mix(uC2,vec3(1.0,0.9,0.7),0.25);
+      float glow=1.0-L*0.6; e=mix(c,uC3,0.4)*glow*1.5*(1.0-rib*0.5); return vec4(c*(1.0-rib*0.4), 400.0); }
+    if(abs(abs(p.y)-0.27)<0.025 && length(p.xz)<0.16) return vec4(brt(uC1,0.45)*0.6, 400.0);
+    if(p.y<-0.28 && p.y>-0.46 && length(p.xz)<0.03+(-0.28-p.y)*0.15 && abs(fract(atan(p.z,p.x)*3.0)-0.5)<0.35) return vec4(brt(uC1,0.45), 400.0);
+    if(p.y>0.29 && length(p.xz)<0.006) return vec4(vec3(0.3), 400.0);
+    e+=mix(uC2,uC3,0.5)*exp(-length(p)*4.0)*0.6+starsE(q,0.6);
+    return vec4(uC1*0.06, 0.45);
+  }
+#elif MODE==269
+  { // bougie : une bougie de la 2e couleur, ses coulures de cire, sa flamme de la 3e et son halo, sur un bougeoir de la 1re
+    float r=length(q); e=vec3(0.0);
+    float rho=length(q.xz);
+    if(q.y<-0.38 && q.y>-0.45 && rho<0.3-(q.y+0.45)*1.2) return vec4(brt(uC1,0.45)*0.7*(0.7+0.3*noise(q*30.0)), 400.0);
+    float drip=0.012*step(0.6,noise(vec3(atan(q.z,q.x)*4.0,0.0,so.x)))*smoothstep(0.1,-0.2,q.y);
+    if(q.y>-0.38 && q.y<0.08 && rho<0.12+drip){ return vec4(mix(uC2,vec3(1.0),0.2)*(0.6+0.4*clamp(0.5-q.x*4.0,0.0,1.0))+uC3*0.2*smoothstep(-0.1,0.08,q.y), 400.0); }
+    if(q.y>0.08 && q.y<0.13 && rho<0.008) return vec4(vec3(0.1), 400.0);
+    vec3 fp=q-vec3(0.0,0.2,0.0); float fl=length(fp/vec3(0.04,0.09,0.04));
+    e=mix(vec3(1.0,0.97,0.85),uC3,smoothstep(0.2,1.0,fl))*smoothstep(1.0,0.3,fl)*8.0+uC3*exp(-length(fp)*6.0)*0.8;
+    e+=starsE(q,0.6);
+    return vec4(uC1*0.06, 0.45);
+  }
+#elif MODE==270
+  { // ampoule : une ampoule dont le filament brille de la 3e couleur, son halo de la 2e, son culot de métal, dans un verre de la 1re
+    float r=length(q); e=vec3(0.0); vec3 p=q-vec3(0.0,0.08,0.0);
+    float bulb=length(p)-0.26; float neck=length(p.xz)-0.1;
+    if(p.y<-0.2 && p.y>-0.4 && length(p.xz)<0.11){ return vec4(vec3(0.7)*(0.6+0.4*step(0.5,fract(p.y*30.0+atan(p.z,p.x)*0.3))), 400.0); }
+    e+=vec3(0.9,0.95,1.0)*exp(-abs(bulb)*90.0)*0.6*step(-0.2,p.y);
+    float fy=p.y; vec2 fxz=vec2(p.x-0.06*sin(fy*40.0)*step(abs(fy),0.06),p.z);
+    float fil=length(vec2(length(vec2(p.x,p.z))-0.05,fy))*0.0+length(vec2(p.x-clamp(p.x,-0.07,0.07),fy-0.02*sin(p.x*60.0)))+abs(p.z)*0.5;
+    e+=mix(vec3(1.0,0.95,0.8),uC3,0.4)*exp(-fil*45.0)*30.0;
+    e+=uC2*exp(-length(p)*5.0)*0.8;
+    return vec4(brt(uC1,0.4)*0.08, 0.45);
+  }
+#elif MODE==271
+  { // perle : une huître entrouverte de la 1re couleur, nacrée dedans, qui garde une grosse perle de la 3e, dans une eau de la 2e
+    float r=length(q); e=vec3(0.0);
+    vec3 pl=q-vec3(0.0,-0.12,0.0); float pd=length(pl);
+    if(pd<0.12){ vec3 n=pl/pd; vec3 c=mix(uC3,vec3(1.0),0.5)*lit(n)+0.15*(0.5+0.5*cos(6.2831*(vec3(0.0,0.33,0.67)+n.y)));
+      e=uC3*0.2; return vec4(c, 400.0); }
+    vec3 lo=q-vec3(0.0,-0.25,0.0); float lw=length(lo/vec3(0.42,0.1,0.32));
+    if(lw<1.0 && lo.y<0.02){ return vec4(lo.y>-0.01?mix(vec3(0.9,0.92,0.95),uC2,0.2):brt(uC1,0.45)*0.6*(0.7+0.4*noise(q*20.0)), 400.0); }
+    vec3 up=q-vec3(0.0,-0.18,-0.1); up.yz=mrot(-0.9)*up.yz; float uw=length(up/vec3(0.42,0.1,0.32));
+    if(uw<1.0) return vec4(up.y<0.0?mix(vec3(0.92),uC2,0.25):brt(uC1,0.45)*0.55*(0.7+0.4*noise(q*20.0)), 400.0);
+    e+=mix(uC2,vec3(1.0),0.5)*pow(noise(vec3(q.x*5.0+q.y*1.5,q.z*5.0,so.x)),3.0)*smoothstep(-0.5,0.6,q.y)*0.6;
+    return vec4(mix(uC2*0.2,uC2*0.5,smoothstep(-0.8,0.8,q.y)), 0.45);
+  }
+#elif MODE==272
+  { // hibou : un hibou de la 2e couleur posé sur sa branche, ses grands yeux de la 3e qui brillent, sous la lune
+    float r=length(q); e=vec3(0.0);
+    if(abs(q.y+0.25)<0.035 && abs(q.z)<0.04 && abs(q.x)<0.5) return vec4(vec3(0.35,0.24,0.15), 400.0);
+    vec3 b=q-vec3(0.0,-0.02,0.0); float bd=length(b/vec3(0.17,0.24,0.14));
+    vec3 h=q-vec3(0.0,0.2,0.0); float hd=length(h/vec3(0.15,0.12,0.12));
+    if(bd<1.0||hd<1.0){ vec3 c=uC2*(bd<1.0?0.75:0.85);
+      if(bd<1.0 && b.z>0.0){ c=mix(c,mix(uC2,vec3(1.0),0.5),smoothstep(0.1,0.0,abs(b.x))*0.0+step(length(b.xy/vec2(0.1,0.16)),1.0)*0.5);
+        c*=0.85+0.15*step(0.5,fract(b.y*25.0+abs(b.x)*15.0)); }
+      vec2 ex=vec2(abs(h.x)-0.06,h.y); if(hd<1.0 && h.z>0.0){ float ed=length(ex);
+        if(ed<0.05){ c=ed<0.02?vec3(0.03):mix(uC3,vec3(1.0,0.9,0.4),0.3); e=c*(ed<0.02?0.0:1.5); }
+        if(abs(h.x)<0.015 && h.y<-0.02 && h.y>-0.06) c=brt(uC1,0.45); }
+      if(hd<1.0 && h.y>0.06 && abs(abs(h.x)-0.1)<0.03) c*=0.7;
+      return vec4(c*lit(normalize(bd<1.0?b:h)), 400.0); }
+    vec3 M=vec3(0.3,0.36,-0.25); float dm=length(q.xy-M.xy);
+    e=mix(uC3,vec3(1.0),0.4)*(smoothstep(0.1,0.09,dm)*3.0*exp(-pow((q.z-M.z)/0.06,2.0))+exp(-dm*8.0)*0.3)+starsE(q,0.55);
+    return vec4(uC1*0.06, 0.45);
+  }
+#elif MODE==273
+  { // chat de nuit : un chat noir assis sur un toit de tuiles de la 1re couleur, devant une grosse lune de la 3e, ses yeux de la 2e
+    float r=length(q); e=vec3(0.0);
+    float roof=-0.25-abs(q.x)*0.35;
+    if(q.y<roof) return vec4(brt(uC1,0.45)*0.45*(0.8+0.3*step(0.5,fract(q.x*12.0+step(0.5,fract(q.y*14.0))*0.5)))*(0.7+0.3*step(0.12,fract(q.y*14.0))), 400.0);
+    vec3 c=q-vec3(0.0,-0.12,0.0);
+    float body=length(c/vec3(0.13,0.17,0.1)), head=length((q-vec3(0.0,0.1,0.0))/vec3(0.09,0.08,0.08));
+    vec2 ea=vec2(abs(q.x),q.y);
+    float ear=inTri(ea,vec2(0.02,0.14),vec2(0.09,0.12),vec2(0.07,0.22))*step(abs(q.z),0.04);
+    float tail=step(length(vec3(q.x-0.15-0.06*sin((q.y+0.25)*8.0),q.y+0.18,q.z)/vec3(0.025,0.1,0.025)),1.0);
+    if(body<1.0||head<1.0||ear>0.5||tail>0.5){ vec3 cc=vec3(0.04);
+      if(head<1.0 && q.z>0.0 && length(vec2(abs(q.x)-0.035,q.y-0.11))<0.017){ cc=uC2; e=uC2*2.0; }
+      return vec4(cc, 400.0); }
+    vec3 M=vec3(0.0,0.08,-0.3); float dm=length(q.xy-M.xy);
+    e+=mix(uC3,vec3(1.0),0.3)*(smoothstep(0.3,0.29,dm)*2.5*exp(-pow((q.z-M.z)/0.08,2.0))+exp(-dm*5.0)*0.25)+starsE(q,0.6);
+    return vec4(uC1*0.06, 0.45);
+  }
+#elif MODE==274
+  { // cascade : une chute d'eau de la 2e couleur tombe entre deux falaises de la 1re couverte de végétation de la 3e, dans un bassin plein d'écume
+    float r=length(q); e=vec3(0.0);
+    float cl=abs(q.x)-0.12-0.04*noise(q*8.0+so)-0.1*smoothstep(0.0,-0.4,q.y);
+    if(cl>0.0 && q.z<0.05+0.1*noise(q*5.0)){ float veg=step(0.55,noise(q*14.0+so))*step(0.0,q.y+0.2);
+      return vec4(mix(brt(uC1,0.45)*0.45*(0.7+0.5*noise(q*25.0)),uC3*0.7,veg), 400.0); }
+    if(q.y<-0.4) { float foam=smoothstep(0.5,0.75,noise(q*18.0+so))*smoothstep(0.3,0.0,abs(q.x)); return vec4(mix(uC2*0.5,vec3(0.95),foam), 400.0); }
+    if(abs(q.x)<0.13 && q.z<0.0 && q.z>-0.15){ float st=0.6+0.4*noise(vec3(q.x*40.0,q.y*3.0,so.x)); return vec4(mix(uC2,vec3(1.0),0.5)*st, 300.0); }
+    float mist=smoothstep(0.5,0.7,fbm(q*3.0+so))*smoothstep(-0.1,-0.45,q.y);
+    return vec4(mix(mix(vec3(0.75,0.88,1.0),uC2,0.1),vec3(1.0),mist), 0.2+mist*2.0);
+  }
+#elif MODE==275
+  { // toupie : une toupie en bois rayée des 3 couleurs qui tourne sur sa pointe, avec son ombre
+    float r=length(q); vec3 p=q; p.xy=mrot(0.12)*p.xy; float y=p.y, rho=length(p.xz);
+    float prof=y>0.1?0.05*step(y,0.3):(y>-0.05?0.3*(1.0-pow((y-0.1+0.15)/0.3-0.5,2.0)*0.0)*(1.0-smoothstep(0.02,0.1,y)*0.0)-0.0:0.0);
+    float R=y>0.12?(y<0.3?0.035:0.0):(y>-0.02?0.3-0.25*smoothstep(0.02,0.12,y):0.3*max(0.0,(y+0.32)/0.3));
+    if(rho<R && y>-0.32){ float m=mod(floor((y+0.32)*14.0+atan(p.z,p.x)*0.3),3.0);
+      vec3 c=y>0.12?vec3(0.5,0.35,0.2):(m<1.0?brt(uC1,0.45):(m<2.0?uC2:uC3));
+      return vec4(c*lit(normalize(vec3(p.x,0.25,p.z))), 400.0); }
+    if(q.y<-0.34) return vec4(mix(vec3(0.85,0.82,0.76),vec3(0.4),smoothstep(0.3,0.0,length(q.xz-vec2(0.1,0.0))*1.0)*0.5), 400.0);
+    return vec4(mix(vec3(0.95,0.94,0.9),uC3,0.1), 0.18);
+  }
+// ===================== Légendaires =====================
+#elif MODE==276
+  { // château : un château de conte, ses murs de la 1re couleur, ses toits pointus de la 2e, ses fenêtres qui brillent de la 3e, sous les étoiles
+    float r=length(q); q=q*0.72+vec3(0.0,-0.1,0.0); e=vec3(0.0); vec3 c1=brt(uC1,0.45);
+    if(q.y<-0.4) return vec4(c1*0.15, 400.0);
+    for(int i=0;i<5;i++){ float fi=float(i); float x=-0.36+0.18*fi; float hh=i==2?0.32:(mod(fi,2.0)<1.0?0.12:0.2); float rr=i==2?0.08:0.06;
+      vec3 p=q-vec3(x,-0.4,0.0); float rho=length(p.xz);
+      if(p.y<hh && rho<rr){ vec3 c=mix(c1,vec3(0.85),0.3)*lit(normalize(vec3(p.x,0.0,p.z)));
+        if(p.z>0.0 && abs(p.x)<0.015 && abs(fract(p.y*8.0)-0.5)<0.2 && p.y>0.05){ c=uC3; e=uC3*2.0; } return vec4(c, 400.0); }
+      if(p.y>=hh && p.y<hh+0.16 && rho<rr*1.2*(1.0-(p.y-hh)/0.16)) return vec4(uC2*lit(normalize(vec3(p.x,0.3,p.z))), 400.0); }
+    if(q.y<-0.25 && abs(q.x)<0.36 && abs(q.z)<0.05){ vec3 c=c1*0.5; if(q.z>0.0 && abs(q.x)<0.04 && q.y<-0.32){ c=uC3*0.8; e=uC3; } return vec4(c, 400.0); }
+    e+=starsE(q,0.4)*step(-0.1,q.y)+mix(uC2,uC3,0.5)*exp(-length(q-vec3(0.0,0.2,-0.4))*3.0)*0.3;
+    return vec4(uC1*0.06, 0.45);
+  }
+#elif MODE==277
+  { // arbre de vie : un arbre dont les branches brillent de la 3e couleur, ses feuilles de lumière de la 2e qui tombent, ses racines dans un sol de la 1re
+    float r=length(q); e=vec3(0.0);
+    if(q.y<-0.42) return vec4(brt(uC1,0.45)*0.25, 400.0);
+    float d=sdCap(q,vec3(0.0,-0.42,0.0),vec3(0.0,-0.05,0.0),0.05);
+    for(int i=0;i<6;i++){ float a=float(i)*1.0472+0.4; vec3 A=vec3(0.0,-0.05+0.03*float(i),0.0), B=A+vec3(cos(a)*0.25,0.18,sin(a)*0.12);
+      d=min(d,sdCap(q,A,B,0.022)); vec3 C=B+vec3(cos(a+0.6)*0.1,0.1,sin(a+0.6)*0.06); d=min(d,sdCap(q,B,C,0.012));
+      vec3 R=vec3(cos(a)*0.22,-0.45,sin(a)*0.1); d=min(d,sdCap(q,vec3(0.0,-0.36,0.0),R,0.015)); }
+    vec3 c3=mix(uC3,vec3(1.0,0.95,0.7),0.3);
+    if(d<0.0){ e=c3*2.0; return vec4(mix(vec3(0.3,0.2,0.12),c3,0.4), 400.0); }
+    e=c3*exp(-max(d,0.0)*30.0)*2.0;
+    vec3 g=q*9.0+so; vec3 fc=fract(g)-0.5; float leaf=step(0.9,h31(floor(g)))*smoothstep(0.18,0.08,length(fc))*smoothstep(0.65,0.2,length(q-vec3(0.0,0.2,0.0)));
+    e+=uC2*leaf*4.0+starsE(q,0.6);
+    return vec4(uC1*0.06, 0.45);
+  }
+#elif MODE==278
+  { // astronaute : un petit astronaute flotte dans l'espace, la visière d'or (3e couleur), les bandes de sa combinaison de la 1re, une planète de la 2e
+    float r=length(q); e=vec3(0.0); vec3 L=normalize(vec3(-0.5,0.6,0.6));
+    vec3 p=q-vec3(-0.05,0.0,0.0); p.xy=mrot(0.35)*p.xy;
+    float hd=length(p-vec3(0.0,0.14,0.0))-0.13;
+    if(hd<0.0){ vec3 n=normalize(p-vec3(0.0,0.14,0.0)); vec3 c=vec3(0.95)*lit(n);
+      if(n.z>0.35 && abs(n.x)<0.75 && n.y<0.6 && n.y>-0.5){ c=mix(vec3(1.0,0.8,0.35),uC3,0.4)*(0.5+0.8*pow(clamp(dot(reflect(-L,n),vec3(0.0,0.0,1.0)),0.0,1.0),4.0)); e=c*0.3; }
+      return vec4(c, 400.0); }
+    float bd=sdCap(p,vec3(0.0,0.0,0.0),vec3(0.0,-0.12,0.0),0.1);
+    bd=min(bd,sdCap(p,vec3(0.08,0.0,0.0),vec3(0.2,0.08,0.02),0.04)); bd=min(bd,sdCap(p,vec3(-0.08,0.0,0.0),vec3(-0.18,-0.1,0.02),0.04));
+    bd=min(bd,sdCap(p,vec3(0.05,-0.18,0.0),vec3(0.08,-0.32,0.03),0.045)); bd=min(bd,sdCap(p,vec3(-0.05,-0.18,0.0),vec3(-0.1,-0.3,-0.02),0.045));
+    if(bd<0.0){ vec3 c=vec3(0.92)*(0.6+0.4*clamp(0.5-p.x*3.0+p.z*2.0,0.0,1.0)); if(abs(p.y+0.05)<0.02) c=brt(uC1,0.45); return vec4(c, 400.0); }
+    if(max(abs(p.x)-0.08,max(abs(p.y+0.03)-0.12,abs(p.z+0.12)-0.05))<0.0) return vec4(vec3(0.7), 400.0);
+    vec3 P=vec3(0.4,-0.4,-0.3); float dp=length(q-P);
+    if(dp<0.25){ vec3 n=(q-P)/dp; return vec4(mix(uC2,vec3(1.0),0.2*step(0.6,noise(n*5.0)))*lit(n), 1000.0); }
+    e+=starsE(q,0.3)*2.0;
+    return vec4(uC1*0.05, 0.45);
+  }
+#elif MODE==279
+  { // supernova : une étoile qui explose au fond d'un verre de nuit, son cœur aveuglant et sa coquille de filaments des 3 couleurs
+    float r=length(q); e=vec3(0.0); vec3 n=q/max(r,1e-4);
+    e+=vec3(1.0)*exp(-r*30.0)*20.0+mix(uC3,vec3(1.0),0.5)*exp(-r*8.0)*2.0;
+    float sh=exp(-pow((r-0.42-0.05*fbm(n*4.0+so))/0.05,2.0));
+    float fil=pow(1.0-abs(2.0*noise(n*7.0+so)-1.0),6.0);
+    float k=noise(n*3.0+so+5.0); vec3 fc=k<0.4?brt(uC1,0.5):(k<0.6?uC2:uC3);
+    e+=fc*sh*(0.4+fil*3.0)*2.0;
+    e+=uC2*exp(-pow((length(q.xy)-0.6)/0.02,2.0))*exp(-q.z*q.z*40.0)*1.5;
+    e+=starsE(q,0.65);
+    return vec4(uC1*0.05, 0.4);
+  }
+#elif MODE==280
+  { // pulsar : une étoile minuscule et brûlante lance deux faisceaux de lumière de la 2e couleur, entourée de lignes de champ de la 3e
+    float r=length(q); e=vec3(0.0); vec3 ax=normalize(vec3(0.35,1.0,0.2));
+    e+=vec3(1.0)*exp(-r*40.0)*25.0+mix(vec3(1.0),uC2,0.4)*exp(-r*10.0)*1.5;
+    float h=dot(q,ax); float rho=length(q-ax*h);
+    e+=mix(uC2,vec3(1.0),0.3)*exp(-pow(rho/(0.015+abs(h)*0.12),2.0))*smoothstep(0.9,0.0,abs(h))*3.0;
+    for(int i=0;i<4;i++){ float a=float(i)*1.5708; vec3 b1=normalize(cross(ax,vec3(0.0,0.0,1.0))), b2=cross(ax,b1);
+      vec3 pl=normalize(b1*cos(a)+b2*sin(a)); float x=dot(q,pl), z=dot(q,cross(ax,pl));
+      float loopd=abs(length(vec2(x-0.25,h))-0.25)+abs(z)*1.5; e+=mix(uC3,vec3(1.0),0.2)*exp(-loopd*70.0)*1.5; }
+    e+=brt(uC1,0.4)*smoothstep(0.6,0.75,fbm(q*2.0+so))*0.3+starsE(q,0.6);
+    return vec4(uC1*0.05, 0.4);
+  }
+#elif MODE==281
+  { // cristal de pouvoir : un grand cristal taillé de la 2e couleur flotte et brille, entouré d'éclats de la 3e et d'un anneau d'énergie de la 1re
+    float r=length(q); e=vec3(0.0);
+    vec3 p=q; p.xz=mrot(0.5)*p.xz;
+    float oc=abs(p.x)/0.14+abs(p.z)/0.14+abs(p.y)/0.36;
+    if(oc<1.0){ vec3 n=normalize(sign(p)*vec3(1.0/0.14,1.0/0.36,1.0/0.14)); vec3 c=mix(uC2,vec3(1.0),0.3)*(0.5+0.8*lit(n));
+      e=uC2*(0.5+0.8*(1.0-oc)); return vec4(c, 400.0); }
+    e=uC2*exp(-max(oc-1.0,0.0)*3.0)*0.5;
+    for(int i=0;i<6;i++){ float a=float(i)*1.0472+so.x; vec3 S=vec3(cos(a)*0.4,0.12*sin(a*2.0),sin(a)*0.25);
+      vec3 sp=q-S; if(abs(sp.x)/0.04+abs(sp.y)/0.07+abs(sp.z)/0.04<1.0){ e=uC3*0.8; return vec4(mix(uC3,vec3(1.0),0.3), 400.0); } }
+    vec3 ra=normalize(vec3(0.0,1.0,0.3)); float h=dot(q,ra); float rd=abs(length(q-ra*h)-0.5);
+    e+=brt(uC1,0.5)*exp(-(rd*rd+h*h)*900.0)*4.0;
+    e+=starsE(q,0.6);
+    return vec4(uC1*0.05, 0.4);
+  }
+#elif MODE==282
+  { // couronne : une couronne royale d'or (3e couleur) posée sur un coussin de velours de la 1re, sertie de pierres de la 2e
+    float r=length(q); e=vec3(0.0); vec3 gold=mix(vec3(1.0,0.8,0.32),uC3,0.4);
+    vec3 cu=q-vec3(0.0,-0.35,0.0); if(length(cu/vec3(0.45,0.12,0.35))<1.0) return vec4(brt(uC1,0.45)*0.55*lit(normalize(cu/vec3(0.2,0.0144,0.12))), 400.0);
+    vec3 p=q-vec3(0.0,-0.18,0.0); float rho=length(p.xz), a=atan(p.z,p.x);
+    float tri=abs(fract(a/6.2831853*8.0)-0.5)*2.0;
+    if(abs(rho-0.24)<0.025 && p.y>0.0 && p.y<0.12+0.14*(1.0-tri)){ vec3 c=gold*(0.6+0.5*clamp(cos(a-2.2),0.0,1.0));
+      if(p.y<0.06 && abs(fract(a/6.2831853*8.0+0.5)-0.5)<0.1 && abs(p.y-0.035)<0.02){ c=uC2; e=uC2*0.6; }
+      return vec4(c, 400.0); }
+    for(int i=0;i<8;i++){ float aa=(float(i)+0.5)*0.785398; vec3 B=vec3(cos(aa)*0.24,0.27,sin(aa)*0.24); if(length(p-B)<0.025){ e=gold*0.5; return vec4(gold, 400.0); } }
+    e+=gold*step(0.97,h31(floor(q*20.0+so)))*2.0*step(-0.2,q.y);
+    return vec4(uC1*0.05, 0.4);
+  }
+#elif MODE==283
+  { // coffre au trésor : un coffre de bois ouvert, débordant de pièces d'or (3e couleur) et de pierres de la 1re et de la 2e
+    float r=length(q); e=vec3(0.0); vec3 gold=mix(vec3(1.0,0.82,0.35),uC3,0.35);
+    vec3 b=q-vec3(0.0,-0.25,0.0);
+    if(abs(b.x)<0.3 && abs(b.y)<0.12 && abs(b.z)<0.18){ vec3 c=vec3(0.45,0.28,0.14)*(0.8+0.2*step(0.5,fract(b.x*12.0)));
+      if(abs(abs(b.x)-0.25)<0.025 || abs(b.y-0.1)<0.02) c=gold*0.7; return vec4(c, 400.0); }
+    vec3 l=q-vec3(0.0,0.0,-0.2); l.yz=mrot(-0.4)*l.yz;
+    if(abs(l.x)<0.3 && abs(l.y)<0.13 && abs(l.z)<0.03) return vec4(vec3(0.4,0.25,0.12), 400.0);
+    float pile=-0.13+0.08*(1.0-length(q.xz/vec2(0.3,0.18)))+0.02*noise(q*30.0);
+    if(q.y<pile && abs(q.x)<0.3 && abs(q.z)<0.18){ vec3 g=q*30.0; float k=h31(floor(g));
+      vec3 c=k<0.08?brt(uC1,0.5):(k<0.16?uC2:gold*(0.7+0.4*h31(floor(g)+1.0))); e=c*0.6; return vec4(c, 400.0); }
+    e+=gold*exp(-length(q-vec3(0.0,-0.1,0.0))*6.0)*0.6+gold*step(0.975,h31(floor(q*18.0+so)))*2.5;
+    return vec4(uC1*0.05, 0.4);
+  }
+#elif MODE==284
+  { // œuf de dragon : un œuf couvert d'écailles de la 1re couleur, fendu de lumière de la 3e, posé dans des braises, une fumée de la 2e
+    float r=length(q); e=vec3(0.0); vec3 p=q-vec3(0.0,-0.02,0.0); p.y*=0.78;
+    float L=length(p);
+    if(L<0.27){ vec3 n=p/L; vec3 cid; float d2; float d1=vorF(n*7.0+so,cid,d2);
+      vec3 c=brt(uC1,0.45)*0.6*(0.6+0.5*h31(cid))*mix(0.5,1.0,smoothstep(0.02,0.08,d2-d1))*lit(n);
+      float crack=smoothstep(0.04,0.0,abs(fbm(n*3.0+so)-0.5))*step(0.4,noise(n*2.0+so));
+      vec3 c3=mix(uC3,vec3(1.0,0.8,0.4),0.3); c=mix(c,c3,crack); e=c3*crack*3.0; return vec4(c, 400.0); }
+    if(q.y<-0.3){ float em=step(0.6,noise(q*25.0+so)); e=mix(uC3,vec3(1.0,0.4,0.1),0.5)*em*2.0; return vec4(mix(vec3(0.08),uC3*0.6,em), 400.0); }
+    float sm=smoothstep(0.55,0.75,fbm(q*3.0+so+vec3(0.0,-2.0,0.0)))*smoothstep(0.1,0.4,q.y)*smoothstep(0.9,0.6,r);
+    e+=uC3*exp(-L*6.0)*0.5+starsE(q,0.65)*(1.0-sm);
+    return vec4(mix(uC1*0.05,mix(uC2,vec3(0.5),0.4),sm), 0.4+sm*2.5);
+  }
+#elif MODE==285
+  { // lampe magique : une lampe à huile d'or (3e couleur) d'où sort une fumée enchantée de la 2e qui monte en spirale, pleine d'étincelles
+    float r=length(q); e=vec3(0.0); vec3 gold=mix(vec3(1.0,0.8,0.35),uC3,0.4);
+    vec3 p=q-vec3(-0.05,-0.3,0.0);
+    float body=length(p/vec3(0.22,0.09,0.13));
+    float spout=sdCap(q,vec3(0.12,-0.3,0.0),vec3(0.32,-0.22,0.0),0.025);
+    float handle=abs(length(vec2(length(vec2(p.x+0.25,p.y)),p.z)-0.0)-0.07)+0.0; float hd=abs(length((p.xy-vec2(-0.24,0.0)))-0.07)+abs(p.z)*1.0-0.02;
+    if(body<1.0||spout<0.0||hd<0.0||(abs(p.y-0.1)<0.03&&length(p.xz)<0.06)){ vec3 n=normalize(p/vec3(0.0484,0.0081,0.0169));
+      vec3 c=gold*(0.35+0.9*pow(clamp(dot(reflect(normalize(vec3(0.5,-0.6,-0.6)),n),vec3(0.0,0.0,1.0)),0.0,1.0),3.0)+0.3*lit(n));
+      return vec4(c, 400.0); }
+    vec3 s=q-vec3(0.32,-0.2,0.0); float t=clamp(s.y/0.7,0.0,1.0);
+    vec2 cen=vec2(-0.25*t+0.08*sin(t*10.0),0.08*cos(t*10.0)); float dd=length(vec2(s.x,s.z)-cen);
+    float smk=smoothstep(0.03+0.12*t,0.0,dd)*step(0.0,s.y)*step(s.y,0.75)*(0.5+0.5*fbm(q*6.0+so));
+    e=uC2*smk*2.0+gold*step(0.96,h31(floor(q*22.0+so)))*smk*8.0+starsE(q,0.65);
+    return vec4(uC1*0.05, 0.4+smk*2.0);
+  }
+#elif MODE==286
+  { // pagode : une pagode à trois toits recourbés de la 1re couleur, ses murs de la 2e, ses lanternes de la 3e, sous la lune
+    float r=length(q); e=vec3(0.0); vec3 c1=brt(uC1,0.45);
+    if(q.y<-0.45) return vec4(vec3(0.1,0.09,0.08), 400.0);
+    for(int i=0;i<3;i++){ float fi=float(i); float y0=-0.45+fi*0.18, w=0.2-fi*0.04;
+      vec3 p=q-vec3(0.0,y0,0.0);
+      if(p.y>0.0 && p.y<0.12 && abs(p.x)<w && abs(p.z)<w*0.8){ vec3 c=uC2*0.7; if(p.z>0.0 && abs(fract(p.x*10.0)-0.5)<0.2 && p.y<0.09 && p.y>0.03){ c=uC3*0.8; e=uC3; } return vec4(c, 400.0); }
+      float rw=w+0.12+0.04*smoothstep(0.0,0.1,abs(p.x)-w);
+      if(p.y>0.12 && p.y<0.17+0.05*pow(abs(p.x)/rw,3.0) && abs(p.x)<rw && abs(p.z)<rw*0.8 && p.y<0.12+0.06*(1.0-abs(p.x)/rw)+0.06*pow(abs(p.x)/rw,4.0)) return vec4(c1*0.8, 400.0);
+      vec3 lp=p-vec3(rw*0.9,0.09,0.0); e+=uC3*exp(-length(lp)*40.0)*3.0; lp=p-vec3(-rw*0.9,0.09,0.0); e+=uC3*exp(-length(lp)*40.0)*3.0; }
+    if(length(q.xz)<0.01 && q.y>0.1 && q.y<0.3) return vec4(c1, 400.0);
+    vec3 M=vec3(-0.3,0.35,-0.25); float dm=length(q.xy-M.xy);
+    e+=mix(uC3,vec3(1.0),0.4)*(smoothstep(0.09,0.08,dm)*3.0*exp(-pow((q.z-M.z)/0.06,2.0))+exp(-dm*8.0)*0.3)+starsE(q,0.55);
+    return vec4(uC1*0.06, 0.45);
+  }
+#elif MODE==287
+  { // boule de cristal : une boule de voyante sur son pied de la 1re couleur ; dedans tourbillonne une brume de la 2e et de la 3e
+    float r=length(q); e=vec3(0.0);
+    vec3 b=q-vec3(0.0,0.06,0.0); float L=length(b);
+    if(q.y<-0.24 && q.y>-0.42 && length(q.xz)<0.2-(q.y+0.24)*(-0.6)){ return vec4(brt(uC1,0.45)*0.6*(0.6+0.4*clamp(0.5-q.x*3.0,0.0,1.0))*(0.85+0.15*step(0.5,fract(q.y*30.0))), 400.0); }
+    if(L<0.3){ float a=atan(b.z,b.x)+L*8.0; vec3 w=vec3(cos(a)*L,b.y,sin(a)*L)*3.0+so;
+      float m1=smoothstep(0.45,0.75,fbm(w)), m2=smoothstep(0.5,0.8,fbm(w+7.0));
+      e=(uC2*m1+uC3*m2)*1.6+mix(uC2,vec3(1.0),0.5)*exp(-L*14.0)*2.0;
+      e+=vec3(0.9,0.95,1.0)*exp(-abs(L-0.3)*120.0)*0.8;
+      return vec4(mix(uC2,uC3,m2)*0.3, 0.6+(m1+m2)*1.5); }
+    e+=mix(uC2,uC3,0.5)*exp(-(L-0.3)*8.0)*0.3+starsE(q,0.6);
+    return vec4(uC1*0.05, 0.4);
+  }
+// ===================== Mythiques (animés, une boucle de MYTH_T secondes : lp fait un tour, 2π) =====================
+#elif MODE==288
+  { // horloge du temps : une horloge enchantée ; la grande aiguille fait un tour, la petite tourne à l'envers, la trotteuse file, le balancier se balance,
+    // des engrenages de la 1re couleur tournent derrière ; le cadran luit de la 2e, les heures et les aiguilles de la 3e
+    float t=mod(uTime,3.9269908), lp=t*1.6; e=vec3(0.0);
+    float h=q.z; vec2 p=q.xy*1.3; float lay=exp(-h*h/0.006); float rr=length(p), a=atan(p.y,p.x);
+    vec3 c1=brt(uC1,0.5), c3=mix(uC3,vec3(1.0),0.3);
+    // les engrenages derrière (un peu en retrait)
+    float lay2=exp(-(h+0.12)*(h+0.12)/0.006);
+    for(int i=0;i<2;i++){ vec2 C=i==0?vec2(-0.32,0.3):vec2(0.34,-0.28); float n=i==0?10.0:8.0; float R=i==0?0.24:0.2;
+      vec2 gp=p-C; float ga=atan(gp.y,gp.x)+(i==0?1.0:-1.0)*lp*2.0/n, gl=length(gp);
+      float g=gl-R-0.03*smoothstep(-0.3,0.3,cos(ga*n)); float hole=step(gl,R*0.6)*step(R*0.3,gl);
+      e+=c1*smoothstep(0.01,-0.01,g)*(1.0-hole*0.8)*lay2*1.2; }
+    // le cadran
+    if(rr<0.55){ e+=uC2*0.35*lay*(1.0-rr);
+      float tick=step(abs(fract(a/6.2831853*12.0+0.5)-0.5),0.04)*step(abs(rr-0.46),0.05);
+      float mtick=step(abs(fract(a/6.2831853*60.0+0.5)-0.5),0.08)*step(abs(rr-0.5),0.015);
+      e+=c3*(tick*3.0+mtick*1.5)*lay;
+      e+=c3*exp(-abs(rr-0.55)*80.0)*2.0*lay; }
+    // les aiguilles
+    vec2 dm=vec2(sin(lp),cos(lp)), dh=vec2(sin(-lp+1.0),cos(-lp+1.0)), ds=vec2(sin(lp*4.0),cos(lp*4.0));
+    e+=c3*exp(-segM(p,vec2(0.0),dm*0.42)*90.0)*3.0*lay;
+    e+=c3*exp(-segM(p,vec2(0.0),dh*0.28)*60.0)*3.0*lay;
+    e+=uC2*exp(-segM(p,-ds*0.08,ds*0.48)*200.0)*3.0*lay;
+    e+=vec3(1.0)*exp(-rr*40.0)*3.0*lay;
+    // le balancier sous le cadran
+    float sw=0.35*sin(lp); vec2 pd=vec2(sin(sw),-cos(sw)); vec2 bob=vec2(0.0,-0.55)+pd*0.25;
+    e+=c1*(exp(-segM(p,vec2(0.0,-0.55),bob)*120.0)*1.5+exp(-max(length(p-bob)-0.06,0.0)*60.0)*3.0)*lay;
+    e+=starsE(q,0.7);
+    return vec4(uC1*0.05, 0.4);
+  }
+#elif MODE==289
+  { // cœur de cristal : un cœur taillé de la 2e couleur bat au milieu du verre ; à chaque battement il s'illumine de la 3e,
+    // lance une onde de lumière, et des éclats de la 1re tournent autour
+    float t=mod(uTime,3.9269908), lp=t*1.6; e=vec3(0.0);
+    float beat=pow(max(0.0,cos(lp*2.0)),12.0)+0.6*pow(max(0.0,cos(lp*2.0-0.7)),12.0);   // deux battements par boucle, « boum-boum »
+    float s=0.33*(1.0+0.08*beat);
+    vec3 p=q/s; p=vec3(p.x,p.y-0.05,p.z*1.3);
+    float x=p.x, y=p.z, z=p.y;   // la formule du cœur a la pointe vers le bas sur z
+    float a3=x*x+2.25*y*y+z*z-1.0; float f=a3*a3*a3-x*x*z*z*z-0.1125*y*y*z*z*z;
+    if(f<0.0){ vec3 cid; float d2; float d1=vorF(q*14.0,cid,d2);
+      float fl=0.4+0.8*h31(cid); vec3 c=mix(uC2,mix(uC3,vec3(1.0),0.4),beat*0.7)*fl;
+      e=mix(uC2,uC3,beat)*(0.4+1.6*beat)+vec3(1.0)*smoothstep(0.02,0.0,d2-d1)*0.6;
+      return vec4(c, 400.0); }
+    float rr=length(q);
+    float wave=fract(lp/3.14159); e+=mix(uC3,vec3(1.0),0.3)*exp(-pow((rr-0.35-wave*0.5)/0.03,2.0))*(1.0-wave)*2.0*exp(-q.z*q.z*20.0);
+    e+=mix(uC2,uC3,beat)*exp(-rr*4.0)*(0.3+beat*0.8);
+    for(int i=0;i<6;i++){ float aa=float(i)*1.0472+lp; vec3 S=vec3(cos(aa)*0.55,0.1*sin(aa*2.0+float(i)),sin(aa)*0.35);
+      e+=brt(uC1,0.5)*exp(-length(q-S)*45.0)*4.0; }
+    e+=starsE(q,0.7);
+    return vec4(uC1*0.05, 0.4);
+  }
+#elif MODE==290
+  { // koï : deux carpes koï tournent l'une après l'autre dans un bassin, comme le yin et le yang ; l'une de la 2e couleur, l'autre de la 3e,
+    // tachées de blanc ; des ronds dans l'eau de la 1re s'élargissent, des feuilles de nénuphar flottent ; un tour par boucle
+    float t=mod(uTime,3.9269908), lp=t*1.6; e=vec3(0.0);
+    float h=q.z; vec2 p=q.xy*1.2; float lay=exp(-h*h/0.006); float rr=length(p), a=atan(p.y,p.x);
+    vec3 c1=brt(uC1,0.45);
+    vec3 col=c1*0.25; float den=0.4;
+    for(int k=0;k<2;k++){ float H=lp+float(k)*3.14159;
+      float s=mod(H-a,6.2831853); float R=0.36+0.02*sin(lp*2.0);
+      float bl=1.25; float tt=s/bl;
+      float wig=0.03*sin(s*5.0-lp*4.0)*tt;
+      float w=0.085*pow(max(0.0,1.0-tt),0.7)*smoothstep(0.0,0.12,s);
+      float dd=abs(rr-R-wig);
+      vec3 fc=k==0?uC2:uC3;
+      if(tt<1.0 && dd<w){ float spot=step(0.55,noise(vec3(s*4.0,(rr-R)*20.0,float(k)*5.0)));
+        col=mix(fc,vec3(0.97),spot)*(0.7+0.4*(1.0-dd/max(w,0.001))); den=500.0*lay;
+        if(s<0.15 && abs(rr-R-0.03)<0.012) col=vec3(0.05); }
+      float tl=tt-1.0; if(tl>0.0 && tl<0.25 && dd<0.02+0.25*tl*(1.0+0.5*sin(lp*4.0))){ col=mix(fc,vec3(1.0),0.4); den=300.0*lay; } }
+    for(int i=0;i<3;i++){ float fi=float(i); vec2 C=vec2(cos(fi*2.1+0.5),sin(fi*2.1+0.5))*0.62; float d=length(p-C);
+      if(d<0.12 && abs(atan(p.y-C.y,p.x-C.x)-fi)>0.3){ col=mix(c1,vec3(0.3,0.6,0.3),0.5)*0.9; den=400.0*lay; } }
+    float rip=exp(-pow(fract(rr*3.0-lp/6.2831853)-0.5,2.0)*200.0)*smoothstep(0.85,0.2,rr);
+    e+=mix(c1,vec3(1.0),0.5)*rip*0.8*lay+c1*0.15*lay;
+    return vec4(col, den>1.0?den:0.4);
+  }
 #elif MODE==150
   { // tesseract : un hypercube (un cube en 4 dimensions) tourne dans le verre ; on le voit se retourner comme un gant,
     // le petit cube passant dehors et le grand dedans. Ses arêtes sont des fils de lumière, ses sommets des étoiles
@@ -3207,6 +4853,24 @@ void main(){
       vec3 tc=m<1.0?brt(uC1,0.5):(m<2.0?uC2:uC3); tc=mix(vec3(0.85),tc,0.5);
       float ln=smoothstep(0.0,0.18,b)*smoothstep(1.0,0.82,b);
       col=chrome(rv)*tc*(0.5+0.5*ln)*(0.7+0.3*n.z)+spec*1.3*tc; }
+#elif MODE==187
+    { float v=tigreV(qs); vec3 fib=normalize(cross(TIGRE_AX,normalize(qs)));
+      float shim=pow(1.0-abs(dot(normalize(rv),fib)),6.0)*(0.6+0.4*sin(fract(v)*3.14159));
+      col=base*(0.45+0.6*dif)+base*1.3*shim+mix(base,vec3(1.0),0.5)*shim*0.4+spec*0.6+refl*F*0.2; }
+#elif MODE==189
+    { vec2 m=orM(qs); vec3 gt=m.y>0.5?mix(vec3(0.85,0.86,0.9),uC2,0.4):mix(vec3(1.0,0.78,0.36),uC3,0.25);
+      vec3 met=chrome(rv)*gt*(0.75+0.3*noise(qo*30.0))*(0.7+0.3*n.z)+spec*1.4*gt;
+      col=mix(base*(0.4+0.65*dif)+refl*F*0.3+spec*0.8,met,m.x); }
+#elif MODE==192
+    { float m=mercM(qs); vec3 met=chrome(rv)*mix(vec3(0.92),uC2,0.15)*(0.7+0.3*n.z)+spec*1.6;
+      col=mix(base*(0.4+0.65*dif)+refl*F*0.2+spec*0.5,met,m); }
+#elif MODE==240
+    { vec3 cid; float d2; float d1=vorF(normalize(qs)*3.0+uSeed.xyz*40.0,cid,d2); vec3 fd=normalize(vec3(h31(cid),h31(cid+1.0),h31(cid+2.0))-0.5+0.001);
+      float fl=pow(max(0.0,dot(normalize(rv),fd)),5.0); float k=h31(cid+4.0); vec3 fc=k<0.34?brt(uC1,0.5):(k<0.67?uC2:uC3);
+      col=base*(0.4+0.6*dif)+fc*fl*1.8+spec*0.7+refl*F*0.25; }
+#elif defined(HAS_METAL)
+    { vec4 mt=metalF(qs); vec3 met=chrome(rv)*mt.rgb*(0.75+0.25*noise(qo*30.0))*(0.7+0.3*n.z)+spec*1.4*mt.rgb;
+      col=mix(base*(0.4+0.65*dif)+refl*F*0.25+spec*0.6,met,mt.a); }
 #elif MODE==10
     vec3 nac=0.5+0.5*cos(6.2831*(vec3(0.0,0.33,0.67)+(1.0-n.z)*0.9+fbm(qs*2.0)*0.8));
     col=mix(col,col*0.75+nac*0.3,0.32)+nac*F*0.35;      // reflets de nacre

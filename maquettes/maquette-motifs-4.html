@@ -1,0 +1,306 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Tikalo · La grande fournée</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Lilita+One&family=Nunito:wght@500;600;700;800;900&family=Caveat:wght@600;700&display=swap">
+<style>
+:root{
+  --bg:#FBF4E6;--panel:#FFFCF6;--panel-2:#FFF8EC;--line:#EFE3CD;--ink:#24253D;--ink-2:#56546B;--muted:#8E8898;
+  --display:"Lilita One","Arial Rounded MT Bold",sans-serif;--body:"Nunito","Segoe UI",system-ui,sans-serif;--hand:"Caveat",cursive;
+  --shadow:0 1px 0 rgba(120,90,40,.06),0 6px 18px -10px rgba(120,90,40,.25);
+}
+@media (prefers-color-scheme:dark){ :root:not([data-theme="light"]){
+  --bg:#16130F;--panel:#211D18;--panel-2:#2A251F;--line:#352E26;--ink:#F5EEE2;--ink-2:#C8BDAD;--muted:#8F8578;
+  --shadow:0 1px 0 rgba(0,0,0,.25),0 8px 22px -12px rgba(0,0,0,.7) } }
+:root[data-theme="dark"]{--bg:#16130F;--panel:#211D18;--panel-2:#2A251F;--line:#352E26;--ink:#F5EEE2;--ink-2:#C8BDAD;--muted:#8F8578}
+*{box-sizing:border-box;margin:0}
+body{background:var(--bg);color:var(--ink);font-family:var(--body);font-weight:600;line-height:1.45}
+.wrap{max-width:1180px;margin:0 auto;padding:28px 16px 80px}
+.tag{display:inline-block;font-size:11px;font-weight:900;letter-spacing:.08em;text-transform:uppercase;padding:4px 10px;border-radius:999px;background:var(--ink);color:var(--bg)}
+h1{font-family:var(--display);font-weight:400;font-size:clamp(34px,5vw,52px);line-height:1;margin:12px 0 8px}
+h2{font-family:var(--display);font-weight:400;font-size:30px;margin:40px 0 6px}
+h2 small{font-family:var(--body);font-size:16px;color:var(--muted)}
+.lead{max-width:75ch;color:var(--ink-2)}
+.note{font-family:var(--hand);font-size:22px;color:#C07A0C;margin-top:6px}
+nav.jump{position:sticky;top:0;z-index:5;display:flex;gap:8px;flex-wrap:wrap;padding:12px 0;background:var(--bg)}
+nav.jump a{padding:8px 14px;border-radius:999px;border:1px solid var(--line);background:var(--panel);color:var(--ink);text-decoration:none;font-weight:800;font-size:14px}
+.bar{position:sticky;top:58px;z-index:4;margin-top:4px;display:flex;flex-wrap:wrap;gap:6px 14px;align-items:center;padding:10px 14px;border-radius:14px;background:var(--ink);color:var(--bg);font-weight:800}
+.bar b{font-family:var(--display);font-weight:400;font-size:20px}
+.bar i{font-style:normal;color:var(--c)}
+.bar .warn{color:#FF8A8A}
+.bar button{margin-left:auto;border:0;border-radius:999px;padding:6px 12px;font:inherit;font-weight:900;cursor:pointer;background:var(--bg);color:var(--ink)}
+.filt{display:flex;gap:6px;flex-wrap:wrap;margin-top:10px}
+.filt button{border:1px solid var(--line);background:var(--panel);color:var(--ink);border-radius:999px;padding:6px 12px;font:inherit;font-weight:800;font-size:13px;cursor:pointer}
+.filt button.on{background:var(--ink);color:var(--bg);border-color:var(--ink)}
+
+.news{display:grid;grid-template-columns:repeat(auto-fill,minmax(340px,1fr));gap:14px;margin-top:14px}
+.nm{background:var(--panel);border:1px solid var(--line);border-radius:20px;box-shadow:var(--shadow);padding:16px;display:grid;grid-template-columns:150px minmax(0,1fr);gap:14px;border-top:5px solid var(--c)}
+.nm[hidden]{display:none}
+.nm .hero{cursor:zoom-in;border:0;background:none;padding:0}
+.nm .hero img,.nm .hero canvas{width:150px;height:150px;display:block}
+.nm h3{font-family:var(--display);font-weight:400;font-size:26px;line-height:1}
+.pill{display:inline-block;margin:6px 0;font-size:11px;font-weight:900;letter-spacing:.05em;text-transform:uppercase;padding:3px 9px;border-radius:999px;color:#fff;background:var(--c)}
+.nm p{font-size:13.5px;color:var(--ink-2)}
+.tags{display:flex;gap:4px;flex-wrap:wrap}
+.tg{display:inline-block;margin:6px 0;font-size:11px;font-weight:900;padding:3px 9px;border-radius:999px;background:var(--panel-2);border:1px solid var(--line);color:var(--ink-2)}
+.tg.fresh{background:var(--c);border-color:var(--c);color:#fff}
+.var{grid-column:1/-1;display:flex;gap:6px;flex-wrap:wrap;align-items:flex-end}
+.var button{border:0;background:var(--panel-2);border-radius:12px;padding:6px 4px 4px;cursor:zoom-in;text-align:center;font:inherit;color:inherit;width:calc(16.66% - 5px);min-width:46px}
+.var img{width:100%;max-width:64px;height:auto;aspect-ratio:1;display:block;margin:0 auto}
+.var small{display:block;font-size:10px;font-weight:800;color:var(--muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.keep{grid-column:1/-1;display:flex;align-items:center;gap:8px;justify-content:center;padding:10px;border-radius:12px;border:2px dashed var(--line);font:inherit;font-weight:900;color:var(--ink);background:var(--panel-2);cursor:pointer}
+.nm.pick{outline:3px solid var(--c);outline-offset:2px}
+.nm.pick .keep{border-style:solid;border-color:var(--c);background:var(--c);color:#fff}
+img.wait{background:radial-gradient(circle at 40% 35%,var(--line),transparent 62%);border-radius:50%}
+
+.tier{display:grid;grid-template-columns:150px minmax(0,1fr);margin-top:12px;border-radius:18px;overflow:hidden;background:var(--panel);border:1px solid var(--line);box-shadow:var(--shadow)}
+.th{background:var(--c);color:#fff;padding:14px;display:flex;flex-direction:column;gap:4px}
+.th b{font-family:var(--display);font-weight:400;font-size:24px;line-height:1}
+.th .cnt{font-size:20px;font-weight:900}
+.cards{display:flex;flex-wrap:wrap;gap:8px;padding:12px}
+.card{position:relative;width:104px;padding:8px 6px 9px;border-radius:14px;background:var(--panel-2);border:2px solid var(--line);text-align:center;font:inherit;color:inherit;cursor:zoom-in}
+.card img{width:70px;height:70px;display:block;margin:0 auto 4px}
+.card b{display:block;font-size:12.5px;font-weight:900;line-height:1.15}
+.card.new{border-style:dashed;border-color:var(--ink-2)}
+.bdg{position:absolute;top:-8px;left:50%;transform:translateX(-50%);white-space:nowrap;font-size:10px;font-weight:900;letter-spacing:.04em;text-transform:uppercase;padding:2px 7px;border-radius:999px;color:#fff;background:#24253D}
+.odds{margin-top:14px;background:var(--panel);border:1px solid var(--line);border-radius:18px;padding:14px;box-shadow:var(--shadow);overflow-x:auto}
+.odds table{border-collapse:collapse;width:100%;min-width:560px;font-size:14px}
+.odds th,.odds td{padding:6px 8px;text-align:right;border-bottom:1px solid var(--line)}
+.odds th:first-child,.odds td:first-child{text-align:left}
+.odds .dn{color:#C0392B;font-weight:900}.odds .eq{color:var(--muted)}
+.impact{margin-top:14px;display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:10px}
+.impact div{background:var(--panel);border:1px solid var(--line);border-radius:16px;padding:12px 14px;box-shadow:var(--shadow)}
+.impact small{display:block;font-size:12px;color:var(--muted);font-weight:800}
+.impact b{font-family:var(--display);font-weight:400;font-size:26px}
+.impact i{font-style:normal;font-size:13px;color:var(--ink-2)}
+.list{margin-top:12px;padding:12px 14px;border-radius:14px;background:var(--panel);border:1px solid var(--line);font-size:14px}
+.list:empty{display:none}
+.zoom{position:fixed;inset:0;z-index:20;background:rgba(10,8,6,.82);display:grid;place-items:center;padding:16px}
+.zoom[hidden]{display:none}
+.zoom div{text-align:center;color:#fff}
+.zoom canvas{width:min(78vw,520px);height:min(78vw,520px);cursor:grab;touch-action:none}
+.zoom b{display:block;font-family:var(--display);font-weight:400;font-size:28px}
+.zoom small{opacity:.75;font-weight:700}
+#err{color:#C0392B;white-space:pre-wrap;font-size:12px}
+@media (max-width:640px){ .tier{grid-template-columns:minmax(0,1fr)} .nm{grid-template-columns:110px minmax(0,1fr)} .nm .hero img,.nm .hero canvas{width:110px;height:110px} .card{width:calc(33.33% - 6px)} .bar{top:96px} }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <span class="tag">Maquette · 6 novembre 2026</span>
+  <h1>La grande fournée : 66 motifs à choisir</h1>
+  <p class="lead"><b>33 motifs tout neufs</b> dans toutes les raretés, <b>2 nouveaux mythiques animés</b> (l'Astrolabe et le Kraken), et tout ce qui avait déjà été proposé sans être gardé : les 26 motifs du 3 novembre et les 5 mythiques du 11 octobre. Tous en vrai rendu 3D du jeu, avec les 3 couleurs du coloris ; seuls les mythiques bougent. Chaque rareté garde la même part des billes.</p>
+  <p class="note">Touche une bille pour l'agrandir et la faire tourner (les mythiques s'animent) !</p>
+  <nav class="jump" id="jump"></nav>
+  <div class="bar" id="bar"></div>
+  <div class="filt" id="filt"></div>
+  <div id="sections"></div>
+  <h2 id="album">L'album</h2>
+  <div class="impact" id="impact"></div>
+  <h2 id="chances">Les chances</h2>
+  <p class="lead">Chaque rareté garde <b>sa part des billes</b> : ce sont ses motifs qui se la partagent. Avec 2 mythiques, chacun sort 2 fois moins souvent que l'Œil du Dragon aujourd'hui.</p>
+  <div class="odds" id="odds"></div>
+  <h2 id="tierlist">La tier list avec tes choix</h2>
+  <p class="lead" id="tl-lead"></p>
+  <div id="tiers"></div>
+  <div class="list" id="list"></div>
+  <pre id="err"></pre>
+</div>
+<div class="zoom" id="zoom" hidden><div><canvas id="zc" width="1040" height="1040"></canvas><b id="zn"></b><small>Glisse pour la tourner · touche à côté pour fermer</small></div></div>
+
+<script src="motifs-4-rendu.js"></script>
+<script>
+/* Maquette du 6 novembre 2026. Rendu : motifs-4-rendu.js, fabriqué par fabriquer-motifs-4.mjs à partir de tikalo-demo-rendu.js
+   + motifs-3.glsl (86 à 116) + motifs-4.glsl (117 à 149, 155, 156) + mythique-2.glsl (renumérotés 150 à 154).
+   Les numéros d'ici ne sont pas ceux du jeu : les motifs gardés prendront les numéros 91, 92… dans l'ordre. */
+const TIERS = DECOR_RAR;
+const palOf = n => PALETTES.findIndex(P=>P[0]===n);
+const AZUR = palOf("Azur"), VARS = ["Grenat","Émeraude","Miel","Lavande","Réglisse"].map(palOf);
+// les 5 motifs du 3 novembre déjà dans le jeu (86 à 90 là-bas) : ils comptent dans l'album d'aujourd'hui
+const IN_GAME = [{fam:86, rar:0, name:"Triangles"},{fam:91, rar:1, name:"Camouflage"},{fam:103, rar:2, name:"Météorite"},{fam:110, rar:3, name:"Montgolfière", face:true},{fam:112, rar:4, name:"Atome", face:true}];
+// src : "neuf" (dessiné pour cette maquette), "nov" (proposé le 3 novembre), "oct" (mythique proposé le 11 octobre)
+const N = (fam, rar, name, desc, o={}) => ({fam, rar, name, desc, src:"neuf", ...o});
+const NEW = [
+  // ---------- Communs ----------
+  N(117,0,"Arcs-en-ciel","De petits arcs-en-ciel aux 3 couleurs du coloris, un nuage à chaque bout."),
+  N(118,0,"Croisillons","De petites croix bien rangées de deux couleurs, un point de la 3e entre elles."),
+  N(119,0,"Pastèque","De grandes rayures qui ondulent d'un pôle à l'autre, comme une pastèque entière."),
+  N(120,0,"Mosaïque","Des tesselles carrées serrées dans leur joint, qui dessinent des cadres de 3 couleurs."),
+  N(121,0,"Mikado","Des baguettes rayées jetées en vrac les unes sur les autres."),
+  N(122,0,"Dé","La bille est un gros dé : une face de 1 à 6 de chaque côté."),
+  N(123,0,"Œuf décoré","Des bandes peintes comme un œuf de Pâques : zigzags, points et losanges."),
+  N(87,0,"Cahier","La page d'un cahier d'écolier, ses lignes, ses colonnes et sa marge.",{src:"nov"}),
+  N(88,0,"Spirales","De petites spirales comme des coquilles d'escargot, sur un fond clair.",{src:"nov"}),
+  N(89,0,"Gouttes","Des gouttes de pluie de deux couleurs, chacune avec son reflet.",{src:"nov"}),
+  N(90,0,"Éventails","Des rangées d'éventails ronds, comme les vagues des estampes japonaises.",{src:"nov"}),
+  // ---------- Peu communs ----------
+  N(124,1,"Bouleau","L'écorce blanche du bouleau, ses traits sombres, ses cicatrices et un peu de mousse."),
+  N(125,1,"Léopard","Des rosaces de taches sombres au cœur plus foncé, sur un pelage doré."),
+  N(126,1,"Vinyle","Un disque de chaque côté : les sillons qui brillent, l'étiquette et le petit trou.",{face:true}),
+  N(127,1,"Osier","Des brins de 3 couleurs tressés dessus-dessous, comme un panier."),
+  N(128,1,"Vache","De grandes taches sur un pelage blanc, des plus petites et des taches de rousseur."),
+  N(129,1,"Trèfles","Des trèfles à quatre feuilles semés sur un fond clair : la bille porte-bonheur."),
+  N(130,1,"Cotte de mailles","Des anneaux de métal de 3 couleurs passés les uns dans les autres."),
+  N(131,1,"Tie-dye","La spirale du tee-shirt teint à la main, ses couleurs qui bavent et ses plis blancs."),
+  N(132,1,"Zellige","Des carreaux émaillés en étoiles à huit branches, avec leur joint blanc."),
+  N(92,1,"Pied-de-poule","Le motif des manteaux chics, avec un fin carreau d'une 3e couleur.",{src:"nov"}),
+  N(93,1,"Terrazzo","Des éclats de pierre colorés pris dans un ciment clair.",{src:"nov"}),
+  N(94,1,"Sable","Des couches de sable coloré qui ondulent, comme une bouteille de sable des vacances.",{src:"nov"}),
+  N(95,1,"Foot","Le ballon de foot, ses pentagones et ses hexagones, cousus d'une 3e couleur.",{src:"nov"}),
+  N(96,1,"Origami","Du papier plié en mille facettes qui prennent chacune la lumière.",{src:"nov"}),
+  N(97,1,"Bonbecs","Des bonbons rayés dans leur papier tortillé : la monnaie de la cour !",{src:"nov"}),
+  N(98,1,"Galets","Des cailloux de rivière bien ronds et polis, serrés les uns contre les autres.",{src:"nov"}),
+  N(99,1,"Pâte à modeler","Trois boudins de pâte de couleur roulés ensemble, en longues volutes.",{src:"nov"}),
+  N(100,1,"Tableau noir","L'ardoise de la classe, pleine de gribouillis à la craie.",{src:"nov"}),
+  // ---------- Rares ----------
+  N(133,2,"Lapis","Une pierre profonde, veinée et piquée de paillettes d'or."),
+  N(134,2,"Cloisonné","De l'émail de 3 couleurs coulé entre de fins fils d'or."),
+  N(135,2,"Damas","Un acier forgé en mille couches qui ondulent, brillant comme un miroir."),
+  N(136,2,"Corail","Trois coraux branchus sur le sable, au fond d'un verre d'eau claire.",{verre:true, face:true}),
+  N(137,2,"Kintsugi","Une céramique cassée puis réparée : ses fêlures sont remplies d'or."),
+  N(138,2,"Fluorite","Un cristal fait de cubes emboîtés, couche après couche, dans le verre.",{verre:true}),
+  N(139,2,"Aquarelle","Trois lavis de couleur sur un papier épais, plus foncés au bord."),
+  N(101,2,"Cuivre","Du cuivre poli comme un miroir, mangé par une patine vert-de-gris.",{src:"nov"}),
+  N(102,2,"Paon","Des yeux de plume de paon sur un fond de barbes qui chatoient.",{src:"nov"}),
+  N(104,2,"Feu d'opale","Une pierre laiteuse où s'allument des éclats de couleur.",{src:"nov", verre:true}),
+  N(105,2,"Malachite","Une pierre aux bandes rondes serrées, du plus foncé au plus clair.",{src:"nov"}),
+  N(106,2,"Encre","Trois gouttes d'encre qui se déploient en volutes dans l'eau.",{src:"nov", verre:true}),
+  N(107,2,"Holographique","Comme une carte brillante : des arcs de couleur glissent quand on la tourne.",{src:"nov"}),
+  // ---------- Épiques ----------
+  N(140,3,"Pissenlit","Une boule de pissenlit qui brille dans un verre de soir, et des graines qui s'envolent.",{verre:true, face:true}),
+  N(141,3,"Voilier","Un petit bateau à voiles sur les vagues, dans un verre clair : le bateau en bouteille.",{verre:true, face:true}),
+  N(142,3,"Bonsaï","Un petit arbre tordu dans son pot, trois nuages de feuilles et quelques fleurs.",{verre:true, face:true}),
+  N(143,3,"Nébuleuse","Des nuages de gaz des 3 couleurs dans un verre de nuit, et de jeunes étoiles.",{verre:true, face:true}),
+  N(144,3,"Champignons","Trois champignons lumineux sur un tapis de mousse, et des spores qui flottent.",{verre:true, face:true}),
+  N(145,3,"Feu de camp","Des bûches dans un cercle de pierres, des flammes des 3 couleurs et des étincelles.",{verre:true, face:true}),
+  N(108,3,"Lune","La pleine lune au cœur d'un verre de nuit, ses mers et ses cratères.",{src:"nov", verre:true, face:true}),
+  N(109,3,"Engrenages","Trois roues dentées qui s'engrènent au cœur du verre.",{src:"nov", verre:true, face:true}),
+  N(111,3,"Fusée","Une petite fusée qui décolle dans un verre de nuit.",{src:"nov", verre:true, face:true}),
+  // ---------- Légendaires ----------
+  N(146,4,"Saturne","La planète aux anneaux et deux lunes, dans un verre de nuit.",{verre:true, face:true}),
+  N(147,4,"Pyramides","Trois pyramides sous la lune, dans le désert la nuit.",{verre:true, face:true}),
+  N(148,4,"Baleine","Une baleine passe dans l'eau profonde, sous les rayons de lumière.",{verre:true, face:true}),
+  N(149,4,"Diamant","Un diamant taillé dans un écrin de velours : ses facettes lancent des feux.",{verre:true, face:true}),
+  N(113,4,"Éclipse","La Lune devant le Soleil : un disque noir dans sa couronne de feu.",{src:"nov", verre:true, face:true}),
+  N(114,4,"Volcan","Un volcan crache sa lave dans un verre de nuit.",{src:"nov", verre:true, face:true}),
+  N(115,4,"Phare","Un phare sur son rocher, et ses deux faisceaux qui balaient la nuit.",{src:"nov", verre:true, face:true}),
+  N(116,4,"Sablier","Un sablier dans son cadre de bois, le sable qui coule et scintille.",{src:"nov", verre:true, face:true}),
+  // ---------- Mythiques (animés) ----------
+  N(155,5,"Astrolabe","Trois anneaux d'or gradués pivotent autour d'un petit soleil ; une planète fait le tour de l'écliptique.",{verre:true, face:true, myth:true}),
+  N(156,5,"Kraken","Six tentacules ondulent et s'enroulent autour d'un gouffre qui luit, leurs ventouses allumées.",{verre:true, face:true, myth:true}),
+  N(150,5,"Tesseract","Un cube en 4 dimensions qui se retourne comme un gant, sans fin.",{src:"oct", verre:true, face:true, myth:true}),
+  N(151,5,"Sceau arcanique","Un cercle magique : les runes tournent dans un sens, l'étoile dans l'autre.",{src:"oct", verre:true, face:true, myth:true}),
+  N(152,5,"Plasma","Une boule plasma : des éclairs partent du cœur et cherchent le bord du verre.",{src:"oct", verre:true, face:true, myth:true}),
+  N(153,5,"Ouroboros","Le serpent qui se mord la queue fait le tour du verre, en relief.",{src:"oct", verre:true, face:true, myth:true}),
+  N(154,5,"Kaléidoscope infini","Une rosace dans laquelle on plonge sans jamais arriver au fond.",{src:"oct", verre:true, face:true, myth:true}),
+];
+const SRC_TXT = {neuf:"Tout nouveau", nov:"Proposé le 3 nov.", oct:"Proposé le 11 oct."};
+const N0 = FAMILIES.length;   // 86 : le rendu de démo s'arrête à la Constellation
+NEW.concat(IN_GAME).forEach(x=>{ while(FAMILIES.length<=x.fam) FAMILIES.push({name:"", rar:0, desc:"", event:"vide"});
+  FAMILIES[x.fam] = {name:x.name, rar:x.rar, desc:x.desc||"", ...(x.face?{face:true}:{}), ...(x.myth?{myth:true}:{})};
+  if(!x.verre && x.rar<3 && ![104,106].includes(x.fam)) OPAQUE_FAMS.push(x.fam) });
+const extra = f => FAMILIES[f].event || FAMILIES[f].season!=null || FAMILIES[f].beta;
+const OLD = FAMILIES.map((_,i)=>i).filter(i=>i<N0 && !extra(i)).concat(IN_GAME.map(x=>x.fam));   // les 76 motifs de l'album aujourd'hui
+const isNew = f => NEW.some(x=>x.fam===f);
+const KEY = "tikalo-maquette-motifs-4";
+let pick = new Set(); try{ pick = new Set(JSON.parse(localStorage.getItem(KEY))||[]) }catch(e){}
+const saveP = () => { try{ localStorage.setItem(KEY, JSON.stringify([...pick])) }catch(e){} };
+let filt = "tout";
+
+// ---------- les images : dessinées quand elles arrivent à l'écran, quelques-unes par image d'animation ----------
+const spec = (fam, pal=AZUR, type="calot", k="") => ({seed:hash("motifs4"+fam+k), type, family:fam, pal, shiny:0});
+const allZ = [], errs = new Set();
+const pic = (s, px, label) => { allZ.push({s, label, px}); return `<img class="wait" alt="" width="${px}" height="${px}" data-z="${allZ.length-1}">` };
+const queue = []; const seen = new WeakSet();
+const io = new IntersectionObserver(es=>es.forEach(en=>{ if(en.isIntersecting && !seen.has(en.target)){ seen.add(en.target); queue.push(en.target); io.unobserve(en.target) } }), {rootMargin:"600px"});
+const cache = new Map();
+function paint(t0){
+  while(queue.length && performance.now()-t0 < 24){ const im = queue.shift(), z = allZ[+im.dataset.z], k = urlKey(z.s, z.px);
+    if(!cache.has(k)){ try{ mainGL.draw(z.s, z.px); cache.set(k, mainGL.cv.toDataURL("image/png")) }
+      catch(e){ errs.add(FAMILIES[z.s.family].name+" : "+String(e.message).slice(0,300)); document.getElementById("err").textContent = [...errs].join("\n"); cache.set(k, "") } }
+    const u = cache.get(k); if(u){ im.src = u; im.classList.remove("wait") } }
+  requestAnimationFrame(paint);
+}
+requestAnimationFrame(paint);
+const observeAll = () => document.querySelectorAll("img[data-z]").forEach(im=>{ if(!seen.has(im)) io.observe(im) });
+
+// ---------- les propositions ----------
+const RARS = [0,1,2,3,4,5];
+const plural = (n, w) => n+" "+w+(n>1?"s":"");
+document.getElementById("jump").innerHTML = RARS.map(r=>`<a href="#r${r}" style="color:${TIERS[r].c}">${TIERS[r].name}s</a>`).join("") + `<a href="#album">L'album</a><a href="#chances">Les chances</a><a href="#tierlist">Tier list</a>`;
+document.getElementById("sections").innerHTML = RARS.map(r=>{ const l = NEW.filter(x=>x.rar===r), T = TIERS[r], nf = l.filter(x=>x.src==="neuf").length;
+  return `<h2 id="r${r}" style="color:${T.c}">${T.name}s <small>(${plural(l.length,"proposition")}, dont ${nf} nouveau${nf>1?"x":""})</small></h2>${r===5?`<p class="lead">Tu as dit <b>1 ou 2 grand max</b> : l'Œil du Dragon reste, et chaque mythique en plus divise ses chances. Agrandis-les pour les voir bouger.</p>`:""}<div class="news">${l.map(x=>`<article class="nm" data-fam="${x.fam}" data-src="${x.src}" style="--c:${T.c}">
+    <button class="hero">${pic(spec(x.fam), 300, x.name+" · Azur")}</button>
+    <div><h3>${x.name}</h3><div class="tags"><span class="pill">${T.name}</span><span class="tg${x.src==="neuf"?" fresh":""}">${SRC_TXT[x.src]}</span><span class="tg">${x.verre?"Dans le verre":"Peint"}</span>${x.myth?`<span class="tg">Animé</span>`:""}</div><p>${x.desc}</p></div>
+    <div class="var">${VARS.map((p,j)=>`<button>${pic(spec(x.fam,p,"calot","v"+j), 128, x.name+" · "+PALETTES[p][0])}<small>${PALETTES[p][0]}</small></button>`).join("")}
+      <button>${pic(spec(x.fam,AZUR,"mammouth","m"), 128, x.name+" · Mammouth")}<small>Mammouth</small></button></div>
+    <button class="keep" data-keep="${x.fam}"></button>
+  </article>`).join("")}</div>` }).join("");
+const FILT = [["tout","Tout"],["neuf","Nouveaux"],["ancien","Déjà proposés"],["pick","Mes choix"]];
+
+const pctF = v => (v>=10 ? v.toFixed(1) : v>=1 ? v.toFixed(2) : v>=.1 ? v.toFixed(3) : v.toFixed(4)).replace(".",",")+" %";
+const sur = v => "1 sur "+Math.round(100/v).toLocaleString("fr-FR");
+const nf = v => v.toLocaleString("fr-FR");
+const tierCache = {};
+const tierPic = f => tierCache[f] || (tierCache[f] = pic(spec(f, AZUR, "calot", "t"), 140, FAMILIES[f].name));
+const NPAL = 52, NT = 6;   // coloris de l'album, tailles
+function render(){
+  document.getElementById("filt").innerHTML = FILT.map(([k,t])=>`<button data-filt="${k}" class="${filt===k?"on":""}">${t}</button>`).join("");
+  document.querySelectorAll(".nm").forEach(el=>{ const f = +el.dataset.fam, on = pick.has(f), s = el.dataset.src;
+    el.classList.toggle("pick", on); el.querySelector(".keep").textContent = on ? "✓ Je le garde" : "Je le garde";
+    el.hidden = filt==="neuf" ? s!=="neuf" : filt==="ancien" ? s==="neuf" : filt==="pick" ? !on : false });
+  const got = RARS.map(r=>NEW.filter(x=>x.rar===r && pick.has(x.fam)).length);
+  document.getElementById("bar").innerHTML = `<b>Tes choix : ${pick.size}</b> ${RARS.map(r=>`<span style="--c:${TIERS[r].c}"${r===5&&got[5]>2?` class="warn"`:""}><i>●</i> ${TIERS[r].name} ${got[r]}${r===5&&got[5]>2?" (2 max !)":""}</span>`).join("")}${pick.size?`<button data-act="clear">Tout décocher</button>`:""}`;
+  const all = OLD.concat(NEW.filter(x=>pick.has(x.fam)).map(x=>x.fam));
+  const alb = l => l.filter(f=>FAMILIES[f].rar!==5).length;   // la case « tous les motifs » ne compte pas le mythique, mais l'album si
+  const c0 = OLD.length*NT, c1 = all.length*NT;
+  document.getElementById("impact").innerHTML = `
+    <div><small>Motifs dans l'album</small><b>${OLD.length}${all.length>OLD.length?` → ${all.length}`:""}</b>${all.length>OLD.length?`<i>+${all.length-OLD.length} motifs</i>`:""}</div>
+    <div><small>Cases de l'album (taille × motif)</small><b>${nf(c0)}${c1>c0?` → ${nf(c1)}`:""}</b></div>
+    <div><small>Modèles (avec les ${NPAL} coloris)</small><b>${nf(c0*NPAL)}${c1>c0?` → ${nf(c1*NPAL)}`:""}</b></div>`;
+  const wTot = TIERS.reduce((a,T,r)=>a+RAR_N0[r]*T.w,0);
+  const n0 = TIERS.map((_,r)=>OLD.filter(f=>FAMILIES[f].rar===r).length), n1 = TIERS.map((_,r)=>all.filter(f=>FAMILIES[f].rar===r).length);
+  const cl = (a,b) => Math.abs(a-b)<1e-12 ? "eq" : b<a ? "dn" : "";
+  document.getElementById("odds").innerHTML = `<table><tr><th>Rareté</th><th>Motifs</th><th>Part des billes</th><th>Un motif précis, aujourd'hui</th><th>Avec tes choix</th></tr>
+    ${TIERS.map((T,r)=>{ const part = RAR_N0[r]*T.w/wTot*100, c = part/n0[r], d = part/n1[r];
+      return `<tr><td><b style="color:${T.c}">${T.name}</b></td><td>${n0[r]}${n1[r]>n0[r]?` → ${n1[r]}`:""}</td><td>${pctF(part)} <small class="eq">(sans changement)</small></td><td>${sur(c)}</td><td class="${cl(c,d)}">${sur(d)}</td></tr>` }).join("")}</table>
+    <p class="lead" style="margin-top:8px;font-size:13px">« Un motif précis » : la chance qu'une bille tirée ait ce motif-là. En rouge : ce qui baisse.</p>`;
+  document.getElementById("tl-lead").innerHTML = `${all.length} motifs dans l'album (${OLD.length} aujourd'hui) : ${[5,4,3,2,1,0].map(r=>`${n1[r]} ${TIERS[r].name}`).join(" · ")}. En pointillés : tes nouveaux.`;
+  document.getElementById("tiers").innerHTML = [5,4,3,2,1,0].map(r=>{ const T = TIERS[r];
+    const l = all.filter(f=>FAMILIES[f].rar===r).sort((a,b)=>FAMILIES[a].name.localeCompare(FAMILIES[b].name,"fr"));
+    return `<section class="tier"><div class="th" style="--c:${T.c}"><b>${T.name}</b><span class="cnt">${l.length}</span></div>
+      <div class="cards">${l.map(f=>`<button class="card${isNew(f)?" new":""}">${isNew(f)?`<span class="bdg">Nouveau</span>`:""}${tierPic(f)}<b>${FAMILIES[f].name}</b></button>`).join("")}</div></section>` }).join("");
+  document.getElementById("list").innerHTML = pick.size ? `<b>Ta liste à m'envoyer :</b> ${RARS.map(r=>{ const l = NEW.filter(x=>x.rar===r && pick.has(x.fam)).map(x=>x.name); return l.length ? `${TIERS[r].name} : ${l.join(", ")}` : "" }).filter(Boolean).join(" — ")}` : "";
+  observeAll();
+}
+render();
+
+// ---------- l'agrandissement : la bille en grand, qu'on fait tourner (les mythiques bougent) ----------
+const zoom = document.getElementById("zoom"), zc = document.getElementById("zc"), zgl = makeGL(zc);
+let zcur = null, drag = null, raf = 0, ax = 0, ay = 0;
+const rotM = (ax, ay) => { const cx=Math.cos(ax), sx=Math.sin(ax), cy=Math.cos(ay), sy=Math.sin(ay); return [cy,0,-sy, sx*sy,cx,sx*cy, cx*sy,-sx,cx*cy] };
+function frame(){ if(!zcur || !zgl) return; const f = FAMILIES[zcur.family];
+  if(!drag) ay += f.face ? 0 : .006;
+  const a = f.face && !drag ? .35*Math.sin(performance.now()/1000*.6) : ay;
+  try{ zgl.draw(zcur, zc.width, rotM(ax, a)) }catch(e){}
+  raf = requestAnimationFrame(frame) }
+document.addEventListener("click", e=>{
+  if(e.target.closest("[data-act=clear]")){ pick.clear(); saveP(); render(); return }
+  const fb = e.target.closest("[data-filt]"); if(fb){ filt = fb.dataset.filt; render(); return }
+  const k = e.target.closest("[data-keep]");
+  if(k){ const f = +k.dataset.keep; if(pick.has(f)) pick.delete(f); else pick.add(f); saveP(); render(); return }
+  const im = e.target.closest("[data-z]") || e.target.closest("button")?.querySelector("[data-z]");
+  if(im && !zoom.contains(e.target)){ const z = allZ[+im.dataset.z]; zcur = z.s; ax = 0; ay = 0; document.getElementById("zn").textContent = z.label; zoom.hidden = false; cancelAnimationFrame(raf); frame(); return }
+  if(zoom.contains(e.target) && e.target!==zc){ zoom.hidden = true; zcur = null; cancelAnimationFrame(raf) }
+});
+zc.addEventListener("pointerdown", e=>{ drag = {x:e.clientX, y:e.clientY, ax, ay}; zc.setPointerCapture(e.pointerId) });
+zc.addEventListener("pointermove", e=>{ if(!drag) return; ay = drag.ay + (e.clientX-drag.x)*.01; ax = drag.ax + (e.clientY-drag.y)*.01 });
+zc.addEventListener("pointerup", ()=>{ drag = null });
+document.addEventListener("keydown", e=>{ if(e.key==="Escape"){ zoom.hidden = true; zcur = null } });
+</script>
+</body>
+</html>

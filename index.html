@@ -1871,6 +1871,8 @@ canvas.gr-foil{touch-action:none}
 .recipe .rc-x{position:absolute;top:-8px;right:-4px;font-family:var(--display);font-size:12px;line-height:1;padding:4px 7px;border-radius:999px;background:var(--yellow);color:#24253D;box-shadow:0 2px 0 var(--yellow-2,#F2AE12)}
 .fz-lot{width:100%;max-width:520px;display:grid;gap:10px;margin-top:8px;padding:12px 14px;border-radius:16px;background:var(--yellow-soft);box-shadow:inset 0 0 0 1.5px var(--gold-line,#F2D27A)}
 .fz-lot-t b{font-size:15px}
+.fz-lot-m{display:inline-flex;gap:6px;margin-left:10px;vertical-align:middle}
+.fz-lot-m .chip{padding:4px 12px;font-size:12.5px}
 .fz-lot-t small{display:block;margin-top:3px;font-size:12.5px;font-weight:700;color:var(--ink-2)}
 .fz-lot-t small b{font-size:inherit;color:var(--ink)}
 .fz-lot-go{display:flex;flex-wrap:wrap;gap:10px;align-items:center}
@@ -9811,6 +9813,15 @@ function craftLotCan(t){
   craftPool(t).filter(craftFilt).forEach(s=>{ const k = dupKey(s); inPool[k] = (inPool[k]||0)+1 });
   return Math.floor(Object.entries(inPool).reduce((a,[k,n])=>a+Math.min(n, cnt[k]-1), 0)/craftN(t));
 }
+// (6 novembre 2026) le lot avec des billes uniques (un seul exemplaire : elles quittent l'album), tirées au hasard comme « Remplir au hasard »
+const craftLotSingles = t => { const cnt = slotCounts(); return craftPool(t).filter(craftFilt).filter(s=>cnt[dupKey(s)]===1) };
+const craftLotCanU = t => Math.floor(craftLotSingles(t).length/craftN(t));
+const craftLotCanM = (t, u) => u ? craftLotCanU(t) : craftLotCan(t);
+function craftLotIdsU(t, k){
+  const l = craftLotSingles(t), want = k*craftN(t);
+  for(let i=l.length-1;i>0;i--){ const j=Math.floor(Math.random()*(i+1)); [l[i],l[j]]=[l[j],l[i]] }
+  return l.length>=want ? l.slice(0, want).map(s=>s.id) : [];
+}
 // les billes de k fusions, toujours dans les doubles les plus nombreux d'abord
 function craftLotIds(t, k){
   const cnt = slotCounts(), want = k*craftN(t), rest = craftPool(t).filter(craftFilt).sort((a,b)=>a.at-b.at), sel = [];
@@ -9844,9 +9855,13 @@ function viewCraft(){
   const last = C.sel.filter(id=>{ const s=specById(id); return !S.specs.some(x=>colorKey(x)===colorKey(s) && !C.sel.includes(x.id)) }).length;
   const full = C.sel.length===N;
   // (21 octobre 2026) la fusion en lot : le plus de fusions possible avec ses doubles (CRAFT_LOT_MAX au plus), − et + pour en faire moins
-  const lotMax = Math.min(CRAFT_LOT_MAX, craftLotCan(C.t)), lotN = Math.max(2, Math.min(C.lotN || lotMax, lotMax));
-  const lotBox = lotMax<2 ? "" : `<div class="fz-lot"><div class="fz-lot-t"><b>Fusion en lot</b>
-      <small><b>${lotN*N} doubles</b> → <b>${lotN} ${RAR_PL[C.t+1]}</b> · ${pct(+((1-Math.pow(1-craftShiny(C.t), lotN))*100).toFixed(2))} de shiny</small></div>
+  // (6 novembre 2026) ou avec ses billes uniques (C.lotU)
+  const lotD = Math.min(CRAFT_LOT_MAX, craftLotCan(C.t)), lotUn = Math.min(CRAFT_LOT_MAX, craftLotCanU(C.t));
+  if(C.lotU ? lotUn<2 && lotD>=2 : lotD<2 && lotUn>=2){ C.lotU = !C.lotU; C.lotN = 0 }
+  const lotMax = C.lotU ? lotUn : lotD, lotN = Math.max(2, Math.min(C.lotN || lotMax, lotMax));
+  const lotMode = lotD>=2 && lotUn>=2 ? `<span class="chips fz-lot-m"><button class="chip" data-action="craft-lot-u" data-u="" aria-pressed="${!C.lotU}">Doubles</button><button class="chip" data-action="craft-lot-u" data-u="1" aria-pressed="${!!C.lotU}">Uniques</button></span>` : "";
+  const lotBox = lotMax<2 ? "" : `<div class="fz-lot"><div class="fz-lot-t"><b>Fusion en lot</b>${lotMode}
+      <small><b>${lotN*N} ${C.lotU?"uniques":"doubles"}</b> → <b>${lotN} ${RAR_PL[C.t+1]}</b> · ${pct(+((1-Math.pow(1-craftShiny(C.t), lotN))*100).toFixed(2))} de shiny</small>${C.lotU?`<small class="warn-note">Elles quitteront ton album</small>`:""}</div>
     <div class="fz-lot-go"><span class="fz-step" role="group" aria-label="Nombre de fusions"><button data-action="craft-lot-n" data-d="-1" ${lotN<=2?"disabled":""} aria-label="Une fusion de moins">−</button><b>×${lotN}</b><button data-action="craft-lot-n" data-d="1" ${lotN>=lotMax?"disabled":""} aria-label="Une fusion de plus">+</button></span>
       <button class="btn btn-yellow" data-action="craft-lot" data-n="${lotN}">${ic("flask",18)} Fusionner ×${lotN}</button></div></div>`;
   const nDup = ([,l]) => cnt[dupKey(l[0])]||0;   // exemplaires en tout (cnt est rangé par dupKey, pas par colorKey)
@@ -10083,10 +10098,10 @@ function craftOpenFX(out, el, k=pullScore(out)){
 // de la moins rare à la plus rare, et la plus rare s'ouvre en grand en dernier, comme une fusion. « Passer » montre tout de suite le résultat.
 const czlScore = s => Math.max(0, decorRar(s))*10 + [0,25,30,45][s.shiny||0] + tierOf(s)*.1;   // la plus rare du lot (une shiny compte pour 2,5 à 4,5 crans de rareté du motif en plus)
 const czlCol = s => s.shiny===3 ? PALETTES[s.pal][2] : s.shiny ? CZ_SH[s.shiny] : DECOR_RAR[Math.max(0, decorRar(s))].c;
-function craftLotGo(C, k){
+function craftLotGo(C, k, pick){
   if(!srvNeed() || eco.busy) return;
-  const t = C.t, ids = craftLotIds(t, k);
-  if(!ids.length){ toast("Il n'y a plus assez de doubles pour ce lot."); renderView(); return }
+  const t = C.t, u = !!C.lotU, ids = pick || (u ? craftLotIdsU(t, k) : craftLotIds(t, k));
+  if(!ids.length){ toast(u ? "Il n'y a plus assez de billes uniques pour ce lot." : "Il n'y a plus assez de doubles pour ce lot."); renderView(); return }
   const inputs = ids.map(specById), gone = new Set(ids);
   S.specs = S.specs.filter(s=>!gone.has(s.id)); S.unseen = S.unseen.filter(id=>!gone.has(id));
   eco.busy = true; gone.forEach(id=>sync.known.delete(id));
@@ -10174,7 +10189,7 @@ async function czlResults(st, instant){
   const ord = [...st.outs].sort((a,b)=>czlScore(a)-czlScore(b)), best = ord.pop(), T2 = TK[st.t+1], dr = Math.max(0, decorRar(best)), sh = best.shiny||0;
   const nSh = st.outs.filter(s=>s.shiny).length, nNew = st.outs.filter(s=>st.fresh.has(s.id)).length;
   const tally = DECOR_RAR.map((R,i)=>[R, st.outs.filter(s=>Math.max(0, decorRar(s))===i).length]).filter(([,n])=>n).reverse();
-  const again = ui.craft && ui.craft.t===st.t ? Math.min(CRAFT_LOT_MAX, craftLotCan(st.t), ui.craft.lotN || CRAFT_LOT_MAX) : 0;
+  const again = ui.craft && ui.craft.t===st.t ? Math.min(CRAFT_LOT_MAX, craftLotCanM(st.t, ui.craft.lotU), ui.craft.lotN || CRAFT_LOT_MAX) : 0;
   const pill = s => { const r = Math.max(0, decorRar(s)); return `<span class="czl-pill" style="--c:${DECOR_RAR[r].c}">${DECOR_RAR[r].name}</span>${s.shiny?`<span class="czl-pill" style="--c:${CZ_SH[s.shiny]}">${SHINIES[s.shiny].name}</span>`:""}` };
   const endTitle = sh ? "Une shiny dans le lot !" : `${st.n} fusions réussies !`;
   body.innerHTML = `<span class="ov-kicker">La Confiserie · Fusion ×${st.n}</span>
@@ -17369,7 +17384,7 @@ let bugKeep = null;   // un message qui n'est pas parti : il est reproposé au p
 // on:false cache le bouton (pendant qu'on prépare la mise à jour) ; on:true le remet, avec la pastille si l'id a changé
 // (16 octobre 2026) deux repères : dot = la pastille rouge du bouton, à changer à CHAQUE mise en ligne qui ajoute une ligne au patchnote
 // (avec txt : la date du jour) ; id = la fenêtre d'annonce à l'arrivée, seulement pour les très gros jours
-const NEWS = {on:true, id:"2026-10-27", dot:"2026-11-04-2300", url:"/nouveautes.html", txt:"Mise à jour du 4 nov."};
+const NEWS = {on:true, id:"2026-10-27", dot:"2026-11-06-1200", url:"/nouveautes.html", txt:"Mise à jour du 6 nov."};
 const newsUnseen = () => lsGet("billeo-news-vu")!==NEWS.dot;
 // (14 octobre 2026) à l'arrivée, une fenêtre annonce la mise à jour, une seule fois par mise à jour et par compte (S.newsPop, gardé
 // dans la partie : elle ne revient pas sur un autre appareil) ; on choisit d'aller voir les nouveautés, ou pas
@@ -18993,13 +19008,15 @@ document.addEventListener("click", e=>{
     }
     case "craft-again": closeOv(); ui.craft.sel = craftAuto(ui.craft.t); renderView(); break;
     // (21 octobre 2026) la fusion en lot
-    case "craft-lot-n": { const C = ui.craft, mx = Math.min(CRAFT_LOT_MAX, craftLotCan(C.t)); C.lotN = Math.max(2, Math.min(mx, (C.lotN || mx) + +t.dataset.d)); renderView(); break }
+    case "craft-lot-u": ui.craft.lotU = !!t.dataset.u; ui.craft.lotN = 0; renderView(); break;
+    case "craft-lot-n": { const C = ui.craft, mx = Math.min(CRAFT_LOT_MAX, craftLotCanM(C.t, C.lotU)); C.lotN = Math.max(2, Math.min(mx, (C.lotN || mx) + +t.dataset.d)); renderView(); break }
     case "craft-lot": {
-      const C = ui.craft, k = +t.dataset.n, ids = craftLotIds(C.t, k);
+      const C = ui.craft, k = +t.dataset.n, u = !!C.lotU, ids = u ? craftLotIdsU(C.t, k) : craftLotIds(C.t, k);
       if(k<2 || !ids.length){ renderView(); break }
       ask({title:`Fusionner ${k} fois ?`, balls:ids.map(specById), ok:`Fusionner ×${k}`,
-           text:`Ces ${ids.length} ${RAR_PL[C.t]} partent dans le chaudron pour donner ${k} ${RAR_PL[C.t+1]}, motifs et coloris au hasard. Que des doubles : il te reste au moins un exemplaire de chacune, ton album ne perd rien.`})
-        .then(yes=>{ if(yes) craftLotGo(C, k) });
+           text: u ? `Ces ${ids.length} ${RAR_PL[C.t]} donnent ${k} ${RAR_PL[C.t+1]}, motifs et coloris au hasard.<span class="warn-note">Tu ne les as qu'en un exemplaire : elles quitteront ton album.</span>`
+                   : `Ces ${ids.length} ${RAR_PL[C.t]} partent dans le chaudron pour donner ${k} ${RAR_PL[C.t+1]}, motifs et coloris au hasard. Que des doubles : il te reste au moins un exemplaire de chacune, ton album ne perd rien.`})
+        .then(yes=>{ if(yes) craftLotGo(C, k, ids) });
       break;
     }
     case "craft-lot-again": { const k = +t.dataset.n; closeOv(true); if(ui.craft) craftLotGo(ui.craft, k); break }

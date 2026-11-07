@@ -16024,7 +16024,7 @@ const G3 = {R:.42, DT:1/60, MAXT:150};
 // qui donne le poids : les billes sont grosses par rapport au circuit, elles avaient l'air de tomber au ralenti), presque plus de rebond sur la piste
 // (.35 → .1), chocs entre billes .75 → .6, vitesse plafonnée + garde-fou dans g3Simulate. G3.PHY vide : la physique d'avant.
 // À partir de la course du 7 novembre au soir : les courses d'avant se rejouent comme elles ont été vues.
-const G3_LOURD = {jour:"2026-11-07", heure:20, phy:{g:2, rp:.1, rb:.6, vmax:18}};
+const G3_LOURD = {jour:"2026-11-07", heure:20, phy:{g:2, rp:.1, rb:.6, vmax:18, murs:true}};
 const g3Phy = race => { const j = race.jour || "2026-10-03", h = race.heure || 20; return (j > G3_LOURD.jour || (j===G3_LOURD.jour && h >= G3_LOURD.heure)) ? G3_LOURD.phy : null };
 let G3LIB = null;
 async function g3Load(){
@@ -16161,7 +16161,10 @@ function g3Zigzag(k, o, deco){
       piece(uh-HL/2, uh+HL/2, WID-HW-.5, -hole.side*(HW+.5)/2); piece(uh-HL/2, uh+HL/2, .5, hole.side*(WID/2-.25)) }
     if(i===0) k.box([.4, wall+1, WID+.6], [cx - (LEN+ext)/2*Math.cos(rot) - .2, y + wall/2, 0], [0,0,0], "end");   // derrière la ligne de départ
     k.box([LEN+ext, wall, .3], [cx, y+wall/2-.1, WID/2+.15], [0,0,rot], "wall"); k.box([LEN+ext, wall, .3], [cx, y+wall/2-.1, -WID/2-.15], [0,0,rot], "wall");
-    if(i<RAMPS-1){ const xe = dir*(LEN/2+1.4); k.box([.4, STEP+1.6, WID+.6], [xe, y-STEP/2+.6, 0], [0,0,0], "end") }
+    if(i<RAMPS-1){ const xe = dir*(LEN/2+1.4); k.box([.4, STEP+1.6, WID+.6], [xe, y-STEP/2+.6, 0], [0,0,0], "end");
+      // (7 novembre 2026) des vitres de chaque côté de la chute, du bout de la rampe au mur : une bille calée dans ce coin et poussée par une pichenette
+      // passait par-dessus le bord et tombait dans le vide (Billard, Cascade). Seulement pour les courses depuis le 7 novembre au soir (G3_LOURD).
+      if((G3.PHY||{}).murs) [-1, 1].forEach(sd=>k.box([2.6, STEP+wall+1.4, .3], [dir*(LEN/2+.3), y-STEP/2+wall/2+.5, sd*(WID/2+.15)], [0,0,0], "glass")) }
     path.push([-dir*(LEN/2-1), sY(-dir*(LEN/2-1))+.5, 0], [dir*(LEN/2), sY(dir*LEN/2)+.5, 0]);
     deco && deco(i, {dir, y, rot, cx, sY});
     // des bosses rondes dans les murs, d'un côté puis de l'autre : une bille qui longe le mur est renvoyée vers le milieu
@@ -16302,7 +16305,9 @@ function g3Fourche(k, r, n, o){
       // (assez bas : le détour revient au-dessus de son bord)
       const yt = yb - 2.6, c = [xa + L/2, yt, 0];
       k.box([L + 1, .4, 18], c, [0,0,0], "tray");
-      [[-1, 0, .4, 18], [1, 0, .4, 18], [0, -1, L + 1, .4], [0, 1, L + 1, .4]].forEach(([a, b2, sx, sz])=>k.box([sx, 2.2, sz], [c[0] + a*(L/2 + .5), yt + 1.1, b2*9], [0,0,0], a ? "glass" : "wall"));
+      // (7 novembre 2026) la vitre du fond plus haute (6 au lieu de 2,2) depuis le 7 novembre au soir : une bille lancée au bout du raccourci passait par-dessus (Forêt)
+      [[-1, 0, .4, 18], [1, 0, .4, 18], [0, -1, L + 1, .4], [0, 1, L + 1, .4]].forEach(([a, b2, sx, sz])=>{ const H = a===1 && (G3.PHY||{}).murs ? 6 : 2.2;
+        k.box([sx, H, sz], [c[0] + a*(L/2 + .5), yt + H/2, b2*9], [0,0,0], a ? "glass" : "wall") });
       path.push([c[0], yt + 1, 0]);
       return {finishY:yt + 1.2, floorY:yt - 3, trayR:10};
     }
@@ -16720,7 +16725,12 @@ const G3C = {
         const ext = 2.6, L = o.LEN+ext, x0 = cx - dir*L/2, NS = 10, sl = L/NS;
         for(let s=0;s<NS;s++){ const xc = x0 + dir*(s+.5)*sl; k.box([sl+.3, .4, o.WID], [xc, sY(xc), 0], [0,0,rot*.35], "ramp") }
         // les rochers : sur 4 terrasses au hasard (jamais la première), à gauche ou à droite
-        for(let j=0;j<4;j++){ const s = 1 + Math.floor(r()*(NS-3)), xc = x0 + dir*(s+.5)*sl; k.ball(.42, [xc, sY(xc)+.4, (r()<.5 ? -1 : 1)*r()*1.2], "rock") }
+        // (7 novembre 2026) depuis le 7 novembre au soir, un seul rocher par terrasse : deux ou trois rochers tirés sur la même terrasse se touchaient presque,
+        // une bille se calait entre eux pour toute la course
+        const pris = new Set();
+        for(let j=0;j<4;j++){ const s = 1 + Math.floor(r()*(NS-3)), xc = x0 + dir*(s+.5)*sl, zc = (r()<.5 ? -1 : 1)*r()*1.2;
+          if((G3.PHY||{}).murs){ if(pris.has(s)) continue; pris.add(s) }
+          k.ball(.42, [xc, sY(xc)+.4, zc], "rock") }
         k.look("box", [o.LEN, .05, o.WID-.1], [cx, y+.75, 0], [0, 0, Math.sin(rot/2), Math.cos(rot/2)], "water") });
       return {...z, ...g3ZigStart(k, o, n, r), cam:g3ZigCam} }},
 

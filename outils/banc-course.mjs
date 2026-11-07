@@ -25,6 +25,8 @@ const [quels, nb = "30", lib = "cannon-es.js"] = process.argv.slice(2);
 const CANNON = await import(pathToFileURL(path.resolve(lib)).href);
 const J = new Function(code)();
 if(process.env.PEL != null) J.G3.PEL = +process.env.PEL;   // PEL=0 : sans le peloton (pour comparer)
+// (7 novembre 2026) PHY='{"g":2,"rp":0.1,"rb":0.6,"vmax":18}' : la physique des billes lourdes (celle des courses depuis le 7 novembre au soir, G3_LOURD dans index.html)
+if(process.env.PHY) J.G3.PHY = JSON.parse(process.env.PHY);
 const ids = quels && quels !== "tous" ? quels.split(",") : Object.keys(J.G3C);
 
 // on compte les pichenettes (et où elles tombent) en écoutant applyImpulse

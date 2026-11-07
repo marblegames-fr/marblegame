@@ -16020,6 +16020,12 @@ const GCV = {raf:0};
    Toutes les billes ont la même taille dans la simulation : chaque bille garde exactement la même chance.
    Moteurs chargés à la demande (three.js, cannon-es : importmap en haut du fichier). En cas de souci, la course 2D prend le relais. */
 const G3 = {R:.42, DT:1/60, MAXT:150};
+// (7 novembre 2026) billes lourdes (maquettes/maquette-course-lourde.html) : on trouvait les billes « en apesanteur ». Gravité ×2 (c'est elle
+// qui donne le poids : les billes sont grosses par rapport au circuit, elles avaient l'air de tomber au ralenti), presque plus de rebond sur la piste
+// (.35 → .1), chocs entre billes .75 → .6, vitesse plafonnée + garde-fou dans g3Simulate. G3.PHY vide : la physique d'avant.
+// À partir de la course du 7 novembre au soir : les courses d'avant se rejouent comme elles ont été vues.
+const G3_LOURD = {jour:"2026-11-07", heure:20, phy:{g:2, rp:.1, rb:.6, vmax:18}};
+const g3Phy = race => { const j = race.jour || "2026-10-03", h = race.heure || 20; return (j > G3_LOURD.jour || (j===G3_LOURD.jour && h >= G3_LOURD.heure)) ? G3_LOURD.phy : null };
 let G3LIB = null;
 async function g3Load(){
   if(G3LIB) return G3LIB;
@@ -16094,8 +16100,8 @@ const v3 = {sub:(a,b)=>[a[0]-b[0],a[1]-b[1],a[2]-b[2]], add:(a,b)=>[a[0]+b[0],a[
 // les outils : une boîte, un cylindre (un plot), une pièce qui tourne ; chaque pièce est notée pour être dessinée en 3D
 function g3Kit(CANNON, world, o3={}){
   const M = {piste:new CANNON.Material("piste"), bille:new CANNON.Material("bille"), rebond:new CANNON.Material("rebond")};
-  world.addContactMaterial(new CANNON.ContactMaterial(M.piste, M.bille, {friction:.04, restitution:.35}));
-  world.addContactMaterial(new CANNON.ContactMaterial(M.bille, M.bille, {friction:.02, restitution:.75}));
+  world.addContactMaterial(new CANNON.ContactMaterial(M.piste, M.bille, {friction:(G3.PHY||{}).fp ?? .04, restitution:(G3.PHY||{}).rp ?? .35}));
+  world.addContactMaterial(new CANNON.ContactMaterial(M.bille, M.bille, {friction:(G3.PHY||{}).fb ?? .02, restitution:(G3.PHY||{}).rb ?? .75}));
   world.addContactMaterial(new CANNON.ContactMaterial(M.rebond, M.bille, {friction:0, restitution:1.1}));
   M.tramp = new CANNON.Material("tramp"); world.addContactMaterial(new CANNON.ContactMaterial(M.tramp, M.bille, {friction:o3.trampF ?? .45, restitution:o3.tramp ?? .8}));   // (14 octobre 2026) les trampolines
   const statics = [], kin = [];
@@ -16926,7 +16932,7 @@ function g3Aura(s){
 // la piste d'une course : les pièces du circuit, les billes au départ et leur barrière
 function g3World(CANNON, seed, n, cid="lacets"){
   const r = rng(seed), C = G3C[cid] || G3C.lacets;
-  const world = new CANNON.World({gravity: new CANNON.Vec3(0, -9.81*(C.g||1), 0)});   // g : un mur penché (Plinko) fait descendre moins vite
+  const world = new CANNON.World({gravity: new CANNON.Vec3(0, -9.81*(C.g||1)*((G3.PHY||{}).g ?? 1), 0)});   // g : un mur penché (Plinko) fait descendre moins vite
   world.allowSleep = false; world.broadphase = new CANNON.SAPBroadphase(world); world.solver.iterations = 14;
   if(C.axis!=null) world.broadphase.axisIndex = C.axis;
   const k = g3Kit(CANNON, world, {tramp:C.tramp, trampF:C.trampF}), T = C.build(k, r, n);
@@ -16965,6 +16971,7 @@ function g3Peloton(W, fin){
     b.linearDamping = .02 + w*Math.min(.35, Math.max(0, d - 2)*.04);
     let push = w*Math.min(.7, Math.max(0, -d - 2)*.08);
     if(info.some((o, j)=>j!==i && on[j] && o.s - s > .3 && o.s - s < 2.5)) push += w*.35;   // l'aspiration
+    push *= (G3.PHY||{}).g ?? 1;   // (7 novembre 2026) la poussée à la mesure de la gravité (le freinage, lui, ne change pas : au-delà de 1 il emballait le calcul)
     return push ? [T[0]*push, T[1]*push, T[2]*push] : null });
 }
 function g3Simulate(CANNON, seed, n, cid){
@@ -16980,13 +16987,18 @@ function g3Simulate(CANNON, seed, n, cid){
     if(t>=3 && W.gate.world) W.world.removeBody(W.gate);   // 3 s de feux, puis la barrière tombe
     if(t>=4 && f%15===0) pel = g3Peloton(W, fin);
     if(pel) W.balls.forEach((b, i)=>{ const q = pel[i]; if(q){ b.force.x += q[0]; b.force.y += q[1]; b.force.z += q[2] } });
+    // (7 novembre 2026) billes lourdes : garde-fou, une bille dont le calcul part en NaN (chute très rapide contre une pièce, crevasses du Volcan)
+    // reprend sa place d'avant, arrêtée ; vitesse plafonnée à vmax (sinon une bille lancée traverse les pièces fines)
+    const vmax = (G3.PHY||{}).vmax || 0, sv = vmax ? W.balls.map(b=>[b.position.x, b.position.y, b.position.z]) : null;
     W.world.step(DT); t += DT;
+    if(vmax) W.balls.forEach((b, i)=>{ if(!isFinite(b.position.x + b.position.y + b.position.z + b.velocity.x + b.velocity.y + b.velocity.z)){ b.position.set(...sv[i]); b.previousPosition.set(...sv[i]); b.interpolatedPosition.set(...sv[i]); b.velocity.set(0, 0, 0); b.angularVelocity.set(0, 0, 0); b.quaternion.set(0, 0, 0, 1); b.force.set(0, 0, 0); b.torque.set(0, 0, 0) }
+      else { const v = b.velocity.length(); if(v > vmax) b.velocity.scale(vmax/v, b.velocity) } });
     // une bille qui n'avance plus sur le circuit depuis 4 s (calée, ou coincée dans un tas où elle tremble sur place)
     // reçoit une pichenette dans le sens de la piste, de plus en plus forte si ça ne suffit pas
     if(f%30===0) W.balls.forEach((b,i)=>{ if(fin[i]!=null || t<4) return; const {s, T} = g3Where(W, b.position.x, b.position.y, b.position.z);
       if(b.best==null || s > b.best+.5){ b.best = s; b.bestT = t; b.kicks = 0; return }
       // (14 octobre 2026) patience : plus longue dans les entonnoirs, où une bille qui tourne n'est pas bloquée
-      if(t-b.bestT>(W.C.patience||3)){ b.bestT = t; b.kicks = (b.kicks||0)+1; const side = i%2 ? 1 : -1, p = Math.min(2.5, 1+.5*(b.kicks-1));   // plafonnée : une bille ne doit jamais sauter hors de la piste
+      if(t-b.bestT>(W.C.patience||3)){ b.bestT = t; b.kicks = (b.kicks||0)+1; const side = (i + (G3.PHY && b.kicks>2 ? b.kicks : 0))%2 ? 1 : -1, p = Math.min(2.5, 1+.5*(b.kicks-1))*Math.sqrt((G3.PHY||{}).g ?? 1);   // (7 novembre 2026, billes lourdes) après 2 pichenettes du même côté, un coup de chaque côté : une bille calée contre un plot y était repoussée à chaque fois   // plafonnée : une bille ne doit jamais sauter hors de la piste
         // dans le sens de la piste, et sur le côté (sur une piste qui descend tout droit, comme le Plinko, c'est le côté qui débloque)
         const L = Math.hypot(T[0], T[2]) > .3 ? v3.norm([T[2], 0, -T[0]]) : [1, 0, 0];
         b.applyImpulse(new CANNON.Vec3(T[0]*1.2*p + side*L[0]*.8*p, .5, T[2]*1.2*p + side*L[2]*.8*p)) } });
@@ -17066,6 +17078,7 @@ async function gcWatch3D(race){
   const list = race.resultats, n = list.length;
   await new Promise(r=>setTimeout(r, 30));   // laisse le message s'afficher avant le calcul
   const cid = g3CircuitOf(race), C = G3C[cid], TH = C.theme;
+  G3.PHY = g3Phy(race);
   const sim = g3Simulate(CANNON, (race.graine>>>0) || 1, n, cid), W = sim.W;
   // la bille arrivée k-ième dans la simulation prend le k-ième du tirage du serveur
   const order = sim.fin.map((x,i)=>i).sort((a,b)=>sim.fin[a]-sim.fin[b]);
@@ -17198,7 +17211,7 @@ async function gcWatch3D(race){
   // La bille chinoise est une pépite aplatie qui reste à plat et tourne sur elle-même (dessinée vue de dessus sur un dôme).
   const flats = [], auras = [];
   const meshes = who.map((o,i)=>{
-    const m = new THREE.Mesh(new THREE.SphereGeometry(G3.R, 48, 32), new THREE.MeshPhysicalMaterial({map:g3Texture(THREE, o.spec, i), roughness:.06, clearcoat:1, clearcoatRoughness:.02, envMapIntensity:night ? .4 : .85}));
+    const m = new THREE.Mesh(new THREE.SphereGeometry(G3.R, 48, 32), new THREE.MeshPhysicalMaterial({map:g3Texture(THREE, o.spec, i), roughness:.13, clearcoat:.85, clearcoatRoughness:.08, envMapIntensity:night ? .34 : .7}));
     m.castShadow = true; scene.add(m);
     // (6 octobre 2026) une shiny garde son aura pendant la course : arc-en-ciel (Irisée), or (Dorée), sa couleur (Lumineuse)
     if(o.spec?.shiny){ const at = new THREE.CanvasTexture(g3Aura(o.spec)); at.colorSpace = THREE.SRGBColorSpace;
@@ -17209,7 +17222,7 @@ async function gcWatch3D(race){
     if(spec.type!=="chinoise"){ m.material.map.dispose(); m.material.map = tx; m.material.needsUpdate = true; return }
     const g = new THREE.SphereGeometry(G3.R, 40, 20, 0, TAU, 0, Math.PI/2), uv = g.attributes.uv, ps = g.attributes.position;
     for(let j=0;j<ps.count;j++) uv.setXY(j, .5 + ps.getX(j)/(2*G3.R)*.9, .5 - ps.getZ(j)/(2*G3.R)*.9);
-    const dome = new THREE.Mesh(g, new THREE.MeshPhysicalMaterial({map:tx, roughness:.08, clearcoat:1, clearcoatRoughness:.03, envMapIntensity:night ? .4 : .85}));
+    const dome = new THREE.Mesh(g, new THREE.MeshPhysicalMaterial({map:tx, roughness:.14, clearcoat:.85, clearcoatRoughness:.09, envMapIntensity:night ? .34 : .7}));
     dome.scale.set(1, .62, 1); dome.castShadow = true;
     const base = new THREE.Mesh(new THREE.CircleGeometry(G3.R, 40), new THREE.MeshStandardMaterial({color:PALETTES[spec.pal]?.[1] || "#888", roughness:.3})); base.rotation.x = Math.PI/2;
     const grp = new THREE.Group(); grp.add(dome, base); scene.add(grp); flats[i] = grp; m.visible = false };   // la sphère ne garde que le centre (noms, sons, caméra, aura)
@@ -17857,7 +17870,7 @@ let bugKeep = null;   // un message qui n'est pas parti : il est reproposé au p
 // on:false cache le bouton (pendant qu'on prépare la mise à jour) ; on:true le remet, avec la pastille si l'id a changé
 // (16 octobre 2026) deux repères : dot = la pastille rouge du bouton, à changer à CHAQUE mise en ligne qui ajoute une ligne au patchnote
 // (avec txt : la date du jour) ; id = la fenêtre d'annonce à l'arrivée, seulement pour les très gros jours
-const NEWS = {on:true, id:"2026-11-06", dot:"2026-11-07-1200", url:"/nouveautes.html", txt:"Mise à jour du 7 nov."};
+const NEWS = {on:true, id:"2026-11-06", dot:"2026-11-07-1700", url:"/nouveautes.html", txt:"Mise à jour du 7 nov."};
 const newsUnseen = () => lsGet("billeo-news-vu")!==NEWS.dot;
 // (14 octobre 2026) à l'arrivée, une fenêtre annonce la mise à jour, une seule fois par mise à jour et par compte (S.newsPop, gardé
 // dans la partie : elle ne revient pas sur un autre appareil) ; on choisit d'aller voir les nouveautés, ou pas

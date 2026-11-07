@@ -16369,7 +16369,10 @@ function g3Entonnoirs(k, r, n, o){
     // l'entonnoir suivant : sa goulotte d'arrivée suit la ligne z = C.z (celle-ci), donc son centre est en z = C.z + off
     // la goulotte commence juste derrière le trou (en pente : avant, un petit bac plat sous le trou gardait les billes et bouchait le trou)
     const D = 2*RO + 4, L = D + .8, P = g3Trace([["S", last ? 18 : L]], {pente:last ? p : pc, from:[C[0] - 2, y0 + .2, C[2]]});   // finit avant le centre de l'entonnoir suivant
-    k.box([.3, 2.2, WID+.4], [C[0] - 2.15, y0 + .9, C[2]], [0,0,0], "wall");
+    // (7 novembre 2026) ce mur dépassait du fond de l'entonnoir (de 0,3 à 0,5 : il est hors du trou) et une bille arrivée juste derrière
+    // y restait calée toute la course ; depuis le 7 novembre au soir (G3_LOURD), son haut est sous le fond (assez haut encore pour la goulotte)
+    if((G3.PHY||{}).murs) k.box([.3, 1.35, WID+.4], [C[0] - 2.15, C[1] - .925, C[2]], [0,0,0], "wall");
+    else k.box([.3, 2.2, WID+.4], [C[0] - 2.15, y0 + .9, C[2]], [0,0,0], "wall");
     const tr = g3Trough(k, P, {WID, mur:1.4, kind:o.kind}).path; path.push(...tr);
     if(last){ const end = g3TroughEnd(k, P, path, {WID}); return {path, ...st, ...end, cam:g3FunnelCam} }
     const yEnd = P.at(-1)[1];

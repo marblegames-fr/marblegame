@@ -16025,6 +16025,10 @@ const G3 = {R:.42, DT:1/60, MAXT:150};
 // (.35 → .1), chocs entre billes .75 → .6, vitesse plafonnée + garde-fou dans g3Simulate. G3.PHY vide : la physique d'avant.
 // À partir de la course du 7 novembre au soir : les courses d'avant se rejouent comme elles ont été vues.
 const G3_LOURD = {jour:"2026-11-07", heure:20, phy:{g:2, rp:.1, rb:.6, vmax:18, murs:true}};
+// (8 novembre 2026) des billes plus petites, plus à l'échelle de vraies billes face aux circuits : rayon .42 → .32, à partir de la course
+// du 9 novembre midi (les rediffusions d'avant gardent leurs billes, et donc leur course : la taille change la physique).
+const G3_PETIT = {jour:"2026-11-09", heure:12, R:.32};
+const g3R = race => { const j = race.jour || "2026-10-03", h = race.heure || 20; return (j > G3_PETIT.jour || (j===G3_PETIT.jour && h >= G3_PETIT.heure)) ? G3_PETIT.R : .42 };
 const g3Phy = race => { const j = race.jour || "2026-10-03", h = race.heure || 20; return (j > G3_LOURD.jour || (j===G3_LOURD.jour && h >= G3_LOURD.heure)) ? G3_LOURD.phy : null };
 let G3LIB = null;
 async function g3Load(){
@@ -16419,6 +16423,9 @@ function g3Trampo(k, r, n, o){
     const hautM = Y(np-1) + 4.5, basM = L===NL-1 ? yt + 6 : Y(np-1) - STEP - 1.5;
     k.box([.3, hautM - basM, CW], [dir>0 ? xe + pas*.5 + 1.4 : x0 - pas*.5 - 1.4, (hautM + basM)/2, 0], [0,0,0], "end");
     if(L>0) k.box([.3, 4, CW], [dir>0 ? x0 - pas*.5 - 1.2 : xe + pas*.5 + 1.2, Y(0) + 1.5, 0], [0,0,0], "end");
+    // (8 novembre 2026) courses depuis le 9 novembre midi (G3_PETIT) : au 1er étage aussi, le début de la piste du dessous est fermé (sous la goulotte
+    // de départ) ; une bille renvoyée en arrière par un trampoline y remontait la piste et tombait dans le vide par ce bout
+    else if(G3.R < .4) k.box([.3, 5.5, CW], [x0 - pas*.5 - .3, yf(0) + 1.75, 0], [0,0,0], "end");   // contre le bout de la piste (pas de trou où tomber tout droit au bac)
   }
   // le bac : sous le bout du dernier étage
   const dirL = (NL-1)%2 ? -1 : 1, xt =dirL>0 ? xe + 4 : x0 - 4;
@@ -16847,7 +16854,9 @@ const G3C = {
       k.box([.3, 2.2, 3.4], [C[0] - 2.15, C[1] - 2.2 + 1.1, C[2]], [0,0,0], "wall");
       [-1, 1].forEach(sd=>k.box([5, 2, .25], [C[0] + .3, C[1] - 1.4, C[2] + sd*1.75], [0,0,0], "wall"));   // une bille qui tombe du trou ne saute pas hors de la goulotte
       const P1 = g3Trace([["S", 6], ["D", 5, 90]], {pente:.1, from:[C[0] - 2, C[1] - 2.2, C[2]]}), S1 = g3Trough(k, P1, {WID:3.2, mur:1.6});
-      const yS = P1.at(-1)[1] - .08, P = [];
+      // (8 novembre 2026) petites billes (G3_PETIT) : la spirale .25 plus bas. Au raccord, côté intérieur, le bout de la goulotte (relevée dans son virage)
+      // était ~.2 plus bas que le début de la spirale : une marche qu'une bille de .42 passait, mais où une bille de .32 restait calée toute la course
+      const yS = P1.at(-1)[1] - .08 - (G3.R < .4 ? .25 : 0), P = [];
       for(let i=0;i<=NS;i++){ const q = at(i*A/NS); P.push([q[0], q[1] + yS, q[2]]) }
       const I0 = 0, iA = a => I0 + Math.round(a/A*NS);
       // les crevasses : une trappe contre le bord extérieur à chaque tour (sauf le dernier) ; la bille qui tombe atterrit sur le tour du dessous
@@ -17091,7 +17100,7 @@ async function gcWatch3D(race){
   const list = race.resultats, n = list.length;
   await new Promise(r=>setTimeout(r, 30));   // laisse le message s'afficher avant le calcul
   const cid = g3CircuitOf(race), C = G3C[cid], TH = C.theme;
-  G3.PHY = g3Phy(race);
+  G3.PHY = g3Phy(race); G3.R = g3R(race);
   const sim = g3Simulate(CANNON, (race.graine>>>0) || 1, n, cid), W = sim.W;
   // la bille arrivée k-ième dans la simulation prend le k-ième du tirage du serveur
   const order = sim.fin.map((x,i)=>i).sort((a,b)=>sim.fin[a]-sim.fin[b]);
@@ -17883,7 +17892,7 @@ let bugKeep = null;   // un message qui n'est pas parti : il est reproposé au p
 // on:false cache le bouton (pendant qu'on prépare la mise à jour) ; on:true le remet, avec la pastille si l'id a changé
 // (16 octobre 2026) deux repères : dot = la pastille rouge du bouton, à changer à CHAQUE mise en ligne qui ajoute une ligne au patchnote
 // (avec txt : la date du jour) ; id = la fenêtre d'annonce à l'arrivée, seulement pour les très gros jours
-const NEWS = {on:true, id:"2026-11-06", dot:"2026-11-07-1700", url:"/nouveautes.html", txt:"Mise à jour du 7 nov."};
+const NEWS = {on:true, id:"2026-11-06", dot:"2026-11-08-2100", url:"/nouveautes.html", txt:"Mise à jour du 8 nov."};
 const newsUnseen = () => lsGet("billeo-news-vu")!==NEWS.dot;
 // (14 octobre 2026) à l'arrivée, une fenêtre annonce la mise à jour, une seule fois par mise à jour et par compte (S.newsPop, gardé
 // dans la partie : elle ne revient pas sur un autre appareil) ; on choisit d'aller voir les nouveautés, ou pas
@@ -19775,7 +19784,7 @@ if(DEV_HOST){ const q = new URLSearchParams(location.search), cid = q.get("essai
   if(cid) setTimeout(()=>{ const g = +q.get("graine"), n = +q.get("n");
     if(!g){ gcTest(G3C[cid] ? cid : null); return }
     const noms = (q.get("noms") || "").split(",").filter(Boolean), list = Array.from({length:n || noms.length || 9}, (_, i)=>({bot:true, nom:noms[i] || "Bille "+(i+1), graine:i+1}));
-    gcWatch({jour:isoDay(), graine:g, depart:Date.now(), resultats:list, test:true, circuit:cid, heure:g3Midi(cid) ? 12 : 20}) }, 1500) }
+    gcWatch({jour:q.get("jour") || isoDay(), graine:g, depart:Date.now(), resultats:list, test:true, circuit:cid, heure:g3Midi(cid) ? 12 : 20}) }, 1500) }
 const devTools = () => sync.on ? eco.testeur : DEV_HOST;
 const DEV_ACTIONS = ["add-jetons","refill-free","give-shiny","pass-xp","daily-reset","pity-max","shiny-demo","sound-demo","fuse-demo","fuse-demo-menu","reset"];
 function srvOn(){ return !!(sync.on && eco.ready) }

@@ -4759,6 +4759,8 @@ const FAMILIES = [
   {name:"Phare",         rar:4, face:true, desc:"Un phare rayé sur son rocher, au milieu des vagues, et ses deux faisceaux qui balaient la nuit."},
   {name:"Astrolabe",     rar:5, face:true, myth:true, desc:"Un motif mythique : trois anneaux d'or gradués pivotent autour d'un petit soleil qui respire, et une planète fait le tour de l'écliptique."},
   {name:"Plasma",        rar:5, face:true, myth:true, desc:"Un motif mythique : une boule plasma dont le cœur brûlant lance des éclairs des 3 couleurs qui cherchent le bord du verre."},
+  // (9 novembre 2026) événement de décembre 2026 « Pluie de bonbons ! » (numéro 116 ; maquettes/maquette-event-decembre.html)
+  {name:"Bonbon",        rar:4, event:"bonbons", face:true, desc:"Un bonbon à rayures dans sa papillote de cellophane plissée, au cœur d'un verre sucré où scintillent des grains de sucre."},
 ];
 // (20 octobre 2026) chaque rareté garde la part des billes qu'elle avait avec la tier list du 10 octobre (RAR_N0 motifs à DECOR_RAR.w chacun) :
 // quand on ajoute des motifs, ce sont ses motifs qui se partagent cette part (même calcul dans supabase/serveur.sql, interne.tirer_decor)
@@ -4864,6 +4866,15 @@ const EVENTS = {
           ["Aile de nuit","#2B1450","#8E3FE0","#F1ECFF","#341A5E"],
           ["Poing de jade","#0E5E35","#7B2FC0","#9BF26A","#14703F"],
           ["Toile écarlate","#B5121B","#FF8A1F","#FFF0B0","#C21E24"]]},
+  // (9 novembre 2026) décembre 2026, le jour de la fin de la bêta (pause du 16 au 30 novembre). late:2 : coloris rangés après tous les autres (88 à 92)
+  bonbons: {name:"Pluie de bonbons !", fam:"Bonbon", color:"#FF4F9A", late:2,
+    start:Date.parse("2026-12-01T00:00:00+01:00"), end:Date.parse("2026-12-15T23:59:59+01:00"),
+    desc:"Deux semaines de billes Bonbon : coche la case sur un sachet payant.",
+    pals:[["Fraise","#F7B6C8","#E5303A","#FFF4F6","#E89AB0"],
+          ["Menthe","#BFF0DA","#1FA36B","#FFFFFF","#9AD8BC"],
+          ["Citron","#FFF0A0","#F2C230","#FFFFFF","#E8D27A"],
+          ["Myrtille","#C9B8F0","#5A2FB0","#E8DCFF","#A898D8"],
+          ["Caramel","#E8C590","#8A4A18","#FFE9C2","#C8A070"]]},
 };
 Object.values(EVENTS).filter(E=>!E.late).forEach(E=>{ E.palIdx = E.pals.map(P=>{ PALETTES.push(P); return PALETTES.length-1 }) });
 // La bille Bêta : un cadeau pour ceux qui testent Tikalo avant sa sortie, une de chaque taille, gardée à la remise à zéro du lancement.
@@ -4890,7 +4901,7 @@ const PLAYER_PALS = [
   ["Poups","#FFFFFF","#E48B25","#000000","#CCCCCC"],   // 3 octobre 2026 : base blanche ; 7 octobre : vedette orange et détails noirs (l'orange ne se voyait pas sur la plupart des motifs)
 ].map(P=>PALETTES.push(P)-1);
 // les coloris des événements arrivés après les coloris des joueurs (Super-héros : 79 à 83, mêmes numéros dans supabase/serveur.sql)
-Object.values(EVENTS).filter(E=>E.late).forEach(E=>{ E.palIdx = E.pals.map(P=>{ PALETTES.push(P); return PALETTES.length-1 }) });
+Object.values(EVENTS).filter(E=>E.late===true).forEach(E=>{ E.palIdx = E.pals.map(P=>{ PALETTES.push(P); return PALETTES.length-1 }) });
 // (8 octobre 2026) la bille de départ : un Calot choisi au premier lancement, dans l'un des 3 coloris réservés (84 à 86, mêmes numéros dans
 // supabase/serveur.sql, bille_gagnee 'depart'). Rangée avec les secrètes (secret « depart ») : ni troc, ni marché, ni Confiserie, ni fusion,
 // et ces coloris ne comptent pas dans l'album (personne n'est bloqué parce qu'il n'a pas les 3).
@@ -4905,6 +4916,8 @@ DEPART.forEach(D=>{ D.palIdx = PALETTES.push(D.pal)-1 });
 const PLAYER_PALS_2 = [
   ["BCKC","#00294B","#0090DD","#6FCBDB","#B8E6F0"],
 ].map(P=>PALETTES.push(P)-1);
+// (9 novembre 2026) les coloris des événements arrivés après BCKC (late:2 ; Bonbon : 88 à 92, mêmes numéros dans supabase/serveur.sql)
+Object.values(EVENTS).filter(E=>E.late===2).forEach(E=>{ E.palIdx = E.pals.map(P=>PALETTES.push(P)-1) });
 const isDepart = s => s?.secret==="depart";
 const departSpec = D => ({seed:hash("depart-"+D.k), type:"calot", family:D.fam, pal:D.palIdx, shiny:0});
 // les coloris qu'on peut tirer : les 48 d'origine et ceux des joueurs
@@ -6338,6 +6351,40 @@ vec4 fam(vec3 q, out vec3 e){
     e=vec3(1.0)*fl*1.2;
     return vec4(vec3(1.0), 0.12+fl*60.0);
   }
+#elif MODE==116
+  { // bonbon (événement de décembre 2026) : un bonbon rayé (2e et 3e couleur) dans sa papillote de cellophane, au cœur d'un verre sucré
+    bool couche=uAsp>1.2; vec3 p=couche?vec3(q.x,-q.z,q.y):q;
+    p.xy=mat2(0.94,0.34,-0.34,0.94)*p.xy;   // un peu penché
+    float rr=length(q);
+    vec3 glass=mix(uC1,vec3(1.0),0.2)*(0.75+0.2*smoothstep(0.95,0.2,rr));
+    vec3 eb=p/vec3(0.36,0.25,0.23); float body=length(eb);
+    vec3 L=normalize(vec3(-0.5,0.62,0.6));
+    if(body<1.0){
+      vec3 n=normalize(p/vec3(0.13,0.0625,0.053));
+      float st=sin((p.x*2.6+atan(p.z,p.y)/6.2832)*6.2832*2.0);
+      vec3 c=mix(uC2, uC3, smoothstep(-0.15,0.15,st));
+      float dif=max(dot(n,L),0.0), sp=pow(max(dot(n,normalize(L+vec3(0.0,0.0,1.0))),0.0),60.0);
+      return vec4(c*(0.35+0.8*dif)+vec3(sp*1.2), 300.0);
+    }
+    // la papillote : de chaque côté, la cellophane pincée puis évasée en éventail plissé
+    float ax=abs(p.x), rz=length(p.yz);
+    if(ax>0.3 && ax<0.74){
+      float t=(ax-0.38)/0.36;
+      float rad = t<0.0 ? 0.06+(-t)*0.9 : 0.045+0.3*pow(clamp(t,0.0,1.0),0.8);
+      float a=atan(p.z,p.y), pl=0.5+0.5*sin(a*9.0+ax*14.0);
+      rad*=0.85+0.25*pl;
+      if(rz<rad && rz>rad-0.035-0.04*step(t,0.0)){
+        vec3 cel=mix(uC3, vec3(1.0), 0.55);
+        e=cel*(0.35+1.2*pow(pl,6.0))*smoothstep(1.0,0.7,t);
+        return vec4(cel*(0.5+0.5*pl), 14.0);
+      }
+    }
+    // du sucre qui scintille dans le verre
+    vec3 g=q*14.0+so; vec3 fc=fract(g)-0.5;
+    float sug=step(0.9,h31(floor(g)))*smoothstep(0.12,0.03,length(fc))*smoothstep(0.95,0.8,rr)*step(0.55,length(eb));
+    e=mix(uC3,vec3(1.0),0.6)*sug*1.6;
+    return vec4(glass, 0.18+sug*20.0);
+  }
 #elif MODE==48
   { // super-héros (événement de novembre 2026). (31 octobre 2026) chaque coloris est un héros, sculpté au cœur d'un verre net,
     // avec son décor : la cape au-dessus des nuages, l'éclair et ses images fantômes, la chauve-souris devant la lune,
@@ -7627,7 +7674,7 @@ void main(){
 #if MODE==49
     const int GSTEPS=96;   // le Prisme : des faces nettes, sans grain (pas réguliers)
     float jit=0.5;
-#elif MODE==32 || MODE==48 || MODE==50 || MODE==51 || MODE==61 || MODE==63 || MODE==64 || MODE==79 || MODE==82 || MODE==83 || MODE==84 || MODE==85 || MODE==89 || MODE==90 || MODE==106 || MODE==107 || MODE==109 || MODE==110 || MODE==111 || MODE==112 || MODE==113 || MODE==114 || MODE==115
+#elif MODE==32 || MODE==48 || MODE==50 || MODE==51 || MODE==61 || MODE==63 || MODE==64 || MODE==79 || MODE==82 || MODE==83 || MODE==84 || MODE==85 || MODE==89 || MODE==90 || MODE==106 || MODE==107 || MODE==109 || MODE==110 || MODE==111 || MODE==112 || MODE==113 || MODE==114 || MODE==115 || MODE==116
     const int GSTEPS=64;
     float jit=fract(sin(dot(gl_FragCoord.xy,vec2(12.9898,78.233)))*43758.5453);   // pas décalés d'un pixel à l'autre : pas de stries
 #else

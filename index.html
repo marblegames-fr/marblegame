@@ -4336,6 +4336,8 @@ body.gc-open{overflow:hidden}
 @keyframes gcHop{to{transform:translateY(-8px)}}
 .gc-vig{position:absolute;inset:0;pointer-events:none;background:radial-gradient(130% 100% at 50% 60%,transparent 55%,rgba(0,0,0,.35))}
 .gc-skip{background:rgba(20,18,32,.82)!important;color:#fff!important;border:1px solid rgba(255,255,255,.18)!important;height:44px}
+/* (9 novembre 2026) « ×2 » allumé : bien jaune (le fond sombre de .gc-skip cachait le btn-yellow : on ne voyait jamais s'il était allumé ou pas) */
+.gc-x2[aria-pressed="true"]{background:var(--yellow)!important;color:#24253D!important;border-color:var(--yellow-2)!important}
 .gc-lights{position:absolute;left:50%;top:84px;transform:translateX(-50%);z-index:3;display:flex;gap:10px;padding:10px 14px;border-radius:18px;background:#15121F;box-shadow:0 10px 30px rgba(0,0,0,.5)}
 .gc-lights[hidden]{display:none}
 .gc-lights i{width:30px;height:30px;border-radius:50%;background:#3A2A2E;box-shadow:inset 0 -4px 6px rgba(0,0,0,.5)}

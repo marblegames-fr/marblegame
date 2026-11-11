@@ -667,6 +667,9 @@ vec3 meteo(vec3 q){ vec3 u=normalize(q), so=uSeed.xyz*40.0; vec3 g=u*3.2+so; vec
   float l=max(max(smoothstep(0.43,0.49,abs(fract(dot(u,a1)*16.0)-0.5)),smoothstep(0.43,0.49,abs(fract(dot(u,a2)*16.0)-0.5))),smoothstep(0.44,0.49,abs(fract(dot(u,a3)*16.0)-0.5)));
   return vec3(cr, l*0.8+0.2*h31(cid+5.0), h31(cid+7.0)); }
 #endif
+#if MODE<91
+vec3 brt(vec3 c, float m){ return c/max(max(c.r,max(c.g,c.b)),m); }   // (11 novembre 2026) aussi pour les motifs du 10 octobre (Nuages, Jean, Étoilée), qui prennent maintenant les 3 couleurs
+#endif
 #if MODE>=91
 // (6 novembre 2026) les outils des motifs 91 et suivants
 mat2 mrot(float a){ float c=cos(a), s=sin(a); return mat2(c,s,-s,c); }
@@ -1506,13 +1509,13 @@ vec4 fam(vec3 q, out vec3 e){
     return vec4(mix(col,vec3(1.0,0.9,0.7),sp), 0.7+sp*40.0+smoothstep(0.55,0.85,sw)*1.4);
   }
 #elif MODE==52
-  { // étoilée : de petites étoiles à cinq branches semées sur toute la bille
+  { // (11 novembre 2026, les 3 couleurs du coloris) étoilée : le fond de la 1re couleur, les étoiles de la 2e, de la 3e et quelques-unes crème
     vec3 u=normalize(q); vec3 g=u*3.4+so; vec3 id=floor(g), f=fract(g)-0.5;
     vec3 t1=normalize(cross(u,vec3(0.0,1.0,0.013))), t2=cross(u,t1);
     float a=h31(id+5.0)*6.2831853; vec2 p=vec2(dot(f,t1),dot(f,t2)); p=vec2(cos(a)*p.x-sin(a)*p.y, sin(a)*p.x+cos(a)*p.y);
     float sz=0.19+0.11*h31(id+3.0);
     float st=smoothstep(0.015,-0.015,sdStar(p/sz)*sz)*step(0.22,h31(id));
-    vec3 sc=h31(id+2.0)<0.6?vec3(0.99,0.95,0.8):uC3;
+    float k=h31(id+2.0); vec3 sc=k<0.42?brt(uC2,0.55):(k<0.84?uC3:vec3(0.99,0.95,0.8));
     return vec4(mix(uC1,sc,st), 200.0);
   }
 #elif MODE==53
@@ -1534,40 +1537,41 @@ vec4 fam(vec3 q, out vec3 e){
     return vec4(c, 200.0);
   }
 #elif MODE==55
-  { // vagues : des bandes en vagues bien rondes qui font le tour de la bille
+  { // (11 novembre 2026, les 3 couleurs du coloris) vagues : les bandes prennent les 3 couleurs, la crème en fin filet entre elles
     vec3 u=normalize(q); float lon=atan(u.z,u.x);
     float y=u.y*(4.5+nb)+0.38*sin(lon*(4.0+nb)+so.x);
-    float m=mod(floor(y),3.0); vec3 c=m<1.0?uC1:(m<2.0?vec3(0.97,0.96,0.93):uC2);
+    float m=mod(floor(y),3.0); vec3 c=m<1.0?uC1:(m<2.0?uC3:uC2);
     c*=mix(0.8,1.0,smoothstep(0.0,0.14,fract(y)));
+    c=mix(c,vec3(0.97,0.96,0.93),smoothstep(0.93,0.97,fract(y)));
     return vec4(c, 200.0);
   }
 #elif MODE==56
-  { // zigzag : des bandes en dents de scie, comme sur un pull d'hiver
+  { // (11 novembre 2026, les 3 couleurs du coloris) zigzag : 1re, 3e, 2e couleur et un rang crème
     vec3 u=normalize(q); float s=atan(u.z,u.x)/6.2831853*(8.0+nb*2.0);
     float zz=abs(fract(s)-0.5)*2.0;
     float y=u.y*(3.5+nb*0.5)+zz*0.6;
-    float m=mod(floor(y),4.0); vec3 c=m<1.0?uC1:(m<2.0?uC3:(m<3.0?uC1:vec3(0.97,0.95,0.9)));
+    float m=mod(floor(y),4.0); vec3 c=m<1.0?uC1:(m<2.0?uC3:(m<3.0?uC2:vec3(0.97,0.95,0.9)));
     c*=mix(0.82,1.0,smoothstep(0.0,0.1,fract(y)));
     return vec4(c, 200.0);
   }
 #elif MODE==57
-  { // tricot : des mailles de laine en V, rang par rang, avec quelques rangs d'une autre couleur
+  { // (11 novembre 2026, les 3 couleurs du coloris) tricot : des rangs des 3 couleurs (et un rang crème), comme un pull jacquard
     vec3 u=normalize(q); vec2 s=sph(u); float n=16.0+nb*2.0;
     vec2 p=vec2(s.x*n, s.y*n*0.62); vec2 id=floor(p), f=fract(p)-0.5;
     vec2 g=vec2(abs(f.x)-0.23, f.y+abs(f.x)*0.85-0.1);
     float leg=length(g*vec2(1.9,1.0))-0.3;
     float sh=smoothstep(0.1,-0.06,leg);
-    float row=mod(id.y+floor(so.x),7.0);
-    vec3 yarn=row<2.0?uC2:(row<3.0?vec3(0.96,0.94,0.9):uC1);
+    float row=mod(id.y+floor(so.x),8.0);
+    vec3 yarn=row<3.0?uC1:(row<5.0?uC2:(row<7.0?uC3:vec3(0.96,0.94,0.9)));
     vec3 c=yarn*(0.4+0.65*sh)*(0.9+0.18*noise(vec3(p*7.0,so.x)));
     return vec4(c, 200.0);
   }
 #elif MODE==58
-  { // nuages : un ciel de la couleur du coloris où passent de gros nuages blancs bien ronds
+  { // (11 novembre 2026, les 3 couleurs du coloris) nuages : un ciel qui passe de la 1re couleur (en bas) à la 2e (en haut), des nuages teintés de la 3e
     vec3 u=normalize(q); float n=fbm(u*vec3(2.0,3.4,2.0)+so)+0.3*fbm(u*6.0+so+3.0);
     float cl=smoothstep(0.6,0.68,n);
-    vec3 sky=mix(uC1,mix(uC1,vec3(1.0),0.5),u.y*0.5+0.5);
-    vec3 cloud=mix(vec3(0.78,0.83,0.92),vec3(1.0),smoothstep(0.64,0.86,n));
+    vec3 sky=mix(uC1,brt(uC2,0.5),smoothstep(-0.7,0.8,u.y));
+    vec3 cloud=mix(mix(uC3,vec3(1.0),0.35)*0.82,vec3(1.0),smoothstep(0.64,0.86,n));
     return vec4(mix(sky,cloud,cl), 200.0);
   }
 #elif MODE==59
@@ -1582,18 +1586,18 @@ vec4 fam(vec3 q, out vec3 e){
     return vec4(mix(base,sc,sp), 200.0);
   }
 #elif MODE==60
-  { // jean : la toile de jean (sa trame en diagonale, un peu délavée) et une double couture au fil doré
+  { // (11 novembre 2026, les 3 couleurs du coloris) jean : la toile de la 1re couleur, délavée vers la 2e, la double couture au fil de la 3e
     vec3 u=normalize(q); vec2 s=sph(u);
     float tw2=fract((s.x*2.0+s.y)*55.0);
     float fade=smoothstep(0.45,0.75,fbm(u*2.0+so));
     vec3 den=mix(uC1*0.45,mix(uC1,vec3(0.9),0.25),smoothstep(0.35,0.65,tw2));
-    den=mix(den,mix(uC1,vec3(0.92,0.94,0.97),0.6),fade*0.7);
+    den=mix(den,mix(uC2,vec3(0.92,0.94,0.97),0.35),fade*0.7);
     den*=0.88+0.22*noise(u*70.0+so);
     float y=u.y+0.04*sin(atan(u.z,u.x)*2.0+so.x);
     den=mix(den,den*0.7,smoothstep(0.065,0.04,abs(y)));
     float lon=atan(u.z,u.x)/6.2831853*80.0;
     float stitch=step(0.4,fract(lon))*smoothstep(0.02,0.01,abs(abs(y)-0.085));
-    return vec4(mix(den,vec3(0.93,0.64,0.24),stitch), 200.0);
+    return vec4(mix(den,mix(brt(uC3,0.6),vec3(0.93,0.64,0.24),0.2),stitch), 200.0);
   }
 #elif MODE==61
   { // ambre : une résine limpide de la couleur du coloris, plus foncée vers le bord ; au cœur, une feuille fossile
@@ -1614,7 +1618,7 @@ vec4 fam(vec3 q, out vec3 e){
     return vec4(res, 0.55+bub*25.0);
   }
 #elif MODE==62
-  { // circuit : une carte électronique sombre ; ses pistes s'allument et la lumière y court d'un point à l'autre
+  { // (11 novembre 2026, les 3 couleurs du coloris) circuit : la carte de la 1re couleur (sombre), les pistes de la 2e, les pastilles de la 3e
     vec3 u=normalize(q); vec2 s=sph(u); float n=9.0+nb*2.0;
     vec2 p=vec2(s.x*n*2.0, s.y*n); vec2 id=floor(p), f=fract(p);
     float hk=h31(vec3(id,so.x)), hk2=h31(vec3(id,so.y+4.0));
@@ -1625,10 +1629,11 @@ vec4 fam(vec3 q, out vec3 e){
     float pad=smoothstep(0.21,0.16,length(f-0.5))*step(0.7,h31(vec3(id,so.z+9.0)));
     float hole=smoothstep(0.085,0.055,length(f-0.5))*pad;
     float pulse=pow(0.5+0.5*sin((p.x+p.y)*0.9-uTime*2.5+hk*6.0),6.0);
-    vec3 board=mix(vec3(0.03,0.06,0.07),uC1*0.25,0.6)*(0.85+0.2*noise(u*40.0+so));
-    vec3 lc=mix(uC2,vec3(1.0),0.35);
-    e=(lc*(tr*(0.5+2.5*pulse)+pad*1.1)*(1.0-hole)+lc*smoothstep(0.32,0.0,dd)*0.2)*1.4;
-    vec3 c=mix(board,mix(uC2,vec3(0.85,0.75,0.4),0.3),max(tr,pad)*(1.0-hole));
+    vec3 board=mix(vec3(0.03,0.06,0.07),uC1*0.45,0.7)*(0.85+0.2*noise(u*40.0+so));
+    vec3 lc=mix(uC2,vec3(1.0),0.2), pc=mix(uC3,vec3(1.0),0.15);
+    e=(lc*(tr*(0.5+2.5*pulse))*(1.0-pad)+pc*pad*1.1*(1.0-hole)+lc*smoothstep(0.32,0.0,dd)*0.2)*1.2;
+    vec3 c=mix(board,mix(uC2,vec3(0.85,0.75,0.4),0.2),tr*(1.0-pad));
+    c=mix(c,pc,pad*(1.0-hole));
     return vec4(c, 200.0);
   }
 #elif MODE==63

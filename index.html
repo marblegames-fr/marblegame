@@ -3482,6 +3482,10 @@ button.cp-who:hover b{text-decoration:underline}
 /* (7 octobre 2026) combien d'exemplaires on a déjà : ×2 = un double à vendre ou troquer */
 .pick-n{position:absolute;top:5px;right:5px;display:inline-flex;align-items:center;gap:2px;font-size:10.5px;font-weight:900;padding:1px 6px;border-radius:999px;background:#E8743B;color:#fff}
 .pick-n.have{background:var(--green)}
+.pick-stp{display:inline-flex;align-items:center;gap:6px;margin-top:4px;padding:2px;border-radius:999px;background:var(--tc,var(--blue));color:#fff}
+.pick-stp>span{width:22px;height:22px;display:grid;place-items:center;border-radius:50%;background:rgba(0,0,0,.22);font-size:15px;font-weight:900;cursor:pointer}
+.pick-stp>span[aria-disabled="true"]{opacity:.35;cursor:default}.pick-stp b{font-size:11px;min-width:30px}
+.pick-ns{position:absolute;top:5px;right:5px;display:inline-flex;gap:3px}.pick-ns .pick-n{position:static}
 .pick-n svg{width:10px;height:10px}
 /* au marché et dans les trocs : déjà dans ta boîte (vert) ou qui te manque (doré : motif, bleu : coloris) */
 .mk-own{display:inline-flex;align-items:center;gap:4px;font-size:11.5px;font-weight:800;padding:2px 9px;border-radius:999px;background:color-mix(in srgb,var(--green) 16%,transparent);color:var(--green)}
@@ -10037,7 +10041,7 @@ function viewCollection(){
   const ballCard = (x, grp=[x]) => { const nw = grp.filter(y=>unseenIds.has(y.id)).map(y=>y.id), bz = grp.map(y=>busy.get(y.id)).find(Boolean);
     const rb = rarBand(x);
     const pk = ui.sel && ui.sel.has(x.id);
-    const nX = show==="dups" ? byColor.get(dupKey(x)).length : grp.length;   // le filtre Doubles montre les exemplaires un par un, chacun avec le total (×3)
+    const nX = grp.length;   // (11 novembre 2026) le filtre Doubles aussi : une seule carte par bille, avec son nombre d'exemplaires (×3)
     return `<button class="m-card${x.shiny?" is-shiny":""}${bz?` busy bz-${bz}`:""}${rb?" has-rb":""}${pk?" picked":""}" data-action="${ui.sel?"sel-toggle":"spec"}" data-id="${x.id}"${ui.sel?` data-grp="${grp.map(y=>y.id).join(",")}" aria-pressed="${!!pk}"`:""}${nw.length?` data-unseen="${nw.join(",")}"`:""}${bz?` title="${BUSY[bz]}${grp.length>1?" (un des exemplaires)":""}"`:""}>
       ${rb}${ui.sel?`<span class="sel-ck" aria-hidden="true">${ic("check",14,3.2)}</span>`:""}${bz?`<span class="bz-tag">${ic(bz==="troc"?"swap":bz==="ench"?"gavel":"candy",11,2.4)} ${BUSY[bz]}</span>`:""}
       <span class="m-tags">${grp.some(y=>y.lock)?`<span class="lock-tag" title="${grp.length>1&&!grp.every(y=>y.lock)?"Un des exemplaires est verrouillé":"Verrouillée"}">${ic("lock",11,2.6)}</span>`:""}${x.shiny?shinyPill(x):""}<i class="m-tags-sp"></i>${nw.length&&show!=="dups"?`<span class="new">Nouveau</span>`:""}${nX>1?`<span class="x-n" title="Tu as ${nX} exemplaires de cette bille">×${nX}</span>`:""}</span>
@@ -10116,9 +10120,9 @@ function viewCollection(){
       rar:(a,b)=>FAMILIES[b.family].rar-FAMILIES[a.family].rar || FAMILIES[a.family].name.localeCompare(FAMILIES[b.family].name,"fr") || tierSort(a,b),
       color:(a,b)=>PALETTES[a.pal][0].localeCompare(PALETTES[b.pal][0],"fr")||tierSort(a,b),
       slot:(a,b)=>byColor.get(dupKey(b)).length-byColor.get(dupKey(a)).length || TIDX[b.type]-TIDX[a.type] || a.family-b.family || a.pal-b.pal || (keep.has(b.id)?1:0)-(keep.has(a.id)?1:0) || tierSort(a,b)};
-    // les exemplaires d'une même bille sont regroupés sur une seule carte (« ×2 ») ; le filtre Doubles les montre un par un
+    // les exemplaires d'une même bille sont regroupés sur une seule carte (« ×2 »), le filtre Doubles compris (11 novembre 2026)
     const grps = new Map();
-    if(show!=="dups"){ const g = new Map(); list.forEach(x=>{ const k=dupKey(x); if(!g.has(k)) g.set(k,[]); g.get(k).push(x) });
+    { const g = new Map(); list.forEach(x=>{ const k=dupKey(x); if(!g.has(k)) g.set(k,[]); g.get(k).push(x) });
       list = [...g.values()].map(l=>{ const b=[...l].sort(tierSort)[0]; grps.set(b.id,l); return b }) }
     list.sort(by[srt]);
     // (16 octobre 2026) les très grosses boîtes : 50 cartes, puis « Afficher plus » par paquets de 100.
@@ -17955,7 +17959,7 @@ let bugKeep = null;   // un message qui n'est pas parti : il est reproposé au p
 // on:false cache le bouton (pendant qu'on prépare la mise à jour) ; on:true le remet, avec la pastille si l'id a changé
 // (16 octobre 2026) deux repères : dot = la pastille rouge du bouton, à changer à CHAQUE mise en ligne qui ajoute une ligne au patchnote
 // (avec txt : la date du jour) ; id = la fenêtre d'annonce à l'arrivée, seulement pour les très gros jours
-const NEWS = {on:true, id:"2026-11-06", dot:"2026-11-09-1500", url:"/nouveautes.html", txt:"Mise à jour du 9 nov."};
+const NEWS = {on:true, id:"2026-11-06", dot:"2026-11-11-1200", url:"/nouveautes.html", txt:"Mise à jour du 11 nov."};
 const newsUnseen = () => lsGet("billeo-news-vu")!==NEWS.dot;
 // (14 octobre 2026) à l'arrivée, une fenêtre annonce la mise à jour, une seule fois par mise à jour et par compte (S.newsPop, gardé
 // dans la partie : elle ne revient pas sur un autre appareil) ; on choisit d'aller voir les nouveautés, ou pas
@@ -18893,6 +18897,13 @@ function dupsIn(list){
   by.forEach(l=>{ if(l.length>1){ const k = [...l].sort(tierSort)[0]; l.forEach(s=>{ if(s.id!==k.id) out.add(s.id) }) } });
   return out;
 }
+// (11 novembre 2026) avec « Seulement mes doubles » / « Seulement ses doubles » : une seule carte par bille (son ×N reste affiché),
+// celle déjà choisie si l'un de ses exemplaires l'est
+function oneEach(list, sel=[]){
+  const by = new Map();
+  list.forEach(x=>{ const k = dupKey(x), b = by.get(k); if(!b || (!sel.includes(b.id) && sel.includes(x.id))) by.set(k, x) });
+  return [...by.values()];
+}
 // ce qui manque à un copain, d'après les clés de sa boîte (collection_copain) : "dec" = motif absent dans cette taille, "col" = coloris absent
 function hisMiss(keys){
   const sk = new Set(), ck = new Set();
@@ -18908,7 +18919,7 @@ function missOf(){
 const pickGlow = x => { const F = FAMILIES[x.family], r = decorRar(x);
   return F?.event ? "#FF5FD2" : F?.season!=null || isSeason(x) ? "#2EE6C8" : r>=1 ? MOTIF_COL[r] : r===0 ? "#FFFFFF" : mvBg(x).c };
 // (28 octobre 2026) « Vendre une bille » : chaque bille a la lueur de la rareté de son motif (au troc, seulement celles qui manquent)
-const pickCard = (x, side, on, hid, nw, cnt) => `<button class="pick${nw?` miss ${nw}`:side==="sell"?" pk-rar":""}"${nw||side==="sell"?` style="--gc:${pickGlow(x)}"`:""} data-action="troc-pick" data-q="${esc(pickTxt(x))}"${hid?" hidden":""} data-side="${side}" data-id="${x.id}" aria-pressed="${on}">${cnt||""}<span class="ball">${mImg(x,120,Math.round(28*scaleOf(x.type)+18),"")}</span>${nw?`<span class="miss-sp" title="${side==="give" ? (nw==="dec"?"Un motif que ton copain n'a pas dans cette taille":"Un coloris que ton copain n'a pas") : nw==="dec"?"Un motif que tu n'as pas dans cette taille":"Un coloris que tu n'as pas"}">${SPARK}</span>`:""}${esc(specName(x))}<small class="meta">${TYPES[x.type].label}</small></button>`;
+const pickCard = (x, side, on, hid, nw, cnt, stp="") => `<button class="pick${nw?` miss ${nw}`:side==="sell"?" pk-rar":""}"${nw||side==="sell"?` style="--gc:${pickGlow(x)}"`:""} data-action="troc-pick" data-q="${esc(pickTxt(x))}"${hid?" hidden":""} data-side="${side}" data-id="${x.id}" aria-pressed="${on}">${cnt||""}<span class="ball">${mImg(x,120,Math.round(28*scaleOf(x.type)+18),"")}</span>${nw?`<span class="miss-sp" title="${side==="give" ? (nw==="dec"?"Un motif que ton copain n'a pas dans cette taille":"Un coloris que ton copain n'a pas") : nw==="dec"?"Un motif que tu n'as pas dans cette taille":"Un coloris que tu n'as pas"}">${SPARK}</span>`:""}${esc(specName(x))}<small class="meta">${TYPES[x.type].label}</small>${stp}</button>`;
 // la recherche (par nom, shiny, rareté…) cache les billes sans tout redessiner ; elle est gardée dans PQ pour les redessins
 const PQ = {};
 // (6 novembre 2026) la rareté du motif, pour le filtre de « Vendre une bille » : comme la lueur (événement et saison à part)
@@ -18917,8 +18928,12 @@ const PICK_RAR = [["0",DECOR_RAR[0].name,"#FFFFFF"],["1",DECOR_RAR[1].name,MOTIF
 const pqWords = side => fold(PQ[side]||"").trim().split(/\s+/).filter(Boolean);
 // (28 octobre 2026) 30 billes par page : avec des milliers de billes, tout dessiner d'un coup bloquait la page (« Vendre une bille », troc)
 const PK_PAGE = 30, PL = {};
-function pickList(list, side, sel, filt, missFn){
+function pickList(list, side, sel, filt, missFn, hisN, one){
   if(!list) return courWait();
+  // (11 novembre 2026) une carte par bille avec les filtres de doubles ; grp : les exemplaires qu'on peut mettre de cette bille (le compteur − / + du troc)
+  let grp = null;
+  if(one){ const by = new Map(); list.forEach(x=>{ const k = dupKey(x); if(!by.has(k)) by.set(k,[]); by.get(k).push(x.id) });
+    list = oneEach(list, sel); grp = new Map(list.map(x=>[x.id, by.get(dupKey(x))])) }
   const miss = missFn || (side==="want" ? missOf() : () => ""), nd = list.filter(x=>miss(x)==="dec").length, nc = list.filter(x=>miss(x)==="col").length;
   const te = missFn ? "lui" : "te";   // (16 octobre 2026) côté « Tu donnes » : ce qui manque au copain
   const leg = nd||nc ? `<p class="miss-leg">${nd?`<span class="dec">${SPARK} ${nd} motif${nd>1?"s":""} qui ${te} manque${nd>1?"nt":""}</span>`:""}${nc?`<span class="col">${SPARK} ${nc} coloris qui ${te} manque${nc>1?"nt":""}</span>`:""}</p>` : "";
@@ -18927,20 +18942,24 @@ function pickList(list, side, sel, filt, missFn){
   const rf = side!=="sell" ? "" : (()=>{ const ks = new Set(list.map(pickRarK)), R = PICK_RAR.filter(([k])=>ks.has(k));
     return R.length<2 ? "" : `<div class="pick-filters pk-rf"><button class="chip" data-action="pick-rar" data-r="" aria-pressed="${!cour.sell?.rf}">Tous les motifs</button>${R.map(([k,l,c])=>`<button class="chip" data-action="pick-rar" data-r="${k}" style="--rc:${c}" aria-pressed="${cour.sell?.rf===k}"><i></i>${l}</button>`).join("")}</div>` })();
   // le nombre d'exemplaires : chez toi, ×2 et plus = un double ; chez le copain, ce que tu as déjà
+  // (11 novembre 2026) « Seulement ses doubles » : une carte par bille, avec combien il en a (hisN) à côté de ce que tu as
   const own = ownInfo(), cnt = x => { const n = own(x).n;
-    return side==="want" ? (n ? `<span class="pick-n have" title="Tu l'as déjà">${ic("check",10,3)}${n>1?`×${n}`:""}</span>` : "")
-      : n>1 ? `<span class="pick-n" title="Tu en as ${n}">×${n}</span>` : "" };
-  PL[side] = {list, sel, filt, miss, cnt};
+    if(side==="want"){ const have = n ? `<span class="pick-n have" title="Tu l'as déjà">${ic("check",10,3)}${n>1?`×${n}`:""}</span>` : "", h = hisN ? hisN(x) : 0;
+      return h>1 ? `<span class="pick-ns">${have}<span class="pick-n" title="Il en a ${h}">×${h}</span></span>` : have }
+    return n>1 ? `<span class="pick-n" title="Tu en as ${n}">×${n}</span>` : "" };
+  PL[side] = {list, sel, filt, miss, cnt, grp};
   return list.length ? search + chips + rf + leg + `<div class="pick-res" data-side="${side}">${pickRes(side)}</div>` : `<p class="empty">Aucune bille à troquer.</p>`;
 }
 // la page de billes affichée (recherche et taille appliquées à toute la liste), et ses flèches
 function pickRes(side){
-  const {list, sel, filt, miss, cnt} = PL[side], q = pqWords(side);
+  const {list, sel, filt, miss, cnt, grp} = PL[side], q = pqWords(side);
   const rf = side==="sell" && cour.sell?.rf;
   const shown = list.filter(x=>(!filt || x.type===filt) && (!rf || pickRarK(x)===rf) && q.every(w=>pickTxt(x).includes(w)));
   if(!shown.length) return `<p class="meta pick-none">Aucune bille ne correspond.</p>`;
   const P = courPages(shown.length, PK_PAGE, "pk"+side);
-  return `<div class="pick-grid" data-side="${side}">${shown.slice(P.from, P.from+PK_PAGE).map(x=>pickCard(x, side, sel.includes(x.id), false, miss(x), cnt(x))).join("")}</div>${courPager(P, "pk"+side, "Billes")}`;
+  return `<div class="pick-grid" data-side="${side}">${shown.slice(P.from, P.from+PK_PAGE).map(x=>{ const g = side!=="sell" && grp?.get(x.id), k = g ? g.filter(id=>sel.includes(id)).length : 0;
+    const on = g ? k>0 : sel.includes(x.id), stp = g && k && g.length>1 ? `<span class="pick-stp"><span role="button" tabindex="0" data-action="troc-step" data-side="${side}" data-id="${x.id}" data-d="-1" aria-label="Un de moins">−</span><b>${k} / ${g.length}</b><span role="button" tabindex="0" data-action="troc-step" data-side="${side}" data-id="${x.id}" data-d="1" aria-label="Un de plus"${k>=g.length?` aria-disabled="true"`:""}>+</span></span>` : "";
+    return pickCard(x, side, on, false, miss(x), cnt(x), stp) }).join("")}</div>${courPager(P, "pk"+side, "Billes")}`;
 }
 function trocCompose(){
   const C = cour.compose;
@@ -18956,11 +18975,11 @@ function trocCompose(){
         <div style="--tc:#E8743B">${(()=>{ if(!C.mine) return pickList(C.mine, "give", C.give, C.fg);
           // (16 octobre 2026) ce qui manque au copain, d'après toute sa boîte (C.coll) : halo doré = motif qu'il n'a pas dans cette taille, bleu = coloris qu'il n'a pas
           const hm = C.coll ? hisMiss(C.coll) : null, dd = C.dbl ? trocDups() : null, L = C.mine.filter(x=>(!dd || dd.has(x.id)) && (!C.lmanque || !hm || hm(x)));
-          return (C.dbl || C.lmanque) && !L.length ? `<p class="empty">Tu n'as aucune bille ${C.dbl && C.lmanque ? `en double qui manque à ${esc(C.pseudo)}` : C.lmanque ? `qui manque à ${esc(C.pseudo)}` : "en double à troquer"}.</p>` : pickList(L, "give", C.give, C.fg, hm || undefined) })()}</div></section>
+          return (C.dbl || C.lmanque) && !L.length ? `<p class="empty">Tu n'as aucune bille ${C.dbl && C.lmanque ? `en double qui manque à ${esc(C.pseudo)}` : C.lmanque ? `qui manque à ${esc(C.pseudo)}` : "en double à troquer"}.</p>` : pickList(L, "give", C.give, C.fg, hm || undefined, null, C.dbl) })()}</div></section>
       <section class="panel cmp want"><div class="panel-head"><h3>${ic("arrow",18)} Tu demandes à ${esc(C.pseudo)}</h3>${dots(C.want.length)}</div>${C.theirs?.length ? `<div class="tr-dbls"><label class="tr-dbl"><input type="checkbox" data-action="troc-manque"${C.manque?" checked":""}> Seulement celles qui me manquent</label><label class="tr-dbl"><input type="checkbox" data-action="troc-sdbl"${C.sdbl?" checked":""}> Seulement ses doubles</label></div>` : ""}
         <div style="--tc:var(--green)">${(()=>{ if(!C.theirs) return pickList(C.theirs, "want", C.want, C.fw);
           const miss = missOf(), dup = C.sdbl ? dupsIn(C.theirs) : null, L = C.theirs.filter(x=>(!C.manque || miss(x)) && (!dup || dup.has(x.id)));
-          return (C.manque || C.sdbl) && !L.length ? `<p class="empty">${esc(C.pseudo)} n'a aucune bille ${C.manque && C.sdbl ? "qui te manque en double" : C.manque ? "qui te manque" : "en double"}.</p>` : pickList(L, "want", C.want, C.fw) })()}</div></section>
+          return (C.manque || C.sdbl) && !L.length ? `<p class="empty">${esc(C.pseudo)} n'a aucune bille ${C.manque && C.sdbl ? "qui te manque en double" : C.manque ? "qui te manque" : "en double"}.</p>` : pickList(L, "want", C.want, C.fw, undefined, !dup ? null : (()=>{ const n = new Map(); C.theirs.forEach(x=>{ const k = dupKey(x); n.set(k, (n.get(k)||0)+1) }); return x => n.get(dupKey(x)) })(), !!dup) })()}</div></section>
     </div>
     <section class="panel cmp-send"><div class="cmp-sum">${sd("give","Tu donnes",C.mine,C.give)}${ic("swap",18)}${sd("get","Tu reçois",C.theirs,C.want)}</div>
       <form class="cour-form" id="troc-form"><input type="text" id="troc-mot" maxlength="140" placeholder="Un petit mot pour ${esc(C.pseudo)} (facultatif)" value="${esc(C.mot||"")}" aria-label="Petit mot">
@@ -19179,7 +19198,7 @@ function sellView(){
   const pick = `<section class="panel">${step(1, p ? "Ta bille" : "Choisis la bille à vendre", !p)}
       ${X.list?.length ? `<label class="tr-dbl"><input type="checkbox" data-action="sell-dbl"${X.dbl?" checked":""}> Seulement mes doubles</label>` : ""}
       ${(()=>{ const dd = X.dbl && X.list ? trocDups() : null, L = dd ? X.list.filter(x=>dd.has(x.id)) : X.list;   // (28 octobre 2026) les doubles calculés une seule fois (avant : une fois par bille, très lent avec une grosse boîte)
-        return dd && !L.length ? `<p class="empty">Tu n'as aucun double à vendre.</p>` : pickList(L, "sell", X.pick?[X.pick]:[], X.f) })()}</section>`;
+        return dd && !L.length ? `<p class="empty">Tu n'as aucun double à vendre.</p>` : pickList(L, "sell", X.pick?[X.pick]:[], X.f, undefined, null, !!dd) })()}</section>`;
   const form = p ? `<section class="panel">${step(2, "Comment tu la vends ?", true)}
       <div class="sell-card"><span class="sell-vis" style="${tstyle(p.type)}">${mImg(p,200,Math.round(50*scaleOf(p.type)+50),"")}</span>
         <div><h4>${esc(specName(p))}</h4><span class="pills">${typePill(p.type)}${shinyPill(p)}</span><p class="meta">À la Confiserie, elle vaut ${fmt(recycleValue(p))} ${CUR.many}.</p>
@@ -19350,7 +19369,17 @@ document.addEventListener("click", e=>{
       if(t.dataset.side==="sell"){ cour.sell.pick = t.dataset.id; renderView(); document.getElementById("sell-prix")?.focus(); break }
       const C = cour.compose, list = t.dataset.side==="give" ? C.give : C.want, i = list.indexOf(t.dataset.id);
       C.mot = document.getElementById("troc-mot")?.value || C.mot;
-      if(i>=0) list.splice(i,1); else if(list.length<6) list.push(t.dataset.id); else { toast("6 billes au maximum de chaque côté."); break }
+      const g = PL[t.dataset.side]?.grp?.get(t.dataset.id);   // une carte qui regroupe des doubles : la décocher retire tous ses exemplaires
+      if(g && g.some(id=>list.includes(id))){ g.forEach(id=>{ const j = list.indexOf(id); if(j>=0) list.splice(j,1) }) }
+      else if(i>=0) list.splice(i,1); else if(list.length<6) list.push(t.dataset.id); else { toast("6 billes au maximum de chaque côté."); break }
+      renderView(); break;
+    }
+    case "troc-step": {   // (11 novembre 2026) le compteur − / + d'une bille en double dans le troc
+      const C = cour.compose, list = t.dataset.side==="give" ? C.give : C.want, g = PL[t.dataset.side]?.grp?.get(t.dataset.id) || [];
+      C.mot = document.getElementById("troc-mot")?.value || C.mot;
+      if(+t.dataset.d>0){ const id = g.find(id=>!list.includes(id)); if(!id) break;
+        if(list.length>=6){ toast("6 billes au maximum de chaque côté."); break } list.push(id) }
+      else { const pris = g.filter(id=>list.includes(id)); if(pris.length) list.splice(list.indexOf(pris[pris.length-1]),1) }
       renderView(); break;
     }
     case "troc-oui": case "troc-non": {

@@ -1,4 +1,4 @@
-/* Extrait automatique de index.html du 2026-10-28 (outils/extraire-rendu.mjs) : données, rendu WebGL des billes, icônes, sachets,
+/* Extrait automatique de index.html du 2026-11-11 (outils/extraire-rendu.mjs) : données, rendu WebGL des billes, icônes, sachets,
    aperçus des jeux, marelle, distributeur, chaudron. Ne pas modifier à la main : relancer l'extraction. */
 /* =====================================================================
    DONNÉES DU JEU
@@ -28,7 +28,7 @@ const DECOR_RAR = [
   {name:"Rare",       w:3.5,c:"#2E6BE6"},   // (10 octobre 2026, le soir) 2,5 → 3,5 et 0,8 → 1,2 : avec les 13 nouveaux motifs, les rares et les épiques sortaient trop peu
   {name:"Épique",     w:1.2, c:"#8A4AD6"},
   {name:"Légendaire", w:.2, c:"#D97E06"},
-  {name:"Mythique",   w:.02, c:"#E0182D"},   // (10 octobre 2026) un seul motif, l'Œil du Dragon (le Vortex jusqu'au 11 octobre) : 10 fois plus rare qu'un légendaire (6 dans supabase/serveur.sql, 5 y étant les événements)
+  {name:"Mythique",   w:.02, c:"#E0182D"},   // (6 novembre 2026) trois motifs (Œil du Dragon, Astrolabe, Plasma) qui se partagent la part de la rareté ; (10 octobre 2026) un seul motif, l'Œil du Dragon (le Vortex jusqu'au 11 octobre) : 10 fois plus rare qu'un légendaire (6 dans supabase/serveur.sql, 5 y étant les événements)
 ];
 // Familles de motif (chacune a son propre rendu). L'ordre ne doit pas changer : il sert d'identifiant.
 const FAMILIES = [
@@ -85,7 +85,7 @@ const FAMILIES = [
   // la bille des bêta-testeurs : jamais dans les sachets ni dans l'album
   {name:"Bêta",          rar:4, beta:true, desc:"Un β d'or qui brille au cœur d'un verre précieux (une pierre différente pour chaque taille), cerclé d'un anneau d'or : la bille de ceux qui ont testé Tikalo avant tout le monde."},
   // événement de novembre 2026 « Super-héros ! » (numéro 48 : toujours à la fin, les numéros ne bougent jamais)
-  {name:"Super-héros",   rar:4, event:"superheros", desc:"Chaque coloris est un héros de la cour, avec son blason derrière les rayons d'une case de bande dessinée : l'écusson de Capitaine Éclair, les ailes de Fulgura, le masque d'Ombre violette, le poing du Titan vert et la flamme de Flamme écarlate."},
+  {name:"Super-héros",   rar:4, event:"superheros", desc:"Un héros sculpté au cœur du verre : la cape au-dessus des nuages, l'éclair, la chauve-souris devant la lune, le poing qui fêle le verre, l'araignée sur sa toile."},
   // (7 octobre 2026) nouveaux motifs : un légendaire (49, le Prisme, qui remplace l'Œil de dragon du même jour ; épique depuis le 8 octobre) et deux épiques (50, 51)
   {name:"Prisme",        rar:3, face:true, desc:"Un prisme de cristal au cœur d'un verre profond : un rayon de lumière blanche le traverse et ressort en arc-en-ciel."},
   {name:"Orage",         rar:3, desc:"Un ciel d'orage enfermé dans le verre, traversé d'éclairs qui l'illuminent de l'intérieur."},
@@ -103,7 +103,7 @@ const FAMILIES = [
   {name:"Ambre",         rar:3, face:true, desc:"Une résine limpide où une feuille fossile est prise depuis des millions d'années, avec de petites bulles d'air."},
   {name:"Circuit",       rar:1, desc:"Une carte électronique : ses pistes s'allument et la lumière y court d'un point à l'autre."},
   {name:"Feu d'artifice", rar:4, desc:"Des bouquets de lumière qui éclatent dans un verre de nuit, chacun de sa couleur."},
-  {name:"Œil du Dragon", rar:5, face:true, myth:true, desc:"Le motif mythique : un œil de dragon te regarde depuis le fond du verre. Son iris brûle, sa pupille fendue s'ouvre et se resserre, il cligne… Sa peau, son iris et le feu de sa pupille prennent les 3 couleurs du coloris."},   // (11 octobre 2026) remplace le Vortex, même numéro 64
+  {name:"Œil du Dragon", rar:5, face:true, myth:true, desc:"Un motif mythique : un œil de dragon te regarde depuis le fond du verre. Son iris brûle, sa pupille fendue s'ouvre et se resserre, il cligne… Sa peau, son iris et le feu de sa pupille prennent les 3 couleurs du coloris."},   // (11 octobre 2026) remplace le Vortex, même numéro 64
   // (20 octobre 2026) 21 nouveaux motifs de toutes les raretés (maquettes/maquette-motifs-2.html), chacun avec les 3 couleurs du coloris, toujours à la fin
   {name:"Tricolore",     rar:0, desc:"Trois bandes bien égales qui font le tour de la bille, une par couleur du coloris, comme un drapeau enroulé."},
   {name:"Sucette",       rar:0, face:true, desc:"Une spirale de sucre en quatre bandes (les 3 couleurs et du blanc) qui part du milieu, comme une sucette de fête foraine."},
@@ -126,6 +126,40 @@ const FAMILIES = [
   {name:"Tornade",       rar:3, face:true, desc:"Un entonnoir de vent enroulé en spirale, une bande par couleur du coloris, qui descend d'un nuage d'orage et soulève au sol un anneau de poussière lumineuse."},
   {name:"Comète",        rar:4, face:true, desc:"Une comète file dans un verre de nuit : son cœur éblouissant, une queue droite et une queue courbe."},
   {name:"Constellation", rar:4, face:true, desc:"Les étoiles d'une vraie constellation reliées par des traits de lumière, devant la Voie lactée : la Grande Ourse, Cassiopée ou Orion, selon la bille."},
+  // (3 novembre 2026) 5 nouveaux motifs, un par rareté (maquettes/maquette-motifs-3.html), toujours à la fin
+  {name:"Triangles",     rar:0, desc:"Un pavage de petits triangles, chacun d'une des 3 couleurs du coloris (ou blanc), séparés par un fin joint."},
+  {name:"Camouflage",    rar:1, desc:"Des taches de trois couleurs qui se chevauchent, comme une tenue d'explorateur : la bille qui se cache dans l'herbe."},
+  {name:"Météorite",     rar:2, desc:"Une vraie pierre tombée du ciel : du fer brillant gravé de fines lamelles, avec des cristaux de couleur pris dedans."},
+  {name:"Montgolfière",  rar:3, face:true, desc:"Un ballon à fuseaux de 3 couleurs dans un ciel de nuages, avec sa nacelle et la flamme du brûleur."},
+  {name:"Atome",         rar:4, face:true, desc:"Un noyau de petites boules au centre et trois orbites de lumière, chacune avec son électron, dans un verre de nuit."},
+  // (6 novembre 2026) la grande fournée : 25 nouveaux motifs (maquettes/maquette-motifs-4.html), dont deux mythiques animés (114 Astrolabe, 115 Plasma), toujours à la fin
+  {name:"Pastèque",      rar:0, desc:"De grandes rayures qui ondulent d'un pôle à l'autre, comme une pastèque entière."},
+  {name:"Mosaïque",      rar:0, desc:"De petites tesselles carrées serrées dans leur joint, qui dessinent des cadres de 3 couleurs."},
+  {name:"Dé",            rar:0, desc:"La bille est un gros dé : une face de 1 à 6 de chaque côté, aux points de deux couleurs."},
+  {name:"Œuf décoré",    rar:0, desc:"Des bandes peintes comme un œuf de Pâques, avec des zigzags, des points et des losanges."},
+  {name:"Dégradé",       rar:0, desc:"Les 3 couleurs du coloris fondues l'une dans l'autre d'un pôle à l'autre, comme un coucher de soleil."},
+  {name:"Mondrian",      rar:0, desc:"De grands carrés de couleur séparés par des traits noirs, comme un tableau moderne."},
+  {name:"Pâquerettes",   rar:0, desc:"Des marguerites aux pétales clairs et au cœur coloré, dans un pré."},
+  {name:"Éclairs",       rar:0, desc:"De petits éclairs de deux couleurs, au cœur blanc, sur un fond de la 3e."},
+  {name:"Vinyle",        rar:1, face:true, desc:"Un disque de chaque côté : ses sillons qui brillent, son étiquette de couleur et le petit trou au milieu."},
+  {name:"Foot",          rar:1, desc:"Le ballon de foot, ses 12 pentagones et ses 20 hexagones, cousus d'une 3e couleur."},
+  {name:"Cordage",       rar:1, desc:"Des torons de 3 couleurs enroulés en hélice comme une grosse corde, avec leurs fibres."},
+  {name:"Relief",        rar:1, desc:"Une carte de randonnée : ses courbes de niveau, ses vallées et ses sommets aux 3 couleurs."},
+  {name:"Velours côtelé", rar:1, desc:"Les côtes du velours, bien rondes, en larges bandes douces des 3 couleurs."},
+  {name:"Guirlande lumineuse", rar:1, desc:"Des fils où brillent de petites ampoules de couleur, sur un fond de nuit."},
+  {name:"Œil-de-tigre",  rar:2, desc:"Une pierre en bandes soyeuses des 3 couleurs, faite de fibres, dont l'éclat glisse quand on la tourne."},
+  {name:"Jade",          rar:2, desc:"Une pierre translucide voilée de nuages plus clairs, veinée de deux autres couleurs."},
+  {name:"Néons",         rar:2, face:true, desc:"Des tubes de lumière en anneau, en cœur et en zigzag, un par couleur, dans un verre de nuit."},
+  {name:"Titane",        rar:2, desc:"Un métal brillant comme un miroir, chauffé jusqu'à prendre les 3 couleurs du coloris en reflets."},
+  {name:"Pissenlit",     rar:3, face:true, desc:"Une boule de pissenlit qui brille dans un verre de soir, et des graines qui s'envolent."},
+  {name:"Engrenages",    rar:3, face:true, desc:"Trois roues dentées, une de chaque couleur, qui s'engrènent au cœur du verre, et de la poussière dorée."},
+  {name:"Saturne",       rar:4, face:true, desc:"La planète aux anneaux dans un verre de nuit : ses bandes, ses anneaux et leur ombre, et deux lunes."},
+  {name:"Diamant",       rar:4, face:true, desc:"Un diamant taillé en brillant dans un écrin de velours : ses facettes lancent des feux des 3 couleurs."},
+  {name:"Phare",         rar:4, face:true, desc:"Un phare rayé sur son rocher, au milieu des vagues, et ses deux faisceaux qui balaient la nuit."},
+  {name:"Astrolabe",     rar:5, face:true, myth:true, desc:"Un motif mythique : trois anneaux d'or gradués pivotent autour d'un petit soleil qui respire, et une planète fait le tour de l'écliptique."},
+  {name:"Plasma",        rar:5, face:true, myth:true, desc:"Un motif mythique : une boule plasma dont le cœur brûlant lance des éclairs des 3 couleurs qui cherchent le bord du verre."},
+  // (9 novembre 2026) événement de décembre 2026 « Pluie de bonbons ! » (numéro 116 ; maquettes/maquette-event-decembre.html)
+  {name:"Bonbon",        rar:4, event:"bonbons", face:true, desc:"Un bonbon à rayures dans sa papillote de cellophane plissée, au cœur d'un verre sucré où scintillent des grains de sucre."},
 ];
 // (20 octobre 2026) chaque rareté garde la part des billes qu'elle avait avec la tier list du 10 octobre (RAR_N0 motifs à DECOR_RAR.w chacun) :
 // quand on ajoute des motifs, ce sont ses motifs qui se partagent cette part (même calcul dans supabase/serveur.sql, interne.tirer_decor)
@@ -136,6 +170,7 @@ const FAM_W = FAMILIES.map(f=>f.event || f.season!=null || f.beta ? 0 : DECOR_RA
 const extraFam = f => !!(FAMILIES[f]?.event || FAMILIES[f]?.season!=null || FAMILIES[f]?.beta);
 // les motifs de l'album (sans ceux des événements)
 const DECOR_IDS = FAMILIES.map((_,i)=>i).filter(i=>!extraFam(i)), N_DECORS = DECOR_IDS.length;
+const N_MYTH = DECOR_IDS.filter(i=>FAMILIES[i].myth).length;   // (6 novembre 2026) les motifs mythiques (3 depuis la grande fournée) : jamais obligatoires pour « tous les motifs »
 const SEASON_FAMS = FAMILIES.map((_,i)=>i).filter(i=>FAMILIES[i].season!=null);
 const EVENT_FAMS = FAMILIES.map((_,i)=>i).filter(i=>FAMILIES[i].event);
 // les motifs rangés par rareté (Commun, Peu commun, Rare, Épique, Légendaire), puis par nom : l'ordre de l'album
@@ -146,7 +181,7 @@ const FMT_TIER = {mini:0, bille:1, chinoise:2, calot:3, boulet:4, mammouth:5};
 const BIG = FMT_TIER.boulet;   // "un gros" : Boulet ou Mammouth
 const tierOf = s => FMT_TIER[s.type];
 const SHINY_COLS = ["#FF6FB5","#FFB547","#6FE3A8","#5AB8FF","#B07BFF"];
-const OPAQUE_FAMS = [3,7,8,9,10,12,14,17,18,19,20,21,22,23,24,25,26,27,28,29,33,52,53,54,55,56,57,58,59,60,62,65,66,67,68,69,70,71,72,73,74,75,76,77,78,80,81];   // les motifs de saison sont tous en verre ; le Pirate aussi depuis le 3 octobre 2026   // les motifs de saison sont tous en verre
+const OPAQUE_FAMS = [3,7,8,9,10,12,14,17,18,19,20,21,22,23,24,25,26,27,28,29,33,52,53,54,55,56,57,58,59,60,62,65,66,67,68,69,70,71,72,73,74,75,76,77,78,80,81,86,87,88,91,92,93,94,95,96,97,98,99,100,101,102,103,104,105,108];   // les motifs de saison sont tous en verre ; le Pirate aussi depuis le 3 octobre 2026   // les motifs de saison sont tous en verre
 const FIGURES = ["étoile","cœur","lune","fleur"];
 
 const PALETTES = [
@@ -224,11 +259,21 @@ const EVENTS = {
   superheros: {name:"Super-héros !", fam:"Super-héros", color:"#2E5BFF", late:true,
     start:Date.parse("2026-11-01T00:00:00+01:00"), end:Date.parse("2026-11-15T23:59:59+01:00"),   // (16 octobre 2026) les événements suivent les demi-mois : 1-15 ou 16-fin
     desc:"Deux semaines de billes Super-héros : coche la case sur un sachet payant.",
-    pals:[["Capitaine Éclair","#1E4FD8","#E5303A","#FFD23F","#1A3FA8"],
-          ["Fulgura","#1A1A22","#FFD23F","#E5303A","#24242C"],
-          ["Ombre violette","#2B1450","#8E3FE0","#F1ECFF","#341A5E"],
-          ["Titan vert","#0E5E35","#7B2FC0","#9BF26A","#14703F"],
-          ["Flamme écarlate","#B5121B","#FF8A1F","#FFF0B0","#C21E24"]]},
+    // (31 octobre 2026) renommés avec les nouveaux dessins (le serveur ne garde que le numéro du coloris : rien à changer en base)
+    pals:[["Cape d'azur","#1E4FD8","#E5303A","#FFD23F","#1A3FA8"],
+          ["Éclair d'or","#1A1A22","#FFD23F","#E5303A","#24242C"],
+          ["Aile de nuit","#2B1450","#8E3FE0","#F1ECFF","#341A5E"],
+          ["Poing de jade","#0E5E35","#7B2FC0","#9BF26A","#14703F"],
+          ["Toile écarlate","#B5121B","#FF8A1F","#FFF0B0","#C21E24"]]},
+  // (9 novembre 2026) décembre 2026, le jour de la fin de la bêta (pause du 16 au 30 novembre). late:2 : coloris rangés après tous les autres (88 à 92)
+  bonbons: {name:"Pluie de bonbons !", fam:"Bonbon", color:"#FF4F9A", late:2,
+    start:Date.parse("2026-12-01T00:00:00+01:00"), end:Date.parse("2026-12-15T23:59:59+01:00"),
+    desc:"Deux semaines de billes Bonbon : coche la case sur un sachet payant.",
+    pals:[["Fraise","#F7B6C8","#E5303A","#FFF4F6","#E89AB0"],
+          ["Menthe","#BFF0DA","#1FA36B","#FFFFFF","#9AD8BC"],
+          ["Citron","#FFF0A0","#F2C230","#FFFFFF","#E8D27A"],
+          ["Myrtille","#C9B8F0","#5A2FB0","#E8DCFF","#A898D8"],
+          ["Caramel","#E8C590","#8A4A18","#FFE9C2","#C8A070"]]},
 };
 Object.values(EVENTS).filter(E=>!E.late).forEach(E=>{ E.palIdx = E.pals.map(P=>{ PALETTES.push(P); return PALETTES.length-1 }) });
 // La bille Bêta : un cadeau pour ceux qui testent Tikalo avant sa sortie, une de chaque taille, gardée à la remise à zéro du lancement.
@@ -255,7 +300,7 @@ const PLAYER_PALS = [
   ["Poups","#FFFFFF","#E48B25","#000000","#CCCCCC"],   // 3 octobre 2026 : base blanche ; 7 octobre : vedette orange et détails noirs (l'orange ne se voyait pas sur la plupart des motifs)
 ].map(P=>PALETTES.push(P)-1);
 // les coloris des événements arrivés après les coloris des joueurs (Super-héros : 79 à 83, mêmes numéros dans supabase/serveur.sql)
-Object.values(EVENTS).filter(E=>E.late).forEach(E=>{ E.palIdx = E.pals.map(P=>{ PALETTES.push(P); return PALETTES.length-1 }) });
+Object.values(EVENTS).filter(E=>E.late===true).forEach(E=>{ E.palIdx = E.pals.map(P=>{ PALETTES.push(P); return PALETTES.length-1 }) });
 // (8 octobre 2026) la bille de départ : un Calot choisi au premier lancement, dans l'un des 3 coloris réservés (84 à 86, mêmes numéros dans
 // supabase/serveur.sql, bille_gagnee 'depart'). Rangée avec les secrètes (secret « depart ») : ni troc, ni marché, ni Confiserie, ni fusion,
 // et ces coloris ne comptent pas dans l'album (personne n'est bloqué parce qu'il n'a pas les 3).
@@ -270,6 +315,8 @@ DEPART.forEach(D=>{ D.palIdx = PALETTES.push(D.pal)-1 });
 const PLAYER_PALS_2 = [
   ["BCKC","#00294B","#0090DD","#6FCBDB","#B8E6F0"],
 ].map(P=>PALETTES.push(P)-1);
+// (9 novembre 2026) les coloris des événements arrivés après BCKC (late:2 ; Bonbon : 88 à 92, mêmes numéros dans supabase/serveur.sql)
+Object.values(EVENTS).filter(E=>E.late===2).forEach(E=>{ E.palIdx = E.pals.map(P=>PALETTES.push(P)-1) });
 const isDepart = s => s?.secret==="depart";
 const departSpec = D => ({seed:hash("depart-"+D.k), type:"calot", family:D.fam, pal:D.palIdx, shiny:0});
 // les coloris qu'on peut tirer : les 48 d'origine et ceux des joueurs
@@ -411,7 +458,7 @@ function specParams(s){
   const P = PALETTES[s.pal];
   let tint = hex01(P[4]);
   const opaque = OPAQUE_FAMS.includes(s.family);
-  if(s.family===2||s.family===30||s.family===34||s.family===42||s.family===44||s.family===47||s.family===49||s.family===50||s.family===51||s.family===63||s.family===64||s.family===82||s.family===83||s.family===84||s.family===85) tint = hex01(shade(P[1],-.1)).map(v=>Math.max(.08,v*.8));
+  if(s.family===2||s.family===30||s.family===34||s.family===42||s.family===44||s.family===47||s.family===49||s.family===50||s.family===51||s.family===63||s.family===64||s.family===82||s.family===83||s.family===84||s.family===85||s.family===90||s.family===107||s.family===109||s.family===111||s.family===112||s.family===113||s.family===114||s.family===115) tint = hex01(shade(P[1],-.1)).map(v=>Math.max(.08,v*.8));
   const p = {
     seed:[r(),r(),r(),r()],
     par:[(r()-.5)*5, [3,4,4,5,6][Math.floor(r()*5)], .05+r()*.07, 2+Math.floor(r()*4)],
@@ -419,7 +466,7 @@ function specParams(s){
     srot: FAMILIES[s.family]?.season!=null || FAMILIES[s.family]?.beta || FAMILIES[s.family]?.event==="superheros" || FAMILIES[s.family]?.face ? rotAxis(1,0,0,-.22) : rotAxis(r()-.5,r()-.5,r()-.5,r()*TAU),
     c1:hex01(P[1]), c2:hex01(P[2]), c3:hex01(P[3]), tint,
     mode:s.family, opaque:opaque?1:0, porc:0, sulf:0, fig:s.family%4, shiny:s.shiny||0, asp:s.type==="chinoise"?1.45:1,
-    // (11 octobre 2026) Super-héros : un blason par héros (coloris 79 à 83), chacun son petit programme (#define HERO)
+    // (11 octobre 2026) Super-héros : un héros par coloris (79 à 83), chacun son petit programme (#define HERO)
     hero: FAMILIES[s.family]?.event==="superheros" ? Math.max(0, EVENTS.superheros.palIdx.indexOf(s.pal)) : 0,
   };
   paramCache.set(key,p); return p;
@@ -466,18 +513,129 @@ float sdBeta(vec2 p){   // la lettre β : une hampe et deux panses
 #ifndef HERO
 #define HERO 0
 #endif
+// (31 octobre 2026) chaque héros est un objet sculpté au cœur du verre : la cape, l'éclair, la chauve-souris, le poing, l'araignée.
+// Chaque variante (HERO) ne compile que ses propres outils (un shader de plus en plus gros fige Chrome sous Windows)
 float sdEll(vec2 p, vec2 r){ return (length(p/r)-1.0)*min(r.x,r.y); }   // une ellipse (distance approchée, assez bonne pour un dessin)
 float sdRBox(vec2 p, vec2 b, float r){ vec2 d=abs(p)-b+r; return length(max(d,0.0))+min(max(d.x,d.y),0.0)-r; }
-float sdDrop(vec2 p, float r, float h){   // une goutte pointue vers le haut : un rond de rayon r, une pointe à la hauteur h
-  float y=p.y, w=y<0.0 ? sqrt(max(0.0,r*r-y*y)) : r*pow(max(0.0,1.0-y/h),1.3)*(1.0+0.6*y/h);
-  return max(max(abs(p.x)-w,-(y+r)),y-h);
+#if HERO==1
+// l'éclair : un polygone à 7 sommets, aux pointes vives (distance exacte, pour ses facettes)
+vec2 boltV(int i){ if(i==0) return vec2(0.02,0.82); if(i==1) return vec2(0.4,0.82); if(i==2) return vec2(0.14,0.2);
+  if(i==3) return vec2(0.4,0.2); if(i==4) return vec2(-0.22,-0.84); if(i==5) return vec2(-0.02,-0.06); return vec2(-0.3,-0.06); }
+float sdBolt(vec2 p){ float d=dot(p-boltV(0),p-boltV(0)), s=1.0;
+  for(int i=0;i<7;i++){ vec2 vi=boltV(i), vj=boltV(i==0?6:i-1); vec2 e=vj-vi, w=p-vi;
+    vec2 b=w-e*clamp(dot(w,e)/dot(e,e),0.0,1.0); d=min(d,dot(b,b));
+    bvec3 c=bvec3(p.y>=vi.y, p.y<vj.y, e.x*w.y>e.y*w.x); if(all(c)||all(not(c))) s=-s; }
+  return s*sqrt(d); }
+#elif HERO==2
+// la chauve-souris : la moitié droite (on la replie sur l'axe), les oreilles, les ailes et leurs festons pointus
+vec2 batV(int i){ if(i==0) return vec2(0.0,0.13); if(i==1) return vec2(0.06,0.17); if(i==2) return vec2(0.095,0.36);
+  if(i==3) return vec2(0.14,0.12); if(i==4) return vec2(0.46,0.22); if(i==5) return vec2(0.93,0.42); if(i==6) return vec2(0.8,0.02);
+  if(i==7) return vec2(0.67,0.12); if(i==8) return vec2(0.56,-0.14); if(i==9) return vec2(0.42,-0.04); if(i==10) return vec2(0.3,-0.3);
+  if(i==11) return vec2(0.17,-0.2); if(i==12) return vec2(0.0,-0.52); if(i==13) return vec2(-0.3,-0.52); return vec2(-0.3,0.13); }
+float sdBat(vec2 p){ float d=dot(p-batV(0),p-batV(0)), s=1.0;
+  for(int i=0;i<15;i++){ vec2 vi=batV(i), vj=batV(i==0?14:i-1); vec2 e=vj-vi, w=p-vi;
+    vec2 b=w-e*clamp(dot(w,e)/dot(e,e),0.0,1.0); d=min(d,dot(b,b));
+    bvec3 c=bvec3(p.y>=vi.y, p.y<vj.y, e.x*w.y>e.y*w.x); if(all(c)||all(not(c))) s=-s; }
+  return s*sqrt(d); }
+#elif HERO==3
+float hb2(vec2 p){ return fract(sin(dot(p,vec2(127.1,311.7)))*43758.5453); }
+// un doigt replié du poing, vu de face : de 0 (l'index) à 3 (l'auriculaire), collés, de plus en plus étroits
+float fistFinger(vec2 p, float fi){
+  float hw=0.108-0.009*fi, x=-0.3+fi*0.19-0.006*fi*fi;
+  float top=0.36+0.05*(1.0-abs(fi-1.2)/1.8)-0.05*step(2.5,fi);
+  return sdRBox(p-vec2(x,(top-0.02)*0.5),vec2(hw,(top+0.02)*0.5),0.07);
 }
-float sdFlame(vec2 p, float k){   // une flamme : une grande langue au milieu, deux plus petites sur les côtés, penchées vers l'extérieur
-  p/=k; vec2 w=vec2(abs(p.x),p.y);
-  float d=sdDrop(p-vec2(0.03*sin(p.y*5.0),-0.3),0.36,1.05);
-  vec2 s=w-vec2(0.2,-0.4); s=vec2(0.94*s.x-0.34*s.y,0.34*s.x+0.94*s.y);
-  d=min(d,sdDrop(s,0.22,0.62));
-  return d*k;
+float fistThumb(vec2 p){ return min(sdSeg2(p,vec2(-0.47,-0.1),vec2(-0.18,0.03)), sdSeg2(p,vec2(-0.18,0.03),vec2(0.12,0.06)))-0.11; }
+// une fêlure : un trait brisé qui part du centre dans la direction a0, de r0 à r1
+float zigzag(vec2 p, float a0, float r0, float r1, float sd, float jag){
+  vec2 dir=vec2(cos(a0),sin(a0)); float u=dot(p,dir), v=dot(p,vec2(-dir.y,dir.x));
+  float k=u*7.0+sd*13.0, i=floor(k), f=fract(k);
+  float off=mix(hb2(vec2(i,sd))-0.5, hb2(vec2(i+1.0,sd))-0.5, f)*jag*u;
+  return u<r0||u>r1 ? 1e3 : abs(v-off)+0.004*(u-r0);
+}
+#elif HERO==4
+// les 8 pattes de l'araignée (4 de chaque côté), en deux morceaux chacune
+float spiderLegs(vec2 w){
+  float d=1e3;
+  for(int i=0;i<4;i++){ float fi=float(i);
+    vec2 hip=vec2(0.08,0.17-fi*0.07), knee=vec2(0.36+0.06*min(fi,3.0-fi), 0.44-fi*0.2), foot=vec2(0.5+0.12*min(fi,3.0-fi), 0.74-fi*0.42);
+    d=min(d, min(sdSeg2(w,hip,knee)-0.042, sdSeg2(w,knee,foot)-0.032+0.01*clamp(length(w-knee)/0.4,0.0,1.0)));
+  }
+  return d;
+}
+#endif
+// la forme du héros : renvoie sa silhouette ; det = ses détails, body/detc : leurs couleurs, glow : ce qui brille
+float blason(vec2 p, out float det, out float glow, out vec3 body, out vec3 detc){
+  float shield; glow=0.0; body=uC2; detc=uC3; det=1e3;
+  vec2 w=vec2(abs(p.x),p.y);
+#if HERO==1
+  // Éclair d'or : un gros éclair taillé en facettes
+  shield=sdBolt(p);
+#elif HERO==2
+  // Aile de nuit : la chauve-souris, ailes déployées ; ses yeux brillent dans le noir
+  shield=sdBat(w);
+  det=sdEll(w-vec2(0.05,0.07),vec2(0.05,0.026)); detc=vec3(1.0); glow=smoothstep(0.01,-0.02,det)*3.0;
+#elif HERO==3
+  // Poing de jade : le poing serré, vu de face : les doigts collés (un pli au milieu), le gros pouce en travers devant,
+  // la paume, le poignet et un bout de manche violette déchirée ; des traits vert sombre séparent tout
+  float f=1e3, fl=1e3;
+  for(int i=0;i<4;i++){ float fi=float(i), d=fistFinger(p,fi), x=-0.3+fi*0.19-0.006*fi*fi;
+    f=min(f,d); fl=min(fl,abs(d));
+    fl=min(fl, max(sdSeg2(p,vec2(x-0.07,0.2),vec2(x+0.07,0.21)), d)); }
+  float th=fistThumb(p);
+  float palm=sdRBox(p-vec2(-0.04,-0.17),vec2(0.38,0.13),0.12);
+  float wrist=sdRBox(p-vec2(0.0,-0.4),vec2(0.24,0.15),0.06);
+  float cuff=max(sdRBox(p-vec2(0.0,-0.6),vec2(0.28,0.09),0.03), -(p.y+0.66-0.05*abs(sin(p.x*22.0))));   // le bas en dents de scie
+  shield=min(min(min(f,th),min(palm,wrist)),cuff);
+  float lines=max(fl,-th);
+  lines=min(lines, abs(th));
+  lines=min(lines, max(abs(palm),-min(f,th)));
+  lines=min(lines, max(abs(wrist),-min(palm,min(f,th))));
+  lines-=0.011;
+  body=uC3;
+  float nail=sdEll(p-vec2(0.1,0.065),vec2(0.06,0.055));   // l'ongle du pouce
+  if(cuff<0.01){ det=cuff; detc=uC2; }
+  else if(nail<0.0){ det=max(nail,-lines); detc=mix(uC3,vec3(1.0),0.5); if(lines<0.0){ det=lines; detc=uC1*0.45; } }
+  else { det=lines; detc=uC1*0.45; }
+#elif HERO==4
+  // Toile écarlate : une araignée noire aux grands yeux blancs (sa toile est dans le verre, voir le motif)
+  shield=min(min(sdEll(p-vec2(0.0,0.13),vec2(0.14,0.13)), sdEll(p-vec2(0.0,-0.2),vec2(0.19,0.25))), spiderLegs(w));
+  det=sdEll(vec2(w.x-0.06,p.y-0.16),vec2(0.05,0.065)); body=vec3(0.07,0.06,0.09); detc=vec3(1.0);
+#else
+  // Cape d'azur : une cape rouge, fine, qui flotte au vent, les plis qui se creusent vers le bas, une agrafe d'or au col
+  float yy=clamp((0.55-p.y)/1.2,0.0,1.0), xs=p.x-0.18*yy*yy, hw=mix(0.12,0.46,pow(yy,0.9));
+  float hem=-0.64+0.05*sin(xs*13.0+1.0);
+  shield=max(abs(xs)-hw, max(p.y-0.55, hem-p.y));
+  shield=min(shield, sdEll(p-vec2(0.0,0.56),vec2(0.2,0.065)));   // le col
+  vec2 cq=p-vec2(0.0,0.52); det=(abs(cq.x)+abs(cq.y))*0.75-0.075;
+#endif
+  return shield;
+}
+float blasonS(vec2 p){ float a,b; vec3 c,d; return blason(p,a,b,c,d); }
+// le relief de l'objet : bombé depuis le bord (en facettes pour l'éclair), plus les plis de la cape, les os des ailes, les doigts
+float relief(vec2 p){
+  float h=clamp(-blasonS(p)/0.12,0.0,1.0);
+#if HERO==1
+  float r=h;
+#else
+  float r=sqrt(h*(2.0-h));
+#endif
+#if HERO==0
+  float yy=clamp((0.55-p.y)/1.2,0.0,1.0), xs=p.x-0.18*yy*yy, hw=mix(0.12,0.46,pow(yy,0.9));
+  r+=0.4*(0.5+0.5*cos(xs/hw*9.42))*smoothstep(0.42,-0.3,p.y);   // les plis
+#elif HERO==2
+  vec2 w=vec2(abs(p.x),p.y), sh=vec2(0.14,0.1);
+  float b=min(min(sdSeg2(w,sh,vec2(0.93,0.42)),sdSeg2(w,sh,vec2(0.8,0.02))),min(sdSeg2(w,sh,vec2(0.56,-0.14)),sdSeg2(w,sh,vec2(0.3,-0.3))));
+  r+=0.4*smoothstep(0.035,0.0,b);   // les os des ailes
+#elif HERO==3
+  float m=0.0;   // chaque morceau bombé à part : le pouce devant, les doigts (la jointure plus que le bout), la paume, le poignet
+  for(int i=0;i<4;i++){ m=max(m, sqrt(clamp(-fistFinger(p,float(i))/0.08,0.0,1.0))*(0.75+0.35*smoothstep(0.0,0.35,p.y))); }
+  m=max(m, 0.45+sqrt(clamp(-fistThumb(p)/0.09,0.0,1.0)));
+  m=max(m, 0.55*sqrt(clamp(-sdRBox(p-vec2(-0.04,-0.17),vec2(0.38,0.13),0.12)/0.1,0.0,1.0)));
+  m=max(m, 0.5*sqrt(clamp(-sdRBox(p-vec2(0.0,-0.4),vec2(0.24,0.15),0.06)/0.1,0.0,1.0)));
+  r=r*0.25+m*0.85;
+#endif
+  return r;
 }
 #endif
 #if MODE==22
@@ -488,7 +646,7 @@ vec2 sph(vec3 u){ return vec2(atan(u.z,u.x)/6.2831853, asin(clamp(u.y,-1.0,1.0))
 
 float sdCap(vec3 p, vec3 a, vec3 b, float r){ vec3 pa=p-a, ba=b-a; return length(pa-ba*clamp(dot(pa,ba)/dot(ba,ba),0.0,1.0))-r; }
 
-#if MODE==68 || MODE==72 || MODE==76 || MODE==77 || MODE==78
+#if MODE==68 || MODE==72 || MODE==76 || MODE==77 || MODE==78 || MODE==86 || MODE==92 || MODE==93 || MODE==96
 // (20 octobre 2026) la bille découpée en 6 faces de cube, pour les motifs en grille. xy : la place sur la face (-1..1, à angles égaux :
 // les cases gardent presque la même taille jusqu'au bord), w : le numéro de la face
 vec4 cubeF(vec3 u){ vec3 a=abs(u); vec2 p; float f;
@@ -496,6 +654,37 @@ vec4 cubeF(vec3 u){ vec3 a=abs(u); vec2 p; float f;
   else if(a.y>=a.z){ p=vec2(u.x,u.z)/a.y; f=u.y>0.0?2.0:3.0; }
   else { p=vec2(u.x,u.y)/a.z; f=u.z>0.0?4.0:5.0; }
   return vec4(atan(p)*1.2732395, 0.0, f); }
+#endif
+#if MODE==88
+// (3 novembre 2026) la Météorite. x : un cristal (1) ou le fer (0) ; y : les lamelles gravées dans le fer ; z : la couleur du cristal
+vec3 meteo(vec3 q){ vec3 u=normalize(q), so=uSeed.xyz*40.0; vec3 g=u*3.2+so; vec3 i0=floor(g), f0=fract(g);
+  float d1=9.0, d2=9.0; vec3 cid=vec3(0.0);
+  for(int x=-1;x<=1;x++) for(int y=-1;y<=1;y++) for(int z=-1;z<=1;z++){ vec3 o=vec3(float(x),float(y),float(z));
+    vec3 pt=o+0.15+0.7*vec3(h31(i0+o),h31(i0+o+7.1),h31(i0+o+3.3)); float d=length(pt-f0);
+    if(d<d1){ d2=d1; d1=d; cid=i0+o; } else if(d<d2) d2=d; }
+  float cr=smoothstep(0.05,0.09,d2-d1+0.04*(noise(g*4.0)-0.5))*step(0.5,h31(cid+2.0));
+  vec3 a1=normalize(vec3(h31(cid),h31(cid+1.0),h31(cid+4.0))-0.5+0.01), a2=normalize(cross(a1,vec3(0.3,1.0,0.2))), a3=normalize(a1+a2*1.3);
+  float l=max(max(smoothstep(0.43,0.49,abs(fract(dot(u,a1)*16.0)-0.5)),smoothstep(0.43,0.49,abs(fract(dot(u,a2)*16.0)-0.5))),smoothstep(0.44,0.49,abs(fract(dot(u,a3)*16.0)-0.5)));
+  return vec3(cr, l*0.8+0.2*h31(cid+5.0), h31(cid+7.0)); }
+#endif
+#if MODE>=91
+// (6 novembre 2026) les outils des motifs 91 et suivants
+mat2 mrot(float a){ float c=cos(a), s=sin(a); return mat2(c,s,-s,c); }
+float segM(vec2 p, vec2 a, vec2 b){ vec2 pa=p-a, ba=b-a; return length(pa-ba*clamp(dot(pa,ba)/dot(ba,ba),0.0,1.0)); }
+vec3 brt(vec3 c, float m){ return c/max(max(c.r,max(c.g,c.b)),m); }   // une couleur du coloris éclaircie (la 1re est souvent presque noire)
+// des petits dessins semés : la place du point dans le repère de sa case, le numéro de la case (id), et s'il y a de la place (on)
+vec2 scatP(vec3 u, float sc, float i, out vec3 id, out float on){ vec3 t1=normalize(cross(u,vec3(0.0,1.0,0.013))), t2=cross(u,t1);
+  vec3 g=u*sc*0.72+uSeed.xyz*40.0+i*vec3(0.5,0.37,0.61); id=floor(g)+i*17.0; vec3 f=fract(g)-0.5;
+  on=step(abs(dot(f,u)),0.36); return vec2(dot(f,t1),dot(f,t2))*0.8; }
+#endif
+#if MODE==105
+const vec3 TIGRE_AX=vec3(0.28,0.92,0.27);
+float tigreV(vec3 q){ vec3 u=normalize(q), so=uSeed.xyz*40.0; return dot(u,TIGRE_AX)*11.0+2.5*fbm(u*1.5+so); }   // les bandes de l'Œil-de-tigre
+#endif
+#if MODE==108
+vec4 metalF(vec3 q){ vec3 u=normalize(q), so=uSeed.xyz*40.0; float t=dot(u,normalize(vec3(0.3,1.0,0.2)))*0.5+0.5+0.2*(fbm(u*2.0+so)-0.5);
+  vec3 c=t<0.5?mix(brt(uC1,0.5),uC2,smoothstep(0.1,0.5,t)):mix(uC2,uC3,smoothstep(0.5,0.9,t));
+  c=mix(vec3(0.8),c,0.75)*(0.9+0.1*sin(dot(u,vec3(3.0,1.0,7.0))*120.0)); return vec4(c, 1.0); }   // le Titane : la teinte du métal, du bas (1re couleur) vers le haut (3e)
 #endif
 vec4 fam(vec3 q, out vec3 e){
   e=vec3(0.0);
@@ -1095,74 +1284,106 @@ vec4 fam(vec3 q, out vec3 e){
     e=vec3(1.0)*fl*1.2;
     return vec4(vec3(1.0), 0.12+fl*60.0);
   }
-#elif MODE==48
-  { // super-héros (événement de novembre 2026) : un verre teinté de la couleur du héros ; au cœur, comme une bille sulfure,
-    // son blason, un par héros (HERO, voir plus bas), cerclé d'un liseré ; derrière, les rayons d'une case de bande dessinée
-    float n=fbm(q*4.0+so), r=length(q);
-    vec3 glass=mix(uC1, uC2, 0.12)*(0.6+0.3*n);
-    float dens=0.26+0.2*n;
-    // la bille chinoise se regarde par le dessus : le blason y est couché à plat (comme le β de la Bêta)
-    bool couche=uAsp>1.2; vec2 p=(couche?vec2(q.x,-q.z):q.xy)*1.7; float bz=couche?q.y:q.z;
-    // (11 octobre 2026) chaque héros a son blason : shield = la silhouette, det = ses détails ; body/detc : leurs couleurs
-    float shield, det, glow=0.0; vec3 body=uC2, detc=uC3;
-#if HERO==1
-    // Fulgura, la plus rapide de la cour : des ailes aux pieds, comme le casque ailé du messager des dieux ; au centre, un éclair
-    vec2 w=vec2(abs(p.x),p.y);
-    shield=length(p)-0.22;
-    for(int i=0;i<3;i++){ float fi=float(i), a=0.3+fi*0.5, L=0.72-fi*0.14;
-      shield=min(shield, sdSeg2(w,vec2(0.12,-0.05),vec2(0.12,-0.05)+L*vec2(cos(a),sin(a)))-(0.09-fi*0.012)); }
-    float bolt=min(min(sdSeg2(p,vec2(0.07,0.15),vec2(-0.04,0.0)), sdSeg2(p,vec2(-0.04,0.0),vec2(0.05,0.0))), sdSeg2(p,vec2(0.05,0.0),vec2(-0.06,-0.16)))-0.035;
-    det=max(length(p)-0.17,-bolt);
-    for(int i=0;i<3;i++){ float fi=float(i), a=0.3+fi*0.5;   // le trait de chaque plume
-      det=min(det, sdSeg2(w,vec2(0.12,-0.05)+0.3*vec2(cos(a),sin(a)),vec2(0.12,-0.05)+(0.68-fi*0.14)*vec2(cos(a),sin(a)))-0.014); }
-#elif HERO==2
-    // Ombre violette, justicier de la nuit : le loup (le masque des justiciers masqués) et deux yeux qui brillent dans le noir
-    vec2 w=vec2(abs(p.x),p.y);
-    vec2 m=w-vec2(0.3,0.02); m=vec2(m.x, m.y+0.22*m.x);   // les deux moitiés du loup, un peu relevées vers l'extérieur
-    shield=min(sdEll(m,vec2(0.42,0.27)), sdRBox(p-vec2(0.0,0.06),vec2(0.2,0.14),0.08));
-    shield=max(shield, -sdEll(p-vec2(0.0,-0.2),vec2(0.12,0.12)));   // l'échancrure du nez
-    shield=min(shield, sdSeg2(w,vec2(0.66,0.04),vec2(0.86,-0.28))-0.055);   // les bouts du ruban
-    float eye=sdEll(vec2(m.x+0.02,m.y-0.02),vec2(0.19,0.085));
-    det=eye; detc=vec3(1.0); glow=smoothstep(0.02,-0.05,eye)*1.5;
-#elif HERO==3
-    // Titan vert, le colosse en colère : son poing serré, vert, avec un liseré violet
-    float f=1e3;
-    for(int i=0;i<4;i++){ f=min(f, sdRBox(p-vec2(-0.33+float(i)*0.22,0.2-0.03*abs(float(i)-1.5)),vec2(0.108,0.2),0.1)); }
-    float th=sdSeg2(p,vec2(-0.4,-0.08),vec2(0.12,-0.08))-0.115;   // le pouce, replié devant
-    float palm=sdRBox(p-vec2(0.0,-0.24),vec2(0.44,0.24),0.14);
-    shield=min(min(f,th),palm);
-    det=min(abs(f)-0.014, abs(th)-0.014);
-    det=max(det,-(th+0.01));   // les doigts passent derrière le pouce
-    body=uC3; detc=uC1*0.6;
-#elif HERO==4
-    // Flamme écarlate, l'enfant de feu : une flamme vive, avec son cœur jaune qui rayonne
-    shield=sdFlame(p,1.0);
-    float core=sdFlame(p-vec2(0.0,-0.14),0.55);
-    det=core; glow=smoothstep(0.03,-0.08,core)*0.8;
-#else
-    // Capitaine Éclair : l'écusson frappé d'un éclair
-    float hw=p.y>-0.12 ? 0.5 : 0.5*clamp((p.y+0.8)/0.68,0.0,1.0);   // l'écusson : le haut droit, le bas en pointe
-    shield=max(abs(p.x)-hw, abs(p.y+0.13)-0.67);
-    det=min(min(sdSeg2(p,vec2(0.18,0.42),vec2(-0.1,0.0)), sdSeg2(p,vec2(-0.1,0.0),vec2(0.11,0.0))), sdSeg2(p,vec2(0.11,0.0),vec2(-0.15,-0.52)))-0.07;
-#endif
-    float rim=abs(shield+0.06)-0.03;
-#if HERO==3
-    rim=abs(shield+0.04)-0.045;
-    vec3 rimc=uC2;   // le liseré violet du Titan
-#else
-    vec3 rimc=uC3;
-#endif
-    float sh=smoothstep(0.02,-0.02,shield)*smoothstep(0.13,0.06,abs(bz));
-    if(sh>0.01){
-      vec3 c=body*(0.82+0.25*n);
-      c=mix(c, rimc*(0.95+0.1*n), smoothstep(0.015,-0.015,rim));
-      c=mix(c, detc*(0.95+0.1*n), smoothstep(0.015,-0.015,det));
-      e=detc*glow*sh*1.5;
-      return vec4(mix(glass,c,sh), mix(dens,90.0,sh));
+#elif MODE==116
+  { // bonbon (événement de décembre 2026) : un bonbon rayé (2e et 3e couleur) dans sa papillote de cellophane, au cœur d'un verre sucré
+    bool couche=uAsp>1.2; vec3 p=couche?vec3(q.x,-q.z,q.y):q;
+    p.xy=mat2(0.94,0.34,-0.34,0.94)*p.xy;   // un peu penché
+    float rr=length(q);
+    vec3 glass=mix(uC1,vec3(1.0),0.2)*(0.75+0.2*smoothstep(0.95,0.2,rr));
+    vec3 eb=p/vec3(0.36,0.25,0.23); float body=length(eb);
+    vec3 L=normalize(vec3(-0.5,0.62,0.6));
+    if(body<1.0){
+      vec3 n=normalize(p/vec3(0.13,0.0625,0.053));
+      float st=sin((p.x*2.6+atan(p.z,p.y)/6.2832)*6.2832*2.0);
+      vec3 c=mix(uC2, uC3, smoothstep(-0.15,0.15,st));
+      float dif=max(dot(n,L),0.0), sp=pow(max(dot(n,normalize(L+vec3(0.0,0.0,1.0))),0.0),60.0);
+      return vec4(c*(0.35+0.8*dif)+vec3(sp*1.2), 300.0);
     }
-    float ang=atan(p.y,p.x), rx=length(p)/1.7;
-    float ray=smoothstep(0.55,0.85,abs(sin(ang*8.0)))*smoothstep(0.4,0.6,rx)*smoothstep(0.9,0.72,r)*smoothstep(0.0,-0.15,bz);
-    if(ray>0.02) return vec4(mix(glass, uC3, 0.55*ray), mix(dens, 4.0, ray));
+    // la papillote : de chaque côté, la cellophane pincée puis évasée en éventail plissé
+    float ax=abs(p.x), rz=length(p.yz);
+    if(ax>0.3 && ax<0.74){
+      float t=(ax-0.38)/0.36;
+      float rad = t<0.0 ? 0.06+(-t)*0.9 : 0.045+0.3*pow(clamp(t,0.0,1.0),0.8);
+      float a=atan(p.z,p.y), pl=0.5+0.5*sin(a*9.0+ax*14.0);
+      rad*=0.85+0.25*pl;
+      if(rz<rad && rz>rad-0.035-0.04*step(t,0.0)){
+        vec3 cel=mix(uC3, vec3(1.0), 0.55);
+        e=cel*(0.35+1.2*pow(pl,6.0))*smoothstep(1.0,0.7,t);
+        return vec4(cel*(0.5+0.5*pl), 14.0);
+      }
+    }
+    // du sucre qui scintille dans le verre
+    vec3 g=q*14.0+so; vec3 fc=fract(g)-0.5;
+    float sug=step(0.9,h31(floor(g)))*smoothstep(0.12,0.03,length(fc))*smoothstep(0.95,0.8,rr)*step(0.55,length(eb));
+    e=mix(uC3,vec3(1.0),0.6)*sug*1.6;
+    return vec4(glass, 0.18+sug*20.0);
+  }
+#elif MODE==48
+  { // super-héros (événement de novembre 2026). (31 octobre 2026) chaque coloris est un héros, sculpté au cœur d'un verre net,
+    // avec son décor : la cape au-dessus des nuages, l'éclair et ses images fantômes, la chauve-souris devant la lune,
+    // le poing qui fêle le verre, l'araignée sur sa toile. Tout est à la profondeur du centre : quand la bille tourne, tout tourne
+    // d'un bloc (un décor derrière le centre glisserait à contresens, et la bille aurait l'air de tourner à l'envers)
+    float r=length(q);
+    vec3 glass=mix(uC1, uC2, 0.08)*(0.7+0.25*smoothstep(0.95,0.2,r)), pe=vec3(0.0);
+    float dens=0.22;
+    // la bille chinoise se regarde par le dessus : le héros y est couché à plat (comme le β de la Bêta)
+    bool couche=uAsp>1.2; vec2 p=(couche?vec2(q.x,-q.z):q.xy)*1.7; float bz=couche?q.y:q.z;
+    float det, glow; vec3 body, detc;
+    float shield=blason(p,det,glow,body,detc), rr=length(p), ang=atan(p.y,p.x);
+    float sw=smoothstep(0.3,0.08,abs(bz));
+    // le relief ne se calcule que dans la silhouette (c'est le plus coûteux : tout le reste du verre s'en passe)
+    float H0=shield<0.0 && abs(bz)<0.21 ? relief(p) : 0.0;
+#if HERO==0
+    float thk=0.035+0.055*min(H0,1.4);   // la cape : une étoffe mince
+#else
+    float thk=0.06+0.1*min(H0,1.4);
+#endif
+    if(shield<0.0 && abs(bz)<thk){
+      // l'objet : sa surface suit le relief, un vernis brillant
+      vec2 g=vec2(relief(p+vec2(0.01,0.0))-H0, relief(p+vec2(0.0,0.01))-H0)/0.01;
+      vec3 nrm=normalize(vec3(-0.22*g,1.0));
+      vec3 Lp=normalize(vec3(-0.5,0.62,0.6)), Hh=normalize(Lp+vec3(0.0,0.0,1.0));
+      float dif=max(dot(nrm,Lp),0.0), sp=max(dot(nrm,Hh),0.0);
+      vec3 c=mix(body, detc, smoothstep(0.012,-0.012,det));
+      e=detc*glow*3.0;
+      return vec4(c*(0.28+0.85*dif)+vec3(1.0)*(pow(sp,60.0)*1.3+pow(sp,10.0)*0.12), 150.0);
+    }
+#if HERO==1
+    // l'éclair va si vite qu'il laisse deux images fantômes derrière lui, et un halo jaune
+    if(abs(bz)<0.05){
+      if(sdBolt(p+vec2(0.24,0.06))<0.0){ e=uC3*2.2; return vec4(mix(glass,uC3,0.55), 9.0); }
+      if(sdBolt(p+vec2(0.48,0.12))<0.0){ e=uC3*1.1; return vec4(mix(glass,uC3*0.8,0.35), 4.0); }
+    }
+    pe+=uC2*exp(-max(shield,0.0)*14.0)*0.8*smoothstep(0.1,0.03,abs(bz));
+#elif HERO==2
+    // une pleine lune derrière la chauve-souris, ses cratères et son halo
+    vec2 mc=p-vec2(0.0,0.08); float rm=length(mc);
+    if(rm<0.6 && abs(bz)<0.06){
+      float cr=fbm(vec3(mc*3.2,2.0)+so);
+      vec3 c=mix(mix(uC3,vec3(1.0,0.97,0.88),0.4), uC3*0.72, smoothstep(0.45,0.68,cr))*(0.85+0.15*smoothstep(0.6,0.0,rm));
+      e=uC3*0.35; return vec4(c, 90.0);
+    }
+    pe+=mix(uC3,uC2,0.3)*exp(-(rm-0.6)*5.0)*0.7*sw;
+#elif HERO==3
+    // le coup de poing a fêlé le verre : les fêlures luisent de vert tout autour
+    float d=1e3;
+    for(int i=0;i<9;i++){ float fi=float(i), a0=fi*0.698+0.25*(hb2(vec2(fi,4.0))-0.5);
+      d=min(d, zigzag(p, a0, 0.62, 1.2+0.4*hb2(vec2(fi,8.0)), fi*2.9, 0.9));
+      d=min(d, zigzag(p, a0+0.9*(hb2(vec2(fi,6.0))-0.5), 0.95, 1.45, fi*4.3+1.0, 1.0)+0.004); }
+    pe+=mix(uC3,vec3(1.0),0.35)*(exp(-d*110.0)*9.0+exp(-d*20.0)*1.0)*sw;
+#elif HERO==4
+    // la toile, dans le plan de l'araignée : 10 fils qui rayonnent, et les tours qui pendent un peu entre deux fils
+    float al=0.6283185, ph=(fract((ang+0.3)/al)-0.5)*al;
+    float rp=rr*cos(ph)/cos(al*0.5); rp/=1.0-0.07*(1.0-abs(ph)/(al*0.5));
+    float th=min(abs(rr*sin(ph)), abs(rp-(0.34+0.17*clamp(floor((rp-0.34)/0.17+0.5),0.0,7.0))));
+    pe+=mix(uC3,vec3(1.0),0.6)*smoothstep(0.022,0.006,th)*smoothstep(1.62,1.5,rr)*smoothstep(0.08,0.02,abs(bz))*3.5;
+#else
+    // une mer de nuages en bas de la bille : la cape vole au-dessus
+    float cl=fbm(vec3(p*vec2(1.5,2.6),bz*2.0)+so*0.1);
+    float c=smoothstep(0.4,0.6,cl)*smoothstep(-0.3,-0.85,p.y+0.12*sin(p.x*3.0+so.x))*smoothstep(0.98,0.8,r)*smoothstep(0.55,0.25,abs(bz));
+    if(c>0.01){ vec3 cc=mix(vec3(0.7,0.78,0.95),vec3(1.0),smoothstep(0.5,0.72,cl)); e=cc*c*0.35; return vec4(mix(glass,cc,c), dens+c*16.0); }
+#endif
+    e=pe;
     return vec4(glass, dens);
   }
 #elif MODE==49
@@ -1784,6 +2005,455 @@ vec4 fam(vec3 q, out vec3 e){
     e+=vec3(step(0.965,h31(floor(g)))*smoothstep(0.2,0.0,length(fc)))*5.0;
     return vec4(uC1*0.1, 0.45);
   }
+// (3 novembre 2026) 5 nouveaux motifs (86 à 90), un par rareté (maquettes/maquette-motifs-3.html)
+#elif MODE==86
+  { // triangles : un pavage de triangles, chacun d'une des 3 couleurs (ou blanc), séparés par un fin joint
+    vec3 u=normalize(q); vec4 cf=cubeF(u); vec2 p=cf.xy*(2.0+nb*0.3)+so.xy;
+    vec2 s=vec2(p.x+p.y*0.57735, p.y*1.1547); vec2 id=floor(s), f=fract(s); float up=step(1.0,f.x+f.y);
+    float k=h31(vec3(id,up+cf.w*3.0+so.z));
+    vec3 c=k<0.3?uC1:(k<0.6?uC2:(k<0.85?uC3:vec3(0.97,0.96,0.93)));
+    float ed=min(min(f.x,f.y),abs(1.0-f.x-f.y)*0.7071);
+    c*=mix(0.6,1.0,smoothstep(0.015,0.04,ed));
+    return vec4(c, 200.0);
+  }
+#elif MODE==87
+  { // camouflage : des taches de trois couleurs qui se chevauchent, comme une tenue d'explorateur
+    vec3 u=normalize(q);
+    float n1=fbm(u*2.1+so), n2=fbm(u*2.5+so+11.0), n3=fbm(u*3.1+so+23.0);
+    vec3 c=mix(uC2,uC3,0.3);
+    c=mix(c,uC1,smoothstep(0.49,0.51,n1));
+    c=mix(c,uC1*0.35,smoothstep(0.55,0.57,n2));
+    c=mix(c,mix(uC3,vec3(0.92,0.88,0.75),0.55),smoothstep(0.6,0.62,n3));
+    c*=0.93+0.1*noise(u*45.0+so);
+    return vec4(c, 200.0);
+  }
+#elif MODE==88
+  { // météorite : une pallasite, du fer d'étoile filante (miroir, au rendu) gravé de fines lamelles, avec des cristaux colorés pris dedans
+    vec3 m=meteo(q);
+    vec3 cr=m.z<0.33?uC1/max(max(uC1.r,max(uC1.g,uC1.b)),0.4)*0.8:(m.z<0.66?uC2:uC3);
+    return vec4(mix(vec3(0.72-0.3*m.y),cr,m.x), 200.0);
+  }
+#elif MODE==89
+  { // montgolfière : un ballon à fuseaux de 3 couleurs dans un ciel de nuages, avec sa nacelle et la flamme du brûleur
+    float r=length(q); vec3 L=normalize(vec3(-0.5,0.6,0.6));
+    vec3 p=q-vec3(0.0,0.1,0.0); float y=p.y, rho=length(p.xz);
+    float rr=y>0.0?0.33*sqrt(max(0.0,1.0-pow(y/0.36,2.0))):0.33*pow(max(0.0,1.0-pow(-y/0.4,1.4)),0.9)+0.04*step(-0.4,y);
+    float env=step(rho,rr)*step(-0.4,y)*step(y,0.36);
+    vec3 cl=vec3(0.0);
+    if(env>0.5){ float ga=atan(p.z,p.x)/6.2831853*12.0; float m=mod(floor(ga),3.0);
+      vec3 gc=m<1.0?uC1/max(max(uC1.r,max(uC1.g,uC1.b)),0.5):(m<2.0?uC2:uC3);
+      vec3 nn=normalize(vec3(p.x,p.y*0.6,p.z)); float sh=0.45+0.7*clamp(dot(nn,L),0.0,1.0);
+      gc*=mix(0.75,1.0,smoothstep(0.0,0.06,abs(fract(ga)-0.5)*2.0*0.5+0.0));
+      return vec4(gc*sh, 400.0); }
+    // la nacelle et ses cordes
+    vec3 bq=q-vec3(0.0,-0.43,0.0);
+    if(max(max(abs(bq.x),abs(bq.z))-0.065,abs(bq.y)-0.05)<0.0) return vec4(vec3(0.45,0.28,0.12)*(0.8+0.3*step(0.5,fract(bq.y*30.0))), 400.0);
+    vec2 cxz=abs(q.xz)-vec2(0.05); if(length(cxz)<0.008 && q.y>-0.39 && q.y<-0.3) return vec4(vec3(0.25,0.18,0.1), 400.0);
+    e=mix(uC3,vec3(1.0,0.75,0.3),0.5)*exp(-length(q-vec3(0.0,-0.33,0.0))*30.0)*4.0;   // la flamme
+    float cloud=smoothstep(0.58,0.72,fbm(q*2.6+so))*smoothstep(0.95,0.75,r);
+    return vec4(mix(mix(vec3(0.7,0.85,1.0),uC2,0.15),vec3(1.0),cloud), 0.25+cloud*3.0);
+  }
+#elif MODE==90
+  { // atome : un noyau de petites boules au centre et trois orbites de lumière, chacune avec son électron (qui tourne, en grand)
+    float r=length(q); e=vec3(0.0);
+    vec3 ocol=mix(uC2,vec3(1.0),0.35);
+    for(int i=0;i<3;i++){ float fa=float(i)*1.0471976+0.3;
+      vec2 xy=vec2(cos(fa)*q.x+sin(fa)*q.y, -sin(fa)*q.x+cos(fa)*q.y); float h=q.z+0.12*xy.y;
+      float a=0.72, b=0.24; float th=atan(xy.y/b, xy.x/a); vec2 P=vec2(a*cos(th), b*sin(th));
+      float d=length(vec3(xy-P, h));
+      e+=ocol*(exp(-d*80.0)*5.0+exp(-d*18.0)*0.35);
+      float te=float(i)*2.1+so.x; vec2 Pe=vec2(a*cos(te), b*sin(te));
+      float de=length(vec3(xy-Pe, h));
+      e+=mix(uC3,vec3(1.0),0.3)*(exp(-de*60.0)*30.0+exp(-de*14.0)*2.0);
+    }
+    float dn=9.0, kk=0.0; vec3 cb=vec3(0.0);
+    for(int i=0;i<7;i++){ float fi=float(i); vec3 c=(vec3(h31(so+fi*1.3),h31(so+fi*2.9),h31(so+fi*4.1))-0.5)*0.16;
+      float dd=length(q-c)-0.07; if(dd<dn){ dn=dd; kk=fi; cb=c; } }
+    e+=mix(uC2,uC3,0.5)*exp(-max(dn,0.0)*12.0)*1.2;
+    if(dn<0.0){ vec3 nc=mod(kk,3.0)<1.0?uC1/max(max(uC1.r,max(uC1.g,uC1.b)),0.4):(mod(kk,3.0)<2.0?uC2:uC3);
+      float sh=0.5+0.6*clamp(dot(normalize(q-cb),normalize(vec3(-0.5,0.6,0.6))),0.0,1.0);
+      e+=nc*0.5; return vec4(nc*sh, 600.0); }
+    vec3 g=q*15.0+so; vec3 fc=fract(g)-0.5;
+    e+=vec3(step(0.975,h31(floor(g)))*smoothstep(0.2,0.0,length(fc)))*5.0*step(0.6,r);
+    return vec4(uC1*0.1, 0.45);
+  }
+// (6 novembre 2026) la grande fournée : 25 nouveaux motifs (91 à 115), venus de maquettes/maquette-motifs-4.html
+#elif MODE==91
+  { // pastèque : de grandes rayures sombres qui ondulent d'un pôle à l'autre, un fond marbré, et la petite trace de la queue
+    vec3 u=normalize(q); float lon=atan(u.z,u.x);
+    float s=sin(lon*7.0+1.6*fbm(u*2.5+so)+0.5*sin(u.y*10.0+so.x))+0.45*(noise(u*18.0+so)-0.5);
+    float dk=smoothstep(0.22,0.3,s);
+    vec3 c=mix(uC2,vec3(0.95),0.12);
+    c=mix(c,mix(uC3,vec3(1.0),0.25),smoothstep(0.55,0.68,noise(u*7.0+so))*0.7);
+    c=mix(c,uC1*0.75,dk);
+    c*=0.92+0.1*noise(u*50.0+so);
+    c=mix(c,uC1*0.35,smoothstep(0.13,0.09,length(u.xz))*step(0.0,u.y));
+    return vec4(c, 200.0);
+  }
+#elif MODE==92
+  { // mosaïque : de petites tesselles carrées serrées dans leur joint, qui dessinent des cadres de 3 couleurs sur chaque face
+    vec3 u=normalize(q); vec4 cf=cubeF(u); float S=8.0+nb; vec2 p=cf.xy*S;
+    vec2 id=floor(p), f=fract(p), ed=min(f,1.0-f);
+    float jx=h31(vec3(id,cf.w+1.0));
+    float gr=smoothstep(0.05,0.11,min(ed.x,ed.y)+0.03*(jx-0.5));
+    float ch=max(abs(id.x+0.5),abs(id.y+0.5));
+    float m=mod(floor(ch*0.75+so.x),3.0);
+    vec3 c=m<1.0?brt(uC1,0.35):(m<2.0?uC2:uC3);
+    c*=0.82+0.3*h31(vec3(id,cf.w+7.0));
+    return vec4(mix(vec3(0.86,0.84,0.79),c,gr), 200.0);
+  }
+#elif MODE==93
+  { // dé : la bille est un gros dé, une face du cube par côté (de 1 à 6), aux points de la 1re couleur, le 1 de la 2e
+    vec3 u=normalize(q); vec4 cf=cubeF(u); vec2 p=cf.xy;
+    float n=cf.w<0.5?1.0:(cf.w<1.5?6.0:(cf.w<2.5?2.0:(cf.w<3.5?5.0:(cf.w<4.5?3.0:4.0))));
+    float d=9.0;
+    if(mod(n,2.0)>0.5) d=min(d,length(p));
+    if(n>1.5){ d=min(d,length(p-vec2(0.55,0.55))); d=min(d,length(p+vec2(0.55,0.55))); }
+    if(n>3.5){ d=min(d,length(p-vec2(0.55,-0.55))); d=min(d,length(p+vec2(0.55,-0.55))); }
+    if(n>5.5){ d=min(d,length(p-vec2(0.55,0.0))); d=min(d,length(p+vec2(0.55,0.0))); }
+    float pr=n<1.5?0.32:0.18;
+    vec3 body=mix(uC3,vec3(0.98,0.97,0.95),0.35);
+    body*=mix(1.0,0.78,smoothstep(0.82,1.0,max(abs(p.x),abs(p.y))));
+    vec3 pc=mod(n,2.0)<0.5?uC2:brt(uC1,0.3)*0.8;   // les points : de la 1re couleur sur les faces impaires, de la 2e sur les paires
+    float pip=smoothstep(pr,pr-0.03,d);
+    return vec4(mix(body,pc*(0.6+0.4*smoothstep(0.0,pr,d)),pip), 200.0);
+  }
+#elif MODE==94
+  { // œuf décoré : des bandes peintes comme un œuf de Pâques, avec des zigzags blancs, des points et des losanges
+    vec3 u=normalize(q); float lon=atan(u.z,u.x), lat=u.y;
+    float y=lat*6.0+3.0+so.x*0.0; float b=floor(y), fy=fract(y);
+    float m=mod(b,3.0); vec3 c=m<1.0?brt(uC1,0.4):(m<2.0?uC2:uC3);
+    vec3 oc=m<1.0?uC3:(m<2.0?brt(uC1,0.4):uC2);
+    float N=18.0, lx=fract(lon/6.2831853*N), zz=abs(lx-0.5)*2.0;
+    float cl=sqrt(max(0.0,1.0-lat*lat));
+    c=mix(c,vec3(0.98),smoothstep(0.05,0.02,abs(fy-0.8-0.1*(zz-0.5))));
+    vec2 dp=vec2((lx-0.5)*0.349*cl,(fy-0.4)/6.0);
+    float dots=smoothstep(0.03,0.022,length(dp));
+    float dia=smoothstep(0.035,0.028,abs(dp.x)+abs(dp.y));
+    c=mix(c,m<1.5?vec3(0.98):oc,m<1.0?dots:(m<2.0?0.0:dia));
+    c=mix(c,oc,m>0.5&&m<1.5?dia:0.0);
+    c=mix(c,brt(uC1,0.4),smoothstep(0.9,0.92,abs(lat)));
+    return vec4(c, 200.0);
+  }
+#elif MODE==95
+  { // dégradé : les 3 couleurs du coloris fondues l'une dans l'autre d'un pôle à l'autre, comme un coucher de soleil
+    vec3 u=normalize(q); vec3 ax=normalize(vec3(h31(so)-0.5,1.0,h31(so+1.0)-0.5));
+    float t=0.5-0.5*cos(dot(u,ax)*4.4+0.25*sin(dot(u,vec3(7.0,3.0,5.0))+so.x));   // (6 novembre 2026) deux allers-retours : les 3 couleurs se voient de tous les côtés
+    vec3 c=t<0.5?mix(brt(uC1,0.45),uC2,smoothstep(0.0,0.5,t)):mix(uC2,uC3,smoothstep(0.5,1.0,t));
+    c*=0.96+0.06*noise(u*90.0+so);
+    return vec4(c, 200.0);
+  }
+#elif MODE==96
+  { // mondrian : de grands carrés de couleur séparés par des traits noirs, comme un tableau moderne
+    vec3 u=normalize(q); vec4 cf=cubeF(u); vec2 p=cf.xy; float fw=cf.w;
+    float x1=-0.5+0.35*h31(vec3(fw,1.0,so.x)), x2=0.15+0.5*h31(vec3(fw,2.0,so.x)), y1=-0.55+0.4*h31(vec3(fw,3.0,so.x)), y2=0.1+0.5*h31(vec3(fw,4.0,so.x));
+    float ix=p.x<x1?0.0:(p.x<x2?1.0:2.0), iy=p.y<y1?0.0:(p.y<y2?1.0:2.0);
+    float k=h31(vec3(ix+fw*3.0,iy,so.y));
+    vec3 c=k<0.24?brt(uC1,0.4):(k<0.48?uC2:(k<0.72?uC3:vec3(0.96,0.95,0.92)));
+    float ln=min(min(abs(p.x-x1),abs(p.x-x2)),min(abs(p.y-y1),abs(p.y-y2)));
+    ln=min(ln,1.0-max(abs(p.x),abs(p.y)));
+    return vec4(mix(vec3(0.07),c,smoothstep(0.022,0.032,ln)), 200.0);
+  }
+#elif MODE==97
+  { // pâquerettes : des marguerites aux pétales clairs (3e couleur) et au cœur de la 2e, dans un pré de la 1re
+    vec3 u=normalize(q); vec3 c=mix(brt(uC1,0.45)*0.6,brt(uC1,0.45)*0.85,noise(u*8.0+so));
+    for(int i=0;i<2;i++){ vec3 id; float on; vec2 p=scatP(u,2.2,float(i),id,on); p=mrot(h31(id+5.0)*6.2831853)*p;
+      on*=step(0.1,h31(id)); float r=length(p), a=atan(p.y,p.x), sz=0.19+0.06*h31(id+3.0);
+      float pet=step(r,sz*(0.72+0.28*abs(cos(a*6.0))))*step(0.05,r);
+      vec3 pc=mix(uC3,vec3(1.0),0.3)*(0.8+0.25*abs(cos(a*6.0)));
+      c=mix(c,pc,pet*on);
+      c=mix(c,uC2*(0.8+0.3*step(0.6,noise(vec3(p*60.0,id.x)))),step(r,0.065)*on); }
+    return vec4(c, 200.0);
+  }
+#elif MODE==98
+  { // éclairs : des petits éclairs de la 2e et de la 3e couleur, au cœur blanc, sur un fond de la 1re
+    vec3 u=normalize(q); vec3 c=brt(uC1,0.4)*(0.55+0.15*noise(u*5.0+so));
+    for(int i=0;i<2;i++){ vec3 id; float on; vec2 p=scatP(u,2.0,float(i),id,on); p=mrot(h31(id+5.0)*6.2831853)*p;
+      on*=step(0.15,h31(id));
+      float d=segM(p,vec2(0.06,0.26),vec2(-0.06,0.02)); d=min(d,segM(p,vec2(-0.06,0.02),vec2(0.06,0.03))); d=min(d,segM(p,vec2(0.06,0.03),vec2(-0.05,-0.26)));
+      vec3 bc=h31(id+2.0)<0.5?uC2:uC3;
+      c=mix(c,bc,smoothstep(0.05,0.04,d)*on); c=mix(c,vec3(1.0),smoothstep(0.018,0.01,d)*on*0.8); }
+    return vec4(c, 200.0);
+  }
+#elif MODE==99
+  { // vinyle : un disque de chaque côté, ses sillons qui brillent, son étiquette de couleur et le petit trou au milieu
+    vec3 u=normalize(q); float rho=length(u.xy), a=atan(u.y,u.x);
+    vec3 vc=mix(vec3(0.04),brt(uC1,0.3)*0.35,0.55);
+    float gro=0.5+0.5*sin(rho*320.0+so.x);
+    float sheen=pow(abs(cos(a-0.6)),10.0)*0.4+pow(abs(cos(a+0.9)),30.0)*0.15;
+    vec3 c=vc*(0.8+0.35*gro)+vec3(sheen)*(0.55+0.45*gro);
+    c*=mix(0.55,1.0,smoothstep(0.0,0.012,abs(fract(rho*4.3+0.15)-0.5)-0.004));   // les blancs entre les chansons
+    if(rho<0.4){ c=uC2*(0.95+0.05*noise(u*40.0));
+      c=mix(c,uC3,step(0.28,rho)*step(rho,0.32));
+      c=mix(c,uC3,smoothstep(0.012,0.006,abs(rho-0.13)));
+      float tx=step(0.5,noise(vec3(a*7.0,rho*50.0,so.x)))*step(0.17,rho)*step(rho,0.24);
+      c=mix(c,brt(uC1,0.2)*0.4,tx*0.7);
+      c=mix(c,vec3(0.05),step(rho,0.045)); }
+    return vec4(c, 200.0);
+  }
+#elif MODE==100
+  { // foot : le ballon de foot, ses 12 pentagones et ses 20 hexagones bien cousus
+    vec3 u=normalize(q); float d1=-2.0, d2=-2.0, pent=0.0;
+    float ph=1.618034, ip=0.618034;
+    for(int k=0;k<3;k++) for(int s1=0;s1<2;s1++) for(int s2=0;s2<2;s2++){
+      float a=s1==0?1.0:-1.0, b=s2==0?1.0:-1.0;
+      vec3 v=vec3(0.0,a,b*ph); v=k==0?v:(k==1?v.zxy:v.yzx);   // les sommets de l'icosaèdre : les pentagones
+      float d=dot(u,normalize(v)); if(d>d1){ d2=d1; d1=d; pent=1.0; } else if(d>d2) d2=d;
+      vec3 w=vec3(0.0,a*ph,b*ip); w=k==0?w:(k==1?w.zxy:w.yzx);   // ceux du dodécaèdre : les hexagones
+      d=dot(u,normalize(w)); if(d>d1){ d2=d1; d1=d; pent=0.0; } else if(d>d2) d2=d; }
+    for(int s=0;s<8;s++){ vec3 v=vec3(mod(float(s),2.0)<1.0?1.0:-1.0, mod(floor(float(s)/2.0),2.0)<1.0?1.0:-1.0, s<4?1.0:-1.0);
+      float d=dot(u,normalize(v)); if(d>d1){ d2=d1; d1=d; pent=0.0; } else if(d>d2) d2=d; }
+    vec3 c=pent>0.5?uC1:mix(uC3,vec3(0.97,0.96,0.93),0.55);
+    float seam=d1-d2;
+    c*=mix(0.8,1.0,smoothstep(0.0,0.03,seam));
+    c=mix(uC2,c,smoothstep(0.004,0.01,seam));
+    return vec4(c, 200.0);
+  }
+#elif MODE==101
+  { // cordage : des torons de 3 couleurs enroulés en hélice comme une grosse corde, avec leurs fibres
+    vec3 u=normalize(q); float lon=atan(u.z,u.x), lat=asin(clamp(u.y,-1.0,1.0));
+    float v=lon/6.2831853*3.0+lat*3.5+so.x; float f=fract(v), m=mod(floor(v),3.0);
+    vec3 c=m<1.0?brt(uC1,0.45):(m<2.0?uC2:uC3);
+    float sh=0.45+0.6*sin(3.14159*f);
+    float fib=0.85+0.15*sin((lon*3.0-lat*9.0)*20.0+f*6.0);
+    return vec4(c*sh*fib, 200.0);
+  }
+#elif MODE==102
+  { // relief : une carte de randonnée, ses courbes de niveau, ses vallées de la 1re couleur et ses sommets de la 3e
+    vec3 u=normalize(q); float h=fbm(u*1.5+so)+0.06*noise(u*6.0+so);
+    float hn=smoothstep(0.36,0.7,h); float v=hn*9.0; float b=floor(v)/9.0;   // (6 novembre 2026) les hauteurs étalées : vallées de la 1re couleur, pentes de la 2e, sommets de la 3e
+    vec3 c=b<0.4?mix(brt(uC1,0.55),uC2,smoothstep(0.15,0.4,b)):mix(uC2,mix(uC3,vec3(1.0),0.2),smoothstep(0.45,0.75,b));
+    float inn=step(0.5,v)*step(v,8.5);   // pas de courbe là où la hauteur est au plus bas ou au plus haut (elle y scintillait)
+    c=mix(c,c*0.6,smoothstep(0.42,0.48,abs(fract(v)-0.5))*inn);
+    c=mix(c,c*0.5,smoothstep(0.475,0.495,abs(fract(v/3.0)-0.5))*inn);   // une courbe sur trois plus marquée
+    return vec4(c, 200.0);
+  }
+#elif MODE==103
+  { // velours côtelé : les côtes du velours, bien rondes, en larges bandes douces des 3 couleurs
+    vec3 u=normalize(q); float lon=atan(u.z,u.x);
+    float rib=0.5+0.5*sin(lon*48.0);
+    float t=fbm(vec3(u.x,u.y*0.3,u.z)*1.5+so);
+    vec3 c=t<0.47?brt(uC1,0.45):(t<0.53?uC2:uC3);
+    c*=0.55+0.5*pow(rib,0.6);
+    c*=0.94+0.08*noise(u*120.0+so);
+    return vec4(c, 200.0);
+  }
+#elif MODE==104
+  { // guirlande lumineuse : des fils où brillent de petites ampoules de la 2e, de la 3e couleur et blanches, sur un fond de nuit de la 1re
+    vec3 u=normalize(q); float lon=atan(u.z,u.x); vec3 c=brt(uC1,0.3)*0.2;
+    for(int i=0;i<5;i++){ float fi=float(i); float y0=-0.72+0.36*fi+0.08*sin(lon*2.0+fi*1.7);   // (6 novembre 2026) plus de fils, des ampoules plus grosses
+      c=mix(c,vec3(0.15),step(abs(u.y-y0),0.006));
+      float N=12.0; float x=lon/6.2831853*N+fi*0.5; float lx=(fract(x)-0.5)*6.2831853/N*sqrt(max(0.05,1.0-y0*y0));
+      vec2 p=vec2(lx,u.y-y0+0.05); float L=length(p/vec2(0.036,0.052));
+      float m=mod(floor(x)+fi,3.0); vec3 bc=m<1.0?uC2:(m<2.0?uC3:mix(brt(uC1,0.6),vec3(1.0),0.3));
+      c+=bc*exp(-length(p)*16.0)*0.7;
+      c=mix(c,mix(bc,vec3(1.0),0.5),step(L,1.0)); }
+    return vec4(c, 200.0);
+  }
+#elif MODE==105
+  { // œil-de-tigre : une pierre en bandes soyeuses, faite de fibres, dont l'éclat glisse quand on la tourne
+    float v=tigreV(q); float m=mod(floor(v),3.0);
+    vec3 c=m<1.0?brt(uC1,0.4)*0.55:(m<2.0?uC2*0.8:uC3);
+    return vec4(c, 200.0);
+  }
+#elif MODE==106
+  { // jade : une pierre translucide de la 2e couleur, voilée de nuages plus clairs et veinée de la 1re et de la 3e
+    float r=length(q); vec3 w=q*2.0+so; w+=0.4*vec3(fbm(w),fbm(w+3.0),fbm(w+6.0));
+    float cl=fbm(w*1.4), v1=smoothstep(0.04,0.0,abs(fbm(w*1.1+10.0)-0.5)), v3=smoothstep(0.035,0.0,abs(fbm(w*1.3+20.0)-0.5));
+    vec3 c=mix(uC2*0.7,mix(uC2,vec3(1.0),0.4),cl);
+    c=mix(c,brt(uC1,0.4)*0.6,v1*0.9); c=mix(c,uC3,v3*0.9);
+    e=uC2*0.05;
+    return vec4(c, 2.2+cl*2.0+(v1+v3)*6.0);
+  }
+#elif MODE==107
+  { // néons : des tubes de lumière en forme de cœur, d'étoile et d'éclair flottent dans un verre de nuit, un par couleur
+    float h=q.z; vec2 p=q.xy*1.05; float lay=exp(-h*h/0.006); e=vec3(0.0);
+    vec2 a=p-vec2(-0.32,0.25); float d1=abs(length(a)-0.2);   // un anneau
+    vec2 b=p-vec2(0.3,0.22); vec2 b2=vec2(abs(b.x),b.y); float d2=abs(length(b2-vec2(0.09,0.03))-0.1)*step(-0.01,b.y)+step(b.y,-0.01)*segM(b2,vec2(0.0,-0.2),vec2(0.17,-0.04));   // un cœur
+    d2=min(d2,abs(length(b2-vec2(0.09,0.03))-0.1)+step(-0.01,-b.y)*0.0);
+    vec2 c=p-vec2(0.0,-0.3); float d3=segM(c,vec2(-0.3,0.05),vec2(-0.12,-0.08)); d3=min(d3,segM(c,vec2(-0.12,-0.08),vec2(0.05,0.08))); d3=min(d3,segM(c,vec2(0.05,0.08),vec2(0.3,-0.06)));   // un zigzag
+    vec3 c1=brt(uC1,0.5);
+    e+=lay*(c1*(exp(-d1*120.0)*6.0+exp(-d1*18.0)*0.5)+uC2*(exp(-d2*120.0)*6.0+exp(-d2*18.0)*0.5)+uC3*(exp(-d3*120.0)*6.0+exp(-d3*18.0)*0.5));
+    e+=lay*vec3(1.0)*(exp(-d1*400.0)+exp(-d2*400.0)+exp(-d3*400.0))*2.0;
+    return vec4(c1*0.05, 0.4);
+  }
+#elif MODE==108
+  { // titane : un métal (miroir, au rendu) chauffé jusqu'à prendre les 3 couleurs du coloris en reflets, avec un fin brossage
+    vec4 mt=metalF(q); return vec4(mt.rgb, 200.0);
+  }
+#elif MODE==109
+  { // pissenlit : une boule de pissenlit dans un verre de soir, ses aigrettes de lumière (3e couleur), des graines qui s'envolent
+    float r=length(q); vec3 p=q-vec3(0.0,0.06,0.0); e=vec3(0.0);
+    vec3 fc=mix(uC3,vec3(1.0),0.45), c1=brt(uC1,0.45);
+    for(int i=0;i<46;i++){ float fi=float(i)+0.5, y=1.0-2.0*fi/46.0, rr=sqrt(1.0-y*y), a=2.39996*fi;
+      vec3 d=vec3(cos(a)*rr,y,sin(a)*rr); float on=step(-0.8,y);
+      float t=clamp(dot(p,d)/0.34,0.0,1.0), ds=length(p-d*0.34*t);
+      e+=fc*on*(exp(-ds*90.0)*4.0*(0.3+t)+exp(-length(p-d*0.34)*45.0)*6.0); }
+    for(int i=0;i<5;i++){ float fi=float(i); vec3 P=vec3(0.32+0.09*fi,0.14+0.1*fi,0.12*sin(fi*2.0+so.x));
+      e+=fc*exp(-length(q-P)*40.0)*7.0; }
+    if(length(p)<0.065) return vec4(c1*0.55, 600.0);
+    vec2 sp=vec2(q.x-0.03*sin(q.y*4.0),q.z);
+    if(q.y<0.0 && q.y>-0.8 && length(sp)<0.02) return vec4(mix(c1,uC2,0.3)*0.5, 600.0);
+    return vec4(mix(uC1*0.1,uC2*0.5,smoothstep(-0.8,0.7,q.y)), 0.45);
+  }
+#elif MODE==110
+  { // engrenages : trois roues dentées qui s'engrènent au cœur du verre, une de chaque couleur (on les voit tourner en grand)
+    float T=0.0; float d=9.0, k=0.0;
+    for(int i=0;i<3;i++){
+      vec2 C=i==0?vec2(-0.17,0.06):(i==1?vec2(0.31,0.2):vec2(0.11,-0.36));
+      float Rg=i==0?0.3:(i==1?0.17:0.13), n=i==0?12.0:(i==1?7.0:5.0), z=i==0?0.0:(i==1?0.03:-0.03), ns=i==0?5.0:4.0;
+      float rot=i==0?T:(i==1?-T*12.0/7.0+0.25:-T*12.0/5.0+0.3);
+      vec2 p=q.xy-C; float a=atan(p.y,p.x)+rot, L=length(p);
+      float g=L-Rg-0.045*smoothstep(-0.25,0.25,cos(a*n));
+      bool hole=L<Rg*0.17 || (L>Rg*0.32 && L<Rg*0.7 && abs(fract(a*ns/6.2831853)-0.5)<0.33);
+      if(hole) g=max(g,0.01);
+      g=max(g,abs(q.z-z)-0.045);
+      if(g<d){ d=g; k=float(i); }
+    }
+    vec3 gc=k<0.5?mix(vec3(0.98,0.76,0.32),uC3,0.4):(k<1.5?mix(vec3(0.9,0.7,0.35),uC2,0.55):mix(vec3(0.8,0.6,0.3),uC1/max(max(uC1.r,max(uC1.g,uC1.b)),0.4),0.55));
+    vec3 g3=q*13.0+so; vec3 fc=fract(g3)-0.5;
+    e=vec3(step(0.975,h31(floor(g3)))*smoothstep(0.2,0.0,length(fc)))*2.5;   // de la poussière dorée qui brille
+    if(d<0.0){ float edge=smoothstep(0.0,0.02,-d); e+=gc*0.35; return vec4(gc*(0.6+0.5*edge), 400.0); }
+    return vec4(mix(uC1,uC2,0.3)*0.5, 0.4);
+  }
+#elif MODE==111
+  { // saturne : la planète aux anneaux dans un verre de nuit : ses bandes (2e et 3e couleurs), ses anneaux (3e et 1re) et leur ombre, deux lunes
+    float r=length(q); vec3 L=normalize(vec3(-0.6,0.45,0.65)); e=vec3(0.0);
+    vec3 n=normalize(vec3(0.18,0.92,0.38)), c1=brt(uC1,0.45);
+    float R=0.27;
+    if(r<R){ vec3 nm=q/r; float lat=dot(nm,n)+0.03*noise(nm*6.0+so);
+      float bd=sin(lat*26.0+so.x)*0.5+0.5;
+      vec3 c=mix(uC2,mix(uC3,vec3(1.0),0.3),bd); c=mix(c,c1,smoothstep(0.7,0.95,sin(lat*9.0+1.0))*0.6);
+      float sh=0.12+0.95*clamp(dot(nm,L),0.0,1.0);
+      e=c*sh*0.5; return vec4(c*sh, 1000.0); }
+    float h=dot(q,n), rr=length(q-n*h);
+    if(rr>0.34 && rr<0.66){ float t=(rr-0.34)/0.32;
+      float gap=smoothstep(0.0,0.02,abs(t-0.62)-0.03)*smoothstep(0.0,0.02,abs(t-0.25)-0.01);
+      vec3 rc=mix(mix(uC3,vec3(1.0),0.2),c1,smoothstep(0.3,0.9,t)); rc*=0.75+0.25*sin(t*60.0+so.x);
+      float tt=dot(-q,L); float sh=(tt>0.0 && length(q+L*tt)<R)?0.15:1.0;
+      e+=rc*exp(-pow(h/0.018,2.0))*gap*sh*2.2; }
+    for(int i=0;i<2;i++){ vec3 P=i==0?vec3(0.55,0.32,0.1):vec3(-0.5,-0.4,0.15);
+      float d=length(q-P); if(d<0.035) return vec4(mix(uC2,vec3(0.8),0.5)*(0.3+0.8*clamp(dot((q-P)/d,L),0.0,1.0)), 1000.0); }
+    vec3 g=q*15.0+so; vec3 fc=fract(g)-0.5;
+    e+=vec3(step(0.972,h31(floor(g)))*smoothstep(0.2,0.0,length(fc)))*5.0*step(0.55,r);
+    return vec4(uC1*0.06, 0.45);
+  }
+#elif MODE==112
+  { // diamant : un diamant taillé en brillant flotte dans un écrin de velours (1re couleur) ; ses facettes lancent des feux des 3 couleurs
+    float r=length(q); vec3 L=normalize(vec3(-0.5,0.7,0.6)); e=vec3(0.0);
+    vec3 p=q; p.yz=mrot(-0.45)*p.yz; p.xz=mrot(0.3+so.x*0.0)*p.xz;
+    float a=atan(p.z,p.x), seg=floor(a/0.7853982+0.5), a0=seg*0.7853982;
+    vec2 dr=vec2(cos(a0),sin(a0));
+    float rr=dot(p.xz,dr);
+    float table=p.y-0.1, crown=rr*0.7+p.y*0.72-0.27, girdle=length(p.xz)-0.34, pav=rr*0.76-p.y*0.66-0.24;
+    float a1=floor(a/0.7853982)*0.7853982+0.3927; vec2 dr2=vec2(cos(a1),sin(a1)); float star=dot(p.xz,dr2)*0.45+p.y*0.9-0.205;
+    float dd=max(max(max(table,crown),max(girdle,pav)),star);
+    if(dd<0.0){ float id=0.0;
+      if(dd==table) id=0.0; else if(dd==crown) id=1.0+seg; else if(dd==star) id=20.0+seg; else id=40.0+seg;
+      float k=h31(vec3(id,1.0,so.y)); vec3 fc=k<0.34?brt(uC1,0.45):(k<0.67?uC2:uC3);
+      float br=pow(h31(vec3(id,2.0,so.y)),2.0);
+      vec3 c=mix(vec3(0.9,0.93,1.0),fc,0.55)*(0.35+1.1*br);
+      e=c*0.5+vec3(1.0)*smoothstep(0.004,0.0,-dd)*1.5;
+      return vec4(c, 1000.0); }
+    for(int i=0;i<5;i++){ float fi=float(i); vec3 P=vec3((h31(so+fi*1.3)-0.5)*1.0,(h31(so+fi*2.9)-0.5)*1.0,0.2);
+      vec2 dq=abs(q.xy-P.xy); float gl=exp(-dq.x*90.0)*exp(-dq.y*7.0)+exp(-dq.y*90.0)*exp(-dq.x*7.0);
+      e+=mix(vec3(1.0),uC3,0.3)*gl*exp(-pow((q.z-P.z)/0.1,2.0))*3.0*step(0.45,length(P.xy)); }
+    float vel=0.7+0.3*noise(q*25.0+so);
+    return vec4(brt(uC1,0.3)*0.12*vel, 0.45);
+  }
+#elif MODE==113
+  { // phare : une tour rayée (1re couleur et blanc) sur son rocher, la mer (2e couleur), et deux faisceaux de lumière (3e couleur) dans la nuit
+    float r=length(q); vec3 L=normalize(vec3(-0.5,0.6,0.6)); e=vec3(0.0);
+    vec3 c1=uC1/max(max(uC1.r,max(uC1.g,uC1.b)),0.45), lc=mix(uC3,vec3(1.0,0.97,0.85),0.35);
+    // la mer
+    float wv=-0.5+0.025*sin(q.x*13.0+so.x)+0.02*sin(q.z*17.0+q.x*5.0+so.y)+0.03*(fbm(q*5.0+so)-0.5);
+    if(q.y<wv){ float crest=smoothstep(-0.012,0.0,q.y-wv);
+      vec3 w=mix(uC2*0.18,uC2*0.55,0.5+0.5*noise(q*12.0+so)); w=mix(w,vec3(0.9),crest*0.7);
+      w+=lc*0.5*exp(-abs(q.x)*6.0)*smoothstep(-0.75,-0.5,q.y)*(0.6+0.4*noise(q*30.0+so));   // le reflet du phare
+      return vec4(w, 400.0); }
+    // le rocher
+    float rk=length((q-vec3(0.0,-0.5,0.0))*vec3(1.0,1.6,1.4))-0.2-0.03*fbm(q*9.0+so);
+    if(rk<0.0) return vec4(vec3(0.16,0.14,0.13)*(0.7+0.5*noise(q*25.0+so)), 400.0);
+    // la tour
+    float y=q.y, rho=length(q.xz), rt=mix(0.1,0.07,clamp((y+0.36)/0.6,0.0,1.0));
+    vec3 nn=normalize(vec3(q.x,0.0,q.z)+1e-4); float sh=0.45+0.7*clamp(dot(nn,L),0.0,1.0);
+    if(y>-0.4 && y<0.24 && rho<rt){ vec3 c=mod(floor((y+0.36)/0.1),2.0)<1.0?vec3(0.95,0.94,0.9):c1;
+      if(q.z>0.0 && abs(q.x)<0.018 && abs(fract((y+0.36)/0.2)-0.5)<0.12) c=vec3(0.15);   // les petites fenêtres
+      return vec4(c*sh, 400.0); }
+    if(y>0.24 && y<0.265 && rho<0.11) return vec4(vec3(0.12)*sh+c1*0.2, 400.0);   // la galerie
+    if(y>0.265 && y<0.36 && rho<0.065){ e=lc*3.0; return vec4(lc, 400.0); }   // la lanterne
+    if(y>0.36 && y<0.45 && rho<0.075*(1.0-(y-0.36)/0.09)) return vec4(c1*0.5*sh, 400.0);   // le toit
+    // les deux faisceaux
+    vec3 Lc=vec3(0.0,0.31,0.0); float ba=0.55+0.6*h31(so+0.4);
+    vec3 dir=normalize(vec3(cos(ba),0.06,sin(ba)));
+    for(int k=0;k<2;k++){ vec3 d=k==0?dir:vec3(-dir.x,dir.y,-dir.z); vec3 pa=q-Lc; float t=dot(pa,d);
+      float w=0.03+t*0.26; float pr=length(pa-d*t);
+      e+=lc*step(0.0,t)*exp(-pow(pr/w,2.0))*exp(-t*0.8)*4.0; }
+    e+=lc*exp(-length(q-Lc)*14.0)*1.2;
+    vec3 g=q*15.0+so; vec3 fc=fract(g)-0.5;
+    e+=vec3(step(0.972,h31(floor(g)))*smoothstep(0.2,0.0,length(fc)))*5.0*step(0.55,r)*step(-0.3,q.y);
+    return vec4(uC1*0.08, 0.45);
+  }
+#elif MODE==114
+  { // astrolabe : une sphère armillaire tourne dans le verre : trois anneaux d'or (de la 3e couleur) gradués qui pivotent chacun sur son axe,
+    // un petit soleil (2e couleur) au centre qui respire, une planète qui fait le tour de l'écliptique et des signes du zodiaque (1re couleur)
+    float t=mod(uTime,3.9269908), lp=t*1.6; e=vec3(0.0);
+    float r=length(q); vec3 L=normalize(vec3(-0.5,0.6,0.6));
+    vec3 gold=mix(vec3(1.0,0.82,0.42),uC3,0.45), c1=brt(uC1,0.45);
+    float best=9.0; vec3 bn=vec3(0.0); float bid=0.0, ba=0.0;
+    for(int i=0;i<3;i++){ float fi=float(i);
+      vec3 ax=i==0?vec3(sin(lp),0.0,cos(lp)):(i==1?normalize(vec3(0.0,cos(lp*-1.0+0.6),sin(lp*-1.0+0.6))):normalize(vec3(0.4,0.92,0.2)));
+      float R=i==0?0.62:(i==1?0.5:0.4);
+      float h=dot(q,ax); vec3 pr=q-ax*h; float rho=length(pr);
+      float d=length(vec2(rho-R,h*1.0))-0.028;
+      if(d<best){ best=d; bid=fi; bn=normalize(vec3(0.0)+(pr/max(rho,1e-4))*(rho-R)+ax*h+1e-5);
+        vec3 b1=normalize(cross(ax,vec3(0.3,0.7,0.1))); ba=atan(dot(pr,cross(ax,b1)),dot(pr,b1))-(i==2?lp*2.0:0.0); } }
+    if(best<0.0){ float tick=step(0.75,fract(ba/6.2831853*36.0))*step(0.5,0.5);
+      float sh=0.35+0.8*clamp(dot(bn,L),0.0,1.0);
+      vec3 c=gold*sh+vec3(1.0)*pow(clamp(dot(reflect(-L,bn),vec3(0.0,0.0,1.0)),0.0,1.0),20.0)*0.8;
+      c=mix(c,bid>1.5?c1:gold*0.4,tick*0.85);
+      if(bid>1.5){ float zs=step(0.85,fract(ba/6.2831853*12.0)); e=c1*zs*2.0; }
+      return vec4(c, 600.0); }
+    // la planète sur l'écliptique (l'anneau du milieu), qui fait deux tours par boucle
+    vec3 ax3=normalize(vec3(0.4,0.92,0.2)), b1=normalize(cross(ax3,vec3(0.3,0.7,0.1))), b2=cross(ax3,b1);
+    vec3 PL=(b1*cos(lp*2.0+1.0)+b2*sin(lp*2.0+1.0))*0.4;
+    float dp=length(q-PL); if(dp<0.05) return vec4(c1*(0.3+0.9*clamp(dot((q-PL)/dp,L),0.0,1.0)), 800.0);
+    // le soleil du centre
+    float pulse=0.8+0.2*sin(lp*3.0);
+    float ds=length(q); if(ds<0.11){ e=mix(vec3(1.0),uC2,0.4)*4.0*pulse; return vec4(mix(vec3(1.0),uC2,0.5), 800.0); }
+    float ang=atan(q.y,q.x);
+    e+=uC2*exp(-(ds-0.11)*10.0)*1.2*pulse*(0.75+0.25*sin(ang*12.0+lp*2.0));
+    e+=c1*exp(-abs(r-0.62)*25.0)*0.15;
+    vec3 g=q*14.0+so; vec3 fc=fract(g)-0.5;
+    e+=vec3(step(0.972,h31(floor(g)))*smoothstep(0.2,0.0,length(fc)))*5.0*step(0.66,r);
+    return vec4(uC1*0.08, 0.4);
+  }
+#elif MODE==115
+  { // plasma : une boule plasma, comme au palais de la découverte. Un cœur brûlant au centre lâche des éclairs
+    // qui se tordent et cherchent le bord du verre, où ils s'écrasent en petites taches de lumière.
+    // Les 3 couleurs du coloris : les éclairs en prennent une chacun, à tour de rôle ; le cœur est de la 3e, son halo de la 2e, la brume du verre de la 1re
+    float t=mod(uTime,3.9269908), lp=t*1.6;
+    float rr=length(q)+1e-4; vec3 u=q/rr;
+    vec3 E=vec3(0.0); float jit=noise(q*16.0+so)-0.5;
+    vec3 c1g=uC1/max(max(uC1.r,max(uC1.g,uC1.b)),0.35);
+    for(int i=0;i<9;i++){
+      float fi=float(i);
+      float b=fi*2.3999632+0.45*sin(lp+fi*1.7);
+      float z=(fract(fi*0.618+so.x*0.01)-0.5)*1.4+0.25*sin(lp+fi*2.9);
+      vec3 wg=vec3(sin(rr*7.0+fi*2.0+lp),cos(rr*9.0+fi*3.0-lp),sin(rr*8.0+fi*5.0+lp*2.0))*0.22*rr;
+      vec3 dir=normalize(vec3(cos(b),sin(b),z)+wg+jit*0.12*rr);
+      float d=length(u-dir)*rr;
+      float wd=0.013+0.02*(1.0-rr);
+      float fl=0.7+0.3*sin(lp*2.0+fi*1.7);
+      float kc=mod(fi,3.0); vec3 fc=kc<1.0?c1g:(kc<2.0?uC2:uC3);
+      vec3 col=mix(mix(fc,vec3(1.0),0.5),fc*1.15,smoothstep(0.12,0.3,rr));   // blanc tout près du cœur, de sa couleur ensuite
+      E+=(col*exp(-d*d/(wd*wd))*6.0+fc*exp(-d*d/(wd*wd*6.0))*2.5+fc*exp(-d*12.0)*0.6)*fl*smoothstep(0.08,0.16,rr)*smoothstep(0.97,0.86,rr);
+      vec3 ud=u-dir; E+=mix(fc,vec3(1.0),0.3)*exp(-pow((rr-0.86)/0.035,2.0))*exp(-dot(ud,ud)/0.004)*6.0*fl;
+    }
+    E+=mix(uC3,vec3(1.0),0.45)*exp(-rr*rr/0.01)*9.0 + uC2*exp(-rr*5.0)*1.6 + c1g*smoothstep(0.55,0.95,rr)*0.35;
+    e=E;
+    return vec4(uC1*0.12,0.5);
+  }
 #else
   { // à pois
     vec3 g=q*2.6+so; vec3 id=floor(g); vec3 f=fract(g)-0.5;
@@ -1912,6 +2582,16 @@ void main(){
     // acier : miroir teinté par le coloris, avec de fines stries de polissage qui tournent avec la bille
     float brush=0.9+0.1*noise(vec3(qo.x*3.0,qo.y*80.0,qo.z*3.0)+uSeed.xyz*10.0);
     col=chrome(rv)*mix(vec3(0.95),uC2,0.35)*brush*(0.72+0.28*n.z)+spec*1.6;
+#elif MODE==88
+    { vec3 m=meteo(qs);   // la Météorite : le fer en miroir, les cristaux en couleur
+      vec3 met=chrome(rv)*vec3(0.82-0.4*m.y)*mix(vec3(1.0),uC2,0.12)*(0.7+0.3*n.z)+spec*1.3;
+      col=mix(met,base*(0.5+0.6*dif)+base*0.25+refl*F*0.5+spec*0.9,m.x); }
+#elif MODE==105
+    { float v=tigreV(qs); vec3 fib=normalize(cross(TIGRE_AX,normalize(qs)));   // l'Œil-de-tigre : un reflet soyeux qui glisse le long des fibres
+      float shim=pow(1.0-abs(dot(normalize(rv),fib)),6.0)*(0.6+0.4*sin(fract(v)*3.14159));
+      col=base*(0.45+0.6*dif)+base*1.3*shim+mix(base,vec3(1.0),0.5)*shim*0.4+spec*0.6+refl*F*0.2; }
+#elif MODE==108
+    { vec4 mt=metalF(qs); col=chrome(rv)*mt.rgb*(0.75+0.25*noise(qo*30.0))*(0.7+0.3*n.z)+spec*1.4*mt.rgb; }   // le Titane : un miroir teinté
 #elif MODE==10
     vec3 nac=0.5+0.5*cos(6.2831*(vec3(0.0,0.33,0.67)+(1.0-n.z)*0.9+fbm(qs*2.0)*0.8));
     col=mix(col,col*0.75+nac*0.3,0.32)+nac*F*0.35;      // reflets de nacre
@@ -1927,7 +2607,7 @@ void main(){
 #if MODE==49
     const int GSTEPS=96;   // le Prisme : des faces nettes, sans grain (pas réguliers)
     float jit=0.5;
-#elif MODE==32 || MODE==48 || MODE==50 || MODE==51 || MODE==61 || MODE==63 || MODE==64 || MODE==79 || MODE==82 || MODE==83 || MODE==84 || MODE==85
+#elif MODE==32 || MODE==48 || MODE==50 || MODE==51 || MODE==61 || MODE==63 || MODE==64 || MODE==79 || MODE==82 || MODE==83 || MODE==84 || MODE==85 || MODE==89 || MODE==90 || MODE==106 || MODE==107 || MODE==109 || MODE==110 || MODE==111 || MODE==112 || MODE==113 || MODE==114 || MODE==115 || MODE==116
     const int GSTEPS=64;
     float jit=fract(sin(dot(gl_FragCoord.xy,vec2(12.9898,78.233)))*43758.5453);   // pas décalés d'un pixel à l'autre : pas de stries
 #else
@@ -2218,7 +2898,7 @@ setInterval(()=>{
     const k = im.dataset.myth, R = mythReg.get(k); if(!R) return;
     let F = mythFrames.get(k);
     // F.u[j] : l'adresse de l'image (prête et décodée), 1 pendant qu'elle se fabrique, 0 si elle a raté (on réessaiera)
-    if(!F){ F = {u:[], keep:[], ok:0, sz:Math.min(R.size, Math.max(48, Math.ceil(r.width*pxRatio()/8)*8))}; mythFrames.set(k, F) }
+    if(!F){ F = {u:[], keep:[], ok:0, sz:Math.min(R.size, Math.max(48, Math.ceil(Math.max(im.offsetWidth, r.width)*pxRatio()/8)*8))}; mythFrames.set(k, F) }   // (6 novembre 2026) offsetWidth : la vraie taille, même pendant une animation qui la rétrécit (les mythiques de l'annonce étaient floues)
     F.seen = now;
     // tant que la boucle n'est pas complète : on en fabrique autant que possible en ~10 ms (partagées entre les billes à l'écran)
     for(let j=0; j<MYTH_N && F.ok<MYTH_N && performance.now()-t0<10; j++){

@@ -1,0 +1,150 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Tikalo · Les 3 couleurs</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Lilita+One&family=Nunito:wght@500;600;700;800;900&family=Caveat:wght@600;700&display=swap">
+<style>
+:root{
+  --bg:#FBF4E6;--panel:#FFFCF6;--panel-2:#FFF8EC;--line:#EFE3CD;--ink:#24253D;--ink-2:#56546B;--muted:#8E8898;--acc:#E0182D;--ok:#2F8F45;
+  --display:"Lilita One","Arial Rounded MT Bold",sans-serif;--body:"Nunito","Segoe UI",system-ui,sans-serif;--hand:"Caveat",cursive;
+  --shadow:0 1px 0 rgba(120,90,40,.06),0 6px 18px -10px rgba(120,90,40,.25);
+}
+@media (prefers-color-scheme:dark){ :root:not([data-theme="light"]){
+  --bg:#16130F;--panel:#211D18;--panel-2:#2A251F;--line:#352E26;--ink:#F5EEE2;--ink-2:#C8BDAD;--muted:#8F8578;--ok:#5BC46E;
+  --shadow:0 1px 0 rgba(0,0,0,.25),0 8px 22px -12px rgba(0,0,0,.7) } }
+:root[data-theme="dark"]{--bg:#16130F;--panel:#211D18;--panel-2:#2A251F;--line:#352E26;--ink:#F5EEE2;--ink-2:#C8BDAD;--muted:#8F8578;--ok:#5BC46E}
+*{box-sizing:border-box;margin:0}
+body{background:var(--bg);color:var(--ink);font-family:var(--body);font-weight:600;line-height:1.45}
+.wrap{max-width:1180px;margin:0 auto;padding:28px 16px 80px}
+.tag{display:inline-block;font-size:11px;font-weight:900;letter-spacing:.08em;text-transform:uppercase;padding:4px 10px;border-radius:999px;background:var(--ink);color:var(--bg)}
+h1{font-family:var(--display);font-weight:400;font-size:clamp(34px,5vw,52px);line-height:1;margin:12px 0 8px}
+h2{font-family:var(--display);font-weight:400;font-size:30px;margin:40px 0 6px}
+.lead{max-width:75ch;color:var(--ink-2)}
+.note{font-family:var(--hand);font-size:22px;color:#C07A0C;margin-top:6px}
+.live{margin-top:16px;display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px;max-width:760px}
+.live figure{background:var(--panel);border:1px solid var(--line);border-radius:18px;padding:12px;text-align:center;box-shadow:var(--shadow)}
+.live canvas{width:100%;max-width:220px;aspect-ratio:1;height:auto;display:block;margin:0 auto}
+.live figcaption{font-weight:900;margin-top:6px}
+.live figcaption small{display:block;color:var(--muted);font-weight:700;font-size:12px}
+.mot{margin-top:18px;background:var(--panel);border:1px solid var(--line);border-radius:20px;padding:16px;box-shadow:var(--shadow)}
+.mot h3{font-family:var(--display);font-weight:400;font-size:26px;line-height:1.05}
+.mot h3 small{font-family:var(--body);font-size:13px;font-weight:800;color:var(--muted);margin-left:6px}
+.mot p{font-size:14px;color:var(--ink-2);margin-top:4px}
+.grid{margin-top:12px;display:grid;grid-template-columns:70px repeat(8,minmax(0,1fr));gap:4px 6px;align-items:center}
+.grid .hd{font-size:11px;font-weight:900;color:var(--muted);text-align:center;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.grid .rl{font-weight:900;font-size:13px}
+.grid .rl.ap{color:var(--ok)}
+.grid img{width:100%;max-width:96px;aspect-ratio:1;height:auto;display:block;margin:0 auto}
+img.wait{background:radial-gradient(circle at 40% 35%,var(--line),transparent 62%);border-radius:50%}
+.ch{margin-top:12px;display:flex;gap:8px;flex-wrap:wrap}
+.ch button{border:2px solid var(--line);background:var(--panel-2);color:var(--ink);border-radius:999px;padding:8px 14px;font:inherit;font-weight:900;cursor:pointer}
+.ch button[aria-pressed="true"]{background:var(--ink);border-color:var(--ink);color:var(--bg)}
+.sum{position:sticky;bottom:12px;margin-top:24px;padding:12px 16px;border-radius:16px;background:var(--ink);color:var(--bg);font-weight:800;box-shadow:var(--shadow)}
+#err{color:#C0392B;white-space:pre-wrap;font-size:12px}
+@media (max-width:720px){
+  .grid{grid-template-columns:52px repeat(4,minmax(0,1fr))}
+  .grid .x{display:none}
+  .live{grid-template-columns:repeat(3,minmax(0,1fr));gap:6px}
+  .live figure{padding:6px}
+}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <span class="tag">Maquette · 11 novembre 2026</span>
+  <h1>Les 3 couleurs de chaque coloris</h1>
+  <p class="lead">Le but : que deux coloris d'un même motif ne se ressemblent jamais. Ici, les motifs qui n'utilisaient pas les 3 couleurs (ou les noyaient), <b>avant</b> et <b>après</b>, sur 8 coloris : d'abord ceux d'une seule teinte (les plus durs), puis des coloris bien contrastés. Le dessin de chaque bille ne bouge pas, seules les couleurs changent.</p>
+
+  <h2>Le Plasma</h2>
+  <p class="lead">Le Plasma utilisait déjà les 3 couleurs, mais il brille si fort que tout part au jaune-blanc. <b>A</b> : moins de lumière, chaque éclair garde sa teinte. <b>B</b> : pareil, et les 3 couleurs sont un peu écartées les unes des autres (plus vives), pour les coloris d'une seule teinte comme Miel.</p>
+  <div class="live" id="live"></div>
+  <p class="note">Plasma Miel, en mouvement : la bille d'hier.</p>
+  <div id="plasma"></div>
+
+  <h2>Les motifs du 10 octobre</h2>
+  <p class="lead">Ils datent d'avant la règle des 3 couleurs : chacun n'en utilisait qu'une ou deux. Changer ces motifs changera aussi les billes que les joueurs ont déjà (même dessin, nouvelles couleurs).</p>
+  <div id="old"></div>
+  <div class="sum" id="sum"></div>
+  <pre id="err"></pre>
+</div>
+<script src="couleurs-rendu.js"></script>
+<script>
+/* Maquette du 11 novembre 2026. Rendu : couleurs-rendu.js, fabriqué par fabriquer-couleurs.mjs (tikalo-demo-rendu.js + couleurs-apres.glsl).
+   Le motif N du jeu, version « après » : 300 + N ; Plasma B : 515. */
+const palOf = n => PALETTES.findIndex(P=>P[0]===n);
+const PALS = ["Miel","Citron","Glacier","Ambre","Lavande","Azur","Pop","Réglisse"].map(palOf);
+const MOTS = [
+  {f:52, name:"Étoilée",  was:"Les étoiles : crème ou 3e couleur. La 2e n'apparaissait jamais.", now:"Des étoiles de la 2e et de la 3e couleur (et quelques crème) sur la 1re."},
+  {f:55, name:"Vagues",   was:"Des bandes de la 1re, de la 2e et… de crème. La 3e manquait.", now:"Des bandes des 3 couleurs, avec un fin filet crème entre elles."},
+  {f:56, name:"Zigzag",   was:"1re, 3e, 1re encore et crème : la 2e manquait.", now:"1re, 3e, 2e et un rang crème."},
+  {f:57, name:"Tricot",   was:"Des rangs de la 1re, de la 2e et de crème : pas la 3e.", now:"Des rangs des 3 couleurs et un rang crème, comme un pull jacquard."},
+  {f:58, name:"Nuages",   was:"Un ciel de la 1re couleur seulement, des nuages blancs.", now:"Un ciel qui passe de la 1re (en bas) à la 2e (en haut), des nuages teintés de la 3e."},
+  {f:60, name:"Jean",     was:"La toile de la 1re couleur seulement, la couture toujours dorée.", now:"La toile de la 1re, délavée vers la 2e, la couture au fil de la 3e."},
+  {f:62, name:"Circuit",  was:"Une carte sombre et des pistes de la 2e couleur : pas la 3e.", now:"La carte de la 1re (sombre), les pistes de la 2e, les pastilles de la 3e."},
+];
+// les versions « après » : mêmes réglages que l'original (verre ou opaque, posé de face, animé…)
+MOTS.forEach(m=>{ FAMILIES[300+m.f] = {...FAMILIES[m.f]}; if(OPAQUE_FAMS.includes(m.f)) OPAQUE_FAMS.push(300+m.f) });
+FAMILIES[415] = {...FAMILIES[115]}; FAMILIES[515] = {...FAMILIES[115]};
+const spec = (fam, base, pal) => ({seed:hash("couleurs"+base+"|"+pal), type:"calot", family:fam, pal, shiny:0});
+const PT = 1.3;   // le moment de l'animation pour les images fixes des Plasma
+
+// ---------- les images : dessinées quand elles arrivent à l'écran ----------
+const allZ = [], errs = new Set(), cache = new Map(), queue = [], seen = new WeakSet();
+const pic = (s, px) => { allZ.push({s, px}); return `<img class="wait" alt="${esc(FAMILIES[s.family].name+" "+PALETTES[s.pal][0])}" width="${px/2}" height="${px/2}" data-z="${allZ.length-1}">` };
+const io = new IntersectionObserver(es=>es.forEach(en=>{ if(en.isIntersecting && !seen.has(en.target)){ seen.add(en.target); queue.push(en.target); io.unobserve(en.target) } }), {rootMargin:"600px"});
+function paint(){
+  const t0 = performance.now();
+  while(queue.length && performance.now()-t0 < 20){ const im = queue.shift(), z = allZ[+im.dataset.z], k = urlKey(z.s, z.px);
+    if(!cache.has(k)){ try{ mainGL.draw(z.s, z.px, I3, PT); cache.set(k, mainGL.cv.toDataURL("image/png")) }
+      catch(e){ errs.add(FAMILIES[z.s.family].name+" : "+String(e.message).slice(0,300)); document.getElementById("err").textContent = [...errs].join("\n"); cache.set(k, "") } }
+    const u = cache.get(k); if(u){ im.src = u; im.classList.remove("wait") } }
+  requestAnimationFrame(paint);
+}
+
+// ---------- les choix, gardés dans ce navigateur ----------
+const KEY = "tikalo-maquette-couleurs";
+let pick = {}; try{ pick = JSON.parse(localStorage.getItem(KEY)) || {} }catch(e){}
+const save = () => { try{ localStorage.setItem(KEY, JSON.stringify(pick)) }catch(e){} };
+
+const head = `<span></span>${PALS.map((p,i)=>`<span class="hd${i>=4?" x":""}">${PALETTES[p][0]}</span>`).join("")}`;
+const row = (lbl, cls, fam, base) => `<span class="rl ${cls}">${lbl}</span>${PALS.map((p,i)=>`<span class="${i>=4?"x":""}">${pic(spec(fam, base, p), 192)}</span>`).join("")}`;
+const choices = (k, opts) => `<div class="ch" role="group" aria-label="Ton choix">${opts.map(([v,l])=>`<button data-k="${k}" data-v="${v}" aria-pressed="${pick[k]===v}">${l}</button>`).join("")}</div>`;
+
+document.getElementById("plasma").innerHTML = `<section class="mot"><h3>Plasma <small>Mythique · 115</small></h3>
+  <div class="grid">${head}${row("Avant","",115,115)}${row("A","ap",415,115)}${row("B","ap",515,115)}</div>
+  ${choices("115", [["avant","Garder comme avant"],["A","Prendre A"],["B","Prendre B"]])}</section>`;
+document.getElementById("old").innerHTML = MOTS.map(m=>`<section class="mot"><h3>${m.name} <small>${DECOR_RAR[FAMILIES[m.f].rar].name} · ${m.f}</small></h3>
+  <p><b>Avant :</b> ${m.was}<br><b>Après :</b> ${m.now}</p>
+  <div class="grid">${head}${row("Avant","",m.f,m.f)}${row("Après","ap",300+m.f,m.f)}</div>
+  ${choices(String(m.f), [["avant","Garder comme avant"],["apres","Prendre l'après"]])}</section>`).join("");
+
+function sum(){
+  const L = [["115","Plasma"], ...MOTS.map(m=>[String(m.f), m.name])];
+  const done = L.filter(([k])=>pick[k]);
+  document.getElementById("sum").textContent = done.length ? `Tes choix (${done.length} / ${L.length}) : ` + done.map(([k,n])=>`${n} → ${pick[k]==="avant"?"avant":pick[k]==="apres"?"après":pick[k]}`).join(" · ") : `Choisis pour chaque motif : avant ou après (${L.length} motifs).`;
+}
+document.addEventListener("click", e=>{ const b = e.target.closest(".ch button"); if(!b) return;
+  pick[b.dataset.k] = b.dataset.v; save();
+  b.parentNode.querySelectorAll("button").forEach(x=>x.setAttribute("aria-pressed", x===b)); sum() });
+sum();
+document.querySelectorAll("img[data-z]").forEach(im=>io.observe(im));
+requestAnimationFrame(paint);
+
+// ---------- Plasma Miel en mouvement : avant, A, B ----------
+const MIEL = palOf("Miel"), LIVE = [[115,"Avant","aujourd'hui dans le jeu"],[415,"A","moins de lumière"],[515,"B","moins de lumière + couleurs écartées"]];
+document.getElementById("live").innerHTML = LIVE.map(([f,l,s],i)=>`<figure><canvas id="lv${i}" width="300" height="300" aria-label="Plasma Miel, ${l}"></canvas><figcaption>${l}<small>${s}</small></figcaption></figure>`).join("");
+const lv = LIVE.map((_,i)=>document.getElementById("lv"+i).getContext("2d"));
+let lvLast = 0;
+function live(now){
+  if(now-lvLast > 60 && !document.hidden){ lvLast = now; const t = (now/1000) % MYTH_T;
+    LIVE.forEach(([f],i)=>{ try{ mainGL.draw(spec(f, 115, MIEL), 300, I3, t); lv[i].clearRect(0,0,300,300); lv[i].drawImage(mainGL.cv, 0, 0) }catch(e){} }) }
+  requestAnimationFrame(live);
+}
+requestAnimationFrame(live);
+</script>
+</body>
+</html>

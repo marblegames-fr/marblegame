@@ -16094,7 +16094,11 @@ const G3_LOURD = {jour:"2026-11-07", heure:20, phy:{g:2, rp:.1, rb:.6, vmax:18, 
 // (8 novembre 2026) des billes plus petites, plus à l'échelle de vraies billes face aux circuits : rayon .42 → .32, à partir de la course
 // du 9 novembre midi (les rediffusions d'avant gardent leurs billes, et donc leur course : la taille change la physique).
 const G3_PETIT = {jour:"2026-11-09", heure:12, R:.32};
-const g3R = race => { const j = race.jour || "2026-10-03", h = race.heure || 20; return (j > G3_PETIT.jour || (j===G3_PETIT.jour && h >= G3_PETIT.heure)) ? G3_PETIT.R : .42 };
+// (11 novembre 2026) encore un peu plus petites : rayon .32 → .27 à partir de la course du 12 novembre midi (G3_MINI). Les réglages de circuit
+// qui ne vont qu'avec elles sont derrière G3.R < .3 (Plinko, Billard, Moulins, bac des zigzags, Cirque/Nuages, Couloirs, Bobsleigh) : les courses d'avant se rejouent à l'identique
+const G3_MINI = {jour:"2026-11-12", heure:12, R:.27};
+const g3Apres = (race, d) => { const j = race.jour || "2026-10-03", h = race.heure || 20; return j > d.jour || (j===d.jour && h >= d.heure) };
+const g3R = race => g3Apres(race, G3_MINI) ? G3_MINI.R : g3Apres(race, G3_PETIT) ? G3_PETIT.R : .42;
 const g3Phy = race => { const j = race.jour || "2026-10-03", h = race.heure || 20; return (j > G3_LOURD.jour || (j===G3_LOURD.jour && h >= G3_LOURD.heure)) ? G3_LOURD.phy : null };
 let G3LIB = null;
 async function g3Load(){
@@ -16245,6 +16249,9 @@ function g3Zigzag(k, o, deco){
   k.box([14, .4, WID+4], [xf, yt+.4, 0], [0,0,0], "tray");
   k.box([.4, 3, WID+4], [xf+dirL*7, yt+1.8, 0], [0,0,0], "end"); k.box([.4, 3, WID+4], [xf-dirL*7, yt+1.8, 0], [0,0,0], "end");
   k.box([14, 3, .4], [xf, yt+1.8, WID/2+2], [0,0,0], "wall"); k.box([14, 3, .4], [xf, yt+1.8, -WID/2-2], [0,0,0], "wall");
+  // (11 novembre 2026) petites billes (G3_MINI) : une vitre au-dessus des bords du bac (côtés et fond). Sortie en biais de la dernière rampe,
+  // une bille de .27 passait juste par-dessus le bord et tombait dans le vide (Train fantôme, 3 courses sur 16)
+  if(G3.R < .3){ [-1, 1].forEach(sd=>k.box([14, 4, .3], [xf, yt+5.3, sd*(WID/2+2)], [0,0,0], "glass")); k.box([.3, 4, WID+4], [xf+dirL*7, yt+5.3, 0], [0,0,0], "glass") }
   path.push([xf, yt+1, 0]);
   return {path, finishY:yt+1.2, floorY:yt-3};
 }
@@ -16492,6 +16499,9 @@ function g3Trampo(k, r, n, o){
     // (8 novembre 2026) courses depuis le 9 novembre midi (G3_PETIT) : au 1er étage aussi, le début de la piste du dessous est fermé (sous la goulotte
     // de départ) ; une bille renvoyée en arrière par un trampoline y remontait la piste et tombait dans le vide par ce bout
     else if(G3.R < .4) k.box([.3, 5.5, CW], [x0 - pas*.5 - .3, yf(0) + 1.75, 0], [0,0,0], "end");   // contre le bout de la piste (pas de trou où tomber tout droit au bac)
+    // (11 novembre 2026) petites billes (G3_MINI) : pareil aux étages suivants. Entre le début de leur piste du dessous et le mur du bout de l'étage
+    // d'avant, un trou de 1,3 : une bille de .27 renvoyée en arrière y tombait dans le vide (Nuages). Le mur s'arrête sous la rampe d'arrivée
+    if(L>0 && G3.R < .3) k.box([.3, 3.8, CW], [X(0) - dir*(pas*.5 + .3), Y(0) - 2.1, 0], [0,0,0], "end");
   }
   // le bac : sous le bout du dernier étage
   const dirL = (NL-1)%2 ? -1 : 1, xt =dirL>0 ? xe + 4 : x0 - 4;
@@ -16634,6 +16644,9 @@ function g3Couloirs(k, r, n, o){
   [-1, 1].forEach(sd=>{ k.seg(at(iG, sd*(WID/2 - .05), 0), at(iF, sd*GW/2, 0), fq.Y, 1.2, "rail");
     k.seg(at(iF, sd*GW/2, 0), at(i1, sd*GW/2, 0), F[Math.round((iF + i1)/2)].Y, 1.2, "rail");
     k.cyl(.2, 1.2, at(i1, sd*GW/2, .6), F[Math.round(i1)].q, "rail") });
+  // (11 novembre 2026) petites billes (G3_MINI) : une vitre au-dessus des murs de la piste, d'un bout à l'autre des couloirs. Une porte qui tourne
+  // ramassait parfois une bille de .27 et la lançait par-dessus le mur (1,3) : elle tombait dans le vide (1 course sur 16)
+  if(G3.R < .3) [-1, 1].forEach(sd=>k.seg(at(i0 - 4, sd*(WID/2 + .12), 1.2), at(i1 + 2, sd*(WID/2 + .12), 1.2), F[i0].Y, 2.3, "glass"));
   { const fd = F[Math.round(iF + 4)]; g3Rotor(k.spin([.3, 2.1, GW - .2], at(iF + 4, 0, 1.45), fd.q, v3.mul(fd.Z, o.wGoulot || 2.6))) }
   const end = g3TroughEnd(k, P, path, {});
   return {path, ...st, ...end, cam:g3ChaseCam};
@@ -16664,9 +16677,14 @@ const G3C = {
       for(let row=0; row<ROWS; row++){ const y = top - 2 - row*DY, off = row%2 ? .9 : 0;
         for(let x=-7.2+off; x<7.3; x+=1.8){   // symétrique : 9 plots sur les rangs pairs, 8 sur les impairs
           // de temps en temps, un gros champignon à la place d'un plot : il renvoie les billes bien plus loin
-          if(row>2 && r()<.07) k.pin(.5, GAP*.9, [x, y, 0], "bump", "rebond"); else k.pin(.2, GAP*.9, [x + (r()-.5)*.12, y, 0]) }
+          // (11 novembre 2026) petites billes (G3_MINI) : des plots un peu plus gros (.2 → .25), sinon une bille de .27 passe tout droit entre deux rangs
+          if(row>2 && r()<.07) k.pin(.5, GAP*.9, [x, y, 0], "bump", "rebond"); else k.pin(G3.R < .3 ? .25 : .2, GAP*.9, [x + (r()-.5)*.12, y, 0]) }
         // une bosse ronde dans chaque mur, un rang sur deux : personne ne descend tranquillement le long du bord
-        if(row%2===1) [-1,1].forEach(s=>k.pin(.5, GAP*.9, [s*(W/2+.05), y, 0], "wall2"));
+        // (11 novembre 2026) petites billes : entre le dernier plot et le mur, un couloir restait libre de haut en bas (x ≈ ±8, là où part la 1re
+        // et la 17e bille de la grille) : une bille y gagnait en 7,6 s à chaque course. Aux rangs impairs, un plot de plus au bout du rang,
+        // et la bosse du mur passe aux rangs pairs (plot + bosse au même rang : un berceau où les billes se posaient)
+        if(G3.R < .3) [-1,1].forEach(s=>{ if(row%2===1) k.pin(.25, GAP*.9, [s*8.1, y, 0]); else k.pin(.5, GAP*.9, [s*(W/2+.05), y, 0], "wall2") });
+        else if(row%2===1) [-1,1].forEach(s=>k.pin(.5, GAP*.9, [s*(W/2+.05), y, 0], "wall2"));
       }
       k.box([W, .4, D], [0, yb-1.5, 0], [0,0,0], "tray"); path.push([0, yb-1, 0]);
       const cols = 17, starts = [];
@@ -16748,7 +16766,9 @@ const G3C = {
         const nrm = [-Math.sin(rot), Math.cos(rot), 0];
         [i ? .25 : .36,.55,.85].forEach((f, j)=>{ const x = -dir*o.LEN/2 + dir*f*o.LEN, w = ((i+j)%2 ? 1 : -1)*(.8 + .5*r());
           const c = v3.add([x, sY(x), 0], v3.mul(nrm, .55));
-          k.spin([4.6, .5, .5], c, [0,0,rot], v3.mul(nrm, w));
+          // (11 novembre 2026) petites billes (G3_MINI) : des pales un peu plus longues (4,6 → 5,2) ; une bille de .27 qui longeait le mur passait
+          // sous le bout des pales toute la course et gagnait avec 15 s d'avance
+          k.spin([G3.R < .3 ? 5.2 : 4.6, .5, .5], c, [0,0,rot], v3.mul(nrm, w));
           k.cyl(.3, 1.6, v3.add([x, sY(x), 0], v3.mul(nrm, .8)), [0,0,rot], "axle") });
         // entre les pales, des rangées de plots (3 de front)
         [.12,.4,.7].forEach(f=>{ const x = -dir*o.LEN/2 + dir*f*o.LEN; [-2,0,2].forEach(zz=>k.cyl(.22, 1.4, [x, sY(x)+.7, zz + (r()-.5)*.3])) }) });
@@ -16816,8 +16836,11 @@ const G3C = {
     build(k, r, n){ const o = {RAMPS:4, LEN:34, WID:10, STEP:7, ANG:8.5*Math.PI/180, wall:2.2, holes:i=>({f:.88, side:i%2 ? 1 : -1, w:1.6}), wallBumps:[.15,.4,.65]};
       const z = g3Zigzag(k, o, (i, {dir, sY})=>{ const xf = f => -dir*o.LEN/2 + dir*f*o.LEN;
         [.3,.62].forEach((f, t)=>{ const x0 = xf(f), zc = ((i+t)%2 ? 1 : -1)*1.2;
-          for(let row=0; row<3; row++) for(let j=0; j<=row; j++){ const x = x0 + dir*row*1.15;
-            k.ball(.5, [x, sY(x)+.68, zc + (j - row/2)*1.25], (row+j)%2 ? "pool2" : "pool") } }) });
+          // (11 novembre 2026) petites billes (G3_MINI) : les boules du triangle se touchent, comme un vrai triangle de billard ; entre deux boules
+          // écartées, une bille de .27 restait coincée dans le creux
+          const dx = G3.R < .3 ? .87 : 1.15, dz = G3.R < .3 ? 1.0 : 1.25;
+          for(let row=0; row<3; row++) for(let j=0; j<=row; j++){ const x = x0 + dir*row*dx;
+            k.ball(.5, [x, sY(x)+.68, zc + (j - row/2)*dz], (row+j)%2 ? "pool2" : "pool") } }) });
       return {...z, ...g3ZigStart(k, o, n, r), cam:g3TableCam} }},
 
   // Un flipper à plat, la nuit : des bumpers qui renvoient fort, des couloirs au départ et des lance-billes au bout
@@ -16864,7 +16887,8 @@ const G3C = {
   // Un bobsleigh la nuit : une piste de glace, des virages serrés et très relevés, et des obstacles qui brillent
   bobsleigh:{name:"Le Bobsleigh", desc:"Une piste de glace qui file dans la nuit : des virages très relevés, des champignons lumineux et des plots partout. Une erreur et on perd sa place !",
     theme:{bg:"#0B1430", ramp:"#DCEBFF", tray:"#5AB8FF", spin:"#5AB8FF", bump:"#FF4F7A", peg:"#FFD34D"}, form:"serpent",
-    build(k, r, n){ const o = {WID:4, mur:1.8, pente:.15, relief:6, bankMax:.34};
+    // (11 novembre 2026) petites billes (G3_MINI) : murs 1,8 → 2,4 ; un champignon envoyait parfois une bille de .27 juste par-dessus le mur d'un virage
+    build(k, r, n){ const o = {WID:4, mur:G3.R < .3 ? 2.4 : 1.8, pente:.15, relief:6, bankMax:.34};
       const P = g3Trace([["S",16],["G",10,90],["S",12],["D",8,150],["S",12],["G",9,150],["S",12],["D",7,140],["S",12],["G",6,180],["S",12],["D",10,120],["S",12],["G",8,130],["S",16]], o);
       const {path, frames} = g3Trough(k, P, o), L = g3Semis(P, ["champis","plots","bosse","champis","plots","bosse"], r);   // (pas de tourniquet : sur cette piste plus étroite, une bille se coinçait à côté)
       g3Obstacles(k, frames, o.WID, L, r);
@@ -17964,7 +17988,7 @@ let bugKeep = null;   // un message qui n'est pas parti : il est reproposé au p
 // on:false cache le bouton (pendant qu'on prépare la mise à jour) ; on:true le remet, avec la pastille si l'id a changé
 // (16 octobre 2026) deux repères : dot = la pastille rouge du bouton, à changer à CHAQUE mise en ligne qui ajoute une ligne au patchnote
 // (avec txt : la date du jour) ; id = la fenêtre d'annonce à l'arrivée, seulement pour les très gros jours
-const NEWS = {on:true, id:"2026-11-06", dot:"2026-11-11-1500", url:"/nouveautes.html", txt:"Mise à jour du 11 nov."};
+const NEWS = {on:true, id:"2026-11-06", dot:"2026-11-11-2000", url:"/nouveautes.html", txt:"Mise à jour du 11 nov."};
 const newsUnseen = () => lsGet("billeo-news-vu")!==NEWS.dot;
 // (14 octobre 2026) à l'arrivée, une fenêtre annonce la mise à jour, une seule fois par mise à jour et par compte (S.newsPop, gardé
 // dans la partie : elle ne revient pas sur un autre appareil) ; on choisit d'aller voir les nouveautés, ou pas

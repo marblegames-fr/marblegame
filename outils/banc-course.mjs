@@ -27,7 +27,7 @@ const J = new Function(code)();
 if(process.env.PEL != null) J.G3.PEL = +process.env.PEL;   // PEL=0 : sans le peloton (pour comparer)
 // (7 novembre 2026) PHY='{"g":2,"rp":0.1,"rb":0.6,"vmax":18}' : la physique des billes lourdes (celle des courses depuis le 7 novembre au soir, G3_LOURD dans index.html)
 if(process.env.PHY) J.G3.PHY = JSON.parse(process.env.PHY);
-// (8 novembre 2026) R=0.32 : le rayon des billes (G3_PETIT dans index.html : plus petites depuis la course du 9 novembre midi)
+// (8 novembre 2026) R=0.32 : le rayon des billes (G3_PETIT dans index.html : plus petites depuis la course du 9 novembre midi) ; R=0.27 depuis le 12 novembre midi (G3_MINI)
 if(process.env.R) J.G3.R = +process.env.R;
 const ids = quels && quels !== "tous" ? quels.split(",") : Object.keys(J.G3C);
 

@@ -7774,7 +7774,15 @@ class MarbleGL{
     this.cv=cv;
     const gl=cv.getContext("webgl",{preserveDrawingBuffer:true,premultipliedAlpha:true,alpha:true,antialias:false});
     if(!gl) throw new Error("webgl indisponible");
-    this.gl=gl;
+    this.gl=gl; this.init();
+    // (13 novembre 2026) un téléphone coupe le WebGL quand on change d'appli ou qu'il manque de mémoire. Sans ces deux écouteurs,
+    // le navigateur ne le rendait jamais : jusqu'au rechargement, toutes les billes sortaient en rendu de secours (dégradé sans motif).
+    // preventDefault() demande au navigateur de le rendre ; quand il revient, les programmes sont refaits et les billes redessinées.
+    cv.addEventListener("webglcontextlost",e=>{ e.preventDefault() },false);
+    cv.addEventListener("webglcontextrestored",()=>{ this.init(); glBack(this) },false);
+  }
+  init(){
+    const gl=this.gl;
     this.progs=new Map(); this.cur=null;
     // (21 octobre 2026) la compilation en parallèle, à côté de la page : sans elle, une première visite (ou la première après
     // une mise à jour du shader) figeait la page 4 à 6 secondes, une variante après l'autre (300 à 900 ms chacune)
@@ -7818,6 +7826,7 @@ class MarbleGL{
     while(!this.busy && this.wait.size){ const [k,a]=this.wait.entries().next().value; this.wait.delete(k); if(!this.progs.has(k)) this.busy=this.prog(...a) }
   }
   use(mode,opaque,hero=0){
+    if(this.gl.isContextLost()) throw new Error("contexte WebGL perdu");   // (sinon un programme vide resterait gardé après le retour)
     const gl=this.gl, p=this.prog(mode,opaque,hero);
     if(!p.ok){
       if(!gl.getProgramParameter(p.pr,gl.LINK_STATUS)){
@@ -7859,6 +7868,14 @@ const gamePx = cssW => Math.round(Math.min(cssW*pxRatio(), GAME_PX)*GameQ.q);
 const screenDpr = (w, h, d=Math.min(2, devicePixelRatio||1)) => d*Math.min(1, Math.sqrt(SCREEN_PX/Math.max(1, w*h*d*d)));
 function makeGL(cv){ try{ return new MarbleGL(cv) }catch(e){ console.warn("Rendu WebGL indisponible :",e.message); return null } }
 const mainGL = makeGL(document.createElement("canvas"));
+// les billes dessinées en rendu de secours pendant que le WebGL était coupé : refaites dès qu'il revient (cache et images affichées)
+const urlSecours = new Map();
+function glBack(g){
+  if(g!==mainGL) return;
+  urlSecours.forEach(([s,size],k)=>{ const old=urlCache.get(k); urlCache.delete(k); if(!old) return;
+    const u=marbleURL(s,size); document.querySelectorAll("img").forEach(im=>{ if(im.getAttribute("src")===old) im.src=u }) });
+  urlSecours.clear();
+}
 
 // Rendu de secours sans WebGL
 function draw2D(s,size){
@@ -7875,7 +7892,7 @@ function marbleURL(s,size=160){
   const k=urlKey(s,size);
   if(urlCache.has(k)) return urlCache.get(k);
   let u;
-  try{ mainGL.draw(s,size); u=mainGL.cv.toDataURL("image/png") }catch(e){ u=draw2D(s,size).toDataURL("image/png") }
+  try{ mainGL.draw(s,size); u=mainGL.cv.toDataURL("image/png") }catch(e){ u=draw2D(s,size).toDataURL("image/png"); if(mainGL) urlSecours.set(k,[s,size]) }
   // (5 octobre 2026) une adresse blob: courte plutôt que l'image entière en base64 : le HTML des grandes grilles reste léger
   try{ const bin=atob(u.slice(u.indexOf(",")+1)), a=new Uint8Array(bin.length); for(let i=0;i<bin.length;i++) a[i]=bin.charCodeAt(i);
     u=URL.createObjectURL(new Blob([a],{type:"image/png"})) }catch(e){}
@@ -11914,8 +11931,9 @@ const tirOfDay = (d) => TIR_ORDER[dayNum(d) % LEVELS.length];
 function tirLeftTime(){ const d=new Date(), m=new Date(d.getFullYear(),d.getMonth(),d.getDate()+1)-d, h=Math.floor(m/36e5); return h ? `${h} h ${Math.floor(m/6e4)%60} min` : `${Math.floor(m/6e4)} min` }
 const BORDER = [[0,0,W,20],[0,H-20,W,20],[0,0,20,H],[W-20,0,20,H]];
 const game = {lvl:0, raf:null};
-const ballCanvas = document.createElement("canvas");
-const ballGL = makeGL(ballCanvas);
+// (13 novembre 2026) les billes des jeux se dessinent avec le même moteur que les images (chaque dessin est copié aussitôt) :
+// 4 contextes WebGL ouverts en même temps, plus celui de la course 3D, c'était trop pour un petit téléphone, qui en coupait un
+const ballGL = mainGL, ballCanvas = mainGL ? mainGL.cv : document.createElement("canvas");
 let feltCanvas = null;
 
 function starsFor(strokes,par){ return strokes<=par?3:strokes===par+1?2:1 }
@@ -17497,7 +17515,12 @@ function g3Skip(){ const G = GCV.g3v; if(!G) return; const sim = G.sim, nowT = g
 // la course : en 3D si possible, sinon la vue 2D d'avant
 function gcWatch(race){
   if(!window.WebGLRenderingContext || lsGet("billeo-gc-2d")==="1") return gcWatch2D(race);
-  gcWatch3D(race).catch(e=>{ console.warn("Course 3D indisponible :", e); gcWatch2D(race) });
+  // (13 novembre 2026) un second essai avant la vue 2D : sur téléphone, le WebGL peut être indisponible un instant
+  // (retour dans l'appli, contexte coupé) ou three.js pas encore arrivé (réseau mobile)
+  gcWatch3D(race).catch(e=>{ console.warn("Course 3D indisponible, nouvel essai :", e);
+    try{ g3Free() }catch(x){}
+    setTimeout(()=>{ if(document.getElementById("gc-ov")?.hidden) return;
+      gcWatch3D(race).catch(e2=>{ console.warn("Course 3D indisponible :", e2); gcWatch2D(race) }) }, 800) });
 }
 function gcWatch2D(race){
   const T = gcTrack(race.jour), R = gcPlan(T, race.resultats, race.graine);
@@ -17669,7 +17692,7 @@ function gcPhys(t){
     return {o, s, x:p.x+p.nx*o.d, y:p.y+p.ny*o.d, z:o.r, fall:null, crash:o.crash, done, hide:false, tx:p.tx, ty:p.ty} });
 }
 function gcFx(x,y,col,n,sp){ for(let i=0;i<n;i++){ const a = Math.random()*TAU, v = sp*(.3+Math.random()); GCV.fx.push({x,y,z:4,vx:Math.cos(a)*v,vy:Math.sin(a)*v,vz:1+Math.random()*3,life:1,col,sz:5}) } }
-const gcGL = (()=>{ try{ return new MarbleGL(document.createElement("canvas")) }catch(e){ return null } })();
+const gcGL = mainGL;   // (13 novembre 2026) le même moteur que les images : un contexte WebGL de moins
 function gcSprite(o, px){
   if(!gcGL) return null; if(!o.cv) o.cv = document.createElement("canvas");
   if(o.dirty || o.cv.width!==px){ gcGL.draw(o.spec, px, o.rot); o.cv.width = o.cv.height = px; o.cv.getContext("2d").drawImage(gcGL.cv,0,0); o.dirty = false }
@@ -17988,7 +18011,7 @@ let bugKeep = null;   // un message qui n'est pas parti : il est reproposé au p
 // on:false cache le bouton (pendant qu'on prépare la mise à jour) ; on:true le remet, avec la pastille si l'id a changé
 // (16 octobre 2026) deux repères : dot = la pastille rouge du bouton, à changer à CHAQUE mise en ligne qui ajoute une ligne au patchnote
 // (avec txt : la date du jour) ; id = la fenêtre d'annonce à l'arrivée, seulement pour les très gros jours
-const NEWS = {on:true, id:"2026-11-06", dot:"2026-11-11-2000", url:"/nouveautes.html", txt:"Mise à jour du 11 nov."};
+const NEWS = {on:true, id:"2026-11-06", dot:"2026-11-13-1200", url:"/nouveautes.html", txt:"Mise à jour du 13 nov."};
 const newsUnseen = () => lsGet("billeo-news-vu")!==NEWS.dot;
 // (14 octobre 2026) à l'arrivée, une fenêtre annonce la mise à jour, une seule fois par mise à jour et par compte (S.newsPop, gardé
 // dans la partie : elle ne revient pas sur un autre appareil) ; on choisit d'aller voir les nouveautés, ou pas

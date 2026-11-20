@@ -285,7 +285,7 @@ begin
     select interne.bille_json(b) j from billes b
     where b.proprietaire = qui and b.detruite_le is null and b.origine = 'serveur' and b.secrete is null and not interne.encore_liee(b.liee, b.proprietaire)
       and not b.verrouillee and not interne.en_vente(b.id)
-    order by interne.rang(b.taille) desc, b.shiny desc, b.numero desc limit 5000) x), '[]');
+    order by interne.rang(b.taille) desc, b.shiny desc, b.numero desc limit 50000) x), '[]');   -- (20 novembre 2026) 5000 → 50000 : au-delà de 5000 billes, les Mini (en dernier) disparaissaient du troc et de « Vendre une bille »
 end $$;
 
 -- (16 octobre 2026) ce qu'un copain a déjà dans sa boîte, en clés « taille|motif|coloris|shiny » (toutes ses billes, même celles qu'il ne peut pas troquer) :

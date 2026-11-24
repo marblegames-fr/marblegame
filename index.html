@@ -9473,7 +9473,8 @@ function confResync(){ if(!srvOn() || Date.now()-lastResync<30000) return; lastR
 function go(view){
   if(!viewOk(view)){ const E = onbOn() && ONB[S.onb.step]; toast(E?.but ? `Bientôt ! Ton objectif d'abord : ${E.but.toLowerCase()}.` : "Bientôt !"); return }
   if(onbOn()){ if(view==="confiserie" || view==="atelier") S.onb.conf = 1; if(view==="cour") S.onb.cour = 1; if(view==="confiserie" || view==="cour") setTimeout(onbCheck, 1500) }
-  toggleProfPop(false); if(view!==ui.view) ui.ballPicked = null; if(view==="confiserie") confResync(); if(view==="atelier"){ view="confiserie"; ui.confTab="fusion" } if(view==="billepedia"){ view="collection"; ui.tab="pedia" } ui.view=view; renderNav(); renderView(true); window.scrollTo({top:0}); phoneGo(); }
+  toggleProfPop(false); if(view!==ui.view) ui.ballPicked = null; if(view==="confiserie") confResync(); if(view==="atelier"){ view="confiserie"; ui.confTab="fusion" } if(view==="billepedia"){ view="collection"; ui.tab="pedia" } if(view==="accueil" && ui.view!=="accueil") hc.i = 0;   // (24 novembre 2026) en revenant sur l'accueil : la diapo la plus récente
+  ui.view=view; renderNav(); renderView(true); window.scrollTo({top:0}); phoneGo(); }
 // (23 octobre 2026) une partie en cours des Gobelets, du Tiercé, de la Toupie ou de la Pince : un réaffichage venu d'ailleurs
 // (la boîte resynchronisée toutes les minutes, un lot arrivé…) relançait le jeu en pleine animation, et le Tiercé restait bloqué
 // (Stephiox). Pendant la partie, la page n'est pas redessinée (le haut et le menu, si). Changer de page (go) passe toujours.
@@ -9648,7 +9649,8 @@ function heroSlides(){
   const lane = (track, lbl) => { const r = passReward(track, t1), locked = track==="prem" && !P.premium;
     return `<div class="hs-lane${locked?" locked":""}"><small>${lbl}${locked?` ${ic("lock",12,2.6)}`:""}</small><b>${rewardLabel(r)}</b><i>palier ${t1}</i></div>` };
   const finalSpec = rewardSpec("prem",30,passReward("prem",30));
-  out.push({id:"passe", label:"Passe de saison", score: pc ? 85 : 40, style:seasonStyle(se), html:`
+  const seDeb = new Date(se.y, se.m, 1).getTime();
+  out.push({id:"passe", label:"Passe de saison", score: pc ? 85 : 40, neuf: Date.now()-seDeb < 7*864e5 ? seDeb : 0, style:seasonStyle(se), html:`
     ${art("", img(finalSpec, 190, "right:7%;top:50%;translate:0 -50%", "big"))}
     <div class="hm-txt">
       <span class="hm-k">${ic("ticket",15)} Passe de saison · ${esc(se.def.name)}</span>
@@ -9672,7 +9674,7 @@ function heroSlides(){
   const left = se.end - Date.now();
   if(left < 7*864e5){
     const nx = seasonNow(new Date(se.y, se.m+1, 1)), nm = t => ({seed:hash(nx.id+"une"+t), type:t, family:nx.def.fam, pal:nx.pal, shiny:0});
-    out.push({id:"bientot", label:"Bientôt", score:35, style:seasonStyle(nx), html:`
+    out.push({id:"bientot", label:"Bientôt", score:35, neuf: se.end - 7*864e5, style:seasonStyle(nx), html:`
       ${art("teaser", img(nm("mammouth"),170,"right:9%;top:50%;translate:0 -50%","veil") + `<span class="hs-soon">Bientôt</span>`)}
       <div class="hm-txt">
         <span class="hm-k">${ic("clock",15)} La prochaine saison arrive</span>
@@ -9684,7 +9686,7 @@ function heroSlides(){
   // l'événement en cours
   liveEvents().forEach(k=>{ const E = EVENTS[k], b = BAG_BY[E.bag], f = FAMILIES.findIndex(F=>F.event===k), n = b ? S.bagInv[b.id]||0 : 0;
     const ex = (t,j) => ({seed:hash("ev-une"+k+t), type:t, family:f, pal:E.palIdx[j], shiny:0});
-    out.push({id:"event", label:"Événement", score: n ? 98 : 70, style:`--s1:${PALETTES[E.palIdx[0]][1]};--s2:${E.color};--s3:${PALETTES[E.palIdx[0]][2]}`, html:`
+    out.push({id:"event", label:"Événement", score: n ? 98 : 70, neuf: +E.start, style:`--s1:${PALETTES[E.palIdx[0]][1]};--s2:${E.color};--s3:${PALETTES[E.palIdx[0]][2]}`, html:`
       ${art("", img(ex("mammouth",0),150,"right:16%;top:46%;translate:0 -50%","big") + img(ex("calot",1),78,"right:4%;top:14%") + img(ex("boulet",3),92,"right:5%;bottom:10%") + img(ex("chinoise",2),58,"right:38%;bottom:12%"))}
       <div class="hm-txt">
         <span class="hm-k">${ic("flag",15)} Événement · jusqu'au ${dayMonth(E.end)}</span>
@@ -9696,7 +9698,7 @@ function heroSlides(){
   // un événement qui arrive dans moins de 7 jours : on l'annonce (billes floutées, comme la saison suivante)
   Object.keys(EVENTS).filter(k=>{ const d = EVENTS[k].start - Date.now(); return d>0 && d<7*864e5 }).forEach(k=>{ const E = EVENTS[k], f = FAMILIES.findIndex(F=>F.event===k);
     const ex = (t,j) => ({seed:hash("ev-une"+k+t), type:t, family:f, pal:E.palIdx[j], shiny:0});
-    out.push({id:"bientot-ev", label:"Bientôt", score:40, style:`--s1:${PALETTES[E.palIdx[0]][1]};--s2:${E.color};--s3:${PALETTES[E.palIdx[0]][2]}`, html:`
+    out.push({id:"bientot-ev", label:"Bientôt", score:40, neuf: E.start - 7*864e5, style:`--s1:${PALETTES[E.palIdx[0]][1]};--s2:${E.color};--s3:${PALETTES[E.palIdx[0]][2]}`, html:`
       ${art("", img(ex("mammouth",0),150,"right:16%;top:46%;translate:0 -50%","big veil") + img(ex("calot",1),78,"right:4%;top:14%","veil") + img(ex("boulet",3),92,"right:5%;bottom:10%","veil"))}
       <div class="hm-txt">
         <span class="hm-k">${ic("flag",15)} Bientôt · le ${dayMonth(E.start)}</span>
@@ -9715,7 +9717,8 @@ function heroSlides(){
         <div class="hs-lines">${line(C.trocs, `${C.trocs} troc${C.trocs>1?"s":""} à voir`, "troc", "swap")}${line(C.depasse, `Dépassé sur ${C.depasse} enchère${C.depasse>1?"s":""}`, "marche", "gavel")}${line(C.demandes, `${C.demandes} demande${C.demandes>1?"s":""} de copain`, "copains", "users")}</div>
       </div>`});
   }
-  return out.map((x,k)=>Object.assign(x, {k})).sort((a,b)=>b.score-a.score || a.k-b.k);
+  // (24 novembre 2026) les nouveautés d'abord (événement en cours ou annoncé, passe de la 1re semaine, saison suivante), la plus récente en tête ; puis le reste par importance
+  return out.map((x,k)=>Object.assign(x, {k})).sort((a,b)=>(b.neuf||0)-(a.neuf||0) || b.score-a.score || a.k-b.k);
 }
 function homeHero(){
   const sl = heroSlides(); if(hc.i >= sl.length) hc.i = 0;
@@ -18213,7 +18216,7 @@ let bugKeep = null;   // un message qui n'est pas parti : il est reproposé au p
 // on:false cache le bouton (pendant qu'on prépare la mise à jour) ; on:true le remet, avec la pastille si l'id a changé
 // (16 octobre 2026) deux repères : dot = la pastille rouge du bouton, à changer à CHAQUE mise en ligne qui ajoute une ligne au patchnote
 // (avec txt : la date du jour) ; id = la fenêtre d'annonce à l'arrivée, seulement pour les très gros jours
-const NEWS = {on:true, id:"2026-11-06", dot:"2026-11-20-1940", url:"/nouveautes.html", txt:"Mise à jour du 20 nov."};
+const NEWS = {on:true, id:"2026-11-06", dot:"2026-11-24-1200", url:"/nouveautes.html", txt:"Mise à jour du 24 nov."};
 const newsUnseen = () => lsGet("billeo-news-vu")!==NEWS.dot;
 // (14 octobre 2026) à l'arrivée, une fenêtre annonce la mise à jour, une seule fois par mise à jour et par compte (S.newsPop, gardé
 // dans la partie : elle ne revient pas sur un autre appareil) ; on choisit d'aller voir les nouveautés, ou pas
